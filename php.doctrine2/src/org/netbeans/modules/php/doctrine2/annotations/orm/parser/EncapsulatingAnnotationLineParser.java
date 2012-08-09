@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -66,6 +65,9 @@ public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
         Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
         joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
         ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
+        Set<String> joinTableInlineAnnotations = new HashSet<String>();
+        joinTableInlineAnnotations.add("JoinColumn"); //NOI18N
+        ANNOTATIONS.put("JoinTable", joinTableInlineAnnotations); //NOI18N
     }
 
     @Override

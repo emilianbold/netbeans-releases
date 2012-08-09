@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
@@ -52,21 +54,49 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class DiscriminatorMapLineParser implements AnnotationLineParser {
+public class TypedParametersAnnotationLineParser implements AnnotationLineParser {
 
-    static final String ANNOTATION_NAME = "DiscriminatorMap"; //NOI18N
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
+    static {
+        Set<String> entityRegexs = new HashSet<String>();
+        entityRegexs.add("repositoryClass"); //NOI18N
+        ANNOTATIONS.put("Entity", entityRegexs); //NOI18N
+
+        Set<String> discriminatorMapRegexs = new HashSet<String>();
+        discriminatorMapRegexs.add(""); //NOI18N
+        ANNOTATIONS.put("DiscriminatorMap", discriminatorMapRegexs); //NOI18N
+
+        Set<String> manyToOneRegexs = new HashSet<String>();
+        manyToOneRegexs.add("targetEntity"); //NOI18N
+        ANNOTATIONS.put("ManyToOne", manyToOneRegexs); //NOI18N
+
+        Set<String> manyToManyRegexs = new HashSet<String>();
+        manyToManyRegexs.add("targetEntity"); //NOI18N
+        ANNOTATIONS.put("ManyToMany", manyToManyRegexs); //NOI18N
+
+        Set<String> oneToOneRegexs = new HashSet<String>();
+        oneToOneRegexs.add("targetEntity"); //NOI18N
+        ANNOTATIONS.put("OneToOne", oneToOneRegexs); //NOI18N
+
+        Set<String> oneToManyRegexs = new HashSet<String>();
+        oneToManyRegexs.add("targetEntity"); //NOI18N
+        ANNOTATIONS.put("OneToMany", oneToManyRegexs); //NOI18N
+    }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
         String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            types.putAll(AnnotationUtils.extractTypesFromParameters(line));
-            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
+        for (Map.Entry<String, Set<String>> entry : ANNOTATIONS.entrySet()) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                types.putAll(AnnotationUtils.extractTypesFromParameters(line, entry.getValue()));
+                result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
+                break;
+            }
         }
         return result;
     }

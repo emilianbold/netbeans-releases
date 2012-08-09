@@ -46,16 +46,15 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EntityLineParserTest extends NbTestCase {
+public class ManyToOneLineParserTest extends NbTestCase {
     private TypedParametersAnnotationLineParser parser;
 
-    public EntityLineParserTest(String name) {
+    public ManyToOneLineParserTest(String name) {
         super(name);
     }
 
@@ -69,120 +68,120 @@ public class EntityLineParserTest extends NbTestCase {
         assertTrue(parser instanceof AnnotationLineParser);
     }
 
-    public void testReturnValueIsEntityParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Entity") instanceof ParsedLine);
+    public void testReturnValueIsManyToOneParsedLine_01() throws Exception {
+        assertTrue(parser.parse("ManyToOne") instanceof AnnotationParsedLine.ParsedLine);
     }
 
-    public void testReturnValueIsEntityParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Entity") instanceof ParsedLine);
+    public void testReturnValueIsManyToOneParsedLine_02() throws Exception {
+        assertTrue(parser.parse("Annotations\\ManyToOne") instanceof AnnotationParsedLine.ParsedLine);
     }
 
-    public void testReturnValueIsEntityParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\Entity") instanceof ParsedLine);
+    public void testReturnValueIsManyToOneParsedLine_03() throws Exception {
+        assertTrue(parser.parse("\\Foo\\Bar\\ManyToOne") instanceof AnnotationParsedLine.ParsedLine);
     }
 
-    public void testReturnValueIsEntityParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Entity(repositoryClass=\"MyProject\\UserRepository\")") instanceof ParsedLine);
+    public void testReturnValueIsManyToOneParsedLine_04() throws Exception {
+        assertTrue(parser.parse("Annotations\\ManyToOne(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")") instanceof AnnotationParsedLine.ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
-        assertNull(parser.parse("Entitys"));
+        assertNull(parser.parse("ManyToOnes"));
     }
 
     public void testValidUseCase_01() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Entity");
-        assertEquals("Entity", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("ManyToOne");
+        assertEquals("ManyToOne", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 6));
-        assertEquals("Entity", type1);
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("ManyToOne", type1);
     }
 
     public void testValidUseCase_02() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Entity   ");
-        assertEquals("Entity", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("ManyToOne   ");
+        assertEquals("ManyToOne", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 6));
-        assertEquals("Entity", type1);
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("ManyToOne", type1);
     }
 
     public void testValidUseCase_03() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Entity\t\t  ");
-        assertEquals("Entity", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("ManyToOne\t\t  ");
+        assertEquals("ManyToOne", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 6));
-        assertEquals("Entity", type1);
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("ManyToOne", type1);
     }
 
     public void testValidUseCase_04() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Entity(repositoryClass=\"MyProject\\UserRepository\")");
-        assertEquals("Entity", parsedLine.getName());
-        assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("ManyToOne(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")");
+        assertEquals("ManyToOne", parsedLine.getName());
+        assertEquals("(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(2, types.size());
-        String type1 = types.get(new OffsetRange(0, 6));
-        assertEquals("Entity", type1);
-        String type2 = types.get(new OffsetRange(24, 48));
-        assertEquals("MyProject\\UserRepository", type2);
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("ManyToOne", type1);
+        String type2 = types.get(new OffsetRange(24, 28));
+        assertEquals("Cart", type2);
     }
 
     public void testValidUseCase_05() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Annotations\\Entity(repositoryClass=\"MyProject\\UserRepository\")  \t");
-        assertEquals("Entity", parsedLine.getName());
-        assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("Annotations\\ManyToOne(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")  \t");
+        assertEquals("ManyToOne", parsedLine.getName());
+        assertEquals("(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")", parsedLine.getDescription());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertNotNull(types);
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(0, 21));
+        assertEquals("Annotations\\ManyToOne", type1);
+        String type2 = types.get(new OffsetRange(36, 40));
+        assertEquals("Cart", type2);
+    }
+
+    public void testValidUseCase_06() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\ManyToOne(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")  \t");
+        assertEquals("ManyToOne", parsedLine.getName());
+        assertEquals("(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(2, types.size());
         String type1 = types.get(new OffsetRange(0, 18));
-        assertEquals("Annotations\\Entity", type1);
-        String type2 = types.get(new OffsetRange(36, 60));
-        assertEquals("MyProject\\UserRepository", type2);
-    }
-
-    public void testValidUseCase_06() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\Entity(repositoryClass=\"MyProject\\UserRepository\")  \t");
-        assertEquals("Entity", parsedLine.getName());
-        assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
-        Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertNotNull(types);
-        assertEquals(2, types.size());
-        String type1 = types.get(new OffsetRange(0, 15));
-        assertEquals("\\Foo\\Bar\\Entity", type1);
-        String type2 = types.get(new OffsetRange(33, 57));
-        assertEquals("MyProject\\UserRepository", type2);
+        assertEquals("\\Foo\\Bar\\ManyToOne", type1);
+        String type2 = types.get(new OffsetRange(33, 37));
+        assertEquals("Cart", type2);
     }
 
     public void testValidUseCase_07() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("entity");
-        assertEquals("Entity", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("manytoone");
+        assertEquals("ManyToOne", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 6));
-        assertEquals("entity", type1);
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("manytoone", type1);
     }
 
     public void testValidUseCase_08() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\entity(repositoryClass=\"MyProject\\UserRepository\")  \t");
-        assertEquals("Entity", parsedLine.getName());
-        assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\manytoone(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")  \t");
+        assertEquals("ManyToOne", parsedLine.getName());
+        assertEquals("(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(2, types.size());
-        String type1 = types.get(new OffsetRange(0, 15));
-        assertEquals("\\Foo\\Bar\\entity", type1);
-        String type2 = types.get(new OffsetRange(33, 57));
-        assertEquals("MyProject\\UserRepository", type2);
+        String type1 = types.get(new OffsetRange(0, 18));
+        assertEquals("\\Foo\\Bar\\manytoone", type1);
+        String type2 = types.get(new OffsetRange(33, 37));
+        assertEquals("Cart", type2);
     }
 
 }
