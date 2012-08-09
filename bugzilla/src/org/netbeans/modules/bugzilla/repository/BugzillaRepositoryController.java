@@ -354,7 +354,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     }
 
     private boolean isValid(String url) {
-        if (!url.startsWith("https://") || !url.startsWith("http://")) { 
+        if (!url.startsWith("https://") && !url.startsWith("http://")) { 
             return false;
         }
         try {
