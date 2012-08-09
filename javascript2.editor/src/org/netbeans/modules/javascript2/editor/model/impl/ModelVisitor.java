@@ -48,7 +48,11 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
+import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -478,7 +482,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 List<Type> types = parserResult.getDocumentationHolder().getReturnType(functionNode);
                 if (types != null && !types.isEmpty()) {
                     for(Type type : types) {
-                        fncScope.addReturnType(new TypeUsageImpl(type.getType(), -1, true));
+                        fncScope.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), true));
                     }
                 }
                 if (fncScope.areReturnTypesEmpty()) {
@@ -911,6 +915,17 @@ public class ModelVisitor extends PathNodeVisitor {
             scope = scope.getInScope();
         }
         if (property != null) {
+
+            // occurence in the doc
+            JsComment comment = JsDocumentationSupport.getCommentForOffset(parserResult, property.getOffset());
+            if (comment != null) {
+                for (DocParameter docParameter : comment.getParameters()) {
+                    if (docParameter.getParamName().getName().equals(iNode.getName())) {
+                        ((JsObjectImpl)property).addOccurrence(DocumentationUtils.getOffsetRange(docParameter));
+                    }
+                }
+            }
+
             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
         } else {
             // it's a new global variable?
