@@ -760,16 +760,16 @@ public class RefactoringPanel extends JPanel {
                             // ui.getRefactoring().setClassPath();
                             for (Iterator it = elements.iterator(); it.hasNext();i++) {
                                 final RefactoringElement e = (RefactoringElement) it.next();
+
                                 createNode(TreeElementFactory.getTreeElement(e), nodes, root);
-                                
+                                final int occurrences = i + 1;
+                                size.set(occurrences);
                                 if (isQuery && showParametersPanel) {
                                     if (cancelRequest.get()) {
                                         break;
                                     }
 
                                     final boolean last = !it.hasNext();
-                                    final int occurrences = i + 1;
-                                    size.set(occurrences);
                                     if (occurrences % 10 == 0 || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
 
