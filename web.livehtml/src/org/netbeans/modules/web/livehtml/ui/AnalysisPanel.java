@@ -431,8 +431,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
                     
                     //TODO: This part of code must be changed - now it will open Chrome Tab for every "file". 
-//                    getPreviewBrowserSupport().disablePageInspector();
-                    getPreviewBrowserSupport().reload(fo.toURL());
+                    getPreviewBrowserSupport().disablePageInspector();
+                    getPreviewBrowserSupport().load(fo.toURL(), fo);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -479,6 +479,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         reformatRevisionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/pretty.png"))); // NOI18N
         reformatRevisionButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.reformatRevisionsButton.toolTipText")); // NOI18N
+        reformatRevisionButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         reformatRevisionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reformatRevisionButtonActionPerformed(evt);
@@ -487,6 +488,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         startAnalysisButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
         startAnalysisButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.startAnalysisButton.toolTipText")); // NOI18N
+        startAnalysisButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         startAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 startAnalysisButtonActionPerformed(evt);
@@ -495,6 +497,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         filterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/filter.png"))); // NOI18N
         filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.filterButton.toolTipText")); // NOI18N
+        filterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filterButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterButtonActionPerformed(evt);
@@ -503,6 +506,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         previewRevisionToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/preview.png"))); // NOI18N
         previewRevisionToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.previewRevisionButton.toolTipText")); // NOI18N
+        previewRevisionToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         previewRevisionToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewRevisionToggleButtonActionPerformed(evt);
