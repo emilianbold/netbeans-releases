@@ -73,6 +73,11 @@
                         <specification-version>8.2</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>

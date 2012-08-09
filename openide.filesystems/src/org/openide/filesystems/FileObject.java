@@ -66,6 +66,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -74,7 +75,7 @@ import org.openide.util.UserQuestionException;
 *
 * @author Jaroslav Tulach, Petr Hamernik, Ian Formanek
 */
-public abstract class FileObject extends Object implements Serializable {
+public abstract class FileObject extends Object implements Serializable, Lookup.Provider {
     /**
      * Name of default line separator attribute.
      * File object can provide default line separator if it differs from
@@ -387,6 +388,16 @@ public abstract class FileObject extends Object implements Serializable {
         } finally {
             lock.releaseLock();
         }
+    }
+
+    /**
+    //XXX: implement me
+    * 
+    * @since 7.63
+    */
+    @Override
+    public Lookup getLookup() {
+        throw new IllegalStateException("No impl yet");
     }
 
     /** Get the file attribute with the specified name.
