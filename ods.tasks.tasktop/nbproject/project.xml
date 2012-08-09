@@ -72,6 +72,12 @@
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.ods.tasks</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages/>

@@ -56,8 +56,8 @@ import org.netbeans.modules.ods.tasks.spi.C2CData;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class QueryTest extends C2CTestBase {
-    public QueryTest(String n) {
+public class QueryTst extends C2CTestBase {
+    public QueryTst(String n) {
         super(n);
     }
 
