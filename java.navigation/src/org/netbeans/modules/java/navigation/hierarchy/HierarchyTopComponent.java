@@ -497,6 +497,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                                     if (ctx.getViewType() == ViewType.SUPER_TYPE) {
                                      root = Nodes.superTypeHierarchy(
                                             (DeclaredType)te.asType(),
+                                            cc.getClasspathInfo(),
                                             ctx);
                                     } else {
                                         root = null;

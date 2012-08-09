@@ -42,9 +42,12 @@
 package org.netbeans.modules.java.navigation.hierarchy;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -54,15 +57,22 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -85,16 +95,17 @@ class Nodes {
 
     static Node superTypeHierarchy(
             @NonNull final DeclaredType type,
+            @NonNull final ClasspathInfo cpInfo,
             @NonNull final Context ctx) {
         final TypeElement element = (TypeElement)type.asElement();
         final TypeMirror superClass = element.getSuperclass();
         final List<? extends TypeMirror> interfaces = element.getInterfaces();
         final List<Node> childNodes = new ArrayList<Node>(interfaces.size()+1);
         if (superClass.getKind() != TypeKind.NONE) {
-            childNodes.add(superTypeHierarchy((DeclaredType)superClass, ctx));
+            childNodes.add(superTypeHierarchy((DeclaredType)superClass, cpInfo, ctx));
         }
         for (TypeMirror superInterface : interfaces) {
-            childNodes.add(superTypeHierarchy((DeclaredType)superInterface, ctx));
+            childNodes.add(superTypeHierarchy((DeclaredType)superInterface, cpInfo, ctx));
         }
         final Children cld;
         if (childNodes.isEmpty()) {
@@ -105,8 +116,11 @@ class Nodes {
         }
         return new TypeNode(
             cld,
-            ElementHandle.create(element),
-            ctx);
+            new Description(
+                cpInfo,
+                ElementHandle.create(element)),
+            ctx,
+            new Action[0]);
         
     }
 
@@ -118,6 +132,31 @@ class Nodes {
         boolean isOrdered();
         void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
         void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
+    }
+
+    private static final class Description {
+
+        private final ClasspathInfo cpInfo;
+        private final ElementHandle<TypeElement> handle;
+
+
+        Description(
+                @NonNull final ClasspathInfo cpInfo,
+                @NonNull final ElementHandle<TypeElement> handle) {
+            assert cpInfo != null;
+            assert handle != null;
+            this.cpInfo = cpInfo;
+            this.handle = handle;
+        }
+
+        ClasspathInfo getClasspathInfo() {
+            return cpInfo;
+        }
+
+        ElementHandle<TypeElement> getHandle() {
+            return handle;
+        }
+
     }
     
     private static class WaitNode extends AbstractNode {
@@ -131,28 +170,36 @@ class Nodes {
         }
     }
 
-
     private static class TypeNode extends AbstractNode implements PropertyChangeListener {
 
-        private final ElementHandle<TypeElement> handle;
+        private final Description description;
         private final Context ctx;
+        private final Action[] globalActions;
+        //@GuardedBy("this")
+        private Action openAction;
 
         TypeNode(
             @NonNull final Children cld,
-            @NonNull final ElementHandle<TypeElement> handle,
-            @NonNull final Context ctx) {
+            @NonNull final Description description,
+            @NonNull final Context ctx,
+            @NonNull final Action[] globalActions) {
             super(cld);
-            assert handle != null;
+            assert description != null;
             assert ctx != null;
-            this.handle = handle;
+            assert globalActions != null;
+            this.description = description;
             this.ctx = ctx;
+            this.globalActions = globalActions;
             this.ctx.addPropertyChangeListener(this);
             updateDisplayName();
         }
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.icon2Image(ElementIcons.getElementIcon(handle.getKind(), EnumSet.noneOf(Modifier.class)));
+            return ImageUtilities.icon2Image(
+                    ElementIcons.getElementIcon(
+                    description.getHandle().getKind(),
+                    EnumSet.noneOf(Modifier.class)));
         }
 
         @Override
@@ -167,12 +214,94 @@ class Nodes {
             }
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            if (context) {
+                return globalActions;
+            } else {
+                Action actions[]  = new Action[ 4 + globalActions.length ];
+                actions[0] = getOpenAction();
+                actions[1] = RefactoringActionsFactory.whereUsedAction();
+                actions[2] = RefactoringActionsFactory.popupSubmenuAction();
+                actions[3] = null;
+                System.arraycopy(globalActions, 0, actions, 4, globalActions.length);
+                return actions;
+            }
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return getOpenAction();
+        }
+
+        @Override
+        public boolean canCopy() {
+            return false;
+        }
+
+        @Override
+        public boolean canCut() {
+            return false;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public boolean canRename() {
+            return false;
+        }
+
+        @Override
+        public PasteType getDropType(Transferable t, int action, int index) {
+            return null;
+        }
+
+        @Override
+        public Transferable drag() throws IOException {
+            return null;
+        }
+
+        @Override
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
+            // Do nothing
+        }
+
+        private synchronized Action getOpenAction() {
+            if ( openAction == null) {
+                openAction = new OpenAction();
+            }
+            return openAction;
+        }
+
         private void updateDisplayName() {
-            String name = handle.getQualifiedName();
+            String name = description.handle.getQualifiedName();
             if (!ctx.isFQN()) {
                 name = HierarchyHistory.getSimpleName(name);
             }
             setDisplayName(name);
+        }
+
+        private class OpenAction extends AbstractAction {
+
+            @NbBundle.Messages({"LBL_GoTo=Go to Source"})
+            OpenAction() {
+                putValue ( Action.NAME, Bundle.LBL_GoTo());
+            }
+
+            @NbBundle.Messages({"MSG_NoSource=Source not available for {0}"})
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!ElementOpen.open(
+                        description.getClasspathInfo(),
+                        description.getHandle())) {
+                    Toolkit.getDefaultToolkit().beep();
+                    StatusDisplayer.getDefault().setStatusText(
+                        Bundle.MSG_NoSource(description.getHandle().getQualifiedName()));
+                }
+            }
         }
 
     }
