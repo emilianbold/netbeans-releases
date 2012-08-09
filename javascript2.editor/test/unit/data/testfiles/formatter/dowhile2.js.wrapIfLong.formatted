@@ -2,7 +2,7 @@ do {
     " something strange"
 } while (a)
 
-do  " something strange"
+do " something strange"
 while (a)
 
 do

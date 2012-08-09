@@ -829,7 +829,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void markSpacesBeforeBrace(Block block, FormatToken.Kind mark) {
-        FormatToken brace = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY,
+        FormatToken brace = getPreviousToken(getStart(block), null,
                 getStart(block) - 1);
         if (brace != null) {
             FormatToken previous = brace.previous();

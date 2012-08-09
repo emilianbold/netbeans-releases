@@ -41,6 +41,7 @@ FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=50, text=
 }
 FormattingToken{kind=WHITESPACE, offset=51, text= }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=52, text=a}
 FormattingToken{kind=WHITESPACE, offset=53, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}

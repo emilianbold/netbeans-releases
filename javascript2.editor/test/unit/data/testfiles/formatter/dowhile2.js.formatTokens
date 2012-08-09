@@ -35,6 +35,7 @@ FormattingToken{kind=TEXT, offset=41, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=43, text=  }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text="}
 FormattingToken{kind=TEXT, offset=46, text= something strange}
 FormattingToken{kind=TEXT, offset=64, text="}
@@ -63,6 +64,7 @@ FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=80, text=
 }
 FormattingToken{kind=WHITESPACE, offset=81, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=82, text=a}
 FormattingToken{kind=WHITESPACE, offset=83, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -102,6 +104,7 @@ FormattingToken{kind=TEXT, offset=120, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=122, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=123, text="}
 FormattingToken{kind=TEXT, offset=124, text=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
 FormattingToken{kind=TEXT, offset=194, text="}
@@ -131,6 +134,7 @@ FormattingToken{kind=TEXT, offset=208, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=210, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=211, text="}
 FormattingToken{kind=TEXT, offset=212, text=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
 FormattingToken{kind=TEXT, offset=290, text="}
