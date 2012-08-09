@@ -593,7 +593,7 @@ public class FormatVisitor extends NodeVisitor {
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
-            handleVirtualBlock(body);
+            handleVirtualBlock(body, FormatToken.Kind.AFTER_WHILE_START);
             return true;
         }
         return false;

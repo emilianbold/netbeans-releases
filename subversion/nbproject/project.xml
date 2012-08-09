@@ -367,7 +367,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <package>org.netbeans.modules.subversion.hooks.spi</package>
+                <friend>org.netbeans.modules.ods.subversion</friend>
                 <package>org.netbeans.modules.subversion.api</package>
             </friend-packages>
         </data>

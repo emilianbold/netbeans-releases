@@ -413,6 +413,10 @@ public class JsFormatter implements Formatter {
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
+                        case AFTER_WHILE_START:
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // XXX refactor eol token WRAP_IF_LONG handling
@@ -989,6 +993,9 @@ public class JsFormatter implements Formatter {
         }
         if (token.getKind() == FormatToken.Kind.AFTER_ELSE_START) {
             return CodeStyle.get(context).wrapIfStatement();
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_WHILE_START) {
+            return CodeStyle.get(context).wrapWhileStatement();
         }
         return null;
     }

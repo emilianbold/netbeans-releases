@@ -44,7 +44,9 @@ package org.netbeans.modules.git.ui.clone;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.io.File;
+import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitURI;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -67,9 +70,11 @@ class CloneWizard  implements ChangeListener {
     private PanelsIterator wizardIterator;
     private WizardDescriptor wizardDescriptor;
     private final String forPath;
+    private final PasswordAuthentication pa;
 
-    public CloneWizard (String forPath) { 
+    public CloneWizard (PasswordAuthentication pa, String forPath) { 
         this.forPath = forPath;
+        this.pa = pa;
     }
 
     boolean show () {
@@ -77,7 +82,24 @@ class CloneWizard  implements ChangeListener {
         wizardDescriptor = new WizardDescriptor(wizardIterator);        
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(CloneWizard.class, "LBL_CloneWizard.title")); // NOI18N
+        
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        if(pa != null && forPath != null) {
+            Git.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    wizardIterator.repositoryStep.waitPopulated();
+                    // url and credential already provided, so try 
+                    // to reach the next step ...
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            wizardDescriptor.doNextClick();
+                        }
+                    });
+                }
+            });
+        }
         setErrorMessage(wizardIterator.repositoryStep.getErrorMessage());
         dialog.setVisible(true);
         dialog.toFront();
@@ -146,7 +168,7 @@ class CloneWizard  implements ChangeListener {
         @Override
         @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
-            repositoryStep = new RepositoryStep(forPath);
+            repositoryStep = new RepositoryStep(pa, forPath);
             repositoryStep.addChangeListener(CloneWizard.this);
             fetchBranchesStep = new FetchBranchesStep();
             fetchBranchesStep.addChangeListener(CloneWizard.this);
@@ -196,5 +218,6 @@ class CloneWizard  implements ChangeListener {
         public synchronized void previousPanel () {
             super.previousPanel();
         }
+        
     }
 }
