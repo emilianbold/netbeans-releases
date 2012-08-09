@@ -41,21 +41,14 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author sdedic
  */
-public class PackageItem extends AbstractCompletionItem {
+final class PackageItem extends AbstractCompletionItem {
     private static final String PACKAGE = "org/netbeans/modules/javafx2/editor/resources/package.gif"; // NOI18N
     private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
     private static ImageIcon icon;

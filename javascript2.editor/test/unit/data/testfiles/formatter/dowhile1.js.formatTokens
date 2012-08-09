@@ -33,7 +33,7 @@ FormattingToken{kind=EOL, offset=40, text=
 }
 FormattingToken{kind=TEXT, offset=41, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=43, text=
 }
 FormattingToken{kind=WHITESPACE, offset=44, text= }

@@ -30,7 +30,7 @@ FormattingToken{kind=EOL, offset=39, text=
 }
 FormattingToken{kind=TEXT, offset=40, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=42, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=43, text=;}
@@ -56,7 +56,7 @@ FormattingToken{kind=EOL, offset=56, text=
 }
 FormattingToken{kind=TEXT, offset=57, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=59, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=60, text=;}
@@ -144,7 +144,7 @@ FormattingToken{kind=TEXT, offset=123, text=++}
 FormattingToken{kind=BEFORE_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=125, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=126, text=
 }
 FormattingToken{kind=WHITESPACE, offset=127, text=    }
