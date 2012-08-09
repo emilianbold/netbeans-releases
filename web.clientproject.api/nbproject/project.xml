@@ -83,10 +83,11 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.web.client.rest</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
+                <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
-                <friend>org.netbeans.modules.cordova</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
