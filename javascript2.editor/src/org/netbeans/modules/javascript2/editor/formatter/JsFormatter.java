@@ -376,43 +376,17 @@ public class JsFormatter implements Formatter {
                             break;
                         // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
-                            if (!ELSE_IF_SINGLE_LINE) {
-                                i = handleLineWrap(tokens, i, formatContext,
-                                        initialIndent, continuationIndent);
+                            if (ELSE_IF_SINGLE_LINE) {
+                                break;
                             }
-                            break;
                         case AFTER_CASE:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_BLOCK_START:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_STATEMENT:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_VAR_DECLARATION:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case BEFORE_FUNCTION_DECLARATION_PARAMETER:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case BEFORE_FUNCTION_CALL_ARGUMENT:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_IF_START:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_ELSE_START:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_WHILE_START:
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
@@ -961,43 +935,36 @@ public class JsFormatter implements Formatter {
     }
 
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
-        if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-            return CodeStyle.get(context).wrapStatement();
+        switch (token.getKind()) {
+            case AFTER_STATEMENT:
+                return CodeStyle.get(context).wrapStatement();
+            case AFTER_BLOCK_START:
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case AFTER_CASE:
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case ELSE_IF_AFTER_BLOCK_START:
+                if (ELSE_IF_SINGLE_LINE) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case AFTER_VAR_DECLARATION:
+                return CodeStyle.get(context).wrapVariables();
+            case BEFORE_FUNCTION_DECLARATION_PARAMETER:
+                return CodeStyle.get(context).wrapMethodParams();
+            case BEFORE_FUNCTION_CALL_ARGUMENT:
+                return CodeStyle.get(context).wrapMethodCallArgs();
+            case AFTER_IF_START:
+                return CodeStyle.get(context).wrapIfStatement();
+            case AFTER_ELSE_START:
+                return CodeStyle.get(context).wrapIfStatement();
+            case AFTER_WHILE_START:
+                return CodeStyle.get(context).wrapWhileStatement();
+            default:
+                return null;
         }
-        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_CASE) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START) {
-            if (ELSE_IF_SINGLE_LINE) {
-                return CodeStyle.WrapStyle.WRAP_NEVER;
-            }
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_VAR_DECLARATION) {
-            return CodeStyle.get(context).wrapVariables();
-        }
-        if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER) {
-            return CodeStyle.get(context).wrapMethodParams();
-        }
-        if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT) {
-            return CodeStyle.get(context).wrapMethodCallArgs();
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_IF_START) {
-            return CodeStyle.get(context).wrapIfStatement();
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_ELSE_START) {
-            return CodeStyle.get(context).wrapIfStatement();
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_WHILE_START) {
-            return CodeStyle.get(context).wrapWhileStatement();
-        }
-        return null;
     }
 
     /**
