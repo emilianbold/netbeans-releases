@@ -48,7 +48,7 @@ import org.json.simple.JSONObject;
  *
  * @author Jan Stola
  */
-public class RuleId {
+public final class RuleId {
     /** Identifier of the enclosing styleheet. */
     private String styleSheetId;
     /** Rule ordinal within the stylesheet. */
@@ -92,6 +92,23 @@ public class RuleId {
         json.put("styleSheetId", getStyleSheetId()); // NOI18N
         json.put("ordinal", getOrdinal()); // NOI18N
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89*hash + styleSheetId.hashCode();
+        hash = 89*hash + ordinal;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof RuleId)) {
+            return false;
+        }
+        RuleId other = (RuleId)object;
+        return styleSheetId.equals(other.styleSheetId) && (ordinal == other.ordinal);
     }
 
 }
