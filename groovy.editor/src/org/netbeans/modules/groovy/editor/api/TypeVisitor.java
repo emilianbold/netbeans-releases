@@ -54,6 +54,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 
@@ -123,6 +124,21 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                         visitParameters(method.getParameters(), variable);
                     }
                     super.visitMethod(method);
+
+                    // This might look awkward.  If we have caret location on the method parameter type, we want
+                    // to walk through the whole file and look for the type occurrences. BUT if we have caret
+                    // location on the method parameter itself (not the type) we don't want to go through the
+                    // whole code, because it's out of the variable scope - and in that case we returns
+                    boolean isParamType = false;
+                    for (Parameter param : method.getParameters()) {
+                        if (AstUtilities.isCaretOnParamType(param, doc, cursorOffset)) {
+                            isParamType = true;
+                        }
+                    }
+                    if (!isParamType) {
+                        super.visitMethod(method);
+                        return;
+                    }
                 } else if (scope instanceof ConstructorNode) {
                     ConstructorNode constructor = (ConstructorNode) scope;
                     VariableScope variableScope = (constructor).getVariableScope();
@@ -172,5 +188,4 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
      */
     protected void visitParameters(Parameter[] parameters, Variable variable) {
     }
-
 }

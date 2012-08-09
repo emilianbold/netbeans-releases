@@ -44,10 +44,12 @@ package org.netbeans.modules.groovy.refactoring.utils;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -91,6 +93,14 @@ public final class ElementUtils {
         } else if (node instanceof PropertyNode) {
             return ElementKind.PROPERTY;
         } else if (node instanceof VariableExpression) {
+            Variable variable = ((VariableExpression) node).getAccessedVariable();
+            if (variable instanceof DynamicVariable) {
+                // Not sure now if this is 100% correct, but if we have VariableExpression
+                // like "Book^mark.get()" the accessed variable Bookmark (which is the type
+                // name) is marked as DynamicVariable and in that case we want to return
+                // different ElementKind in oposite to usage of 'normal' variables
+                return ElementKind.CLASS;
+            }
             return ElementKind.VARIABLE;
         } else if (node instanceof DeclarationExpression) {
             return ElementKind.VARIABLE;
