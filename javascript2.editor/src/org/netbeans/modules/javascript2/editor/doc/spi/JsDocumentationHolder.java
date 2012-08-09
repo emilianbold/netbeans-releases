@@ -43,12 +43,16 @@ package org.netbeans.modules.javascript2.editor.doc.spi;
 
 import com.oracle.nashorn.ir.Node;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -65,11 +69,45 @@ public abstract class JsDocumentationHolder {
 
     private final Snapshot snapshot;
 
+    private Map<String, List<OffsetRange>> occurencesMap = null;
+
     public JsDocumentationHolder(Snapshot snapshot) {
         this.snapshot = snapshot;
     }
 
     public abstract Map<Integer, ? extends JsComment> getCommentBlocks();
+
+
+    public final Map<String, List<OffsetRange>> getOccurencesMap() {
+        if (occurencesMap == null) {
+            occurencesMap = new HashMap<String, List<OffsetRange>>();
+            for (Map.Entry<Integer, ? extends JsComment> entry : getCommentBlocks().entrySet()) {
+                JsComment comment = entry.getValue();
+                for (DocParameter docParameter : comment.getParameters()) {
+                    for (Type type : docParameter.getParamTypes()) {
+                        insertIntoOccurencesMap(type);
+                    }
+                }
+                DocParameter returnType = comment.getReturnType();
+                if (returnType != null) {
+                    for (Type type : returnType.getParamTypes()) {
+                        insertIntoOccurencesMap(type);
+                    }
+                }
+            }
+        }
+        return occurencesMap;
+    }
+
+    private void insertIntoOccurencesMap(Type type) {
+        if (type.getType().trim().isEmpty()) {
+            return;
+        }
+        if (!occurencesMap.containsKey(type.getType())) {
+            occurencesMap.put(type.getType(), new LinkedList<OffsetRange>());
+        }
+        occurencesMap.get(type.getType()).add(DocumentationUtils.getOffsetRange(type));
+    }
 
     /**
      * Gets possible return types get for the node.

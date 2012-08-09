@@ -72,8 +72,6 @@ public class JsFormatter implements Formatter {
 
     private int lastOffsetDiff = 0;
 
-    private int lastIndentationLevel;
-
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;
     }
@@ -151,7 +149,6 @@ public class JsFormatter implements Formatter {
                         if (token.getKind() != FormatToken.Kind.WHITESPACE
                                 && token.getKind() != FormatToken.Kind.EOL) {
                             lastOffsetDiff = formatContext.getOffsetDiff();
-                            lastIndentationLevel = formatContext.getIndentationLevel();
                         }
                         initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
                                 + CodeStyle.get(formatContext).getInitialIndent();
@@ -376,44 +373,20 @@ public class JsFormatter implements Formatter {
                             break;
                         // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
-                            if (!ELSE_IF_SINGLE_LINE) {
-                                i = handleLineWrap(tokens, i, formatContext,
-                                        initialIndent, continuationIndent);
+                            if (ELSE_IF_SINGLE_LINE) {
+                                break;
                             }
-                            break;
                         case AFTER_CASE:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_BLOCK_START:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_STATEMENT:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_VAR_DECLARATION:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case BEFORE_FUNCTION_DECLARATION_PARAMETER:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case BEFORE_FUNCTION_CALL_ARGUMENT:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_IF_START:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_ELSE_START:
-                            i = handleLineWrap(tokens, i, formatContext,
-                                    initialIndent, continuationIndent);
-                            break;
                         case AFTER_WHILE_START:
+                        case AFTER_DO_START:
+                        case AFTER_FOR_START:
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
@@ -554,17 +527,11 @@ public class JsFormatter implements Formatter {
 
         // search for token which will be present just before eol
         FormatToken tokenBeforeEol = null;
-        // we need to distinct whether there are only virtual tokens only
-        // if so we will later use the current indentation (that might be one
-        // of that virtual tokens)
-        boolean virtualOnlyFollows = true;
         for (int j = startIndex - 1; j >= 0; j--) {
             tokenBeforeEol = tokens.get(j);
             if (!tokenBeforeEol.isVirtual()
                     && tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE) {
                 break;
-            } else if (tokenBeforeEol.getKind() == FormatToken.Kind.WHITESPACE) {
-                virtualOnlyFollows = false;
             }
         }
         
@@ -598,8 +565,7 @@ public class JsFormatter implements Formatter {
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
                             tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges),
-                            // use current indentation if there were only virtual tokens
-                            virtualOnlyFollows ? formatContext.getIndentationLevel() : lastIndentationLevel));
+                            formatContext.getIndentationLevel()));
                     return i;
                 }
                 // we proceed with wrapping if there is no wrap other than current
@@ -607,8 +573,7 @@ public class JsFormatter implements Formatter {
             } else {
                 formatContext.setLastLineWrap(new FormatContext.LineWrap(
                         tokenBeforeEol, lastOffsetDiff,
-                        // use current indentation if there were only virtual tokens
-                        virtualOnlyFollows ? formatContext.getIndentationLevel() : lastIndentationLevel));
+                        formatContext.getIndentationLevel()));
                 return i;
             }
         }
@@ -637,6 +602,32 @@ public class JsFormatter implements Formatter {
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+
+                    // we have to check the line length and wrap if needed
+                    // FIXME duplicated code
+                    int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                            - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+                    if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
+                        FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                        if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                            // we dont have to remove trailing spaces as indentation will fix it
+                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                            // there is + 1 for eol
+                            formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
+                                    + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
+                            // do the indentation
+                            int indentationSize = initialIndent
+                                    + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                            if (isContinuation(lastWrap.getToken(), true)) {
+                                indentationSize += continuationIndent;
+                            }
+                            formatContext.indentLineWithOffsetDiff(
+                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                        }
+                    }
+
                     // we dont have to remove trailing spaces as indentation will fix it
                     formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
                     // there is + 1 for eol
@@ -961,43 +952,40 @@ public class JsFormatter implements Formatter {
     }
 
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
-        if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-            return CodeStyle.get(context).wrapStatement();
+        switch (token.getKind()) {
+            case AFTER_STATEMENT:
+                return CodeStyle.get(context).wrapStatement();
+            case AFTER_BLOCK_START:
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case AFTER_CASE:
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case ELSE_IF_AFTER_BLOCK_START:
+                if (ELSE_IF_SINGLE_LINE) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case AFTER_VAR_DECLARATION:
+                return CodeStyle.get(context).wrapVariables();
+            case BEFORE_FUNCTION_DECLARATION_PARAMETER:
+                return CodeStyle.get(context).wrapMethodParams();
+            case BEFORE_FUNCTION_CALL_ARGUMENT:
+                return CodeStyle.get(context).wrapMethodCallArgs();
+            case AFTER_IF_START:
+                return CodeStyle.get(context).wrapIfStatement();
+            case AFTER_ELSE_START:
+                return CodeStyle.get(context).wrapIfStatement();
+            case AFTER_WHILE_START:
+                return CodeStyle.get(context).wrapWhileStatement();
+            case AFTER_DO_START:
+                return CodeStyle.get(context).wrapDoWhileStatement();
+            case AFTER_FOR_START:
+                return CodeStyle.get(context).wrapForStatement();
+            default:
+                return null;
         }
-        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_CASE) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START) {
-            if (ELSE_IF_SINGLE_LINE) {
-                return CodeStyle.WrapStyle.WRAP_NEVER;
-            }
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_VAR_DECLARATION) {
-            return CodeStyle.get(context).wrapVariables();
-        }
-        if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER) {
-            return CodeStyle.get(context).wrapMethodParams();
-        }
-        if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT) {
-            return CodeStyle.get(context).wrapMethodCallArgs();
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_IF_START) {
-            return CodeStyle.get(context).wrapIfStatement();
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_ELSE_START) {
-            return CodeStyle.get(context).wrapIfStatement();
-        }
-        if (token.getKind() == FormatToken.Kind.AFTER_WHILE_START) {
-            return CodeStyle.get(context).wrapWhileStatement();
-        }
-        return null;
     }
 
     /**

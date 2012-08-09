@@ -92,7 +92,7 @@ public final class JsDocumentationSupport {
     }
 
     public static JsComment getCommentForOffset(JsParserResult result, int offset) {
-        JsDocumentationHolder holder = result.getDocumentationHolder();
+        JsDocumentationHolder holder = getDocumentationHolder(result);
         return holder.getCommentForOffset(offset, holder.getCommentBlocks());
     }
 

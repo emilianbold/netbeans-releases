@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -917,12 +918,19 @@ public class ModelVisitor extends PathNodeVisitor {
         if (property != null) {
 
             // occurence in the doc
-            JsComment comment = JsDocumentationSupport.getCommentForOffset(parserResult, property.getOffset());
+            JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+            JsComment comment = holder.getCommentForOffset(property.getOffset(), holder.getCommentBlocks());
             if (comment != null) {
                 for (DocParameter docParameter : comment.getParameters()) {
-                    if (docParameter.getParamName().getName().equals(iNode.getName())) {
-                        ((JsObjectImpl)property).addOccurrence(DocumentationUtils.getOffsetRange(docParameter));
+                    DocIdentifier paramName = docParameter.getParamName();
+                    if (paramName.getName().equals(iNode.getName())) {
+                        ((JsObjectImpl)property).addOccurrence(DocumentationUtils.getOffsetRange(paramName));
                     }
+                }
+            }
+            if (holder.getOccurencesMap().containsKey(iNode.getName())) {
+                for (OffsetRange offsetRange : holder.getOccurencesMap().get(iNode.getName())) {
+                    ((JsObjectImpl)property).addOccurrence(offsetRange);
                 }
             }
 

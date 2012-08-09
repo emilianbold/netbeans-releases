@@ -105,39 +105,52 @@ public class FindTypeUtils {
         ASTNode leaf = path.leaf();
         ASTNode leafParent = path.leafParent();
 
-        if (leaf instanceof FieldNode) {
-            if (!FindTypeUtils.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
+        if (leaf instanceof ClassNode) {
+            ClassNode classNode = ((ClassNode) leaf);
+            if (isCaretOnClassNode(classNode, doc, caret)) {
+                return classNode;
+            }
+            if (isCaretOnClassNode(classNode.getSuperClass(), doc, caret)) {
+                return classNode.getSuperClass();
+            }
+            for (ClassNode interfaceNode : classNode.getInterfaces()) {
+                if (isCaretOnClassNode(interfaceNode, doc, caret)) {
+                    return interfaceNode;
+                }
+            }
+        } else if (leaf instanceof FieldNode) {
+            if (!isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof PropertyNode) {
-            if (!FindTypeUtils.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
+            if (!isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof MethodNode) {
             MethodNode method = ((MethodNode) leaf);
-            if (!FindTypeUtils.isCaretOnReturnType(method, doc, caret)) {
+            if (!isCaretOnReturnType(method, doc, caret)) {
                 return leaf;
             }
 
             for (Parameter param : method.getParameters()) {
-                if (!FindTypeUtils.isCaretOnParamType(param, doc, caret)) {
+                if (!isCaretOnParamType(param, doc, caret)) {
                     return param;
                 }
             }
         } else if (leaf instanceof Parameter) {
-            if (!FindTypeUtils.isCaretOnParamType(((Parameter) leaf), doc, caret)) {
+            if (!isCaretOnParamType(((Parameter) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof DeclarationExpression) {
-            if (!FindTypeUtils.isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
+            if (!isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof VariableExpression) {
-            if (!FindTypeUtils.isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
+            if (!isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof ForStatement) {
-            if (!FindTypeUtils.isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
+            if (!isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
                 return ((ForStatement) leaf).getVariable();
             } else {
                 return ((ForStatement) leaf).getVariableType();
@@ -158,6 +171,13 @@ public class FindTypeUtils {
             return currentType;
         }
         return leaf;
+    }
+
+    private static boolean isCaretOnClassNode(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        if (getClassNodeRange(classNode, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
     }
 
     private static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
@@ -218,6 +238,10 @@ public class FindTypeUtils {
             return OffsetRange.NONE;
         }
         return getRange(method, doc, cursorOffset);
+    }
+
+    private static OffsetRange getClassNodeRange(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        return getRange(classNode, doc, cursorOffset);
     }
 
     private static OffsetRange getFieldRange(FieldNode field, BaseDocument doc, int cursorOffset) {
