@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -50,36 +54,26 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
+public class JoinColumnsLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmAnnotationLineParser();
+    static final String ANNOTATION_NAME = "JoinColumns"; //NOI18N
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
     static {
-        PARSERS.add(new SimpleAnnotationLineParser());
-        PARSERS.add(new ParameterizedAnnotationLineParser());
-        PARSERS.add(new DiscriminatorMapLineParser());
-        PARSERS.add(new EntityLineParser());
-        PARSERS.add(new TableLineParser());
-        PARSERS.add(new JoinColumnsLineParser());
-    }
-
-    private Doctrine2OrmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=500)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+        INLINE_ANNOTATIONS.add("JoinColumn"); //NOI18N
     }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
+            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
         }
         return result;
     }
