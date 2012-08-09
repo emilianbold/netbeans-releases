@@ -42,10 +42,14 @@
 package org.netbeans.modules.web.inspect.actions;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -58,13 +62,17 @@ import org.openide.filesystems.FileUtil;
 public final class Resource {
     /** URI of the resource. */
     private String name;
+    /** Owning project of the resource. */
+    private Project project;
 
     /**
      * Creates a new {@code Resource}.
      *
+     * @param project owning project of the resource.
      * @param name URI of the resource.
      */
-    public Resource(String name) {
+    public Resource(Project project, String name) {
+        this.project = project;
         this.name = name;
     }
 
@@ -78,6 +86,15 @@ public final class Resource {
     }
 
     /**
+     * Returns the owning project of the resource.
+     * 
+     * @return the owning project of the resource.
+     */
+    public Project getProject() {
+        return project;
+    }
+
+    /**
      * Returns a {@code FileObject} that corresponds to this resource.
      *
      * @return {@code FileObject} that corresponds to this resource
@@ -85,7 +102,13 @@ public final class Resource {
      * or if the corresponding {@code FileObject} cannot be found.
      */
     public FileObject toFileObject() {
-        if (name == null || !name.startsWith("file://")) {
+        if (project != null) {
+            try {
+                return ServerURLMapping.fromServer(project, new URL(name));
+            } catch (MalformedURLException ex) {
+            }
+        }
+        if (name == null || !name.startsWith("file://")) { // NOI18N
             return null;
         }
         try {

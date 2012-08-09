@@ -85,7 +85,7 @@ public class OpenResourceAction extends NodeAction {
         }
         for (int i=0; i<activatedNodes.length; i++) {
             Resource resource = activatedNodes[i].getLookup().lookup(Resource.class);
-            if (resource.toFileObject() == null) {
+            if ((resource != null) && (resource.toFileObject() == null)) {
                 return false;
             }
         }

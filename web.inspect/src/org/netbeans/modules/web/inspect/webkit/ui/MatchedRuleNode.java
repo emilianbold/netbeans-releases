@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
@@ -72,9 +73,10 @@ public class MatchedRuleNode extends AbstractNode {
      *
      * @param node node that was matched by the rule to represent.
      * @param rule rule to represent.
+     * @param ruleOrigin origin of the rule.
      */
-    MatchedRuleNode(Node node, Rule rule) {
-        super(Children.LEAF, Lookups.fixed(rule));
+    MatchedRuleNode(Node node, Rule rule, Resource ruleOrigin) {
+        super(Children.LEAF, Lookups.fixed(rule, ruleOrigin));
         this.node = node;
         setDisplayName(rule.getSelector());
     }

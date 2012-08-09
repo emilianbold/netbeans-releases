@@ -43,7 +43,9 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
@@ -59,6 +61,8 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class MatchedRulesNode extends AbstractNode {
+    /** Owning project of the inspected page. */
+    private Project project;
     /** Node that was matched by the displayed rules. */
     private Node node;
     /** Rules matching the selected element. */
@@ -67,11 +71,13 @@ public class MatchedRulesNode extends AbstractNode {
     /**
      * Creates a new {@code MatchedRulesNode}.
      *
+     * @param project owning project of the inspected page.
      * @param node node that was matched by the displayed rules.
      * @param matchedStyles rules matching the selected element.
      */
-    MatchedRulesNode(Node node, MatchedStyles matchedStyles) {
+    MatchedRulesNode(Project project, Node node, MatchedStyles matchedStyles) {
         super(new Children.Array());
+        this.project = project;
         this.node = node;
         this.matchedStyles = matchedStyles;
         if (matchedStyles != null) {
@@ -129,7 +135,7 @@ public class MatchedRulesNode extends AbstractNode {
      * @return child for the specified matched rule.
      */
     private MatchedRuleNode createMatchedRuleNode(Node node, Rule rule) {
-        return new MatchedRuleNode(node, rule);
+        return new MatchedRuleNode(node, rule, new Resource(project, rule.getSourceURL()));
     }
 
 }

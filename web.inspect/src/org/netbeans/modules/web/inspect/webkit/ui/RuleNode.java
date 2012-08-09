@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import javax.swing.Action;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
@@ -62,10 +63,10 @@ public class RuleNode extends AbstractNode {
      * Creates a new {@code RuleNode}.
      *
      * @param rule rule represented by the node.
-     * @param styleSheetSourceURL URL of the stylesheet the rule belongs to.
+     * @param ruleOrigin origin of the rule.
      */
-    RuleNode(Rule rule, String styleSheetSourceURL) {
-        super(Children.LEAF, Lookups.fixed(rule));
+    RuleNode(Rule rule, Resource ruleOrigin) {
+        super(Children.LEAF, Lookups.fixed(rule, ruleOrigin));
         setDisplayName(rule.getSelector());
         setIconBaseWithExtension(ICON_BASE);
     }

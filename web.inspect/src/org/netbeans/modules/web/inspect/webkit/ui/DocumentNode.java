@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.nodes.AbstractNode;
@@ -62,11 +63,12 @@ public class DocumentNode extends AbstractNode {
     /**
      * Creates a new {@code DocumentNode}.
      *
+     * @param project owning project of the inspected page.
      * @param css CSS domain of WebKit debugging.
      * @param filter filter for the subtree of the node.
      */
-    DocumentNode(CSS css, Filter filter) {
-        super(Children.create(new DocumentChildFactory(css, filter), true));
+    DocumentNode(Project project, CSS css, Filter filter) {
+        super(Children.create(new DocumentChildFactory(project, css, filter), true));
         setDisplayName(NbBundle.getMessage(DocumentNode.class, "DocumentNode.displayName")); // NOI18N
         setIconBaseWithExtension(ICON_BASE);
     }
@@ -79,14 +81,18 @@ public class DocumentNode extends AbstractNode {
         private CSS css;
         /** Filter for the subtree of the node. */
         private Filter filter;
+        /** Owning project of the inspected page. */
+        private Project project;
 
         /**
          * Creates a new {@code DocumentChildFactory}.
          *
+         * @param project owning project of the inspected page.
          * @param css CSS domain of the corresponding WebKit debugging.
          * @param filter filter for the subtree of the node.
          */
-        DocumentChildFactory(CSS css, Filter filter) {
+        DocumentChildFactory(Project project, CSS css, Filter filter) {
+            this.project = project;
             this.css = css;
             this.filter = filter;
         }
@@ -99,7 +105,7 @@ public class DocumentNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(StyleSheetHeader key) {
-            return new StyleSheetNode(css, key, filter);
+            return new StyleSheetNode(project, css, key, filter);
         }
 
     }

@@ -57,6 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
@@ -72,7 +73,6 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -235,8 +235,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      * Updates the content of this panel.
      */
     void updateContent() {
-        WebKitDebugging webKit = (pageModel == null) ? null : pageModel.getWebKit();
-        documentPanel.updateContent(webKit);
+        documentPanel.updateContent(pageModel);
         selectionPanel.updateContent(pageModel);
     }
 
@@ -257,7 +256,11 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                         if (rules.size() == 1) {
                             Rule rule = rules.iterator().next();
                             String resourceName = rule.getSourceURL();
-                            FileObject fob = new Resource(resourceName).toFileObject();
+                            Project project = null;
+                            if (pageModel != null) {
+                                project = pageModel.getProject();
+                            }
+                            FileObject fob = new Resource(project, resourceName).toFileObject();
                             if (fob == null) {
                                 controller.setNoRuleState();
                             } else {
