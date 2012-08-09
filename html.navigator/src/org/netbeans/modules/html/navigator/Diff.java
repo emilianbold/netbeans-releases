@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.openide.util.Lookup;
 
 /**
+ * An utility class for merging children descriptions.
  *
  * @author marekfukala
  */
@@ -62,11 +63,36 @@ public class Diff {
 
     private static final String ID_ATTR_NAME = "id"; //NOI18N
 
+    /**
+     * Does nothing! Just returns the given neww collection.
+     * @param old
+     * @param neww
+     * @param sourceNode
+     * @return 
+     */
     public static Collection<? extends Description> mergeOldAndNew(Collection<? extends Description> old, Collection<? extends Description> neww, HtmlElementNode sourceNode) {
         //todo - report conflict situations and refresh the whole children in such cases
         return neww; 
     }
     
+    /**
+     * Merges the source and dom children.
+     * 
+     * What it really does:
+     * 1) creates a hashset of {@link DescriptionSetWrapper} 
+     * 2) puts all source descriptions wrapped by the {@link DescriptionSetWrapper}
+     * 3) puts all dom descriptions wrapped by the {@link DescriptionSetWrapper}
+     * 4) unwraps the descriptions and return it as the result.
+     * 
+     * It does the wrapping to override the default equals and hashCode methods which does
+     * take the description class into account (dom description cannot equal source one and vice versa).
+     * 
+     * @param source source code element description children
+     * @param dom dom element description children
+     * @param sourceNode explorer node requesting the merge (just for logging purposes)
+     * 
+     * @return merged set of {@link Description} 
+     */
     public static Collection<? extends Description> mergeSourceAndDOM(Collection<? extends Description> source, Collection<? extends Description> dom, HtmlElementNode sourceNode) {
         LOGGER.log(Level.INFO, "Diff.merge(''{0}'')", sourceNode.getDisplayName());
 
@@ -113,23 +139,34 @@ public class Diff {
         return result;
     }
 
-    public static boolean equals(Description d1, Description d2) {
-        return equals(d1, d2, true);
+    public static boolean equals(Description d1, Description d2, boolean forceIdAttrEquality) {
+        return equals(d1, d2, true, forceIdAttrEquality);
     }
 
-    private static boolean equals(Description d1, Description d2, boolean checkIndexInParent) {
+    /**
+     * Does equality check for two descriptions. 
+     * 
+     * @param d1 first Description
+     * @param d2 second Description
+     * @param checkIndexInParent if true the method also check the position (index) of the child in its parent children
+     * @param forceIdAttrEquality if true two descriptions are same if they have same id attribute, regardless the rest of the attributes.
+     * @return 
+     */
+    private static boolean equals(Description d1, Description d2, boolean checkIndexInParent, boolean forceIdAttrEquality) {
         //if name differs, then it's simple
         if (!d1.getName().equals(d2.getName())) {
             return false;
         }
 
         //compare by id attribute, so far quite simple
-        String d1IdAttrVal = d1.getAttributeValue(ID_ATTR_NAME);
-        String d2IdAttrVal = d2.getAttributeValue(ID_ATTR_NAME);
-        if ((d1IdAttrVal != null) && d1IdAttrVal.equals(d2IdAttrVal)) {
-            //the id attributes are the same, lets say they are equal
-            //xxx what if one changes the id attribute?
-            return true;
+        if(forceIdAttrEquality) {
+            String d1IdAttrVal = d1.getAttributeValue(ID_ATTR_NAME);
+            String d2IdAttrVal = d2.getAttributeValue(ID_ATTR_NAME);
+            if ((d1IdAttrVal != null) && d1IdAttrVal.equals(d2IdAttrVal)) {
+                //the id attributes are the same, lets say they are equal
+                //xxx what if one changes the id attribute?
+                return true;
+            }
         }
 
         //now lets compare by the other attributes
@@ -150,7 +187,7 @@ public class Diff {
 
         //ok, now we have same name, same attributes w/o id
         //what next?=>compute the "index in similar nodes"
-        if (checkIndexInParent && getIndexInParent(d1) != getIndexInParent(d2)) {
+        if (checkIndexInParent && getIndexInParent(d1, forceIdAttrEquality) != getIndexInParent(d2, forceIdAttrEquality)) {
             return false;
         }
 
@@ -168,7 +205,14 @@ public class Diff {
         return true;
     }
 
-    public static int hashCode(Description d) {
+    /**
+     * Computes hashCode for the given {@link Description}
+     * 
+     * @param d the Description
+     * @param forceIdAttrEquality if true two descriptions are same if they have same id attribute, regardless the rest of the attributes.
+     * @return 
+     */
+    public static int hashCode(Description d, boolean forceIdAttrEquality) {
         //follow the equal logic so we fulfil the equals - hashCode contract
         int hash = 11;
 
@@ -192,13 +236,16 @@ public class Diff {
             }
         }
 
-        hash = 37 * hash + getIndexInParent(d);
+        hash = 37 * hash + getIndexInParent(d, forceIdAttrEquality);
 
         return hash;
     }
 
-    //tries to find index of the node in SIMILAR nodes, eg. nodes which equals
-    static int getIndexInParent(Description d) {
+    /**
+     * Tries to find index of the description in SIMILAR descriptions, eg.descriptions which equals.
+     * 
+     */
+    static int getIndexInParent(Description d, boolean forceIdAttrEquality) {
         int index = 0;
         Description parent = d.getParent();
         if (parent == null) {
@@ -213,7 +260,7 @@ public class Diff {
                 //we found THE "D" element, break
                 break;
             }
-            if (equals(ch, d, false)) {
+            if (equals(ch, d, false, forceIdAttrEquality)) {
                 //we found equal element, but not THE "D" element, increase index
                 index++;
             }

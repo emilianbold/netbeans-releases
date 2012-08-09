@@ -57,6 +57,7 @@ import javax.swing.Action;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.navigator.actions.HighlightInBrowserAction;
 import org.netbeans.modules.html.navigator.actions.OpenAction;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
@@ -66,6 +67,11 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
+/**
+ * Node representing a source or dom element or both.
+ * 
+ * @author marekfukala
+ */
 public class HtmlElementNode extends AbstractNode {
     
     private enum State {
@@ -82,8 +88,8 @@ public class HtmlElementNode extends AbstractNode {
     private FileObject fileObject;
     
     //actions
-    private Action openAction;
-    private Action highlightInBrowserAction;
+    private OpenAction openAction;
+    private HighlightInBrowserAction highlightInBrowserAction;
     
     //static description (of the source element)
     private SourceDescription source;
@@ -100,9 +106,6 @@ public class HtmlElementNode extends AbstractNode {
         this(ui, fileObject);
         this.source = sourceDescription;
         getElementChildren().setStaticKeys(sourceDescription.getChildren(), true);
-        
-        openAction = new OpenAction((HtmlElementDescription)sourceDescription);
-//        highlightInBrowserAction = new HighlightInBrowserAction(element, ui);
     }
     
     public HtmlElementNode(Description domDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
@@ -113,25 +116,25 @@ public class HtmlElementNode extends AbstractNode {
     
     public HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject) {
         super(new ElementChildren(ui, fileObject));
-
         this.ui = ui;
         this.fileObject = fileObject;
-
-
+        
+        openAction = new OpenAction(this);
+        highlightInBrowserAction = new HighlightInBrowserAction(this, ui);
     }
     
     private State getState() {
         Description s = getSourceDescription();
         Description d = getDOMDescription();
         
-        if(s != null && s != Description.EMPTY_SOURCE_DESCRIPTION) {
-            if(d != null && d != Description.EMPTY_DOM_DESCRIPTION) {
+        if(s != null && s != Description.empty(Description.SOURCE)) {
+            if(d != null && d != Description.empty(Description.DOM)) {
                 return State.SOURCE_AND_DOM;
             } else {
                 return State.SOURCE;
             }
         } else {
-            if(d != null && d != Description.EMPTY_DOM_DESCRIPTION) {
+            if(d != null && d != Description.empty(Description.DOM)) {
                 return State.DOM;
             }
         }
@@ -156,14 +159,23 @@ public class HtmlElementNode extends AbstractNode {
         
     }
     
+    /**
+     * Returns source element description for this node.
+     */
     private SourceDescription getSourceDescription() {
         return source;
     }
     
+    /**
+     * Returns DOM element description for this node.
+     */
     private Description getDOMDescription() {
         return dom;
     }
     
+    /**
+     * Gets primary description of this node.
+     */
     public Description getDescription() {
         switch(getState()) {
             case DOM:
@@ -177,6 +189,9 @@ public class HtmlElementNode extends AbstractNode {
         }
     }
      
+    /**
+     * Gets {@link Description} of the given type.
+     */
     public Description getDescription(int type) {
         switch(type) {
             case Description.DOM:
@@ -187,95 +202,6 @@ public class HtmlElementNode extends AbstractNode {
                 return null; //will not happen
         }
     }
-
-//    private PageModel getPageModel() {
-//        return ui.getPageModel();
-//    }
-
-//    private Node findWebKitNode() {
-//        //check if the inspected fileobject matches our fileobject
-//        FileObject inspectedFile = ui.getInspectedFileObject();
-//        if (inspectedFile == null) {
-//            return null;
-//        }
-//        if (!inspectedFile.equals(fileObject)) {
-//            //foreign fileobject, someone likely switched the inspector do different file
-//            return null;
-//        }
-//
-//        PageModel pageModel = getPageModel();
-//        if (pageModel == null) {
-//            return null;
-//        }
-//        Node domDocumentNode = pageModel.getDocumentNode();
-//        if (domDocumentNode == null) {
-//            return null;
-//        }
-//        return Utils.findNode(domDocumentNode, source);
-//    }
-
-//    /**
-//     * Refreshes all the data related to the webkit DOM node corresponding to
-//     * this source element node
-//     */
-//    private synchronized void refreshWebkitCounterpartState(boolean forceChildrenKeysRefresh) {
-//        ElementChildren children = getElementChildren();
-//        WebKitNodeDescription currentWebKitNodeDescription = dom;
-//        Node freshWebKitNode = findWebKitNode();
-//        if (isConnected()) {
-//            //the source node has already assigned a webkit counterpart
-//            if (freshWebKitNode == null) {
-//                //"disconnected"
-//                webKitNode = null;
-//                dom = null;
-//
-//                webkitNodeDescriptionChanged(currentWebKitNodeDescription, dom);
-//                children.setDynamicKeys(Collections.<Description>emptyList(), forceChildrenKeysRefresh);
-//            } else {
-//                //still "connected" - refresh
-//                if (freshWebKitNode != webKitNode) { //instances comparison
-//                    webKitNode = freshWebKitNode;
-//                    dom = WebKitNodeDescription.forNode(webKitNode);
-//
-//                    webkitNodeDescriptionChanged(currentWebKitNodeDescription, dom);
-//                    children.setDynamicKeys(dom.getChildren(), forceChildrenKeysRefresh);
-//                }
-//            }
-//        } else {
-//            //the source node has no assigned webkit node counterpart
-//            if (freshWebKitNode == null) {
-//                //still "disconnected", no change
-//            } else {
-//                //now "connected" - initialize
-//                webKitNode = freshWebKitNode;
-//                dom = WebKitNodeDescription.forNode(webKitNode);
-//
-//                webkitNodeDescriptionChanged(currentWebKitNodeDescription, dom);
-//                children.setDynamicKeys(dom.getChildren(), forceChildrenKeysRefresh);
-//            }
-//
-//        }
-//
-//        LOGGER.log(Level.INFO, "{0}: refreshWebkitCounterpartState() called.", getDisplayName());
-//    }
-//
-//    //recursively refreshes the DOM counterpart status
-//    void refreshDOMStatus() {
-//        refreshWebkitCounterpartState(true);
-//
-//        for (Node child : getChildren().getNodes(true)) {
-//            ((HtmlElementNode) child).refreshDOMStatus();
-//        }
-//    }
-//
-//    private void webkitNodeDescriptionChanged(WebKitNodeDescription oldDescription, WebKitNodeDescription newDescription) {
-//        //update the "connected" status 
-//        fireDisplayNameChange(getHtmlDisplayName(oldDescription != null),
-//                getHtmlDisplayName(newDescription != null));
-//
-//        //refresh the "connection" sensitive actions state
-//        highlightInBrowserAction.setEnabled(newDescription != null);
-//    }
 
     private ElementChildren getElementChildren() {
         return (ElementChildren) getChildren();
@@ -376,17 +302,17 @@ public class HtmlElementNode extends AbstractNode {
             if(getSourceDescription() != null) {
                 b.append("SOURCE:");
                 b.append("idx:");
-                b.append(Diff.getIndexInParent(getSourceDescription()));
+                b.append(Diff.getIndexInParent(getSourceDescription(), false));
                 b.append("hc:");
-                b.append(Diff.hashCode(getSourceDescription()));
+                b.append(Diff.hashCode(getSourceDescription(), false));
             }
             b.append(' ');
             if(getDOMDescription() != null) {
                 b.append("DOM:");
                 b.append("idx:");
-                b.append(Diff.getIndexInParent(getDOMDescription()));
+                b.append(Diff.getIndexInParent(getDOMDescription(), false));
                 b.append("hc:");
-                b.append(Diff.hashCode(getDOMDescription()));
+                b.append(Diff.hashCode(getDOMDescription(), false));
             }
             
             b.append("]");
@@ -423,12 +349,11 @@ public class HtmlElementNode extends AbstractNode {
 
             Action actions[] = new Action[4 + panelActions.length];
             actions[0] = openAction;
-//            actions[1] = null;
-//            actions[2] = highlightInBrowserAction;
+            actions[1] = null;
+            actions[2] = highlightInBrowserAction;
             actions[3] = null;
-            for (int i = 0; i < panelActions.length; i++) {
-                actions[4 + i] = panelActions[i];
-            }
+            System.arraycopy(panelActions, 0, actions, 4, panelActions.length);
+            
             return actions;
         }
     }
@@ -437,29 +362,6 @@ public class HtmlElementNode extends AbstractNode {
     public Action getPreferredAction() {
         return openAction;
     }
-
-//    /**
-//     * Refreshes the Node recursively. Only initiates the refresh; the refresh
-//     * itself may happen asynchronously.
-//     */
-//    public void refreshRecursively() {
-//        List<Node> toExpand = new ArrayList<Node>();
-//        refreshRecursively(Collections.singleton(this), toExpand);
-//        ui.performExpansion(toExpand, Collections.<Node>emptyList());
-//    }
-//
-//    private void refreshRecursively(Collection<HtmlNode> toDo, final Collection<Node> toExpand) {
-//        for (HtmlNode elnod : toDo) {
-//            final Children ch = elnod.getChildren();
-//            if (ch instanceof ElementChildren) {
-//                ((ElementChildren) ch).resetKeys(elnod.element.getChildren());
-//
-//                Collection<HtmlNode> children = (Collection<HtmlNode>) (List) Arrays.asList(ch.getNodes());
-//                toExpand.addAll(children);
-//                refreshRecursively(children, toExpand);
-//            }
-//        }
-//    }
     
     /**
      * Finds source Node spanning over the the given offset.
@@ -500,6 +402,13 @@ public class HtmlElementNode extends AbstractNode {
         return this;
     }
 
+    /**
+     * Updates this node descriptions according to the given {@link Description}.
+     * 
+     * @param newDescription the new description to be set.
+     * @param nodesToExpand
+     * @param nodesToExpandRec 
+     */
     private void updateRecursively(Description newDescription, List<Node> nodesToExpand, List<Node> nodesToExpandRec) {
         LOGGER.log(Level.INFO, "{0}: entering updateRecursively()", getDisplayName());
 
@@ -526,34 +435,30 @@ public class HtmlElementNode extends AbstractNode {
                 originalDescription = null; 
         }
 
-        Collection<? extends Description> originalChildrenDescriptions = originalDescription != null ? originalDescription.getChildren() : Collections.<Description>emptyList();
-
+        //creates a map of primary description (source or dom) to the peer node
         Node[] nodes = ch.getNodes(true);
-        
-        //map of primary description (source or dom) to the peer node
         HashMap<DescriptionSetWrapper, HtmlElementNode> oldD2node = new HashMap<DescriptionSetWrapper, HtmlElementNode>();
         for (Node node : nodes) {
             HtmlElementNode htmlElementNode = (HtmlElementNode)node;
             oldD2node.put(new DescriptionSetWrapper(htmlElementNode.getDescription()), htmlElementNode);
         }
 
-        //get children from the new description
-        Collection<? extends Description> newChildrenDescriptions = newDescription.getChildren();
-        
-        // Now refresh keys
+        // Now set the appropriate children keys
         switch(newDescription.getType()) {
             case Description.SOURCE:
-                Collection newSourceKeys = Diff.mergeOldAndNew(ch.staticKeys, newChildrenDescriptions, this);
-                ch.setStaticKeys(newSourceKeys, false); //will set re-set the keys later
+                Collection<? extends Description> newSourceKeys = Diff.mergeOldAndNew(ch.staticKeys, source.getChildren(), this);
+                ch.setStaticKeys(newSourceKeys, false); //will re-set the keys later
                 break;
             case Description.DOM:
-                Collection newDOMKeys = Diff.mergeOldAndNew(ch.dynamicKeys, newChildrenDescriptions, this);
-                ch.setDynamicKeys(newDOMKeys, false); //will set re-set the keys later
+                Collection<? extends Description> newDOMKeys = Diff.mergeOldAndNew(ch.dynamicKeys, dom.getChildren(), this);
+                ch.setDynamicKeys(newDOMKeys, false); //will re-set the keys later
                 break;
         }
 
         //merge the source and dom keys
         Collection<? extends Description> newKeys = Diff.mergeSourceAndDOM(ch.staticKeys, ch.dynamicKeys, this);
+        
+        //setting the children keys really does the merge of the old and new state
         ch.resetKeys(newKeys);
 
         //update text & icon
@@ -567,30 +472,20 @@ public class HtmlElementNode extends AbstractNode {
             fireDisplayNameChange(null, getDisplayName());
         }
         
-        //follows the recursive update...
-        
         // Reread nodes
         nodes = ch.getNodes(true);
         
+        //Refresh nodes for removed keys:
+        //
+        //Why to refresh child nodes if their keys were removed? 
+        //Since there are two keys - source and DOM.
+        //If for examole the DOM key is removed, the node still exists since there's the source key, 
+        //but the node needs to be properly updated to reflect such change.
+        Collection<? extends Description> newChildrenDescriptions = newDescription.getChildren();
+        Collection<? extends Description> originalChildrenDescriptions = originalDescription != null ? originalDescription.getChildren() : Collections.<Description>emptyList();
         Collection<? extends Description> removedKeys = new HashSet<Description>(originalChildrenDescriptions);
         removedKeys.removeAll(newChildrenDescriptions);
-        
-        Collection<? extends Description> addedKeys = new HashSet<Description>(newChildrenDescriptions);
-        addedKeys.removeAll(originalChildrenDescriptions);
-        
-        Collection<Description> changedKeys = new HashSet<Description>(originalChildrenDescriptions);
-        changedKeys.retainAll(newChildrenDescriptions);
-        
-        addedKeys.removeAll(removedKeys);
-        removedKeys.removeAll(addedKeys);
-        
-        for(Description addedKey : addedKeys) {
-            System.out.println("+ added key   : " + addedKey);
-        }
-        
-        //refresh nodes for removed keys
         for(Description removedKey : removedKeys) {
-            System.out.println("- removed key : " + removedKey);
             DescriptionSetWrapper wrapper = new DescriptionSetWrapper(removedKey);
             Node n = oldD2node.get(wrapper);
             if(n != null) {
@@ -598,13 +493,7 @@ public class HtmlElementNode extends AbstractNode {
             }
         }
         
-        for(Description changedKey : changedKeys) {
-            System.out.println("* changed key : " + changedKey);
-        }
-        
-        
-        
-        //refresh new keys' nodes
+        //recursively refresh nodes from the previous generation (those which were not added by this change)
         for (Description descriptionChild : newChildrenDescriptions) {
             DescriptionSetWrapper wrapper = new DescriptionSetWrapper(descriptionChild);
             HtmlElementNode node = oldD2node.get(wrapper);
@@ -633,6 +522,9 @@ public class HtmlElementNode extends AbstractNode {
         return fileObject;
     }
 
+    /**
+     * Children.Keys subclass which allows to reset its keys.
+     */
     private static class ElementChildren extends Children.Keys<Description> {
 
         private HtmlNavigatorPanelUI ui;
@@ -679,4 +571,80 @@ public class HtmlElementNode extends AbstractNode {
             setKeys(keys);
         }
     }
+    
+    //some unused code, still may be reused?!?
+    
+    //    private PageModel getPageModel() {
+//        return ui.getPageModel();
+//    }
+//
+//    private Node findWebKitNode() {
+//        //check if the inspected fileobject matches our fileobject
+//        FileObject inspectedFile = ui.getInspectedFileObject();
+//        if (inspectedFile == null) {
+//            return null;
+//        }
+//        if (!inspectedFile.equals(fileObject)) {
+//            //foreign fileobject, someone likely switched the inspector do different file
+//            return null;
+//        }
+//
+//        PageModel pageModel = getPageModel();
+//        if (pageModel == null) {
+//            return null;
+//        }
+//        Node domDocumentNode = pageModel.getDocumentNode();
+//        if (domDocumentNode == null) {
+//            return null;
+//        }
+//        return Utils.findNode(domDocumentNode, getSourceDescription());
+//    }
+
+//    /**
+//     * Refreshes all the data related to the webkit DOM node corresponding to
+//     * this source element node
+//     */
+//    private synchronized void refreshWebkitCounterpartState(boolean forceChildrenKeysRefresh) {
+//        ElementChildren children = getElementChildren();
+//        WebKitNodeDescription currentWebKitNodeDescription = dom;
+//        Node freshWebKitNode = findWebKitNode();
+//        if (isConnected()) {
+//            //the source node has already assigned a webkit counterpart
+//            if (freshWebKitNode == null) {
+//                //"disconnected"
+//                webKitNode = null;
+//                dom = null;
+//
+//                webkitNodeDescriptionChanged(currentWebKitNodeDescription, dom);
+//                children.setDynamicKeys(Collections.<Description>emptyList(), forceChildrenKeysRefresh);
+//            } else {
+//                //still "connected" - refresh
+//                if (freshWebKitNode != webKitNode) { //instances comparison
+//                    webKitNode = freshWebKitNode;
+//                    dom = WebKitNodeDescription.forNode(webKitNode);
+//
+//                    webkitNodeDescriptionChanged(currentWebKitNodeDescription, dom);
+//                    children.setDynamicKeys(dom.getChildren(), forceChildrenKeysRefresh);
+//                }
+//            }
+//        } else {
+//            //the source node has no assigned webkit node counterpart
+//            if (freshWebKitNode == null) {
+//                //still "disconnected", no change
+//            } else {
+//                //now "connected" - initialize
+//                webKitNode = freshWebKitNode;
+//                dom = WebKitNodeDescription.forNode(webKitNode);
+//
+//                webkitNodeDescriptionChanged(currentWebKitNodeDescription, dom);
+//                children.setDynamicKeys(dom.getChildren(), forceChildrenKeysRefresh);
+//            }
+//
+//        }
+//
+//        LOGGER.log(Level.INFO, "{0}: refreshWebkitCounterpartState() called.", getDisplayName());
+//    }
+//
+    
+    
 }

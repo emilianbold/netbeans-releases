@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.html.navigator.actions;
 
 import java.awt.event.*;
@@ -49,32 +48,37 @@ import javax.swing.*;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.navigator.Description;
 import org.netbeans.modules.html.navigator.HtmlElementDescription;
+import org.netbeans.modules.html.navigator.HtmlElementNode;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.*;
 
 @NbBundle.Messages(
-        "goto.element=Go to Source"
-        )
+        "goto.element=Go to Source")
 public final class OpenAction extends AbstractAction {
-    
-    private HtmlElementDescription description;
-      
-    public OpenAction(HtmlElementDescription description) {
-        this.description = description;
-        putValue ( Action.NAME, Bundle.goto_element() ); //NOI18N
+
+    private HtmlElementNode node;
+
+    public OpenAction(HtmlElementNode node) {
+        this.node = node;
+        putValue(Action.NAME, Bundle.goto_element()); //NOI18N
+    }
+
+    private HtmlElementDescription getDesDescription() {
+        return (HtmlElementDescription)node.getDescription(Description.SOURCE);
     }
     
     @Override
-    public void actionPerformed (ActionEvent ev) {
+    public void actionPerformed(ActionEvent ev) {
+        final HtmlElementDescription description = getDesDescription();
         try {
             description.runTask(new HtmlElementDescription.Task() {
-
                 @Override
                 public void run(HtmlParserResult result) {
                     OffsetRange range = description.getOffsetRange(result);
                     UiUtils.open(description.getFileObject(), range.getStart());
-                    
+
                 }
             });
         } catch (ParseException ex) {
@@ -82,9 +86,8 @@ public final class OpenAction extends AbstractAction {
         }
     }
 
-    public @Override boolean isEnabled () {
-          return true;
+    @Override
+    public boolean isEnabled() {
+        return getDesDescription() != null;
     }
-
-    
 }

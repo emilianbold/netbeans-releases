@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.navigator;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -115,6 +116,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
         }
     };
+    
+    private HtmlElementDescription sourceDescription;
 
     public HtmlNavigatorPanelUI() {
         manager = new ExplorerManager();
@@ -160,7 +163,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             //we need to explicitly call pageModelDocumentChanged() since
             //no change event from PageModel will come and we need to refresh
             //the nodes dom status
-            pageModelNotAvailable();
+            pageModelRemoved();
 
         } else {
             //new model
@@ -181,43 +184,58 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
 
     }
+    
+    private void pageModelRemoved() {
+        //refresh DOM status to empty
+        HtmlElementNode root = getRootNode();
+        if (root != null) {
+            root.setDescription(Description.empty(Description.DOM));
+        }
+        inspectedFileObject = null;
+    }
 
     private void pageModelDocumentChanged() {
         setStatusText("DOM has changed.");
 
-        refreshInspectedFile();
-
-        refreshNodeDOMStatus();
-    }
-    
-    private void pageModelNotAvailable() {
-        refreshInspectedFile();
-        
-        //refresh DOM status
-        HtmlElementNode root = getRootNode();
-        if (root != null) {
-            root.setDescription(Description.EMPTY_DOM_DESCRIPTION);
-        }
-    }
-
-    private void refreshInspectedFile() {
         //try to find corresponding FileObject for the inspected document
-        FileObject current = getInspectedFile();
+        FileObject current = getInspectedFileFromPageModel();
         if (inspectedFileObject == null) {
             if (current != null) {
+                //starting the inspection 
                 inspectedFileObject = current;
-                inspectedFileChanged();
+                inspectedFileChanged(null, current);
             }
         } else {
             if (!inspectedFileObject.equals(current)) {
-                //changed
+                //inspected file changed
+                FileObject old = inspectedFileObject;
                 inspectedFileObject = current;
-                inspectedFileChanged();
+                inspectedFileChanged(old, current);
+            } else {
+                //still same inspected file, just refresh the dom
+                refreshNodeDOMStatus();
+            }
+        }
+        
+    }
+    
+    private void inspectedFileChanged(FileObject old, FileObject neww) {
+        updateInspectedFileUI();
+        
+        HtmlElementNode root = getRootNode();
+        if(root != null) {
+            if(!root.getFileObject().equals(neww)) {
+                //the inspected file no more corresponds to the navigator's active file
+                root.setDescription(Description.empty(Description.DOM));
+            } else {
+                //same file as in the root node
+                //=> reset the dom 
+                refreshNodeDOMStatus();
             }
         }
     }
 
-    private void inspectedFileChanged() {
+    private void updateInspectedFileUI() {
         if (inspectedFileObject == null) {
             LOGGER.log(Level.INFO, "inspectedFileObject set to null");
             setStatusText("No Inspected File");
@@ -229,7 +247,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    private FileObject getInspectedFile() {
+    private FileObject getInspectedFileFromPageModel() {
         //try to find corresponding FileObject for the inspected document
         if (pageModel == null) {
             return null;
@@ -248,7 +266,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         LOGGER.info("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
         if (root != null) {
-            
+            //if we are inspecting the current file, the source changes propagates just after the fresh DOM is received
+            if(sourceDescription != null) {
+                root.setDescription(sourceDescription);
+                sourceDescription = null;
+                setSynchronizationState(true);
+                updateInspectedFileUI(); //set the status text back to the inspected file
+            }
+            //now apply to dom descriptions
             WebKitNodeDescription domDescription = new WebKitNodeDescription(null, Utils.getWebKitNode(pageModel.getDocumentNode()));
             root.setDescription(domDescription);
             
@@ -343,7 +368,24 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     public void setParserResult(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        refresh(new HtmlElementDescription(null, result.root(), file));
+        sourceDescription = new HtmlElementDescription(null, result.root(), file);
+        if(!file.equals(getInspectedFileObject())) {
+            //the file is not inspected, apply changes
+            refresh(sourceDescription);
+        } else {
+            setSynchronizationState(false);
+        }
+    }
+    
+    private void setSynchronizationState(boolean insynch) {
+        if(!insynch) {
+            setStatusText("Source changed");
+            stateLabel.setForeground(Color.red.darker());
+            stateLabel.setText("Unsynchronized");
+        } else {
+            stateLabel.setForeground(Color.black); //todo fix the hardcoded color
+            updateInspectedFileUI();
+        }
     }
 
     private void refresh(final HtmlElementDescription description) {

@@ -46,13 +46,26 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 
 /**
+ * Source or DOM node "description".
+ * 
+ * Used as a Children.Keys' key in the nodes view.
+ * 
+ * The descriptions reflects the source elements and DOM elements and as such
+ * their comprises a tree like structure.
  *
  * @author marekfukala
  */
 public abstract class Description {
     
+    private static Description EMPTY_SOURCE_DESCRIPTION = new EmptySourceDescription();
+    private static Description EMPTY_DOM_DESCRIPTION = new EmptyDOMNodeDescription();
+    
+    /**
+     * Gets empty Description of the given type.
+     */
     public static Description empty(int type) {
         switch(type) {
             case SOURCE:
@@ -64,32 +77,60 @@ public abstract class Description {
         }
     }
     
-    public static Description EMPTY_SOURCE_DESCRIPTION = new EmptySourceDescription();
-    
-    public static Description EMPTY_DOM_DESCRIPTION = new EmptyDOMNodeDescription();
-    
+    /**
+     * Source type of the Description. Represents source elements descriptions.
+     */
     public static final int SOURCE = 1;
+    /**
+     * DOM type of the Description. Represents DOM elements descriptions.
+     */
     public static final int DOM = 2;
 
+    /**
+     * Gets children descriptions.
+     */
     public abstract Collection<? extends Description> getChildren();
-    
-//    protected abstract int getNodeIndex();
-    
+
+    /**
+     * Gets parent description.
+     */
     public abstract Description getParent();
     
+    /**
+     * Name of the description (element).
+     */
     public abstract String getName();
-    
+
+    /**
+     * Type of the description, should be {@link #SOURCE} or {@link #DOM}
+     */
     public abstract int getType();
 
+    /**
+     * Get's description path from the root of the tree to the element itself.
+     * 
+     * Example: html/body/table/thead/th
+     * @see ElementUtils#encodeToString(org.netbeans.modules.html.editor.lib.api.elements.TreePath) 
+     */
     protected abstract String getElementPath();
 
+    /**
+     * Map all description's attributes in key-value form.
+     * @return 
+    */
     protected abstract Map<String, String> getAttributes();
-    
+
+    /**
+     * Gets value of specified attribute name.
+     * 
+     * @return may return null if there's no such attribute or it have no value.
+     * (<div class), but <div class=""> should return empty string as the value.
+     */
     public final String getAttributeValue(String attributeName) {
         return getAttributes().get(attributeName);
     }
 
-    protected final int getAttributesHash() {
+    private int getAttributesHash() {
         int hash = 11;
         for (Entry<String, String> a : getAttributes().entrySet()) {
             hash = 37 * hash + a.getKey().hashCode();
@@ -99,56 +140,6 @@ public abstract class Description {
         return hash;
     }
 
-//    @Override
-//    public int hashCode() {
-//        int hash = 7;
-//        hash = 41 * hash + getName().hashCode();
-//        String id = getAttributeValue("id");
-//        if(id != null) {
-//            hash = 41 * hash + id.hashCode();
-//        } else {
-//            hash = 41 * hash + getAttributesHash();
-//        }
-//        return hash;
-//    }
-
-//    @Override
-//    public boolean equals(Object obj) {
-//        return equals(obj, true);
-//    }
-//    
-//    boolean equals(Object obj, boolean checkInstanceType) {
-//        if (obj == null) {
-//            return false;
-//        }
-//        if (!(obj instanceof Description)) {
-//            return false;
-//        }
-//        
-//        if(checkInstanceType) {
-//            if(!getClass().equals(obj.getClass())) {
-//                return false;
-//            }
-//        }
-//        
-//        final Description other = (Description) obj;
-//        if (!getName().equals(other.getName())) {
-//            return false;
-//        }
-//        String id = getAttributeValue("id");
-//        String otherId = other.getAttributeValue("id");
-//        if(id != null && id.equalsIgnoreCase(otherId)) {
-//            return true;
-//        }
-//        if ((getAttributesHash() != other.getAttributesHash())) {
-//            return false;
-//        }
-//        if(getNodeIndex() != other.getNodeIndex()) {
-//            return false;
-//        }
-//        
-//        return true;
-//    }
 
     @Override
     public String toString() {
@@ -159,7 +150,7 @@ public abstract class Description {
                 .append("(ahash=")
                 .append(getAttributesHash())
                 .append(", idx=")
-                .append(Diff.getIndexInParent(this))
+                .append(Diff.getIndexInParent(this, false))
                 .append(')')
                 .toString();
     }
@@ -201,11 +192,6 @@ public abstract class Description {
             return 0;
         }
 
-//        @Override
-//        protected int getNodeIndex() {
-//            return -1;
-//        }
-
         @Override
         public Description getParent() {
             return null;
@@ -234,11 +220,6 @@ public abstract class Description {
         protected Map<String, String> getAttributes() {
             return Collections.emptyMap();
         }
-        
-//        @Override
-//        protected int getNodeIndex() {
-//            return -1;
-//        }
         
         @Override
         public Description getParent() {

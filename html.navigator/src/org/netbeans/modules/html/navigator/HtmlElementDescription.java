@@ -61,6 +61,11 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
+/**
+ * Implementation of {@link Description} for html parse tree elements.
+ * 
+ * @author marekfukala
+ */
 public class HtmlElementDescription extends SourceDescription {
 
     private final String elementPath;
@@ -87,7 +92,6 @@ public class HtmlElementDescription extends SourceDescription {
         this.isLeaf = element instanceof Node ? ((Node)element).children(OpenTag.class).isEmpty() : true;
         
         OpenTag openTag = element instanceof OpenTag ? (OpenTag)element : null;
-        
         if(openTag != null) {
             //init attributes map
             Collection<Attribute> attrs = openTag.attributes();
@@ -117,12 +121,12 @@ public class HtmlElementDescription extends SourceDescription {
             return false;
         }
         HtmlElementDescription descr = (HtmlElementDescription)obj;
-        return Diff.equals(this, descr);
+        return Diff.equals(this, descr, false);
     }
 
     @Override
     public int hashCode() {
-        return Diff.hashCode(this);
+        return Diff.hashCode(this, false);
     }
 
     @Override

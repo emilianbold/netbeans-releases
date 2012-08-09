@@ -42,6 +42,8 @@
 package org.netbeans.modules.html.navigator;
 
 /**
+ * The wrapper allows to override the default equals and hashCode methods the peer description.
+ * 
  * @author marekfukala
  */
 public class DescriptionSetWrapper {
@@ -58,7 +60,7 @@ public class DescriptionSetWrapper {
 
     @Override
     public int hashCode() {
-        return Diff.hashCode(getPeer());
+        return Diff.hashCode(getPeer(), true);
     }
 
     @Override
@@ -67,7 +69,7 @@ public class DescriptionSetWrapper {
             return false;
         }
         DescriptionSetWrapper dsw = (DescriptionSetWrapper)obj;
-        return Diff.equals(getPeer(), dsw.getPeer());
+        return Diff.equals(getPeer(), dsw.getPeer(), true); //force ID equality
     }
     
     
