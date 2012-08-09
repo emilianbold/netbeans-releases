@@ -83,6 +83,7 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
+import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -601,6 +602,8 @@ public final class PhpProject implements Project {
                 PhpSearchInfo.create(this),
                 new PhpSubTreeSearchOptions(),
                 InternalWebServer.createForProject(this),
+                ProjectPropertiesProblemProvider.createForProject(this),
+                //UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });
