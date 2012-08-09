@@ -86,6 +86,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
@@ -365,7 +366,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         stopButton.addActionListener(getButtonListener());
         
         // create toolbar
-        JToolBar toolbar = new JToolBar(JToolBar.VERTICAL);
+        JToolBar toolbar = new ToolbarWithOverflow(JToolBar.VERTICAL);
         toolbar.setFloatable(false);
 
         toolbar.add(refreshButton);
