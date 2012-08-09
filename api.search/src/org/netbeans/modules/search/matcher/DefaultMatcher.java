@@ -159,11 +159,23 @@ public class DefaultMatcher extends AbstractMatcher {
                     || subtype.equals("sgml") //NOI18N
                     || subtype.startsWith("xml-") //NOI18N
                     || subtype.endsWith("+xml") //NOI18N
-                    || subtype.startsWith("x-") //NOI18N
-                    && searchableXMimeTypes.contains(subtype.substring(2));
+                    || isApplicationXSource(subtype, fileObj);
         }
 
         return false;
+    }
+
+    /**
+     * Check whether this is a text file with MIME type application/x-something.
+     * See issue #88210.
+     *
+     * @param subtype of MIME type, after "application/", e.g. x-php
+     * @param fo File object containing the data.
+     */
+    private static boolean isApplicationXSource(String subtype, FileObject fo) {
+        return (subtype.startsWith("x-") //NOI18N
+                && (searchableXMimeTypes.contains(subtype.substring(2))
+                || hasTextContent(fo)));
     }
 
     /**
