@@ -72,8 +72,6 @@ public class JsFormatter implements Formatter {
 
     private int lastOffsetDiff = 0;
 
-    private int lastIndentationLevel;
-
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;
     }
@@ -151,7 +149,6 @@ public class JsFormatter implements Formatter {
                         if (token.getKind() != FormatToken.Kind.WHITESPACE
                                 && token.getKind() != FormatToken.Kind.EOL) {
                             lastOffsetDiff = formatContext.getOffsetDiff();
-                            lastIndentationLevel = formatContext.getIndentationLevel();
                         }
                         initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
                                 + CodeStyle.get(formatContext).getInitialIndent();
@@ -530,17 +527,11 @@ public class JsFormatter implements Formatter {
 
         // search for token which will be present just before eol
         FormatToken tokenBeforeEol = null;
-        // we need to distinct whether there are only virtual tokens only
-        // if so we will later use the current indentation (that might be one
-        // of that virtual tokens)
-        boolean virtualOnlyFollows = true;
         for (int j = startIndex - 1; j >= 0; j--) {
             tokenBeforeEol = tokens.get(j);
             if (!tokenBeforeEol.isVirtual()
                     && tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE) {
                 break;
-            } else if (tokenBeforeEol.getKind() == FormatToken.Kind.WHITESPACE) {
-                virtualOnlyFollows = false;
             }
         }
         
@@ -574,8 +565,7 @@ public class JsFormatter implements Formatter {
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
                             tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges),
-                            // use current indentation if there were only virtual tokens
-                            virtualOnlyFollows ? formatContext.getIndentationLevel() : lastIndentationLevel));
+                            formatContext.getIndentationLevel()));
                     return i;
                 }
                 // we proceed with wrapping if there is no wrap other than current
@@ -583,8 +573,7 @@ public class JsFormatter implements Formatter {
             } else {
                 formatContext.setLastLineWrap(new FormatContext.LineWrap(
                         tokenBeforeEol, lastOffsetDiff,
-                        // use current indentation if there were only virtual tokens
-                        virtualOnlyFollows ? formatContext.getIndentationLevel() : lastIndentationLevel));
+                        formatContext.getIndentationLevel()));
                 return i;
             }
         }

@@ -575,6 +575,35 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for4.js");
     }
 
+    public void testFor5Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapForStatement, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/for5.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testFor5Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapForStatement, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/for5.js", options, ".wrapNever.formatted");
+    }
+
+    public void testFor5IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapForStatement, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/for5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFor5IfLongNoSpace() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapForStatement, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
+        reformatFileContents("testfiles/formatter/for5.js", options, ".wrapIfLongNoSpace.formatted");
+    }
+
+    public void testFor5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/for5.js");
+    }
+
     public void testWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/while1.js",new IndentPrefs(4, 4));
     }

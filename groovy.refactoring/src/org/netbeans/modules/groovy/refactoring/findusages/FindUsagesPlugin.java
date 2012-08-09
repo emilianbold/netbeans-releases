@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages;
 
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.AbstractFindUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllSubtypes;
@@ -54,6 +54,7 @@ import org.netbeans.modules.groovy.refactoring.findusages.impl.FindDirectSubtype
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindMethodUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindOverridingMethods;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindTypeUsages;
+import org.netbeans.modules.groovy.refactoring.findusages.impl.FindVariableUsages;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -98,9 +99,9 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
             strategy = getMethodStrategy();
         } else if (isClassTypeUsage()) {
             strategy = getClassStrategy();
+        } else if (isVariableUsage()) {
+            strategy = getVariableStrategy();
         } else {
-
-            // Not implemented yet for field etc.
             throw new IllegalStateException("Not implemented yet for kind: " + element.getKind());
         }
 
@@ -114,21 +115,39 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
     }
 
     private boolean isClassTypeUsage() {
-        if (element.getKind() == ElementKind.CLASS ||
-            element.getKind() == ElementKind.INTERFACE ||
-            element.getKind() == ElementKind.PROPERTY ||
-            element.getKind() == ElementKind.FIELD) {
-
-            return true;
+        ASTNode node = element.getNode();
+        switch (element.getKind()) {
+            case CLASS:
+            case INTERFACE:
+                return true;
+            case PROPERTY:
+            case FIELD:
+                if (node instanceof ClassNode) {
+                    return true;
+                }
         }
         return false;
     }
 
     private boolean isMethodUsage() {
-        if (element.getKind() == ElementKind.METHOD ||
-            element.getKind() == ElementKind.CONSTRUCTOR) {
+        switch (element.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR:
+                return true;
+        }
+        return false;
+    }
 
-            return true;
+    private boolean isVariableUsage() {
+        ASTNode node = element.getNode();
+        switch (element.getKind()) {
+            case VARIABLE:
+                return true;
+            case PROPERTY:
+            case FIELD:
+                if (!(node instanceof ClassNode)) {
+                    return true;
+                }
         }
         return false;
     }
@@ -151,6 +170,10 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
             return new FindTypeUsages(element);
         }
         return null;
+    }
+
+    private AbstractFindUsages getVariableStrategy() {
+        return new FindVariableUsages(element);
     }
 
     private List<FileObject> getRelevantFiles() {
