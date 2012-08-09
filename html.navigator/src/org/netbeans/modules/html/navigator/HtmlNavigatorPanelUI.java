@@ -259,7 +259,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             URL url = new URL(inspectedURL);
             return URLMapper.findFileObject(url);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getAnonymousLogger().log(
+                    Level.WARNING, 
+                    String.format("Cannot resolve URL '%s' obtained from web.inspect's PageModel.", inspectedURL), 
+                    ex);
         }
         return null;
     }
