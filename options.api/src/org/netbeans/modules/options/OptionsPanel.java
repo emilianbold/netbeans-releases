@@ -63,6 +63,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -164,6 +165,16 @@ public class OptionsPanel extends JPanel {
     public OptionsPanel (String categoryID) {        
         // init UI components, layout and actions, and add some default values
         initUI(categoryID);        
+        if (getActionMap().get("SEARCH_OPTIONS") == null) {//NOI18N
+            InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+            if(Utilities.isMac()) {
+                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_MASK), "SEARCH_OPTIONS");//NOI18N
+            } else {
+                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK), "SEARCH_OPTIONS");//NOI18N
+            }
+            getActionMap().put("SEARCH_OPTIONS", new SearchAction());//NOI18N
+        }
     }
     
     private String getCategoryID(String categoryID) {
@@ -972,6 +983,14 @@ public class OptionsPanel extends JPanel {
             if (highlightedB != null) {
                 setCurrentCategory(highlightedB, null);
             }
+        }
+    }
+    
+    private class SearchAction extends AbstractAction {
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            JComponent searchPanel = (JComponent)quickSearch.getComponent(0);
+            searchPanel.getComponent(searchPanel.getComponentCount() - 1).requestFocusInWindow();
         }
     }
     
