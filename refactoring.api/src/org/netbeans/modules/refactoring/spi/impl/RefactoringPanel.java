@@ -777,16 +777,15 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                 } else {
                                     hidden++;
                                 }
+                                final int occurrences = i + 1;
+                                final int hiddenOccurrences = hidden;
+                                size.set(occurrences);
                                 if (isQuery && showParametersPanel) {
                                     if (cancelRequest.get()) {
                                         break;
                                     }
-
+                                    final boolean finished = APIAccessor.DEFAULT.isFinished(session);
                                     final boolean last = !it.hasNext();
-                                    final int occurrences = i + 1;
-                                    final int hiddenOccurrences = hidden;
-                                    size.set(occurrences);
-                                    boolean finished = APIAccessor.DEFAULT.isFinished(session);
                                     if ((occurrences % 10 == 0 && !finished) || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
