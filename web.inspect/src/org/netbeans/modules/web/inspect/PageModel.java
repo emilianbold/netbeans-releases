@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  * @author Jan Stola
  */
 public abstract class PageModel {
+    /** Name of the property that is fired when a new document is loaded into the inspected browser pane. */
     public static final String PROP_DOCUMENT = "document"; // NOI18N
     /** Name of the property that is fired when the set of selected elements is changed. */
     public static final String PROP_SELECTED_NODES = "selectedNodes"; // NOI18N
