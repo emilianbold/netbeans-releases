@@ -130,7 +130,13 @@ class CSSUpdater {
         assert webKit != null: "webKit not initialized";
         FileObject fileObject = snapshot.getSource().getFileObject();
         Project owner = FileOwnerQuery.getOwner(fileObject);
+        if (owner == null) {
+            return;
+        }
         URL serverUrl = ServerURLMapping.toServer(owner, fileObject);
+        if (serverUrl == null) {
+            return;
+        }
         StyleSheetHeader header = sheetsMap.get(serverUrl.toString());
         if (header != null) {
             webKit.getCSS().setStyleSheetText(header.getStyleSheetId(), snapshot.getText().toString());
