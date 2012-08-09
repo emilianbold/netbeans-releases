@@ -238,7 +238,8 @@ public final class Utils {
         localServerComboBox.setSelectedItem(localServer);
     }
 
-    public static void browseTestSources(JTextField textField, PhpProject phpProject) {
+    // XXX
+    public static File browseTestSources(JTextField textField, PhpProject phpProject) {
         File selectedFile = new FileChooserBuilder(LastUsedFolders.TEST_DIR)
                 .setTitle(NbBundle.getMessage(Utils.class, "LBL_SelectUnitTestFolder", ProjectUtils.getInformation(phpProject).getDisplayName()))
                 .setDirectoriesOnly(true)
@@ -246,8 +247,12 @@ public final class Utils {
                 .forceUseOfDefaultWorkingDirectory(true)
                 .showOpenDialog();
         if (selectedFile != null) {
-            textField.setText(FileUtil.normalizeFile(selectedFile).getAbsolutePath());
+            selectedFile = FileUtil.normalizeFile(selectedFile);
+            if (textField != null) {
+                textField.setText(selectedFile.getAbsolutePath());
+            }
         }
+        return selectedFile;
     }
 
     public static String validateTestSources(PhpProject project, String testDirPath) {
