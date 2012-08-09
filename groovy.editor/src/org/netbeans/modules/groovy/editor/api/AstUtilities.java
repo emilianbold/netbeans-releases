@@ -726,6 +726,22 @@ public class AstUtilities {
         return limit;
     }
 
+    public static boolean isCaretOnClassNode(ClassNode superType, BaseDocument doc, int cursorOffset) {
+        if (getClassNodeRange(superType, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static OffsetRange getClassNodeRange(ClassNode superType, BaseDocument doc, int cursorOffset) {
+        int offset = AstUtilities.getOffset(doc, superType.getLineNumber(), superType.getColumnNumber());
+        OffsetRange range = AstUtilities.getNextIdentifierByName(doc, superType.getNameWithoutPackage(), offset);
+        if (range.containsInclusive(cursorOffset)) {
+            return range;
+        }
+        return OffsetRange.NONE;
+    }
+
     public static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
         if (getMethodReturnType(method, doc, cursorOffset) != OffsetRange.NONE) {
             return true;

@@ -613,9 +613,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 occurrences.add(classNode);
             }
         } else if (leaf instanceof ClassNode) {
-            if (classNode.getName().equals(((ClassNode) leaf).getName())) {
-                occurrences.add(classNode);
-            }
+            checkClassNode(classNode, ((ClassNode) leaf));
+            checkClassNode(classNode.getSuperClass(), ((ClassNode) leaf).getSuperClass());
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression declaration = (DeclarationExpression) leaf;
             VariableExpression variable = declaration.getVariableExpression();
@@ -630,6 +629,14 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         }
         super.visitClass(classNode);
+    }
+
+    private void checkClassNode(ClassNode visitedClass, ClassNode leafClass) {
+        if (AstUtilities.isCaretOnClassNode(visitedClass, doc, cursorOffset)) {
+            if (visitedClass.getName().equals(leafClass.getName())) {
+                occurrences.add(new FakeASTNode(visitedClass, visitedClass.getName()));
+            }
+        }
     }
 
     @Override
