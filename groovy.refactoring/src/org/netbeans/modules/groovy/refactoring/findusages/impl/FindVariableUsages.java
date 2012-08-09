@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
 /**
  *
@@ -67,19 +70,48 @@ public class FindVariableUsages extends AbstractFindUsages {
         return ElementKind.VARIABLE;
     }
 
-    /**
-    * Visitor for collecting all usages for a given <code>ModuleNode</code> and fully
-    * qualified name of the finding class.
-    *
-    * @author Martin Janicek
-    */
+
     private class FindVariableUsagesVisitor extends AbstractFindUsagesVisitor {
 
-        private final String findingFqn;
+        private final String declaringClassName;
+        private final String variableName;
 
-        public FindVariableUsagesVisitor(ModuleNode moduleNode, String findingFqn) {
+        
+        public FindVariableUsagesVisitor(ModuleNode moduleNode, String declaringClass) {
            super(moduleNode);
-           this.findingFqn = ElementUtils.normalizeTypeName(findingFqn, null);
+           this.declaringClassName = element.getDeclaringClassName();
+           this.variableName = element.getName();
+        }
+
+        @Override
+        public void visitField(FieldNode field) {
+            if (variableName.equals(field.getName())) {
+                usages.add(field);
+            }
+            super.visitField(field);
+        }
+
+        @Override
+        public void visitProperty(PropertyNode property) {
+            if (variableName.equals(property.getName())) {
+                usages.add(property);
+            }
+            super.visitProperty(property);
+        }
+
+        @Override
+        public void visitVariableExpression(VariableExpression expression) {
+            VariableExpression variableExpression = ((VariableExpression) expression);
+            Variable variable = variableExpression.getAccessedVariable();
+            if (variable != null) {
+                // FIXME: we have to check also variable declaration type somehow
+                // So far if there are two classes containing both field with the
+                // same name, the result won't be correct
+                if (variableName.equals(variable.getName())) {
+                    usages.add(expression);
+                }
+            }
+            super.visitVariableExpression(expression);
         }
     }
 }
