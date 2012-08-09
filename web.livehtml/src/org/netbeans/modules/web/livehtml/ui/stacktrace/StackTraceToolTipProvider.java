@@ -108,6 +108,8 @@ public class StackTraceToolTipProvider extends RevisionToolTipService implements
         stacTraceScrollPane = new javax.swing.JScrollPane();
         stackTraceListView = new org.openide.explorer.view.ListView();
 
+        stackTraceListView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        stackTraceListView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         stacTraceScrollPane.setViewportView(stackTraceListView);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

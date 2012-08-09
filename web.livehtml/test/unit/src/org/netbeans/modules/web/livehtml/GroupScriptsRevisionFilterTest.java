@@ -43,15 +43,14 @@ package org.netbeans.modules.web.livehtml;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.web.livehtml.diff.DiffTest;
-import org.netbeans.modules.web.livehtml.filter.TrueStackTraceFilter;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFilteredAnalysis;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.ScriptRevisionFilter;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
  *
@@ -60,7 +59,7 @@ import org.netbeans.modules.web.livehtml.filter.groupscripts.ScriptRevisionFilte
 public class GroupScriptsRevisionFilterTest extends NbTestCase {
 
     private Analysis analysis;
-    private GroupScriptsFilteredAnalysis groupScriptsFilteredAnalysis;
+    private FilteredAnalysis filteredAnalysis;
 
     public GroupScriptsRevisionFilterTest() {
         super(GroupScriptsRevisionFilterTest.class.getName());
@@ -70,20 +69,19 @@ public class GroupScriptsRevisionFilterTest extends NbTestCase {
     public void test() {
         assertEquals(11, analysis.getTimeStampsCount());
 
-        assertEquals(5, groupScriptsFilteredAnalysis.getTimeStampsCount());
+        assertEquals(5, filteredAnalysis.getTimeStampsCount());
 
-        assertNull(groupScriptsFilteredAnalysis.getScriptGroupedRevisions(0));
+        assertNull(filteredAnalysis.getScriptGroupedRevisions(0));
+        assertNull(filteredAnalysis.getScriptGroupedRevisions(1));
 
-        assertNull(groupScriptsFilteredAnalysis.getScriptGroupedRevisions(1));
-
-        final Set<Integer> scriptGroupedRevisions2 = groupScriptsFilteredAnalysis.getScriptGroupedRevisions(2);
+        final Set<Integer> scriptGroupedRevisions2 = filteredAnalysis.getScriptGroupedRevisions(2);
         assertNull(scriptGroupedRevisions2);
 
-        final Set<Integer> whiteSpaceGroupedRevisions2 = groupScriptsFilteredAnalysis.getWhiteSpaceGroupedRevisions(2);
+        final Set<Integer> whiteSpaceGroupedRevisions2 = filteredAnalysis.getWhiteSpaceGroupedRevisions(2);
         assertNull(whiteSpaceGroupedRevisions2);
         
-        final Set<Integer> scriptGroupedRevisions3 = groupScriptsFilteredAnalysis.getScriptGroupedRevisions(3);
-        final Set<Integer> whiteSpaceGroupedRevisions3 = groupScriptsFilteredAnalysis.getWhiteSpaceGroupedRevisions(3);
+        final Set<Integer> scriptGroupedRevisions3 = filteredAnalysis.getScriptGroupedRevisions(3);
+        final Set<Integer> whiteSpaceGroupedRevisions3 = filteredAnalysis.getWhiteSpaceGroupedRevisions(3);
         assertNotNull(scriptGroupedRevisions3);
         
         assertEquals(4, scriptGroupedRevisions3.size());
@@ -166,7 +164,11 @@ public class GroupScriptsRevisionFilterTest extends NbTestCase {
         HtmlSource source15 = DiffTest.getHtmlSource(getDataDir(), "filter/test002-r15.content");
         analysis.storeDocumentVersion("15", source15.getSourceCode().toString(), "[{}]", false);
 
-        groupScriptsFilteredAnalysis = new GroupScriptsFilteredAnalysis(new ScriptRevisionFilter(new TrueStackTraceFilter()), null, true, analysis);
+        String scriptLocation1 = "/js/jquery-1.6.4.js";
+        final ArrayList<String> groupScriptLocations = new ArrayList<String>();
+        groupScriptLocations.add(scriptLocation1);
+        
+        filteredAnalysis = new FilteredAnalysis(groupScriptLocations, false, true, analysis);
     }
 
 }

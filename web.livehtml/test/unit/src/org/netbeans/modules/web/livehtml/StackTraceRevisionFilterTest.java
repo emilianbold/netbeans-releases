@@ -49,9 +49,7 @@ import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.web.livehtml.diff.DiffTest;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFilteredAnalysis;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.ScriptRevisionFilter;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceRevisionFilter;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
  *
@@ -60,7 +58,7 @@ import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceRevisionF
 public class StackTraceRevisionFilterTest extends NbTestCase {
 
     private Analysis analysis;
-    private GroupScriptsFilteredAnalysis groupScriptsFilteredAnalysis;
+    private FilteredAnalysis filteredAnalysis;
 
     public StackTraceRevisionFilterTest() {
         super(StackTraceRevisionFilterTest.class.getName());
@@ -70,15 +68,15 @@ public class StackTraceRevisionFilterTest extends NbTestCase {
     public void test() {
         assertEquals(8, analysis.getTimeStampsCount());
 
-        assertEquals(4, groupScriptsFilteredAnalysis.getTimeStampsCount());
+        assertEquals(4, filteredAnalysis.getTimeStampsCount());
 
-        assertNull(groupScriptsFilteredAnalysis.getStackTraceGroupedRevisions(0));
+        assertNull(filteredAnalysis.getStackTraceGroupedRevisions(0));
 
-        assertNull(groupScriptsFilteredAnalysis.getStackTraceGroupedRevisions(1));
+        assertNull(filteredAnalysis.getStackTraceGroupedRevisions(1));
 
-        assertNull(groupScriptsFilteredAnalysis.getStackTraceGroupedRevisions(2));
+        assertNull(filteredAnalysis.getStackTraceGroupedRevisions(2));
 
-        final Set<Integer> stackTraceGroupedRevisions3 = groupScriptsFilteredAnalysis.getStackTraceGroupedRevisions(3);
+        final Set<Integer> stackTraceGroupedRevisions3 = filteredAnalysis.getStackTraceGroupedRevisions(3);
         assertNotNull(stackTraceGroupedRevisions3);
         assertEquals(4, stackTraceGroupedRevisions3.size());
         assertTrue(stackTraceGroupedRevisions3.contains(4));
@@ -139,7 +137,7 @@ public class StackTraceRevisionFilterTest extends NbTestCase {
 
         HtmlSource source11 = DiffTest.getHtmlSource(getDataDir(), "filter/test001-r11.content");
 
-        groupScriptsFilteredAnalysis = new GroupScriptsFilteredAnalysis(null, new StackTraceRevisionFilter(), false, analysis);
+        filteredAnalysis = new FilteredAnalysis(null, true, false, analysis);
     }
 
 }
