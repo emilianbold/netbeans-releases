@@ -79,6 +79,7 @@ FormattingToken{kind=LINE_COMMENT, offset=96, text=// comment}
 FormattingToken{kind=EOL, offset=106, text=
 }
 FormattingToken{kind=WHITESPACE, offset=107, text=    }
+FormattingToken{kind=BEFORE_FOR_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=111, text=doSomethingElse}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=126, text=(}
@@ -148,6 +149,7 @@ FormattingToken{kind=LINE_COMMENT, offset=185, text=// dfsdf}
 FormattingToken{kind=EOL, offset=193, text=
 }
 FormattingToken{kind=WHITESPACE, offset=194, text=        }
+FormattingToken{kind=BEFORE_FOR_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=202, text=space}
 FormattingToken{kind=WHITESPACE, offset=207, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
