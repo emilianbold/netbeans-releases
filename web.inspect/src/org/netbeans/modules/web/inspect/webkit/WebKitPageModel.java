@@ -83,6 +83,8 @@ public class WebKitPageModel extends PageModel {
     private DOM.Listener domListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
+    
+    private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
 
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
 
@@ -127,6 +129,7 @@ public class WebKitPageModel extends PageModel {
                 // init
                 String initScript = Files.getScript("initialization"); // NOI18N
                 webKit.getRuntime().evaluate(initScript);
+                cSSUpdater.start(webKit);
             }
         }
     }
@@ -144,6 +147,7 @@ public class WebKitPageModel extends PageModel {
     protected void dispose() {
         DOM dom = webKit.getDOM();
         dom.removeListener(domListener);
+        cSSUpdater.stop();
     }
 
     @Override
