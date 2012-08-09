@@ -43,9 +43,11 @@ package org.netbeans.modules.java.navigation.hierarchy;
 
 import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,12 +93,13 @@ import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -168,7 +171,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     public void setContext (@NonNull final JavaSource context) {
-        showBusy();
         final Collection<FileObject> fos = context.getFileObjects();
         assert fos.size() == 1;
         final FileObject fo = fos.iterator().next();
@@ -235,18 +237,23 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
 
     @NonNull
     private static BeanTreeView createBeanTreeView() {
-        return new BeanTreeView();
+        final BeanTreeView btw = new BeanTreeView();
+        btw.setRootVisible(false);
+        return btw;
     }
 
     private void showBusy() {
-        explorerManager.setRootContext(WaitNode.INSTANCE);
+        btw.setRootVisible(true);
+        explorerManager.setRootContext(Nodes.waitNode());
     }
 
     private void schedule(@NonNull final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver) {
+        showBusy();
         assert resolver != null;
         final RunnableFuture<Pair<URI,ElementHandle<TypeElement>>> becomesType = new FutureTask<Pair<URI,ElementHandle<TypeElement>>>(resolver);
         RP.execute(becomesType);
-        final Runnable refreshTask = new RefreshTask(becomesType);
+        final ContextImpl ctx = new ContextImpl();
+        final Runnable refreshTask = new RefreshTask(becomesType, ctx);
         RP.execute(refreshTask);
     }
 
@@ -458,49 +465,124 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final class RefreshTask implements Runnable {
 
         private final Future<Pair<URI,ElementHandle<TypeElement>>> toShow;
+        private final ContextImpl ctx;
 
-        RefreshTask(@NonNull final Future<Pair<URI,ElementHandle<TypeElement>>> toShow) {
+        RefreshTask(
+            @NonNull final Future<Pair<URI,ElementHandle<TypeElement>>> toShow,
+            @NonNull final ContextImpl ctx) {
             assert toShow != null;
+            assert ctx != null;
             this.toShow = toShow;
+            this.ctx = ctx;
         }
 
         @Override
+        @NbBundle.Messages({
+        "ERR_Cannot_Resolve_File=Cannot resolve type: {0}"})
         public void run() {
             try {
                 final Pair<URI,ElementHandle<TypeElement>> pair = toShow.get();
-                LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());
-                HierarchyHistory.getInstance().addToHistory(pair);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        historyCombo.getModel().setSelectedItem(pair);
-                        explorerManager.setRootContext(new AbstractNode(Children.LEAF));
+                if (pair != null) {
+                    final FileObject file = URLMapper.findFileObject(pair.first.toURL());
+                    JavaSource js;
+                    if (file != null && (js=JavaSource.forFileObject(file)) != null) {
+                        LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
+                        HierarchyHistory.getInstance().addToHistory(pair);
+                        js.runUserActionTask(new Task<CompilationController>() {
+                            @Override
+                            public void run(CompilationController cc) throws Exception {
+                                final TypeElement te = pair.second.resolve(cc);
+                                if (te != null) {
+                                    final Node root;
+                                    if (ctx.getViewType() == ViewType.SUPER_TYPE) {
+                                     root = Nodes.superTypeHierarchy(
+                                            (DeclaredType)te.asType(),
+                                            ctx);
+                                    } else {
+                                        root = null;
+                                    }
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            historyCombo.getModel().setSelectedItem(pair);
+                                            explorerManager.setRootContext(root);
+                                            btw.expandAll();
+                                        }
+                                    });
+                                }
+                            }
+                        }, true);
+                    } else {
+                        StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
                     }
-                });
-
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-
     }
 
-    private static class WaitNode extends AbstractNode {
+    private class ContextImpl implements Nodes.Context, ActionListener {
 
-        static final WaitNode INSTANCE = new WaitNode();
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-        @StaticResource
-        private static final String ICON = "org/netbeans/modules/java/navigation/resources/wait.gif";   //NOI18N
+        private volatile ViewType vt;
+        private volatile boolean fqn;
+        private volatile boolean ordered;
 
-        @NbBundle.Messages({
-            "LBL_PleaseWait=Please Wait..."
-        })
-        private WaitNode() {
-            super(Children.LEAF);
-            setIconBaseWithExtension(ICON);
-            setDisplayName(Bundle.LBL_PleaseWait());
+        ContextImpl() {
+            update();
         }
+
+        @Override
+        public boolean isFQN() {
+            return fqn;
+        }
+
+        @Override
+        public boolean isOrdered() {
+            return ordered;
+        }
+
+        public ViewType getViewType() {
+            return vt;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            assert listener != null;
+            this.support.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            assert listener != null;
+            this.support.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update();
+                }
+            });
+        }
+
+        private void update() {
+            assert SwingUtilities.isEventDispatchThread();
+            this.fqn = false;
+            this.ordered = true;
+            final Object selItem = viewTypeCombo.getSelectedItem();
+            this.vt = selItem instanceof ViewType ?
+                    (ViewType) selItem :
+                    ViewType.SUPER_TYPE;
+        }
+
     }
 }
