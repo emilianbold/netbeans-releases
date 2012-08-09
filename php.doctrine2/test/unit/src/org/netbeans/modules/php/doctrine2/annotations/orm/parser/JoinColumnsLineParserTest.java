@@ -52,7 +52,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class JoinColumnsLineParserTest extends NbTestCase {
-    private JoinColumnsLineParser parser;
+    private EncapsulatingAnnotationLineParser parser;
 
     public JoinColumnsLineParserTest(String name) {
         super(name);
@@ -61,7 +61,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new JoinColumnsLineParser();
+        this.parser = new EncapsulatingAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -90,7 +90,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("JoinColumns");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -101,7 +101,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("JoinColumns   ");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -112,7 +112,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("JoinColumns\t\t  ");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -123,7 +123,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("JoinColumns(name=\"user\")");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -134,7 +134,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\JoinColumns(name=\"user\")  \t");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -145,7 +145,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\JoinColumns(name=\"user\")  \t");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -156,7 +156,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("joincolumns");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -167,7 +167,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\joincolumns(name=\"user\")  \t");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -178,7 +178,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_09() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\JoinColumns({@JoinColumn(name=\"user_unique\"), @JoinColumn(name=\"user_unique\")})");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("({@JoinColumn(name=\"user_unique\"), @JoinColumn(name=\"user_unique\")})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -193,7 +193,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_10() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\joincolumns({@joincolumn(name=\"user_unique\"), @joincolumn(name=\"user_unique\")})");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("({@joincolumn(name=\"user_unique\"), @joincolumn(name=\"user_unique\")})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -208,7 +208,7 @@ public class JoinColumnsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_11() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\JoinColumns({@Baz\\JoinColumn(name=\"user_unique\"), @JoinColumn(name=\"user_unique\")})");
-        assertEquals(JoinColumnsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("JoinColumns", parsedLine.getName());
         assertEquals("({@Baz\\JoinColumn(name=\"user_unique\"), @JoinColumn(name=\"user_unique\")})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

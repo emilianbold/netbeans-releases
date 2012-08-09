@@ -53,7 +53,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class TableLineParserTest extends NbTestCase {
-    private TableLineParser parser;
+    private EncapsulatingAnnotationLineParser parser;
 
     public TableLineParserTest(String name) {
         super(name);
@@ -62,7 +62,7 @@ public class TableLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new TableLineParser();
+        this.parser = new EncapsulatingAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -91,7 +91,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Table");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -102,7 +102,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Table   ");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -113,7 +113,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Table\t\t  ");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -124,7 +124,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Table(name=\"user\")");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -135,7 +135,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\Table(name=\"user\")  \t");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -146,7 +146,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\Table(name=\"user\")  \t");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -157,7 +157,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("table");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -168,7 +168,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\table(name=\"user\")  \t");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -179,7 +179,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_09() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\Table(name=\"user\", uniqueConstraints={@UniqueConstraint(name=\"user_unique\",columns={\"username\"})}, indexes={@Index(name=\"user_idx\", columns={\"email\"})})");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\", uniqueConstraints={@UniqueConstraint(name=\"user_unique\",columns={\"username\"})}, indexes={@Index(name=\"user_idx\", columns={\"email\"})})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -194,7 +194,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_10() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\table(name=\"user\", uniqueConstraints={@uniqueconstraint(name=\"user_unique\",columns={\"username\"})}, indexes={@index(name=\"user_idx\", columns={\"email\"})})");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\", uniqueConstraints={@uniqueconstraint(name=\"user_unique\",columns={\"username\"})}, indexes={@index(name=\"user_idx\", columns={\"email\"})})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -209,7 +209,7 @@ public class TableLineParserTest extends NbTestCase {
 
     public void testValidUseCase_11() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\Table(name=\"user\", uniqueConstraints={@Baz\\UniqueConstraint(name=\"user_unique\",columns={\"username\"})}, indexes={@Index(name=\"user_idx\", columns={\"email\"})})");
-        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Table", parsedLine.getName());
         assertEquals("(name=\"user\", uniqueConstraints={@Baz\\UniqueConstraint(name=\"user_unique\",columns={\"username\"})}, indexes={@Index(name=\"user_idx\", columns={\"email\"})})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
