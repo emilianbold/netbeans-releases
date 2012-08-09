@@ -304,6 +304,19 @@ public final class CompletionContext {
         processValueType();
         
         readRootElement(ts);
+        
+        // do not allow real content before root tag
+        if (caretOffset < rootTagStartOffset) {
+            switch (type) {
+                case BEAN:
+                case PROPERTY_ELEMENT:
+                case CHILD_ELEMENT:
+                case ROOT:
+                    type = Type.INSTRUCTION_TARGET;
+                    break;
+            }
+        }
+        
         readCurrentContent(ts);
 
         processNamespaces();
@@ -703,12 +716,12 @@ public final class CompletionContext {
         while (seq.moveNext()) {
             Token<XMLTokenId> t = seq.token();
             XMLTokenId id = t.id();
-            if (id == XMLTokenId.TAG) {
+            if (id == XMLTokenId.TAG && t.length() > 1) {
                 int startOffset = seq.offset();
                 readTagContent(seq);
                 // reassign stuff:
-                rootTagStartOffset = startOffset;
                 copyToRoot();
+                rootTagStartOffset = startOffset;
                 rootAttrInsertOffset = startOffset + t.length();
                 if (t.text().charAt(t.length() - 1) == '>') {
                     rootAttrInsertOffset--;
@@ -1247,6 +1260,36 @@ public final class CompletionContext {
             tagName != null && !tagName.equals("") && !isClassTagName(tagName)) {
             // assume bean
             type = Type.BEAN;
+        }
+        
+        if (type == Type.ROOT) {
+            // try to traverse forward through all the whitespace, to find whether there's an processing instruction.
+            ts.move(caretOffset);
+            
+            cont = true;
+            while (cont && ts.moveNext()) {
+                t = ts.token();
+                XMLTokenId id = t.id();
+                switch (id) {
+                    case BLOCK_COMMENT:
+                        // this is ok
+                        break;
+                        
+                    case TEXT:
+                    case CDATA_SECTION:
+                        // this is maybe also OK
+                        break;
+                        
+                    case PI_START:
+                        // must not present tag for completion
+                        type = Type.INSTRUCTION_TARGET;
+                        cont = false;
+                        break;
+                    case TAG:
+                        cont = false;
+                        break;
+                }
+            }
         }
     }
     
