@@ -39,38 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter.groupscripts;
+package org.netbeans.modules.web.livehtml.filter;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.web.livehtml.Analysis;
-import org.netbeans.modules.web.livehtml.StackTrace;
 import org.netbeans.modules.web.livehtml.Revision;
-import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
-import org.netbeans.modules.web.livehtml.filter.NotStackTraceFilter;
-import org.netbeans.modules.web.livehtml.filter.OrStackTraceFilter;
-import org.netbeans.modules.web.livehtml.ui.RevisionFilterPanel;
+import org.netbeans.modules.web.livehtml.StackTrace;
 
 /**
  *
  * @author petr-podzimek
  */
-public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupScriptsFilteredAnalysis> {
+public class RevisionFilterPanel extends javax.swing.JPanel {
     
+    private Analysis analysis;
+
     /**
      * Creates new form NewRevisionFilterPanelService
      */
-    public GroupScriptsRevisionFilterPanel() {
+    public RevisionFilterPanel() {
         initComponents();
     }
 
-    @Override
     public void setAnalysis(Analysis analysis) {
-        super.setAnalysis(analysis);
+        this.analysis = analysis;
         
         Set<String> scripts = new HashSet<String>();
         
@@ -89,6 +88,7 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
         }
         
         scriptsPanel.removeAll();
+        
         for (String script : scripts) {
             final JCheckBox checkBox = new JCheckBox(script);
             checkBox.setToolTipText(script);
@@ -98,103 +98,44 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
         }
     }
 
-    @Override
-    public GroupScriptsFilteredAnalysis createFilteredAnalysis() {
+    public Analysis getAnalysis() {
+        return analysis;
+    }
+    
+    private void selectScripts(Collection<String> scriptLocations) {
+        for (Component component : scriptsPanel.getComponents()) {
+            if (component instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) component;
+                checkBox.setSelected(scriptLocations.contains(checkBox.getName()));
+            }
+        }
+    }
+
+    public FilteredAnalysis createFilteredAnalysis() {
         if (isClear()) {
             return null;
         }
-        GroupScriptsFilteredAnalysis filteredAnalysis = 
-                new GroupScriptsFilteredAnalysis(
-                        createScriptRevisionFilter(), 
-                        createstackTraceRevisionFilter(), 
-                        ignoreWhiteSpacesCheckBox.isSelected(), 
+        FilteredAnalysis filteredAnalysis = 
+                new FilteredAnalysis(
+                        getSelectedScripts(), 
+                        groupByStackTraceCheckBox.isSelected(), 
+                        groupByWhiteSpacesCheckBox.isSelected(), 
                         getAnalysis());
         
         return filteredAnalysis;
     }
 
-    @Override
-    public void setFilteredAnalysis(GroupScriptsFilteredAnalysis filteredAnalysis) {
+    public void setFilteredAnalysis(FilteredAnalysis filteredAnalysis) {
         if (filteredAnalysis == null) {
             clear();
             return;
         }
         
-        final ScriptRevisionFilter revisionFilter = filteredAnalysis.getScriptRevisionFilter();
-        setScriptRevisionFilter(revisionFilter);
-        
-        groupRevisionsCheckBox.setSelected(filteredAnalysis.getStackTraceRevisionFilter() != null);
-        ignoreWhiteSpacesCheckBox.setSelected(filteredAnalysis.isIgnoreWhiteSpaces());
+        groupByStackTraceCheckBox.setSelected(filteredAnalysis.isGroupIdenticalStackTraces());
+        groupByWhiteSpacesCheckBox.setSelected(filteredAnalysis.isGroupWhiteSpaces());
+        selectScripts(filteredAnalysis.getGroupScriptLocations());
     }
     
-    private void setScriptRevisionFilter(ScriptRevisionFilter scriptRevisionFilter) {
-        if (scriptRevisionFilter == null) {
-            setStackTraceFilter(null);
-        } else {
-            setStackTraceFilter(scriptRevisionFilter.getStackTraceFilter());
-        }
-    }
-    
-    private void setStackTraceFilter(StackTraceFilter stackTraceFilter) {
-        if (stackTraceFilter == null) {
-            return;
-        }
-        
-        if (stackTraceFilter instanceof NotStackTraceFilter) {
-            NotStackTraceFilter notStackTraceFilter = (NotStackTraceFilter) stackTraceFilter;
-            final StackTraceFilter stackTraceFilter1 = notStackTraceFilter.getStackTraceFilter();
-            if (stackTraceFilter1 instanceof OrStackTraceFilter) {
-                OrStackTraceFilter orStackTraceFilter = (OrStackTraceFilter) stackTraceFilter1;
-                for (StackTraceFilter stackTraceFilter2 : orStackTraceFilter.getStackTraceFilters()) {
-                    if (stackTraceFilter2 instanceof ScriptStackTraceFilter) {
-                        ScriptStackTraceFilter scriptStackTraceFilter = (ScriptStackTraceFilter) stackTraceFilter2;
-                        
-                        for (Component component : scriptsPanel.getComponents()) {
-                            if (component instanceof JCheckBox) {
-                                JCheckBox checkBox = (JCheckBox) component;
-                                if (scriptStackTraceFilter.getScriptUrl().equals(checkBox.getName())) {
-                                    checkBox.setSelected(true);
-                                }
-                            }
-                        }
-                        
-                    }
-                }
-            }
-        }
-    }
-    
-    private StackTraceFilter createStackTraceFilter() {
-        final List<String> selectedScripts = getSelectedScripts();
-        
-        if (selectedScripts == null || selectedScripts.isEmpty()) {
-            return null;
-        }
-        
-        List<StackTraceFilter> stackTraceFilters = new ArrayList<StackTraceFilter>();
-        for (String script : selectedScripts) {
-            stackTraceFilters.add((new ScriptStackTraceFilter(script)));
-        }
-        
-        StackTraceFilter stackTraceFilter = new NotStackTraceFilter(new OrStackTraceFilter(stackTraceFilters));
-        return stackTraceFilter;
-    }
-    
-    private ScriptRevisionFilter createScriptRevisionFilter() {
-        final StackTraceFilter createStackTraceFilter = createStackTraceFilter();
-        ScriptRevisionFilter scriptRevisionFilter = createStackTraceFilter == null ? null : new ScriptRevisionFilter(createStackTraceFilter);
-        
-        return scriptRevisionFilter;
-    }
-    
-    private StackTraceRevisionFilter createstackTraceRevisionFilter() {
-        if (groupRevisionsCheckBox.isSelected()) {
-            return new StackTraceRevisionFilter();
-        } else {
-            return null;
-        }
-    }
-
     private List<String> getSelectedScripts() {
         List<String> selectedScripts = new ArrayList<String>();
         for (Component component : scriptsPanel.getComponents()) {
@@ -211,19 +152,14 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
     private boolean isClear() {
         final List<String> selectedScripts = getSelectedScripts();
         return (selectedScripts == null || selectedScripts.isEmpty()) && 
-                !groupRevisionsCheckBox.isSelected() && 
-                !ignoreWhiteSpacesCheckBox.isSelected();
+                !groupByStackTraceCheckBox.isSelected() && 
+                !groupByWhiteSpacesCheckBox.isSelected();
     }
     
     private void clear() {
-        for (Component component : scriptsPanel.getComponents()) {
-            if (component instanceof JCheckBox) {
-                JCheckBox checkBox = (JCheckBox) component;
-                checkBox.setSelected(false);
-            }
-        }
-        groupRevisionsCheckBox.setSelected(false);
-        ignoreWhiteSpacesCheckBox.setSelected(false);
+        selectScripts(Collections.<String>emptyList());
+        groupByStackTraceCheckBox.setSelected(false);
+        groupByWhiteSpacesCheckBox.setSelected(false);
     }
 
     /**
@@ -235,24 +171,24 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        scriptsScrollPane = new javax.swing.JScrollPane();
         scriptsPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        groupRevisionsCheckBox = new javax.swing.JCheckBox();
-        ignoreWhiteSpacesCheckBox = new javax.swing.JCheckBox();
+        scriptsLabel = new javax.swing.JLabel();
+        groupByStackTraceCheckBox = new javax.swing.JCheckBox();
+        groupByWhiteSpacesCheckBox = new javax.swing.JCheckBox();
         clearFiltersButton = new javax.swing.JButton();
 
         scriptsPanel.setOpaque(false);
         scriptsPanel.setLayout(new javax.swing.BoxLayout(scriptsPanel, javax.swing.BoxLayout.Y_AXIS));
-        jScrollPane1.setViewportView(scriptsPanel);
+        scriptsScrollPane.setViewportView(scriptsPanel);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GroupScriptsRevisionFilterPanel.class, "GroupScriptsRevisionFilterPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(scriptsLabel, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.scriptsLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(groupRevisionsCheckBox, org.openide.util.NbBundle.getMessage(GroupScriptsRevisionFilterPanel.class, "GroupScriptsRevisionFilterPanel.groupRevisionsCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(groupByStackTraceCheckBox, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.groupByStackTraceCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(ignoreWhiteSpacesCheckBox, org.openide.util.NbBundle.getMessage(GroupScriptsRevisionFilterPanel.class, "GroupScriptsRevisionFilterPanel.ignoreWhiteSpacesCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(groupByWhiteSpacesCheckBox, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.groupByWhiteSpacesCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(clearFiltersButton, org.openide.util.NbBundle.getMessage(GroupScriptsRevisionFilterPanel.class, "GroupScriptsRevisionFilterPanel.clearFiltersButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clearFiltersButton, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.clearFiltersButton.text")); // NOI18N
         clearFiltersButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearFiltersButtonActionPerformed(evt);
@@ -263,12 +199,12 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-            .addComponent(jScrollPane1)
+            .addComponent(scriptsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(scriptsScrollPane)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(groupRevisionsCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ignoreWhiteSpacesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(groupByStackTraceCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .addComponent(groupByWhiteSpacesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(clearFiltersButton)
                 .addContainerGap())
@@ -276,15 +212,15 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addComponent(scriptsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                .addComponent(scriptsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(groupRevisionsCheckBox)
+                        .addComponent(groupByStackTraceCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ignoreWhiteSpacesCheckBox))
+                        .addComponent(groupByWhiteSpacesCheckBox))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(clearFiltersButton)
                         .addContainerGap())))
@@ -297,10 +233,10 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clearFiltersButton;
-    private javax.swing.JCheckBox groupRevisionsCheckBox;
-    private javax.swing.JCheckBox ignoreWhiteSpacesCheckBox;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JCheckBox groupByStackTraceCheckBox;
+    private javax.swing.JCheckBox groupByWhiteSpacesCheckBox;
+    private javax.swing.JLabel scriptsLabel;
     private javax.swing.JPanel scriptsPanel;
+    private javax.swing.JScrollPane scriptsScrollPane;
     // End of variables declaration//GEN-END:variables
 }

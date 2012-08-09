@@ -49,7 +49,7 @@ import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.web.livehtml.diff.DiffTest;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFilteredAnalysis;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
  *
@@ -58,7 +58,7 @@ import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFiltere
 public class IgnoreWhiteSpacesTest extends NbTestCase {
 
     private Analysis analysis;
-    private GroupScriptsFilteredAnalysis filteredAnalysis;
+    private FilteredAnalysis filteredAnalysis;
 
     public IgnoreWhiteSpacesTest() {
         super(IgnoreWhiteSpacesTest.class.getName());
@@ -121,7 +121,7 @@ public class IgnoreWhiteSpacesTest extends NbTestCase {
         analysis.storeDocumentVersion("9", source6.getSourceCode().toString(), "[{}]", true); // white space detected
         analysis.storeDocumentVersion("10", source6.getSourceCode().toString(), "[{}]", true); // white space detected
 
-        filteredAnalysis = new GroupScriptsFilteredAnalysis(null, null, true, analysis);
+        filteredAnalysis = new FilteredAnalysis(null, false, true, analysis);
     }
 
 }

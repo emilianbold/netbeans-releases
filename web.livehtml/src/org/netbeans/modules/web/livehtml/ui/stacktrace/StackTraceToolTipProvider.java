@@ -105,24 +105,26 @@ public class StackTraceToolTipProvider extends RevisionToolTipService implements
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        stacTraceScrollPane = new javax.swing.JScrollPane();
+        stackTraceScrollPane = new javax.swing.JScrollPane();
         stackTraceListView = new org.openide.explorer.view.ListView();
 
-        stacTraceScrollPane.setViewportView(stackTraceListView);
+        stackTraceListView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        stackTraceListView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        stackTraceScrollPane.setViewportView(stackTraceListView);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(stacTraceScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(stackTraceScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(stacTraceScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .addComponent(stackTraceScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane stacTraceScrollPane;
     private org.openide.explorer.view.ListView stackTraceListView;
+    private javax.swing.JScrollPane stackTraceScrollPane;
     // End of variables declaration//GEN-END:variables
 }

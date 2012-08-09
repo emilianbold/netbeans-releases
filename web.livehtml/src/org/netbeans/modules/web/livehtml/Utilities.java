@@ -45,12 +45,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
@@ -149,70 +143,4 @@ public class Utilities {
         }
     }
 
-    public static void putRevision(Map<Integer, Set<Integer>> target, Integer targetIndex, Integer value) {
-        Set<Integer> record = target.get(targetIndex);
-        if (record == null) {
-            record = new HashSet<Integer>();
-            target.put(targetIndex, record);
-        }
-        record.add(value);
-    }
-
-    public static Integer max(Collection<Integer> collection) {
-        if (collection == null) {
-            return Integer.MIN_VALUE;
-        } else {
-            return Collections.max(collection);
-        }
-    }
-
-    private static void fixRemovedRevisions(List<Integer> indexes, Map<Integer, Set<Integer>> source, Map<Integer, Set<Integer>> target) {
-        Set<Integer> indexesToRemove = new HashSet<Integer>();
-        for (Map.Entry<Integer, Set<Integer>> entry : target.entrySet()) {
-            final Integer key = entry.getKey();
-            if (!indexes.contains(key)) {
-                final Set<Integer> values = entry.getValue();
-                final Integer indexReplacement = getIndexReplacement(indexes, key, source);
-                if (indexReplacement != null) {
-                    for (Integer value : values) {
-                        putRevision(target, indexReplacement, value);
-                    }
-                    indexesToRemove.add(key);
-                }
-            }
-        }
-        for (Integer index : indexesToRemove) {
-            target.remove(index);
-        }
-    }
-
-    public static void fixRemovedRevisions(List<Integer> indexes, Map<Integer, Set<Integer>>...sources) {
-        for (Map<Integer, Set<Integer>> map : sources) {
-            for (Map<Integer, Set<Integer>> map1 : sources) {
-                if (map != map1) {
-                    fixRemovedRevisions(indexes, map, map1);
-                }
-            }
-        }
-    }
-
-    public static Integer getIndexReplacement(List<Integer> indexes, Integer index, Map<Integer, Set<Integer>> source) {
-        for (Map.Entry<Integer, Set<Integer>> entry : source.entrySet()) {
-            final Integer key = entry.getKey();
-            final Set<Integer> values = entry.getValue();
-            if (values.contains(index) && indexes.contains(key)) {
-                return key;
-            }
-        }
-        return null;
-    }
-
-    public static void putRevisions(Integer targetIndex, Set<Integer> source, Map<Integer, Set<Integer>> target) {
-        if (source != null) {
-            for (Integer revision : source) {
-                putRevision(target, targetIndex, revision);
-            }
-        }
-    }
-    
 }
