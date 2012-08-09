@@ -87,7 +87,7 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
     @Override
     protected void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory taskRepositoryLocationFactory) {
         C2CRepositoryConnector cfc = (C2CRepositoryConnector)rc;
-        cfc.getClientManager().setTaskRepositoryLocationFactory(new TaskRepositoryLocationFactory());
+        cfc.getClientManager().setTaskRepositoryLocationFactory(taskRepositoryLocationFactory);
     }
     
     @Override
