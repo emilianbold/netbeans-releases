@@ -233,6 +233,9 @@ public class HtmlElementDescription extends SourceDescription {
                             for (OpenTag child : nonVirtualChildren) {
                                 children.add(new HtmlElementDescription(HtmlElementDescription.this, child, file));
                             }
+                        } else {
+                            //cannot resolve the node
+                            children = Collections.emptyList();
                         }
                     }
                 });
