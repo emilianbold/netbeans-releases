@@ -90,6 +90,32 @@ public class Utilities {
                     selector = styleSheetText.substring(range.getStart(), range.getEnd());
                     selector = CSSUtils.normalizeSelector(selector);
                     result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);
+                    if ((result == null) && !rule.getMedia().isEmpty() && (range.getStart() == 0)) {
+                        // Workaround for a bug in WebKit (already fixed in the latest
+                        // versions of Chrome, but still present in WebView)
+                        boolean inLiteral = false;
+                        int index = selector.length()-1;
+                        outer: while (index >= 0) {
+                            char c = selector.charAt(index);
+                            switch (c) {
+                                case '"':
+                                    inLiteral = !inLiteral; break;
+                                case '{':
+                                case '}':
+                                    if (inLiteral) {
+                                        break;
+                                    } else {
+                                        break outer;
+                                    }
+                            }
+                            index--;
+                        }
+                        if (index != -1) {
+                            selector = selector.substring(index+1);
+                            selector = CSSUtils.normalizeSelector(selector);
+                            result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);                            
+                        }
+                    }
                 }
             }
         }
