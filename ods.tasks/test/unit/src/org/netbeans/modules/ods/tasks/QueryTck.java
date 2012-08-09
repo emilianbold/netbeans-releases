@@ -82,6 +82,7 @@ public class QueryTck extends C2CTestBase {
         assertJSON("The server query is as expected", serverRequest, sb.toString());
         assertEquals("One task data is found", 1, arr.size());
         TaskData td = arr.get(0);
-        assertEquals("test feature", td.getRoot().getAttribute(TaskAttribute.SUMMARY).getValue());
+        assertAttribute("test feature", td.getRoot(), TaskAttribute.DESCRIPTION);
+        assertAttribute("this is a test feature", td.getRoot(), TaskAttribute.SUMMARY);
     }
 }

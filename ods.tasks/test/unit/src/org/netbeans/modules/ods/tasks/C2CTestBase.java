@@ -48,6 +48,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.Lookup;
@@ -108,6 +109,19 @@ public class C2CTestBase extends NbTestCase {
         }
         
     }
+    /**
+     * Asserts value of a task attribute.
+     * 
+     * @param value expected value of the attribute
+     * @param root the root to obtain the attribute from
+     * @param attrId the name of attribute to seek in the root
+     */
+    protected static void assertAttribute(String value, TaskAttribute root, String attrId) {
+        TaskAttribute v = root.getAttribute(attrId);
+        assertNotNull("Attribute " + attrId + " should be present", v);
+        assertEquals("Attribute " + attrId + " should have the right value", value, v.getValue());
+    }
+    
     private static boolean assertSame(
         JsonNode expNode, JsonNode realNode, StringBuilder same, String indent, JsonNode[] diff
     ) {

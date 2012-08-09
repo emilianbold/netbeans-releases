@@ -156,7 +156,8 @@ final class NbRepositoryConnector extends AbstractRepositoryConnector {
         TaskAttributeMapper m = new TaskAttributeMapper(tr);
         for (Task t : ret.queryResult.getResultPage()) {
             TaskData d = new TaskData(m, tr.getConnectorKind(), tr.getRepositoryUrl(), "" + t.getId());
-            d.getRoot().createMappedAttribute(TaskAttribute.SUMMARY).setValue(t.getDescription());
+            d.getRoot().createMappedAttribute(TaskAttribute.DESCRIPTION).setValue(t.getDescription());
+            d.getRoot().createMappedAttribute(TaskAttribute.SUMMARY).setValue(t.getShortDescription());
             tdc.accept(d);
         }
         return Status.OK_STATUS;
