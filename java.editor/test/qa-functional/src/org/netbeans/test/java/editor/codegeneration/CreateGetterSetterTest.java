@@ -234,17 +234,18 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
             jto.selectRow(1);
             ggso.generate();
             String expected = "" +
+"    public void setNum(int num) {\n"+
+"        this.num = num;\n"+
+"    }\n"+ 
+"\n"+
 "    public void setBool(boolean bool) {\n"+
 "        this.bool = bool;\n"+
 "    }\n"+
 "\n"+
 "    public void setHasGetter(int hasGetter) {\n"+
 "        this.hasGetter = hasGetter;\n"+
-"    }\n"+
-"\n"+
-"    public void setNum(int num) {\n"+
-"        this.num = num;\n"+
 "    }\n";
+
             waitAndCompare(expected);
         } finally {
             editor.close(false);
@@ -266,16 +267,16 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
             jto.selectRow(3);
             ggso.generate();
             String expected = "" +
+                    "    public int getNum() {\n"+
+"        return num;\n"+
+"    }\n"+
+"\n"+
 "    public boolean isBool() {\n"+
 "        return bool;\n"+
 "    }\n"+
 "\n"+
 "    public int getHasSetter() {\n"+
 "        return hasSetter;\n"+
-"    }\n"+
-"\n"+
-"    public int getNum() {\n"+
-"        return num;\n"+
 "    }\n";
             waitAndCompare(expected);
         } finally {

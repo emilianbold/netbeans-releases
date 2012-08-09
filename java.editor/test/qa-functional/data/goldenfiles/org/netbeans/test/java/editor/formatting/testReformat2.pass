@@ -18,11 +18,14 @@ import javax.swing.JButton;
 
 /**
  * Inner classes, anonymous classes, annotation formatting
+ *
  * @author ms159439
  */
 public class testReformat2<E> extends ArrayList<E> implements List<E> {
 
-    /** Creates a new instance of testReformat2 */
+    /**
+     * Creates a new instance of testReformat2
+     */
     public testReformat2() {
     }
 
@@ -75,7 +78,6 @@ public class testReformat2<E> extends ArrayList<E> implements List<E> {
 
         public myButton() {
             this.addActionListener(new ActionListener() {
-
                 public void actionPerformed(ActionEvent arg0) {
                     //              a8888b.
                     //             d888888b.
@@ -102,8 +104,8 @@ public class testReformat2<E> extends ArrayList<E> implements List<E> {
          * A javadoc comment
          */
         public void myButtonActionPerformed(ActionEvent evt) {
-            System.out.println("-==-" +
-                    "These smiling eyes are just a mirror for the sun.");
+            System.out.println("-==-"
+                    + "These smiling eyes are just a mirror for the sun.");
         }
 
         @Override
