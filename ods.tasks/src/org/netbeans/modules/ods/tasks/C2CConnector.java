@@ -55,7 +55,8 @@ import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 @BugtrackingConnector.Registration (
         id=C2CConnector.ID,
         displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
+        tooltip="#LBL_ConnectorTooltip",
+        providesRepositoryManagement=false
 )    
 public class C2CConnector extends BugtrackingConnector {
     public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
