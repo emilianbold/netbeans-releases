@@ -121,7 +121,7 @@ public class JsConventionRule implements Rule.AstRule{
         return HintSeverity.WARNING;
     }
     
-    private class ConventionVisitor extends PathNodeVisitor {
+    private static class ConventionVisitor extends PathNodeVisitor {
 
         private List<Hint> hints;
         private JsRuleContext context;

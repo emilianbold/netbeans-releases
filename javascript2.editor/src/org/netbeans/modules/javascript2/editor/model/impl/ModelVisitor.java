@@ -93,25 +93,23 @@ public class ModelVisitor extends PathNodeVisitor {
             if (!(node != null && node.tokenType() == TokenType.ASSIGN)) {
 //                System.out.println("AccessNode: " + accessNode);
                 if (accessNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
-                    if (accessNode.getProperty() instanceof IdentNode) {
-                        IdentNode iNode = (IdentNode)accessNode.getProperty();
-                        JsObject current = modelBuilder.getCurrentDeclarationScope();
-                        JsObject property = current.getProperty(iNode.getName());
-                        if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
-                                || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
+                    IdentNode iNode = (IdentNode)accessNode.getProperty();
+                    JsObject current = modelBuilder.getCurrentDeclarationScope();
+                    JsObject property = current.getProperty(iNode.getName());
+                    if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
+                        current = current.getParent();
+                        if (current.getName().equals("prototype")) {
                             current = current.getParent();
-                            if (current.getName().equals("prototype")) {
-                                current = current.getParent();
-                            }
-                            property = current.getProperty(iNode.getName());
                         }
-                        if (property == null && current.getParent() == null) {
-                            // probably we are in global space and there is used this
-                            property = modelBuilder.getGlobal().getProperty(iNode.getName());
-                        }
-                        if (property != null) {
-                            ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
-                        }
+                        property = current.getProperty(iNode.getName());
+                    }
+                    if (property == null && current.getParent() == null) {
+                        // probably we are in global space and there is used this
+                        property = modelBuilder.getGlobal().getProperty(iNode.getName());
+                    }
+                    if (property != null) {
+                        ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
                     }
                 }
             }

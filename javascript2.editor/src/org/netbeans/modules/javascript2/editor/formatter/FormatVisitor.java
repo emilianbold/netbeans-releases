@@ -348,7 +348,7 @@ public class FormatVisitor extends NodeVisitor {
                         previous = previous.previous();
                     }
                     assert previous != null
-                            && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
+                            && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                     tokenStream.removeToken(previous);
                 }
 
@@ -747,7 +747,6 @@ public class FormatVisitor extends NodeVisitor {
                     lastVarNode = next;
                 }
 
-                assert lastVarNode instanceof VarNode;
                 for (int j = index; j < i; j++) {
                     Node skipped = statements.get(j);
                     skipped.accept(this);
