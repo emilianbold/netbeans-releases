@@ -347,7 +347,8 @@ public class FormatVisitor extends NodeVisitor {
                             && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
                         previous = previous.previous();
                     }
-                    assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
+                    assert previous != null
+                            && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                     tokenStream.removeToken(previous);
                 }
 
@@ -486,7 +487,8 @@ public class FormatVisitor extends NodeVisitor {
                                 && toRemove.getKind() != FormatToken.Kind.BEFORE_BINARY_OPERATOR) {
                             toRemove = toRemove.previous();
                         }
-                        assert toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
 
                         toRemove = formatToken.next();
@@ -494,7 +496,8 @@ public class FormatVisitor extends NodeVisitor {
                                 && toRemove.getKind() != FormatToken.Kind.AFTER_BINARY_OPERATOR) {
                             toRemove = toRemove.next();
                         }
-                        assert toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
                     }
 
@@ -645,11 +648,6 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void handleVirtualBlock(Block block) {
-        handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
-                FormatToken.Kind.AFTER_BLOCK_START);
-    }
-
     private void handleVirtualBlock(Block block, FormatToken.Kind afterBlock) {
         handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
                 afterBlock);
@@ -685,9 +683,11 @@ public class FormatVisitor extends NodeVisitor {
                 if (formatToken == null && ts.offset() <= formatFinish) {
                     formatToken = tokenStream.getTokens().get(0);
                 }
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
-                if (afterBlock != null) {
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                if (formatToken != null) {
+                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
+                    if (afterBlock != null) {
+                        appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                    }
                 }
             }
         }
@@ -747,7 +747,6 @@ public class FormatVisitor extends NodeVisitor {
                     lastVarNode = next;
                 }
 
-                assert lastVarNode instanceof VarNode;
                 for (int j = index; j < i; j++) {
                     Node skipped = statements.get(j);
                     skipped.accept(this);

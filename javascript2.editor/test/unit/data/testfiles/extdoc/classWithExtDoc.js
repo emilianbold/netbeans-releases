@@ -472,3 +472,9 @@ function Rectangle2(width, height) {
         }
     }
 }
+
+/**
+ * @me
+ */
+function methodCCTest() {
+}

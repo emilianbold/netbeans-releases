@@ -44,14 +44,15 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.FilesViewAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
 
 /**
  * Test opening Files Tab.
@@ -74,22 +75,31 @@ public class FilesWindowTest extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(FilesWindowTest.class)
-             .enableModules(".*").clusters(".*")));
+        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
+                .addTest(FilesWindowTest.class)
+                .enableModules(".*").clusters("ide").suite());
         return suite;
     }
     
     public void prepare() {
     }
 
+    @Override
     public void initialize() {
-        new FilesTabOperator().close();
+        JMenuBarOperator jmbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        jmbo.pushMenu("Window"); //NOI18N
+        jmbo.closeSubmenus();
+        jmbo.pushMenuNoBlock("Window|Files"); //NOI18N
+        FilesTabOperator fto = new FilesTabOperator();
+        if (fto!=null) {
+            fto.close();
+        }
     }
     
     public ComponentOperator open() {
         // invoke Files from the main menu
-        new FilesViewAction().performMenu();
+        FilesViewAction fva = new FilesViewAction();
+        fva.performMenu();
         return new FilesTabOperator();
     }
     
@@ -99,8 +109,9 @@ public class FilesWindowTest extends PerformanceTestCase {
     
     @Override
     public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing()) {
             ((FilesTabOperator)testedComponentOperator).close();
+        }
     }
     
     @Override

@@ -184,7 +184,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         cancelled = true;
     }
     
