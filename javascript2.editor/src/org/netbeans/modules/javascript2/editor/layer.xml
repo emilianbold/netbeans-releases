@@ -169,17 +169,6 @@
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>
                 <folder name="text">
-                    <folder name="x-php5">
-                        <file name="PHPHints.instance">
-                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption.createStatic"/>
-                        </file>
-                    </folder>
-                </folder>
-            </folder>
-            <folder name="Hints">
-                <attr name="position" intvalue="0"/>
-                <folder name="text">
                     <folder name="javascript">
                         <file name="JSHints.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
