@@ -203,6 +203,11 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override
+    public void simple_declaration(int kind, Token token) {
+        orig.simple_declaration(kind, convertToken(token));
+    }
+    
+    @Override
     public void end_simple_declaration(Token token) {
         orig.end_simple_declaration(convertToken(token));
     }
@@ -341,5 +346,26 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     public void qualified_namespace_specifier(int kind, Token token) {
         orig.qualified_namespace_specifier(kind, convertToken(token));
     }
+
+    @Override
+    public void greedy_declarator() {
+        orig.greedy_declarator();
+    }
+
+    @Override
+    public void end_greedy_declarator() {
+        orig.end_greedy_declarator();
+    }
+
+    @Override
+    public void declarator_id() {
+        orig.declarator_id();
+    }
+
+    @Override
+    public void end_declarator_id() {
+        orig.end_declarator_id();
+    }
+
     
 }

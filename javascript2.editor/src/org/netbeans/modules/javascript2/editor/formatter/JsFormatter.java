@@ -359,6 +359,10 @@ public class JsFormatter implements Formatter {
                             i = handleSpaceBefore(tokens, i, formatContext,
                                     !CodeStyle.get(formatContext).spaceBeforeSwitchLeftBrace());
                             break;
+                        case BEFORE_WITH_BRACE:
+                            i = handleSpaceBefore(tokens, i, formatContext,
+                                    !CodeStyle.get(formatContext).spaceBeforeWithLeftBrace());
+                            break;
                         case BEFORE_FUNCTION_DECLARATION_BRACE:
                             i = handleSpaceBefore(tokens, i, formatContext,
                                     !CodeStyle.get(formatContext).spaceBeforeMethodDeclLeftBrace());
@@ -387,6 +391,7 @@ public class JsFormatter implements Formatter {
                         case AFTER_WHILE_START:
                         case AFTER_DO_START:
                         case AFTER_FOR_START:
+                        case AFTER_WITH_START:
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
@@ -983,6 +988,8 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapDoWhileStatement();
             case AFTER_FOR_START:
                 return CodeStyle.get(context).wrapForStatement();
+            case AFTER_WITH_START:
+                return CodeStyle.get(context).wrapWithStatement();
             default:
                 return null;
         }
