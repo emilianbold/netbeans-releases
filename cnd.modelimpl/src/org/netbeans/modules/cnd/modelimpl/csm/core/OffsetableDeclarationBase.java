@@ -248,6 +248,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean typedefSpecifier = false;
         private boolean typeSpecifier = false;
         private boolean inDeclSpecifiers = false;
+        private DeclaratorBuilder declaratorBuilder;
         
         
         public void setTypedefSpecifier() {
@@ -277,8 +278,43 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         public boolean isInDeclSpecifiers() {
             return inDeclSpecifiers;
         }
+
+        public void setDeclarator(DeclaratorBuilder declaratorBuilder) {
+            this.declaratorBuilder = declaratorBuilder;
+        }
+
+        public DeclaratorBuilder getDeclaratorBuilder() {
+            return declaratorBuilder;
+        }
         
     }
+    
+    public static class DeclaratorBuilder implements CsmObjectBuilder {
+
+        private int level = 0;
+        private CharSequence name;
+        
+        public void setName(CharSequence name) {
+            this.name = name;
+        }
+
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public void enterDeclarator() {
+            level++;
+        }
+        
+        public void leaveDeclarator() {
+            level--;
+        }
+        
+        public boolean isTopDeclarator() {
+            return level == 0;
+        }
+        
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
