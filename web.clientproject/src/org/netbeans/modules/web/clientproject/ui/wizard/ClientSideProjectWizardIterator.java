@@ -64,6 +64,7 @@ import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelection.LibraryVersion;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,7 +130,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         String name = (String) wiz.getProperty("name");
         dirF.mkdirs();
         FileObject dir = FileUtil.toFileObject(dirF);
-        ClientSideProjectUtilities.setupProject(dir, name);
+        AntProjectHelper helper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         resultSet.add(dir);
 
@@ -137,15 +138,23 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wiz.getProperty(SITE_TEMPLATE);
         if (siteTemplate != null) {
             // any site template selected
-            applySiteTemplate(siteTemplate, dir, handle);
+            applySiteTemplate(helper, siteTemplate, handle);
         }
+        
+        // get application dir:
+        FileObject siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(helper);
+        if (siteRootDir == null) {
+            ClientSideProjectUtilities.initializeProject(helper);
+            siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(helper);
+            assert siteRootDir != null;
+         }
 
         // js libs
         @SuppressWarnings("unchecked")
         List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries = (List<JavaScriptLibrarySelection.SelectedLibrary>) wiz.getProperty(SELECTED_LIBRARIES);
         if (selectedLibraries != null) {
             // any libraries selected
-            applyJsLibraries(selectedLibraries, (String) wiz.getProperty(LIBRARIES_FOLDER), dir, handle);
+            applyJsLibraries(selectedLibraries, (String) wiz.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
         }
 
         File parent = dirF.getParentFile();
@@ -161,11 +170,11 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         "# {0} - template name",
         "ClientSideProjectWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
     })
-    private void applySiteTemplate(SiteTemplateImplementation siteTemplate, final FileObject p, final ProgressHandle handle) {
+    private void applySiteTemplate(AntProjectHelper helper, SiteTemplateImplementation siteTemplate, final ProgressHandle handle) {
         assert !EventQueue.isDispatchThread();
         final String templateName = siteTemplate.getName();
         try {
-            siteTemplate.apply(p, handle);
+            siteTemplate.apply(helper, handle);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
@@ -177,7 +186,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         "# {0} - library name",
         "ClientSideProjectWizardIterator.msg.downloadingJsLib=Downloading {0}"
     })
-    private void applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries, String jsLibFolder, FileObject projectDir,
+    private void applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries, String jsLibFolder, FileObject siteRootDir,
             ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         FileObject librariesRoot = null;
@@ -188,7 +197,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
                 continue;
             }
             if (librariesRoot == null) {
-                librariesRoot = FileUtil.createFolder(projectDir, jsLibFolder);
+                librariesRoot = FileUtil.createFolder(siteRootDir, jsLibFolder);
             }
             LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
             Library library = libraryVersion.getLibrary();

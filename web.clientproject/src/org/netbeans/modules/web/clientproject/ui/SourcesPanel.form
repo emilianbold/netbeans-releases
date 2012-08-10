@@ -28,13 +28,13 @@
                   <Component id="jProjectFolderTextField" pref="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jEncodingComboBox" alignment="0" pref="187" max="32767" attributes="0"/>
+                          <Component id="jEncodingComboBox" alignment="0" pref="195" max="32767" attributes="0"/>
                           <Component id="jTestFolderTextField" max="32767" attributes="0"/>
-                          <Component id="jAppFolderTextField" max="32767" attributes="0"/>
+                          <Component id="jSiteRootFolderTextField" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jBrowseAppButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jBrowseSiteRootButton" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="jBrowseTestButton" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -52,8 +52,8 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jAppFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jBrowseAppButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jSiteRootFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jBrowseSiteRootButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -94,21 +94,21 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="jAppFolderTextField">
+    <Component class="javax.swing.JTextField" name="jSiteRootFolderTextField">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="SourcesPanel.jAppFolderTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="SourcesPanel.jSiteRootFolderTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="jBrowseAppButton">
+    <Component class="javax.swing.JButton" name="jBrowseSiteRootButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="SourcesPanel.jBrowseAppButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="SourcesPanel.jBrowseSiteRootButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowseAppButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowseSiteRootButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">

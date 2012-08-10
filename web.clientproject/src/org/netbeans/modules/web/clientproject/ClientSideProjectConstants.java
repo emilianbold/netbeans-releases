@@ -46,10 +46,12 @@ package org.netbeans.modules.web.clientproject;
  *
  */
 public class ClientSideProjectConstants {
-    
+
+    // misc persistent project properties:
     public static final String PROJECT_ENCODING = "files.encoding";
-    public static final String PROJECT_APP_FOLDER = "app.folder";
+    public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder";
     public static final String PROJECT_TEST_FOLDER = "test.folder";
+    public static final String PROJECT_CONFIG_FOLDER = "config.folder";
     public static final String PROJECT_SERVER = "server";
     public static final String PROJECT_START_FILE = "start.file";
     public static final String PROJECT_WEB_ROOT = "web.context.root";
@@ -57,4 +59,11 @@ public class ClientSideProjectConstants {
     public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh";
     public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection";
 
+    // default paths:
+    public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html";
+    public static final String DEFAULT_TEST_FOLDER = "test";
+    public static final String DEFAULT_CONFIG_FOLDER = "config";
+    
+    // template's descriptor file
+    public static final String TEMPLATE_DESCRIPTOR = "netbeans-project.properties";
 }

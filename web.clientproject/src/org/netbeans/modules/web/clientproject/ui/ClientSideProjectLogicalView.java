@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.ui;
 
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,21 +51,29 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -203,13 +212,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         final ClientSideProject project;
 
         public ClientSideProjectNode(Node node, ClientSideProject project) throws DataObjectNotFoundException {
-            super(node, new ClientSideProjectChildren(project, node),
-                    //The projects system wants the project in the Node's lookup.
-                    //NewAction and friends want the original Node's lookup.
-                    //Make a merge of both
-                    new ProxyLookup(new Lookup[]{Lookups.singleton(project),
-                        node.getLookup()
-                    }));
+            super(node, new ClientSideProjectChildren(project));
             this.project = project;
         }
 
@@ -235,83 +238,339 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
-    private static class ClientSideProjectChildren extends Children.Keys {
-
-        private static String REMOTE_FILES = "remote.files";
+    private static enum BasicNodes {
+        Sources,
+        Tests,
+        RemoteFiles,
+        Configuration;
+    }
+    private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
         private ClientSideProject project;
-        private Node folderNode;
+        private FileObject siteRootFolder;
+        private FileObject testsFolder;
+        private FileObject configFolder;
+        private boolean siteRootFolderEmpty;
+        private boolean testsFolderEmpty;
+        private boolean configFolderEmpty;
 
-        public ClientSideProjectChildren(ClientSideProject project, Node folderNode) {
-            this.project = project;
-            this.folderNode = folderNode;
-            this.folderNode.addNodeListener(new NodeListener() {
-                @Override
-                public void childrenAdded(NodeMemberEvent ev) {
-                    updateKeys();
-                }
-
-                @Override
-                public void childrenRemoved(NodeMemberEvent ev) {
-                    updateKeys();
-                }
-
-                @Override
-                public void childrenReordered(NodeReorderEvent ev) {
-                    updateKeys();
-                }
-
-                @Override
-                public void nodeDestroyed(NodeEvent ev) {
-                }
-
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                }
-            });
+        public ClientSideProjectChildren(ClientSideProject p) {
+            this.project = p;
+            updateKeys();
             project.getRemoteFiles().addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     updateKeys();
                 }
             });
+            siteRootFolder = getSiteRootFolder();
+            siteRootFolderEmpty = siteRootFolder != null && siteRootFolder.getChildren().length == 0;
+            testsFolder = getTestsFolder();
+            testsFolderEmpty = testsFolder != null && testsFolder.getChildren().length == 0;
+            configFolder = getConfigFolder();
+            configFolderEmpty = configFolder != null && configFolder.getChildren().length == 0;
+            project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
+                        refreshKeyInAWT(BasicNodes.Sources);
+                    }
+                    if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
+                        refreshKeyInAWT(BasicNodes.Tests);
+                    }
+                    if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
+                        refreshKeyInAWT(BasicNodes.Tests);
+                    }
+                }
+            });
+            
+            // XXX: refactor listening; it is ugly!!
+            project.getProjectDirectory().addRecursiveListener(new FileChangeAdapter() {
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    if (siteRootFolder == null) {
+                        siteRootFolder = getSiteRootFolder();
+                        if (siteRootFolder != null) {
+                            refreshKeyInAWT(BasicNodes.Sources);
+                        }
+                    } else if (siteRootFolderEmpty) {
+                        siteRootFolderEmpty = siteRootFolder.getChildren().length == 0;
+                        if (!siteRootFolderEmpty) {
+                            refreshKeyInAWT(BasicNodes.Sources);
+                        }
+                    }
+                    if (testsFolder == null) {
+                        testsFolder = getTestsFolder();
+                        if (testsFolder != null) {
+                            refreshKeyInAWT(BasicNodes.Tests);
+                        }
+                    } else if (testsFolderEmpty) {
+                        testsFolderEmpty = testsFolder.getChildren().length == 0;
+                        if (!testsFolderEmpty) {
+                            refreshKeyInAWT(BasicNodes.Tests);
+                        }
+                    }
+                    if (configFolder == null) {
+                        configFolder = getConfigFolder();
+                        if (configFolder != null) {
+                            refreshKeyInAWT(BasicNodes.Configuration);
+                        }
+                    } else if (configFolderEmpty) {
+                        configFolderEmpty = configFolder.getChildren().length == 0;
+                        if (!configFolderEmpty) {
+                            refreshKeyInAWT(BasicNodes.Configuration);
+                        }
+                    }
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    if (siteRootFolder != null && siteRootFolderEmpty) {
+                        siteRootFolderEmpty = siteRootFolder.getChildren().length == 0;
+                        if (!siteRootFolderEmpty) {
+                            refreshKeyInAWT(BasicNodes.Sources);
+                        }
+                    }
+                    if (testsFolder != null && testsFolderEmpty) {
+                        testsFolderEmpty = testsFolder.getChildren().length == 0;
+                        if (!testsFolderEmpty) {
+                            refreshKeyInAWT(BasicNodes.Tests);
+                        }
+                    }
+                    if (configFolder != null && configFolderEmpty) {
+                        configFolderEmpty = configFolder.getChildren().length == 0;
+                        if (!configFolderEmpty) {
+                            refreshKeyInAWT(BasicNodes.Configuration);
+                        }
+                    }
+                }
+
+                
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    if (siteRootFolder != null) {
+                        if (!siteRootFolder.isValid()) {
+                            siteRootFolder = null;
+                            siteRootFolderEmpty = true;
+                            refreshKeyInAWT(BasicNodes.Sources);
+                        } else {
+                            if (!siteRootFolderEmpty) {
+                                siteRootFolderEmpty = siteRootFolder.getChildren().length == 0;
+                                if (siteRootFolderEmpty) {
+                                    refreshKeyInAWT(BasicNodes.Sources);
+                                }
+                            }
+                        }
+                    }
+                    if (testsFolder != null) {
+                        if (!testsFolder.isValid()) {
+                            testsFolder = null;
+                            testsFolderEmpty = true;
+                            refreshKeyInAWT(BasicNodes.Tests);
+                        } else {
+                            if (!testsFolderEmpty) {
+                                testsFolderEmpty = testsFolder.getChildren().length == 0;
+                                if (testsFolderEmpty) {
+                                    refreshKeyInAWT(BasicNodes.Tests);
+                                }
+                            }
+                        }
+                    }
+                    if (configFolder != null) {
+                        if (!configFolder.isValid()) {
+                            configFolder = null;
+                            configFolderEmpty = true;
+                            refreshKeyInAWT(BasicNodes.Configuration);
+                        } else {
+                            if (!configFolderEmpty) {
+                                configFolderEmpty = configFolder.getChildren().length == 0;
+                                if (configFolderEmpty) {
+                                    refreshKeyInAWT(BasicNodes.Configuration);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        private FileObject getSiteRootFolder() {
+            String sources = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+            if (sources == null) {
+                return null;
+            }
+            return project.getProjectDirectory().getFileObject(sources);
         }
 
+        private FileObject getTestsFolder() {
+            String tests = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+            if (tests == null) {
+                return null;
+            }
+            return project.getProjectDirectory().getFileObject(tests);
+        }
+
+        private FileObject getConfigFolder() {
+            String config = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
+            if (config == null) {
+                return null;
+            }
+            return project.getProjectDirectory().getFileObject(config);
+        }
+
+        private void refreshKeyInAWT(final BasicNodes type) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    refreshKey(type);
+                }
+            });
+        }
+        
         @Override
-        protected Node[] createNodes(Object k) {
-            if (REMOTE_FILES.equals(k)) {
-                return new Node[]{new RemoteFilesNode(project)};
+        protected Node[] createNodes(BasicNodes k) {
+            switch (k) {
+                case Sources:
+                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER), new String[]{"nbproject", "build"}, true);
+                case Tests:
+                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER), new String[]{"nbproject", "build"}, false);
+                case RemoteFiles:
+                    return new Node[]{new RemoteFilesNode(project)};
+                case Configuration:
+                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER), new String[0], false);
+                default:
+                    return new Node[0];
+            }
+        }
+
+        private Node[] createNodeForFolder(BasicNodes type, String subfolder, String[] ignoreList, boolean showEmpty) {
+            FileObject root;
+            if (subfolder == null || subfolder.trim().length() == 0) {
+                root = project.getProjectDirectory();
             } else {
-                Node key = (Node)k;
-                if (key.getDisplayName().equals("nbproject")) {
-                    return new Node[0];
-                }
-                // Hides build folder
-                // TODO: need an API?
-                if(key.getDisplayName().equals("build")) {
-                    return new Node[0];
-                }
-                return new Node[]{key.cloneNode()};
+                root = project.getProjectDirectory().getFileObject(subfolder);
             }
+            if (root == null) {
+                if (showEmpty) {
+                    return new Node[]{new FolderFilterNode(type, ignoreList)};
+                }
+            } else {
+                DataFolder df = DataFolder.findFolder(root);
+                if (df.getChildren().length > 0) {
+                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
+                }
+            }
+            return new Node[0];
         }
-
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            updateKeys();
-        }
-
+        
         private void updateKeys() {
-            ArrayList keys = new ArrayList();
+            ArrayList<BasicNodes> keys = new ArrayList<BasicNodes>();
+            keys.add(BasicNodes.Sources);
+            keys.add(BasicNodes.Tests);
             if (!project.getRemoteFiles().getRemoteFiles().isEmpty()) {
-                keys.add(REMOTE_FILES);
+                keys.add(BasicNodes.RemoteFiles);
             }
-            keys.addAll(Arrays.asList(folderNode.getChildren().getNodes(false)));
+            keys.add(BasicNodes.Configuration);
             setKeys(keys);
         }
 
     }
 
+    private static final class FolderFilterNode extends FilterNode {
+
+        private ClientSideProject project;
+        private BasicNodes nodeType;
+        private Node iconDelegate;
+        private static final Image SOURCES_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/sources-badge.gif", true); // NOI18N
+        private static final Image TESTS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/tests-badge.gif", true); // NOI18N
+        private static final Image CONFIGS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/config-badge.gif", true); // NOI18N
+
+        public FolderFilterNode(BasicNodes nodeType, String[] ignoreList) {
+            this(nodeType, new AbstractNode(Children.LEAF), ignoreList);
+        }
+        public FolderFilterNode(BasicNodes nodeType, Node folderNode, String[] ignoreList) {
+            super(folderNode, folderNode.isLeaf() ? Children.LEAF :
+                    new FolderFilterChildren(folderNode, ignoreList));
+            this.nodeType = nodeType;
+            iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
+        }
+
+        @Override
+        public Action[] getActions(boolean arg0) {
+            // TODO: absed on nodeType provide right actions
+            return CommonProjectActions.forType(ClientSideProjectType.TYPE);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return computeIcon(nodeType, false, type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return computeIcon(nodeType, true, type);
+        }
+
+        private Image computeIcon(BasicNodes node, boolean opened, int type) {
+            Image image;
+            Image badge = null;
+            switch (nodeType) {
+                case Sources:
+                    badge = SOURCES_FILES_BADGE;
+                    break;
+                case Tests:
+                    badge = TESTS_FILES_BADGE;
+                    break;
+                case Configuration:
+                    badge = CONFIGS_FILES_BADGE;
+                    break;
+            }
+            
+            image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
+            if (badge != null) {
+                image = ImageUtilities.mergeImages(image, badge, 7, 7);
+            }
+
+            return image;        
+        }
+
+        @Override
+        public String getDisplayName() {
+            switch (nodeType) {
+                case Sources:
+                    return "Site Root";
+                case Tests:
+                    return "Unit Tests";
+                case Configuration:
+                    return "Configuration Files";
+                default:
+                    throw new AssertionError(nodeType.name());
+            }
+        }
+
+    }
+    
+    private static class FolderFilterChildren extends FilterNode.Children {
+
+        private String[] ignoreList;
+       
+        public FolderFilterChildren(Node n, String[] ignoreList) {
+            super(n);
+            this.ignoreList = ignoreList;
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            for (String ignore : ignoreList) {
+                if (key.getDisplayName().equals(ignore)) {
+                    return new Node[0];
+                }
+            }
+            return super.createNodes(key);
+        }
+        
+    }
+    
     @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
     private static final class RemoteFilesNode extends AbstractNode {
 
