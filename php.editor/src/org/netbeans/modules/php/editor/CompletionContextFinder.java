@@ -492,18 +492,6 @@ class CompletionContextFinder {
         return false;
     }
 
-    private static boolean isOneOfTokens(Token[] tokens, PHPTokenId[] tokenIds) {
-        for (Token token : tokens) {
-            TokenId searchedId = token.id();
-            for (TokenId tokenId : tokenIds) {
-                if (tokenId.equals(searchedId)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private static boolean isEachOfTokens(Token[] tokens, PHPTokenId[] tokenIds) {
         Set<PHPTokenId> set = new HashSet<PHPTokenId>();
         for (Token token : tokens) {

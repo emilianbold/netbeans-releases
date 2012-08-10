@@ -1269,7 +1269,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     public static  boolean isPhp_53(Document document) {
         final FileObject fileObject = CodeUtils.getFileObject(document);
         assert fileObject != null;
-        return fileObject != null ? CodeUtils.isPhp_53(fileObject) : false;
+        return CodeUtils.isPhp_53(fileObject);
     }
 
 
@@ -1280,7 +1280,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
-        return null;
+        return Collections.EMPTY_SET;
     }
 
     @Override
