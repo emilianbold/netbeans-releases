@@ -67,7 +67,7 @@ import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
-import org.netbeans.modules.mylyn.GetTaskDataCommand;
+import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.openide.util.NbBundle;
 
 /**

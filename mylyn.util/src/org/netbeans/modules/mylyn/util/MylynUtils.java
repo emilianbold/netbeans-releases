@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn;
+package org.netbeans.modules.mylyn.util;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;

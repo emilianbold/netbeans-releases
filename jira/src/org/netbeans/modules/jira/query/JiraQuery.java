@@ -68,7 +68,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.netbeans.modules.mylyn.PerformQueryCommand;
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.openide.util.NbBundle;
 
 /**

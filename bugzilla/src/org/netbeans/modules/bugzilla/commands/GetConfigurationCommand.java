@@ -49,7 +49,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *

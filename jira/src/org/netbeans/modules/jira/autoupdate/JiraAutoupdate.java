@@ -44,7 +44,6 @@ package org.netbeans.modules.jira.autoupdate;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
 import com.atlassian.connector.eclipse.internal.jira.core.model.ServerInfo;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Calendar;
@@ -64,7 +63,7 @@ import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

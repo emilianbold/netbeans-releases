@@ -100,7 +100,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.mylyn</code-name-base>
+                    <code-name-base>org.netbeans.modules.mylyn.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

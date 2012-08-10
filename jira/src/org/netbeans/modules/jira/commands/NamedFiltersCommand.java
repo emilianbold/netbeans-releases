@@ -50,7 +50,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *

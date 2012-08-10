@@ -63,7 +63,6 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.Resolutio
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -112,7 +111,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.ComponentComparator;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.VersionComparator;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;

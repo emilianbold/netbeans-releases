@@ -40,17 +40,15 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn;
+package org.netbeans.modules.mylyn.util;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
-import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 
@@ -58,20 +56,17 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
  *
  * @author Tomas Stupka
  */
-public class SubmitCommand extends BugtrackingCommand {
+public class GetTaskDataCommand extends BugtrackingCommand {
 
-    private final AbstractRepositoryConnector repositoryConnector;
+    private final String id;
     private final TaskRepository taskRepository;
-    private final TaskData data;
-    private RepositoryResponse rr;
-    private boolean wasNew;
-    private String stringValue;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private TaskData taskData;
 
-    public SubmitCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskData data) {
+    public GetTaskDataCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, String id) {
+        this.id = id;
         this.taskRepository = taskRepository;
         this.repositoryConnector = repositoryConnector;
-        this.data = data;
-        wasNew = data.isNew();
     }
 
     @Override
@@ -79,37 +74,26 @@ public class SubmitCommand extends BugtrackingCommand {
         
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
-            log.log(
-                Level.FINE, 
-                "executing SubmitCommand for taskData with id {0} ", // NOI18N
-                data.getTaskId());
+            log.log(Level.FINE, "executing GetTaskDataCommand for task: {0}", id); // NOI18N
         }
         
-        rr = repositoryConnector.getTaskDataHandler().postTaskData(taskRepository, data, null, new NullProgressMonitor());
-        // XXX evaluate rr
+        taskData = repositoryConnector.getTaskData(taskRepository, id, new NullProgressMonitor());
     }
 
-    public RepositoryResponse getRepositoryResponse() {
-        return rr;
+    public TaskData getTaskData() {
+        return taskData;
     }
 
     @Override
     public String toString() {
-        if(stringValue == null) {
-            StringBuilder sb = new StringBuilder();
-            if(wasNew) {
-                sb.append("SubmitCommand new issue [repository=");              // NOI18N
-                sb.append(taskRepository.getUrl());
-                sb.append("]");                                                 // NOI18N
-            } else {
-                sb.append("SubmitCommand [issue #");                            // NOI18N
-                sb.append(data.getTaskId());
-                sb.append(",repository=");                                      // NOI18N
-                sb.append(taskRepository.getUrl());
-                sb.append("]");                                                 // NOI18N
-            }
-            stringValue = sb.toString();
-        }
-        return stringValue;
+        StringBuilder sb = new StringBuilder();
+        sb.append("GetTaskDataCommand [repository=");                       // NOI18N
+        sb.append(taskRepository.getUrl());
+        sb.append(",id=");                                                  // NOI18N
+        sb.append(id);
+        sb.append("]");                                                     // NOI18N
+        return  sb.toString();
+        
     }
+
 }

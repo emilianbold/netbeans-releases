@@ -37,76 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn;
+package org.netbeans.modules.mylyn.util;
 
-import java.util.Set;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
- * Retrieves the TaskData for all given issue ids
- * 
+ *
  * @author Tomas Stupka
  */
-public class GetMultiTaskDataCommand extends BugtrackingCommand {
+public class SubmitCommand extends BugtrackingCommand {
 
     private final AbstractRepositoryConnector repositoryConnector;
     private final TaskRepository taskRepository;
-    private final Set<String> ids;
-    private final TaskDataCollector collector;
+    private final TaskData data;
+    private RepositoryResponse rr;
+    private boolean wasNew;
+    private String stringValue;
 
-    public GetMultiTaskDataCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskDataCollector collector, Set<String> ids) {
+    public SubmitCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskData data) {
         this.taskRepository = taskRepository;
         this.repositoryConnector = repositoryConnector;
-        this.ids = ids;
-        this.collector = collector;
+        this.data = data;
+        wasNew = data.isNew();
     }
 
     @Override
-    public void execute() throws CoreException {
+    public void execute() throws CoreException, IOException, MalformedURLException {
         
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
             log.log(
                 Level.FINE, 
-                "executing GetMultiTaskDataCommand for tasks: {0}", // NOI18N
-                print(ids));    
+                "executing SubmitCommand for taskData with id {0} ", // NOI18N
+                data.getTaskId());
         }
         
-        repositoryConnector.getTaskDataHandler().getMultiTaskData(
-                taskRepository,
-                ids,
-                collector,
-                new NullProgressMonitor());
+        rr = repositoryConnector.getTaskDataHandler().postTaskData(taskRepository, data, null, new NullProgressMonitor());
+        // XXX evaluate rr
     }
 
-    private String print(Set<String> ids) {
-        StringBuilder sb = new StringBuilder();
-        int i = 0;
-        for (String string : ids) {
-            sb.append(string);
-            if(++i < ids.size()) {
-                sb.append(",");                                                 // NOI18N
-            }
-        }
-        return sb.toString();
+    public RepositoryResponse getRepositoryResponse() {
+        return rr;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GetMultiTaskDataCommand [repository=");                      // NOI18N
-        sb.append(taskRepository.getUrl());
-        sb.append(",...]");                                                     // NOI18N
-        return sb.toString();
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder();
+            if(wasNew) {
+                sb.append("SubmitCommand new issue [repository=");              // NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]");                                                 // NOI18N
+            } else {
+                sb.append("SubmitCommand [issue #");                            // NOI18N
+                sb.append(data.getTaskId());
+                sb.append(",repository=");                                      // NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]");                                                 // NOI18N
+            }
+            stringValue = sb.toString();
+        }
+        return stringValue;
     }
-
 }

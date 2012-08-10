@@ -44,7 +44,7 @@ package org.netbeans.modules.ods.tasks;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.Exceptions;
 
 /**

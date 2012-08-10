@@ -93,7 +93,7 @@ import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
-import org.netbeans.modules.mylyn.SubmitCommand;
+import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;

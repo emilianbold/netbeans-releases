@@ -71,7 +71,7 @@ import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
-import org.netbeans.modules.mylyn.PerformQueryCommand;
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;

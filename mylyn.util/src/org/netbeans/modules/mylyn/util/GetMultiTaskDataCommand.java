@@ -40,36 +40,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn;
+package org.netbeans.modules.mylyn.util;
 
-import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 
 /**
- * Perfoms a repository query
+ * Retrieves the TaskData for all given issue ids
  * 
  * @author Tomas Stupka
  */
-public class PerformQueryCommand extends BugtrackingCommand {
+public class GetMultiTaskDataCommand extends BugtrackingCommand {
 
     private final AbstractRepositoryConnector repositoryConnector;
     private final TaskRepository taskRepository;
-    private final IRepositoryQuery query;
+    private final Set<String> ids;
     private final TaskDataCollector collector;
-    private IStatus status;
-    
-    public PerformQueryCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskDataCollector collector, IRepositoryQuery query) {
+
+    public GetMultiTaskDataCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskDataCollector collector, Set<String> ids) {
         this.taskRepository = taskRepository;
         this.repositoryConnector = repositoryConnector;
-        this.query = query;
+        this.ids = ids;
         this.collector = collector;
     }
 
@@ -78,32 +75,38 @@ public class PerformQueryCommand extends BugtrackingCommand {
         
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
-            Map<String, String> attrs = query.getAttributes();
             log.log(
                 Level.FINE, 
-                "executing PerformQueryCommand for query {0} on repository {1} with url \n\t{2} and parameters \n\t{3}", // NOI18N
-                new Object[] {query.getSummary(), taskRepository.getUrl(), query.getUrl(), attrs != null ? attrs : null});
+                "executing GetMultiTaskDataCommand for tasks: {0}", // NOI18N
+                print(ids));    
         }
         
-        status = repositoryConnector.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
+        repositoryConnector.getTaskDataHandler().getMultiTaskData(
+                taskRepository,
+                ids,
+                collector,
+                new NullProgressMonitor());
     }
 
-    public IStatus getStatus() {
-        return status;
+    private String print(Set<String> ids) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (String string : ids) {
+            sb.append(string);
+            if(++i < ids.size()) {
+                sb.append(",");                                                 // NOI18N
+            }
+        }
+        return sb.toString();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("PerformQueryCommand [repository=");
+        sb.append("GetMultiTaskDataCommand [repository=");                      // NOI18N
         sb.append(taskRepository.getUrl());
-        sb.append(", summary=");
-        sb.append(query.getSummary()); 
-        sb.append(", url=");
-        sb.append(query.getUrl()); // XXX won't work for all queries
-        sb.append("]");
-        return super.toString();
+        sb.append(",...]");                                                     // NOI18N
+        return sb.toString();
     }
-
 
 }

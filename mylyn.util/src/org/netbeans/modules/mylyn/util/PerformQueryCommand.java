@@ -40,41 +40,70 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.mylyn.util;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.commons.net.AbstractWebLocation;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
-import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 
 /**
- *
+ * Perfoms a repository query
+ * 
  * @author Tomas Stupka
  */
-public class ValidateCommand extends BugtrackingCommand {
+public class PerformQueryCommand extends BugtrackingCommand {
 
+    private final AbstractRepositoryConnector repositoryConnector;
     private final TaskRepository taskRepository;
-
-    public ValidateCommand(TaskRepository taskRepository) {
+    private final IRepositoryQuery query;
+    private final TaskDataCollector collector;
+    private IStatus status;
+    
+    public PerformQueryCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskDataCollector collector, IRepositoryQuery query) {
         this.taskRepository = taskRepository;
+        this.repositoryConnector = repositoryConnector;
+        this.query = query;
+        this.collector = collector;
     }
 
     @Override
-    public void execute() throws CoreException, MalformedURLException, IOException {
-        new URL(taskRepository.getRepositoryUrl());
-        AbstractWebLocation location = new TaskRepositoryLocationFactory().createWebLocation(taskRepository);
-        try {
-            JiraClientFactory.getDefault().validateConnection(location, new NullProgressMonitor());
-        } catch (JiraException ex) {
-            throw new IOException(ex);
+    public void execute() throws CoreException {
+        
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            Map<String, String> attrs = query.getAttributes();
+            log.log(
+                Level.FINE, 
+                "executing PerformQueryCommand for query {0} on repository {1} with url \n\t{2} and parameters \n\t{3}", // NOI18N
+                new Object[] {query.getSummary(), taskRepository.getUrl(), query.getUrl(), attrs != null ? attrs : null});
         }
+        
+        status = repositoryConnector.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
+
+    public IStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PerformQueryCommand [repository=");
+        sb.append(taskRepository.getUrl());
+        sb.append(", summary=");
+        sb.append(query.getSummary()); 
+        sb.append(", url=");
+        sb.append(query.getUrl()); // XXX won't work for all queries
+        sb.append("]");
+        return super.toString();
+    }
+
 
 }

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
-import org.netbeans.modules.mylyn.PerformQueryCommand;
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -60,7 +60,7 @@ import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

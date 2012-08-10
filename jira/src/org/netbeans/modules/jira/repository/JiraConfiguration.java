@@ -54,17 +54,14 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.netbeans.modules.mylyn.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.Exceptions;
 
 /**

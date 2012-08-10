@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.mylyn</code-name-base>
+            <code-name-base>org.netbeans.modules.mylyn.util</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.eclipse.core.runtime</code-name-base>
@@ -28,7 +28,7 @@
                     <run-dependency>
                         <specification-version>3.6.0</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.eclipse.equinox.common</code-name-base>
                     <build-prerequisite/>
@@ -59,7 +59,7 @@
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.ods.tasks</friend>
-                <package>org.netbeans.modules.mylyn</package>
+                <package>org.netbeans.modules.mylyn.util</package>
             </friend-packages>
         </data>
     </configuration>

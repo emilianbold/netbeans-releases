@@ -37,63 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn;
+package org.netbeans.modules.mylyn.util;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class GetTaskDataCommand extends BugtrackingCommand {
+public abstract class BugtrackingCommand {
+    private boolean failed = false;
+    private String errorMessage;
 
-    private final String id;
-    private final TaskRepository taskRepository;
-    private final AbstractRepositoryConnector repositoryConnector;
-    private TaskData taskData;
+    public abstract void execute() throws CoreException, IOException, MalformedURLException;
 
-    public GetTaskDataCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, String id) {
-        this.id = id;
-        this.taskRepository = taskRepository;
-        this.repositoryConnector = repositoryConnector;
+    public boolean hasFailed() {
+        return failed;
     }
 
-    @Override
-    public void execute() throws CoreException, IOException, MalformedURLException {
-        
-        Logger log = Logger.getLogger(this.getClass().getName());
-        if(log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "executing GetTaskDataCommand for task: {0}", id); // NOI18N
-        }
-        
-        taskData = repositoryConnector.getTaskData(taskRepository, id, new NullProgressMonitor());
+    public void setFailed(boolean failed) {
+        this.failed = failed;
     }
 
-    public TaskData getTaskData() {
-        return taskData;
+    public void setErrorMessage(String msg) {
+        this.errorMessage = msg;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GetTaskDataCommand [repository=");                       // NOI18N
-        sb.append(taskRepository.getUrl());
-        sb.append(",id=");                                                  // NOI18N
-        sb.append(id);
-        sb.append("]");                                                     // NOI18N
-        return  sb.toString();
-        
+    public String getErrorMessage() {
+        return errorMessage;
     }
-
+    
 }
