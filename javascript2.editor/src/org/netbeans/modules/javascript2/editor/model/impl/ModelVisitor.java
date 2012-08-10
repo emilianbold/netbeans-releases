@@ -498,6 +498,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         for(Type type : docParameter.getParamTypes()) {
                             param.addAssignment(new TypeUsageImpl(type.getType(), param.getOffset(), true), param.getOffset());
                         }
+                        // param occurence in the doc
+                        addDocNameOccurence(param);
                     }
                 }
             }
@@ -918,21 +920,8 @@ public class ModelVisitor extends PathNodeVisitor {
         if (property != null) {
 
             // occurence in the doc
-            JsDocumentationHolder holder = parserResult.getDocumentationHolder();
-            JsComment comment = holder.getCommentForOffset(property.getOffset(), holder.getCommentBlocks());
-            if (comment != null) {
-                for (DocParameter docParameter : comment.getParameters()) {
-                    DocIdentifier paramName = docParameter.getParamName();
-                    if (paramName.getName().equals(iNode.getName())) {
-                        ((JsObjectImpl)property).addOccurrence(DocumentationUtils.getOffsetRange(paramName));
-                    }
-                }
-            }
-            if (holder.getOccurencesMap().containsKey(iNode.getName())) {
-                for (OffsetRange offsetRange : holder.getOccurencesMap().get(iNode.getName())) {
-                    ((JsObjectImpl)property).addOccurrence(offsetRange);
-                }
-            }
+            addDocNameOccurence(((JsObjectImpl)property));
+            addDocTypesOccurence(((JsObjectImpl)property));
 
             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
         } else {
@@ -942,6 +931,30 @@ public class ModelVisitor extends PathNodeVisitor {
         }
     }
     
+    private void addDocNameOccurence(JsObjectImpl jsObject) {
+        JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+        JsComment comment = holder.getCommentForOffset(jsObject.getOffset(), holder.getCommentBlocks());
+        if (comment != null) {
+            for (DocParameter docParameter : comment.getParameters()) {
+                DocIdentifier paramName = docParameter.getParamName();
+                if (paramName.getName().equals(jsObject.getName())) {
+                    jsObject.addOccurrence(DocumentationUtils.getOffsetRange(paramName));
+                }
+            }
+        }
+    }
+
+    private void addDocTypesOccurence(JsObjectImpl jsObject) {
+        JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+        if (holder.getOccurencesMap().containsKey(jsObject.getName())) {
+            for (OffsetRange offsetRange : holder.getOccurencesMap().get(jsObject.getName())) {
+                ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
+            }
+        }
+    }
+
+
+
     private Node getPreviousFromPath(int back) {
         int size = getPath().size();
         if (size >= back) {
