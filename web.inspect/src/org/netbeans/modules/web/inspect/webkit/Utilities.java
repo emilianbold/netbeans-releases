@@ -42,6 +42,9 @@
 package org.netbeans.modules.web.inspect.webkit;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaQueryList;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
@@ -70,7 +73,12 @@ public class Utilities {
     public static org.netbeans.modules.css.model.api.Rule findRuleInStyleSheet(
             final Model sourceModel, StyleSheet styleSheet, Rule rule) {
         String selector = CSSUtils.normalizeSelector(rule.getSelector());
-        org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);
+        String mediaQuery = null;
+        if (!rule.getMedia().isEmpty()) {
+            mediaQuery = rule.getMedia().get(0).getText();
+            mediaQuery = CSSUtils.normalizeSelector(mediaQuery);
+        }
+        org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(sourceModel, styleSheet, selector, mediaQuery);
         if (result == null) {
             // rule.getSelector() sometimes returns value that differs slightly
             // from the selector in the source file. Besides whitespace changes
@@ -89,7 +97,7 @@ public class Utilities {
                 if (styleSheetText != null) {
                     selector = styleSheetText.substring(range.getStart(), range.getEnd());
                     selector = CSSUtils.normalizeSelector(selector);
-                    result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);
+                    result = findRuleInStyleSheet0(sourceModel, styleSheet, selector, mediaQuery);
                     if ((result == null) && !rule.getMedia().isEmpty() && (range.getStart() == 0)) {
                         // Workaround for a bug in WebKit (already fixed in the latest
                         // versions of Chrome, but still present in WebView)
@@ -113,7 +121,7 @@ public class Utilities {
                         if (index != -1) {
                             selector = selector.substring(index+1);
                             selector = CSSUtils.normalizeSelector(selector);
-                            result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);                            
+                            result = findRuleInStyleSheet0(sourceModel, styleSheet, selector, mediaQuery);
                         }
                     }
                 }
@@ -128,10 +136,12 @@ public class Utilities {
      * @param sourceModel source model where the rule should be found.
      * @param styleSheet style sheet where the rule should be found.
      * @param selector selector of the rule to find.
+     * @param mediaQuery media query of the rule (can be {@code null}).
      * @return source model representation of a rule with the specified selector.
      */
     private static org.netbeans.modules.css.model.api.Rule findRuleInStyleSheet0(
-            final Model sourceModel, StyleSheet styleSheet, final String selector) {
+            final Model sourceModel, StyleSheet styleSheet,
+            final String selector, final String mediaQuery) {
         final AtomicBoolean visitorCancelled = new AtomicBoolean();
         final org.netbeans.modules.css.model.api.Rule[] result =
                 new org.netbeans.modules.css.model.api.Rule[1];
@@ -144,8 +154,17 @@ public class Utilities {
                 }
                 SelectorsGroup selectorGroup = rule.getSelectorsGroup();
                 CharSequence image = sourceModel.getElementSource(selectorGroup);
+                Element parent = rule.getParent();
+                String queryListText = null;
+                if (parent instanceof Media) {
+                    Media media = (Media)parent;
+                    MediaQueryList queryList = media.getMediaQueryList();
+                    queryListText = sourceModel.getElementSource(queryList).toString();
+                    queryListText = CSSUtils.normalizeSelector(queryListText);
+                }
                 String selectorInFile = CSSUtils.normalizeSelector(image.toString());
-                if (selector.equals(selectorInFile)) {
+                if (selector.equals(selectorInFile) &&
+                        ((mediaQuery == null) ? (queryListText == null) : mediaQuery.equals(queryListText))) {
                     visitorCancelled.set(true);
                     result[0] = rule;
                 }
