@@ -696,6 +696,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/with2.js");
     }
 
+    public void testWith3Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapWithStatement, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/with3.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testWith3Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapWithStatement, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/with3.js", options, ".wrapNever.formatted");
+    }
+
+    public void testWith3IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapWithStatement, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/with3.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testWith3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/with3.js");
+    }
+
     public void testFormatting1() throws Exception {
         reformatFileContents("testfiles/formatter/formatting1.js",new IndentPrefs(4, 4));
     }
