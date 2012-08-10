@@ -139,18 +139,14 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
             calculateConfigs();
         }
         String config = p.getEvaluator().getProperty(PROP_CONFIG);
-        if(config==null || !configs.containsKey(config)) {
-            // return first in the list:
-            Collection<ClientProjectConfigurationImplementation> l = configs.values();
-            if (l.isEmpty()) {
-                return null;
-            }
-            return l.iterator().next();
-        }
-        if (configs.containsKey(config)) {
+        if (config != null && configs.containsKey(config)) {
             return configs.get(config);
         }
-        return null;
+        // return first in the list:
+        if (orderedConfigurations.isEmpty()) {
+            return null;
+        }
+        return orderedConfigurations.iterator().next();
     }
 
     @Override
