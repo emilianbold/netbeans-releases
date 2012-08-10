@@ -255,11 +255,15 @@ public final class MemoryCache {
             Persistent result = (Persistent) ((Reference) value).get();
             if (SOFT_REFS_ON_GET && result != null && value instanceof WeakReference) {
                 // switch to soft reference
-                if (STATISTIC) {switchToSoft++;}
-                value = new SoftValue<Persistent>(result, key, refQueue);
                 s.w.lock();
-                try{
-                    s.storage.put(key, value);
+                try {
+                    // check that there were no modifications
+                    Object freshValue = s.storage.get(key);
+                    if (freshValue == value) {
+                        value = new SoftValue<Persistent>(result, key, refQueue);
+                        s.storage.put(key, value);
+                        if (STATISTIC) {switchToSoft++;}
+                    }
                 } finally {
                     s.w.unlock();
                 }
