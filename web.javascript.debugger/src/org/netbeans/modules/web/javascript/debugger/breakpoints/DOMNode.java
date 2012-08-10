@@ -205,7 +205,13 @@ public final class DOMNode {
         int n = path.size();
         nodePath = new ArrayList<Node>(n);
         this.node = null;
-        Node node = dom.getDocument();
+        Node node;
+        synchronized (this) {
+            if (dom == null) {
+                return ;
+            }
+            node = dom.getDocument();
+        }
         if (node == null) {
             throw new PathNotFoundException(path.get(0).name, 0, getNodePathNames());
         }
