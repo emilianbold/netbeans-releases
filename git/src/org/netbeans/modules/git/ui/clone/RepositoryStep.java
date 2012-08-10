@@ -196,7 +196,12 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), getProgressMonitor()));
             } catch (final GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
-                message = new Message(ex.getMessage(), false);
+                String str = ex.getMessage();
+                if (str.startsWith("/")) { //NOI18N
+                    // hack for dialog wizard, it does not display the error messages otherwise
+                    str = " " + str; //NOI18N
+                }
+                message = new Message(str, false);
                 setValid(false, message);
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
