@@ -76,6 +76,7 @@ import java.util.regex.Pattern;
 import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import junit.framework.Test;
@@ -106,7 +107,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /** Checks consistency of System File System contents.
  */
@@ -114,6 +114,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
     static {
         System.setProperty("java.awt.headless", "true");
+        System.setProperty("org.openide.util.lookup.level", "FINE");
     }
 
     private static final String SFS_LB = "SystemFileSystem.localizingBundle";
@@ -770,7 +771,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         bcm.store(bcm.createEmptyFileSystem(), urls, os);
         assertNoErrors("No errors or warnings during layer parsing", h.errors);
     }
-    
+
     private static class TestHandler extends Handler {
         List<String> errors = new ArrayList<String>();
         
@@ -964,10 +965,18 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
     }
     
-    @RandomlyFails // http://netbeans.org/bugzilla/show_bug.cgi?id=215948
     public void testNbinstHost() throws Exception {
         TestHandler handler = new TestHandler();
-        Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);
+        final Logger LOG = Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl");
+        try {
+            LOG.addHandler(handler);
+            implNbinstHost(handler);
+        } finally {
+            LOG.removeHandler(handler);
+        }
+    }
+    
+    private void implNbinstHost(TestHandler handler) throws ParserConfigurationException, IOException, IllegalArgumentException, SAXException {
         FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");                
         if (libs != null) {
             final List<FileObject> schemas = new ArrayList<FileObject>(3);
@@ -1026,6 +1035,7 @@ next:       for (FileObject lib : libs.getChildren()) {
         }
         assertNoErrors("No improper nbinst URLs", handler.errors());
     }
+    
     private void validateNbinstURL(URL u, TestHandler handler, FileObject f) {
         URL u2 = FileUtil.getArchiveFile(u);
         if (u2 != null) {
