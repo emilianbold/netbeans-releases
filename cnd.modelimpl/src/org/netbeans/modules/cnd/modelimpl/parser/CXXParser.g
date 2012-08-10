@@ -523,8 +523,14 @@ simple_declaration_or_function_definition [decl_kind kind]
                 { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
                     function_definition_after_declarator
             |
-                // this is a continuation of init_declarator_list after greedy_declarator
-                initializer? ( COMMA init_declarator )* SEMICOLON
+                // this is a continuation of init_declarator_list 
+                // after greedy_declarator
+                initializer? 
+                ( 
+                    COMMA                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                    init_declarator 
+                )* 
+                SEMICOLON                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
             )
         )                                                                       {action.end_simple_declaration(input.LT(0));}
     ;
@@ -1061,7 +1067,8 @@ options { backtrack = true; }
     ;
 
 greedy_declarator returns [declarator_type_t type]
-    :
+    :                                                                           {action.greedy_declarator();}
+    (
         greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
         (ptr_operator)=>
@@ -1069,6 +1076,7 @@ greedy_declarator returns [declarator_type_t type]
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}
+    )                                                                           {action.end_greedy_declarator();}
     ;
 
 /*
@@ -1129,8 +1137,10 @@ ref_qualifier:
  * This alternative deleted, as it actually is contained in id_expression
  */
 
-declarator_id returns [ declarator_type_t type ] :
-        ELLIPSIS? id_expression //{{ type.set_ident(); }}
+declarator_id returns [ declarator_type_t type ] 
+    :                                                                           {action.declarator_id();}
+        ELLIPSIS? id_expression //{{ type.set_ident(); }}                       
+                                                                                {action.end_declarator_id();}
     ;
 
 /*
