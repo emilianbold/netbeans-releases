@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
 import org.netbeans.modules.javascript2.editor.*;
 
@@ -47,18 +47,46 @@ import org.netbeans.modules.javascript2.editor.*;
  *
  * @author Martin Fousek <marfous@oracle.com>
  */
-public class JsDocumentationCodeCompletionTest extends JsCodeComplationBase {
+public class SDocCodeCompletionTest extends JsCodeComplationBase {
 
-    public JsDocumentationCodeCompletionTest(String testName) {
+    public SDocCodeCompletionTest(String testName) {
         super(testName);
     }
   
-    public void testPrefix1() throws Exception {
-        checkPrefix("testfiles/doc/completion/cc-prefix1.js");
+    public void testAllCompletion() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @^param {int} One The first number to add", false);
     }
 
-    public void testPrefix2() throws Exception {
-        checkPrefix("testfiles/doc/completion/cc-prefix2.js");
+    public void testNoCompletion() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * ^@param {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion2() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @p^aram {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion3() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @pa^ram {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion4() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @par^am {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion5() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @para^m {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion6() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @param^ {int} One The first number to add", false);
+    }
+
+    public void testMethodCompletion1() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @m^e", false);
+    }
+
+    public void testMethodCompletion2() throws Exception {
+        checkCompletion("testfiles/sdoc/classWithSDoc.js", " * @me^", false);
     }
 
 }
