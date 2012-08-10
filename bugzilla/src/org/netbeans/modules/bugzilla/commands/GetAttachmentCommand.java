@@ -49,12 +49,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class GetAttachmentCommand extends BugzillaCommand {
+public class GetAttachmentCommand extends BugtrackingCommand {
     private BugzillaRepository repository;
     private final String id;
     private final OutputStream os;
