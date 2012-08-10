@@ -42,70 +42,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.dialogs;
+package org.netbeans.performance.j2ee.setup;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test of Add Server Instance dialog
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author  cyhelsky@netbeans.org
  */
-public class AddServerInstanceDialogTest extends PerformanceTestCase {
 
-    private String MENU, TITLE;
-    private Node thenode;
+public class J2EEBaseSetup extends PerformanceTestCase2 {
+    
 
-    /** Creates a new instance of AddServerInstanceDialog */
-    public AddServerInstanceDialogTest(String testName) {
+    public J2EEBaseSetup(java.lang.String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of AddServerInstanceDialog */
-    public AddServerInstanceDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
+    public void testCloseAllDocuments() {
+        CommonUtilities.closeAllDocuments();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(AddServerInstanceDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
     }
 
-    public void testAddServerInstanceDialog() {
-        doMeasurement();
+    public void testAddAppServer() {
+        CommonUtilities.addApplicationServer();
     }
-            
-    @Override
-    public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //"Add Server..."
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        
-        String path = Bundle.getStringTrimmed("org.netbeans.modules.server.ui.manager.Bundle", "ACSN_ServerList"); //"Servers"
-        
-        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);
-        thenode.select();
-    }
-    
-    public void prepare() {
-    }
-    
-    public ComponentOperator open() {
-        thenode.callPopup().pushMenu(MENU);
-        return new NbDialogOperator(TITLE);
-    }
-
 }
