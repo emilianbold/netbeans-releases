@@ -206,6 +206,16 @@ public final class BugtrackingManager implements LookupListener {
         }
     }
 
+    DelegatingConnector getConnector(String connectorId) {
+        assert connectorId != null;
+        for(DelegatingConnector c : getConnectors()) {
+            if(connectorId.equals(c.getID())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     private class ActivatedTCListener implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
