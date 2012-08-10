@@ -354,10 +354,18 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     return null;
                 }
 
-                // get the token before
-                docTokenSeq.movePrevious();
                 Token<? extends JsDocumentationTokenId> docToken = docTokenSeq.token();
-                prefix = docToken.text().toString();
+                if (docToken.id() == JsDocumentationTokenId.KEYWORD) {
+                    // inside the keyword tag
+                    prefix = docToken.text().toString();
+                    if (upToOffset) {
+                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                    }
+                } else {
+                    // get the token before
+                    docTokenSeq.movePrevious();
+                    prefix = docToken.text().toString();
+                }
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
