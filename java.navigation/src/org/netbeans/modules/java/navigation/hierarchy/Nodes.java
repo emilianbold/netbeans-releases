@@ -228,12 +228,11 @@ class Nodes {
             if (context) {
                 return globalActions;
             } else {
-                Action actions[]  = new Action[ 4 + globalActions.length ];
+                Action actions[]  = new Action[ 3 + globalActions.length ];
                 actions[0] = getOpenAction();
                 actions[1] = RefactoringActionsFactory.whereUsedAction();
-                actions[2] = RefactoringActionsFactory.popupSubmenuAction();
-                actions[3] = null;
-                System.arraycopy(globalActions, 0, actions, 4, globalActions.length);
+                actions[2] = null;
+                System.arraycopy(globalActions, 0, actions, 3, globalActions.length);
                 return actions;
             }
         }

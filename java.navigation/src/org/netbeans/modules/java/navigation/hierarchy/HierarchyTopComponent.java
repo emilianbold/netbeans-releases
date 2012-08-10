@@ -45,6 +45,7 @@ import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -102,10 +103,14 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -125,7 +130,7 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
     "CTL_HierarchyTopComponent=Hierarchy",
     "HINT_HierarchyTopComponent=This is a Hierarchy window"
 })
-public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener {
+public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
@@ -136,6 +141,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static HierarchyTopComponent instance;
 
     private final ExplorerManager explorerManager;
+    private final InstanceContent selectedNodes;
+    private final Lookup lookup;
     private final Box upperToolBar;
     private final BeanTreeView btw;
     private final TapPanel lowerToolBar;
@@ -146,6 +153,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
 
     public HierarchyTopComponent() {
         explorerManager = new ExplorerManager();
+        selectedNodes  = new InstanceContent();
+        lookup = new AbstractLookup(selectedNodes);
+        explorerManager.addPropertyChangeListener(this);
         initComponents();
         setName(Bundle.CTL_HierarchyTopComponent());
         setToolTipText(Bundle.HINT_HierarchyTopComponent());
@@ -186,6 +196,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -216,6 +231,22 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             
         } else if (viewTypeCombo == e.getSource()) {
             
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            for (Node n: (Node[])evt.getOldValue()) {
+                selectedNodes.remove(n);
+            }
+            for (Node n: (Node[])evt.getNewValue()) {
+                selectedNodes.add(n);
+            }
+        } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
+            NbPreferences.forModule(HierarchyTopComponent.class).putBoolean(
+                    "filtersPanelTap.expanded", //NOI18N
+                    lowerToolBar.isExpanded());
         }
     }
 
