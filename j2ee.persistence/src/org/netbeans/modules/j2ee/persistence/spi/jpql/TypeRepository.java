@@ -59,6 +59,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
@@ -132,8 +134,7 @@ public class TypeRepository implements ITypeRepository {
                 int lastPnt = fqn.lastIndexOf('.');
                 ManagedType mt = (ManagedType) (lastPnt > -1 ? mtp.getManagedType(fqn.substring(lastPnt+1)) :  mtp.getManagedType(fqn));
                 if(mt != null  && mt.getPersistentObject() != null && mt.getPersistentObject().getTypeElement()!=null && mt.getPersistentObject().getTypeElement().getQualifiedName().contentEquals(fqn)) {
-                    TypeElement te = mt.getPersistentObject().getTypeElement();
-                    types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
+                    types.put(fqn, new Type[]{new Type(TypeRepository.this, mt.getPersistentObject())});
                 } else {
                     //
                     fillTypeElement(fqn);
@@ -157,6 +158,7 @@ public class TypeRepository implements ITypeRepository {
             SourceGroup firstGroup=groups[0];
             FileObject fo=firstGroup.getRootFolder();
             ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
+            final AnnotationModelHelper helper = AnnotationModelHelper.create(classpathInfo);
             JavaSource javaSource = JavaSource.create(classpathInfo);
             try {
                 javaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -165,7 +167,8 @@ public class TypeRepository implements ITypeRepository {
                         if(mtp.isValid()) {//model will be filled with nulls  after provider invalidation and with values only if valid provider
                             TypeElement te = wc.getElements().getTypeElement(fqn);
                             if(te!=null) {
-                                types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
+                                PersistentObject po = new PersistentObject(helper, te) {};
+                                types.put(fqn, new Type[]{new Type(TypeRepository.this, po)});
                             }
                         }
                     }
