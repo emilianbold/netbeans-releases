@@ -51,14 +51,11 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -72,6 +69,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     private static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
             PhpProjectProperties.SRC_DIR,
             PhpProjectProperties.TEST_SRC_DIR,
+            PhpProjectProperties.SELENIUM_SRC_DIR,
             PhpProjectProperties.WEB_ROOT));
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -125,6 +123,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         if (currentProblems.isEmpty()) {
             // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)
             checkTestDir(currentProblems);
+            checkSeleniumDir(currentProblems);
             checkWebRoot(currentProblems);
         }
         if (currentProblems.isEmpty()) {
@@ -144,7 +143,9 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     @NbBundle.Messages({
         "ProjectPropertiesProblemProvider.invalidSrcDir.title=Invalid Source Files",
         "# {0} - src dir path",
-        "ProjectPropertiesProblemProvider.invalidSrcDir.description=The directory \"{0}\" does not exist and cannot be used for Source Files."
+        "ProjectPropertiesProblemProvider.invalidSrcDir.description=The directory \"{0}\" does not exist and cannot be used for Source Files.",
+        "# {0} - project name",
+        "ProjectPropertiesProblemProvider.invalidSrcDir.dialog.title=Select Source Files for {0}"
     })
     private void checkSrcDir(Collection<ProjectProblem> currentProblems) {
         File invalidDirectory = getInvalidDirectory(ProjectPropertiesSupport.getSourcesDirectory(project), PhpProjectProperties.SRC_DIR);
@@ -152,7 +153,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidSrcDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidSrcDir_description(invalidDirectory.getAbsolutePath()),
-                    new SourceRootProblemResolver(project));
+                    new DirectoryProblemResolver(project, PhpProjectProperties.SRC_DIR, Bundle.ProjectPropertiesProblemProvider_invalidSrcDir_dialog_title(project.getName())));
             currentProblems.add(problem);
         }
     }
@@ -169,6 +170,24 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
                     new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
+            currentProblems.add(problem);
+        }
+    }
+
+    @NbBundle.Messages({
+        "ProjectPropertiesProblemProvider.invalidSeleniumDir.title=Invalid Selenium Test Files",
+        "# {0} - selenium dir path",
+        "ProjectPropertiesProblemProvider.invalidSeleniumDir.description=The directory \"{0}\" does not exist and cannot be used for Selenium Test Files.",
+        "# {0} - project name",
+        "ProjectPropertiesProblemProvider.invalidSeleniumDir.dialog.title=Select Selenium Test Files for {0}"
+    })
+    private void checkSeleniumDir(Collection<ProjectProblem> currentProblems) {
+        File invalidDirectory = getInvalidDirectory(ProjectPropertiesSupport.getSeleniumDirectory(project, false), PhpProjectProperties.SELENIUM_SRC_DIR);
+        if (invalidDirectory != null) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_description(invalidDirectory.getAbsolutePath()),
+                    new DirectoryProblemResolver(project, PhpProjectProperties.SELENIUM_SRC_DIR, Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_dialog_title(project.getName())));
             currentProblems.add(problem);
         }
     }
@@ -219,46 +238,6 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             }
             propertyChangeSupport.firePropertyChange(PROP_PROBLEMS, null, null);
         }
-    }
-
-    //~ Inner classes
-
-    private static final class SourceRootProblemResolver implements ProjectProblemResolver {
-
-        private final PhpProject project;
-
-
-        public SourceRootProblemResolver(PhpProject project) {
-            this.project = project;
-        }
-
-        @NbBundle.Messages({
-            "# {0} - project name",
-            "SourceRootProblemResolver.dialog.title=Select Source Files for {0}",
-            "SourceRootProblemResolver.dialog.select=Select"
-        })
-        @Override
-        public Future<Result> resolve() {
-            File projectDir = FileUtil.toFile(project.getProjectDirectory());
-            File sources = new FileChooserBuilder(ProjectPropertiesProblemProvider.class)
-                    .setTitle(Bundle.SourceRootProblemResolver_dialog_title(project.getName()))
-                    .setDefaultWorkingDirectory(projectDir)
-                    .forceUseOfDefaultWorkingDirectory(true)
-                    .setDirectoriesOnly(true)
-                    .setFileHiding(true)
-                    .setApproveText(Bundle.SourceRootProblemResolver_dialog_select())
-                    .showOpenDialog();
-            if (sources == null) {
-                // no file selected
-                return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
-            }
-            // save metadata
-            String srcPath = ProjectPropertiesSupport.relativizeFile(projectDir, sources);
-            PhpProjectProperties.save(project, Collections.singletonMap(PhpProjectProperties.SRC_DIR, srcPath), Collections.<String, String>emptyMap());
-            // return unresolved state; it will change automatically once the metadata are really saved (property change will be fired)
-            return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
-        }
-
     }
 
 }
