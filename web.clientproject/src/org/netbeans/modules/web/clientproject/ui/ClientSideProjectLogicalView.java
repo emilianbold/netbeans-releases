@@ -431,33 +431,33 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER), new String[]{"nbproject", "build"}, true);
+                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER), new String[]{"nbproject", "build"});
                 case Tests:
-                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER), new String[]{"nbproject", "build"}, false);
+                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER), new String[]{"nbproject", "build"});
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
-                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER), new String[0], false);
+                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER), new String[0]);
                 default:
                     return new Node[0];
             }
         }
 
-        private Node[] createNodeForFolder(BasicNodes type, String subfolder, String[] ignoreList, boolean showEmpty) {
-            FileObject root;
-            if (subfolder == null || subfolder.trim().length() == 0) {
-                root = project.getProjectDirectory();
+        private Node[] createNodeForFolder(BasicNodes type, String subfolder, String[] ignoreList) {
+            FileObject root = null;
+            if (subfolder == null) {
+                if (type == BasicNodes.Sources) {
+                    root = project.getProjectDirectory();
+                }
             } else {
                 root = project.getProjectDirectory().getFileObject(subfolder);
             }
-            if (root == null) {
-                if (showEmpty) {
-                    return new Node[]{new FolderFilterNode(type, ignoreList)};
-                }
-            } else {
+            if (root != null) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (df.getChildren().length > 0) {
                     return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
+                } else if (type == BasicNodes.Sources) {
+                    return new Node[]{new FolderFilterNode(type, ignoreList)};
                 }
             }
             return new Node[0];
