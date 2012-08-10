@@ -212,7 +212,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         final ClientSideProject project;
 
         public ClientSideProjectNode(Node node, ClientSideProject project) throws DataObjectNotFoundException {
-            super(node, new ClientSideProjectChildren(project));
+            super(node, new ClientSideProjectChildren(project),
+                    //The projects system wants the project in the Node's lookup.
+                    //NewAction and friends want the original Node's lookup.
+                    //Make a merge of both
+                    new ProxyLookup(new Lookup[]{Lookups.singleton(project),
+                        node.getLookup()
+                    }));
             this.project = project;
         }
 
@@ -452,12 +458,14 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             } else {
                 root = project.getProjectDirectory().getFileObject(subfolder);
             }
-            if (root != null) {
-                DataFolder df = DataFolder.findFolder(root);
-                if (df.getChildren().length > 0) {
-                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
-                } else if (type == BasicNodes.Sources) {
+            if (root == null) {
+                if (type == BasicNodes.Sources) {
                     return new Node[]{new FolderFilterNode(type, ignoreList)};
+                }
+            } else {
+                DataFolder df = DataFolder.findFolder(root);
+                if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
+                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
                 }
             }
             return new Node[0];
@@ -497,8 +505,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            // TODO: absed on nodeType provide right actions
-            return CommonProjectActions.forType(ClientSideProjectType.TYPE);
+            return new Action[]{CommonProjectActions.newFileAction()};
         }
 
         @Override
