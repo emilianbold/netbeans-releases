@@ -207,6 +207,15 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(properties.getProject(), false);
         if (testDirectory != null) {
             testFolderTextField.setText(FileUtil.toFile(testDirectory).getAbsolutePath());
+        } else {
+            // XXX check invalid test files
+            String testsProperty = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.TEST_SRC_DIR);
+            if (testsProperty != null) {
+                // invalid test dir
+                File tests = ProjectPropertiesSupport.getSourceSubdirectory(project, testsProperty);
+                assert !tests.isDirectory() : "Test directory should be invalid: " + tests;
+                testFolderTextField.setText(tests.getAbsolutePath());
+            }
         }
     }
 
