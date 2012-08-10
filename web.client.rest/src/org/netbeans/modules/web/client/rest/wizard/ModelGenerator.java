@@ -132,11 +132,19 @@ class ModelGenerator {
             else {
                 myDisplayNameAlias = myIdAttribute.getName();
             }
-            myCommonModels.append(",\n initialize: function(){\n");      // NOI18N
+            myCommonModels.append(",\n toViewJson: function(){\n");      // NOI18N
+            myCommonModels.append("var result = this.toJSON();");        // NOI18N
             myCommonModels.append("// displayName property is used to render item in the list\n");// NOI18N
-            myCommonModels.append("this.set('displayName', this.get('"); // NOI18N
+            myCommonModels.append("result.displayName = this.get('");    // NOI18N
             myCommonModels.append(myDisplayNameAlias);
-            myCommonModels.append("'));\n}");                          // NOI18N
+            myCommonModels.append("');\n return result;\n},\n");         // NOI18N
+            
+            myCommonModels.append("isNew: function(){\n");           // NOI18N
+            myCommonModels.append("// default isNew() method imlementation is\n");// NOI18N
+            myCommonModels.append("// based on the 'id' initialization which\n" );// NOI18N
+            myCommonModels.append("// sometimes is required to be initialized.\n");// NOI18N
+            myCommonModels.append("// So isNew() is rediefined here\n");   // NOI18N
+            myCommonModels.append("return this.notSynced;\n}");          // NOI18N
         }
           
         String sync = overrideSync( url, httpPaths , useIds); 
@@ -188,14 +196,9 @@ class ModelGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
-        if ( builder.length()>0 || getDisplayNameAlias() != null){
+        if ( builder.length()>0 ){
             builder.insert(0, "sync: function(method, model, options){\n");         // NOI18N
             builder.append("var result = Backbone.sync(method, model, options);\n");// NOI18N
-            if ( getDisplayNameAlias()!= null ){
-                builder.append("this.set('displayName',this.get('");                // NOI18N
-                builder.append(getDisplayNameAlias());
-                builder.append("'));\n");                                           // NOI18N
-            }
             builder.append("return result;\n}\n");                                  // NOI18N
         }
         return builder.toString();

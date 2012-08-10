@@ -77,7 +77,7 @@ var app = {
         },
         
         render:function (eventName) {
-            $(this.el).html(this.template(this.model.toJSON()));
+            $(this.el).html(this.template(this.model.toViewJson()));
             return this;
         },
         
@@ -95,7 +95,7 @@ var app = {
         },
  
         render:function (eventName) {
-            $(this.el).html(this.template(this.model.toJSON()));
+            $(this.el).html(this.template(this.model.toViewJson()));
             return this;
         },
         
@@ -131,6 +131,8 @@ var app = {
                 var self = this;
                 this.collection.create(this.model,{
                     success: function(){
+                        // see isNew() method implementation in the model
+                        self.model.notSynced = false;
                         self.options.navigate(self.model.id);
                     }
                 });
