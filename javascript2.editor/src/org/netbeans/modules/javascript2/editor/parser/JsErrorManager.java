@@ -137,7 +137,7 @@ public class JsErrorManager extends ErrorManager {
                 for (ParserError error : parserErrors) {
                     errors.add(convert(error));
                 }
-                Collections.sort(errors);
+                Collections.sort(errors, JsParserError.POSITION_COMPARATOR);
                 convertedErrors = errors;
             }
         }

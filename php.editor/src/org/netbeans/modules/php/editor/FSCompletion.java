@@ -345,13 +345,10 @@ public class FSCompletion implements CompletionProvider {
         @Override
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
-                String strToAdd = null;
-
-                switch (evt.getKeyChar()) {
-                    case '/': if (strToAdd == null) strToAdd = "/";
+                String strToAdd = "/";
+                if (evt.getKeyChar() == '/') {
                     doSubstitute((JTextComponent) evt.getSource(), strToAdd, strToAdd.length() - 1);
                     evt.consume();
-                    break;
                 }
             }
         }
