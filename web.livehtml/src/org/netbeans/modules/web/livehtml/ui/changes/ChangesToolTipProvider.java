@@ -42,7 +42,7 @@
 package org.netbeans.modules.web.livehtml.ui.changes;
 
 import java.util.List;
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
 import org.openide.explorer.ExplorerManager;

@@ -43,7 +43,7 @@ package org.netbeans.modules.web.livehtml.ui.changes;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 

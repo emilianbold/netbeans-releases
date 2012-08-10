@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.domdiff;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -157,11 +157,11 @@ public class Change {
         return addedText;
     }
 
-    void increment(int inc) {
+    public void increment(int inc) {
         offset += inc;
     }
     
-    void incrementLength(int inc) {
+    public void incrementLength(int inc) {
         length += inc;
     }
 

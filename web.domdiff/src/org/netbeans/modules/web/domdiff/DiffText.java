@@ -40,56 +40,57 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.livehtml.diff;
+package org.netbeans.modules.web.domdiff;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 
-public class DiffAttribute {
-    
+public class DiffText {
+
     public static enum ChangeType {
         NONE,
         ADDED,
         REMOVED,
-        MODIFIED
+        MODIFIED,
+        ADDED_BY_MOVE,
+        REMOVED_BY_MOVE,
     }
     
     private ChangeType change;
-    private Attribute a1;
-    private Attribute a2;
-    private Origin2 origin;
+    private Element t1;
+    private Element t2;
 
-    public DiffAttribute(Attribute a1, Attribute a2, ChangeType change) {
-        this.a1 = a1;
-        this.a2 = a2;
+    public DiffText(Element t1, Element t2, ChangeType change) {
+        this.t1 = t1;
+        this.t2 = t2;
         this.change = change;
     }
-    
+
     public ChangeType getChange() {
         return change;
     }
 
-    public Attribute getPreviousAttribute() {
-        return a1;
+    public Element getPreviousText() {
+        return t1;
     }
 
-    public Attribute getCurrentAttribute() {
-        return a2;
+    public Element getCurrentText() {
+        return t2;
     }
     
-    void setOrigin(int previousDiffIndex) {
-        origin = new Origin2(previousDiffIndex);
+    /*
+     * This change is not of type ADDED but MOVED:
+     */
+    public void markAsMovedFrom(DiffText r) {
+        assert this.getChange() == ChangeType.ADDED;
+        assert r.getChange() == ChangeType.REMOVED;
+        this.change = ChangeType.ADDED_BY_MOVE;
+        r.change = ChangeType.REMOVED_BY_MOVE;
+        // do I need to store link between them here?
     }
-
-    void setOrigin(Origin2 o) {
-        this.origin = o;
-    }
-
-    Origin2 getOrigin() {
-        return origin;
-    }
-
+    
     @Override
     public String toString() {
-        return "Attr{a1=" + (a1 != null ? a1.name() : "null") + ", a2=" + (a2 != null ? a2.name() : "null") + ", " + change + '}';
+        return "Text{t1=" + t1 + ", t2=" + t2 + ", "+change+ '}';
     }
+    
 }

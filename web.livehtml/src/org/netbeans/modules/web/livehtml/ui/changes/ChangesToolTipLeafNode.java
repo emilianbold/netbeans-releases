@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.livehtml.ui.changes;
 
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 

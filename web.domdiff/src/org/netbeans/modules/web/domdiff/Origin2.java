@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.livehtml.diff;
+package org.netbeans.modules.web.domdiff;
 
 /**
  *

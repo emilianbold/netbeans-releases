@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.livehtml;
 
+import org.netbeans.modules.web.domdiff.Change;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -62,7 +63,7 @@ import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.web.livehtml.diff.Diff;
+import org.netbeans.modules.web.domdiff.Diff;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 

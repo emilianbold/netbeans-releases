@@ -70,7 +70,7 @@ import org.netbeans.modules.web.livehtml.AnalysisListener;
 import org.netbeans.modules.web.livehtml.AnalysisModel;
 import org.netbeans.modules.web.livehtml.AnalysisModelListener;
 import org.netbeans.modules.web.livehtml.AnalysisStorage;
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
 import org.netbeans.modules.web.livehtml.ReformatSupport;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;

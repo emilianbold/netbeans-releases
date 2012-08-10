@@ -56,7 +56,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.modules.web.livehtml.Analysis;
 import org.netbeans.modules.web.livehtml.AnalysisListener;
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.StackTrace;
 

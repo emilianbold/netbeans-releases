@@ -59,7 +59,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.RequestProcessor;

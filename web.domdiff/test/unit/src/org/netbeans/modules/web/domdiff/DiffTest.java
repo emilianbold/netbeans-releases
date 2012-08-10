@@ -39,13 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.diff;
+package org.netbeans.modules.web.domdiff;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,11 +68,10 @@ import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.web.livehtml.AnalysisStorage;
-import org.netbeans.modules.web.livehtml.Change;
-import org.netbeans.modules.web.livehtml.Revision;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -109,18 +109,18 @@ public class DiffTest extends NbTestCase {
         assertEquals(6, l.size());
         assertRemoveChange(34, "<table>", s1, l.get(0));
         assertRemoveChange(146, "<div>", s1, l.get(5));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
-        String res =
-            "<html>\n" +
-            "        <head></head><body><table>\n" +
-            "        <div></div>\n" +
-            "        <div></div>\n" +
-            "        <p></p>\n" +
-            "        <div></div>\n" +
-            "        <div></div>\n" +
-            "        <a></a><div>\n" +
-            "</body></html>\n";
-        assertEquals(res, r.getContent());
+//        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
+//        String res =
+//            "<html>\n" +
+//            "        <head></head><body><table>\n" +
+//            "        <div></div>\n" +
+//            "        <div></div>\n" +
+//            "        <p></p>\n" +
+//            "        <div></div>\n" +
+//            "        <div></div>\n" +
+//            "        <a></a><div>\n" +
+//            "</body></html>\n";
+//        assertEquals(res, r.getContent());
     }
     
     @Test
@@ -136,11 +136,11 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(9, "1", s1, l.get(1));
         assertAddChange(9, 1, "5", s2, l.get(2));
         assertAddChange(18, 5, "d=\"4\"", s2, l.get(3));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
-        String res =
-            "<html c=\"3\"a=\"15\" b=\"2\" d=\"4\">\n" +
-            "</html>\n";
-        assertEquals(res, r.getContent());
+//        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
+//        String res =
+//            "<html c=\"3\"a=\"15\" b=\"2\" d=\"4\">\n" +
+//            "</html>\n";
+//        assertEquals(res, r.getContent());
     }
     
     @Test
@@ -173,29 +173,29 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(250, "<span>", s1, l.get(2));
         assertRemoveChange(312, "id=\"new-form-placeholder\"", s1, l.get(3));
         assertRemoveChange(332, "<p>", s1, l.get(4));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
-        String res = 
-                "<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "    <head>\n" +
-                "        <title>Hello</title>\n" +
-                "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n" +
-                "    </head>\n" +
-                "    <body>\n" +
-                "        <div id=\"new\" data-url=\"new\"data-role=\"page\">\n" +
-                "            <div data-role=\"header\">\n" +
-                "                <h1><span>Add New Manufacturer</h1>\n" +
-                "            </div>\n" +
-                "            <div id=\"new-form-placeholder\"data-role=\"content\"><p>	\n" +
-                "            \n" +
-                "                    <table id=\"aa\">\n" +
-                "                    </table>\n" +
-                "                    \n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </body>\n" +
-                "</html>\n";
-        assertEquals(res, r.getContent());
+//        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
+//        String res = 
+//                "<!DOCTYPE html>\n" +
+//                "<html>\n" +
+//                "    <head>\n" +
+//                "        <title>Hello</title>\n" +
+//                "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n" +
+//                "    </head>\n" +
+//                "    <body>\n" +
+//                "        <div id=\"new\" data-url=\"new\"data-role=\"page\">\n" +
+//                "            <div data-role=\"header\">\n" +
+//                "                <h1><span>Add New Manufacturer</h1>\n" +
+//                "            </div>\n" +
+//                "            <div id=\"new-form-placeholder\"data-role=\"content\"><p>	\n" +
+//                "            \n" +
+//                "                    <table id=\"aa\">\n" +
+//                "                    </table>\n" +
+//                "                    \n" +
+//                "            </div>\n" +
+//                "        </div>\n" +
+//                "    </body>\n" +
+//                "</html>\n";
+//        assertEquals(res, r.getContent());
     }
     
     @Test
@@ -211,14 +211,14 @@ public class DiffTest extends NbTestCase {
 //        assertEquals(17, l.get(0).getOffset());
 //        assertEquals("<div data-role=\"page\"><div data-role=\"header\">", l.get(0).getRemovedText());
         // test that removed text was added properly:
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
-        String val = 
-                "<html>\n" +
-                "    <body><div data-role=\"page\"><div data-role=\"header\">\n" +
-                "                <h1 id=\"aaa\">Add New Manufacturer</h1>\n" +
-                "    </body>\n" +
-                "</html>\n";
-        assertEquals(val, r.getContent());
+//        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
+//        String val = 
+//                "<html>\n" +
+//                "    <body><div data-role=\"page\"><div data-role=\"header\">\n" +
+//                "                <h1 id=\"aaa\">Add New Manufacturer</h1>\n" +
+//                "    </body>\n" +
+//                "</html>\n";
+//        assertEquals(val, r.getContent());
     }
     
     @Test
@@ -250,7 +250,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(255, "<p>", s1, l.get(0));
         assertRemoveChange(335, "<span>", s1, l.get(1));
         assertRemoveChange(394, "<table id=\"aa\">", s1, l.get(2));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
+//        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
     }
     
     public static void assertAddChange(int offset, int len, String text, HtmlSource s, Change ch) {
@@ -295,9 +295,15 @@ public class DiffTest extends NbTestCase {
         return new HtmlSource(file);
     }
     
+    public static Lookup getParserLookup() {
+        Properties p = new Properties();
+        p.setProperty("add_text_nodes", "true");
+        return Lookups.fixed(p);
+    }
+    
     private OpenTag parse(HtmlSource source) throws ParseException {
         HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.getDefaultVersion());
-        HtmlParseResult result = parser.parse(source, HtmlVersion.getDefaultVersion(), AnalysisStorage.getParserLookup());
+        HtmlParseResult result = parser.parse(source, HtmlVersion.getDefaultVersion(), getParserLookup());
 //        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
 //        ElementUtils.dumpTree(result.root());
         return (OpenTag)result.root().children().iterator().next();

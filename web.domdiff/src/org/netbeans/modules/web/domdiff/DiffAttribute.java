@@ -40,57 +40,56 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.livehtml.diff;
+package org.netbeans.modules.web.domdiff;
 
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 
-public class DiffText {
-
+public class DiffAttribute {
+    
     public static enum ChangeType {
         NONE,
         ADDED,
         REMOVED,
-        MODIFIED,
-        ADDED_BY_MOVE,
-        REMOVED_BY_MOVE,
+        MODIFIED
     }
     
     private ChangeType change;
-    private Element t1;
-    private Element t2;
+    private Attribute a1;
+    private Attribute a2;
+    private Origin2 origin;
 
-    public DiffText(Element t1, Element t2, ChangeType change) {
-        this.t1 = t1;
-        this.t2 = t2;
+    public DiffAttribute(Attribute a1, Attribute a2, ChangeType change) {
+        this.a1 = a1;
+        this.a2 = a2;
         this.change = change;
     }
-
+    
     public ChangeType getChange() {
         return change;
     }
 
-    public Element getPreviousText() {
-        return t1;
+    public Attribute getPreviousAttribute() {
+        return a1;
     }
 
-    public Element getCurrentText() {
-        return t2;
+    public Attribute getCurrentAttribute() {
+        return a2;
     }
     
-    /*
-     * This change is not of type ADDED but MOVED:
-     */
-    public void markAsMovedFrom(DiffText r) {
-        assert this.getChange() == ChangeType.ADDED;
-        assert r.getChange() == ChangeType.REMOVED;
-        this.change = ChangeType.ADDED_BY_MOVE;
-        r.change = ChangeType.REMOVED_BY_MOVE;
-        // do I need to store link between them here?
+    void setOrigin(int previousDiffIndex) {
+        origin = new Origin2(previousDiffIndex);
     }
-    
+
+    void setOrigin(Origin2 o) {
+        this.origin = o;
+    }
+
+    Origin2 getOrigin() {
+        return origin;
+    }
+
     @Override
     public String toString() {
-        return "Text{t1=" + t1 + ", t2=" + t2 + ", "+change+ '}';
+        return "Attr{a1=" + (a1 != null ? a1.name() : "null") + ", a2=" + (a2 != null ? a2.name() : "null") + ", " + change + '}';
     }
-    
 }

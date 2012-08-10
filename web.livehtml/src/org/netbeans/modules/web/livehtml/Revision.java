@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.livehtml;
 
+import org.netbeans.modules.web.domdiff.Change;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.simple.JSONArray;

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.livehtml.diff;
+package org.netbeans.modules.web.domdiff;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,8 +55,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.web.livehtml.Change;
-import org.netbeans.modules.web.livehtml.diff.DiffElement.ChangeType;
+import org.netbeans.modules.web.domdiff.DiffElement.ChangeType;
 
 /**
  * Calculate differences between two DOM trees.

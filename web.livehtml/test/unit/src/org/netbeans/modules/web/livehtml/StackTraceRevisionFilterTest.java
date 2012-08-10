@@ -48,7 +48,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.web.livehtml.diff.DiffTest;
+import org.netbeans.modules.web.domdiff.DiffTest;
 import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
