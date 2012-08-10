@@ -48,14 +48,19 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,7 +68,9 @@ import org.openide.util.NbBundle;
  */
 public final class ProjectPropertiesProblemProvider implements ProjectProblemsProvider, PropertyChangeListener {
 
-    private static final Set<String> WATCHED_PROPERTIES = new HashSet<String>(Arrays.asList(
+    // set would be better but it is fine to use a list for small number of items
+    private static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
+            PhpProjectProperties.SRC_DIR,
             PhpProjectProperties.TEST_SRC_DIR));
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -112,10 +119,14 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             return currentProblems;
         }
         // check all problems
-        currentProblems = new HashSet<ProjectProblem>();
-        checkTestDir(currentProblems);
+        currentProblems = new LinkedHashSet<ProjectProblem>();
+        checkSrcDir(currentProblems);
         if (currentProblems.isEmpty()) {
-            currentProblems = Collections.<ProjectProblem>emptyList();
+            // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)
+            checkTestDir(currentProblems);
+        }
+        if (currentProblems.isEmpty()) {
+            currentProblems = Collections.<ProjectProblem>emptySet();
         }
         synchronized (problemsLock) {
             if (curEventId == eventId) {
@@ -126,6 +137,22 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         }
         assert currentProblems != null;
         return currentProblems;
+    }
+
+    @NbBundle.Messages({
+        "ProjectPropertiesProblemProvider.invalidSrcDir.title=Invalid Source Files",
+        "# {0} - src dir path",
+        "ProjectPropertiesProblemProvider.invalidSrcDir.description=The directory \"{0}\" does not exist and cannot be used for Source Files."
+    })
+    private void checkSrcDir(Collection<ProjectProblem> currentProblems) {
+        File invalidDirectory = getInvalidDirectory(ProjectPropertiesSupport.getSourcesDirectory(project), PhpProjectProperties.SRC_DIR);
+        if (invalidDirectory != null) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidSrcDir_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidSrcDir_description(invalidDirectory.getAbsolutePath()),
+                    new SourceRootProblemResolver(project));
+            currentProblems.add(problem);
+        }
     }
 
     @NbBundle.Messages({
@@ -145,6 +172,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     }
 
     private File getInvalidDirectory(FileObject directory, String propertyName) {
+        assert WATCHED_PROPERTIES.contains(propertyName) : "Property '" + propertyName + "' should be watched for changes";
         if (directory != null && directory.isValid()) {
             // ok
             return null;
@@ -167,6 +195,46 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             }
             propertyChangeSupport.firePropertyChange(PROP_PROBLEMS, null, null);
         }
+    }
+
+    //~ Inner classes
+
+    private static final class SourceRootProblemResolver implements ProjectProblemResolver {
+
+        private final PhpProject project;
+
+
+        public SourceRootProblemResolver(PhpProject project) {
+            this.project = project;
+        }
+
+        @NbBundle.Messages({
+            "# {0} - project name",
+            "SourceRootProblemResolver.dialog.title=Select Source Files for {0}",
+            "SourceRootProblemResolver.dialog.select=Select"
+        })
+        @Override
+        public Future<Result> resolve() {
+            File projectDir = FileUtil.toFile(project.getProjectDirectory());
+            File sources = new FileChooserBuilder(ProjectPropertiesProblemProvider.class)
+                    .setTitle(Bundle.SourceRootProblemResolver_dialog_title(project.getName()))
+                    .setDefaultWorkingDirectory(projectDir)
+                    .forceUseOfDefaultWorkingDirectory(true)
+                    .setDirectoriesOnly(true)
+                    .setFileHiding(true)
+                    .setApproveText(Bundle.SourceRootProblemResolver_dialog_select())
+                    .showOpenDialog();
+            if (sources == null) {
+                // no file selected
+                return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+            }
+            // save metadata
+            String srcPath = ProjectPropertiesSupport.relativizeFile(projectDir, sources);
+            PhpProjectProperties.save(project, Collections.singletonMap(PhpProjectProperties.SRC_DIR, srcPath), Collections.<String, String>emptyMap());
+            // return unresolved state; it will change automatically once the metadata are really saved (property change will be fired)
+            return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+        }
+
     }
 
 }
