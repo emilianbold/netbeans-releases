@@ -14,7 +14,9 @@ package org.netbeans.test.java.editor.formatting;
  */
 public class testReformat {
 
-    /** Creates a new instance of testReformat */
+    /**
+     * Creates a new instance of testReformat
+     */
     public testReformat() {
     }
 
@@ -41,13 +43,13 @@ public class testReformat {
         //comment
 
         /**
-         *  a     g
-         *   b   f
-         *    c e
-         *     d
-         *    c e
-         *   b   f
-         *  a     g
+         * a g
+         * b f
+         * c e
+         * d
+         * c e
+         * b f
+         * a g
          */
         return "done";
 // comments

@@ -144,9 +144,10 @@ public class EventCompleter implements Completer, Completer.Factory {
             case PROPERTY_ELEMENT:
                 break;
             default:
+                return null;
         }
         FxNode n = ctx.getInstanceElement();
-        if (n.getKind() != FxNode.Kind.Instance) {
+        if (n == null || n.getKind() != FxNode.Kind.Instance) {
             return null;
         }
         return new EventCompleter(ctx, (FxInstance)n);

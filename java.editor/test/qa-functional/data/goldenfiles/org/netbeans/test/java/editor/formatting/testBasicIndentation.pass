@@ -20,7 +20,8 @@ public class testBasicIndentation {
     }
     
     public void method(boolean cond1){
-        if(cond1)System.out.println("Hello");
+        if(cond1)
+            System.out.println("Hello");
     }
     
 }
