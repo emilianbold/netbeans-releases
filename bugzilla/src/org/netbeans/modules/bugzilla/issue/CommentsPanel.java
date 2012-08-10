@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -91,7 +92,6 @@ import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.issue.AttachmentHyperlinkSupport.Attachement;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.util.NbBundle;
@@ -126,7 +126,7 @@ public class CommentsPanel extends JPanel {
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
-                final String issueKey = BugzillaIssueFinder.getInstance().getIssueId(linkText);
+                final String issueKey = SimpleIssueFinder.getInstance().getIssueId(linkText);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
@@ -306,7 +306,7 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, BugzillaIssueFinder.getInstance());
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, SimpleIssueFinder.getInstance());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

@@ -86,7 +86,7 @@ public class CompletionContextFinder {
         if (th == null) {
             return CompletionContext.NONE;
         }
-        TokenSequence<JsTokenId> ts = th == null ? null : th.tokenSequence(JsTokenId.javascriptLanguage());
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
         if (ts == null) {
             return CompletionContext.NONE;
         }

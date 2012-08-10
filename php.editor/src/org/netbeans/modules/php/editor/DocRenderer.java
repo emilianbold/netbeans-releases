@@ -301,10 +301,10 @@ class DocRenderer {
                     String type = composeType(typeTag.getTypes());
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
                 } else if (kind instanceof LinkParsedLine) {
-                    String line = String.format("<a href=\"%s\">%s</a><br>\n", kind.getDescription(), kind.getDescription()); //NOI18N
+                    String line = String.format("<a href=\"%s\">%s</a><br>%n", kind.getDescription(), kind.getDescription()); //NOI18N
                     links.append(line);
                 } else {
-                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>\n", //NOI18N
+                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
                             processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription()));
                     others.append(oline);
                 }
@@ -321,23 +321,21 @@ class DocRenderer {
             while (index > -1 && text.length() > (index + 1)) {
                 result.append(text.substring(lastIndex, index));
                 lastIndex = index;
-                switch (text.charAt(index + 2)) {
-                    case 'l':
-                    case 's':
-                    case 'u':
-                        int endIndex = text.indexOf(' ', index);
-                        if (endIndex > -1) {
-                            String tag = text.substring(index + 1, endIndex).trim();
-                            if (LINK_TAGS.contains(tag)) {
-                                index = endIndex + 1;
-                                endIndex = text.indexOf('}', index);
-                                if (endIndex > -1) {
-                                    String link = text.substring(index, endIndex).trim();
-                                    result.append(String.format("<a href=\"%s\">%s</a>", link, link));
-                                    lastIndex = endIndex + 1;
-                                }
+                char charAt = text.charAt(index + 2);
+                if (charAt == 'l' || charAt == 's' || charAt == 'u') {
+                    int endIndex = text.indexOf(' ', index);
+                    if (endIndex > -1) {
+                        String tag = text.substring(index + 1, endIndex).trim();
+                        if (LINK_TAGS.contains(tag)) {
+                            index = endIndex + 1;
+                            endIndex = text.indexOf('}', index);
+                            if (endIndex > -1) {
+                                String link = text.substring(index, endIndex).trim();
+                                result.append(String.format("<a href=\"%s\">%s</a>", link, link));
+                                lastIndex = endIndex + 1;
                             }
                         }
+                    }
                 }
 
                 index = text.indexOf('{', index + 1);
@@ -382,7 +380,7 @@ class DocRenderer {
 
         private String composeParameterLine(PHPDocVarTypeTag param) {
             String type = composeType(param.getTypes());
-            String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+            String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>%n", //NOI18N
                     TD_STYLE, type, TD_STYLE, param.getVariable().getValue(), TD_STYLE_MAX_WIDTH, param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
             return pline;
         }

@@ -223,13 +223,10 @@ public class CodeUtils {
         return retval.substring(0, retval.length() - NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length());
     }
 
-    public static Identifier extractUnqualifiedIdentifier(NamespaceName name) {
-        if (name instanceof NamespaceName) {
-            NamespaceName namespaceName = (NamespaceName) name;
-            final List<Identifier> segments = namespaceName.getSegments();
-            if (segments.size() >= 1) {
-                return segments.get(segments.size()-1);
-            }
+    public static Identifier extractUnqualifiedIdentifier(NamespaceName namespaceName) {
+        final List<Identifier> segments = namespaceName.getSegments();
+        if (segments.size() >= 1) {
+            return segments.get(segments.size()-1);
         }
         //TODO: php5.3 !!!
         //assert false : "[php5.3] className Expression instead of Identifier"; //NOI18N

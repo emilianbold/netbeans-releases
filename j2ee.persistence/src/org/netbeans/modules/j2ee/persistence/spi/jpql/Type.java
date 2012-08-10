@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -56,6 +58,9 @@ import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,6 +69,7 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 public class Type implements IType{
     
     private final Element element;
+    private PersistentObject po;
     private final ITypeRepository repository;
     private ITypeDeclaration tDeclaration;
     private final Class<?> type;
@@ -71,6 +77,14 @@ public class Type implements IType{
     private String[] enumConstants;
     private  String typeName;
 
+    public Type(ITypeRepository typeRepository, PersistentObject po) {
+        element = null;
+        this.po = po;
+        this.repository = typeRepository;
+        type = null;
+        typeName = po.getTypeElementHandle().getQualifiedName();
+    }
+    
     public Type(ITypeRepository typeRepository, Element element){
         this.element = element;
         this.repository = typeRepository;
@@ -97,7 +111,9 @@ public class Type implements IType{
     public Iterable<IConstructor> constructors() {
         if(constructors == null){
             constructors = new ArrayList<IConstructor>();
-            if(element != null){
+            if(po!=null) {
+                collectConstructors(constructors, getTypeElement(po));
+            } else if(element != null){
                 collectConstructors(constructors, element);
             } else if (type != null) {
                 collectConstructors(constructors, type);
@@ -124,9 +140,10 @@ public class Type implements IType{
     @Override
     public String[] getEnumConstants() {
         if(enumConstants == null){
-            if(element != null){
+            Element elt = po != null ? getTypeElement(po) : element;
+            if(elt != null){
                 ArrayList<String> constants = new ArrayList<String>();
-                for( Element el:element.getEnclosedElements() ){
+                for( Element el:elt.getEnclosedElements() ){
                     if(el.getKind() == ElementKind.ENUM_CONSTANT){
                         constants.add(el.getSimpleName().toString());
                     }
@@ -154,9 +171,10 @@ public class Type implements IType{
     @Override
     public String getName() {
         if(typeName == null){
-            if(element != null){
-                if(element instanceof TypeElement) typeName = ((TypeElement) element).getQualifiedName().toString();
-                else typeName = element.asType().toString();
+            Element elt = po != null ? getTypeElement(po) : element;
+            if(elt != null){
+                if(elt instanceof TypeElement) typeName = ((TypeElement) elt).getQualifiedName().toString();
+                else typeName = elt.asType().toString();
             } else if (type != null) {
                 typeName = type.getName();
             }
@@ -174,17 +192,20 @@ public class Type implements IType{
 
     @Override
     public boolean hasAnnotation(Class<? extends Annotation> type) {
-        return element != null ? (element.getAnnotation(type) != null) : (type!=null && type.isAnnotationPresent(type));
+        Element elt = po != null ? getTypeElement(po) : element;
+        return elt != null ? (elt.getAnnotation(type) != null) : (type!=null && type.isAnnotationPresent(type));
     }
 
     @Override
     public boolean isAssignableTo(IType itype) {
         if(this == itype) return true;
         Type tp = (Type) itype;
-        if(element != null && tp.element !=null){
+        Element elt1 = po != null ? getTypeElement(po) : element;
+        Element elt2 = tp.po != null ? getTypeElement(tp.po) : tp.element;
+        if(elt1 != null && elt2 !=null){
             //interbal nb type
             String rootName = itype.getName();
-            TypeElement tEl = (TypeElement) (element instanceof TypeElement ? element : null);
+            TypeElement tEl = (TypeElement) (elt1 instanceof TypeElement ? elt1 : null);
             return haveInHierarchy(tEl, rootName);
         } else if (type !=null && tp.type!=null) {
             //java type
@@ -196,12 +217,13 @@ public class Type implements IType{
 
     @Override
     public boolean isEnum() {
-        return  (element instanceof TypeElement ? ((TypeElement)element).getKind() == ElementKind.ENUM : (type != null) && type.isEnum());
+        Element elt = po != null ? getTypeElement(po) : element;
+        return  (elt instanceof TypeElement ? ((TypeElement)elt).getKind() == ElementKind.ENUM : (type != null) && type.isEnum());
     }
 
     @Override
     public boolean isResolvable() {
-        return type!=null || element!=null;
+        return type!=null || element!=null || po!=null;
     }
 
     @Override
@@ -266,5 +288,26 @@ public class Type implements IType{
     
     ITypeRepository getTypeRepository() {
         return repository;
+    }
+    
+    private TypeElement getTypeElement(final PersistentObject po){
+        if(true)return po.getTypeElement();
+        TypeElement te = null;
+       TypeRepository tr = (TypeRepository) this.repository;
+       final AnnotationModelHelper amh = tr.getAnnotationModelHelper();
+       if(amh!=null) {
+            try {
+                te = amh.runJavaSourceTask(new Callable<TypeElement>() {
+
+                @Override
+                public TypeElement call() throws Exception {
+                    return po.getTypeElement();
+                }
+            });
+            } catch (IOException ex) {
+               
+            }
+       }
+       return te;
     }
 }
