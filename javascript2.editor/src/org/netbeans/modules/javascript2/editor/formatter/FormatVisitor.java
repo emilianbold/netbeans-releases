@@ -225,8 +225,12 @@ public class FormatVisitor extends NodeVisitor {
                     FormatToken.Kind.AFTER_WITH_PARENTHESIS, FormatToken.Kind.BEFORE_WITH_PARENTHESIS);
 
             Block body = withNode.getBody();
+
+            // mark space before left brace
+            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_WITH_BRACE);
+
             if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
+                handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
                 return null;
             }
         }
