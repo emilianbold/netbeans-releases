@@ -354,17 +354,16 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     return null;
                 }
 
-                Token<? extends JsDocumentationTokenId> docToken = docTokenSeq.token();
-                if (docToken.id() == JsDocumentationTokenId.KEYWORD) {
+                if (docTokenSeq.token().id() == JsDocumentationTokenId.KEYWORD) {
                     // inside the keyword tag
-                    prefix = docToken.text().toString();
+                    prefix = docTokenSeq.token().text().toString();
                     if (upToOffset) {
                         prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
                     }
                 } else {
                     // get the token before
                     docTokenSeq.movePrevious();
-                    prefix = docToken.text().toString();
+                    prefix = docTokenSeq.token().text().toString();
                 }
             }
         }
