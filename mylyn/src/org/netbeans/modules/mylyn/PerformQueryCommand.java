@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.mylyn;
 
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -73,7 +75,16 @@ public class PerformQueryCommand extends BugtrackingCommand {
 
     @Override
     public void execute() throws CoreException {
-        Mylyn.LOG.log(Level.FINE, "executing query {0} on repository {1} with parameters \n\t{2}", new Object[] {taskRepository.getUrl(), query.getSummary(), query.getUrl()});
+        
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            Map<String, String> attrs = query.getAttributes();
+            log.log(
+                Level.FINE, 
+                "executing PerformQueryCommand for query {0} on repository {1} with url \n\t{2} and parameters \n\t{3}", // NOI18N
+                new Object[] {query.getSummary(), taskRepository.getUrl(), query.getUrl(), attrs != null ? attrs : null});
+        }
+        
         status = repositoryConnector.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
 

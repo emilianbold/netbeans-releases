@@ -44,6 +44,9 @@ package org.netbeans.modules.mylyn;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
@@ -73,6 +76,15 @@ public class SubmitCommand extends BugtrackingCommand {
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
+        
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            log.log(
+                Level.FINE, 
+                "executing SubmitCommand for taskData with id {0} ", // NOI18N
+                data.getTaskId());
+        }
+        
         rr = repositoryConnector.getTaskDataHandler().postTaskData(taskRepository, data, null, new NullProgressMonitor());
         // XXX evaluate rr
     }

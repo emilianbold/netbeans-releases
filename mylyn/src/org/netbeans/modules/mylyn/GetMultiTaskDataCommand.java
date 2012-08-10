@@ -44,6 +44,7 @@ package org.netbeans.modules.mylyn;
 
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
@@ -71,9 +72,15 @@ public class GetMultiTaskDataCommand extends BugtrackingCommand {
 
     @Override
     public void execute() throws CoreException {
-        if(Mylyn.LOG.isLoggable(Level.FINER)) {
-            Mylyn.LOG.log(Level.FINER, "will retrieve data for issues: {0}", print(ids));    // NOI18N
+        
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            log.log(
+                Level.FINE, 
+                "executing GetMultiTaskDataCommand for tasks: {0}", // NOI18N
+                print(ids));    
         }
+        
         repositoryConnector.getTaskDataHandler().getMultiTaskData(
                 taskRepository,
                 ids,
