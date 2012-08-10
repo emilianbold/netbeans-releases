@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.MediaQueryList;
@@ -50,6 +53,7 @@ import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.SourceRange;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
@@ -78,7 +82,16 @@ public class Utilities {
             mediaQuery = rule.getMedia().get(0).getText();
             mediaQuery = CSSUtils.normalizeSelector(mediaQuery);
         }
-        org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(sourceModel, styleSheet, selector, mediaQuery);
+        Set<String> properties = new HashSet<String>();
+        for (Property property : rule.getStyle().getProperties()) {
+            String propertyName = property.getShorthandName();
+            if (propertyName == null) {
+                propertyName = property.getName();
+            }
+            properties.add(propertyName.trim());
+        }
+        org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(
+                sourceModel, styleSheet, selector, mediaQuery, properties);
         if (result == null) {
             // rule.getSelector() sometimes returns value that differs slightly
             // from the selector in the source file. Besides whitespace changes
@@ -97,7 +110,8 @@ public class Utilities {
                 if (styleSheetText != null) {
                     selector = styleSheetText.substring(range.getStart(), range.getEnd());
                     selector = CSSUtils.normalizeSelector(selector);
-                    result = findRuleInStyleSheet0(sourceModel, styleSheet, selector, mediaQuery);
+                    result = findRuleInStyleSheet0(sourceModel, styleSheet,
+                            selector, mediaQuery, properties);
                     if ((result == null) && !rule.getMedia().isEmpty() && (range.getStart() == 0)) {
                         // Workaround for a bug in WebKit (already fixed in the latest
                         // versions of Chrome, but still present in WebView)
@@ -121,7 +135,8 @@ public class Utilities {
                         if (index != -1) {
                             selector = selector.substring(index+1);
                             selector = CSSUtils.normalizeSelector(selector);
-                            result = findRuleInStyleSheet0(sourceModel, styleSheet, selector, mediaQuery);
+                            result = findRuleInStyleSheet0(sourceModel,
+                                    styleSheet, selector, mediaQuery, properties);
                         }
                     }
                 }
@@ -137,21 +152,22 @@ public class Utilities {
      * @param styleSheet style sheet where the rule should be found.
      * @param selector selector of the rule to find.
      * @param mediaQuery media query of the rule (can be {@code null}).
+     * @param properties name of the properties in the rule.
      * @return source model representation of a rule with the specified selector.
      */
     private static org.netbeans.modules.css.model.api.Rule findRuleInStyleSheet0(
             final Model sourceModel, StyleSheet styleSheet,
-            final String selector, final String mediaQuery) {
-        final AtomicBoolean visitorCancelled = new AtomicBoolean();
+            final String selector, final String mediaQuery,
+            final Set<String> properties) {
         final org.netbeans.modules.css.model.api.Rule[] result =
                 new org.netbeans.modules.css.model.api.Rule[1];
 
         styleSheet.accept(new ModelVisitor.Adapter() {
+            /** Value of the best matching rule so far. */
+            private int bestMatchValue = 0;
+
             @Override
             public void visitRule(org.netbeans.modules.css.model.api.Rule rule) {
-                if (visitorCancelled.get()) {
-                    return;
-                }
                 SelectorsGroup selectorGroup = rule.getSelectorsGroup();
                 CharSequence image = sourceModel.getElementSource(selectorGroup);
                 Element parent = rule.getParent();
@@ -165,9 +181,34 @@ public class Utilities {
                 String selectorInFile = CSSUtils.normalizeSelector(image.toString());
                 if (selector.equals(selectorInFile) &&
                         ((mediaQuery == null) ? (queryListText == null) : mediaQuery.equals(queryListText))) {
-                    visitorCancelled.set(true);
-                    result[0] = rule;
+                    int matchValue = matchValue(rule);
+                    if (matchValue >= bestMatchValue) {
+                        bestMatchValue = matchValue;
+                        result[0] = rule;
+                    }
                 }
+            }
+
+            /**
+             * Determines how well the properties in the specified rule
+             * match to the properties of the rule we are searching for.
+             * 
+             * @param rule rule to check.
+             * @return value of the matching (the higher the better match).
+             */
+            private int matchValue(org.netbeans.modules.css.model.api.Rule rule) {
+                int value = 0;
+                Declarations declarations = rule.getDeclarations();
+                if (declarations != null) {
+                    for (Declaration declaration : declarations.getDeclarations()) {
+                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                        String modelPropertyName = modelProperty.getContent().toString().trim();
+                        if (properties.contains(modelPropertyName)) {
+                            value++;
+                        }
+                    }
+                }
+                return value;
             }
         });
 
