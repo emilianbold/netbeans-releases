@@ -71,6 +71,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.AstUtilities.NewFakeASTNode;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
@@ -179,7 +180,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         // second check is here because we want to have occurences also at the end of the identifier (see issue #155574)
         return currentToken.id() == GroovyTokenId.IDENTIFIER || previousToken.id() == GroovyTokenId.IDENTIFIER;
     }
-    
+
     @Override
     public void visitVariableExpression(VariableExpression variableExpression) {
         if (leaf instanceof FieldNode) {
@@ -295,7 +296,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         } else {
             variableName = removeParentheses(visited.getTupleExpression().getType().getName());
         }
-        
+
         if (variableName.equals(fieldTypeName)) {
             occurrences.add(new FakeASTNode(visited, type.getNameWithoutPackage()));
         }
@@ -613,8 +614,11 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 occurrences.add(classNode);
             }
         } else if (leaf instanceof ClassNode) {
-            checkClassNode(classNode, ((ClassNode) leaf));
-            checkClassNode(classNode.getSuperClass(), ((ClassNode) leaf).getSuperClass());
+            checkClassNode(classNode);
+            checkClassNode(classNode.getSuperClass());
+            for (ClassNode interfaceNode : classNode.getInterfaces()) {
+                checkClassNode(interfaceNode);
+            }
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression declaration = (DeclarationExpression) leaf;
             VariableExpression variable = declaration.getVariableExpression();
@@ -631,10 +635,34 @@ public final class VariableScopeVisitor extends TypeVisitor {
         super.visitClass(classNode);
     }
 
-    private void checkClassNode(ClassNode visitedClass, ClassNode leafClass) {
-        if (AstUtilities.isCaretOnClassNode(visitedClass, doc, cursorOffset)) {
-            if (visitedClass.getName().equals(leafClass.getName())) {
-                occurrences.add(new FakeASTNode(visitedClass, visitedClass.getName()));
+    private void checkClassNode(ClassNode visitedClass) {
+        String visitedName = visitedClass.getName();
+        String visitedNameWithoutPkg = visitedClass.getNameWithoutPackage();
+
+        ClassNode classNode = ((ClassNode) leaf);
+        ClassNode superClass = classNode.getSuperClass();
+        ClassNode[] interfaces = classNode.getInterfaces();
+
+        // Check if the caret is on the ClassNode itself
+        if (AstUtilities.isCaretOnClassNode(classNode, doc, cursorOffset)) {
+            if (visitedName.equals(classNode.getName())) {
+                occurrences.add(new FakeASTNode(classNode, visitedNameWithoutPkg));
+            }
+        }
+
+        // Check if the caret is on the parent type
+        if (AstUtilities.isCaretOnClassNode(superClass, doc, cursorOffset)) {
+            if (visitedName.equals(superClass.getName())) {
+                occurrences.add(new FakeASTNode(superClass, visitedNameWithoutPkg));
+            }
+        }
+
+        // Check all implemented interfaces
+        for (ClassNode interfaceNode : interfaces) {
+            if (AstUtilities.isCaretOnClassNode(interfaceNode, doc, cursorOffset)) {
+                if (visitedName.equals(interfaceNode.getName())) {
+                    occurrences.add(new NewFakeASTNode(interfaceNode, visitedNameWithoutPkg));
+                }
             }
         }
     }

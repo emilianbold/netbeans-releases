@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.AstUtilities.NewFakeASTNode;
 import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -196,7 +197,10 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
             OffsetRange range;
-            if (astNode instanceof FakeASTNode) {
+            if (astNode instanceof NewFakeASTNode) {
+                int start = AstUtilities.getOffset(document, astNode.getLineNumber(), astNode.getColumnNumber());
+                range = AstUtilities.getNextIdentifierByName(document, ((NewFakeASTNode) astNode).getName(), start);
+            } else if (astNode instanceof FakeASTNode) {
                 String text = astNode.getText();
                 ASTNode orig = ((FakeASTNode) astNode).getOriginalNode();
                 int line = orig.getLineNumber();

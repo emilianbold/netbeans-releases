@@ -822,4 +822,27 @@ public class AstUtilities {
 
     }
 
+    public static final class NewFakeASTNode extends ASTNode {
+
+        private final ASTNode node;
+        private final String name;
+
+
+        public NewFakeASTNode(ASTNode node, String name) {
+            this.node = node;
+            this.name = name;
+            this.setLineNumber(node.getLineNumber());
+            this.setColumnNumber(node.getColumnNumber());
+            this.setLastLineNumber(node.getLastLineNumber());
+            this.setLastColumnNumber(node.getLastColumnNumber());
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public ASTNode getNode() {
+            return node;
+        }
+    }
 }
