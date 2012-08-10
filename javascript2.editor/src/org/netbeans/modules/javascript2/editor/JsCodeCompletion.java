@@ -223,8 +223,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 case OBJECT_MEMBERS:
                     completeObjectMember(request, resultList);
+                    break;
                 case DOCUMENTATION:
                     JsDocumentationCodeCompletion.complete(request, resultList);
+                    break;
                 default:
                     result = CodeCompletionResult.NONE;
             }

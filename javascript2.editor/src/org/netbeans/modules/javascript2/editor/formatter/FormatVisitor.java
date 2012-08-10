@@ -648,11 +648,6 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void handleVirtualBlock(Block block) {
-        handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
-                FormatToken.Kind.AFTER_BLOCK_START);
-    }
-
     private void handleVirtualBlock(Block block, FormatToken.Kind afterBlock) {
         handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
                 afterBlock);

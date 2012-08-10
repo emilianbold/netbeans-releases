@@ -249,7 +249,7 @@ public class JQueryCodeCompletion {
         
     }
     
-    private class SelectorContext {
+    private static class SelectorContext {
         String prefix;
         Collection<SelectorKind> kinds;
         int prefixIndex;
