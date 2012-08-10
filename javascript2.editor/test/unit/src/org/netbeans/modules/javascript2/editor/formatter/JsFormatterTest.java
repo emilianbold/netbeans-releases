@@ -45,6 +45,8 @@ import com.oracle.nashorn.ir.FunctionNode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
@@ -73,7 +75,7 @@ public class JsFormatterTest extends JsTestBase {
     public JsFormatterTest(String testName) {
         super(testName);
     }
-    
+
     public void testSimple() throws Exception {
         reformatFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
     }
@@ -1103,6 +1105,10 @@ public class JsFormatterTest extends JsTestBase {
 
         try {
             format(doc, formatter, formatStart, formatEnd, false);
+            // XXX tests fails randomly on this with JDK7
+            // XXX so we aretrying to track down whats happening
+            Logger.getAnonymousLogger().log(Level.INFO,
+                    "Space before method call setting: " + CodeStyle.get(doc).spaceBeforeMethodCallParen());
         } finally {
             for (String option : options.keySet()) {
                 prefs.put(option, FmtOptions.getDefaultAsString(option));
@@ -1113,6 +1119,7 @@ public class JsFormatterTest extends JsTestBase {
         if (suffix != null) {
             realSuffix = suffix;
         }
+ 
         assertDescriptionMatches(file, after, false, realSuffix);
     }
 }
