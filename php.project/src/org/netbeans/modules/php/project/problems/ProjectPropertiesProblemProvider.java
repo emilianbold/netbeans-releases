@@ -71,7 +71,8 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     // set would be better but it is fine to use a list for small number of items
     private static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
             PhpProjectProperties.SRC_DIR,
-            PhpProjectProperties.TEST_SRC_DIR));
+            PhpProjectProperties.TEST_SRC_DIR,
+            PhpProjectProperties.WEB_ROOT));
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final PhpProject project;
@@ -124,6 +125,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         if (currentProblems.isEmpty()) {
             // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)
             checkTestDir(currentProblems);
+            checkWebRoot(currentProblems);
         }
         if (currentProblems.isEmpty()) {
             currentProblems = Collections.<ProjectProblem>emptySet();
@@ -171,6 +173,22 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         }
     }
 
+    @NbBundle.Messages({
+        "ProjectPropertiesProblemProvider.invalidWebRoot.title=Invalid Web Root",
+        "# {0} - web root path",
+        "ProjectPropertiesProblemProvider.invalidWebRoot.description=The directory \"{0}\" does not exist and cannot be used for Web Root."
+    })
+    private void checkWebRoot(Collection<ProjectProblem> currentProblems) {
+        File invalidDirectory = getInvalidDirectory(FileUtil.toFileObject(getWebRoot()), PhpProjectProperties.WEB_ROOT);
+        if (invalidDirectory != null) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_description(invalidDirectory.getAbsolutePath()),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
+            currentProblems.add(problem);
+        }
+    }
+
     private File getInvalidDirectory(FileObject directory, String propertyName) {
         assert WATCHED_PROPERTIES.contains(propertyName) : "Property '" + propertyName + "' should be watched for changes";
         if (directory != null && directory.isValid()) {
@@ -182,8 +200,14 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             return null;
         }
         File dir = ProjectPropertiesSupport.getSubdirectory(project, project.getProjectDirectory(), propValue);
-        assert !dir.exists() : "Directory should not exists since fileobject does not exist (or is invalid)";
+        assert !dir.exists() : "Directory should not exists since fileobject does not exist (or is invalid): " + dir;
         return dir;
+    }
+
+    // XXX put somewhere and use everywhere (copied to more places)
+    private File getWebRoot() {
+        // ProjectPropertiesSupport.getWebRootDirectory(project) cannot be used since it always returns a valid fileobject (even if webroot is invalid, then sources are returned)
+        return ProjectPropertiesSupport.getSourceSubdirectory(project, ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.WEB_ROOT));
     }
 
     @Override
