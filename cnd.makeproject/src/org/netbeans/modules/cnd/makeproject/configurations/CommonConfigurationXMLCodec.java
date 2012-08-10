@@ -81,10 +81,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 
 /**
- * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
- */
-/**
+ * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
+ * 
  * Change History:
+ * V85 - NB 7.3
+ *    Configurations descriptor is divided on three parts (public, default public and private).
+ *    Actual for unmanaged projects.
+ *    Project tree and code assistance properties are moved in private area.
+ *    Initial project tree and initial code assistance properties (result of project creation) are
+ *    duplicated in the default configurations.
+ *    Default configurations is read only file that is loaded if private area is absent.
  * V84 - NB 7.2
  *    Support undefined macros
  * V83 - NB 7.2
@@ -101,7 +107,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  * V79 - NB 7.0
  *    Configuration type (CONFIGURATION_TYPE_ELEMENT) in project.xml
  * V78 - NB 7.0
- *    storing active configuration inde in private/private.xml and no longer in private/configurations.xml
+ *    storing active configuration index in private/private.xml and no longer in private/configurations.xml
  * V77 (76?) - NB 7.0
  *    Store configuration type in project.xml
  * V76 - NB 7.0
@@ -151,9 +157,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  *   INCLUDE_DIRECTORIES_ELEMENT2
  *   PATH_ELEMENT
  * V57 - NB 6.7
- *   new attributs for ITEM_ELEMENT: <item path="../gcc/zlib/examples/gzlog.h" ex="true" tool="1">
+ *   new attributes for ITEM_ELEMENT: <item path="../gcc/zlib/examples/gzlog.h" ex="true" tool="1">
  * V56 - NB 6.7
- *   Dont write ITEM_ELEMENT (item configuration) if default values
+ *   Don't write ITEM_ELEMENT (item configuration) if default values
  * V55 - NB 6.7
  *   DISK_FOLDER_ELEMENT
  *   ITEM_NAME_ELEMENT
@@ -182,7 +188,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  * V48 - 08.08.22 - NB 6.5
  *   PACK_TOPDIR_ELEMENT
  * V47 - 08.01.08 - NB 6.5
- *   Packaging persistance:
+ *   Packaging persistence:
  *   ADDITIONAL_OPTIONS_ELEMENT
  *   VALUE_ATTR
  *   MANDATORY_ATTR
@@ -207,7 +213,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  * V43 - 3.06.08 - NB 6.1
  *   Storing compiler flavor as name|flavor
  * V42 - 2.26.08 - NB 6.1
- *   Now storing required tools (c, cpp, ...) only if different from default vaue 
+ *   Now storing required tools (c, cpp, ...) only if different from default value 
  * V41:
  *   Added SOURCE_ROOT_LIST_ELEMENT
  * V40:
@@ -242,7 +248,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 84;
+    public final static int CURRENT_VERSION = 85;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -698,7 +704,8 @@ public abstract class CommonConfigurationXMLCodec
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder, boolean recursive) {
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
         if (folder.getRoot() != null) {
-            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getDiskName())); // NOI18N    
+            // Do not store source root name. See bug #216604
+            //attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getDiskName())); // NOI18N    
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         } else {
             attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N    
