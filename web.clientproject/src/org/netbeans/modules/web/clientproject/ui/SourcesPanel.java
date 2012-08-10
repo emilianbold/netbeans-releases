@@ -211,7 +211,7 @@ public class SourcesPanel extends javax.swing.JPanel {
             File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
             FileObject fo = FileUtil.toFileObject(selected);
             if (fo != null && fo.isFolder()) {
-                String rel = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                String rel = FileUtil.getRelativePath(project.getSiteRootFolder(), fo);
                 if (rel != null) {
                     tf.setText(rel);
                 }

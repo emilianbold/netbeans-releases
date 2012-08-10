@@ -74,7 +74,7 @@ public class BrowserActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (project.isUsingEmbeddedServer()) {
-            WebServer.getWebserver().start(project, project.getWebContextRoot());
+            WebServer.getWebserver().start(project, project.getSiteRootFolder(), project.getWebContextRoot());
         } else {
             WebServer.getWebserver().stop(project);
         }
@@ -84,14 +84,14 @@ public class BrowserActionProvider implements ActionProvider {
             startFile = "index.html";
         }
         if (COMMAND_RUN.equals(command)) {
-            fo = project.getProjectDirectory().getFileObject(startFile);
+            fo = project.getSiteRootFolder().getFileObject(startFile);
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
                     new DialogDescriptor.Message("Main file "+startFile+" cannot be found and opened."));
                 CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
                 cust.showCustomizer("buildConfig");
                 // try again:
-                fo = project.getProjectDirectory().getFileObject(startFile);
+                fo = project.getSiteRootFolder().getFileObject(startFile);
                 if (fo == null) {
                     return;
                 }
