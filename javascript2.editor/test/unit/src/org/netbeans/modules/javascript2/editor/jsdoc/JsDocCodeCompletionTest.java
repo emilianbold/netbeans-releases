@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import org.netbeans.modules.javascript2.editor.*;
 
@@ -47,18 +47,51 @@ import org.netbeans.modules.javascript2.editor.*;
  *
  * @author Martin Fousek <marfous@oracle.com>
  */
-public class JsDocumentationCodeCompletionTest extends JsCodeComplationBase {
+public class JsDocCodeCompletionTest extends JsCodeComplationBase {
 
-    public JsDocumentationCodeCompletionTest(String testName) {
+    public JsDocCodeCompletionTest(String testName) {
         super(testName);
     }
   
-    public void testPrefix1() throws Exception {
-        checkPrefix("testfiles/doc/completion/cc-prefix1.js");
+    public void testAllCompletion() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @^param {int} One The first number to add", false);
     }
 
-    public void testPrefix2() throws Exception {
-        checkPrefix("testfiles/doc/completion/cc-prefix2.js");
+    public void testNoCompletion() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * ^@param {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion2() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @p^aram {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion3() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @pa^ram {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion4() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @par^am {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion5() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @para^m {int} One The first number to add", false);
+    }
+
+    public void testParamCompletion6() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @param^ {int} One The first number to add", false);
+    }
+
+    public void testMethodCompletion1() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @m^e", false);
+    }
+
+    public void testMethodCompletion2() throws Exception {
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", " * @me^", false);
+    }
+
+    public void testReturnCompletion() throws Exception {
+        // @return tag should still offer @return and @returns entries
+        checkCompletion("testfiles/jsdoc/classWithJsDoc.js", "* @return^ {Shape|Coordinate} A new shape.", false);
     }
 
 }
