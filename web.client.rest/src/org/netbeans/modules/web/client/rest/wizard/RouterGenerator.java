@@ -202,7 +202,6 @@ class RouterGenerator {
             myRouters.append("this.view.close();\n}\n");                  // NOI18N
             myRouters.append("var self = this;\n");                       // NOI18N
             myRouters.append("this.view = new views.ModelView({\n");      // NOI18N
-            myRouters.append("isNew: true, \n");                          // NOI18N
             myRouters.append("model: new models.");
             myRouters.append( modelGenerator.getModelName());
             myRouters.append("(),\n");                                    // NOI18N

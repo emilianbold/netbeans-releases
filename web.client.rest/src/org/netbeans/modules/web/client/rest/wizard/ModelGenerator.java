@@ -252,7 +252,7 @@ class ModelGenerator {
         VariableElement id = null;
         for (VariableElement field : fields) {
             if ( JSClientGenerator.getAnnotation(field, ID) != null ){
-                boolean has = attributes.contains(field.getSimpleName().toString());
+                boolean has = attributes.remove(field.getSimpleName().toString());
                 if ( has ){
                     id = field;
                     break;

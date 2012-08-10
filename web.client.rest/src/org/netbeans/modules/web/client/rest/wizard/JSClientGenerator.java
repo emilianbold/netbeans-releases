@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -88,9 +89,19 @@ class JSClientGenerator {
     }
     
     enum HttpRequests {
-        POST,
-        PUT,
-        DELETE
+        POST("create"), 
+        PUT("update"),
+        DELETE("delete");
+        
+        HttpRequests(String method){
+            myBackboneMethod = method;
+        }
+        @Override
+        public String toString(){
+            return myBackboneMethod;
+        }
+        
+        private String myBackboneMethod;
     }
     
     private static final Logger LOG = Logger.getLogger( JSClientGenerator.class.getName()); 
@@ -496,9 +507,11 @@ class JSClientGenerator {
                     myTmplDetails.append("<label>Id:</label>\n");                       // NOI18N
                     myTmplDetails.append("<input type='text' id='");                    // NOI18N
                     myTmplDetails.append(idAttribute);
-                    myTmplDetails.append("' name='id' value='<%= ");                    // NOI18N
+                    myTmplDetails.append("' name='id' value='<%= typeof(");             // NOI18N
                     myTmplDetails.append(idAttribute);
-                    myTmplDetails.append(" %>' disabled />\n");                         // NOI18N
+                    myTmplDetails.append(")!== \"undefined\" ? ");                      // NOI18N
+                    myTmplDetails.append(idAttribute);
+                    myTmplDetails.append(" : \"\" %>' disabled />\n");                  // NOI18N
                 }
                 String nameAttribute = modelGenerator.getDisplayNameAlias();
                 if ( !nameAttribute.equals( idAttribute )){
