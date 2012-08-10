@@ -43,6 +43,7 @@ package org.netbeans.modules.php.doctrine2.annotations;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -54,7 +55,9 @@ import org.openide.util.Parameters;
  */
 public class AnnotationUtils {
 
-    private static final Pattern PARAM_TYPE_PATTERN = Pattern.compile("=\\s*\\\"\\s*([\\w\\\\]+)\\s*\\\""); //NOI18N
+    private static final String PARAM_TYPE_PATTERN = "\\s*=\\s*\\\"\\s*([\\w\\\\]+)\\s*\\\""; //NOI18N
+
+    private static final Pattern INLINE_TYPE_PATTERN = Pattern.compile("@([\\w\\\\]+)"); //NOI18N
 
     private AnnotationUtils() {
     }
@@ -65,12 +68,43 @@ public class AnnotationUtils {
         return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
     }
 
-    public static Map<OffsetRange, String> extractTypesFromParameters(final String line) {
+    public static Map<OffsetRange, String> extractTypesFromParameters(final String line, final Set<String> parameterNameRegexs) {
         Parameters.notNull("line", line); //NOI18N
+        Parameters.notNull("parameterNameRegexs", parameterNameRegexs); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
-        final Matcher matcher = PARAM_TYPE_PATTERN.matcher(line);
+        for (String parameterNameRegex : parameterNameRegexs) {
+            Pattern pattern = Pattern.compile(parameterNameRegex + PARAM_TYPE_PATTERN);
+            final Matcher matcher = pattern.matcher(line);
+            while (matcher.find()) {
+                int lastGroupId = matcher.groupCount();
+                result.put(new OffsetRange(matcher.start(lastGroupId), matcher.end(lastGroupId)), matcher.group(lastGroupId));
+            }
+        }
+        return result;
+    }
+
+    public static Map<OffsetRange, String> extractInlineAnnotations(final String line, final Set<String> expectedTypes) {
+        Parameters.notNull("line", line); //NOI18N
+        Parameters.notNull("expectedTypes", expectedTypes); //NOI18N
+        final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
+        final Matcher matcher = INLINE_TYPE_PATTERN.matcher(line);
         while (matcher.find()) {
-            result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
+            if (isExpectedType(matcher.group(1), expectedTypes)) {
+                result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
+            }
+        }
+        return result;
+    }
+
+    private static boolean isExpectedType(final String typeName, final Set<String> expectedTypes) {
+        Parameters.notNull("typeName", typeName); //NOI18N
+        Parameters.notNull("expectedTypes", expectedTypes); //NOI18N
+        boolean result = false;
+        for (String annotation : expectedTypes) {
+            if (typeName.toLowerCase().endsWith(annotation.toLowerCase())) {
+                result = true;
+                break;
+            }
         }
         return result;
     }

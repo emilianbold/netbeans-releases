@@ -41,24 +41,59 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 
 /**
  * GlassFish instance interface extended to contain NetBeans related attributes.
  * <p/>
- * Contains common method to access both CPAS interface and user account
- * attributes.
+ * Contains additional common method to access both CPAS interface and user
+ * account attributes and methods to handle change events listeners.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
 public interface GlassFishInstance extends ServerInstanceImplementation {
-    
+
+    /**
+     * GlassFish instance change events.
+     * <p/>
+     * Or
+     */
+    enum Event {
+        /** Store event. */
+        LOAD,
+        /** Load event. */
+        STORE,
+        /** Remove event. */
+        REMOVE;
+
+        /** Event enumeration size. */
+        static final int length = Event.values().length;
+    }
+
     /**
      * Get GlassFish local server registered with cloud.
      * <p/>
      * @return GlassFish cloud local server.
      */
     public GlassFishServer getLocalServer();
+
+    /**
+     * Add a listener to changes of the panel validity.
+     * <p/>
+     * @param listener Listener to add.
+     * @param events   Which events to listen for.
+     * @see #isValid
+     */
+    public void addChangeListener(ChangeListener listener, Event[] events);
+
+    /**
+     * Remove a listener to changes of the panel validity.
+     * <p/>
+     * @param listener Listener to remove
+     * @param events   Events from which specified listener will be removed.
+     */
+    public void removeChangeListener(ChangeListener listener, Event[] events);
 
 }

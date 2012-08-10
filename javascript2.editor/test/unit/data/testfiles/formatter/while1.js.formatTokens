@@ -37,10 +37,11 @@ FormattingToken{kind=TEXT, offset=45, text=true}
 FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=49, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=50, text=
 }
 FormattingToken{kind=WHITESPACE, offset=51, text= }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=52, text=a}
 FormattingToken{kind=WHITESPACE, offset=53, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}

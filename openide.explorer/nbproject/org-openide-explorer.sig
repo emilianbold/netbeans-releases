@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.40
+#Version 6.45.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1734,22 +1734,27 @@ meth public boolean isDragSource()
 meth public boolean isDropTarget()
 meth public boolean isExpanded(org.openide.nodes.Node)
 meth public boolean isPopupAllowed()
+meth public boolean isQuickSearchAllowed()
 meth public boolean requestFocusInWindow()
 meth public final boolean removePropertyColumn(java.lang.String)
 meth public final void addPropertyColumn(java.lang.String,java.lang.String)
 meth public final void addPropertyColumn(java.lang.String,java.lang.String,java.lang.String)
+meth public final void setPropertyColumnAttribute(java.lang.String,java.lang.String,java.lang.Object)
 meth public final void setPropertyColumnDescription(java.lang.String,java.lang.String)
 meth public int getAllowedDragActions()
 meth public int getAllowedDropActions()
 meth public int getHorizontalScrollBarPolicy()
 meth public int getTreeHorizontalScrollBarPolicy()
+meth public java.awt.Insets getInsets()
 meth public org.netbeans.swing.outline.Outline getOutline()
 meth public org.openide.explorer.view.NodePopupFactory getNodePopupFactory()
+meth public void add(java.awt.Component,java.lang.Object)
 meth public void addNotify()
 meth public void addTreeExpansionListener(javax.swing.event.TreeExpansionListener)
 meth public void collapseNode(org.openide.nodes.Node)
 meth public void expandNode(org.openide.nodes.Node)
 meth public void readSettings(java.util.Properties,java.lang.String)
+meth public void remove(java.awt.Component)
 meth public void removeNotify()
 meth public void removeTreeExpansionListener(javax.swing.event.TreeExpansionListener)
 meth public void requestFocus()
@@ -1762,12 +1767,17 @@ meth public void setNodePopupFactory(org.openide.explorer.view.NodePopupFactory)
 meth public void setPopupAllowed(boolean)
 meth public void setProperties(org.openide.nodes.Node$Property[])
  anno 0 java.lang.Deprecated()
+meth public void setQuickSearchAllowed(boolean)
+meth public void setQuickSearchTableFilter(org.openide.explorer.view.QuickSearchTableFilter,boolean)
 meth public void setTreeHorizontalScrollBarPolicy(int)
 meth public void setTreeSortable(boolean)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
-hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,logger,manager,managerListener,managerLock,model,outline,popupFactory,popupListener,rowModel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
+hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,logger,manager,managerListener,managerLock,model,outline,popupFactory,popupListener,qsKeyListener,quickSearch,rowModel,searchConstraints,searchPanel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
 hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineScrollLayout,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,ScrollListener,Selection,TableSelectionListener
+
+CLSS public abstract interface org.openide.explorer.view.QuickSearchTableFilter
+meth public abstract java.lang.String getStringValueAt(int,int)
 
 CLSS public org.openide.explorer.view.TableView
 cons public init()
@@ -1802,6 +1812,7 @@ fld protected javax.swing.JTable treeTable
 meth protected org.openide.explorer.view.NodeTreeModel createModel()
 meth protected void showSelection(javax.swing.tree.TreePath[])
 meth public boolean isExpanded(org.openide.nodes.Node)
+meth public boolean isQuickSearchAllowed()
 meth public boolean requestFocusInWindow()
 meth public final int getTableAutoResizeMode()
 meth public final int getTableColumnPreferredWidth(int)
@@ -1809,11 +1820,14 @@ meth public final int getTreePreferredWidth()
 meth public final void setTableAutoResizeMode(int)
 meth public final void setTableColumnPreferredWidth(int,int)
 meth public final void setTreePreferredWidth(int)
+meth public java.awt.Insets getInsets()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
+meth public void add(java.awt.Component,java.lang.Object)
 meth public void addMouseListener(java.awt.event.MouseListener)
 meth public void addNotify()
 meth public void collapseNode(org.openide.nodes.Node)
 meth public void expandNode(org.openide.nodes.Node)
+meth public void remove(java.awt.Component)
 meth public void removeMouseListener(java.awt.event.MouseListener)
 meth public void removeNotify()
 meth public void requestFocus()
@@ -1823,12 +1837,13 @@ meth public void setDropTarget(boolean)
 meth public void setHorizontalScrollBarPolicy(int)
 meth public void setPopupAllowed(boolean)
 meth public void setProperties(org.openide.nodes.Node$Property[])
+meth public void setQuickSearchAllowed(boolean)
 meth public void setRowHeader(javax.swing.JViewport)
 meth public void setSelectionMode(int)
 meth public void setVerticalScrollBarPolicy(int)
 supr org.openide.explorer.view.BeanTreeView
-hfds COLUMNS_ICON,SORT_ASC_ICON,SORT_DESC_ICON,accessContext,allowHideColumns,allowSortingByColumn,colsButton,defaultHeaderRenderer,defaultTreeActionListener,hScrollBar,hideHScrollBar,listener,scrollPane,sortedNodeTreeModel,tableModel,tableMouseListener,treeColumnProperty,treeColumnWidth,treeTableParent
-hcls AccessibleTreeTableView,CompoundScrollPane,DefaultTreeAction,ScrollListener,SortedNodeTreeModel,SortingHeaderRenderer,TreeColumnProperty
+hfds COLUMNS_ICON,SORT_ASC_ICON,SORT_DESC_ICON,accessContext,allowHideColumns,allowSortingByColumn,colsButton,defaultHeaderRenderer,defaultTreeActionListener,hScrollBar,hideHScrollBar,listener,quickSearch,scrollPane,searchConstraints,searchpanel,sortedNodeTreeModel,tableModel,tableMouseListener,treeColumnProperty,treeColumnWidth,treeTableParent
+hcls AccessibleTreeTableView,CompoundScrollPane,DefaultTreeAction,ScrollListener,SearchScrollPaneLayout,SortedNodeTreeModel,SortingHeaderRenderer,TreeColumnProperty
 
 CLSS public abstract org.openide.explorer.view.TreeView
 cons public init()
@@ -1852,10 +1867,12 @@ meth public int getAllowedDragActions()
 meth public int getAllowedDropActions()
 meth public int getSelectionMode()
 meth public java.awt.Insets getInsets()
+meth public void add(java.awt.Component,java.lang.Object)
 meth public void addNotify()
 meth public void collapseNode(org.openide.nodes.Node)
 meth public void expandAll()
 meth public void expandNode(org.openide.nodes.Node)
+meth public void remove(java.awt.Component)
 meth public void removeNotify()
 meth public void requestFocus()
 meth public void setAllowedDragActions(int)
@@ -1869,11 +1886,12 @@ meth public void setQuickSearchAllowed(boolean)
 meth public void setRootVisible(boolean)
 meth public void setSelectionMode(int)
 meth public void setUseSubstringInQuickSearch(boolean)
+ anno 0 java.lang.Deprecated()
 meth public void updateUI()
 meth public void validate()
 supr javax.swing.JScrollPane
-hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,allowedQuickSearch,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,lastSearchField,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchKeyAdapter,quickSearchUsingSubstring,removedNodeWasSelected,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
-hcls CursorR,DummyTransferHandler,ExplorerScrollPaneLayout,ExplorerTree,PopupAdapter,PopupSupport,SearchPanel,TreePropertyListener,VisualizerHolder
+hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,lastSearchField,manager,managerListener,origSelectionPaths,popupListener,qs,removedNodeWasSelected,searchConstraints,searchPanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
+hcls CursorR,DummyTransferHandler,ExplorerScrollPaneLayout,ExplorerTree,PopupAdapter,PopupSupport,TreePropertyListener,VisualizerHolder
 
 CLSS public org.openide.explorer.view.Visualizer
 meth public static javax.swing.tree.TreeNode findVisualizer(org.openide.nodes.Node)
@@ -1881,12 +1899,15 @@ meth public static org.openide.nodes.Node findNode(java.lang.Object)
 supr java.lang.Object
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()

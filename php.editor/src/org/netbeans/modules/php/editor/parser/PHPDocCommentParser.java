@@ -213,7 +213,7 @@ public class PHPDocCommentParser {
             }
             return new PHPDocTag(start, end, type, description);
         } else {
-            return new PHPDocTypeTag(start, end, type, type.getDescription(), resolveTypes(types, start + 1));
+            return new PHPDocTypeTag(start, end, type, type.getDescription(), resolveTypes(types, start + (type.startsWithAnnotation() ? 1 : 0)));
         }
     }
 
@@ -371,6 +371,8 @@ public class PHPDocCommentParser {
                     }
                 }
             }
+        } else if (line.contains("@")) {
+            result = fetchCustomAnnotationLine(line);
         }
         return result;
     }

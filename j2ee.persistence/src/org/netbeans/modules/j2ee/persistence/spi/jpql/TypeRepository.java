@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.jpql.TypeHelper;
+import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -127,7 +128,16 @@ public class TypeRepository implements ITypeRepository {
             if(IType.UNRESOLVABLE_TYPE.equals(fqn)){
                 types.put(fqn, new Type[] {new Type(this, fqn)});
             } else {
-                fillTypeElement(fqn);
+                //try to find in managed
+                int lastPnt = fqn.lastIndexOf('.');
+                ManagedType mt = (ManagedType) (lastPnt > -1 ? mtp.getManagedType(fqn.substring(lastPnt+1)) :  mtp.getManagedType(fqn));
+                if(mt != null  && mt.getPersistentObject() != null && mt.getPersistentObject().getTypeElement()!=null && mt.getPersistentObject().getTypeElement().getQualifiedName().contentEquals(fqn)) {
+                    TypeElement te = mt.getPersistentObject().getTypeElement();
+                    types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
+                } else {
+                    //
+                    fillTypeElement(fqn);
+                }
             }
             ret = types.get(fqn);
         }

@@ -62,6 +62,11 @@ public final class FxEvent extends FxDefinition {
     private ElementHandle<TypeElement>  eventType;
 
     /**
+     * True, if the event is a property change
+     */
+    private boolean propertyChange;
+
+    /**
      * Name of the event object class
      * 
      * @return event object class name
@@ -84,6 +89,10 @@ public final class FxEvent extends FxDefinition {
     FxEvent(String name) {
         super(name);
     }
+    
+    void setPropertyChange(boolean change) {
+        this.propertyChange = change;
+    }
 
     void setEventClassName(String eventClassName) {
         this.eventClassName = eventClassName;
@@ -101,6 +110,23 @@ public final class FxEvent extends FxDefinition {
                 append("; type: ").append(getEventType());
         sb.append("]");
         return sb.toString();
+    }
+    
+    public boolean isPropertyChange() {
+        return propertyChange;
+    }
+    
+    public String getPropertyName() {
+        if (!propertyChange) {
+            return null;
+        }
+        String s = getName();
+        return s.substring(0, s.length() - 6); // minus Change at the end.
+    }
+    
+    public String getSymbol() {
+        String s = getName();
+        return "on" + Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
     
     /**

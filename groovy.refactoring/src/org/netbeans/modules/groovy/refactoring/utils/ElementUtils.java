@@ -44,12 +44,15 @@ package org.netbeans.modules.groovy.refactoring.utils;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -76,14 +79,30 @@ public final class ElementUtils {
             (node instanceof ClassExpression) ||
             FindTypeUtils.isCaretOnClassNode(path, doc, fo, caret)) {
             return ElementKind.CLASS;
-        } else if ((node instanceof MethodNode) ||
-                  ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression))) {
+        } else if ((node instanceof MethodNode)) {
+            if ("<init>".equals(((MethodNode) node).getName())) { // NOI18N
+                return ElementKind.CONSTRUCTOR;
+            }
             return ElementKind.METHOD;
+        } else if ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression)) {
+            return ElementKind.METHOD;
+        } else if (node instanceof ConstructorCallExpression) {
+            return ElementKind.CONSTRUCTOR;
         } else if (node instanceof FieldNode) {
             return ElementKind.FIELD;
         } else if (node instanceof PropertyNode) {
             return ElementKind.PROPERTY;
         } else if (node instanceof VariableExpression) {
+            Variable variable = ((VariableExpression) node).getAccessedVariable();
+            if (variable instanceof DynamicVariable) {
+                // Not sure now if this is 100% correct, but if we have VariableExpression
+                // like "Book^mark.get()" the accessed variable Bookmark (which is the type
+                // name) is marked as DynamicVariable and in that case we want to return
+                // different ElementKind in oposite to usage of 'normal' variables
+                return ElementKind.CLASS;
+            }
+            return ElementKind.VARIABLE;
+        } else if (node instanceof DeclarationExpression) {
             return ElementKind.VARIABLE;
         }
         return ElementKind.OTHER;
@@ -132,6 +151,8 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getType();
             }
+        } else if (node instanceof ConstructorCallExpression) {
+            return ((ConstructorCallExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"); // NOI18N
     }
@@ -142,6 +163,9 @@ public final class ElementUtils {
             name = ((ClassNode) node).getNameWithoutPackage();
         } else if (node instanceof MethodNode) {
             name = ((MethodNode) node).getName();
+            if ("<init>".equals(name)) { // NOI18N
+                name = getDeclaringClassNameWithoutPackage(node);
+            }
         } else if (node instanceof FieldNode) {
             name = ((FieldNode) node).getName();
         } else if (node instanceof PropertyNode) {
@@ -163,6 +187,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             name = ((ConstantExpression) node).getText();
+        } else if (node instanceof ConstructorCallExpression) {
+            name = ((ConstructorCallExpression) node).getType().getNameWithoutPackage();
         }
 
 
@@ -198,6 +224,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             return ((ConstantExpression) node).getDeclaringClass();
+        } else if (node instanceof ConstructorCallExpression) {
+            return ((ConstructorCallExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + " isn't handled at the moment!"); // NOI18N
     }
@@ -207,7 +235,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getName();
         }
-        return "Dynamic type!";
+        return "Dynamic type!"; // NOI18N
     }
 
     public static String getDeclaringClassNameWithoutPackage(ASTNode node) {
@@ -215,7 +243,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getNameWithoutPackage();
         }
-        return "Dynamic type!";
+        return "Dynamic type!"; // NOI18N
     }
 
     public static String normalizeTypeName(String typeName, ClassNode type) {

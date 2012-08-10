@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.25
+#Version 7.28.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -494,7 +494,7 @@ meth public void show()
 meth public void toBack()
 meth public void toFront()
 supr java.awt.Container
-hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
+hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,disposing,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
 hcls WindowDisposerRecord
 
 CLSS public abstract interface java.awt.event.ActionListener
@@ -1641,12 +1641,15 @@ intf javax.swing.Action
 meth public abstract javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()
@@ -1863,6 +1866,6 @@ meth public static javax.swing.JToolBar createToolbarPresenter(org.openide.util.
 meth public static org.openide.util.actions.SystemAction[] linkActions(org.openide.util.actions.SystemAction[],org.openide.util.actions.SystemAction[])
 meth public void setEnabled(boolean)
 supr org.openide.util.SharedClassObject
-hfds BLANK_ICON,LOG,PROP_ICON_TEXTUAL,relativeIconResourceClasses,serialVersionUID
+hfds LOG,PROP_ICON_TEXTUAL,relativeIconResourceClasses,serialVersionUID
 hcls ComponentIcon
 

@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
-    private ChangeTrackingPolicyLineParser parser;
+    private ParameterizedAnnotationLineParser parser;
 
     public ChangeTrackingPolicyLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new ChangeTrackingPolicyLineParser();
+        this.parser = new ParameterizedAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_01() throws Exception {
-        assertTrue(parser.parse("ChangeTrackingPolicy") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("ChangeTrackingPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\ChangeTrackingPolicy") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\ChangeTrackingPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy(\"NOTIFY\")") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy(\"NOTIFY\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ChangeTrackingPolicy");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ChangeTrackingPolicy   ");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ChangeTrackingPolicy\t\t  ");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ChangeTrackingPolicy(\"NOTIFY\")");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("(\"NOTIFY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\ChangeTrackingPolicy(\"NOTIFY\")  \t");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("(\"NOTIFY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\ChangeTrackingPolicy(\"NOTIFY\")  \t");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("(\"NOTIFY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -177,7 +178,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("changetrackingpolicy");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -191,7 +192,7 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\changetrackingpolicy(\"NOTIFY\")  \t");
-        assertEquals(ChangeTrackingPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ChangeTrackingPolicy", parsedLine.getName());
         assertEquals("(\"NOTIFY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

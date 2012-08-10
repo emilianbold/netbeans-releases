@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 
 /**
  *
@@ -77,7 +78,7 @@ public abstract class APIAccessor {
     public abstract boolean hasPluginsWithProgress(AbstractRefactoring refactoring);
     public abstract boolean hasChangesInGuardedBlocks(RefactoringSession session);
     public abstract boolean hasChangesInReadOnlyFiles(RefactoringSession session);
-
-
+    public abstract FiltersDescription getFiltersDescription(AbstractRefactoring refactoring);
+    public abstract boolean isFinished(RefactoringSession session);
 
 }

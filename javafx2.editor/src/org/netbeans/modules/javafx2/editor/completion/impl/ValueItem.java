@@ -50,7 +50,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author sdedic
  */
-public class ValueItem extends AbstractCompletionItem {
+final class ValueItem extends AbstractCompletionItem {
     private String iconResource;
     private ImageIcon icon;
     private boolean attribute;

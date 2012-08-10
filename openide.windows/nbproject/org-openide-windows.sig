@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.48
+#Version 6.55.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -624,12 +624,15 @@ meth public abstract void childrenReordered(org.openide.nodes.NodeReorderEvent)
 meth public abstract void nodeDestroyed(org.openide.nodes.NodeEvent)
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()
@@ -665,6 +668,14 @@ hcls DefLookup,Empty
 CLSS public abstract interface static org.openide.util.Lookup$Provider
  outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
+
+CLSS public abstract interface !annotation org.openide.util.lookup.NamedServiceDefinition
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String position()
+meth public abstract java.lang.Class<?>[] serviceType()
+meth public abstract java.lang.String path()
 
 CLSS public abstract org.openide.windows.CloneableOpenSupport
 cons public init(org.openide.windows.CloneableOpenSupport$Env)
@@ -709,6 +720,7 @@ intf org.openide.windows.TopComponent$Cloneable
 meth protected boolean closeLast()
 meth protected org.openide.windows.CloneableTopComponent createClonedObject()
 meth protected void componentClosed()
+meth protected void componentOpened()
 meth public boolean canClose()
 meth public boolean canClose(org.openide.windows.Workspace,boolean)
 meth public final java.lang.Object clone()
@@ -758,6 +770,12 @@ meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeLis
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void setBounds(java.awt.Rectangle)
 
+CLSS public abstract interface !annotation org.openide.windows.OnShowing
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+
 CLSS public abstract interface !annotation org.openide.windows.RetainLocation
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
@@ -786,6 +804,7 @@ innr public abstract interface static !annotation OpenActionRegistration
 innr public abstract interface static !annotation Registration
 innr public abstract interface static Cloneable
 innr public abstract interface static Registry
+innr public final static SubComponent
 innr public static NodeName
 intf java.io.Externalizable
 intf javax.accessibility.Accessible
@@ -821,6 +840,7 @@ meth public final int getTabPosition()
 meth public final org.openide.nodes.Node[] getActivatedNodes()
 meth public final static org.openide.windows.TopComponent$Registry getRegistry()
 meth public final void cancelRequestAttention()
+meth public final void makeBusy(boolean)
 meth public final void openAtTabPosition(int)
 meth public final void requestAttention(boolean)
 meth public final void setActivatedNodes(org.openide.nodes.Node[])
@@ -830,6 +850,7 @@ meth public int getPersistenceType()
 meth public java.awt.Image getIcon()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getHtmlDisplayName()
+meth public java.lang.String getShortName()
 meth public java.util.List<org.openide.windows.Mode> availableModes(java.util.List<org.openide.windows.Mode>)
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
 meth public javax.swing.Action[] getActions()
@@ -838,6 +859,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 meth public org.openide.util.Lookup getLookup()
 meth public org.openide.util.actions.SystemAction[] getSystemActions()
  anno 0 java.lang.Deprecated()
+meth public org.openide.windows.TopComponent$SubComponent[] getSubComponents()
 meth public static javax.swing.Action openAction(org.openide.windows.TopComponent,java.lang.String,java.lang.String,boolean)
 meth public void addNotify()
 meth public void open()
@@ -915,6 +937,17 @@ meth public abstract org.openide.windows.TopComponent getActivated()
 meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 
+CLSS public final static org.openide.windows.TopComponent$SubComponent
+ outer org.openide.windows.TopComponent
+cons public init(java.lang.String,java.awt.event.ActionListener,boolean)
+cons public init(java.lang.String,java.lang.String,java.awt.event.ActionListener,boolean)
+meth public final boolean isActive()
+meth public final java.lang.String getDescription()
+meth public final java.lang.String getDisplayName()
+meth public final void activate()
+supr java.lang.Object
+hfds activator,active,description,displayName
+
 CLSS public abstract interface org.openide.windows.TopComponentGroup
 meth public abstract void close()
 meth public abstract void open()
@@ -951,6 +984,7 @@ meth protected void componentHidden(org.openide.windows.TopComponent)
 meth protected void componentOpenNotify(org.openide.windows.TopComponent)
 meth protected void componentShowing(org.openide.windows.TopComponent)
 meth protected void topComponentCancelRequestAttention(org.openide.windows.TopComponent)
+meth protected void topComponentMakeBusy(org.openide.windows.TopComponent,boolean)
 meth protected void topComponentOpenAtTabPosition(org.openide.windows.TopComponent,int)
 meth protected void topComponentRequestAttention(org.openide.windows.TopComponent)
 meth protected void topComponentToFront(org.openide.windows.TopComponent)
@@ -988,7 +1022,7 @@ meth public void invokeWhenUIReady(java.lang.Runnable)
 meth public void removeWindowSystemListener(org.openide.windows.WindowSystemListener)
 meth public void setRole(java.lang.String)
 supr java.lang.Object
-hfds activeComponent,dummyInstance,registry,serialVersionUID
+hfds activeComponent,dummyInstance,onShowing,registry,serialVersionUID
 
 CLSS protected abstract interface static org.openide.windows.WindowManager$Component
  outer org.openide.windows.WindowManager

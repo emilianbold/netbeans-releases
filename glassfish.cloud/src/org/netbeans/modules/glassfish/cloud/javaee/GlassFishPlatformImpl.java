@@ -43,8 +43,13 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 
 import java.awt.Image;
 import java.io.File;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.server.config.LibraryBuilder;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishInstance;
@@ -58,11 +63,21 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
+public abstract class GlassFishPlatformImpl
+        extends J2eePlatformImpl2 implements ChangeListener {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Library builder default configuration file. */
+    private static final URL LIBRARY_BUILDER_CONFIG_DEFAULT
+            = GlassFishPlatformImpl.class.getResource("gfLibsDefault.xml");
+
+    /** Library builder configuration since GlassFish 4. */
+    private static final LibraryBuilder.Config LIBRARY_BUILDER_CONFIG_4
+            = new LibraryBuilder.Config(GlassFishVersion.GF_4,
+            GlassFishPlatformImpl.class.getResource("gfLibs4.xml"));
 
     // Now there is only GlassFish 4 so we have single option to return.
     /** Set of Java platforms supported by GlassFish cloud. */
@@ -73,6 +88,15 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Library builder initialization.                                        //
+    ////////////////////////////////////////////////////////////////////////////
+
+    static {
+        LibraryBuilder.init(LIBRARY_BUILDER_CONFIG_DEFAULT,
+                LIBRARY_BUILDER_CONFIG_4);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +104,12 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
     final GlassFishUrl url;
 
     /** GlassFish cloud local instance. */
-    final GlassFishInstance instance;
+    GlassFishInstance instance;
+
+    /** Library builder associated with current platform.
+      * This attribute should be accessed only using {@see #getBuilder()} even
+      * internally. */
+    private volatile LibraryBuilder builder;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -94,14 +123,17 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
      * <p/>
      * @param url GlassFish cloud URL.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     GlassFishPlatformImpl(GlassFishUrl url) {
         this.url = url;
         instance = GlassFishCloudInstanceProvider
-                .getCloudInstance(url.getName());
+                .getCloudInstance(url.getName());        
         if (instance == null || instance.getLocalServer() == null) {
             throw new NullPointerException("GlassFish local server instance "
                     + url.getName() + "does not exist.");
         }
+        instance.addChangeListener(this, new GlassFishInstance.Event[]{
+            GlassFishInstance.Event.STORE, GlassFishInstance.Event.REMOVE});
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -256,4 +288,57 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
         return false;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked when the target of the listener has changed its state.
+     * <p/>
+     * Handles common store event handling. Remove event should be handled
+     * correctly in child class because it's not possible to access correct
+     * factory in common code..
+     * <p/>
+     * @param e ChangeEvent object.
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        GlassFishInstance.Event event = (GlassFishInstance.Event) e.getSource();
+        switch (event) {
+            case STORE:
+                builder = null;
+                instance.removeChangeListener(this, new GlassFishInstance.Event[]{
+                            GlassFishInstance.Event.STORE, GlassFishInstance.Event.REMOVE});
+                instance = GlassFishCloudInstanceProvider.getCloudInstance(url.getName());
+                if (instance == null || instance.getLocalServer() == null) {
+                    throw new NullPointerException("GlassFish local server instance "
+                            + url.getName() + "does not exist.");
+                }
+                instance.addChangeListener(this, new GlassFishInstance.Event[]{
+                            GlassFishInstance.Event.STORE, GlassFishInstance.Event.REMOVE});
+                break;
+            case REMOVE:                
+                GlassFishPlatformFactory.removeJ2eePlatformImpl(url);
+                builder = null;
+                break;
+        }
+    }
+    
+// TODO: Change listeners to reflect server instance changes.
+    /**
+     * Initialize library builder on demand.
+     */
+    LibraryBuilder getBuilder() {
+        if (builder != null) {
+            return builder;
+        }
+        synchronized(this) {
+            if (builder == null) {
+                builder = new LibraryBuilder(
+                        instance.getLocalServer().getServerHome(), "B", "C");
+            }
+        }
+        return builder;
+    }
+    
 }

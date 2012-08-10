@@ -310,7 +310,7 @@ public class GlassFishAccountInstanceProvider
                     i.hasNext(); ) {
                 InstanceProperties props = i.next();
                 if (instance.equalProps(props)) {
-                    props.remove();
+                    instance.remove(props);
                 }
             }
         }

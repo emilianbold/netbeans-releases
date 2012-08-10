@@ -390,6 +390,7 @@ public class FindUsagesTest extends NbTestCase {
         wuq[0].fastCheckParameters();
         wuq[0].checkParameters();
         wuq[0].prepare(rs);
+        rs.finished();
         rs.doRefactoring(true);
         
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
@@ -414,8 +415,8 @@ public class FindUsagesTest extends NbTestCase {
     }
     
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(FindUsagesTest.class)
+        return NbModuleSuite.createConfiguration(FindUsagesTest.class)
                 .clusters(".*").enableModules(".*")
-                .gui(false));
+                .gui(false).suite();
     }
 }

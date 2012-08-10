@@ -63,7 +63,7 @@ import org.openide.text.NbDocument;
  *
  * @author sdedic
  */
-public class ValueClassItem extends SimpleClassItem {
+final class ValueClassItem extends SimpleClassItem {
     private static final Logger LOG = Logger.getLogger(ValueClassItem.class.getName());
 
     private boolean shouldClose;

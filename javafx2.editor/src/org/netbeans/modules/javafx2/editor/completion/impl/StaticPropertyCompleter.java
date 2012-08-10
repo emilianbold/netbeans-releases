@@ -87,7 +87,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
     public StaticPropertyCompleter() {
     }
     
-    public StaticPropertyCompleter(FxInstance instance, boolean attribute, CompletionContext ctx) {
+    StaticPropertyCompleter(FxInstance instance, boolean attribute, CompletionContext ctx) {
         super(instance, attribute, ctx);
     }
     
