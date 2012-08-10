@@ -286,10 +286,12 @@ public class OptionsPanel extends JPanel {
     }
     
     void save () {
+        clearSearchField();
         CategoryModel.getInstance().save();
     }
     
     void cancel () {
+        clearSearchField();
         CategoryModel.getInstance().cancel();    
     }
     
@@ -354,6 +356,11 @@ public class OptionsPanel extends JPanel {
                 b.setSelected();
             }
         }
+    }
+    
+    private void clearSearchField() {
+        JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
+        ((JTextComponent) searchPanel.getComponent(searchPanel.getComponentCount() - 1)).setText("");
     }
         
     private void computeOptionsWords() {

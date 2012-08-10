@@ -100,7 +100,7 @@ public class CndFileUtilsTest extends NbTestCase {
             assertTrue(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), child.getPath()));
             assertTrue(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), parent.getPath()));
             
-            FileObject file = parent.createData("test", "c");
+            FileObject file = child.createData("test", "c");
             assertTrue(CndFileUtils.isExistingFile(file.getPath()));
             assertTrue(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), child.getPath()));
             assertTrue(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), parent.getPath()));
@@ -119,5 +119,21 @@ public class CndFileUtilsTest extends NbTestCase {
             assertFalse(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), parent.getPath()));
             assertFalse(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), child.getPath()));
         }
+    }
+    
+    @Test
+    public void testFlagsUpdates2() throws IOException {
+        // see IZ 216271
+        clearWorkDir();
+        FileObject workDirFO = FileUtil.toFileObject(getWorkDir());
+        // create folders and files
+        FileObject parent = workDirFO.createFolder("parent");
+        FileObject file1 = parent.createData("test", "c");
+        FileObject child = parent.createFolder("child");
+        FileObject file2 = child.createData("test", "c");
+        assertTrue(CndFileUtils.isExistingFile(CndFileUtils.getLocalFileSystem(), file1.getPath()));
+        assertTrue(CndFileUtils.isExistingFile(CndFileUtils.getLocalFileSystem(), file2.getPath()));
+        file2.delete();
+        assertTrue(CndFileUtils.isExistingDirectory(CndFileUtils.getLocalFileSystem(), child.getPath()));
     }
 }

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -275,6 +276,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
+                if (root != null) {
+                    // Restore actual source root name. See bug #216604
+                    String absRootPath = CndPathUtilitities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
+                    absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
+                    name = CndPathUtilitities.getBaseName(absRootPath);
+                }
                 Folder aFolder = currentFolder.findFolderByName(name);
                 if (aFolder != null) {
                     currentFolder = aFolder;
