@@ -93,11 +93,11 @@ public class ClientSideProjectPanelProvider implements ProjectCustomizer.Composi
         return new ClientSideProjectPanelProvider(Mode.Run);
     }
     
-//    @ XXXX ProjectCustomizer.CompositeCategoryProvider.Registration(
-//            projectType = ClientSideProjectType.TYPE,
-//            position = 77)
-//    public static ClientSideProjectPanelProvider createSources() {
-//        return new ClientSideProjectPanelProvider(Mode.Sources);
-//    }
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 77)
+    public static ClientSideProjectPanelProvider createSources() {
+        return new ClientSideProjectPanelProvider(Mode.Sources);
+    }
     
 }

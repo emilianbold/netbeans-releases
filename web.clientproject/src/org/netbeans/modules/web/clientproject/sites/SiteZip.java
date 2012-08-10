@@ -53,7 +53,9 @@ import java.util.zip.CRC32;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -102,14 +104,14 @@ public class SiteZip implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(FileObject projectRoot, ProgressHandle handle) throws IOException {
+    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied");
             return;
         }
-        SiteHelper.unzip(getArchiveFile(), FileUtil.toFile(projectRoot), handle);
+        SiteHelper.unzipProjectTemplate(helper, getArchiveFile(), handle);
         registerTemplate(cust.panel.getTemplate());
     }
 

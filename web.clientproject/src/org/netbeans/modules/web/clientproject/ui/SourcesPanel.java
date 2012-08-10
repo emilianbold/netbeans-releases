@@ -66,11 +66,11 @@ public class SourcesPanel extends javax.swing.JPanel {
         this.project = p;
         initComponents();
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_APP_FOLDER);
+        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
         if (s == null) {
             s = "";
         }
-        jAppFolderTextField.setText(s);
+        jSiteRootFolderTextField.setText(s);
         s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (s == null) {
             s = "";
@@ -87,7 +87,7 @@ public class SourcesPanel extends javax.swing.JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 EditableProperties ep = project.getProjectProperties();
-                ep.setProperty(ClientSideProjectConstants.PROJECT_APP_FOLDER, jAppFolderTextField.getText());
+                ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, jSiteRootFolderTextField.getText());
                 ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, jTestFolderTextField.getText());
                 Charset enc = (Charset)jEncodingComboBox.getSelectedItem();
                 if (enc != null && enc.name() != null) {
@@ -110,8 +110,8 @@ public class SourcesPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jProjectFolderTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jAppFolderTextField = new javax.swing.JTextField();
-        jBrowseAppButton = new javax.swing.JButton();
+        jSiteRootFolderTextField = new javax.swing.JTextField();
+        jBrowseSiteRootButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jTestFolderTextField = new javax.swing.JTextField();
         jBrowseTestButton = new javax.swing.JButton();
@@ -125,12 +125,12 @@ public class SourcesPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel2.text")); // NOI18N
 
-        jAppFolderTextField.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jAppFolderTextField.text")); // NOI18N
+        jSiteRootFolderTextField.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jSiteRootFolderTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jBrowseAppButton, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jBrowseAppButton.text")); // NOI18N
-        jBrowseAppButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(jBrowseSiteRootButton, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jBrowseSiteRootButton.text")); // NOI18N
+        jBrowseSiteRootButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBrowseAppButtonActionPerformed(evt);
+                jBrowseSiteRootButtonActionPerformed(evt);
             }
         });
 
@@ -162,12 +162,12 @@ public class SourcesPanel extends javax.swing.JPanel {
                     .addComponent(jProjectFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 187, Short.MAX_VALUE)
+                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 195, Short.MAX_VALUE)
                             .addComponent(jTestFolderTextField)
-                            .addComponent(jAppFolderTextField))
+                            .addComponent(jSiteRootFolderTextField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jBrowseAppButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jBrowseSiteRootButton, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jBrowseTestButton, javax.swing.GroupLayout.Alignment.TRAILING)))))
         );
         layout.setVerticalGroup(
@@ -179,8 +179,8 @@ public class SourcesPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jAppFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBrowseAppButton))
+                    .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBrowseSiteRootButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -194,9 +194,9 @@ public class SourcesPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jBrowseAppButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseAppButtonActionPerformed
-        browse(jAppFolderTextField);
-    }//GEN-LAST:event_jBrowseAppButtonActionPerformed
+    private void jBrowseSiteRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseSiteRootButtonActionPerformed
+        browse(jSiteRootFolderTextField);
+    }//GEN-LAST:event_jBrowseSiteRootButtonActionPerformed
 
     private void browse(JTextField tf) {
         JFileChooser chooser = new JFileChooser();
@@ -211,7 +211,7 @@ public class SourcesPanel extends javax.swing.JPanel {
             File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
             FileObject fo = FileUtil.toFileObject(selected);
             if (fo != null && fo.isFolder()) {
-                String rel = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                String rel = FileUtil.getRelativePath(project.getSiteRootFolder(), fo);
                 if (rel != null) {
                     tf.setText(rel);
                 }
@@ -224,8 +224,7 @@ public class SourcesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jBrowseTestButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField jAppFolderTextField;
-    private javax.swing.JButton jBrowseAppButton;
+    private javax.swing.JButton jBrowseSiteRootButton;
     private javax.swing.JButton jBrowseTestButton;
     private javax.swing.JComboBox jEncodingComboBox;
     private javax.swing.JLabel jLabel1;
@@ -233,6 +232,7 @@ public class SourcesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jProjectFolderTextField;
+    private javax.swing.JTextField jSiteRootFolderTextField;
     private javax.swing.JTextField jTestFolderTextField;
     // End of variables declaration//GEN-END:variables
 }

@@ -42,12 +42,12 @@
 package org.netbeans.modules.web.clientproject;
 
 import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -60,4 +60,30 @@ public class ClientSideProjectUtilities {
         return h;
     }
     
+    public static void initializeProject(AntProjectHelper h) throws IOException {
+        initializeProject(h, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER, 
+                ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+    }
+    
+    public static void initializeProject(AntProjectHelper h, String siteRoot, String test, String config) throws IOException {
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, test);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, config);
+        h.getProjectDirectory().createFolder(siteRoot);
+        h.getProjectDirectory().createFolder(test);
+        h.getProjectDirectory().createFolder(config);
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
+        ProjectManager.getDefault().saveProject(p);
+    }
+    
+    public static FileObject getSiteRootFolder(AntProjectHelper h) throws IOException, IllegalArgumentException {
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String s = ep.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (s == null || s.length() == 0) {
+            return null;
+        }
+        return h.getProjectDirectory().getFileObject(s);
+    }
 }

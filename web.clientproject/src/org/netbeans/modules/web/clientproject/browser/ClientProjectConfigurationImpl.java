@@ -109,7 +109,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         if (val != null) {
             return Boolean.parseBoolean(val);
         } else {
-            return false;
+            return true;
         }
     }
 
@@ -119,7 +119,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         if (val != null) {
             return Boolean.parseBoolean(val);
         } else {
-            return false;
+            return true;
         }
     }
 

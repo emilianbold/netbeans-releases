@@ -132,10 +132,26 @@ public class ClientSideProject implements Project {
         return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
     
+    public FileObject getSiteRootFolder() {
+        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (s == null) {
+            s = "";
+        }
+        return getProjectDirectory().getFileObject(s);
+    }
+    
+    public String getStartFile() {
+        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
+        if (s == null) {
+            s = "index.html";
+        }
+        return s;
+    }
+    
     public String getWebContextRoot() {
         String ctx = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT);
-        if (ctx == null || ctx.trim().length() == 0) {
-            ctx = "/";
+        if (ctx == null) {
+            ctx = "/"+getProjectDirectory().getName();
         }
         if (!ctx.startsWith("/")) {
             ctx = "/" + ctx;
