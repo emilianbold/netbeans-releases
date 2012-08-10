@@ -45,14 +45,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
+import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -70,7 +72,8 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             PhpProjectProperties.SRC_DIR,
             PhpProjectProperties.TEST_SRC_DIR,
             PhpProjectProperties.SELENIUM_SRC_DIR,
-            PhpProjectProperties.WEB_ROOT));
+            PhpProjectProperties.WEB_ROOT,
+            PhpProjectProperties.INCLUDE_PATH));
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final PhpProject project;
@@ -118,13 +121,14 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             return currentProblems;
         }
         // check all problems
-        currentProblems = new LinkedHashSet<ProjectProblem>();
+        currentProblems = new ArrayList<ProjectProblem>();
         checkSrcDir(currentProblems);
         if (currentProblems.isEmpty()) {
             // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)
             checkTestDir(currentProblems);
             checkSeleniumDir(currentProblems);
             checkWebRoot(currentProblems);
+            checkIncludePath(currentProblems);
         }
         if (currentProblems.isEmpty()) {
             currentProblems = Collections.<ProjectProblem>emptySet();
@@ -205,6 +209,25 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                     Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_description(invalidDirectory.getAbsolutePath()),
                     new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
             currentProblems.add(problem);
+        }
+    }
+
+    @NbBundle.Messages({
+        "ProjectPropertiesProblemProvider.invalidIncludePath.title=Invalid Include Path",
+        "ProjectPropertiesProblemProvider.invalidIncludePath.description=Some directories on project's Include Path are broken."
+    })
+    private void checkIncludePath(Collection<ProjectProblem> currentProblems) {
+        IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getRefHelper(), project.getHelper());
+        for (BasePathSupport.Item item : includePathSupport.itemsList(ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH))) {
+            if (item.isBroken()) {
+                ProjectProblem problem = ProjectProblem.createError(
+                        Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
+                        Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
+                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH));
+                currentProblems.add(problem);
+                return;
+            }
         }
     }
 
