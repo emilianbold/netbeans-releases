@@ -95,14 +95,14 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         jConfigurationComboBox.setSelectedItem(configProvider.getActiveConfiguration());
         updateConfigurationCustomizer();
         
-        jFileToRunTextField.setText(getStartFile());
+        jFileToRunTextField.setText(project.getStartFile());
         model = new DefaultComboBoxModel(new String[]{"Embedded Lightweight", "External"});
         jServerComboBox.setModel(model);
         jServerComboBox.addItemListener(this);
         jServerComboBox.setSelectedIndex(getServer());
         //jServerComboBox.setSelectedIndex(cfg.isUseServer() ? 1 : 0);
         jWebRootTextField.getDocument().addDocumentListener(this);
-        jWebRootTextField.setText(getWebContextRoot());
+        jWebRootTextField.setText(project.getWebContextRoot());
         jProjectURLTextField.setText(project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL));
         jProjectURLTextField.getDocument().addDocumentListener(this);
         updateWebRootEnablement();
@@ -150,25 +150,6 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         return project.isUsingEmbeddedServer() ? 0 : 1;
     }
 
-    private String getStartFile() {
-        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
-        if (val == null) {
-            return "index.html";
-        } else {
-            return val;
-        }
-    }
-
-    private String getWebContextRoot() {
-        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT);
-        if (val == null) {
-            return "/"+project.getProjectDirectory().getName();
-        } else {
-            return val;
-        }
-    }
-
-    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -337,13 +318,14 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         }
         StringBuilder s = new StringBuilder(org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootExampleLabel.text")); // NOI18N        
         s.append(WebServer.getWebserver().getPort());
-        if (getWebContextRoot().trim().length() == 0) {
+        String ctx = jWebRootTextField.getText();
+        if (ctx.trim().length() == 0) {
             s.append("/");
         } else {
-            if (!getWebContextRoot().startsWith("/")) {
+            if (!ctx.startsWith("/")) {
                 s.append("/");
             }
-            s.append(getWebContextRoot());
+            s.append(ctx);
         }
         jWebRootExampleLabel.setText(s.toString());
     }

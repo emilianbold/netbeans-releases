@@ -79,10 +79,7 @@ public class BrowserActionProvider implements ActionProvider {
             WebServer.getWebserver().stop(project);
         }
         FileObject fo = null;
-        String startFile = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
-        if (startFile == null) {
-            startFile = "index.html";
-        }
+        String startFile = project.getStartFile();
         if (COMMAND_RUN.equals(command)) {
             fo = project.getSiteRootFolder().getFileObject(startFile);
             if (fo == null) {
