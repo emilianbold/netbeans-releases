@@ -63,6 +63,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -946,9 +948,7 @@ public class NbModuleSuite {
             if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
                 System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
                 exit.invoke(life);
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public @Override void run() {}
-                });
+                waitForAWT();
             }
         }
 
@@ -1250,6 +1250,16 @@ public class NbModuleSuite {
                 return "true".equals(matcherEnabled.group(1));
             }
             return false;
+        }
+
+        private static void waitForAWT() throws InvocationTargetException, InterruptedException {
+            final CountDownLatch cdl = new CountDownLatch(1);
+            SwingUtilities.invokeLater(new Runnable() {
+                public @Override void run() {
+                    cdl.countDown();
+                }
+            });
+            cdl.await(10, TimeUnit.SECONDS);
         }
 
         private static final class JUnitLoader extends ClassLoader {

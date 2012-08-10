@@ -41,64 +41,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.performance.j2se.setup;
 
-package org.netbeans.performance.j2se.dialogs;
-
-import org.netbeans.jellytools.FavoritesOperator;
-import org.netbeans.jellytools.actions.FavoritesAction;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 
 /**
- * Test opening Favorites Tab.
- * @author  mmirilovic@netbeans.org
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
+ *
+ * @author  cyhelsky@netbeans.org
  */
-public class FavoritesWindowTest extends PerformanceTestCase {
+public class J2SEBaseSetup extends PerformanceTestCase2 {
 
-    /** Creates a new instance of FavoritesWindow */
-    public FavoritesWindowTest(String testName) {
+    public J2SEBaseSetup(java.lang.String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-    }
-
-    /** Creates a new instance of FavoritesWindow */
-    public FavoritesWindowTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
-                .addTest(FavoritesWindowTest.class)
-                .enableModules(".*").clusters("ide").suite());
-        return suite;
-    }
-
-    public void testFavoritesWindow() {
-        doMeasurement();
-    }
-        
-    @Override
-    protected void initialize() {
-    }
+    }    
     
-    public void prepare() {
-    }
-    
-    public ComponentOperator open() {
-        // invoke Favorites from the main menu
-        new FavoritesAction().performShortcut();
-        return new FavoritesOperator();
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();        
+        closeAllModal();
+        MainWindowOperator.getDefault().maximize();
     }
 
-    @Override
-    public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((FavoritesOperator)testedComponentOperator).close();
-    }
- 
 }
