@@ -273,7 +273,7 @@ public class JQueryCodeCompletion {
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
     }
     
-    protected static String HELP_LOCATION = "docs/jquery-api.xml";
+    protected static final String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
         SelectorItem item;
         File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N

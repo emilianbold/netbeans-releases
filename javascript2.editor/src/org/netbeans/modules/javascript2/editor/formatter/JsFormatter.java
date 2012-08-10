@@ -663,8 +663,10 @@ public class JsFormatter implements Formatter {
                         while (last != null && last.isVirtual()) {
                             last = last.previous();
                         }
-                        formatContext.remove(tokenAfterEol.getOffset(),
-                                last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                        if (last != null) {
+                            formatContext.remove(tokenAfterEol.getOffset(),
+                                    last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                        }
                     }
                 }
             } else {
@@ -677,7 +679,9 @@ public class JsFormatter implements Formatter {
                     while (endToken != null && endToken.isVirtual()) {
                         endToken = endToken.previous();
                     }
-                    formatContext.remove(start, endToken.getOffset() + endToken.getText().length() - start);
+                    if (endToken != null) {
+                        formatContext.remove(start, endToken.getOffset() + endToken.getText().length() - start);
+                    }
                 } else if (endToken.getKind() != FormatToken.Kind.EOL) {
                     // no eol
                     // XXX do it only when it is really needed

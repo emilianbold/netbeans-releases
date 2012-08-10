@@ -78,14 +78,14 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         return null;
     }
 
-    public synchronized static ClassPath getBootClassPath() {
+    public static synchronized ClassPath getBootClassPath() {
         if (cachedBootClassPath == null) {
             cachedBootClassPath = ClassPathSupport.createClassPath(getJsStubs());
         }
         return cachedBootClassPath;
     }
 
-    protected static FileObject getJsStubs() { // protect for tests
+    protected static synchronized FileObject getJsStubs() { // protect for tests
         if (jsStubsFileObject == null) {
             // Stubs generated for the "built-in" JavaScript libraries.
             File allstubs = InstalledFileLocator.getDefault().locate(

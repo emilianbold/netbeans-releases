@@ -266,12 +266,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                             
                         }
-                        System.out.println(parserResult);
+                        LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                     }
                     
                 });
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
         if (documentation.length() == 0) {
@@ -383,7 +383,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override
