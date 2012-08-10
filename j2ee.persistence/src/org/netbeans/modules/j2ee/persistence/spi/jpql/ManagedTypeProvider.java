@@ -95,7 +95,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public IManagedType getManagedType(IType itype) {
         initializeManagedTypes();
         for (IManagedType mt : managedTypes.values()) {
-            if (mt.getType().equals(itype)) {
+            if (isValid() && mt.getType().equals(itype)) {
                 return mt;
             }
         }
