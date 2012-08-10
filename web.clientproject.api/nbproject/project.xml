@@ -93,6 +93,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cordova</friend>
+                <friend>org.netbeans.modules.html.navigator</friend>
                 <friend>org.netbeans.modules.web.client.rest</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>

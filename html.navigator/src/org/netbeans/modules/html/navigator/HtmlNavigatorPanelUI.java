@@ -57,7 +57,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
@@ -256,8 +259,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
         String inspectedURL = pageModel.getDocumentURL();
         try {
+            
             URL url = new URL(inspectedURL);
-            return URLMapper.findFileObject(url);
+            final FileObject fo = inspectedFileObject!=null?inspectedFileObject:sourceDescription.getFileObject();
+            Project owner = FileOwnerQuery.getOwner(fo);
+            return ServerURLMapping.fromServer(owner, url);
         } catch (MalformedURLException ex) {
             Logger.getAnonymousLogger().log(
                     Level.WARNING, 
