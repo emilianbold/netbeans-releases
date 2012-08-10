@@ -126,13 +126,11 @@ var app = {
         save:function () {
             // TODO : put save code here
             var hash = this.options.getHashObject();
-            var isNew = this.options.isNew;
             this.model.set(hash);
-            if ( (isNew || this.model.isNew()) && this.collection) {
+            if ( this.model.isNew() && this.collection) {
                 var self = this;
                 this.collection.create(this.model,{
                     success: function(){
-                        self.options.isNew = false;
                         self.options.navigate(self.model.id);
                     }
                 });
