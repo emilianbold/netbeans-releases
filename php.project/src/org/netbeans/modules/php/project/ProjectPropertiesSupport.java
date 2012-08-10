@@ -74,6 +74,24 @@ public final class ProjectPropertiesSupport {
     private ProjectPropertiesSupport() {
     }
 
+    // XXX use it everywhere!
+    /**
+     * Produce a machine-independent relativized version of a filename from a dir.
+     * If path cannot be relative, the full path of the given file is returned.
+     * @param dir base directory
+     * @param file file to be relativized
+     * @return relativized version of a filename from a dir or full path of the given file if the path cannot be relativized
+     * @see PropertyUtils#relativizeFile(File, File)
+     */
+    public static String relativizeFile(File dir, File file) {
+        String relativePath = PropertyUtils.relativizeFile(dir, file);
+        if (relativePath == null) {
+            // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+            relativePath = file.getAbsolutePath();
+        }
+        return relativePath;
+    }
+
     /**
      * <b>This method should not be used, use other methods in this class.</b>
      * <p>
