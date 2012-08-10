@@ -347,6 +347,7 @@ public final class PhpProject implements Project {
         if (webRootDir != null) {
             return webRootDir;
         }
+        LOGGER.log(Level.INFO, "Web root directory {0} not found for project {1}", new Object[] {webRootProperty, getName()});
         // web root directory not found, return sources
         return sources;
     }
