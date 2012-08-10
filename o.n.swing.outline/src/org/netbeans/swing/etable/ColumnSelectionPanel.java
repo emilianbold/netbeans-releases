@@ -395,7 +395,7 @@ class ColumnSelectionPanel extends JPanel {
         }
         // The default behaviour:
         ColumnSelectionPanel panel = new ColumnSelectionPanel(table);
-        int res = JOptionPane.showConfirmDialog(null, panel, table.getSelectVisibleColumnsLabel(), JOptionPane.OK_CANCEL_OPTION);
+        int res = JOptionPane.showConfirmDialog(table, panel, table.getSelectVisibleColumnsLabel(), JOptionPane.OK_CANCEL_OPTION);
         if (res == JOptionPane.OK_OPTION) {
             panel.changeColumnVisibility();
             table.updateColumnSelectionMouseListener();
