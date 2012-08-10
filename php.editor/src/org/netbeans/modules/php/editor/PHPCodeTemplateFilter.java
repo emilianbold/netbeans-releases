@@ -127,16 +127,13 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
                 context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
                 switch (context) {
                     case EXPRESSION:
-                        accept = true;
-                        break;
                     case CLASS_CONTEXT_KEYWORDS:
-                        accept = true;
-                        break;
                     case INTERFACE_CONTEXT_KEYWORDS:
-                        accept = true;
-                        break;
                     case HTML:
                         accept = true;
+                        break;
+                    default:
+                        accept = false;
                         break;
                 }
             }
