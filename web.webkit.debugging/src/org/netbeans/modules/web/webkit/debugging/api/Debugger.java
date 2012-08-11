@@ -47,8 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
@@ -59,7 +57,6 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.openide.util.RequestProcessor;
@@ -78,7 +75,7 @@ public final class Debugger {
     private Map<String, Script> scripts = new HashMap<String, Script>();
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
-    private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
+    //private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
 
@@ -224,29 +221,6 @@ public final class Debugger {
         return res;
     }
 
-    /**
-     * Debugger state listener.
-     */
-    public interface Listener {
-        
-        /**
-         * Execution was suspended.
-         * @param callStack current callstack
-         * @param reason what triggered this suspense
-         */
-        void paused(List<CallFrame> callStack, String reason);
-        
-        /**
-         * Exeuction was resumed.
-         */
-        void resumed();
-        
-        /**
-         * Object state was reset due to page reload.
-         */
-        void reset();
-    }
-    
     private synchronized void addScript(JSONObject data) {
         Script script = APIFactory.createScript(data, webkit);
         scripts.put(script.getID(), script);
@@ -278,7 +252,7 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointByUrl", params));
         if (resp != null) {
             Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            currentBreakpoints.add(b);
+            //currentBreakpoints.add(b);
             return b;
         }
         return null;
@@ -289,7 +263,7 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("breakpointId", b.getBreakpointID());
         transport.sendBlockingCommand(new Command("Debugger.removeBreakpoint", params));
-        currentBreakpoints.remove(b);
+        //currentBreakpoints.remove(b);
     }
     
     // TODO: this method is used only internally so far and it needs to be revisisted
@@ -300,7 +274,7 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
         if (resp != null) {
             Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            currentBreakpoints.add(b);
+            //currentBreakpoints.add(b);
             return b;
         }
         return null;
@@ -320,7 +294,7 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setXHRBreakpoint", params));
         if (resp != null) {
             Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            currentBreakpoints.add(b);
+            //currentBreakpoints.add(b);
             return b;
         }
         return null;
@@ -337,7 +311,7 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setEventListenerBreakpoint", params));
         if (resp != null) {
             Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            currentBreakpoints.add(b);
+            //currentBreakpoints.add(b);
             return b;
         }
         return null;
@@ -410,7 +384,6 @@ public final class Debugger {
                                 recordDocumentChange(timestamp, callStack, finalAttachDOMListeners, true);
                             }
                         });
-                        return;
                     }
                 } else {
                     JSONArray frames = (JSONArray)params.get("callFrames");
@@ -429,4 +402,27 @@ public final class Debugger {
         
     }
 
+    /**
+     * Debugger state listener.
+     */
+    public interface Listener {
+        
+        /**
+         * Execution was suspended.
+         * @param callStack current callstack
+         * @param reason what triggered this suspense
+         */
+        void paused(List<CallFrame> callStack, String reason);
+        
+        /**
+         * Exeuction was resumed.
+         */
+        void resumed();
+        
+        /**
+         * Object state was reset due to page reload.
+         */
+        void reset();
+    }
+    
 }
