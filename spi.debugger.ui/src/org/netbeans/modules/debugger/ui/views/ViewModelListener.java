@@ -69,7 +69,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -199,7 +198,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     void setUp() {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     setUp();
                 }
             });
@@ -221,7 +220,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     void destroy () {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     destroy();
                 }
             });
@@ -325,14 +324,16 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private synchronized void updateModel() {
         RP.post(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 updateModelLazily();
             }
         });
     }
 
     private synchronized void updateModelLazily() {
-        if (!isUp) return ;    // Destroyed in between
+        if (!isUp) {    // Destroyed in between
+            return ;
+        }
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         if (e == null) {
@@ -401,10 +402,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             hyperModels.add(main);
             hyperModels.add(new TreeModelFilter() {
 
+                @Override
                 public Object getRoot(TreeModel original) {
                     return original.getRoot();
                 }
 
+                @Override
                 public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
                     Object[] ch = original.getChildren(parent, from, to);
                     if (ch != null) {
@@ -426,16 +429,20 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     return ch;
                 }
 
+                @Override
                 public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
                     return original.getChildrenCount(node);
                 }
 
+                @Override
                 public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
                     return false;
                 }
 
+                @Override
                 public void addModelListener(ModelListener l) {}
 
+                @Override
                 public void removeModelListener(ModelListener l) {}
             });
         } else {
@@ -608,13 +615,16 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             newModel = null;
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 final JComponent buttonsSubPane;
                 synchronized (destroyLock) {
                     List<AbstractButton> theButtons = buttons;
-                    if (theButtons == null) return ; // Destroyed in between
+                    if (theButtons == null) {    // Destroyed in between
+                        return ;
+                    }
                     buttonsPane.removeAll();
-                    if (theButtons.size() == 0 && sessionProviders.size() == 0) {
+                    if (theButtons.isEmpty() && sessionProviders.isEmpty()) {
                         buttonsPane.setVisible(false);
                         buttonsSubPane = null;
                     } else {
@@ -722,6 +732,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 new ImageIcon(viewIcon),
                 NbBundle.getMessage(ViewModelListener.class, "Tooltip_SelectSrc"));
         b.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == b) {
                     javax.swing.JPopupMenu m = new javax.swing.JPopupMenu();
@@ -873,6 +884,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         
         private RequestProcessor.Task task;
 
+        @Override
         public synchronized void propertyChange(PropertyChangeEvent evt) {
             if (task == null) {
                 task = new RequestProcessor(ModelsChangeRefresher.class.getName(), 1).create(this);
@@ -880,6 +892,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             task.schedule(1);
         }
 
+        @Override
         public void run() {
             refreshModel();
         }
@@ -907,6 +920,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private class ViewPreferenceChangeListener implements PreferenceChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_WATCHES.equals(key) ||
