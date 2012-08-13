@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -50,36 +54,59 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
+public class ComplexAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Set<ComplexAnnotation> ANNOTATIONS = new HashSet<ComplexAnnotation>();
     static {
-        PARSERS.add(new SimpleAnnotationLineParser());
-        PARSERS.add(new ParameterizedAnnotationLineParser());
-        PARSERS.add(new TypedParametersAnnotationLineParser());
-        PARSERS.add(new ComplexAnnotationLineParser());
-    }
-
-    private Doctrine2OdmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=600)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+        Set<String> inlineAnnotations = new HashSet<String>();
+        inlineAnnotations.add("Index"); //NOI18N
+        Set<String> typedParamRegexs = new HashSet<String>();
+        typedParamRegexs.add("repositoryClass"); //NOI18N
+        ANNOTATIONS.add(new ComplexAnnotation("Document", inlineAnnotations, typedParamRegexs)); //NOI18N
     }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
+        String[] tokens = line.split("\\("); //NOI18N
+        for (ComplexAnnotation annotation : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotation.getName())) {
+                String annotationName = tokens[0].trim();
+                String description = line.substring(annotationName.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotationName.length()), annotationName);
+                types.putAll(AnnotationUtils.extractInlineAnnotations(line, annotation.getInlineAnnotations()));
+                types.putAll(AnnotationUtils.extractTypesFromParameters(line, annotation.getTypedParamRegexs()));
+                result = new AnnotationParsedLine.ParsedLine(annotation.getName(), types, description, true);
                 break;
             }
         }
         return result;
+    }
+
+    private static class ComplexAnnotation {
+        private final String name;
+        private final Set<String> inlineAnnotations;
+        private final Set<String> typedParamRegexs;
+
+        public ComplexAnnotation(String name, Set<String> inlineAnnotations, Set<String> typedParamRegexs) {
+            this.name = name;
+            this.inlineAnnotations = inlineAnnotations;
+            this.typedParamRegexs = typedParamRegexs;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        Set<String> getInlineAnnotations() {
+            return inlineAnnotations;
+        }
+
+        Set<String> getTypedParamRegexs() {
+            return typedParamRegexs;
+        }
+
     }
 
 }
