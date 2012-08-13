@@ -60,8 +60,6 @@ import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
 import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
-import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
-import org.openide.nodes.Node;
 
 /**
  * Suggests fx:reference and/or fx:copy appropriate for the context.
@@ -75,7 +73,7 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
     public FxCopyReferenceCompleter() {
     }
 
-    public FxCopyReferenceCompleter(CompletionContext context) {
+    FxCopyReferenceCompleter(CompletionContext context) {
         this.context = context;
     }
     

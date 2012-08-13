@@ -12,10 +12,11 @@ FormattingToken{kind=TEXT, offset=12, text=Element}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=19, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=20, text=
 }
 FormattingToken{kind=WHITESPACE, offset=21, text=  }
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=23, text=var}
 FormattingToken{kind=WHITESPACE, offset=26, text= }
 FormattingToken{kind=TEXT, offset=27, text=Element}
@@ -41,12 +42,13 @@ FormattingToken{kind=WHITESPACE, offset=51, text=  }
 FormattingToken{kind=BEFORE_ELSE_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=53, text=else}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_ELSE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=57, text=
 }
 FormattingToken{kind=WHITESPACE, offset=58, text=  }
 FormattingToken{kind=EOL, offset=60, text=
 }
+FormattingToken{kind=BEFORE_ELSE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=61, text=a}
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=62, text==}

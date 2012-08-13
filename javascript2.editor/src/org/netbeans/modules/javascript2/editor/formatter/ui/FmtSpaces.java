@@ -288,7 +288,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceBeforeSwitchLeftBrace),
                 new Item(spaceBeforeTryLeftBrace),
                 new Item(spaceBeforeCatchLeftBrace),
-                new Item(spaceBeforeFinallyLeftBrace)
+                new Item(spaceBeforeFinallyLeftBrace),
+                new Item(spaceBeforeWithLeftBrace)
 //                new Item(spaceBeforeSynchronizedLeftBrace),
 //                new Item(spaceBeforeStaticInitLeftBrace),
 //                new Item(spaceBeforeArrayInitLeftBrace) ),

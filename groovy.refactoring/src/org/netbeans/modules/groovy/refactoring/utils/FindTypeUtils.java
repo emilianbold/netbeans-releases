@@ -49,6 +49,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -60,6 +61,9 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Utility class for "find type usages". It provides some method for the correct
+ * recognition whether we have caret location on type (respectively ClassNode) or
+ * on the field, property, variable etc.
  *
  * @author Martin Janicek
  */
@@ -69,8 +73,29 @@ public class FindTypeUtils {
     }
 
 
-    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int carret) {
-        if (findCurrentNode(path, doc, fo, carret) instanceof ClassNode) {
+    /**
+     * Finds out whether we are on type of the field, property, method, etc. or
+     * not. Typically if we can have declaration like <code>private String something</code>.
+     * For that example this method returns true in following case:<br/>
+     *      <code>private St^ring something</code>
+     *
+     * <br/><br/>
+     * ..but it returns false for the following case:<br/>
+     *      <code>private String somet^hing</code>
+     *
+     * <br/><br/>
+     * This gives us a chance to recognize whether we are dealing with Find type usages
+     * or with Find field usages. It applies of course also for property, variables,
+     * methods, etc.
+     *
+     * @param path AST path to the current location
+     * @param doc document
+     * @param fo file object we are working on
+     * @param caret caret position
+     * @return true if we are directly on the type, false otherwise
+     */
+    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int caret) {
+        if (findCurrentNode(path, doc, fo, caret) instanceof ClassNode) {
             return true;
         }
         return false;
@@ -80,39 +105,52 @@ public class FindTypeUtils {
         ASTNode leaf = path.leaf();
         ASTNode leafParent = path.leafParent();
 
-        if (leaf instanceof FieldNode) {
-            if (!FindTypeUtils.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
+        if (leaf instanceof ClassNode) {
+            ClassNode classNode = ((ClassNode) leaf);
+            if (isCaretOnClassNode(classNode, doc, caret)) {
+                return classNode;
+            }
+            if (isCaretOnClassNode(classNode.getSuperClass(), doc, caret)) {
+                return classNode.getSuperClass();
+            }
+            for (ClassNode interfaceNode : classNode.getInterfaces()) {
+                if (isCaretOnClassNode(interfaceNode, doc, caret)) {
+                    return interfaceNode;
+                }
+            }
+        } else if (leaf instanceof FieldNode) {
+            if (!isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof PropertyNode) {
-            if (!FindTypeUtils.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
+            if (!isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof MethodNode) {
             MethodNode method = ((MethodNode) leaf);
-            if (!FindTypeUtils.isCaretOnReturnType(method, doc, caret)) {
+            if (!isCaretOnReturnType(method, doc, caret)) {
                 return leaf;
             }
 
             for (Parameter param : method.getParameters()) {
-                if (!FindTypeUtils.isCaretOnParamType(param, doc, caret)) {
+                if (!isCaretOnParamType(param, doc, caret)) {
                     return param;
                 }
             }
         } else if (leaf instanceof Parameter) {
-            if (!FindTypeUtils.isCaretOnParamType(((Parameter) leaf), doc, caret)) {
+            if (!isCaretOnParamType(((Parameter) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof DeclarationExpression) {
-            if (!FindTypeUtils.isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
+            if (!isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof VariableExpression) {
-            if (!FindTypeUtils.isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
+            if (!isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof ForStatement) {
-            if (!FindTypeUtils.isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
+            if (!isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
                 return ((ForStatement) leaf).getVariable();
             } else {
                 return ((ForStatement) leaf).getVariableType();
@@ -124,6 +162,8 @@ public class FindTypeUtils {
             } else {
                 return AstUtilities.getOwningClass(path);
             }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            return leaf;
         }
 
         ClassNode currentType = ElementUtils.getType(leaf);
@@ -131,6 +171,13 @@ public class FindTypeUtils {
             return currentType;
         }
         return leaf;
+    }
+
+    private static boolean isCaretOnClassNode(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        if (getClassNodeRange(classNode, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
     }
 
     private static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
@@ -176,10 +223,7 @@ public class FindTypeUtils {
             range = getRange(expression.getTupleExpression(), doc, cursorOffset);
         }
         
-        if (range != null && range.containsInclusive(cursorOffset)) {
-            return range;
-        }
-        return OffsetRange.NONE;
+        return range;
     }
 
     private static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
@@ -194,6 +238,10 @@ public class FindTypeUtils {
             return OffsetRange.NONE;
         }
         return getRange(method, doc, cursorOffset);
+    }
+
+    private static OffsetRange getClassNodeRange(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        return getRange(classNode, doc, cursorOffset);
     }
 
     private static OffsetRange getFieldRange(FieldNode field, BaseDocument doc, int cursorOffset) {
@@ -218,7 +266,7 @@ public class FindTypeUtils {
         if (variable.isDynamicTyped()) {
             return OffsetRange.NONE;
         }
-        return getRange(variable, doc, cursorOffset);
+        return getRange(variable.getAccessedVariable().getType(), doc, cursorOffset);
     }
 
     private static OffsetRange getRange(ASTNode node, BaseDocument doc, int cursorOffset) {

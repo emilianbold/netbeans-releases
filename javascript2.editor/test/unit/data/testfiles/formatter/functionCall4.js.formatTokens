@@ -1,0 +1,58 @@
+FormattingToken{kind=SOURCE_START, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=0, text=
+}
+FormattingToken{kind=TEXT, offset=1, text=test}
+FormattingToken{kind=TEXT, offset=5, text=.}
+FormattingToken{kind=TEXT, offset=6, text=push}
+FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=10, text=(}
+FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=11, text=arguments}
+FormattingToken{kind=TEXT, offset=20, text=[}
+FormattingToken{kind=TEXT, offset=21, text=i}
+FormattingToken{kind=TEXT, offset=22, text=]}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=23, text=)}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=24, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=25, text=
+}
+FormattingToken{kind=EOL, offset=26, text=
+}
+FormattingToken{kind=TEXT, offset=27, text=var}
+FormattingToken{kind=WHITESPACE, offset=30, text= }
+FormattingToken{kind=TEXT, offset=31, text=escapedString}
+FormattingToken{kind=WHITESPACE, offset=44, text= }
+FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=45, text==}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=46, text= }
+FormattingToken{kind=TEXT, offset=47, text=this}
+FormattingToken{kind=TEXT, offset=51, text=.}
+FormattingToken{kind=TEXT, offset=52, text=replace}
+FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=59, text=(}
+FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=60, text=/}
+FormattingToken{kind=TEXT, offset=61, text=\\}
+FormattingToken{kind=TEXT, offset=63, text=/g}
+FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=65, text=,}
+FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=66, text= }
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=67, text='}
+FormattingToken{kind=TEXT, offset=68, text=\\\\}
+FormattingToken{kind=TEXT, offset=72, text='}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=73, text=)}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=74, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=75, text=
+}

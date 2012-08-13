@@ -69,7 +69,7 @@ public final class EditorDocumentHandler {
     }
     
     public static void runExclusive(Document doc, Runnable r) {
-        if (doc.getClass() == editorDocClass) {
+        if (editorDocClass != null && editorDocClass.isInstance(doc)) {
             editorDocServices.runExclusive(doc, r);
         } else {
             synchronized (doc) {

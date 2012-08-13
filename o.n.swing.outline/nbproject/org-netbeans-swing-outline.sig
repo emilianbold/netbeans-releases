@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.17
+#Version 1.20.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1186,10 +1186,12 @@ supr java.lang.Enum<org.netbeans.swing.etable.ETable$ColumnSelection>
 CLSS public final static org.netbeans.swing.etable.ETable$RowMapping
  outer org.netbeans.swing.etable.ETable
 cons public init(int,javax.swing.table.TableModel)
+cons public init(int,javax.swing.table.TableModel,org.netbeans.swing.etable.ETable)
 meth public int getModelRowIndex()
 meth public java.lang.Object getModelObject(int)
+meth public java.lang.Object getTransformedValue(int)
 supr java.lang.Object
-hfds model,originalIndex
+hfds TRANSFORMED_NONE,allTransformed,model,originalIndex,table,transformed,transformedColumn
 
 CLSS public org.netbeans.swing.etable.ETableColumn
 cons public init(int,int,javax.swing.table.TableCellRenderer,javax.swing.table.TableCellEditor,org.netbeans.swing.etable.ETable)
@@ -1237,6 +1239,7 @@ meth public java.util.Comparator<org.netbeans.swing.etable.ETable$RowMapping> ge
 meth public org.netbeans.swing.etable.TableColumnSelector$TreeNode getColumnHierarchyRoot()
 meth public void clean()
 meth public void clearSortedColumns()
+meth public void moveColumn(int,int)
 meth public void readSettings(java.util.Properties,java.lang.String,org.netbeans.swing.etable.ETable)
 meth public void removeColumn(javax.swing.table.TableColumn)
 meth public void setColumnHidden(javax.swing.table.TableColumn,boolean)

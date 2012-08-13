@@ -50,6 +50,8 @@ import java.util.*;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -58,8 +60,8 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
-import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
+import org.netbeans.modules.mylyn.util.GetMultiTaskDataCommand;
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.nodes.Node;
@@ -202,7 +204,14 @@ public class BugzillaQuery {
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
-                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, url.toString(), new IssuesIdCollector());
+                    IRepositoryQuery iquery = new RepositoryQuery(repository.getTaskRepository().getConnectorKind(), "bugzilla query");            // NOI18N
+                    iquery.setUrl(url.toString());
+                    PerformQueryCommand queryCmd = 
+                        new PerformQueryCommand(
+                            Bugzilla.getInstance().getRepositoryConnector(),
+                            repository.getTaskRepository(), 
+                            new IssuesIdCollector(),
+                            iquery);
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = queryCmd.hasFailed();
                     if(ret[0]) {
@@ -224,7 +233,12 @@ public class BugzillaQuery {
 
                     getController().switchToDeterminateProgress(queryIssues.size());
 
-                    GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
+                    GetMultiTaskDataCommand dataCmd = 
+                        new GetMultiTaskDataCommand(
+                            Bugzilla.getInstance().getRepositoryConnector(),
+                            repository.getTaskRepository(), 
+                            new IssuesCollector(),
+                            queryIssues);
                     repository.getExecutor().execute(dataCmd, !autoRefresh);
                     ret[0] = dataCmd.hasFailed();
                 } finally {

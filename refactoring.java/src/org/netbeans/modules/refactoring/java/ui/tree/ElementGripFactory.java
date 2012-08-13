@@ -63,6 +63,7 @@ public class ElementGripFactory {
 
     private static ElementGripFactory instance;
     private final Map<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
+    private final Map<FileObject, Boolean> testFiles = new WeakHashMap<FileObject, Boolean>();
     
     /**
      * Creates a new instance of ElementGripFactory
@@ -96,6 +97,14 @@ public class ElementGripFactory {
     public ElementGrip getParent(ElementGrip el) {
         Interval start = map.get(el.getFileObject());
         return start.getParent(el);
+    }
+    
+    public void put(FileObject parentFile, Boolean inTestfile) {
+        testFiles.put(parentFile, inTestfile);
+    }
+    
+    public Boolean inTestFile(FileObject parentFile) {
+        return testFiles.get(parentFile);
     }
 
     public void put(FileObject parentFile, TreePath tp, CompilationInfo info) {

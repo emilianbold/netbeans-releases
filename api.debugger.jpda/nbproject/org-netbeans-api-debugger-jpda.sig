@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.33
+#Version 2.35.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -99,20 +99,29 @@ meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.la
 meth public abstract boolean isEnabled()
 meth public abstract void disable()
 meth public abstract void enable()
+meth public boolean canHaveDependentBreakpoints()
 meth public final int getHitCountFilter()
 meth public final java.lang.String getValidityMessage()
 meth public final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE getHitCountFilteringStyle()
 meth public final org.netbeans.api.debugger.Breakpoint$VALIDITY getValidity()
 meth public final void setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public java.lang.String getGroupName()
+meth public java.util.Set<org.netbeans.api.debugger.Breakpoint> getBreakpointsToDisable()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.Set<org.netbeans.api.debugger.Breakpoint> getBreakpointsToEnable()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.debugger.Breakpoint$GroupProperties getGroupProperties()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void setBreakpointsToDisable(java.util.Set<org.netbeans.api.debugger.Breakpoint>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setBreakpointsToEnable(java.util.Set<org.netbeans.api.debugger.Breakpoint>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void setGroupName(java.lang.String)
 supr java.lang.Object
-hfds groupName,hitCountFilter,hitCountFilteringStyle,pcs,validity,validityMessage
+hfds breakpointsToDisable,breakpointsToEnable,groupName,hitCountFilter,hitCountFilteringStyle,pcs,validity,validityMessage
 
 CLSS public abstract org.netbeans.api.debugger.jpda.AbstractDICookie
 cons public init()
@@ -282,6 +291,7 @@ fld public final static int SUSPEND_NONE = 0
 fld public final static java.lang.String PROP_HIDDEN = "hidden"
 fld public final static java.lang.String PROP_PRINT_TEXT = "printText"
 fld public final static java.lang.String PROP_SUSPEND = "suspend"
+meth public boolean canHaveDependentBreakpoints()
 meth public boolean isEnabled()
 meth public boolean isHidden()
 meth public int getSuspend()

@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -128,6 +129,11 @@ public class FindTypeUsages extends AbstractFindUsages {
             if (isEquals(clazz.getSuperClass())) {
                 usages.add(clazz);
             }
+            for (ClassNode interfaceNode : clazz.getInterfaces()) {
+                if (isEquals(interfaceNode)) {
+                    usages.add(clazz);
+                }
+            }
             super.visitClass(clazz);
         }
 
@@ -141,6 +147,14 @@ public class FindTypeUsages extends AbstractFindUsages {
                 addIfEquals(param);
             }
             super.visitConstructorOrMethod(method, isConstructor);
+        }
+
+        @Override
+        public void visitConstructorCallExpression(ConstructorCallExpression call) {
+            if (isEquals(call.getType())) {
+                usages.add(call);
+            }
+            super.visitConstructorCallExpression(call);
         }
 
         @Override

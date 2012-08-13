@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.doc.api;
 
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationResolver;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -81,8 +82,18 @@ public final class JsDocumentationSupport {
         //        }
         //        System.err.println("SIZE = " + providers.size());
         // XXX - complete caching of documentation tool provider
-        JsDocumentationProvider provider = JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
+        JsDocumentationProvider provider = getDocumentationProvider(result);
         return provider.createDocumentationHolder(result.getSnapshot());
+    }
+
+    public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
+        // XXX - complete caching of documentation tool provider
+        return JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
+    }
+
+    public static JsComment getCommentForOffset(JsParserResult result, int offset) {
+        JsDocumentationHolder holder = getDocumentationHolder(result);
+        return holder.getCommentForOffset(offset, holder.getCommentBlocks());
     }
 
 }

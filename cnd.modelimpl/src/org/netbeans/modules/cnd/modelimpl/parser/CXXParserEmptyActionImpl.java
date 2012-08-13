@@ -285,5 +285,25 @@ public class CXXParserEmptyActionImpl implements CXXParserActionEx {
     @Override
     public void qualified_namespace_specifier(int kind, Token token) {
     }
+
+    @Override
+    public void simple_declaration(int kind, Token token) {
+    }
+
+    @Override
+    public void greedy_declarator() {
+    }
+
+    @Override
+    public void end_greedy_declarator() {
+    }
+
+    @Override
+    public void declarator_id() {
+    }
+
+    @Override
+    public void end_declarator_id() {
+    }
     
 }

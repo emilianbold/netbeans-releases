@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -81,18 +82,17 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -103,6 +103,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import static org.netbeans.modules.kenai.ui.Bundle.*;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
  *
@@ -122,7 +126,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         this.prjAndFeature = prjFtr;
         initComponents();
         if (prjAndFeature==null) {
-            kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
+            if (kenaiCombo.getSelectedItem() instanceof KenaiServer) {
+                kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
+            }
         } else {
             kenai = prjAndFeature.kenaiProject.getKenai();
             kenaiCombo.setSelectedItem(kenai);
@@ -138,7 +144,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         updateRepoPath();
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
                     if (kenai.getPasswordAuthentication() != null) {
                         loginButton.setEnabled(false);
                     } else {
@@ -196,19 +202,19 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         browseLocalButton = new JButton();
         proxyConfigButton = new JButton();
         emptySpace = new JPanel();
-        kenaiCombo = new KenaiCombo(true);
+        kenaiCombo = TeamUIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setPreferredSize(new Dimension(700, 250));
         setRequestFocusEnabled(false);
         setLayout(new GridBagLayout());
-        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.text"));
+        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 12, 0);
         add(loggedInLabel, gridBagConstraints);
         loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetFromKenaiPanel.notLoggedIn"));
+        Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetFromKenaiPanel.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -217,7 +223,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         add(usernameLabel, gridBagConstraints);
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loginButton.text"));
+        Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loginButton.text")); // NOI18N
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 loginButtonActionPerformed(evt);
@@ -232,7 +238,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         kenaiRepoLabel.setLabelFor(kenaiRepoComboBox);
-        Mnemonics.setLocalizedText(kenaiRepoLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoLabel.text"));
+        Mnemonics.setLocalizedText(kenaiRepoLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -255,7 +261,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         add(kenaiRepoComboBox, gridBagConstraints);
         kenaiRepoComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoComboBox.AccessibleContext.accessibleName")); // NOI18N
         kenaiRepoComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(browseKenaiButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseKenaiButton.text"));
+        Mnemonics.setLocalizedText(browseKenaiButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseKenaiButton.text")); // NOI18N
         browseKenaiButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseKenaiButtonActionPerformed(evt);
@@ -268,7 +274,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseKenaiButton, gridBagConstraints);
         browseKenaiButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseKenaiButton.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(projectPreviewLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.projectPreviewLabel.text"));
+        Mnemonics.setLocalizedText(projectPreviewLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.projectPreviewLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -279,7 +285,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         add(projectPreviewLabel, gridBagConstraints);
 
         repoFolderLabel.setLabelFor(repoFolderTextField);
-        Mnemonics.setLocalizedText(repoFolderLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderLabel.text"));
+        Mnemonics.setLocalizedText(repoFolderLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -298,7 +304,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         add(repoFolderTextField, gridBagConstraints);
         repoFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         repoFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(browseRepoButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseRepoButton.text"));
+        Mnemonics.setLocalizedText(browseRepoButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseRepoButton.text")); // NOI18N
         browseRepoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseRepoButtonActionPerformed(evt);
@@ -311,7 +317,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseRepoButton, gridBagConstraints);
         browseRepoButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseRepoButton.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(localFolderDescLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
+        Mnemonics.setLocalizedText(localFolderDescLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -323,7 +329,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         localFolderDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         localFolderLabel.setLabelFor(localFolderTextField);
-        Mnemonics.setLocalizedText(localFolderLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderLabel.text"));
+        Mnemonics.setLocalizedText(localFolderLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -347,7 +353,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         add(localFolderTextField, gridBagConstraints);
         localFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         localFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(browseLocalButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseLocalButton.text"));
+        Mnemonics.setLocalizedText(browseLocalButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseLocalButton.text")); // NOI18N
         browseLocalButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseLocalButtonActionPerformed(evt);
@@ -360,7 +366,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseLocalButton, gridBagConstraints);
         browseLocalButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseLocalButton.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(proxyConfigButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.proxyConfigButton.text"));
+        Mnemonics.setLocalizedText(proxyConfigButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.proxyConfigButton.text")); // NOI18N
         proxyConfigButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 proxyConfigButtonActionPerformed(evt);
@@ -400,11 +406,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        boolean loginSuccess = UIUtils.showLogin(kenai);
+        boolean loginSuccess = org.netbeans.modules.kenai.ui.api.KenaiUIUtils.showLogin(kenai);
         if (loginSuccess) {
             refreshUsername();
-            KenaiTopComponent.findInstance().open();
-            KenaiTopComponent.findInstance().requestActive();
+            TeamUIUtils.activateTeamDashboard();
         } else {
             // login failed, do nothing
         }
@@ -505,15 +510,16 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         localFolderPathEdited = true;
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
+    @NbBundle.Messages("CTL_AddInstance=Add Kenai Server")
     private void kenaiComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
         final ActionEvent e = evt;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (kenaiCombo.getSelectedItem()!=null && !(kenaiCombo.getSelectedItem() instanceof Kenai)) {
-                    new AddInstanceAction().actionPerformed(e);
+                if (kenaiCombo.getSelectedItem()!=null && !(kenaiCombo.getSelectedItem() instanceof KenaiServer)) {
+                    new AddInstanceAction(TeamServerProviderImpl.getDefault(), CTL_AddInstance()).actionPerformed(e);
                 }
-                kenai = (Kenai) kenaiCombo.getSelectedItem();
+                kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
                 kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
                 refreshUsername();
             }
@@ -530,10 +536,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ProjectHandle[] openedProjects = getOpenProjects();
-                        for (ProjectHandle prjHandle : openedProjects) {
+                        for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
                             KenaiProject kProject = null;
                             if (prjHandle != null) {
-                                kProject = prjHandle.getKenaiProject();
+                                kProject = prjHandle.getTeamProject();
                             }
                             final KenaiProject project = kProject;
                             if (project != null) {
@@ -562,26 +568,26 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
                 }
 
-                private ProjectHandle[] getOpenProjects() {
+                private ProjectHandle<KenaiProject>[] getOpenProjects() {
                     if (kenai==null) {
                         return new ProjectHandle[0];
                     }
                     String kenaiName = kenai.getUrl().getHost();
-                    Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(DashboardImpl.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
-                    int count = prefs.getInt(DashboardImpl.PREF_COUNT, 0); //NOI18N
+                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
+                    int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
                     ProjectHandle[] handles = new ProjectHandle[count];
                     ArrayList<String> ids = new ArrayList<String>(count);
                     for (int i = 0; i < count; i++) {
-                        String id = prefs.get(DashboardImpl.PREF_ID + i, null); //NOI18N
+                        String id = prefs.get(DefaultDashboard.PREF_ID + i, null); //NOI18N
                         if (null != id && id.trim().length() > 0) {
                             ids.add(id.trim());
                         }
                     }
 
                     HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor accessor = ProjectAccessor.getDefault();
+                    ProjectAccessorImpl accessor = ProjectAccessorImpl.getDefault();
                     for (String id : ids) {
-                        ProjectHandle handle = accessor.getNonMemberProject(kenai, id, false);
+                        ProjectHandle handle = accessor.getNonMemberProject(KenaiServer.forKenai(kenai), id, false);
                         if (handle != null) {
                             projects.add(handle);
                         } else {
@@ -590,7 +596,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
                     PasswordAuthentication pa = kenai.getPasswordAuthentication();
                     if (pa!=null) {
-                        projects.addAll(accessor.getMemberProjects(kenai, new LoginHandleImpl(pa.getUserName()), false));
+                        projects.addAll(accessor.getMemberProjects(KenaiServer.forKenai(kenai), new LoginHandleImpl(pa.getUserName()), false));
                     }
                     return projects.toArray(handles);
                 }
@@ -658,7 +664,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (!localFolderPathEdited && selItem != null) {
             String urlString = selItem.feature.getLocation();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
-            localFolderTextField.setText(Utilities.getDefaultRepoFolder().getPath() + File.separator + repoName);
+            localFolderTextField.setText(TeamUIUtils.getDefaultRepoFolder().getPath() + File.separator + repoName);
         }
     }
 

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.12.0
+#Version 3.14.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -449,6 +449,7 @@ meth public void selectCategory(java.lang.String)
 meth public void selectEditor()
 meth public void selectFontAndColors()
 meth public void selectGeneral()
+meth public void selectJava()
 meth public void selectKeymap()
 meth public void selectMiscellaneous()
 meth public void setDefaultLevel(java.lang.String)
@@ -636,18 +637,18 @@ hfds _lblSelectTheCategory,_tree
 CLSS public org.netbeans.jellytools.SearchResultsOperator
 cons public init()
 meth public org.netbeans.jellytools.FindInFilesOperator modifySearch()
+meth public org.netbeans.jellytools.OutlineOperator outlineResult()
 meth public org.netbeans.jellytools.OutputTabOperator showDetails()
 meth public org.netbeans.jemmy.operators.JButtonOperator btModifySearch()
 meth public org.netbeans.jemmy.operators.JButtonOperator btShowDetails()
 meth public org.netbeans.jemmy.operators.JButtonOperator btStopSearch()
-meth public org.netbeans.jemmy.operators.JTreeOperator treeResult()
 meth public void openResult(java.lang.String)
 meth public void selectResult(java.lang.String)
 meth public void stopSearch()
 meth public void verify()
 meth public void waitEndOfSearch()
 supr org.netbeans.jellytools.TopComponentOperator
-hfds SEARCH_TIME,TITLE,_btModifySearch,_btShowDetails,_btStop,_treeResult
+hfds SEARCH_TIME,TITLE,_btModifySearch,_btShowDetails,_btStop,_outlineResult
 
 CLSS public abstract org.netbeans.jellytools.TestBundleKeys
 cons public init(java.lang.String)
@@ -926,6 +927,7 @@ hfds KEYSTROKE,debugProjectMenu,debugProjectPopup
 
 CLSS public org.netbeans.jellytools.actions.DeleteAction
 cons public init()
+meth public static void confirmDeletion()
 supr org.netbeans.jellytools.actions.ActionNoBlock
 hfds deleteMenu,deletePopup,keystroke
 
@@ -1378,7 +1380,7 @@ hfds keystroke,mainMenuPath
 CLSS public org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction
 cons public init()
 supr org.netbeans.jellytools.actions.Action
-hfds keystroke,mainMenuPath,runItem,toggleBreakpointItem
+hfds debugItem,keystroke,mainMenuPath,toggleBreakpointItem
 
 CLSS public org.netbeans.jellytools.modules.editor.CompletionJListOperator
 cons public init()
@@ -1497,7 +1499,7 @@ supr java.lang.Object
 hfds comparator,linkSuffix
 hcls NodesJTreeOperator,StringArraySubPathChooser
 
-CLSS public org.netbeans.jellytools.nodes.OutlineNode
+CLSS public final org.netbeans.jellytools.nodes.OutlineNode
 cons public init(org.netbeans.jellytools.OutlineOperator,java.lang.String)
 cons public init(org.netbeans.jellytools.OutlineOperator,javax.swing.tree.TreePath)
 cons public init(org.netbeans.jellytools.nodes.OutlineNode,java.lang.String)
@@ -2848,6 +2850,6 @@ meth public void run(junit.framework.TestResult)
 meth public void runBare() throws java.lang.Throwable
 meth public void setFilter(org.netbeans.junit.Filter)
 supr junit.framework.TestCase
-hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,workDirPath
+hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,vmDeadline,workDirPath
 hcls WFOS
 

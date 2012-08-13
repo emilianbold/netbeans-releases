@@ -74,6 +74,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.Utilities;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -210,7 +211,7 @@ public final class IOWindow implements IOContainer.Provider {
             pane.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, this);
             setFocusable(true);
 
-            toolbar = new JToolBar();
+            toolbar = new ToolbarWithOverflow();
             toolbar.setOrientation(JToolBar.VERTICAL);
             toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
             toolbar.setFloatable(false);
@@ -507,7 +508,7 @@ public final class IOWindow implements IOContainer.Provider {
                     toolbar.add(buttons[i]);
                 }
             }
-            toolbar.revalidate();
+            toolbar.validate();
             toolbar.repaint();
         }
 

@@ -95,7 +95,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public IManagedType getManagedType(IType itype) {
         initializeManagedTypes();
         for (IManagedType mt : managedTypes.values()) {
-            if (mt.getType().equals(itype)) {
+            if (isValid() && mt.getType().equals(itype)) {
                 return mt;
             }
         }
@@ -150,23 +150,6 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     private void initializeManagedTypes() {
         if (managedTypes == null) {
             managedTypes = new HashMap<String, IManagedType>();
-            //TODO fill
-//            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
-//            MetadataModel<EntityMappingsMetadata> model = entityClassScope.getEntityMappingsModel(true);
-//            MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper = MetadataModelReadHelper.create(model, new MetadataModelAction<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>>() {
-//
-//                @Override
-//                public List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> run(EntityMappingsMetadata metadata) {
-//                    return Arrays.asList(metadata.getRoot().getEntity());
-//                }
-//            });
-//            List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> entities = null;
-//            try {
-//                entities = readHelper.getResult();
-//            } catch (ExecutionException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-
             //TODO: not only entities but mapped superclasses and embeddable?
             for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : mappings.getEntity()) {
 

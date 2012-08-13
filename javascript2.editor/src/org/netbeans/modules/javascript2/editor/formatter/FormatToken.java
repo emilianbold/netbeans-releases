@@ -53,10 +53,10 @@ import org.netbeans.api.annotations.common.NonNull;
  */
 public final class FormatToken {
 
-    private static final Set<Kind> BEFORE_MARKERS = EnumSet.noneOf(Kind.class);
+    private static final Set<Kind> SPACE_BEFORE_MARKERS = EnumSet.noneOf(Kind.class);
 
     static {
-        Collections.addAll(BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
+        Collections.addAll(SPACE_BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
                 Kind.BEFORE_ASSIGNMENT_OPERATOR, Kind.BEFORE_COMMA,
                 Kind.BEFORE_WHILE_KEYWORD, Kind.BEFORE_ELSE_KEYWORD,
                 Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD,
@@ -71,7 +71,8 @@ public final class FormatToken {
                 Kind.BEFORE_WHILE_BRACE, Kind.BEFORE_FOR_BRACE,
                 Kind.BEFORE_DO_BRACE, Kind.BEFORE_SWITCH_BRACE,
                 Kind.BEFORE_TRY_BRACE, Kind.BEFORE_CATCH_BRACE,
-                Kind.BEFORE_FINALLY_BRACE, Kind.BEFORE_ARRAY_LITERAL_BRACKET);
+                Kind.BEFORE_FINALLY_BRACE, Kind.BEFORE_WITH_BRACE,
+                Kind.BEFORE_ARRAY_LITERAL_BRACKET);
     }
 
     private final Kind kind;
@@ -130,8 +131,8 @@ public final class FormatToken {
         return offset < 0;
     }
 
-    public boolean isBeforeMarker() {
-        return BEFORE_MARKERS.contains(kind);
+    public boolean isSpaceBeforeMarker() {
+        return SPACE_BEFORE_MARKERS.contains(kind);
     }
 
     public boolean isIndentationMarker() {
@@ -171,11 +172,24 @@ public final class FormatToken {
         AFTER_PROPERTY,
         AFTER_CASE,
 
-        AFTER_VAR_DECLARATION,
-        
         AFTER_BLOCK_START,
         ELSE_IF_AFTER_BLOCK_START,
-        
+
+        // for line wrap after comma separated var
+        AFTER_VAR_DECLARATION,
+        // for line wrap of parameters
+        BEFORE_FUNCTION_DECLARATION_PARAMETER,
+        // for line wrap of arguments
+        BEFORE_FUNCTION_CALL_ARGUMENT,
+
+        // separate line wrap options
+        AFTER_IF_START,
+        AFTER_ELSE_START,
+        AFTER_WHILE_START,
+        AFTER_FOR_START,
+        AFTER_WITH_START,
+        AFTER_DO_START,
+
         BEFORE_OBJECT,
 
         // around binary operator
@@ -256,6 +270,7 @@ public final class FormatToken {
         BEFORE_TRY_BRACE,
         BEFORE_CATCH_BRACE,
         BEFORE_FINALLY_BRACE,
+        BEFORE_WITH_BRACE,
 
         // array literal brackets
         AFTER_ARRAY_LITERAL_BRACKET,

@@ -58,7 +58,7 @@ public class FxIncludeCompleter implements Completer, Completer.Factory {
     public FxIncludeCompleter() {
     }
 
-    public FxIncludeCompleter(CompletionContext context) {
+    FxIncludeCompleter(CompletionContext context) {
         this.context = context;
     }
 

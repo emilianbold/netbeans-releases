@@ -111,7 +111,6 @@ public class OptionsDisplayerImpl {
     private JButton btnExport;
     /** Import Options button */
     private JButton btnImport;
-    private JPanel quickSearch;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -179,16 +178,11 @@ public class OptionsDisplayerImpl {
             options[1] = isMac ? bOK : DialogDescriptor.CANCEL_OPTION;
             descriptor = new DialogDescriptor(optionsPanel,title,modal,options,DialogDescriptor.OK_OPTION,DialogDescriptor.DEFAULT_ALIGN, null, null, false);
             
-            quickSearch = new JPanel(new BorderLayout());
-            QuickSearch qs = QuickSearch.attach(quickSearch, null, optionsPanel.new OptionsQSCallback());
-            qs.setAlwaysShown(true);
-            
             // by-passing EqualFlowLayout manager in NbPresenter
             JPanel additionalOptionspanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             additionalOptionspanel.add(bClassic);
             additionalOptionspanel.add(btnExport);
             additionalOptionspanel.add(btnImport);
-            additionalOptionspanel.add(quickSearch);
             setUpButtonListeners(optionsPanel);
             
             descriptor.setAdditionalOptions(new Object[] {additionalOptionspanel});

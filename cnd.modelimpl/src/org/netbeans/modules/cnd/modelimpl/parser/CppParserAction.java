@@ -84,6 +84,9 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     public static int QUALIFIED_NAMESPACE_SPECIFIER__SCOPE = 0;
     public static int QUALIFIED_NAMESPACE_SPECIFIER__IDENT = 1;
     
+    public static int SIMPLE_DECLARATION__COMMA2 = 0;
+    public static int SIMPLE_DECLARATION__SEMICOLON = 1;        
+    
     boolean type_specifier_already_present(TokenStream input);
     
     boolean identifier_is(int kind, Token token);
@@ -115,6 +118,7 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void end_compound_statement(Token token);
     
     void simple_declaration(Token token);
+    void simple_declaration(int kind, Token token);    
     void end_simple_declaration(Token token);
     
     void decl_specifier(int kind, Token token);
@@ -164,4 +168,10 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void end_namespace_alias_definition(Token semicolonToken);
     void qualified_namespace_specifier(int kind, Token token);
         
+    void greedy_declarator();
+    void end_greedy_declarator();
+    
+    void declarator_id();
+    void end_declarator_id();
+    
 }

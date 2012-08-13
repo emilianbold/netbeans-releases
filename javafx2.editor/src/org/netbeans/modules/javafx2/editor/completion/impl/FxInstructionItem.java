@@ -48,14 +48,13 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author sdedic
  */
-public class FxInstructionItem extends AbstractCompletionItem {
+final class FxInstructionItem extends AbstractCompletionItem {
     private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/instruction.png"; // NOI18N
 
     private String instruction;

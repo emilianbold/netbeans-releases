@@ -46,6 +46,7 @@ import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -77,7 +78,7 @@ class ExpectedExceptionLineParser implements AnnotationLineParser {
             int end = start + tokens[1].length();
             types.put(new OffsetRange(start, end), line.substring(start, end));
         }
-        return new ExpectedExceptionParsedLine(description, types);
+        return new ParsedLine(ANNOTATION_NAME, types, description, true);
     }
 
     private static int countSpacesToFirstNonWhitespace(final String line) {

@@ -87,10 +87,11 @@ import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -514,7 +515,7 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox.setComponentPopupMenu(dropDownMenu);
 
 
-        UIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
+        KenaiUIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
     }
 
     void insertToInputArea(String message) {
@@ -819,7 +820,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         suc.sendMessage(m);
                         insertMessage(m);
                     }
-                    UIUtils.logKenaiUsage("CHAT", "MESSAGE_SENT"); // NOI18N
+                    KenaiUIUtils.logKenaiUsage("CHAT", "MESSAGE_SENT"); // NOI18N
                 }
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);

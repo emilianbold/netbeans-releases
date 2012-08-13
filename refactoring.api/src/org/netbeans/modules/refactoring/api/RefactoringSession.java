@@ -254,6 +254,10 @@ public final class RefactoringSession {
         finished.set(true);
     }
     
+    boolean isFinished() {
+        return finished.get();
+    }
+    
     /**
      *  Adds progress listener to this RefactoringSession
      * @param listener to add

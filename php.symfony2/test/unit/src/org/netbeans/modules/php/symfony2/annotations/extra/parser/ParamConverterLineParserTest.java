@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 
 /**
@@ -53,7 +54,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class ParamConverterLineParserTest extends NbTestCase {
-    private ParamConverterLineParser parser;
+    private AnnotationLineParser parser;
 
     public ParamConverterLineParserTest(String name) {
         super(name);
@@ -62,7 +63,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new ParamConverterLineParser();
+        this.parser = Symfony2ExtraAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -70,19 +71,19 @@ public class ParamConverterLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsParamConverterParsedLine_01() throws Exception {
-        assertTrue(parser.parse("ParamConverter") instanceof ParamConverterParsedLine);
+        assertTrue(parser.parse("ParamConverter") instanceof ParsedLine);
     }
 
     public void testReturnValueIsParamConverterParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\ParamConverter") instanceof ParamConverterParsedLine);
+        assertTrue(parser.parse("Annotations\\ParamConverter") instanceof ParsedLine);
     }
 
     public void testReturnValueIsParamConverterParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\ParamConverter") instanceof ParamConverterParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\ParamConverter") instanceof ParsedLine);
     }
 
     public void testReturnValueIsParamConverterParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\ParamConverter(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})") instanceof ParamConverterParsedLine);
+        assertTrue(parser.parse("Annotations\\ParamConverter(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -91,7 +92,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ParamConverter");
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ParamConverter", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -105,7 +106,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ParamConverter   ");
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ParamConverter", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -119,7 +120,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ParamConverter\t\t  ");
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ParamConverter", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -133,7 +134,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("ParamConverter(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})");
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ParamConverter", parsedLine.getName());
         assertEquals("(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -148,7 +149,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\ParamConverter(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})  \t");
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ParamConverter", parsedLine.getName());
         assertEquals("(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -163,7 +164,7 @@ public class ParamConverterLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\ParamConverter(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})  \t");
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("ParamConverter", parsedLine.getName());
         assertEquals("(\"post\", class=\"SensioBlogBundle:Post\", options={\"entity_manager\" = \"foo\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

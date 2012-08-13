@@ -125,5 +125,4 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
         return Collections.singleton(cloudInstance.getServerInstance());
     }
 
-
 }

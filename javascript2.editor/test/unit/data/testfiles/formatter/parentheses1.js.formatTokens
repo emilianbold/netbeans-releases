@@ -62,6 +62,7 @@ FormattingToken{kind=TEXT, offset=99, text=this}
 FormattingToken{kind=BEFORE_WITH_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=103, text=)}
 FormattingToken{kind=WHITESPACE, offset=104, text= }
+FormattingToken{kind=BEFORE_WITH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=105, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
@@ -90,6 +91,7 @@ FormattingToken{kind=WHITESPACE, offset=158, text= }
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=159, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=160, text='}
 FormattingToken{kind=TEXT, offset=161, text=Cylinders: }
 FormattingToken{kind=TEXT, offset=172, text='}
@@ -288,6 +290,7 @@ FormattingToken{kind=TEXT, offset=454, text=round}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=459, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=460, text=Math}
 FormattingToken{kind=TEXT, offset=464, text=.}
 FormattingToken{kind=TEXT, offset=465, text=random}
@@ -339,6 +342,7 @@ FormattingToken{kind=WHITESPACE, offset=526, text= }
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=527, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=528, text=error}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=533, text=)}
@@ -515,6 +519,7 @@ FormattingToken{kind=TEXT, offset=744, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=745, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=746, text=a}
 FormattingToken{kind=WHITESPACE, offset=747, text= }
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
