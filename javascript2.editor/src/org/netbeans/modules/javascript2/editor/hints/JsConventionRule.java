@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.hints;
 
 import com.oracle.nashorn.ir.BinaryNode;
+import com.oracle.nashorn.ir.Block;
 import com.oracle.nashorn.ir.DoWhileNode;
 import com.oracle.nashorn.ir.ExecuteNode;
 import com.oracle.nashorn.ir.ForNode;
@@ -190,7 +191,7 @@ public class JsConventionRule implements Rule.AstRule{
         
         @Override
         public Node visit(ExecuteNode executeNode, boolean onset) {
-            if (onset) {
+            if (onset && !(executeNode.getExpression() instanceof Block)) {
                 checkSemicolon(executeNode.getFinish());
             }
             return super.visit(executeNode, onset);

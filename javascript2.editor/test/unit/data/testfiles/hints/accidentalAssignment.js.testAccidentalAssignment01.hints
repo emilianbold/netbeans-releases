@@ -7,9 +7,6 @@ HINT:Expected a conditional expression and instead saw an assignment.
     for (var i = a; a = b; a++) {
                     -----
 HINT:Expected a conditional expression and instead saw an assignment.
-    }
-    -
-HINT:Expected semicolon ; after "}".
     } while (a = 20);
              ------
 HINT:Expected a conditional expression and instead saw an assignment.
