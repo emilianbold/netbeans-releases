@@ -229,9 +229,22 @@ public class NewClientSideProject extends JPanel {
 
     @NbBundle.Messages("ClientSideProject.dialog.location.title=Select Project Location")
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        File workDir = null;
+        String projectLocation = getProjectLocation();
+        if (projectLocation != null && !projectLocation.isEmpty()) {
+            File projDir = new File(projectLocation);
+            if (projDir.isDirectory()) {
+                workDir = projDir;
+            }
+        }
+        if (workDir == null) {
+            workDir = ProjectChooser.getProjectsFolder();
+        }
         File projectDir = new FileChooserBuilder(NewClientSideProject.class)
                 .setTitle(Bundle.ClientSideProject_dialog_location_title())
                 .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(workDir)
+                .forceUseOfDefaultWorkingDirectory(true)
                 .showOpenDialog();
         if (projectDir != null) {
             projectLocationTextField.setText(FileUtil.normalizeFile(projectDir).getAbsolutePath());
