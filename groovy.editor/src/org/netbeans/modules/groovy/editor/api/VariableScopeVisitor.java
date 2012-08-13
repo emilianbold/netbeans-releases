@@ -656,17 +656,21 @@ public final class VariableScopeVisitor extends TypeVisitor {
         }
 
         // Check if the caret is on the parent type
-        if (AstUtilities.isCaretOnClassNode(superClass, doc, cursorOffset)) {
-            if (visitedName.equals(superClass.getName())) {
-                occurrences.add(new FakeASTNode(superClass, visitedNameWithoutPkg));
+        if (superClass.getLineNumber() > 0 && superClass.getColumnNumber() > 0) {
+            if (AstUtilities.isCaretOnClassNode(superClass, doc, cursorOffset)) {
+                if (visitedName.equals(superClass.getName())) {
+                    occurrences.add(new FakeASTNode(superClass, visitedNameWithoutPkg));
+                }
             }
         }
 
         // Check all implemented interfaces
         for (ClassNode interfaceNode : interfaces) {
-            if (AstUtilities.isCaretOnClassNode(interfaceNode, doc, cursorOffset)) {
-                if (visitedName.equals(interfaceNode.getName())) {
-                    occurrences.add(new FakeASTNode(interfaceNode, visitedNameWithoutPkg));
+            if (interfaceNode.getLineNumber() > 0 && interfaceNode.getColumnNumber() > 0) {
+                if (AstUtilities.isCaretOnClassNode(interfaceNode, doc, cursorOffset)) {
+                    if (visitedName.equals(interfaceNode.getName())) {
+                        occurrences.add(new FakeASTNode(interfaceNode, visitedNameWithoutPkg));
+                    }
                 }
             }
         }
