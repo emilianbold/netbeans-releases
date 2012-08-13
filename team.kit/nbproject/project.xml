@@ -91,6 +91,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.bugtracking.kenai</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.kenai</code-name-base>
                     <run-dependency>
                         <specification-version>0.1</specification-version>
@@ -154,6 +160,12 @@
                     <code-name-base>org.netbeans.modules.ods.versioning</code-name-base>
                     <run-dependency>
                         <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.versioning.kenai</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
