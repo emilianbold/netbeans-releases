@@ -838,5 +838,42 @@ public class AstUtilities {
         @Override
         public void visit(GroovyCodeVisitor visitor) {}
 
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 71 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 71 * hash + this.getLineNumber();
+            hash = 71 * hash + this.getColumnNumber();
+            hash = 71 * hash + this.getLastLineNumber();
+            hash = 71 * hash + this.getLastColumnNumber();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FakeASTNode other = (FakeASTNode) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            if (this.getLineNumber() != other.getLineNumber()) {
+                return false;
+            }
+            if (this.getColumnNumber() != other.getColumnNumber()) {
+                return false;
+            }
+            if (this.getLastLineNumber() != other.getLastLineNumber()) {
+                return false;
+            }
+            if (this.getLastColumnNumber() != other.getLastColumnNumber()) {
+                return false;
+            }
+            return true;
+        }
     }
 }
