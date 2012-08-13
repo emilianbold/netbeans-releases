@@ -110,8 +110,9 @@ public class FindTypeUtils {
             if (isCaretOnClassNode(classNode, doc, caret)) {
                 return classNode;
             }
-            if (isCaretOnClassNode(classNode.getSuperClass(), doc, caret)) {
-                return classNode.getSuperClass();
+            ClassNode superClass = classNode.getUnresolvedSuperClass(false);
+            if (isCaretOnClassNode(superClass, doc, caret)) {
+                return superClass;
             }
             for (ClassNode interfaceNode : classNode.getInterfaces()) {
                 if (isCaretOnClassNode(interfaceNode, doc, caret)) {

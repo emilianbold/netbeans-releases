@@ -39,44 +39,22 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
+package org.netbeans.core.validation;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
-
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new SimpleAnnotationLineParser());
+public class ValidateNbinstPlatformTest {
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateNbinstTest.class).
+            clusters("platform|ide").enableClasspathModules(false).enableModules(".*").gui(false).suite());
+        return suite;
     }
-
-    private Doctrine2OdmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=600)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
-    }
-
-    @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
-    }
-
+    
 }

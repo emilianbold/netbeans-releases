@@ -278,6 +278,11 @@ public class AstUtilities {
             ConstantExpression constantExpression = (ConstantExpression) node;
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + constantExpression.getText().length());
+        } else if (node instanceof FakeASTNode) {
+            int startOffset = AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            int endOffset = AstUtilities.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+            
+            return new OffsetRange(startOffset, endOffset);
         }
         return OffsetRange.NONE;
     }
@@ -804,22 +809,71 @@ public class AstUtilities {
      */
     public static final class FakeASTNode extends ASTNode {
 
-        private final String text;
-        private final ASTNode orig;
+        private final String name;
+        private final ASTNode node;
 
-        public FakeASTNode(ASTNode orig, String text) {
-            this.orig = orig;
-            this.text = text;
+        public FakeASTNode(ASTNode node) {
+            this(node, node.getText());
         }
 
-        public ASTNode getOriginalNode() { return orig; }
+        public FakeASTNode(ASTNode node, String name) {
+            this.node = node;
+            this.name = name;
+
+            setLineNumber(node.getLineNumber());
+            setColumnNumber(node.getColumnNumber());
+            setLastLineNumber(node.getLastLineNumber());
+            setLastColumnNumber(node.getLastColumnNumber());
+        }
+
+        public ASTNode getOriginalNode() {
+            return node;
+        }
 
         @Override
-        public String getText() { return text; }
+        public String getText() {
+            return name;
+        }
 
         @Override
         public void visit(GroovyCodeVisitor visitor) {}
 
-    }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 71 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 71 * hash + this.getLineNumber();
+            hash = 71 * hash + this.getColumnNumber();
+            hash = 71 * hash + this.getLastLineNumber();
+            hash = 71 * hash + this.getLastColumnNumber();
+            return hash;
+        }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FakeASTNode other = (FakeASTNode) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            if (this.getLineNumber() != other.getLineNumber()) {
+                return false;
+            }
+            if (this.getColumnNumber() != other.getColumnNumber()) {
+                return false;
+            }
+            if (this.getLastLineNumber() != other.getLastLineNumber()) {
+                return false;
+            }
+            if (this.getLastColumnNumber() != other.getLastColumnNumber()) {
+                return false;
+            }
+            return true;
+        }
+    }
 }

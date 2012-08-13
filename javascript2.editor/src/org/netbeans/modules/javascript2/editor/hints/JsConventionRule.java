@@ -43,6 +43,8 @@ package org.netbeans.modules.javascript2.editor.hints;
 
 import com.oracle.nashorn.ir.ExecuteNode;
 import com.oracle.nashorn.ir.Node;
+import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
 import java.util.Arrays;
 import java.util.Collections;
@@ -139,8 +141,9 @@ public class JsConventionRule implements Rule.AstRule{
         
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
         private void checkSemicolon(int offset) {
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-            ts.move(offset);
+            int fileOffset = context.parserResult.getSnapshot().getOriginalOffset(offset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
+            ts.move(fileOffset);
             if(ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
                 if(id == JsTokenId.STRING_END && ts.moveNext()) {
@@ -165,7 +168,29 @@ public class JsConventionRule implements Rule.AstRule{
             }
             return super.visit(executeNode, onset);
         }
-        
+
+        @Override
+        @NbBundle.Messages("Unexpected=Unexpected \"{0}\".")
+        public Node visit(ObjectNode objectNode, boolean onset) {
+            if (onset) {
+                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
+                ts.move(offset);
+                if(ts.movePrevious() && ts.moveNext()) {
+                    LexUtilities.findPrevious(ts, Arrays.asList(
+                            JsTokenId.EOL, JsTokenId.WHITESPACE, 
+                            JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                            JsTokenId.BLOCK_COMMENT));
+                    if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                        hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
+                            context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                    }
+                }
+            }
+            return super.visit(objectNode, onset);
+        }
+
         @Override
         public Node visit(VarNode varNode, boolean onset) {
             if (onset) {
