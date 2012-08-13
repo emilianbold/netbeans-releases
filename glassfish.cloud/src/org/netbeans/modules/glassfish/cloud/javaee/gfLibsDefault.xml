@@ -56,8 +56,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             <file path="modules/glassfish-api.jar"/>
         </classpath>
         <javadocs>
-            <fileset dir="modules/web">
-                <include name="javax.*.jar"/>
+            <fileset dir="docs">
+                <include name="javaee6-doc-api.zip"/>
             </fileset>
         </javadocs>
         <sources>

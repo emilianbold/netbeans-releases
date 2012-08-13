@@ -45,15 +45,21 @@ import java.awt.Image;
 import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishLibrary;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.LibraryBuilder;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 
@@ -85,6 +91,22 @@ public abstract class GlassFishPlatformImpl
     static {
         JAVA_PLATFORMS.add("1.6");
         JAVA_PLATFORMS.add("1.7");
+    }
+
+    /** Supported J2EE module types. */
+    private static final Set<J2eeModule.Type> supportedModuleTypes
+            = new HashSet<J2eeModule.Type>();
+    static {
+        supportedModuleTypes.add(J2eeModule.Type.WAR);
+        supportedModuleTypes.add(J2eeModule.Type.EJB);
+        supportedModuleTypes.add(J2eeModule.Type.EAR);
+    }
+
+    /** Supported profiles (terminology of Java EE 6) */
+    private static final Set<Profile> supportedProfiles = new HashSet<Profile>();
+    static {
+        supportedProfiles.add(Profile.JAVA_EE_6_WEB);
+        supportedProfiles.add(Profile.JAVA_EE_6_FULL);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -122,17 +144,17 @@ public abstract class GlassFishPlatformImpl
      * Initializes common Java EE platform attributes.
      * <p/>
      * @param url GlassFish cloud URL.
+     * @param instance GlassFish cloud local instance.
      */
     @SuppressWarnings("LeakingThisInConstructor")
-    GlassFishPlatformImpl(GlassFishUrl url) {
+    GlassFishPlatformImpl(GlassFishUrl url, GlassFishInstance instance) {
         this.url = url;
-        instance = GlassFishCloudInstanceProvider
-                .getCloudInstance(url.getName());        
+        this.instance = instance;
         if (instance == null || instance.getLocalServer() == null) {
             throw new NullPointerException("GlassFish local server instance "
-                    + url.getName() + "does not exist.");
+                    + url.getName() + " does not exist.");
         }
-        instance.addChangeListener(this, new GlassFishInstance.Event[]{
+        this.instance.addChangeListener(this, new GlassFishInstance.Event[]{
             GlassFishInstance.Event.STORE, GlassFishInstance.Event.REMOVE});
     }
 
@@ -202,7 +224,24 @@ public abstract class GlassFishPlatformImpl
 
     @Override
     public LibraryImplementation[] getLibraries() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        GlassFishServer server = instance.getLocalServer();
+        LibraryBuilder lb = getBuilder();
+        List<GlassFishLibrary> libs = lb.getLibraries(server.getVersion());
+        LibraryImplementation[] lis = new LibraryImplementation[libs.size()];
+        int i = 0;
+        for (GlassFishLibrary lib : libs) {
+            LibraryImplementation li
+                    = new J2eeLibraryTypeProvider().createLibrary();
+            li.setName(lib.getLibraryID());
+            li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH,
+                    lib.getClasspath());
+            li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
+                    lib.getJavadocs());
+            li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC,
+                    lib.getSources());
+            lis[i++] = li;
+        }
+        return lis;
     }
 
     /**
@@ -286,6 +325,31 @@ public abstract class GlassFishPlatformImpl
     @Override    
     public boolean isToolSupported(String toolName) {
         return false;
+    }
+
+    /**
+     * Return a set of supported module types.
+     * <p/>
+     * @return Set of currently supported module types. 
+     */
+    @Override
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        return supportedModuleTypes;
+    }
+
+    /**
+     * Returns a set of supported profiles.
+     * <p/>
+     * By default method converts
+     * specification version returned by {@link #getSupportedSpecVersions()}
+     * to profiles.
+     *
+     * @return Set of supported profiles
+     * @see Profile
+     */
+    @Override
+    public Set<Profile> getSupportedProfiles() {
+        return supportedProfiles;
     }
 
     ////////////////////////////////////////////////////////////////////////////

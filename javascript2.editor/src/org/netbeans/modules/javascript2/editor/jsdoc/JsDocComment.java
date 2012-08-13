@@ -49,6 +49,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
 
@@ -59,7 +60,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterEleme
  */
 public class JsDocComment extends JsComment {
 
-    private final Map<JsDocElement.Type, List<JsDocElement>> tags = new EnumMap<JsDocElement.Type, List<JsDocElement>>(JsDocElement.Type.class);
+    private final Map<JsDocElementType, List<JsDocElement>> tags = new EnumMap<JsDocElementType, List<JsDocElement>>(JsDocElementType.class);
     private final JsDocCommentType type;
 
     /**
@@ -87,7 +88,7 @@ public class JsDocComment extends JsComment {
     public List<String> getSummary() {
         List<String> summaries = new LinkedList<String>();
         for (JsDocElement jsDocElement : getTagsForTypes(
-                new JsDocElement.Type[]{JsDocElement.Type.DESCRIPTION, JsDocElement.Type.CONTEXT_SENSITIVE})) {
+                new JsDocElementType[]{JsDocElementType.DESCRIPTION, JsDocElementType.CONTEXT_SENSITIVE})) {
             summaries.add(((DescriptionElement) jsDocElement).getDescription());
         }
         return summaries;
@@ -96,7 +97,7 @@ public class JsDocComment extends JsComment {
     @Override
     public List<String> getSyntax() {
         List<String> syntaxes = new LinkedList<String>();
-        for (JsDocElement jsDocElement : getTagsForType(JsDocElement.Type.SYNTAX)) {
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.SYNTAX)) {
             syntaxes.add(((DescriptionElement) jsDocElement).getDescription());
         }
         return syntaxes;
@@ -105,10 +106,10 @@ public class JsDocComment extends JsComment {
     @Override
     public DocParameter getReturnType() {
         for (JsDocElement jsDocElement : getTagsForTypes(
-                new JsDocElement.Type[]{JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS})) {
+                new JsDocElementType[]{JsDocElementType.RETURN, JsDocElementType.RETURNS})) {
             return  (DocParameter) jsDocElement;
         }
-        for (JsDocElement jsDocElement : getTagsForType(JsDocElement.Type.TYPE)) {
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.TYPE)) {
             return UnnamedParameterElement.create(
                     jsDocElement.getType(),
                     Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType()),
@@ -121,7 +122,7 @@ public class JsDocComment extends JsComment {
     public List<DocParameter> getParameters() {
         List<DocParameter> params = new LinkedList<DocParameter>();
         for (JsDocElement jsDocElement : getTagsForTypes(
-                new JsDocElement.Type[]{JsDocElement.Type.PARAM, JsDocElement.Type.ARGUMENT})) {
+                new JsDocElementType[]{JsDocElementType.PARAM, JsDocElementType.ARGUMENT})) {
             params.add((NamedParameterElement) jsDocElement);
         }
         return params;
@@ -129,14 +130,14 @@ public class JsDocComment extends JsComment {
 
     @Override
     public boolean isDeprecated() {
-        return !getTagsForType(JsDocElement.Type.DEPRECATED).isEmpty();
+        return !getTagsForType(JsDocElementType.DEPRECATED).isEmpty();
     }
 
     @Override
     public Set<JsModifier> getModifiers() {
         Set<JsModifier> modifiers = EnumSet.noneOf(JsModifier.class);
-        for (JsDocElement jsDocElement : getTagsForTypes(new JsDocElement.Type[]{
-                JsDocElement.Type.PRIVATE, JsDocElement.Type.PUBLIC, JsDocElement.Type.STATIC})) {
+        for (JsDocElement jsDocElement : getTagsForTypes(new JsDocElementType[]{
+                JsDocElementType.PRIVATE, JsDocElementType.PUBLIC, JsDocElementType.STATIC})) {
             modifiers.add(JsModifier.fromString(jsDocElement.getType().toString().substring(1)));
         }
         return modifiers;
@@ -171,7 +172,7 @@ public class JsDocComment extends JsComment {
      * Gets list of {@code JsDocTag}s of given type.
      * @return list of {@code JsDocTag}s
      */
-    public List<? extends JsDocElement> getTagsForType(JsDocElement.Type type) {
+    public List<? extends JsDocElement> getTagsForType(JsDocElementType type) {
         List<JsDocElement> tagsForType = tags.get(type);
         return tagsForType == null ? Collections.<JsDocElement>emptyList() : tagsForType;
     }
@@ -180,9 +181,9 @@ public class JsDocComment extends JsComment {
      * Gets list of {@code JsDocTag}s of given types.
      * @return list of {@code JsDocTag}s
      */
-    public List<? extends JsDocElement> getTagsForTypes(JsDocElement.Type[] types) {
+    public List<? extends JsDocElement> getTagsForTypes(JsDocElementType[] types) {
         List<JsDocElement> list = new LinkedList<JsDocElement>();
-        for (JsDocElement.Type type : types) {
+        for (JsDocElementType type : types) {
             list.addAll(getTagsForType(type));
         }
         return list;

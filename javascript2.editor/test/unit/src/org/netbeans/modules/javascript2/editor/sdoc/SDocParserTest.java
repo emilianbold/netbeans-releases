@@ -86,14 +86,14 @@ public class SDocParserTest extends JsTestBase {
         Source source = getTestSource(getTestFile("testfiles/sdoc/allTypesNoAsterisks.js"));
         List<? extends SDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         assertEquals(SDocElementType.DESCRIPTION, tags.get(0).getType());
-        assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/sdoc/allTypesAsterisks.js"));
         List<? extends SDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         assertEquals(SDocElementType.DESCRIPTION, tags.get(0).getType());
-        assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription());
     }
 
     private void checkElementTypes(String filePath) throws Exception {
