@@ -61,15 +61,17 @@ import org.openide.windows.TopComponent;
 /**
  * A quick prototype of a Preview tab in HTML document Multiview window.
  *
+ * Note: It is currently disabled. Uncomment the class annotations below to enable again.
+ *
  * @author S. Aubrecht
  */
-@MultiViewElement.Registration(
-        displayName = "#CTL_PreviewTabCaption", // NOI18N
-// no icon
-persistenceType = TopComponent.PERSISTENCE_NEVER,
-preferredID = "HtmlPreviewTab", // NOI18N
-mimeType = "text/html", // NOI18N
-position = 9501)
+//@MultiViewElement.Registration(
+//        displayName = "#CTL_PreviewTabCaption", // NOI18N
+//// no icon
+//persistenceType = TopComponent.PERSISTENCE_NEVER,
+//preferredID = "HtmlPreviewTab", // NOI18N
+//mimeType = "text/html", // NOI18N
+//position = 9501)
 public class HtmlPreviewElement implements MultiViewElement {
 
     private final JPanel panel = new JPanel(new BorderLayout());
