@@ -52,6 +52,7 @@ import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
+import com.oracle.nashorn.parser.TokenType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -140,6 +141,7 @@ public class JsConventionRule implements Rule.AstRule{
             this.rule = rule;
         }
         
+        @NbBundle.Messages("ExpectedInstead=Expected \"{0}\" and instead saw \"{1}\".")
         public void process(JsRuleContext context, List<Hint> hints) {
             this.hints = hints;
             this.context = context;
@@ -176,10 +178,27 @@ public class JsConventionRule implements Rule.AstRule{
                     hints.add(new Hint(rule, Bundle.AssignmentCondition(), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                } else {
+                    String message = null;
+                    switch(binaryNode.tokenType()) {
+                        case EQ:
+                            message = Bundle.ExpectedInstead("===", "=="); //NOI18N
+                            break;
+                        case NE:
+                            message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
+                            break;
+                    }
+                    if (message != null) {
+                        hints.add(new Hint(rule, message, 
+                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                    }
                 }
             }
         }
 
+        
+       
         @Override
         public Node visit(DoWhileNode doWhileNode, boolean onset) {
             if (onset) {
