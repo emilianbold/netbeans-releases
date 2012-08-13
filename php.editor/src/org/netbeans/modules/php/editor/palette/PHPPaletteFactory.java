@@ -32,10 +32,10 @@ import org.openide.util.datatransfer.ExTransferable;
  */
 
 public class PHPPaletteFactory {
-    
+
     public static final String PHP_PALETTE_FOLDER = "Palettes/PHP";  //NOI18N
 
-    private static PaletteController palette = null;
+    private static volatile PaletteController palette = null;
 
     public static PaletteController getPalette() throws IOException {
         if (palette == null)

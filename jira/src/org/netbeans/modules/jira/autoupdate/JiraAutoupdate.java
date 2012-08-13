@@ -44,7 +44,6 @@ package org.netbeans.modules.jira.autoupdate;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
 import com.atlassian.connector.eclipse.internal.jira.core.model.ServerInfo;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Calendar;
@@ -61,10 +60,10 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -150,9 +149,9 @@ public class JiraAutoupdate {
 
     public boolean checkSupportedJiraServerVersion(final JiraRepository repository) {
         final String[] v = new String[1];
-        JiraCommand cmd = new JiraCommand() {
+        BugtrackingCommand cmd = new BugtrackingCommand() {
             @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+            public void execute() throws CoreException, IOException, MalformedURLException {
                 JiraConfiguration conf = repository.getConfiguration();
                 ServerInfo info = conf.getServerInfo();
                 v[0] = info.getVersion();

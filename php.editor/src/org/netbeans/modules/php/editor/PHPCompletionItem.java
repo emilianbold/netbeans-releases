@@ -101,7 +101,7 @@ import org.openide.util.WeakListeners;
 public abstract class PHPCompletionItem implements CompletionProposal {
 
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
-    protected static ImageIcon keywordIcon = null;
+    protected static final ImageIcon KEYWORD_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
     final CompletionRequest request;
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
@@ -111,7 +111,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
         this.element = element;
-        keywordIcon = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
         this.generateAs = generateAs;
     }
 
@@ -978,7 +977,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return keywordIcon;
+            return KEYWORD_ICON;
         }
 
         @Override
@@ -1133,7 +1132,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return keywordIcon;
+            return KEYWORD_ICON;
         }
     }
 

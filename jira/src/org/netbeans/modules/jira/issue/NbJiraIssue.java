@@ -96,17 +96,14 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -857,7 +854,7 @@ public class NbJiraIssue {
         mapper.setContentType(contentType);
         final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         mapper.applyTo(attAttribute);
-        JiraCommand cmd = new JiraCommand() {
+        BugtrackingCommand cmd = new BugtrackingCommand() {
             @Override
             public void execute() throws CoreException, IOException {
 //                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
@@ -1307,7 +1304,7 @@ public class NbJiraIssue {
         if (Jira.LOG.isLoggable(Level.FINEST)) {
             Jira.LOG.log(Level.FINEST, "submitAndRefresh: id: {0}, new: {1}", new Object[]{getID(), wasNew});
         }
-        JiraCommand submitCmd = new JiraCommand() {
+        BugtrackingCommand submitCmd = new BugtrackingCommand() {
             @Override
             public void execute() throws CoreException {
                 // submit
@@ -1325,9 +1322,9 @@ public class NbJiraIssue {
             return false;
         }
         
-        JiraCommand refreshCmd = new JiraCommand() {
+        BugtrackingCommand refreshCmd = new BugtrackingCommand() {
             @Override
-            public void execute() throws CoreException {
+            public void execute() {
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
                     Jira.LOG.log(Level.FINEST, "submitAndRefresh, refreshCmd: id: {0}, new: {1}", new Object[]{getID(), wasNew});
                 }
@@ -1589,7 +1586,7 @@ public class NbJiraIssue {
          */
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-            JiraCommand cmd = new JiraCommand() {
+            BugtrackingCommand cmd = new BugtrackingCommand() {
                 @Override
                 public void execute() throws CoreException, IOException {
                     if (Jira.LOG.isLoggable(Level.FINER)) {

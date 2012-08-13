@@ -139,7 +139,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                     File file = FileUtil.toFile(fo);
                     if(file != null) {
                         if(Git.getInstance().isManaged(file) ) {
-                            cloneFromPath = file.getAbsolutePath();
+                            cloneFromPath = Git.getInstance().getRepositoryRoot(file).getAbsolutePath();
                         }
                     }
                 }

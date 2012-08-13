@@ -15,9 +15,17 @@ if [ -z $BUILD_NBJDK7 ]; then
     BUILD_NBJDK7=0
 fi
 
+if [ -z "$SIGNING_IDENTITY" ]; then
+    SIGNING_IDENTITY=0
+fi
+
+if [ ! -z $SIGNING_PASSWORD ] ; then
+    security unlock-keychain -p $SIGNING_PASSWORD
+fi
+
 # Run new builds
 sh $NB_ALL/installer/mac/newbuild/init.sh
-sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $EN_BUILD $ML_BUILD $BUILD_NBJDK7 $LOCALES
+sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $EN_BUILD $ML_BUILD $BUILD_NBJDK7 "$SIGNING_IDENTITY" $LOCALES
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -97,4 +105,8 @@ if [ $ML_BUILD == 1 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
 #        exit $ERROR_CODE;
     fi
+fi
+
+if [ ! -z $SIGNING_PASSWORD ] ; then
+    security lock-keychain
 fi

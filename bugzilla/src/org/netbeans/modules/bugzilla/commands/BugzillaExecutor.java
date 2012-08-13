@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -59,6 +60,7 @@ import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -87,23 +89,23 @@ public class BugzillaExecutor {
         this.repository = repository;
     }
 
-    public void execute(BugzillaCommand cmd) {
+    public void execute(BugtrackingCommand cmd) {
         execute(cmd, true);
     }
 
-    public void execute(BugzillaCommand cmd, boolean handleExceptions) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions) {
         execute(cmd, handleExceptions, true);
     }
 
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion) {
         execute(cmd, handleExceptions, checkVersion, true, true);
     }
 
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
         execute(cmd, handleExceptions, checkVersion, ensureCredentials, true);
     }
     
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
         try {
             cmd.setFailed(true);
 
