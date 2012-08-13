@@ -222,6 +222,101 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue215756_03() throws Exception {
         checkOccurrences("testfiles/coloring/issue215756.js", "TE^ST.test();", true);
     }
+    
+    public void testConstructor_1() throws Exception {
+        checkOccurrences(getTestPath(), "function Ad^dress (street, town, country) {", true);
+    }
+
+    public void testConstructor_2() throws Exception {
+        checkOccurrences(getTestPath(), "object = new ^Address(\"V Parku\", \"Prague\", \"Czech Republic\");", true);
+    }
+
+    public void testConstructor_3() throws Exception {
+        checkOccurrences(getTestPath(), "function C^ar (color, maker) {", true);
+    }
+
+    public void testMethodIdent_1() throws Exception {
+        checkOccurrences(getTestPath(), "this.color = col^or;", true);
+    }
+
+    public void testMethodIdent_2() throws Exception {
+        checkOccurrences(getTestPath(), "this.town = t^own;", true);
+    }
+
+    public void testGlobalTypes_1() throws Exception {
+        checkOccurrences(getTestPath(), "var mujString = new St^ring(\"mujString\");", true);
+    }
+
+    public void testDocumentation_1() throws Exception {
+        checkOccurrences(getTestPath(), "* @param {Color} co^lor car color", true);
+    }
+
+    public void testDocumentation_2() throws Exception {
+        checkOccurrences(getTestPath(), "* @param {Co^lor} color car color", true);
+    }
+
+    public void testDocumentation_3() throws Exception {
+        checkOccurrences(getTestPath(), " * @type Ca^r", true);
+    }
+
+    public void testDocumentation_4() throws Exception {
+        checkOccurrences(getTestPath(), " * @param {St^ring} street", true);
+    }
+
+    public void testDocumentation_5() throws Exception {
+        checkOccurrences(getTestPath(), " * @param {String} str^eet", true);
+    }
+
+    public void testDocumentation_6() throws Exception {
+        checkOccurrences(getTestPath(), "* @return {Addre^ss} address", true);
+    }
+
+    public void testDocumentation_7() throws Exception {
+        // should return name occurences only from associated method and its comment
+        checkOccurrences(getTestPath(), "this.street = stre^et; //another line", true);
+    }
+
+    public void testDocumentation_8() throws Exception {
+        // should return name occurences only from associated method and its comment
+        checkOccurrences(getTestPath(), " * @param {String} co^untry my country", true);
+    }
+
+    public void testCorrectPrototype_1() throws Exception {
+        checkOccurrences(getTestPath(), "Car.pr^ototype.a = 5;", true);
+    }
+
+    public void testCorrectPrototype_2() throws Exception {
+        checkOccurrences(getTestPath(), "Car.prototype^.b = 8;", true);
+    }
+
+    public void testCorrectPrototype_3() throws Exception {
+        checkOccurrences(getTestPath(), "Pislik.pro^totype.human = false;", true);
+    }
+
+    public void testCorrectPrototype_4() throws Exception {
+        checkOccurrences(getTestPath(), "Hejlik.^prototype.human = false;", true);
+    }
+
+    public void testCorrectPrototype_5() throws Exception {
+        checkOccurrences(getTestPath(), "Pislik.prototype.hum^an = false;", true);
+    }
+
+    private String getTestFolderPath() {
+        return "testfiles/markoccurences/" + getTestName();//NOI18N
+    }
+
+    private String getTestPath() {
+        return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
+    }
+
+    private String getTestName() {
+        String name = getName();
+        int indexOf = name.indexOf("_");
+        if (indexOf != -1) {
+            name = name.substring(0, indexOf);
+        }
+        return name;
+    }
         
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,

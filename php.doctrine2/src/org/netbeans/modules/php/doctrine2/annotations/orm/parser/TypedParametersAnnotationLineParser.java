@@ -63,7 +63,7 @@ public class TypedParametersAnnotationLineParser implements AnnotationLineParser
         ANNOTATIONS.put("Entity", entityRegexs); //NOI18N
 
         Set<String> discriminatorMapRegexs = new HashSet<String>();
-        discriminatorMapRegexs.add(""); //NOI18N
+        discriminatorMapRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
         ANNOTATIONS.put("DiscriminatorMap", discriminatorMapRegexs); //NOI18N
 
         Set<String> manyToOneRegexs = new HashSet<String>();

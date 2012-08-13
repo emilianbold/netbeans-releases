@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
+package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,40 +54,59 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
+public class ComplexAnnotationLineParser implements AnnotationLineParser {
 
-    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
+    private static final Set<ComplexAnnotation> ANNOTATIONS = new HashSet<ComplexAnnotation>();
     static {
-        Set<String> tableInlineAnnotations = new HashSet<String>();
-        tableInlineAnnotations.add("Index"); //NOI18N
-        tableInlineAnnotations.add("UniqueConstraint"); //NOI18N
-        ANNOTATIONS.put("Table", tableInlineAnnotations); //NOI18N
-
-        Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
-        joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
-        ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
-        
-        Set<String> joinTableInlineAnnotations = new HashSet<String>();
-        joinTableInlineAnnotations.add("JoinColumn"); //NOI18N
-        ANNOTATIONS.put("JoinTable", joinTableInlineAnnotations); //NOI18N
+        Set<String> inlineAnnotations = new HashSet<String>();
+        inlineAnnotations.add("Index"); //NOI18N
+        Set<String> typedParamRegexs = new HashSet<String>();
+        typedParamRegexs.add("repositoryClass"); //NOI18N
+        ANNOTATIONS.add(new ComplexAnnotation("Document", inlineAnnotations, typedParamRegexs)); //NOI18N
     }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
         String[] tokens = line.split("\\("); //NOI18N
-        for (Map.Entry<String, Set<String>> entry : ANNOTATIONS.entrySet()) {
-            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
-                String annotation = tokens[0].trim();
-                String description = line.substring(annotation.length()).trim();
+        for (ComplexAnnotation annotation : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotation.getName())) {
+                String annotationName = tokens[0].trim();
+                String description = line.substring(annotationName.length()).trim();
                 Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-                types.put(new OffsetRange(0, annotation.length()), annotation);
-                types.putAll(AnnotationUtils.extractInlineAnnotations(line, entry.getValue()));
-                result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
+                types.put(new OffsetRange(0, annotationName.length()), annotationName);
+                types.putAll(AnnotationUtils.extractInlineAnnotations(line, annotation.getInlineAnnotations()));
+                types.putAll(AnnotationUtils.extractTypesFromParameters(line, annotation.getTypedParamRegexs()));
+                result = new AnnotationParsedLine.ParsedLine(annotation.getName(), types, description, true);
                 break;
             }
         }
         return result;
+    }
+
+    private static class ComplexAnnotation {
+        private final String name;
+        private final Set<String> inlineAnnotations;
+        private final Set<String> typedParamRegexs;
+
+        public ComplexAnnotation(String name, Set<String> inlineAnnotations, Set<String> typedParamRegexs) {
+            this.name = name;
+            this.inlineAnnotations = inlineAnnotations;
+            this.typedParamRegexs = typedParamRegexs;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        Set<String> getInlineAnnotations() {
+            return inlineAnnotations;
+        }
+
+        Set<String> getTypedParamRegexs() {
+            return typedParamRegexs;
+        }
+
     }
 
 }

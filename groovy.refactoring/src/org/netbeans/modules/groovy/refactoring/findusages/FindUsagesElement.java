@@ -86,7 +86,7 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
 
     @Override
     public String getDisplayText() {
-        return line.getText().trim();
+        return FindUsagesPainter.colorASTNode(element.getNode(), line);
     }
 
     @Override

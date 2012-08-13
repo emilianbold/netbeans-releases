@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
+package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,22 +54,33 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
+public class TypedParametersAnnotationLineParser implements AnnotationLineParser {
 
     private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
     static {
-        Set<String> tableInlineAnnotations = new HashSet<String>();
-        tableInlineAnnotations.add("Index"); //NOI18N
-        tableInlineAnnotations.add("UniqueConstraint"); //NOI18N
-        ANNOTATIONS.put("Table", tableInlineAnnotations); //NOI18N
+        Set<String> discriminatorMapRegexs = new HashSet<String>();
+        discriminatorMapRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("DiscriminatorMap", discriminatorMapRegexs); //NOI18N
 
-        Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
-        joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
-        ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
-        
-        Set<String> joinTableInlineAnnotations = new HashSet<String>();
-        joinTableInlineAnnotations.add("JoinColumn"); //NOI18N
-        ANNOTATIONS.put("JoinTable", joinTableInlineAnnotations); //NOI18N
+        Set<String> embedManyRegexs = new HashSet<String>();
+        embedManyRegexs.add("targetDocument"); //NOI18N
+        embedManyRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("EmbedMany", embedManyRegexs); //NOI18N
+
+        Set<String> embedOneRegexs = new HashSet<String>();
+        embedOneRegexs.add("targetDocument"); //NOI18N
+        embedOneRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("EmbedOne", embedOneRegexs); //NOI18N
+
+        Set<String> referenceManyRegexs = new HashSet<String>();
+        referenceManyRegexs.add("targetDocument"); //NOI18N
+        referenceManyRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("ReferenceMany", referenceManyRegexs); //NOI18N
+
+        Set<String> referenceOneRegexs = new HashSet<String>();
+        referenceOneRegexs.add("targetDocument"); //NOI18N
+        referenceOneRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("ReferenceOne", referenceOneRegexs); //NOI18N
     }
 
     @Override
@@ -82,7 +93,7 @@ public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
                 String description = line.substring(annotation.length()).trim();
                 Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
                 types.put(new OffsetRange(0, annotation.length()), annotation);
-                types.putAll(AnnotationUtils.extractInlineAnnotations(line, entry.getValue()));
+                types.putAll(AnnotationUtils.extractTypesFromParameters(line, entry.getValue()));
                 result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
                 break;
             }

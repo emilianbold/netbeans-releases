@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -153,6 +154,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstructorCallExpression) {
             return ((ConstructorCallExpression) node).getType();
+        } else if (node instanceof ArrayExpression) {
+            return ((ArrayExpression) node).getElementType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"); // NOI18N
     }
@@ -189,6 +192,8 @@ public final class ElementUtils {
             name = ((ConstantExpression) node).getText();
         } else if (node instanceof ConstructorCallExpression) {
             name = ((ConstructorCallExpression) node).getType().getNameWithoutPackage();
+        } else if (node instanceof ArrayExpression) {
+            name = ((ArrayExpression) node).getElementType().getNameWithoutPackage();
         }
 
 
@@ -226,7 +231,10 @@ public final class ElementUtils {
             return ((ConstantExpression) node).getDeclaringClass();
         } else if (node instanceof ConstructorCallExpression) {
             return ((ConstructorCallExpression) node).getType();
+        } else if (node instanceof ArrayExpression) {
+            return ((ArrayExpression) node).getDeclaringClass();
         }
+
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + " isn't handled at the moment!"); // NOI18N
     }
 

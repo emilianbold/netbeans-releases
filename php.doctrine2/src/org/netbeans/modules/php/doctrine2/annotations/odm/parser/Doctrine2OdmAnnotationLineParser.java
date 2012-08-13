@@ -58,6 +58,8 @@ public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
     static {
         PARSERS.add(new SimpleAnnotationLineParser());
         PARSERS.add(new ParameterizedAnnotationLineParser());
+        PARSERS.add(new TypedParametersAnnotationLineParser());
+        PARSERS.add(new ComplexAnnotationLineParser());
     }
 
     private Doctrine2OdmAnnotationLineParser() {
