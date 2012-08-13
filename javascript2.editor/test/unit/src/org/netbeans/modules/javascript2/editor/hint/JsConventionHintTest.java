@@ -66,4 +66,8 @@ public class JsConventionHintTest extends HintTestBase {
     public void testUnexpectedComma01() throws Exception {
         checkHints(this, createRule(), "testfiles/hints/unexpectedComma.js", null);
     }
+    
+    public void testAccidentalAssignment01() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/accidentalAssignment.js", null);
+    }
 }
