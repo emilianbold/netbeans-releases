@@ -41,65 +41,47 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import javax.enterprise.deploy.spi.Target;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 
 /**
- * Abstract deployment manager for GlassFish cloud.
- * <p/>
- * Contains common functionality for both local server and remote cloud server.
- * <p/>
- * Provides the core set of functions a Java EE platform must provide for
- * Java EE application deployment. It provides server related information,
- * such as list of deployment targets and GlassFish cloud unique runtime
- * configuration information.
- * <p/>
- * Based on API that will be made optional in JavaEE 7 platform.
+ * Abstract optional deployment manager for GlassFish cloud.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
+public abstract class GlassFishOptionalDeploymentManager
+        extends OptionalDeploymentManagerFactory {
     
     ////////////////////////////////////////////////////////////////////////////
-    // Instance attributes                                                    //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** GlassFish cloud URL. */
-    final GlassFishUrl url;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Constructors                                                           //
+    // Implemented abstract methods                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates an instance of abstract deployment manager for GlassFish cloud.
-     * <p/>
-     * This is non public constructor called only in child classes to initialize
-     * common deployment manager attributes.
-     * <p/>
-     * @param url GlassFish cloud URL.
-     */
-    GlassFishDeploymentManager(GlassFishUrl url) {
-        this.url = url;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Retrieve the list of deployment targets supported by this
-     * DeploymentManager.
-     * <p/>
-     * @return List of deployment Target designators the user may select for
-     *         application deployment or <code>null</code> if there are none. 
-     * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
+     * Create StartServer for given DeploymentManager.
      */
     @Override
-    public Target[] getTargets() throws IllegalStateException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public StartServer getStartServer(DeploymentManager dm) {
+        return null;
     }
+
+    /** 
+     * Create IncrementalDeployment for given DeploymentManager.
+     */
+    @Override
+    public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
+        return null;
+    }
+
+    /** 
+     * Create FindJSPServlet for given DeploymentManager.
+     */
+    @Override
+    public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Overriden methods                                                      //
+    ////////////////////////////////////////////////////////////////////////////
 
 }
