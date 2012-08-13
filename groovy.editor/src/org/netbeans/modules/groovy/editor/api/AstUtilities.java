@@ -278,6 +278,11 @@ public class AstUtilities {
             ConstantExpression constantExpression = (ConstantExpression) node;
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + constantExpression.getText().length());
+        } else if (node instanceof FakeASTNode) {
+            int startOffset = AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            int endOffset = AstUtilities.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+            
+            return new OffsetRange(startOffset, endOffset);
         }
         return OffsetRange.NONE;
     }
