@@ -183,7 +183,7 @@ public class ToolbarWithOverflow extends JToolBar {
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
             width += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
-            height = getOrientation() == HORIZONTAL ? comp.getPreferredSize().height : comp.getPreferredSize().width;
+            height = Math.max( height, getOrientation() == HORIZONTAL ? comp.getPreferredSize().height : comp.getPreferredSize().width );
         }
         if(overflowToolbar.getComponentCount() > 0) {
             width += getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width : overflowButton.getPreferredSize().height;
