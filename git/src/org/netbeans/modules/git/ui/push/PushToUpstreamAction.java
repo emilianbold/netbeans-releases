@@ -39,48 +39,79 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.git.ui.fetch;
 
+package org.netbeans.modules.git.ui.push;
+
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.libs.git.GitTransportUpdate;
-import org.netbeans.libs.git.GitTransportUpdate.Type;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
-import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.git.ui.fetch.Bundle.*;
+import org.openide.util.actions.SystemAction;
+import static org.netbeans.modules.git.ui.push.Bundle.*;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author ondra
  */
-abstract class GetRemoteChangesAction extends SingleRepositoryAction {
-    protected void log (Map<String, GitTransportUpdate> updates, OutputLogger logger) {
-        if (updates.isEmpty()) {
-            logger.output(NbBundle.getMessage(GetRemoteChangesAction.class, "MSG_GetRemoteChangesAction.updates.noChange")); //NOI18N
-        } else {
-            for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
-                GitTransportUpdate update = e.getValue();
-                if (update.getType() == Type.BRANCH) {
-                    logger.output(NbBundle.getMessage(GetRemoteChangesAction.class, "MSG_GetRemoteChangesAction.updates.updateBranch", new Object[] { //NOI18N
-                        update.getLocalName(), 
-                        update.getOldObjectId(),
-                        update.getNewObjectId(),
-                        update.getResult(),
-                    }));
-                } else {
-                    logger.output(NbBundle.getMessage(GetRemoteChangesAction.class, "MSG_GetRemoteChangesAction.updates.updateTag", new Object[] { //NOI18N
-                        update.getLocalName(), 
-                        update.getResult(),
-                    }));
+@ActionID(id = "org.netbeans.modules.git.ui.push.PushToUpstreamAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_PushToUpstreamAction_Name")
+public class PushToUpstreamAction extends SingleRepositoryAction {
+    
+    @Override
+    protected void performAction (File repository, File[] roots, VCSContext context) {
+        push(repository);
+    }
+    
+    @NbBundle.Messages({"LBL_Push.pushToUpstreamFailed=Push to Upstream Failed",
+        "LBL_PushToUpstreamAction.preparing=Preparing Push...",
+        "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"})
+    private void push (final File repository) {
+        GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
+            @Override
+            protected void perform () {
+                RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                info.refreshRemotes();
+                GitBranch activeBranch = info.getActiveBranch();
+                if (activeBranch == null) {
+                    return;
                 }
+                String errorLabel = LBL_Push_pushToUpstreamFailed();
+                GitBranch trackedBranch = getTrackedBranch(activeBranch, errorLabel);
+                if (trackedBranch == null) {
+                    return;
+                }
+                GitRemoteConfig cfg = getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);                        
+                if (cfg == null) {
+                    return;
+                }
+                String uri = cfg.getPushUris().isEmpty() ? cfg.getUris().get(0) : cfg.getPushUris().get(0);
+                List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                List<String> fetchSpecs = cfg.getFetchRefSpecs();
+                String remoteBranchName = guessRemoteBranchName(fetchSpecs, trackedBranch.getName(), cfg.getRemoteName());
+                if (remoteBranchName == null) {
+                    notifyError(errorLabel, MSG_Err_unknownRemoteBranchName(trackedBranch.getName()));
+                }
+                pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranch.getId(), activeBranch, false, false));
+                Utils.logVCSExternalRepository("GIT", uri); //NOI18N
+                SystemAction.get(PushAction.class).push(repository, uri, pushMappings, cfg.getFetchRefSpecs());
             }
-        }
+        };
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, LBL_PushToUpstreamAction_preparing());
     }
         
     private static String parseRemote (String branchName) {
@@ -94,11 +125,7 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
 
     @Messages({"# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
         "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"})
-    protected GitBranch getTrackedBranch (RepositoryInfo info, String errorLabel) {
-        GitBranch activeBranch = info.getActiveBranch();
-        if (activeBranch == null) {
-            return null;
-        }
+    protected GitBranch getTrackedBranch (GitBranch activeBranch, String errorLabel) {
         GitBranch trackedBranch = activeBranch.getTrackedBranch();
         if (trackedBranch == null) {
             notifyError(errorLabel,
@@ -123,7 +150,7 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
             notifyError(errorLabel, MSG_Err_noRemote(trackedBranch.getName()));
             return null;
         }
-        if (cfg.getUris().isEmpty()) {
+        if (cfg.getPushUris().isEmpty() && cfg.getUris().isEmpty()) {
             notifyError(errorLabel, MSG_Err_noUri(cfg.getRemoteName()));
             return null;
         }
@@ -144,4 +171,33 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
             NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
     }
+
+    private static String guessRemoteBranchName (List<String> fetchSpecs, String branchName, String remoteName) {
+        String remoteBranchName = null;
+        String branchShortName = branchName.startsWith(remoteName) 
+                ? branchName.substring(remoteName.length() + 1)
+                : branchName.substring(branchName.lastIndexOf('/') + 1);
+        for (String spec : fetchSpecs) {
+            if (spec.startsWith("+")) { //NOI18N
+                spec = spec.substring(1);
+            }
+            int pos = spec.lastIndexOf(':');
+            if (pos > 0) {
+                String left = spec.substring(0, pos);
+                String right = spec.substring(pos + 1);
+                if (right.endsWith(GitUtils.PREFIX_R_REMOTES + branchName)
+                        || right.endsWith(GitUtils.PREFIX_R_REMOTES + "*")) { //NOI18N
+                    if (left.endsWith("/*")) { //NOI18N
+                        remoteBranchName = branchShortName;
+                        break;
+                    } else if (left.startsWith(GitUtils.PREFIX_R_HEADS)) {
+                        remoteBranchName = left.substring(GitUtils.PREFIX_R_HEADS.length());
+                        break;
+                    }
+                }
+            }
+        }
+        return remoteBranchName;
+    }
+    
 }
