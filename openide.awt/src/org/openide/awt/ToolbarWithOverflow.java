@@ -46,6 +46,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
@@ -136,6 +138,18 @@ public class ToolbarWithOverflow extends JToolBar {
                 maybeAddOverflow();
             }
         });
+        addContainerListener( new ContainerListener() {
+
+            @Override
+            public void componentAdded( ContainerEvent e ) {
+                System.err.println( e );
+            }
+
+            @Override
+            public void componentRemoved( ContainerEvent e ) {
+                System.err.println( e );
+            }
+        });
         overflowToolbar.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -183,7 +197,7 @@ public class ToolbarWithOverflow extends JToolBar {
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
             width += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
-            height = getOrientation() == HORIZONTAL ? comp.getPreferredSize().height : comp.getPreferredSize().width;
+            height = Math.max( height, getOrientation() == HORIZONTAL ? comp.getPreferredSize().height : comp.getPreferredSize().width );
         }
         if(overflowToolbar.getComponentCount() > 0) {
             width += getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width : overflowButton.getPreferredSize().height;
@@ -273,8 +287,12 @@ public class ToolbarWithOverflow extends JToolBar {
         int sizeSoFar = 0;
         int maxSize = getOrientation() == HORIZONTAL ? getWidth() : getHeight();
         int overflowButtonSize = getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width : overflowButton.getPreferredSize().height;
+        int showingButtons = 0;
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
+            if( !comp.isVisible() )
+                continue;
+            showingButtons++;
             sizeSoFar += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
             if (sizeSoFar > maxSize) {
                 visibleButtons = i;
@@ -295,7 +313,7 @@ public class ToolbarWithOverflow extends JToolBar {
                 }
             }
         }
-        if (visibleButtons == comps.length) {
+        if (visibleButtons >= showingButtons) {
             visibleButtons = -1;
         }
     }

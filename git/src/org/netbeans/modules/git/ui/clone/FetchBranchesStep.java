@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -92,10 +93,12 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
 
     public void fillRemoteBranches (Collection<GitBranch> remoteBranches) {
         List<Branch> l = new ArrayList<Branch>(remoteBranches.size());
+        boolean preselected = remoteBranches.size() == 1;
         for (GitBranch gitBranch : remoteBranches) {
-            l.add(new Branch(gitBranch));
+            l.add(new Branch(gitBranch, preselected || GitUtils.MASTER.equals(gitBranch.getName())));
         }
         branches.setBranches(l);
+        validateBeforeNext();
     }
     
     public List<GitBranch> getSelectedBranches () {
@@ -120,8 +123,8 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     private static class Branch extends ItemSelector.Item {
         private final GitBranch branch;
 
-        public Branch(GitBranch branch) {
-            super(false);
+        public Branch(GitBranch branch, boolean selected) {
+            super(selected);
             this.branch = branch;
         }
         

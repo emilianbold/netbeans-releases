@@ -1,5 +1,5 @@
 Name: SQLJet
-Version: 1.1.0
+Version: 1.1.4
 Description: Java implementation of SQLite DBMS
 License: TMate http://svnkit.com/licensing.html
 Origin: http://svnkit.com
