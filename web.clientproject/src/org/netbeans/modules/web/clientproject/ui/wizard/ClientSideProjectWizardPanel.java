@@ -65,7 +65,6 @@ public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel,
     public Component getComponent() {
         if (component == null) {
             component = new ClientSideProjectPanelVisual(this);
-            component.setName(NbBundle.getMessage(ClientSideProjectWizardPanel.class, "LBL_CreateProjectStep"));
         }
         return component;
     }

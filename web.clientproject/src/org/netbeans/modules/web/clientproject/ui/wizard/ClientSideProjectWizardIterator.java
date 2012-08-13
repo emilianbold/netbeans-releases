@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -151,16 +150,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         String[] steps = wizard.createSteps();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            if (steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
+            assert steps[i] != null : "Missing name for step: " + i;
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }

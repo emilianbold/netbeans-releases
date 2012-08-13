@@ -62,7 +62,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
         synchronized (javaScriptLibrarySelectionLock) {
             if (javaScriptLibrarySelection == null) {
                 javaScriptLibrarySelection = new JavaScriptLibrarySelection();
-                javaScriptLibrarySelection.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_JavaScriptLibrarySelectionStep")); // NOI18N
             }
             return javaScriptLibrarySelection;
         }

@@ -60,7 +60,6 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
         synchronized (siteTemplateWizardLock) {
             if (siteTemplateWizard == null) {
                 siteTemplateWizard = new SiteTemplateWizard();
-                siteTemplateWizard.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
             }
             return siteTemplateWizard;
         }
