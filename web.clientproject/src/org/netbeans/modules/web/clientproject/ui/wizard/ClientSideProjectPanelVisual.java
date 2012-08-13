@@ -224,12 +224,12 @@ public class ClientSideProjectPanelVisual extends JPanel implements DocumentList
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
 
-        d.putProperty("projdir", new File(folder));
-        d.putProperty("name", name);
+        d.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, new File(folder));
+        d.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, name);
     }
 
     void read(WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty("projdir");
+        File projectLocation = (File) settings.getProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY);
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
         } else {
@@ -237,7 +237,7 @@ public class ClientSideProjectPanelVisual extends JPanel implements DocumentList
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
 
-        String projectName = (String) settings.getProperty("name");
+        String projectName = (String) settings.getProperty(ClientSideProjectWizardIterator.Wizard.NAME);
         if (projectName == null) {
             projectName = "ClientSideProject";
             int index = 0;

@@ -76,7 +76,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.SITE_TEMPLATE);
+        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
         synchronized (javaScriptLibrarySelectionLock) {
             getComponent().updateDefaults(siteTemplate.supportedLibraries());
         }
@@ -85,8 +85,8 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     @Override
     public void storeSettings(WizardDescriptor settings) {
         synchronized (javaScriptLibrarySelectionLock) {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.LIBRARIES_FOLDER, getComponent().getLibrariesFolder());
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.SELECTED_LIBRARIES, getComponent().getSelectedLibraries());
+            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, getComponent().getLibrariesFolder());
+            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SELECTED_LIBRARIES, getComponent().getSelectedLibraries());
         }
     }
 
