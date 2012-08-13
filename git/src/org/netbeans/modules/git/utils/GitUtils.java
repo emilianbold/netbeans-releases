@@ -112,6 +112,7 @@ public final class GitUtils {
     public static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
     public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
+    public static final String MASTER = "master"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
