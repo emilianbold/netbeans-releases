@@ -173,7 +173,7 @@ public class JsConventionRule implements Rule.AstRule{
         @NbBundle.Messages("Unexpected=Unexpected \"{0}\".")
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
-                int offset = objectNode.getFinish();
+                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
                 ts.move(offset);
                 if(ts.movePrevious() && ts.moveNext()) {
