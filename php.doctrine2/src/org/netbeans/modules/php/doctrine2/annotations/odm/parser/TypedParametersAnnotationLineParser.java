@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -50,31 +54,47 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
+public class TypedParametersAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
     static {
-        PARSERS.add(new SimpleAnnotationLineParser());
-        PARSERS.add(new ParameterizedAnnotationLineParser());
-        PARSERS.add(new TypedParametersAnnotationLineParser());
-    }
+        Set<String> discriminatorMapRegexs = new HashSet<String>();
+        discriminatorMapRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("DiscriminatorMap", discriminatorMapRegexs); //NOI18N
 
-    private Doctrine2OdmAnnotationLineParser() {
-    }
+        Set<String> embedManyRegexs = new HashSet<String>();
+        embedManyRegexs.add("targetDocument"); //NOI18N
+        embedManyRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("EmbedMany", embedManyRegexs); //NOI18N
 
-    @AnnotationLineParser.Registration(position=600)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+        Set<String> embedOneRegexs = new HashSet<String>();
+        embedOneRegexs.add("targetDocument"); //NOI18N
+        embedOneRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("EmbedOne", embedOneRegexs); //NOI18N
+
+        Set<String> referenceManyRegexs = new HashSet<String>();
+        referenceManyRegexs.add("targetDocument"); //NOI18N
+        referenceManyRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("ReferenceMany", referenceManyRegexs); //NOI18N
+
+        Set<String> referenceOneRegexs = new HashSet<String>();
+        referenceOneRegexs.add("targetDocument"); //NOI18N
+        referenceOneRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
+        ANNOTATIONS.put("ReferenceOne", referenceOneRegexs); //NOI18N
     }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
+        String[] tokens = line.split("\\("); //NOI18N
+        for (Map.Entry<String, Set<String>> entry : ANNOTATIONS.entrySet()) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                types.putAll(AnnotationUtils.extractTypesFromParameters(line, entry.getValue()));
+                result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
                 break;
             }
         }
