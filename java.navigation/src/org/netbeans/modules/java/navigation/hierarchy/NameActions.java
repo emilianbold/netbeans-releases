@@ -39,53 +39,54 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.navigation.actions;
+package org.netbeans.modules.java.navigation.hierarchy;
 
 import java.awt.event.ActionEvent;
+import java.util.EnumSet;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.modules.java.navigation.base.Filters;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
 import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class SortActions {
-    private SortActions() {
-        throw new IllegalStateException("No instance allowed.");    //NOI18N
-    }
+class NameActions {
 
-    @NonNull
-    public static Action createSortByNameAction(@NonNull final Filters<?> filters){
-        Parameters.notNull("filters", filters); //NOI18N
-        return new SortByNameAction(filters);
+    private NameActions() {
+        throw new IllegalStateException();
     }
 
 
-    @NonNull
-    public static Action createSortBySourceAction(@NonNull final Filters<?> filters){
-        Parameters.notNull("filters", filters); //NOI18N
-        return new SortBySourceAction(filters);
+    static Action createFullyQualifiedNameAction(@NonNull final HierarchyFilters filters) {
+        assert filters != null;
+        return new FullyQualifiedNameAction(filters);
     }
 
 
-    private abstract static class BaseSortAction extends AbstractAction implements Presenter.Popup {
+    static Action createSimpleNameAction(@NonNull final HierarchyFilters filters) {
+        assert filters != null;
+        return new SimpleNameAction(filters);
+    }
 
-        public static final String SELECTED = "selected";
 
-        protected final Filters<?> filters;
+
+    private abstract static class BaseNameAction extends AbstractAction implements Presenter.Popup {
+
+        protected final HierarchyFilters filters;
         private JRadioButtonMenuItem menuItem;
 
         /** Creates a new instance of SortByNameAction */
-        public BaseSortAction (@NonNull final Filters<?> filters) {
+        public BaseNameAction (@NonNull final HierarchyFilters filters) {
             assert filters != null;
             this.filters = filters;
         }
@@ -111,52 +112,56 @@ public class SortActions {
     }
 
 
-    private static final class SortByNameAction extends BaseSortAction {
+    private static final class SimpleNameAction extends BaseNameAction {
 
-        @StaticResource
-        private static final String ICON = "org/netbeans/modules/java/navigation/resources/sortAlpha.png";  //NOI18N
-
-        public SortByNameAction (@NonNull final Filters<?> filters) {
+        @NbBundle.Messages({
+            "LBL_SimpleName=Simple Names"
+        })
+        public SimpleNameAction (@NonNull final HierarchyFilters filters) {
             super(filters);
-            putValue(Action.NAME, NbBundle.getMessage(SortByNameAction.class, "LBL_SortByName")); //NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false));
+            putValue(Action.NAME, Bundle.LBL_SimpleName());
+            putValue(Action.SMALL_ICON,
+                ElementIcons.getElementIcon(ElementKind.CLASS,EnumSet.of(Modifier.PUBLIC)));
         }
 
         @Override
         public void actionPerformed (ActionEvent e) {
-            filters.setNaturalSort(false);
+            filters.setFqn(false);
             updateMenuItem();
         }
 
         @Override
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(!filters.isNaturalSort());
+            mi.setSelected(!filters.isFqn());
         }
     }
 
 
-    private static final class SortBySourceAction extends BaseSortAction {
+    private static final class FullyQualifiedNameAction extends BaseNameAction {
 
         @StaticResource
-        private static final String ICON = "org/netbeans/modules/java/navigation/resources/sortPosition.png";  //NOI18N
+        private static final String ICON = "org/netbeans/modules/java/navigation/resources/fqn.gif";  //NOI18N
 
-        public SortBySourceAction (@NonNull final Filters<?> filters ) {
+        @NbBundle.Messages({
+            "LBL_FullyQualifiedName=Fully Qualified Names"
+        })
+        public FullyQualifiedNameAction (@NonNull final HierarchyFilters filters ) {
             super(filters);
-            putValue(Action.NAME, NbBundle.getMessage(SortBySourceAction.class, "LBL_SortBySource")); //NOI18N
+            putValue(Action.NAME, Bundle.LBL_FullyQualifiedName());
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false)); //NOI18N
         }
 
         @Override
         public void actionPerformed (ActionEvent e) {
-            filters.setNaturalSort(true);
+            filters.setFqn(true);
             updateMenuItem();
         }
 
         @Override
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(filters.isNaturalSort());
+            mi.setSelected(filters.isFqn());
         }
     }
 }

@@ -68,8 +68,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.AbstractButton;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -77,9 +75,10 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -96,9 +95,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
-import org.netbeans.modules.java.navigation.actions.SortActions;
-import org.netbeans.modules.java.navigation.base.FiltersDescription;
-import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.awt.ActionID;
@@ -118,6 +114,7 @@ import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.WindowManager;
@@ -188,7 +185,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         add(btw,BorderLayout.CENTER);
         lowerToolBar = new TapPanel();
         lowerToolBar.setOrientation(TapPanel.DOWN);
-        filters = new HierarchyFilters(this);
+        filters = new HierarchyFilters();
         final JComponent lowerButtons = filters.getComponent();
         lowerButtons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         lowerToolBar.add(lowerButtons);
@@ -258,10 +255,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
-    void sort() {
-        refresh();
-    }
-
     private void refresh() {
         final Object selItem = historyCombo.getSelectedItem();
         if (selItem instanceof Pair) {
@@ -308,6 +301,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         final RunnableFuture<Pair<URI,ElementHandle<TypeElement>>> becomesType = new FutureTask<Pair<URI,ElementHandle<TypeElement>>>(resolver);
         RP.execute(becomesType);
         final ContextImpl ctx = new ContextImpl();
+        filters.addChangeListener(WeakListeners.change(ctx, filters));
         final Runnable refreshTask = new RefreshTask(becomesType, ctx);
         RP.execute(refreshTask);
     }
@@ -582,7 +576,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
-    private class ContextImpl implements Nodes.Context, ActionListener {
+    private class ContextImpl implements Nodes.Context, ChangeListener {
 
         private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -590,13 +584,12 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         private volatile boolean fqn;
         private volatile boolean ordered;
 
-        ContextImpl() {
-            this.fqn = false;
-            this.ordered = !filters.isNaturalSort();
+        ContextImpl() {            
             final Object selItem = viewTypeCombo.getSelectedItem();
             this.vt = selItem instanceof ViewType ?
                     (ViewType) selItem :
                     ViewType.SUPER_TYPE;
+            update();
         }
 
         @Override
@@ -626,13 +619,27 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void stateChanged(ChangeEvent e) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    fqn = false;
+                    final boolean oldOrdered = ordered;
+                    final boolean oldFqn = fqn;
+                    update();
+                    if (oldOrdered ^ ordered) {
+                        support.firePropertyChange(PROP_ORDERED, oldOrdered, ordered);
+                    }
+                    if (oldFqn ^ fqn) {
+                        support.firePropertyChange(PROP_FQN, oldFqn, fqn);
+                    }
                 }
             });
+        }
+
+        private void update() {
+            assert SwingUtilities.isEventDispatchThread();
+            this.ordered = !filters.isNaturalSort();
+            this.fqn = false;
         }
     }
 }

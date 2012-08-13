@@ -42,9 +42,11 @@
 package org.netbeans.modules.java.navigation.base;
 
 import java.util.Collection;
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.openide.util.NbPreferences;
 
@@ -56,7 +58,7 @@ public abstract class Filters<T> {
     
     private static final String PROP_NATURAL_SORT = "naturalSort";  //NOI18N
 
-    private volatile boolean naturalSort = false;
+    private volatile boolean naturalSort;
     //@NotThreadSafe
     private FiltersManager filtersManager;
     //@NotThreadSafe
@@ -86,7 +88,17 @@ public abstract class Filters<T> {
 
     public final JComponent getComponent() {
         final FiltersManager fm = getFiltersManager();
-        return fm.getComponent(createSortButtons());
+        final AbstractButton[] customButtons = createCustomButtons();
+        final AbstractButton[] sortButtons = createSortButtons();
+        final AbstractButton[] buttons;
+        if (customButtons.length == 0) {
+            buttons = sortButtons;
+        } else {
+            buttons = new AbstractButton[customButtons.length + sortButtons.length];
+            System.arraycopy(customButtons, 0, buttons, 0, customButtons.length);
+            System.arraycopy(sortButtons, 0, buttons, customButtons.length, sortButtons.length);
+        }
+        return fm.getComponent(buttons);
     }
 
     public abstract Collection<T> filter( Collection<? extends T> original);
@@ -95,7 +107,12 @@ public abstract class Filters<T> {
     
     protected abstract void sortUpdated();
 
-    private synchronized JToggleButton[] createSortButtons() {
+    @NonNull
+    protected AbstractButton[] createCustomButtons() {
+        return new AbstractButton[0];
+    }
+
+    private JToggleButton[] createSortButtons() {
         assert SwingUtilities.isEventDispatchThread();
         JToggleButton[] res = new JToggleButton[2];
         if( null == sortByNameButton ) {
