@@ -72,14 +72,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
-@TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName",
-        description = "ClientSideProjectDescription.html",
-        iconBase = ClientSideProject.PROJECT_ICON )
-@Messages({"ClientSideProject_displayName=HTML Application",
-            "MSG_Progress1=Creating project"})
-public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectWizardIterator.class.getName());
 
@@ -94,10 +88,16 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
     private SiteTemplateWizardPanel sitesPanel;
     private JavaScriptLibrarySelectionPanel librariesPanel;
 
-    public ClientSideProjectWizardIterator() {
+
+    private ClientSideProjectWizardIterator() {
     }
 
-    public static ClientSideProjectWizardIterator createIterator() {
+    @TemplateRegistration(folder="Project/ClientSide",
+            displayName="#ClientSideProjectWizardIterator.displayName",
+            description="../resources/NewClientSideProjectDescription.html",
+            iconBase=ClientSideProject.PROJECT_ICON)
+    @NbBundle.Messages("ClientSideProjectWizardIterator.displayName=HTML Application")
+    public static ClientSideProjectWizardIterator newProject() {
         return new ClientSideProjectWizardIterator();
     }
 
@@ -121,10 +121,11 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
                 };
     }
 
+    @NbBundle.Messages("ClientSideProjectWizardIterator.progress.creatingProject=Creating project")
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
-        handle.progress(Bundle.MSG_Progress1());
+        handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
         String name = (String) wiz.getProperty("name");
@@ -140,7 +141,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
             // any site template selected
             applySiteTemplate(helper, siteTemplate, handle);
         }
-        
+
         // get application dir:
         FileObject siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(helper);
         if (siteRootDir == null) {
