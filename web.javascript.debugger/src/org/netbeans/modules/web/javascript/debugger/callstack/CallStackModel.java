@@ -44,28 +44,21 @@
 
 package org.netbeans.modules.web.javascript.debugger.callstack;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
 import org.netbeans.modules.web.javascript.debugger.annotation.CurrentLineAnnotation;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -75,11 +68,11 @@ import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
-    "CTL_CallstackModel_Column_Name_Name=Name",
-    "CTL_CallstackAction_Copy2CLBD_Label=Copy Stack"
+    "CTL_CallstackModel_Column_Name_Name=Name"
 })
+@DebuggerServiceRegistration(path="javascript-debuggerengine/CallStackView", types={ TreeModel.class, NodeModel.class, TableModel.class })
 public final class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
-        NodeActionsProvider, TableModel, Debugger.Listener {
+        TableModel, Debugger.Listener {
 
     public static final String CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
@@ -88,8 +81,6 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
 
     private Debugger debugger;    
 
-    private Action GO_TO_SOURCE;
-    
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
     private AtomicReference<? extends CallFrame>  myCurrentStack;
@@ -99,7 +90,6 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         debugger.addListener(this);
-        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction();
         // update now:
         setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : new ArrayList<CallFrame>());
         updateAnnotations();
@@ -213,28 +203,6 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         return null;
     }
 
-    // NodeActionsProvider implementation ......................................
-
-    @Override
-    public void performDefaultAction(Object node)
-            throws UnknownTypeException {
-        if (node instanceof CallFrame) {
-            CallFrame frame = (CallFrame)node;
-            Line line = MiscEditorUtil.getLine(frame.getScript().getURL(), frame.getLineNumber());
-            MiscEditorUtil.showLine(line, true);
-        }
-    }
-
-    @Override
-    public Action[] getActions(Object node)
-            throws UnknownTypeException {
-        if (node instanceof CallFrame ) {
-            return new Action [] {GO_TO_SOURCE/*, COPY_TO_CLBD_ACTION*/};
-        }
-        return new Action[]{};
-        
-    }
-
     // TableModel implementation ...............................................
 
     @Override
@@ -271,54 +239,6 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         throw new UnknownTypeException(node);
     }
     
-    private final Action COPY_TO_CLBD_ACTION = new AbstractAction(
-            Bundle.CTL_CallstackAction_Copy2CLBD_Label()) {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            stackToCLBD();
-        }
-    };
-
-    private void stackToCLBD() {
-        // JPDAThread t = debugger.getCurrentThread();
-        StringBuilder frameStr = new StringBuilder(50);
-//        JSCallStackFrame[] stack = debugger.getCallStackFrames();
-//        if (stack != null) {
-//            int i, k = stack.length;
-//
-//            for (i = 0; i < k; i++) {
-//                // frameStr.append(stack[i].getNameSpace());
-//                // frameStr.append(".");
-//                frameStr.append(stack[i].getFunctionName());
-//                String sourceName = stack[i].getURI().toString();
-//                frameStr.append("(");
-//                frameStr.append(sourceName);
-//                int line = stack[i].getLineNumber();
-//                if (line > 0) {
-//                    frameStr.append(":");
-//                    frameStr.append(line);
-//                }
-//                frameStr.append(")");
-//                if (i != k - 1)
-//                    frameStr.append('\n');
-//            }
-//        }
-        Clipboard systemClipboard = getClipboard();
-        Transferable transferableText = new StringSelection(frameStr.toString());
-        systemClipboard.setContents(transferableText, null);
-    }
-        
-    private static Clipboard getClipboard() {
-        Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(
-                Clipboard.class);
-        if (clipboard == null) {
-            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        }
-        return clipboard;
-    }
-
     private void updateAnnotations() {
         for (Annotation ann : annotations) {
             ann.detach();
