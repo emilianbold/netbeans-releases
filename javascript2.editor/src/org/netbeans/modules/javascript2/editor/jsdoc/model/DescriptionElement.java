@@ -54,7 +54,7 @@ public class DescriptionElement extends JsDocElementImpl {
 
     private final String description;
 
-    private DescriptionElement(Type type, String description) {
+    private DescriptionElement(JsDocElementType type, String description) {
         super(type);
         this.description = description;
     }
@@ -65,7 +65,7 @@ public class DescriptionElement extends JsDocElementImpl {
      * @param type element type (tag), never null
      * @param description description of the element, never null
      */
-    public static DescriptionElement create(Type type, String description) {
+    public static DescriptionElement create(JsDocElementType type, String description) {
         return new DescriptionElement(type, description);
     }
 

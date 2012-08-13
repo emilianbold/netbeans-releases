@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Represents parameter element which does not need any parameter name.
@@ -54,8 +55,8 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
  */
 public class UnnamedParameterElement extends ParameterElement implements DocParameter {
 
-    private UnnamedParameterElement(Type type,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    private UnnamedParameterElement(JsDocElementType type,
+            List<Type> paramTypes, String paramDescription) {
         super(type, paramTypes, paramDescription);
     }
 
@@ -64,8 +65,8 @@ public class UnnamedParameterElement extends ParameterElement implements DocPara
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static UnnamedParameterElement create(Type type,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    public static UnnamedParameterElement create(JsDocElementType type,
+            List<Type> paramTypes, String paramDescription) {
         return new UnnamedParameterElement(type, paramTypes, paramDescription);
     }
 

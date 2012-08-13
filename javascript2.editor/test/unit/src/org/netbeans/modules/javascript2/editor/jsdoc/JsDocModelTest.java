@@ -49,6 +49,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.LinkElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.ParameterElement;
@@ -81,7 +82,7 @@ public class JsDocModelTest extends JsDocumentationTestBase {
         String[] tags = expected.split("[;]+");
         for (String tag : tags) {
             String[] tmp = tag.split("[|][|]");
-            FakeJsDocElement element = new FakeJsDocElement(JsDocElement.Type.fromString(tmp[0]));
+            FakeJsDocElement element = new FakeJsDocElement(JsDocElementType.fromString(tmp[0]));
             if (tmp.length > 1) {
                 String[] keyValues = tmp[1].split("[:]+");
                 for (String keyValue : keyValues) {
@@ -454,16 +455,16 @@ public class JsDocModelTest extends JsDocumentationTestBase {
 
     private static class FakeJsDocElement implements JsDocElement {
 
-        private final Type type;
+        private final JsDocElementType type;
         private Map<String, String> properties = new HashMap<String, String>();
 
-        public FakeJsDocElement(Type type) {
+        public FakeJsDocElement(JsDocElementType type) {
             assertNotNull(type);
             this.type = type;
         }
 
         @Override
-        public Type getType() {
+        public JsDocElementType getType() {
             return type;
         }
 
