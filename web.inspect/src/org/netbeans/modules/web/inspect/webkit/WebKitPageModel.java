@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
@@ -503,30 +502,6 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public CSSStylesView getCSSStylesView() {
-        if (!Boolean.getBoolean("org.netbeans.modules.web.inspect.showCSSStyles")) {
-            final javax.swing.JLabel label = new javax.swing.JLabel("Coming soon ...");
-            label.setBackground(java.awt.Color.WHITE);
-            label.setEnabled(false);
-            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-            label.setOpaque(true);
-            return new CSSStylesView() {
-                @Override
-                public JComponent getView() {
-                    return label;
-                }
-                @Override
-                public Lookup getLookup() {
-                    return Lookup.EMPTY;
-                }
-                @Override
-                public void activated() {
-                }
-                @Override
-                public void deactivated() {
-                }
-            };
-        }
         return CSSStylesPanel.getDefault();
     }
 
