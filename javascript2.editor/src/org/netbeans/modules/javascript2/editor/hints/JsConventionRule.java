@@ -55,6 +55,7 @@ import com.oracle.nashorn.ir.WhileNode;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -197,7 +198,53 @@ public class JsConventionRule implements Rule.AstRule{
             }
         }
 
-        
+        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY};
+        @NbBundle.Messages("DuplicateName=Duplicate name of property \"{0}\".")
+        private void checkDuplicateLabels(ObjectNode objectNode) {
+            int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
+            int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, startOffset);
+            ts.move(startOffset);
+            State state = State.BEFORE_COLON;
+            int curlyBalance = 0;
+            if (ts.movePrevious() && ts.moveNext()) {
+                HashSet<String> names = new HashSet<String>();
+                while (ts.moveNext() && ts.offset() < endOffset) {
+                    JsTokenId id = ts.token().id();
+                    switch (state) {
+                        case BEFORE_COLON:
+                            if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
+                                if (!names.add(ts.token().text().toString())) {
+                                    hints.add(new Hint(rule, Bundle.DuplicateName(ts.token().text().toString()),
+                                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                }
+                            } else if (id == JsTokenId.OPERATOR_COLON) {
+                                state = State.AFTER_COLON;
+                            }
+                            break;
+                        case AFTER_COLON:
+                            if (id == JsTokenId.OPERATOR_COMMA) {
+                                state = State.BEFORE_COLON;
+                            } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                                state = State.AFTER_CURLY;
+                            }
+                            break;
+                        case AFTER_CURLY:
+                            if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                                curlyBalance++;
+                            } else if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
+                                if (curlyBalance == 0) {
+                                    state = State.BEFORE_COLON;
+                                } else {
+                                    curlyBalance--;
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }   
        
         @Override
         public Node visit(DoWhileNode doWhileNode, boolean onset) {
@@ -238,6 +285,7 @@ public class JsConventionRule implements Rule.AstRule{
         @NbBundle.Messages("Unexpected=Unexpected \"{0}\".")
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
+                checkDuplicateLabels(objectNode);
                 int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
                 ts.move(offset);
