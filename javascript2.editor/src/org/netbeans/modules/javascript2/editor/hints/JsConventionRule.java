@@ -46,6 +46,7 @@ import com.oracle.nashorn.ir.Block;
 import com.oracle.nashorn.ir.DoWhileNode;
 import com.oracle.nashorn.ir.ExecuteNode;
 import com.oracle.nashorn.ir.ForNode;
+import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
@@ -146,7 +147,10 @@ public class JsConventionRule implements Rule.AstRule{
         public void process(JsRuleContext context, List<Hint> hints) {
             this.hints = hints;
             this.context = context;
-            context.getJsParserResult().getRoot().accept(this);
+            FunctionNode root = context.getJsParserResult().getRoot();
+            if (root != null) {
+                context.getJsParserResult().getRoot().accept(this);
+            }
         }
         
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
