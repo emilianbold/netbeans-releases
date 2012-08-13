@@ -314,7 +314,7 @@ public class OriginResourceIterator implements
         }
         builder.append("\");");                                                                                                                     //NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"ccess-Control-Allow-Headers\",\"");//NOI18N
+        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Headers\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
         builder.append("\");");                                                     //NOI18N                                                              //NOI18N
         builder.append("return response;}");                                        //NOI18N
