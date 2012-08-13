@@ -177,4 +177,24 @@ public class Doctrine2OdmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("UniqueIndex"));
     }
 
+    public void testAlsoLoadParser() {
+        assertNotNull(parser.parse("AlsoLoad"));
+    }
+
+    public void testCollectionParser() {
+        assertNotNull(parser.parse("Collection"));
+    }
+
+    public void testDiscriminatorFieldParser() {
+        assertNotNull(parser.parse("DiscriminatorField"));
+    }
+
+    public void testFieldParser() {
+        assertNotNull(parser.parse("Field"));
+    }
+
+    public void testInheritanceTypeParser() {
+        assertNotNull(parser.parse("InheritanceType"));
+    }
+
 }
