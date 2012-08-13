@@ -410,7 +410,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private FileObject getTestsFolder() {
             String tests = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
-            if (tests == null) {
+            if (tests == null || tests.trim().length() == 0) {
                 return null;
             }
             return project.getProjectDirectory().getFileObject(tests);
@@ -418,7 +418,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private FileObject getConfigFolder() {
             String config = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-            if (config == null) {
+            if (config == null || config.trim().length() == 0) {
                 return null;
             }
             return project.getProjectDirectory().getFileObject(config);
@@ -437,30 +437,23 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, getSiteRootFolder(), new String[]{"nbproject", "build"});
                 case Tests:
-                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, getTestsFolder(), new String[]{"nbproject", "build"});
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
-                    return createNodeForFolder(k, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER), new String[0]);
+                    return createNodeForFolder(k, getConfigFolder(), new String[0]);
                 default:
                     return new Node[0];
             }
         }
 
-        private Node[] createNodeForFolder(BasicNodes type, String subfolder, String[] ignoreList) {
-            FileObject root = null;
-            if (subfolder == null) {
-                if (type == BasicNodes.Sources) {
-                    root = project.getProjectDirectory();
-                }
-            } else {
-                root = project.getProjectDirectory().getFileObject(subfolder);
-            }
+        private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
             if (root == null) {
                 if (type == BasicNodes.Sources) {
-                    return new Node[]{new FolderFilterNode(type, ignoreList)};
+                    DataFolder fakeNode = DataFolder.findFolder(project.getProjectDirectory());
+                    return new Node[]{new FolderFilterNode(type, fakeNode.getNodeDelegate(), ignoreList)};
                 }
             } else {
                 DataFolder df = DataFolder.findFolder(root);
@@ -493,9 +486,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private static final Image TESTS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/tests-badge.gif", true); // NOI18N
         private static final Image CONFIGS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/config-badge.gif", true); // NOI18N
 
-        public FolderFilterNode(BasicNodes nodeType, String[] ignoreList) {
-            this(nodeType, new AbstractNode(Children.LEAF), ignoreList);
-        }
         public FolderFilterNode(BasicNodes nodeType, Node folderNode, String[] ignoreList) {
             super(folderNode, folderNode.isLeaf() ? Children.LEAF :
                     new FolderFilterChildren(folderNode, ignoreList));
