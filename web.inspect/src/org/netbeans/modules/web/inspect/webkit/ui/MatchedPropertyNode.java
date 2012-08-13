@@ -48,6 +48,7 @@ import org.netbeans.modules.web.inspect.webkit.actions.GoToPropertySourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -78,6 +79,21 @@ public class MatchedPropertyNode extends AbstractNode {
         super(Children.LEAF, Lookups.fixed(rule, ruleOrigin, property));
         this.property = property;
         setDisplayName(property.getName());
+    }
+
+    /**
+     * Adds a sub-node to this node. This method is called on nodes that
+     * represent a short-hand property only.
+     *
+     * @param subNode sub-node that represents a property that belongs under
+     * a short-hand property represented by this node.
+     */
+    void addSubNode(MatchedPropertyNode subNode) {
+        if (isLeaf()) {
+            setChildren(new Children.Array());
+        }
+        Children.Array children = (Children.Array)getChildren();
+        children.add(new Node[] { subNode });
     }
 
     @Override

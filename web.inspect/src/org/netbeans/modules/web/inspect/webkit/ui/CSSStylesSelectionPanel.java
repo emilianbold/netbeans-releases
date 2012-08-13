@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -58,6 +59,8 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.api.project.Project;
@@ -387,7 +390,6 @@ public class CSSStylesSelectionPanel extends JPanel {
          */
         CustomTreeTableView() {
             setRootVisible(false);
-            tree.setShowsRootHandles(false);
             final TreeCellRenderer renderer = tree.getCellRenderer();
             tree.setCellRenderer(new TreeCellRenderer() {
                 @Override
@@ -402,6 +404,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                     return component;
                 }
             });
+            hideTreeLines();
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
@@ -425,6 +428,26 @@ public class CSSStylesSelectionPanel extends JPanel {
                     return component;
                 }
             });
+        }
+
+        /**
+         * A hack that diables painting of tree lines.
+         */
+        private void hideTreeLines() {
+            TreeUI treeUI = tree.getUI();
+            if (treeUI instanceof BasicTreeUI) {
+                try {
+                    // The following code is equivalent to
+                    // ((BasicTreeUI)tree.getUI()).paintLines = false;
+                    Field paintLines = BasicTreeUI.class.getDeclaredField("paintLines"); // NOI18N
+                    paintLines.setAccessible(true);
+                    paintLines.setBoolean(treeUI, false);
+                } catch (IllegalArgumentException ex) {
+                } catch (IllegalAccessException ex) {
+                } catch (NoSuchFieldException ex) {
+                } catch (SecurityException ex) {
+                }
+            }
         }
 
     }
