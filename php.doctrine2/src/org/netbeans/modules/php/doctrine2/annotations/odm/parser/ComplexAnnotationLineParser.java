@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import org.netbeans.junit.NbTestCase;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -51,46 +54,59 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OdmInlineAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class ComplexAnnotationLineParser implements AnnotationLineParser {
 
-    public Doctrine2OdmInlineAnnotationLineParserTest(String name) {
-        super(name);
+    private static final Set<ComplexAnnotation> ANNOTATIONS = new HashSet<ComplexAnnotation>();
+    static {
+        Set<String> inlineAnnotations = new HashSet<String>();
+        inlineAnnotations.add("Index"); //NOI18N
+        Set<String> typedParamRegexs = new HashSet<String>();
+        typedParamRegexs.add("repositoryClass"); //NOI18N
+        ANNOTATIONS.add(new ComplexAnnotation("Document", inlineAnnotations, typedParamRegexs)); //NOI18N
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        this.parser = Doctrine2OdmInlineAnnotationLineParser.getDefault();
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        for (ComplexAnnotation annotation : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotation.getName())) {
+                String annotationName = tokens[0].trim();
+                String description = line.substring(annotationName.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotationName.length()), annotationName);
+                types.putAll(AnnotationUtils.extractInlineAnnotations(line, annotation.getInlineAnnotations()));
+                types.putAll(AnnotationUtils.extractTypesFromParameters(line, annotation.getTypedParamRegexs()));
+                result = new AnnotationParsedLine.ParsedLine(annotation.getName(), types, description, true);
+                break;
+            }
+        }
+        return result;
     }
 
-    public void testValidUseCase_01() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("    indexes={@Index(name=\"user_idx\", columns={\"email\"})} ");
-        assertNotNull(parsedLine);
-        assertEquals("", parsedLine.getName());
-        assertEquals("indexes={@Index(name=\"user_idx\", columns={\"email\"})}", parsedLine.getDescription());
-        assertFalse(parsedLine.startsWithAnnotation());
-        Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(14, 19));
-        assertEquals("Index", type1);
-    }
+    private static class ComplexAnnotation {
+        private final String name;
+        private final Set<String> inlineAnnotations;
+        private final Set<String> typedParamRegexs;
 
-    public void testValidUseCase_02() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("    indexes={@Foo\\Index(name=\"user_idx\", columns={\"email\"})} ");
-        assertNotNull(parsedLine);
-        assertEquals("", parsedLine.getName());
-        assertEquals("indexes={@Foo\\Index(name=\"user_idx\", columns={\"email\"})}", parsedLine.getDescription());
-        assertFalse(parsedLine.startsWithAnnotation());
-        Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(14, 23));
-        assertEquals("Foo\\Index", type1);
-    }
+        public ComplexAnnotation(String name, Set<String> inlineAnnotations, Set<String> typedParamRegexs) {
+            this.name = name;
+            this.inlineAnnotations = inlineAnnotations;
+            this.typedParamRegexs = typedParamRegexs;
+        }
 
-    public void testInvalidUseCase_01() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("    indexes={@Blah\\Blah(name=\"user_idx\", columns={\"email\"})} ");
-        assertNull(parsedLine);
+        String getName() {
+            return name;
+        }
+
+        Set<String> getInlineAnnotations() {
+            return inlineAnnotations;
+        }
+
+        Set<String> getTypedParamRegexs() {
+            return typedParamRegexs;
+        }
+
     }
 
 }

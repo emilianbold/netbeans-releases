@@ -217,4 +217,8 @@ public class Doctrine2OdmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("ReferenceMany"));
     }
 
+    public void testDocumentParser() {
+        assertNotNull(parser.parse("Document"));
+    }
+
 }
