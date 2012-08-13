@@ -112,7 +112,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         } else if (leaf instanceof Variable) {
             String varName = removeParentheses(((Variable) leaf).getName());
             if (varName.equals(visitedName)) {
-                occurrences.add(new FakeASTNode(visitedArray, visitedName));
+                occurrences.add(new FakeASTNode(visitedArray.getElementType(), visitedName));
             }
         } else if (leaf instanceof MethodNode) {
             if (AstUtilities.isCaretOnReturnType((MethodNode) leaf, doc, cursorOffset)) {
@@ -121,7 +121,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
             PropertyExpression property = (PropertyExpression) leafParent;
             if (visitedName.equals(property.getPropertyAsString())) {
-                occurrences.add(new FakeASTNode(visitedArray, visitedName));
+                occurrences.add(new FakeASTNode(visitedArray.getElementType(), visitedName));
             }
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression declarationExpression = (DeclarationExpression) leaf;
@@ -143,7 +143,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         String findingTypeName = removeParentheses(findingNode.getName());
 
         if (visitedTypeName.equals(findingTypeName)) {
-            occurrences.add(new FakeASTNode(visitedArray, findingNode.getNameWithoutPackage()));
+            occurrences.add(new FakeASTNode(visitedArray.getElementType(), findingNode.getNameWithoutPackage()));
         }
     }
 
@@ -153,7 +153,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         // but we need to check also parameters as those are not part of method visit
         for (Parameter parameter : parameters) {
             if (AstUtilities.isCaretOnParamType(parameter, doc, cursorOffset)) {
-                occurrences.add(new FakeASTNode(parameter, parameter.getType().getNameWithoutPackage()));
+                occurrences.add(new FakeASTNode(parameter.getType(), parameter.getType().getNameWithoutPackage()));
             } else {
                 if (parameter.getName().equals(variable.getName())) {
                     occurrences.add(parameter);
@@ -210,7 +210,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
         if (AstUtilities.isCaretOnFieldType(findingNode, doc, cursorOffset)) {
             if (visited.getType().getName().equals(fieldTypeName)) {
-                occurrences.add(new FakeASTNode(visited, findingNode.getType().getNameWithoutPackage()));
+                occurrences.add(new FakeASTNode(visited.getType(), findingNode.getType().getNameWithoutPackage()));
             }
         } else {
             if (visited.getName().equals(fieldName)) {
@@ -237,8 +237,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (!variable.isDynamicTyped() && !visited.isDynamicTyped()) {
                 String name = removeParentheses(variable.getType().getNameWithoutPackage());
                 if (name.equals(removeParentheses(visited.getType().getNameWithoutPackage()))) {
-                    FakeASTNode fakeNode = new FakeASTNode(expression, name);
-                    occurrences.add(fakeNode);
+                    occurrences.add(new FakeASTNode(visited.getType(), name));
                 }
             }
         } else if (leaf instanceof ClassExpression) {
@@ -255,8 +254,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 VariableExpression variable = expression.getVariableExpression();
                 if (!variable.isDynamicTyped()) {
                     if (clazz.getName().equals(variable.getType().getName())) {
-                        FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getNameWithoutPackage());
-                        occurrences.add(fakeNode);
+                        occurrences.add(new FakeASTNode(variable.getType(), clazz.getNameWithoutPackage()));
                     }
                 }
             }
@@ -282,7 +280,11 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
 
             if (variableName.equals(fieldTypeName)) {
-                occurrences.add(new FakeASTNode(visited, findingNode.getType().getNameWithoutPackage()));
+                if (!visited.isMultipleAssignmentDeclaration()) {
+                    occurrences.add(new FakeASTNode(visited.getVariableExpression().getType(), findingNode.getType().getNameWithoutPackage()));
+                } else {
+                    occurrences.add(new FakeASTNode(visited.getTupleExpression().getType(), findingNode.getType().getNameWithoutPackage()));
+                }
             }
         }
     }
@@ -297,7 +299,11 @@ public final class VariableScopeVisitor extends TypeVisitor {
         }
 
         if (variableName.equals(fieldTypeName)) {
-            occurrences.add(new FakeASTNode(visited, type.getNameWithoutPackage()));
+            if (!visited.isMultipleAssignmentDeclaration()) {
+                occurrences.add(new FakeASTNode(visited.getVariableExpression().getType(), type.getNameWithoutPackage()));
+            } else {
+                occurrences.add(new FakeASTNode(visited.getTupleExpression().getType(), type.getNameWithoutPackage()));
+            }
         }
     }
 
@@ -320,7 +326,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (AstUtilities.isCaretOnReturnType((MethodNode) leaf, doc, cursorOffset)) {
                 String methodReturnTypeName = removeParentheses(((MethodNode) leaf).getReturnType().getName());
                 if (fieldName.equals(methodReturnTypeName)) {
-                    occurrences.add(new FakeASTNode(fieldNode, fieldShortName));
+                    occurrences.add(new FakeASTNode(fieldNode.getType(), fieldShortName));
                 }
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
@@ -333,7 +339,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (!declarationExpression.isMultipleAssignmentDeclaration()) {
                 VariableExpression variableExpression = declarationExpression.getVariableExpression();
                 if (fieldName.equals(removeParentheses(variableExpression.getType().getName()))) {
-                    occurrences.add(new FakeASTNode(fieldNode, fieldShortName));
+                    occurrences.add(new FakeASTNode(fieldNode.getType(), fieldShortName));
                 }
             }
         } else if (leaf instanceof ClassExpression) {
@@ -353,7 +359,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         if (AstUtilities.isCaretOnFieldType(findingNode, doc, cursorOffset)) {
             String visitedFieldName = removeParentheses(visitedField.getType().getName());
             if (visitedFieldName.equals(fieldTypeName)) {
-                occurrences.add(new FakeASTNode(visitedField, findingNode.getType().getNameWithoutPackage()));
+                occurrences.add(new FakeASTNode(visitedField.getType(), findingNode.getType().getNameWithoutPackage()));
             }
         } else {
             if (visitedField.getName().equals(fieldName)) {
@@ -366,7 +372,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         final String fieldTypeName = removeParentheses(findingNode.getName());
         final String visitedFieldName = removeParentheses(visitedField.getType().getName());
         if (visitedFieldName.equals(fieldTypeName)) {
-            occurrences.add(new FakeASTNode(visitedField, findingNode.getNameWithoutPackage()));
+            occurrences.add(new FakeASTNode(visitedField.getType(), findingNode.getNameWithoutPackage()));
         }
     }
 
@@ -449,7 +455,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         for (Parameter parameter : visitedMethod.getParameters()) {
             String paramName = removeParentheses(parameter.getType().getName());
             if (paramName.equals(name)) {
-                occurrences.add(new FakeASTNode(parameter, nameWithoutPackage));
+                occurrences.add(new FakeASTNode(parameter.getType(), nameWithoutPackage));
             }
         }
     }
@@ -525,7 +531,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         for (Parameter parameter : constructor.getParameters()) {
             String paramName = removeParentheses(parameter.getType().getName());
             if (paramName.equals(name)) {
-                occurrences.add(new FakeASTNode(parameter, nameWithoutPackage));
+                occurrences.add(new FakeASTNode(parameter.getType(), nameWithoutPackage));
             }
         }
     }
