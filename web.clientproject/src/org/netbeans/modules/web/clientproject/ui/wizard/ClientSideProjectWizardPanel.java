@@ -41,71 +41,77 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * Panel just asking for basic info.
  */
-public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private WizardDescriptor wizardDescriptor;
-    private ClientSideProjectPanelVisual component;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private volatile WizardDescriptor wizardDescriptor;
+    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
+    private volatile ClientSideProject component;
+
 
     public ClientSideProjectWizardPanel() {
     }
 
-    public Component getComponent() {
+    @Override
+    public ClientSideProject getComponent() {
         if (component == null) {
-            component = new ClientSideProjectPanelVisual(this);
+            component = new ClientSideProject();
         }
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ClientSideProjectWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.ClientSideProjectWizardPanel"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        // error
+        String error = getComponent().getErrorMessage();
+        if (error != null && !error.isEmpty()) {
+            setErrorMessage(error);
+            return false;
+        }
+        // everything ok
+        setErrorMessage(""); // NOI18N
+        return true;
     }
 
-    public final void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+    private void setErrorMessage(String message) {
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
-    public final void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+    @Override
+    public final void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
     }
 
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
+    @Override
+    public final void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+    @Override
+    public void readSettings(WizardDescriptor wizardDescriptor) {
+        this.wizardDescriptor = wizardDescriptor;
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    @Override
+    public void storeSettings(WizardDescriptor wizardDescriptor) {
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, getComponent().getProjectDirectory());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
-    }
 }
