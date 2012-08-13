@@ -804,45 +804,34 @@ public class AstUtilities {
      */
     public static final class FakeASTNode extends ASTNode {
 
-        private final String text;
-        private final ASTNode orig;
+        private final String name;
+        private final ASTNode node;
 
-        public FakeASTNode(ASTNode orig, String text) {
-            this.orig = orig;
-            this.text = text;
+        public FakeASTNode(ASTNode node) {
+            this(node, node.getText());
         }
 
-        public ASTNode getOriginalNode() { return orig; }
+        public FakeASTNode(ASTNode node, String name) {
+            this.node = node;
+            this.name = name;
+
+            setLineNumber(node.getLineNumber());
+            setColumnNumber(node.getColumnNumber());
+            setLastLineNumber(node.getLastLineNumber());
+            setLastColumnNumber(node.getLastColumnNumber());
+        }
+
+        public ASTNode getOriginalNode() {
+            return node;
+        }
 
         @Override
-        public String getText() { return text; }
+        public String getText() {
+            return name;
+        }
 
         @Override
         public void visit(GroovyCodeVisitor visitor) {}
 
-    }
-
-    public static final class NewFakeASTNode extends ASTNode {
-
-        private final ASTNode node;
-        private final String name;
-
-
-        public NewFakeASTNode(ASTNode node, String name) {
-            this.node = node;
-            this.name = name;
-            this.setLineNumber(node.getLineNumber());
-            this.setColumnNumber(node.getColumnNumber());
-            this.setLastLineNumber(node.getLastLineNumber());
-            this.setLastColumnNumber(node.getLastColumnNumber());
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public ASTNode getNode() {
-            return node;
-        }
     }
 }

@@ -71,7 +71,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
-import org.netbeans.modules.groovy.editor.api.AstUtilities.NewFakeASTNode;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
@@ -661,7 +660,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         for (ClassNode interfaceNode : interfaces) {
             if (AstUtilities.isCaretOnClassNode(interfaceNode, doc, cursorOffset)) {
                 if (visitedName.equals(interfaceNode.getName())) {
-                    occurrences.add(new NewFakeASTNode(interfaceNode, visitedNameWithoutPkg));
+                    occurrences.add(new FakeASTNode(interfaceNode, visitedNameWithoutPkg));
                 }
             }
         }
@@ -718,11 +717,11 @@ public final class VariableScopeVisitor extends TypeVisitor {
     }
 
     private void addForLoopOccurrences(ForStatement visitedLoop, ClassNode findingNode) {
-        final String returnTypeName = removeParentheses(visitedLoop.getVariableType().getName());
+        final String forLoopTypeName = removeParentheses(visitedLoop.getVariableType().getName());
         final String name = removeParentheses(findingNode.getName());
         final String nameWithoutPackage = removeParentheses(findingNode.getNameWithoutPackage());
-        if (returnTypeName.equals(name)) {
-            occurrences.add(new FakeASTNode(visitedLoop, nameWithoutPackage));
+        if (forLoopTypeName.equals(name)) {
+            occurrences.add(new FakeASTNode(visitedLoop.getVariableType(), nameWithoutPackage));
         }
     }
 
