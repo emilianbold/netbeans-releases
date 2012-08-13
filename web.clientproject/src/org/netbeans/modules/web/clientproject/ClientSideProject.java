@@ -137,7 +137,10 @@ public class ClientSideProject implements Project {
         if (s == null) {
             s = "";
         }
-        return getProjectDirectory().getFileObject(s);
+        if (s.length() == 0) {
+            return getProjectDirectory();
+        }
+        return helper.resolveFileObject(s);
     }
     
     public FileObject getTestsFolder() {
@@ -228,7 +231,7 @@ public class ClientSideProject implements Project {
                new ClassPathProviderImpl(this),
                configurationProvider,
                new PageInspectorCustomizerImpl(this),
-               GenericSources.genericOnly(this)
+               new ClientSideProjectSources(this, helper, eval)
        });
     }
 

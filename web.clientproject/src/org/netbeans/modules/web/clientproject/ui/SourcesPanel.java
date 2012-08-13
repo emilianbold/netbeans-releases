@@ -51,7 +51,10 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -195,32 +198,39 @@ public class SourcesPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBrowseSiteRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseSiteRootButtonActionPerformed
-        browse(jSiteRootFolderTextField);
+        browse(jSiteRootFolderTextField, true, project.getSiteRootFolder());
     }//GEN-LAST:event_jBrowseSiteRootButtonActionPerformed
 
-    private void browse(JTextField tf) {
+    private void browse(JTextField tf, boolean allowNonProjectFolders, FileObject baseFolder) {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        File file = new File(FileUtil.toFile(project.getProjectDirectory()), tf.getText());
+        File file = PropertyUtils.resolveFile(FileUtil.toFile(baseFolder), tf.getText());
         if (file.exists()) {
             chooser.setSelectedFile(file);
         } else {
-            chooser.setCurrentDirectory(FileUtil.toFile(project.getProjectDirectory()));
+            chooser.setCurrentDirectory(FileUtil.toFile(baseFolder));
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
             FileObject fo = FileUtil.toFileObject(selected);
             if (fo != null && fo.isFolder()) {
-                String rel = FileUtil.getRelativePath(project.getSiteRootFolder(), fo);
+                String rel = FileUtil.getRelativePath(baseFolder, fo);
                 if (rel != null) {
                     tf.setText(rel);
+                } else {
+                    if (allowNonProjectFolders) {
+                        tf.setText(FileUtil.getFileDisplayName(fo));
+                    } else {
+                        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                            "Selected folder must be located under Project's Folder."));
+                    }
                 }
             }
         }
     }
     
     private void jBrowseTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseTestButtonActionPerformed
-        browse(jTestFolderTextField);
+        browse(jTestFolderTextField, false, project.getProjectDirectory());
     }//GEN-LAST:event_jBrowseTestButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
