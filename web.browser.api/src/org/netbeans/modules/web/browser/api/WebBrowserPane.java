@@ -152,10 +152,6 @@ public final class WebBrowserPane {
         }
     }
     
-    private synchronized boolean isBrowserGoingToBeCreatedLazily() {
-        return (topComponent == null && createTopComponent);
-    }
-    
     private synchronized HtmlBrowserComponent getTopComponent() {
         if (topComponent == null && createTopComponent) {
 
@@ -212,17 +208,14 @@ public final class WebBrowserPane {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                boolean setProjectContext = isBrowserGoingToBeCreatedLazily();
                 HtmlBrowserComponent comp = getTopComponent();
                 if (comp != null) {
                     comp.setURLAndOpen(u);
                     impl = topComponent.getBrowserImpl();
-                    if (setProjectContext && lastProjectContext != null) {
-                        // initialize component with project context:
-                        if ( impl instanceof EnhancedBrowser ){
-                            ((EnhancedBrowser) impl).setProjectContext(lastProjectContext);
-                        }
-                        lastProjectContext = null;
+                    // initialize component with project context because 
+                    // comp.setURLAndOpen() may have created a new browser instance
+                    if ( impl instanceof EnhancedBrowser ){
+                        ((EnhancedBrowser) impl).setProjectContext(lastProjectContext);
                     }
                     if ( impl!= null){
                         impl.addPropertyChangeListener(listener);
@@ -240,9 +233,8 @@ public final class WebBrowserPane {
     }
     
     void setProjectContext(Lookup projectContext) {
-        if (isBrowserGoingToBeCreatedLazily()) {
-            lastProjectContext = projectContext;
-        } else if ( impl instanceof EnhancedBrowser ){
+        lastProjectContext = projectContext;
+        if ( impl != null && impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).setProjectContext(projectContext);
         }
     }
