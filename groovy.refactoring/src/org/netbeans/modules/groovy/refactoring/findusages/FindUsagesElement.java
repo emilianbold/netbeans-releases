@@ -43,6 +43,8 @@
 package org.netbeans.modules.groovy.refactoring.findusages;
 
 import javax.swing.text.Position;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -86,7 +88,25 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
 
     @Override
     public String getDisplayText() {
-        return line.getText().trim();
+        final ASTNode node = element.getNode();
+
+        final int columnStart = node.getColumnNumber();
+        final int columnEnd = node.getLastColumnNumber();
+
+        String beforeUsagePart = line.createPart(0, columnStart - 1).getText();
+        String usagePart = line.createPart(columnStart - 1, columnEnd - columnStart).getText();
+        String afterUsagePart = line.createPart(columnEnd - 1, line.getText().length()).getText();
+
+        if (node instanceof ConstructorNode) {
+            String constructorName = ((ConstructorNode) node).getDeclaringClass().getNameWithoutPackage();
+            int constructorStart = line.getText().indexOf(constructorName);
+
+            beforeUsagePart = line.createPart(0, constructorStart).getText();
+            usagePart = line.createPart(constructorStart, constructorName.length()).getText();
+            afterUsagePart = line.createPart(constructorStart + constructorName.length(), line.getText().length()).getText();
+        }
+
+        return beforeUsagePart + "<b>" + usagePart + "</b>" + afterUsagePart;
     }
 
     @Override
