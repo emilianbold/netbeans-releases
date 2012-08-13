@@ -420,11 +420,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                     }
                     // MINDEXER-42: cannot use WagonHelper.getWagonResourceFetcher
-                    HttpWagon wagon = (HttpWagon) embedder.lookup(Wagon.class, protocol);
-                    //#215343
-                    Properties p = new Properties();
-                    p.setProperty("User-Agent", "netBeans/" + System.getProperty("netbeans.buildnumber"));
-                    wagon.setHttpHeaders(p);
+                    Wagon wagon = embedder.lookup(Wagon.class, protocol);
+                    if (wagon instanceof HttpWagon) { //#216401
+                        HttpWagon httpwagon = (HttpWagon) wagon;
+                        //#215343
+                        Properties p = new Properties();
+                        p.setProperty("User-Agent", "netBeans/" + System.getProperty("netbeans.buildnumber"));
+                        httpwagon.setHttpHeaders(p);
+                    }
                             
                     ResourceFetcher fetcher = new WagonHelper.WagonFetcher(wagon, listener, wagonAuth, wagonProxy);
                     listener.setFetcher(fetcher);
