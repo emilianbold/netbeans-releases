@@ -50,7 +50,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -116,7 +116,7 @@ public class JsDocParser {
 
         List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
         Token<? extends JsDocumentationTokenId> token;
-        Type type = null;
+        JsDocElementType type = null;
         boolean afterDescription = false;
         StringBuilder sb = new StringBuilder();
         int offset = ts.offset();
@@ -136,7 +136,7 @@ public class JsDocParser {
                     // store first description
                     if (!afterDescription) {
                         //TODO - distinguish description and inline comments
-                        jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, sb.toString().trim()));
+                        jsDocElements.add(DescriptionElement.create(JsDocElementType.CONTEXT_SENSITIVE, sb.toString().trim()));
                     } else {
                         jsDocElements.add(JsDocElementUtils.createElementForType(type, sb.toString().trim(), offset));
                     }
@@ -152,7 +152,7 @@ public class JsDocParser {
                     ets.movePrevious();
                 }
                 afterDescription = true;
-                type = Type.fromString(CharSequenceUtilities.toString(token.text()));
+                type = JsDocElementType.fromString(CharSequenceUtilities.toString(token.text()));
             } else {
                 sb.append(token.text());
             }

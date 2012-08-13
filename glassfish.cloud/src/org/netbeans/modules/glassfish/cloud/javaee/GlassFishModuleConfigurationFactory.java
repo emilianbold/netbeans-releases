@@ -39,50 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 
 /**
- * Represents parameter element which does not need any parameter name.
- * <p>
- * <i>Examples:</i> @throws {MyError} my description,...
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Abstract Extension of {@link ModuleConfigurationFactory} providing also
+ * access to server instance URL.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public class UnnamedParameterElement extends ParameterElement implements DocParameter {
+public abstract class GlassFishModuleConfigurationFactory
+        implements ModuleConfigurationFactory2 {
 
-    private UnnamedParameterElement(JsDocElementType type,
-            List<Type> paramTypes, String paramDescription) {
-        super(type, paramTypes, paramDescription);
+    /**
+     * Creates a {@link ModuleConfiguration} instance associated with the
+     * specified J2EE module.
+     * <p/>
+     * @param j2eeModule J2EE module the created ModuleConfigucation should be 
+     *                   associated with.
+     * @param deployment URL of the target server instance.
+     * @return ModuleConfiguration associated with the specified J2EE module.
+     */    
+    @Override
+    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl)
+            throws ConfigurationException {
+        return null;
     }
 
-    /** Creates unnamed parameter element.
-     * @param type type of the element
-     * @param paramTypes type of the parameter
-     * @param paramDescription description of the parameter
+    /**
+     * Creates a {@link ModuleConfiguration} instance associated with the
+     * specified J2EE module.
+     * <p/>
+     * @param j2eeModule J2EE module the created ModuleConfigucation should be 
+     *                   associated with.
+     * @return ModuleConfigucation associated with the specified J2EE module.
      */
-    public static UnnamedParameterElement create(JsDocElementType type,
-            List<Type> paramTypes, String paramDescription) {
-        return new UnnamedParameterElement(type, paramTypes, paramDescription);
-    }
-
     @Override
-    public DocIdentifier getParamName() {
+    public ModuleConfiguration create(J2eeModule j2eeModule)
+            throws ConfigurationException {
         return null;
     }
-
-    @Override
-    public String getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return false;
-    }
-
+    
 }

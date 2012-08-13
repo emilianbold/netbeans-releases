@@ -39,50 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
-
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
 /**
- * Represents parameter element which does not need any parameter name.
- * <p>
- * <i>Examples:</i> @throws {MyError} my description,...
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Extension of {@link ModuleConfigurationFactory} providing also access to
+ * server instance URL for registered GlassFish cloud user account.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public class UnnamedParameterElement extends ParameterElement implements DocParameter {
-
-    private UnnamedParameterElement(JsDocElementType type,
-            List<Type> paramTypes, String paramDescription) {
-        super(type, paramTypes, paramDescription);
-    }
-
-    /** Creates unnamed parameter element.
-     * @param type type of the element
-     * @param paramTypes type of the parameter
-     * @param paramDescription description of the parameter
-     */
-    public static UnnamedParameterElement create(JsDocElementType type,
-            List<Type> paramTypes, String paramDescription) {
-        return new UnnamedParameterElement(type, paramTypes, paramDescription);
-    }
-
-    @Override
-    public DocIdentifier getParamName() {
-        return null;
-    }
-
-    @Override
-    public String getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return false;
-    }
-
+public class GlassFishAccountModuleConfigurationFactory
+        extends GlassFishModuleConfigurationFactory {
+    
 }

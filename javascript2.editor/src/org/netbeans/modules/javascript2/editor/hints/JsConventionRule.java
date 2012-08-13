@@ -46,14 +46,17 @@ import com.oracle.nashorn.ir.Block;
 import com.oracle.nashorn.ir.DoWhileNode;
 import com.oracle.nashorn.ir.ExecuteNode;
 import com.oracle.nashorn.ir.ForNode;
+import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
+import com.oracle.nashorn.parser.TokenType;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -140,10 +143,14 @@ public class JsConventionRule implements Rule.AstRule{
             this.rule = rule;
         }
         
+        @NbBundle.Messages("ExpectedInstead=Expected \"{0}\" and instead saw \"{1}\".")
         public void process(JsRuleContext context, List<Hint> hints) {
             this.hints = hints;
             this.context = context;
-            context.getJsParserResult().getRoot().accept(this);
+            FunctionNode root = context.getJsParserResult().getRoot();
+            if (root != null) {
+                context.getJsParserResult().getRoot().accept(this);
+            }
         }
         
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
@@ -176,10 +183,73 @@ public class JsConventionRule implements Rule.AstRule{
                     hints.add(new Hint(rule, Bundle.AssignmentCondition(), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                } else {
+                    String message = null;
+                    switch(binaryNode.tokenType()) {
+                        case EQ:
+                            message = Bundle.ExpectedInstead("===", "=="); //NOI18N
+                            break;
+                        case NE:
+                            message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
+                            break;
+                    }
+                    if (message != null) {
+                        hints.add(new Hint(rule, message, 
+                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                    }
                 }
             }
         }
 
+        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY};
+        @NbBundle.Messages("DuplicateName=Duplicate name of property \"{0}\".")
+        private void checkDuplicateLabels(ObjectNode objectNode) {
+            int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
+            int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, startOffset);
+            ts.move(startOffset);
+            State state = State.BEFORE_COLON;
+            int curlyBalance = 0;
+            if (ts.movePrevious() && ts.moveNext()) {
+                HashSet<String> names = new HashSet<String>();
+                while (ts.moveNext() && ts.offset() < endOffset) {
+                    JsTokenId id = ts.token().id();
+                    switch (state) {
+                        case BEFORE_COLON:
+                            if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
+                                if (!names.add(ts.token().text().toString())) {
+                                    hints.add(new Hint(rule, Bundle.DuplicateName(ts.token().text().toString()),
+                                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                }
+                            } else if (id == JsTokenId.OPERATOR_COLON) {
+                                state = State.AFTER_COLON;
+                            }
+                            break;
+                        case AFTER_COLON:
+                            if (id == JsTokenId.OPERATOR_COMMA) {
+                                state = State.BEFORE_COLON;
+                            } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                                state = State.AFTER_CURLY;
+                            }
+                            break;
+                        case AFTER_CURLY:
+                            if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                                curlyBalance++;
+                            } else if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
+                                if (curlyBalance == 0) {
+                                    state = State.BEFORE_COLON;
+                                } else {
+                                    curlyBalance--;
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }   
+       
         @Override
         public Node visit(DoWhileNode doWhileNode, boolean onset) {
             if (onset) {
@@ -219,6 +289,7 @@ public class JsConventionRule implements Rule.AstRule{
         @NbBundle.Messages("Unexpected=Unexpected \"{0}\".")
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
+                checkDuplicateLabels(objectNode);
                 int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
                 ts.move(offset);

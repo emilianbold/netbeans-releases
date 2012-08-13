@@ -39,13 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
-import com.oracle.nashorn.ir.*;
-import java.util.LinkedList;
-import java.util.List;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 
 /**
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Abstract optional deployment manager for GlassFish cloud.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
+public abstract class GlassFishOptionalDeploymentManager
+        extends OptionalDeploymentManagerFactory {
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented abstract methods                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Create StartServer for given DeploymentManager.
+     */
+    @Override
+    public StartServer getStartServer(DeploymentManager dm) {
+        return null;
+    }
+
+    /** 
+     * Create IncrementalDeployment for given DeploymentManager.
+     */
+    @Override
+    public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
+        return null;
+    }
+
+    /** 
+     * Create FindJSPServlet for given DeploymentManager.
+     */
+    @Override
+    public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Overriden methods                                                      //
+    ////////////////////////////////////////////////////////////////////////////
+
+}

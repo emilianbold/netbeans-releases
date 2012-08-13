@@ -39,50 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 
 /**
- * Represents parameter element which does not need any parameter name.
- * <p>
- * <i>Examples:</i> @throws {MyError} my description,...
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Optional deployment manager for local GlassFish server registered with cloud.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public class UnnamedParameterElement extends ParameterElement implements DocParameter {
+public class GlassFishCloudOptionalDeploymentManager
+        extends GlassFishOptionalDeploymentManager {
 
-    private UnnamedParameterElement(JsDocElementType type,
-            List<Type> paramTypes, String paramDescription) {
-        super(type, paramTypes, paramDescription);
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // Overriden methods                                                      //
+    ////////////////////////////////////////////////////////////////////////////
 
-    /** Creates unnamed parameter element.
-     * @param type type of the element
-     * @param paramTypes type of the parameter
-     * @param paramDescription description of the parameter
+    /**
+     * Allows a plugin to perform post initialization action.
      */
-    public static UnnamedParameterElement create(JsDocElementType type,
-            List<Type> paramTypes, String paramDescription) {
-        return new UnnamedParameterElement(type, paramTypes, paramDescription);
-    }
-
     @Override
-    public DocIdentifier getParamName() {
-        return null;
-    }
-
-    @Override
-    public String getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return false;
+    public void finishServerInitialization()
+            throws ServerInitializationException {
+        // Cloud instance provider initialization to read all registered
+        // GlassFish cloud instances
+        GlassFishCloudInstanceProvider.getInstance();
     }
 
 }
