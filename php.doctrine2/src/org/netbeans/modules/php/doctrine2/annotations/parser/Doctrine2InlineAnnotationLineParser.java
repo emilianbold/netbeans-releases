@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
+package org.netbeans.modules.php.doctrine2.annotations.parser;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -48,25 +48,23 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OdmInlineAnnotationLineParser implements AnnotationLineParser {
+public class Doctrine2InlineAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmInlineAnnotationLineParser();
+    private static final AnnotationLineParser INSTANCE = new Doctrine2InlineAnnotationLineParser();
 
     private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
     static {
         INLINE_ANNOTATIONS.add("Index"); //NOI18N
+        INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
+        INLINE_ANNOTATIONS.add("JoinColumn"); //NOI18N
     }
 
-    private Doctrine2OdmInlineAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=601)
+    @AnnotationLineParser.Registration(position=700)
     public static AnnotationLineParser getDefault() {
         return INSTANCE;
     }
@@ -76,7 +74,7 @@ public class Doctrine2OdmInlineAnnotationLineParser implements AnnotationLinePar
         AnnotationParsedLine result = null;
         final Map<OffsetRange, String> extractInlineTypes = AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS);
         if (!extractInlineTypes.isEmpty()) {
-            result = new ParsedLine("", extractInlineTypes, line.trim());
+            result = new AnnotationParsedLine.ParsedLine("", extractInlineTypes, line.trim());
         }
         return result;
     }

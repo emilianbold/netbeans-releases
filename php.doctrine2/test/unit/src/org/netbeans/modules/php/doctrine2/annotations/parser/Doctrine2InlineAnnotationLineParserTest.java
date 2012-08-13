@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
+package org.netbeans.modules.php.doctrine2.annotations.parser;
 
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -51,17 +51,17 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmInlineAnnotationLineParserTest extends NbTestCase {
+public class Doctrine2InlineAnnotationLineParserTest extends NbTestCase {
     private AnnotationLineParser parser;
 
-    public Doctrine2OrmInlineAnnotationLineParserTest(String name) {
+    public Doctrine2InlineAnnotationLineParserTest(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = Doctrine2OrmInlineAnnotationLineParser.getDefault();
+        this.parser = Doctrine2InlineAnnotationLineParser.getDefault();
     }
 
     public void testValidUseCase_01() throws Exception {
