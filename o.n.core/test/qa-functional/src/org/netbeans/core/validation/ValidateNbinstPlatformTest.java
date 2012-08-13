@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ide;
+package org.netbeans.core.validation;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ProjectFactory;
-import org.netbeans.spi.project.ProjectState;
-import org.openide.filesystems.FileObject;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
-public final class Factory implements ProjectFactory {
-
-    public boolean isProject(FileObject projectDirectory) {
-        return false;
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class ValidateNbinstPlatformTest {
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateNbinstTest.class).
+            clusters("platform|ide").enableClasspathModules(false).enableModules(".*").gui(false).suite());
+        return suite;
     }
-
-    public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        return null;
-    }
-
-    public void saveProject(Project project) throws IOException, ClassCastException {
-    }
+    
 }
