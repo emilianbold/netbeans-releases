@@ -76,6 +76,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -353,7 +354,13 @@ class StackTraceSupport {
 
     public static void register(final JTextPane textPane) {
         final StyledDocument doc = textPane.getStyledDocument();
-        final String comment = textPane.getText();
+        String text = "";
+        try {
+            text = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
+        final String comment = text;
         final List<StackTracePosition> stacktraces = find(comment);
         if (!stacktraces.isEmpty()) {
             SwingUtilities.invokeLater(new Runnable() {
