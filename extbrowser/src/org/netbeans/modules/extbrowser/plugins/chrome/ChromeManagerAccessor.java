@@ -58,6 +58,7 @@ import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.netbeans.modules.extbrowser.plugins.Utils;
 
 
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
@@ -123,7 +124,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 JSONObject extension = (JSONObject)e.getValue();
                 if (extension != null) {
                     String path = (String)extension.get("path");
-                    if (path != null && (path.indexOf("/extbrowser/plugins/chrome") != -1 || path.indexOf("\\extbrowser\\plugins\\chrome") != -1)) {
+                    if (path != null && (path.indexOf("/extbrowser/plugins/chrome") != -1 
+                            || path.indexOf("\\extbrowser\\plugins\\chrome") != -1)) 
+                    {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
                     JSONObject manifest = (JSONObject)extension.get("manifest");
@@ -153,7 +156,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install(org.netbeans.modules.web.plugins.PluginLoader)
          */
         @Override
-        public boolean install( PluginLoader loader, ExtensionManager.ExtensitionStatus currentStatus ) {
+        public boolean install( PluginLoader loader, 
+                ExtensionManager.ExtensitionStatus currentStatus ) 
+        {
             File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
             
@@ -163,7 +168,23 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return false;
             }
             
-            NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
+            try {
+                String pluginPath = "file:///"+extensionFile.getCanonicalPath();
+                
+                DialogDescriptor descriptor = new DialogDescriptor(
+                        new ChromeInfoPanel(pluginPath, loader), 
+                        NbBundle.getMessage(ChromeExtensionManager.class, 
+                                "TTL_InstallExtension"));                            // NOI18N
+                DialogDisplayer.getDefault().notify(descriptor);
+            }
+            catch( IOException e ){
+                Logger.getLogger( ChromeExtensionManager.class.getCanonicalName()).
+                    log(Level.INFO , null ,e );
+                return false;
+            }
+            return true;
+            
+           /* NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(ChromeExtensionManager.class, 
                             currentStatus == ExtensionManager.ExtensitionStatus.MISSING ? 
                         "LBL_InstallMsg" : "LBL_UpgradeMsg"),                                  // NOI18N
@@ -184,13 +205,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     log(Level.INFO , null ,e );
                 return false;
             }
-            return true;
+            return true;*/
         }
         
-        /*
-         *  TODO : this method should automatically retrieve current plugin 
-         *  version to avoid manual source update
-         */
         @Override
         protected String getCurrentPluginVersion(){
             File extensionFile = InstalledFileLocator.getDefault().locate(
