@@ -243,12 +243,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings("unchecked")
-            WizardDescriptor.Panel<WizardDescriptor>[] pnls = new WizardDescriptor.Panel[] {
-                        new ClientSideProjectWizardPanel(),
-                        new SiteTemplateWizardPanel(),
-                        new JavaScriptLibrarySelectionPanel(),
+            WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
+                new NewClientSideProjectPanel(),
+                new SiteTemplateWizardPanel(),
+                new JavaScriptLibrarySelectionPanel(),
             };
-            return pnls;
+            return panels;
         }
 
         @NbBundle.Messages({

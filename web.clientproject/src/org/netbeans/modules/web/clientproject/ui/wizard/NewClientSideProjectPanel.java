@@ -48,27 +48,27 @@ import org.openide.util.HelpCtx;
 /**
  * Panel just asking for basic info.
  */
-public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
+public class NewClientSideProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     private volatile WizardDescriptor wizardDescriptor;
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
-    private volatile ClientSideProject component;
+    private volatile NewClientSideProject clientSideProject;
 
 
-    public ClientSideProjectWizardPanel() {
+    public NewClientSideProjectPanel() {
     }
 
     @Override
-    public ClientSideProject getComponent() {
-        if (component == null) {
-            component = new ClientSideProject();
+    public NewClientSideProject getComponent() {
+        if (clientSideProject == null) {
+            clientSideProject = new NewClientSideProject();
         }
-        return component;
+        return clientSideProject;
     }
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.ClientSideProjectWizardPanel"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel"); // NOI18N
     }
 
     @Override

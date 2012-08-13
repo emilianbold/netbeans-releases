@@ -52,7 +52,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-public class ClientSideProject extends JPanel {
+public class NewClientSideProject extends JPanel {
 
     private static final long serialVersionUID = 6783546871135477L;
 
@@ -61,7 +61,7 @@ public class ClientSideProject extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    public ClientSideProject() {
+    public NewClientSideProject() {
         initComponents();
         initProjectNameAndLocation();
     }
@@ -175,12 +175,12 @@ public class ClientSideProject extends JPanel {
         createdFolderTextField = new javax.swing.JTextField();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(ClientSideProject.class, "ClientSideProject.projectNameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(NewClientSideProject.class, "NewClientSideProject.projectNameLabel.text")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(ClientSideProject.class, "ClientSideProject.projectLocationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(NewClientSideProject.class, "NewClientSideProject.projectLocationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ClientSideProject.class, "ClientSideProject.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(NewClientSideProject.class, "NewClientSideProject.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -188,7 +188,7 @@ public class ClientSideProject extends JPanel {
         });
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(ClientSideProject.class, "ClientSideProject.createdFolderLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(NewClientSideProject.class, "NewClientSideProject.createdFolderLabel.text")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 
@@ -229,7 +229,7 @@ public class ClientSideProject extends JPanel {
 
     @NbBundle.Messages("ClientSideProject.dialog.location.title=Select Project Location")
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        File projectDir = new FileChooserBuilder(ClientSideProject.class)
+        File projectDir = new FileChooserBuilder(NewClientSideProject.class)
                 .setTitle(Bundle.ClientSideProject_dialog_location_title())
                 .setDirectoriesOnly(true)
                 .showOpenDialog();
