@@ -107,9 +107,10 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     public boolean isAutoRefresh() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId());
         if (val != null) {
-            return Boolean.parseBoolean(val);
+            return Boolean.parseBoolean(val) && getBrowserIntegration() == Boolean.TRUE;
         } else {
-            return true;
+            // if browserIntegration is available then default is true for AutoRefresh
+            return getBrowserIntegration() == Boolean.TRUE;
         }
     }
 
@@ -117,9 +118,10 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     public boolean isHighlightSelectionEnabled() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId());
         if (val != null) {
-            return Boolean.parseBoolean(val);
+            return Boolean.parseBoolean(val) && getBrowserIntegration() == Boolean.TRUE;
         } else {
-            return true;
+            // if browserIntegration is available then default is true for HighlightSelectionEnabled
+            return getBrowserIntegration() == Boolean.TRUE;
         }
     }
 
