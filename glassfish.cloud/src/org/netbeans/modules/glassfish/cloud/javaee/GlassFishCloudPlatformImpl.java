@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 
 /**
@@ -61,7 +62,8 @@ public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
      * @param url GlassFish cloud URL.
      */
     GlassFishCloudPlatformImpl(GlassFishUrl url) {
-        super(url);        
+        super(url, GlassFishCloudInstanceProvider
+                .getCloudInstance(url.getName()));
     }
 
 }

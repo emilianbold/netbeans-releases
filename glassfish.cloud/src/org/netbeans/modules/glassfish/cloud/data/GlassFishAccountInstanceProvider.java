@@ -45,6 +45,7 @@ import java.util.*;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 
 /**
  * GlassFish User Account Instances Provider.
@@ -212,6 +213,16 @@ public class GlassFishAccountInstanceProvider
             serverInstances.add(instance.getServerInstance());
             accountInstances.put(instance.getDisplayName(), instance);
         }
+        if (instance.getUrl() != null) {
+            try {
+                org.netbeans.modules.j2ee.deployment.plugins.api
+                        .InstanceProperties
+                        .createInstancePropertiesNonPersistent(
+                        instance.getUrl(), null, null,
+                        instance.getDisplayName(), null);
+            } catch (InstanceCreationException ice) {
+            }
+        }
         changeListeners.fireChange();
     }
 
@@ -239,6 +250,11 @@ public class GlassFishAccountInstanceProvider
             serverInstances.remove(instance.getServerInstance());
             accountInstances.remove(instance.getDisplayName());
         }
+         if (instance.getUrl() != null) {
+             org.netbeans.modules.j2ee.deployment.plugins.api
+                        .InstanceProperties
+                        .removeInstance(instance.getUrl());
+         }
         changeListeners.fireChange();
     }
 
