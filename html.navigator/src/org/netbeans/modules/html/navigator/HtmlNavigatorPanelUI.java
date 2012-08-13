@@ -330,13 +330,19 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
 
     private void showWaitNode() {
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 view.setRootVisible(true);
                 manager.setRootContext(waitNode);
             }
-        });
+        };
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     public HtmlElementNode getRootNode() {
