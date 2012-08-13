@@ -349,8 +349,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
-
-
     }
 
 }
