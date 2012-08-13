@@ -42,8 +42,10 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
@@ -115,11 +117,38 @@ public class MatchedPropertiesNode extends AbstractNode {
      * node or whether it matches some parent of the selected node.
      */
     private void addChildrenFor(Rule rule, List<MatchedPropertyNode> toPopulate, Set<String> properties, boolean matchingSelection) {
-        for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : rule.getStyle().getProperties()) {
+        List<org.netbeans.modules.web.webkit.debugging.api.css.Property> ruleProperties = rule.getStyle().getProperties();
+        Map<String, MatchedPropertyNode> parentMap = new HashMap<String, MatchedPropertyNode>();
+        Map<String, List<MatchedPropertyNode>> childrenMap = new HashMap<String, List<MatchedPropertyNode>>();
+        for (int i=ruleProperties.size()-1; i>=0; i--) {
+            org.netbeans.modules.web.webkit.debugging.api.css.Property property = ruleProperties.get(i);
             String name = property.getName();
             if (!properties.contains(name) && (matchingSelection || CSSUtils.isInheritedProperty(name))) {
                 properties.add(name);
-                toPopulate.add(new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property));
+                MatchedPropertyNode node = new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property);
+                String shorthandName = property.getShorthandName();
+                if (shorthandName == null) {
+                    parentMap.put(name, node);
+                    toPopulate.add(node);
+                    List<MatchedPropertyNode> children = childrenMap.get(name);
+                    if (children != null) {
+                        for (MatchedPropertyNode child : children) {
+                            node.addSubNode(child);
+                        }
+                    }
+                } else {
+                    MatchedPropertyNode parent = parentMap.get(shorthandName);
+                    if (parent == null) {
+                        List<MatchedPropertyNode> children = childrenMap.get(shorthandName);
+                        if (children == null) {
+                            children = new ArrayList<MatchedPropertyNode>();
+                            childrenMap.put(shorthandName, children);
+                        }
+                        children.add(node);
+                    } else {
+                        parent.addSubNode(node);
+                    }
+                }
             }
         }
     }
