@@ -141,8 +141,9 @@ public class JsConventionRule implements Rule.AstRule{
         
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
         private void checkSemicolon(int offset) {
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-            ts.move(offset);
+            int fileOffset = context.parserResult.getSnapshot().getOriginalOffset(offset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
+            ts.move(fileOffset);
             if(ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
                 if(id == JsTokenId.STRING_END && ts.moveNext()) {
