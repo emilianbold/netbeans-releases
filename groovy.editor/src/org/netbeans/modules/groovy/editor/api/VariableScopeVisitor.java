@@ -645,7 +645,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         String visitedNameWithoutPkg = visitedClass.getNameWithoutPackage();
 
         ClassNode classNode = ((ClassNode) leaf);
-        ClassNode superClass = classNode.getSuperClass();
+        ClassNode superClass = classNode.getUnresolvedSuperClass(false);
         ClassNode[] interfaces = classNode.getInterfaces();
 
         // Check if the caret is on the ClassNode itself
