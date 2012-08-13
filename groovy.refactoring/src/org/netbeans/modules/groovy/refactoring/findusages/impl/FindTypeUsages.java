@@ -49,6 +49,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
@@ -91,6 +92,12 @@ public class FindTypeUsages extends AbstractFindUsages {
         public FindAllTypeUsagesVisitor(ModuleNode moduleNode, String findingFqn) {
            super(moduleNode);
            this.findingFqn = ElementUtils.normalizeTypeName(findingFqn, null);
+        }
+
+        @Override
+        public void visitArrayExpression(ArrayExpression expression) {
+            addIfEquals(expression);
+            super.visitArrayExpression(expression);
         }
 
         @Override
