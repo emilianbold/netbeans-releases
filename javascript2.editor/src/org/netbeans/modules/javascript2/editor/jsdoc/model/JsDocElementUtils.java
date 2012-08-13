@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 
 /**
@@ -61,7 +61,7 @@ public class JsDocElementUtils {
      * @param descBeginOffset type description text start offset
      * @return created {@code JsDocElement)
      */
-    public static JsDocElement createElementForType(JsDocElement.Type type, String tagDescription, int descStartOffset) {
+    public static JsDocElement createElementForType(JsDocElementType type, String tagDescription, int descStartOffset) {
         switch (type.getCategory()) {
             case ASSIGN:
                 String[] values = tagDescription.split("(\\s)*as(\\s)*"); //NOI18N
@@ -102,7 +102,7 @@ public class JsDocElementUtils {
         return types;
     }
 
-    private static ParameterElement createParameterElement(JsDocElement.Type elementType,
+    private static ParameterElement createParameterElement(JsDocElementType elementType,
             String elementText, int descStartOffset) {
         int typeOffset = -1, nameOffset = -1;
         String types = "", desc = ""; //NOI18N

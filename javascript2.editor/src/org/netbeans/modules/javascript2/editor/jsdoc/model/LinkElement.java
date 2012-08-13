@@ -52,12 +52,12 @@ public class LinkElement extends JsDocElementImpl {
 
     private final NamePath linkedPath;
 
-    private LinkElement(Type type, NamePath linkedPath) {
+    private LinkElement(JsDocElementType type, NamePath linkedPath) {
         super(type);
         this.linkedPath = linkedPath;
     }
 
-    public static LinkElement create(Type type, NamePath linkedPath) {
+    public static LinkElement create(JsDocElementType type, NamePath linkedPath) {
         return new LinkElement(type, linkedPath);
     }
 
