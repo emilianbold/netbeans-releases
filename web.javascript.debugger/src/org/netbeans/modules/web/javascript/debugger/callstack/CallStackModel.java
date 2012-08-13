@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
     "CTL_CallstackModel_Column_Name_Name=Name",
     "CTL_CallstackAction_Copy2CLBD_Label=Copy Stack"
 })
-public class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
+public final class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
         NodeActionsProvider, TableModel, Debugger.Listener {
 
     public static final String CALL_STACK =
@@ -237,6 +237,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
 
     // TableModel implementation ...............................................
 
+    @Override
     public Object getValueAt(Object node, String columnID)
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
@@ -282,7 +283,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
 
     private void stackToCLBD() {
         // JPDAThread t = debugger.getCurrentThread();
-        StringBuffer frameStr = new StringBuffer(50);
+        StringBuilder frameStr = new StringBuilder(50);
 //        JSCallStackFrame[] stack = debugger.getCallStackFrames();
 //        if (stack != null) {
 //            int i, k = stack.length;
