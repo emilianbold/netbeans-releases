@@ -233,9 +233,9 @@ class RouterGenerator {
         myRouters.append("getData: function(){\n");                       // NOI18N
         myRouters.append("return {\n");                                   // NOI18N
         String mainModelAttribute = modelGenerator.getDisplayNameAlias();
-        myRouters.append("/*\n* get values from the HTML controls and");  // NOI18N
+        myRouters.append("/*\n * get values from the HTML controls and"); // NOI18N
         myRouters.append(" put them here as a hash of attributes\n");     // NOI18N
-        myRouters.append(" * f.e.\n* ");                                  // NOI18N
+        myRouters.append(" * f.e.\n * ");                                 // NOI18N
         myRouters.append(mainModelAttribute);
         myRouters.append(":$('#");                                        // NOI18N
         myRouters.append(mainModelAttribute);
