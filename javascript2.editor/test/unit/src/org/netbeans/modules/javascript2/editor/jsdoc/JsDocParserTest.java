@@ -47,6 +47,7 @@ import java.util.Map.Entry;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
@@ -60,21 +61,21 @@ public class JsDocParserTest extends JsTestBase {
         super(name);
     }
 
-    private static final JsDocElement.Type[] expectedTypes = new JsDocElement.Type[] {
+    private static final JsDocElementType[] expectedTypes = new JsDocElementType[] {
         // context sensitive type
-        JsDocElement.Type.CONTEXT_SENSITIVE,
+        JsDocElementType.CONTEXT_SENSITIVE,
 
         // classic types
-        JsDocElement.Type.ARGUMENT, JsDocElement.Type.AUGMENTS, JsDocElement.Type.AUTHOR, JsDocElement.Type.BORROWS,
-        JsDocElement.Type.CLASS, JsDocElement.Type.CONSTANT, JsDocElement.Type.CONSTRUCTOR, JsDocElement.Type.CONSTRUCTS,
-        JsDocElement.Type.DEFAULT, JsDocElement.Type.DEPRECATED, JsDocElement.Type.DESCRIPTION, JsDocElement.Type.EVENT,
-        JsDocElement.Type.EXAMPLE, JsDocElement.Type.EXTENDS, JsDocElement.Type.FIELD, JsDocElement.Type.FILE_OVERVIEW,
-        JsDocElement.Type.FUNCTION, JsDocElement.Type.IGNORE, JsDocElement.Type.INNER, JsDocElement.Type.LENDS,
-        JsDocElement.Type.MEMBER_OF, JsDocElement.Type.NAME, JsDocElement.Type.NAMESPACE,
-        JsDocElement.Type.PARAM, JsDocElement.Type.PRIVATE, JsDocElement.Type.PROPERTY, JsDocElement.Type.PUBLIC,
-        JsDocElement.Type.REQUIRES, JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS, JsDocElement.Type.SEE,
-        JsDocElement.Type.SINCE, JsDocElement.Type.STATIC, JsDocElement.Type.THROWS, JsDocElement.Type.TYPE,
-        JsDocElement.Type.VERSION
+        JsDocElementType.ARGUMENT, JsDocElementType.AUGMENTS, JsDocElementType.AUTHOR, JsDocElementType.BORROWS,
+        JsDocElementType.CLASS, JsDocElementType.CONSTANT, JsDocElementType.CONSTRUCTOR, JsDocElementType.CONSTRUCTS,
+        JsDocElementType.DEFAULT, JsDocElementType.DEPRECATED, JsDocElementType.DESCRIPTION, JsDocElementType.EVENT,
+        JsDocElementType.EXAMPLE, JsDocElementType.EXTENDS, JsDocElementType.FIELD, JsDocElementType.FILE_OVERVIEW,
+        JsDocElementType.FUNCTION, JsDocElementType.IGNORE, JsDocElementType.INNER, JsDocElementType.LENDS,
+        JsDocElementType.MEMBER_OF, JsDocElementType.NAME, JsDocElementType.NAMESPACE,
+        JsDocElementType.PARAM, JsDocElementType.PRIVATE, JsDocElementType.PROPERTY, JsDocElementType.PUBLIC,
+        JsDocElementType.REQUIRES, JsDocElementType.RETURN, JsDocElementType.RETURNS, JsDocElementType.SEE,
+        JsDocElementType.SINCE, JsDocElementType.STATIC, JsDocElementType.THROWS, JsDocElementType.TYPE,
+        JsDocElementType.VERSION
     };
 
     public void testParsedTypesForAsterisksComment() throws Exception {
@@ -88,21 +89,21 @@ public class JsDocParserTest extends JsTestBase {
     public void testParsedContextSensitiveContentNoAsterisk() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesNoAsterisk.js"));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
-        assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
+        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesAsterisks.js"));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
-        assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
+        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription());
     }
 
     public void testParsingLongComments() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/windowStub.js"));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
-        assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
+        assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
     }
 
     private void checkElementTypes(String filePath) {

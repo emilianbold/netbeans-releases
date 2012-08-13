@@ -51,7 +51,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.completion.LinkTag;
 import org.netbeans.modules.javascript2.editor.jsdoc.completion.TypeDescribedTag;
 import org.netbeans.modules.javascript2.editor.jsdoc.completion.TypeNamedTag;
 import org.netbeans.modules.javascript2.editor.jsdoc.completion.TypeSimpleTag;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 
 /**
  *
@@ -75,8 +75,8 @@ public class JsDocAnnotationCompletionTagProvider extends AnnotationCompletionTa
 
     private void initAnnotations() {
         annotations = new LinkedList<AnnotationCompletionTag>();
-        for (JsDocElement.Type type : JsDocElement.Type.values()) {
-            if (type == JsDocElement.Type.UNKNOWN || type == JsDocElement.Type.CONTEXT_SENSITIVE) {
+        for (JsDocElementType type : JsDocElementType.values()) {
+            if (type == JsDocElementType.UNKNOWN || type == JsDocElementType.CONTEXT_SENSITIVE) {
                 continue;
             }
 
@@ -95,9 +95,6 @@ public class JsDocAnnotationCompletionTagProvider extends AnnotationCompletionTa
                     break;
                 case NAMED_PARAMETER:
                     annotations.add(new TypeNamedTag(type.toString()));
-                    break;
-                case SIMPLE:
-                    annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
                     break;
                 case UNNAMED_PARAMETER:
                     annotations.add(new TypeDescribedTag(type.toString()));

@@ -42,9 +42,10 @@
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Represents named parameter element.
@@ -59,8 +60,8 @@ public class NamedParameterElement extends ParameterElement implements DocParame
     private final boolean optional;
     private final String defaultValue;
 
-    private NamedParameterElement(Type type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription,
+    private NamedParameterElement(JsDocElementType type, DocIdentifier paramName,
+            List<Type> paramTypes, String paramDescription,
             boolean optional, String defaultValue) {
         super(type, paramTypes, paramDescription);
         this.paramName = paramName;
@@ -77,8 +78,8 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param optional flag if the parameter is optional
      * @param defaultValue default value of the parameter
      */
-    public static NamedParameterElement create(Type type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription,
+    public static NamedParameterElement create(JsDocElementType type, DocIdentifier paramName,
+            List<Type> paramTypes, String paramDescription,
             boolean optional, String defaultValue) {
         return new NamedParameterElement(type, paramName, paramTypes, paramDescription, optional, defaultValue);
     }
@@ -93,8 +94,8 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param paramDescription description of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static NamedParameterElement create(Type type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription,
+    public static NamedParameterElement create(JsDocElementType type, DocIdentifier paramName,
+            List<Type> paramTypes, String paramDescription,
             boolean optional) {
         return new NamedParameterElement(type, paramName, paramTypes, paramDescription, optional, null);
     }
@@ -108,8 +109,8 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static NamedParameterElement create(Type type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    public static NamedParameterElement create(JsDocElementType type, DocIdentifier paramName,
+            List<Type> paramTypes, String paramDescription) {
         return new NamedParameterElement(type, paramName, paramTypes, paramDescription, false, null);
     }
 
@@ -122,8 +123,8 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static NamedParameterElement createWithNameDiagnostics(Type type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    public static NamedParameterElement createWithNameDiagnostics(JsDocElementType type, DocIdentifier paramName,
+            List<Type> paramTypes, String paramDescription) {
         int nameOffset = paramName.getOffset();
         String name = paramName.getName();
         boolean optional = name.matches("\\[.*\\]"); //NOI18N

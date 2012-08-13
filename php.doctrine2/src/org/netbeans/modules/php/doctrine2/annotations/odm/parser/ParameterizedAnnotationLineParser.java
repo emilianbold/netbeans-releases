@@ -39,13 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
-import com.oracle.nashorn.ir.*;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+public class ParameterizedAnnotationLineParser implements AnnotationLineParser {
+
+    private static final Set<String> ANNOTATIONS = new HashSet<String>();
+    static {
+        ANNOTATIONS.add("AlsoLoad"); //NOI18N
+        ANNOTATIONS.add("Collection"); //NOI18N
+        ANNOTATIONS.add("DiscriminatorField"); //NOI18N
+        ANNOTATIONS.add("Field"); //NOI18N
+        ANNOTATIONS.add("InheritanceType"); //NOI18N
+    }
+
+    @Override
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        for (String annotationName : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                result = new AnnotationParsedLine.ParsedLine(annotationName, types, description, true);
+                break;
+            }
+        }
+        return result;
+    }
+
+}

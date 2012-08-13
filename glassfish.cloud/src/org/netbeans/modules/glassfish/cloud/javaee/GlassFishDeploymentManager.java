@@ -48,7 +48,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 /**
  * Abstract deployment manager for GlassFish cloud.
  * <p/>
- * contains common functionality for both local server and remote cloud server.
+ * Contains common functionality for both local server and remote cloud server.
  * <p/>
  * Provides the core set of functions a Java EE platform must provide for
  * Java EE application deployment. It provides server related information,

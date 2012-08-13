@@ -1,5 +1,5 @@
 Name: Maven Dependency Tree
-Version: 1.2
+Version: 2.0
 Description: Maven Dependency Tree
 License: Apache-2.0
 Origin: http://maven.apache.org/

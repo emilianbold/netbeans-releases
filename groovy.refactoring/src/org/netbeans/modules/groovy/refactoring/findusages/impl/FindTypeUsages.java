@@ -49,11 +49,13 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
@@ -93,14 +95,14 @@ public class FindTypeUsages extends AbstractFindUsages {
         }
 
         @Override
+        public void visitArrayExpression(ArrayExpression expression) {
+            addIfEquals(expression);
+            super.visitArrayExpression(expression);
+        }
+
+        @Override
         public void visitDeclarationExpression(DeclarationExpression expression) {
-            if (isEquals(expression)) {
-                if (!expression.isMultipleAssignmentDeclaration()) {
-                    usages.add(expression.getVariableExpression());
-                } else {
-                    usages.add(expression.getTupleExpression());
-                }
-            }
+            addIfEquals(expression);
             super.visitDeclarationExpression(expression);
         }
 
@@ -118,8 +120,8 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         @Override
         public void visitProperty(PropertyNode property) {
-            if (property.isSynthetic() && isEquals(property)) {
-                usages.add(property);
+            if (property.isSynthetic()) {
+                addIfEquals(property);
             }
             super.visitProperty(property);
         }
@@ -127,12 +129,13 @@ public class FindTypeUsages extends AbstractFindUsages {
         @Override
         public void visitClass(ClassNode clazz) {
             if (isEquals(clazz.getSuperClass())) {
-                usages.add(clazz);
+                // Oh my goodness I have absolutely no idea why the hack getSuperClass() doesn't return valid initiated superclass
+                // and the method with a weird name getUnresolvedSuperClass(false) is actually returning resolved super class (with 
+                // line/column numbers set)
+                usages.add(new FakeASTNode(clazz.getUnresolvedSuperClass(false), clazz.getSuperClass().getNameWithoutPackage()));
             }
             for (ClassNode interfaceNode : clazz.getInterfaces()) {
-                if (isEquals(interfaceNode)) {
-                    usages.add(clazz);
-                }
+                addIfEquals(interfaceNode);
             }
             super.visitClass(clazz);
         }
@@ -140,7 +143,7 @@ public class FindTypeUsages extends AbstractFindUsages {
         @Override
         protected void visitConstructorOrMethod(MethodNode method, boolean isConstructor) {
             if (!isConstructor && isEquals(method.getReturnType())) {
-                usages.add(method);
+                addIfEquals(method);
             }
 
             for (Parameter param : method.getParameters()) {
@@ -151,23 +154,19 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         @Override
         public void visitConstructorCallExpression(ConstructorCallExpression call) {
-            if (isEquals(call.getType())) {
-                usages.add(call);
-            }
+            addIfEquals(call);
             super.visitConstructorCallExpression(call);
         }
 
         @Override
         public void visitForLoop(ForStatement forLoop) {
-            if (isEquals(forLoop.getVariableType())) {
-                usages.add(forLoop.getCollectionExpression());
-            }
+            addIfEquals(forLoop);
             super.visitForLoop(forLoop);
         }
 
         private void addIfEquals(ASTNode node) {
             if (isEquals(node)) {
-                usages.add(node);
+                usages.add(new FakeASTNode(ElementUtils.getType(node), ElementUtils.getTypeName(node)));
             }
         }
 
