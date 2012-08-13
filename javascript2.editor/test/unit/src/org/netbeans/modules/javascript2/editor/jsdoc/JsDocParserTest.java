@@ -90,14 +90,14 @@ public class JsDocParserTest extends JsTestBase {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesNoAsterisk.js"));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesAsterisks.js"));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription());
     }
 
     public void testParsingLongComments() throws Exception {

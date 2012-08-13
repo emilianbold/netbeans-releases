@@ -392,7 +392,7 @@ public class JsDocModelTest extends JsDocumentationTestBase {
             case DESCRIPTION:
                 assertTrue(parsed instanceof DescriptionElement);
                 DescriptionElement descElement = (DescriptionElement) parsed;
-                assertEquals(expected.getProperty("desc"), descElement.getDescription().toString());
+                assertEquals(expected.getProperty("desc"), descElement.getDescription());
                 break;
             case LINK:
                 assertTrue(parsed instanceof LinkElement);
