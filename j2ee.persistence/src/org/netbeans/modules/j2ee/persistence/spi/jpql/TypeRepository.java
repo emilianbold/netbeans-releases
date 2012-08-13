@@ -121,7 +121,7 @@ public class TypeRepository implements ITypeRepository {
     @Override
     public IType getType(String fqn) {
         IType[] ret = types.get(fqn);
-        if(ret == null){
+        if(ret == null && isValid()){
             if(IType.UNRESOLVABLE_TYPE.equals(fqn)){
                 types.put(fqn, new Type[] {new Type(this, fqn)});
             } else {
@@ -147,15 +147,15 @@ public class TypeRepository implements ITypeRepository {
     
     private void fillTypeElement(final String fqn){
         types.put(fqn, new Type[]{null});
-        if(mtp.isValid()){ 
+        if(isValid()){ 
             getAnnotationModelHelper();
-            if(amh != null && mtp.isValid()) {
+            if(amh != null && isValid()) {
                 try {
                     amh.runJavaSourceTask(new Callable<Void>() {
 
                         @Override
                         public Void call() throws Exception {
-                                if(mtp.isValid()) {//model will be filled with nulls  after provider invalidation and with values only if valid provider
+                                if(isValid()) {//model will be filled with nulls  after provider invalidation and with values only if valid provider
                                     TypeElement te = amh.getCompilationController().getElements().getTypeElement(fqn);
                                     if(te!=null) {
                                         PersistentObject po = new PersistentObject(amh, te) {};
@@ -187,5 +187,9 @@ public class TypeRepository implements ITypeRepository {
                 }            
         }
         return amh;
+    }
+    
+    boolean isValid(){
+        return mtp.isValid();
     }
 }
