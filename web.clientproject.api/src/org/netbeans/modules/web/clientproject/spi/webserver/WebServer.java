@@ -132,17 +132,31 @@ public final class WebServer {
      */
     public URL toServer(FileObject projectFile) {
         Project p = FileOwnerQuery.getOwner(projectFile);
-        if (p == null) {
-            return null;
-        }
-        Pair pair = deployedApps.get(p);
-        if (pair != null) {
-            String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
-                    FileUtil.getRelativePath(pair.siteRoot, projectFile);
-            try {
-                return new URL("http://localhost:"+PORT+path);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+        if (p != null) {
+            Pair pair = deployedApps.get(p);
+            if (pair != null) {
+                String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                        FileUtil.getRelativePath(pair.siteRoot, projectFile);
+                try {
+                    return new URL("http://localhost:"+PORT+path);
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } else {
+            // fallback if project was not found:
+            for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
+                Pair pair = entry.getValue();
+                String relPath = FileUtil.getRelativePath(pair.siteRoot, projectFile);
+                if (relPath != null) {
+                    String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                            relPath;
+                    try {
+                        return new URL("http://localhost:"+PORT+path);
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         }
         return null;
