@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -50,34 +51,46 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
+public class Doctrine2OdmInlineAnnotationLineParserTest extends NbTestCase {
+    private AnnotationLineParser parser;
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new SimpleAnnotationLineParser());
-        PARSERS.add(new ParameterizedAnnotationLineParser());
-    }
-
-    private Doctrine2OdmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=600)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+    public Doctrine2OdmInlineAnnotationLineParserTest(String name) {
+        super(name);
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.parser = Doctrine2OdmInlineAnnotationLineParser.getDefault();
+    }
+
+    public void testValidUseCase_01() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("    indexes={@Index(name=\"user_idx\", columns={\"email\"})} ");
+        assertNotNull(parsedLine);
+        assertEquals("", parsedLine.getName());
+        assertEquals("indexes={@Index(name=\"user_idx\", columns={\"email\"})}", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertEquals(1, types.size());
+        String type1 = types.get(new OffsetRange(14, 19));
+        assertEquals("Index", type1);
+    }
+
+    public void testValidUseCase_02() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("    indexes={@Foo\\Index(name=\"user_idx\", columns={\"email\"})} ");
+        assertNotNull(parsedLine);
+        assertEquals("", parsedLine.getName());
+        assertEquals("indexes={@Foo\\Index(name=\"user_idx\", columns={\"email\"})}", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertEquals(1, types.size());
+        String type1 = types.get(new OffsetRange(14, 23));
+        assertEquals("Foo\\Index", type1);
+    }
+
+    public void testInvalidUseCase_01() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("    indexes={@Blah\\Blah(name=\"user_idx\", columns={\"email\"})} ");
+        assertNull(parsedLine);
     }
 
 }

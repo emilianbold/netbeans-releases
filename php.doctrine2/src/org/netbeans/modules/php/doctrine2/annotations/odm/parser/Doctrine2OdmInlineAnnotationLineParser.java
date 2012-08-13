@@ -41,29 +41,32 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
+public class Doctrine2OdmInlineAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmAnnotationLineParser();
+    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmInlineAnnotationLineParser();
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
     static {
-        PARSERS.add(new SimpleAnnotationLineParser());
-        PARSERS.add(new ParameterizedAnnotationLineParser());
+        INLINE_ANNOTATIONS.add("Index"); //NOI18N
     }
 
-    private Doctrine2OdmAnnotationLineParser() {
+    private Doctrine2OdmInlineAnnotationLineParser() {
     }
 
-    @AnnotationLineParser.Registration(position=600)
+    @AnnotationLineParser.Registration(position=601)
     public static AnnotationLineParser getDefault() {
         return INSTANCE;
     }
@@ -71,11 +74,9 @@ public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+        final Map<OffsetRange, String> extractInlineTypes = AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS);
+        if (!extractInlineTypes.isEmpty()) {
+            result = new ParsedLine("", extractInlineTypes, line.trim());
         }
         return result;
     }
