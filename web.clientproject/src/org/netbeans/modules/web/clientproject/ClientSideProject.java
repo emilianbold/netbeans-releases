@@ -140,6 +140,22 @@ public class ClientSideProject implements Project {
         return getProjectDirectory().getFileObject(s);
     }
     
+    public FileObject getTestsFolder() {
+        String tests = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+        if (tests == null || tests.trim().length() == 0) {
+            return null;
+        }
+        return getProjectDirectory().getFileObject(tests);
+    }
+
+    public FileObject getConfigFolder() {
+        String config = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
+        if (config == null || config.trim().length() == 0) {
+            return null;
+        }
+        return getProjectDirectory().getFileObject(config);
+    }
+
     public String getStartFile() {
         String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
         if (s == null) {

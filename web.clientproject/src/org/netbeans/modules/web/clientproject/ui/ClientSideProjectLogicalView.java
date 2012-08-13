@@ -269,11 +269,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     updateKeys();
                 }
             });
-            siteRootFolder = getSiteRootFolder();
+            siteRootFolder = project.getSiteRootFolder();
             siteRootFolderEmpty = siteRootFolder != null && siteRootFolder.getChildren().length == 0;
-            testsFolder = getTestsFolder();
+            testsFolder = project.getTestsFolder();
             testsFolderEmpty = testsFolder != null && testsFolder.getChildren().length == 0;
-            configFolder = getConfigFolder();
+            configFolder = project.getConfigFolder();
             configFolderEmpty = configFolder != null && configFolder.getChildren().length == 0;
             project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
@@ -295,7 +295,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 @Override
                 public void fileFolderCreated(FileEvent fe) {
                     if (siteRootFolder == null) {
-                        siteRootFolder = getSiteRootFolder();
+                        siteRootFolder = project.getSiteRootFolder();
                         if (siteRootFolder != null) {
                             refreshKeyInAWT(BasicNodes.Sources);
                         }
@@ -306,7 +306,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                         }
                     }
                     if (testsFolder == null) {
-                        testsFolder = getTestsFolder();
+                        testsFolder = project.getTestsFolder();
                         if (testsFolder != null) {
                             refreshKeyInAWT(BasicNodes.Tests);
                         }
@@ -317,7 +317,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                         }
                     }
                     if (configFolder == null) {
-                        configFolder = getConfigFolder();
+                        configFolder = project.getConfigFolder();
                         if (configFolder != null) {
                             refreshKeyInAWT(BasicNodes.Configuration);
                         }
@@ -400,30 +400,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             });
         }
         
-        private FileObject getSiteRootFolder() {
-            String sources = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-            if (sources == null) {
-                return null;
-            }
-            return project.getProjectDirectory().getFileObject(sources);
-        }
-
-        private FileObject getTestsFolder() {
-            String tests = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
-            if (tests == null || tests.trim().length() == 0) {
-                return null;
-            }
-            return project.getProjectDirectory().getFileObject(tests);
-        }
-
-        private FileObject getConfigFolder() {
-            String config = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-            if (config == null || config.trim().length() == 0) {
-                return null;
-            }
-            return project.getProjectDirectory().getFileObject(config);
-        }
-
         private void refreshKeyInAWT(final BasicNodes type) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -437,13 +413,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, getSiteRootFolder(), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, project.getSiteRootFolder(), new String[]{"nbproject", "build"});
                 case Tests:
-                    return createNodeForFolder(k, getTestsFolder(), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, project.getTestsFolder(), new String[]{"nbproject", "build"});
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
-                    return createNodeForFolder(k, getConfigFolder(), new String[0]);
+                    return createNodeForFolder(k, project.getConfigFolder(), new String[0]);
                 default:
                     return new Node[0];
             }
@@ -452,6 +428,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
             if (root == null) {
                 if (type == BasicNodes.Sources) {
+                    // when site root is configured to point to non-existent directory:
                     DataFolder fakeNode = DataFolder.findFolder(project.getProjectDirectory());
                     return new Node[]{new FolderFilterNode(type, fakeNode.getNodeDelegate(), ignoreList)};
                 }
