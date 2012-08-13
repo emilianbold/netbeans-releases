@@ -76,6 +76,7 @@ import java.util.regex.Pattern;
 import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import junit.framework.Test;
@@ -106,7 +107,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /** Checks consistency of System File System contents.
  */
@@ -114,6 +114,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
     static {
         System.setProperty("java.awt.headless", "true");
+        System.setProperty("org.openide.util.lookup.level", "FINE");
     }
 
     private static final String SFS_LB = "SystemFileSystem.localizingBundle";
@@ -770,7 +771,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         bcm.store(bcm.createEmptyFileSystem(), urls, os);
         assertNoErrors("No errors or warnings during layer parsing", h.errors);
     }
-    
+
     private static class TestHandler extends Handler {
         List<String> errors = new ArrayList<String>();
         
@@ -964,87 +965,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
     }
     
-    @RandomlyFails // http://netbeans.org/bugzilla/show_bug.cgi?id=215948
-    public void testNbinstHost() throws Exception {
-        TestHandler handler = new TestHandler();
-        Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);
-        FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");                
-        if (libs != null) {
-            final List<FileObject> schemas = new ArrayList<FileObject>(3);
-            schemas.add(null);
-            final FileObject schema2 = FileUtil.getConfigFile("ProjectXMLCatalog/library-declaration/2.xsd");
-            if (schema2 != null) {
-                schemas.add(schema2);
-            }
-            final FileObject schema3 = FileUtil.getConfigFile("ProjectXMLCatalog/library-declaration/3.xsd");
-            if (schema3 != null) {
-                schemas.add(schema3);
-            }
-next:       for (FileObject lib : libs.getChildren()) {
-                SAXException lastException = null;
-                for (FileObject schema : schemas) {
-                    lastException = null;
-                    try {
-                        final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-                        docBuilderFactory.setValidating(true);
-                        if (schema != null) {
-                            docBuilderFactory.setNamespaceAware(true);
-                            docBuilderFactory.setAttribute(
-                                "http://java.sun.com/xml/jaxp/properties/schemaLanguage",   //NOI18N
-                                "http://www.w3.org/2001/XMLSchema");                        //NOI18N
-                            docBuilderFactory.setAttribute(
-                                "http://java.sun.com/xml/jaxp/properties/schemaSource",     //NOI18N
-                                schema.toURI().toString());
-                        }
-                        final DocumentBuilder builder = docBuilderFactory.newDocumentBuilder();
-                        builder.setErrorHandler(XMLUtil.defaultErrorHandler());
-                        builder.setEntityResolver(EntityCatalog.getDefault());
-                        Document doc = builder.parse(new InputSource(lib.toURL().toString()));
-                        NodeList nl = doc.getElementsByTagName("resource");
-                        for (int i = 0; i < nl.getLength(); i++) {
-                            Element resource = (Element) nl.item(i);
-                            validateNbinstURL(new URL(XMLUtil.findText(resource)), handler, lib);
-                        }
-                        continue next;
-                    } catch (SAXException e) {
-                        lastException = e;
-                    }
-                }
-                throw lastException;
-            }
-        }
-        for (FileObject f : NbCollections.iterable(FileUtil.getConfigRoot().getChildren(true))) {
-            for (String attr : NbCollections.iterable(f.getAttributes())) {
-                if (attr.equals("instanceCreate")) {
-                    continue; // e.g. on Services/Hidden/org-netbeans-lib-jakarta_oro-antlibrary.instance prints stack trace
-                }
-                Object val = f.getAttribute(attr);
-                if (val instanceof URL) {
-                    validateNbinstURL((URL) val, handler, f);
-                }
-            }
-        }
-        assertNoErrors("No improper nbinst URLs", handler.errors());
-    }
-    private void validateNbinstURL(URL u, TestHandler handler, FileObject f) {
-        URL u2 = FileUtil.getArchiveFile(u);
-        if (u2 != null) {
-            u = u2;
-        }
-        if ("nbinst".equals(u.getProtocol())) {
-            List<String> errors = handler.errors();
-            try {
-                int len = errors.size();
-                u.openStream().close();
-                if (errors.size() == len + 1) {
-                    errors.set(len, f.getPath() + ": " + errors.get(len));
-                }
-            } catch (IOException x) {
-                errors.add(f.getPath() + ": cannot open " + u + ": " + x);
-            }
-        }
-    }
-
     /* XXX too many failures for now, some spurious; use regex, or look for unloc files/folders with loc siblings?
     public void testLocalizedFolderNames() throws Exception {
         List<String> warnings = new ArrayList<String>();
