@@ -100,7 +100,7 @@ class RouterGenerator {
         myRouters.append("$('#");                                         // NOI18N
         myRouters.append(getHeaderId());
         myRouters.append("').html(new views.CreateView({\n");             // NOI18N
-        myRouters.append("// tpl-create is template identifier for 'create' block\n");// NOI18N
+        myRouters.append(" // tpl-create is template identifier for 'create' block\n");// NOI18N
         myRouters.append("templateName :'#");                             // NOI18N
         myRouters.append(getCreateTemplate());
         myRouters.append("',\n");                                         // NOI18N
@@ -122,7 +122,7 @@ class RouterGenerator {
             builder.append(modelVar);
             builder.append("-list-item");                                 // NOI18N
             myListItemTemplate = builder.toString();
-            myRouters.append("// ");                                      // NOI18N
+            myRouters.append(" // ");                                      // NOI18N
             myRouters.append(myListItemTemplate);
             myRouters.append("is template identifier for item\n");        // NOI18N
             myRouters.append("templateName : '#");                        // NOI18N
@@ -205,7 +205,7 @@ class RouterGenerator {
             myRouters.append("var model = new models.");
             myRouters.append( modelGenerator.getModelName());
             myRouters.append("();\n");                                    // NOI18N
-            myRouters.append("// see isNew() method implementation in the model\n");// NOI18N
+            myRouters.append(" // see isNew() method implementation in the model\n");// NOI18N
             myRouters.append("model.notSynced = true;\n");                // NOI18N
             
             myRouters.append("this.view = new views.ModelView({\n");      // NOI18N
@@ -213,7 +213,7 @@ class RouterGenerator {
             if ( hasCollection ){
                 myRouters.append("collection: this.collection,\n");       // NOI18N
             }
-            myRouters.append("// ");                                      // NOI18N
+            myRouters.append(" // ");                                      // NOI18N
             myRouters.append(myDetailsTemplateName);
             myRouters.append(" is a template identifier for chosen model element\n");// NOI18N
             myRouters.append("templateName: '#");                          // NOI18N
@@ -235,11 +235,11 @@ class RouterGenerator {
         String mainModelAttribute = modelGenerator.getDisplayNameAlias();
         myRouters.append("/*\n* get values from the HTML controls and");  // NOI18N
         myRouters.append(" put them here as a hash of attributes\n");     // NOI18N
-        myRouters.append("* f.e.\n* ");                                   // NOI18N
+        myRouters.append(" * f.e.\n* ");                                  // NOI18N
         myRouters.append(mainModelAttribute);
         myRouters.append(":$('#");                                        // NOI18N
         myRouters.append(mainModelAttribute);
-        myRouters.append("').val(),\n* ....\n*/\n");                      // NOI18N
+        myRouters.append("').val(),\n * ....\n */\n");                    // NOI18N
         myRouters.append("};\n}\n");                                      // NOI18N
         
         myRouters.append("});\n");                                        // NOI18N

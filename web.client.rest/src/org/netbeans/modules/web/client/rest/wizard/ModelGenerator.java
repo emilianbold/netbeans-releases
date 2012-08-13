@@ -134,16 +134,16 @@ class ModelGenerator {
             }
             myCommonModels.append(",\n toViewJson: function(){\n");      // NOI18N
             myCommonModels.append("var result = this.toJSON();");        // NOI18N
-            myCommonModels.append("// displayName property is used to render item in the list\n");// NOI18N
+            myCommonModels.append(" // displayName property is used to render item in the list\n");// NOI18N
             myCommonModels.append("result.displayName = this.get('");    // NOI18N
             myCommonModels.append(myDisplayNameAlias);
             myCommonModels.append("');\n return result;\n},\n");         // NOI18N
             
             myCommonModels.append("isNew: function(){\n");           // NOI18N
-            myCommonModels.append("// default isNew() method imlementation is\n");// NOI18N
-            myCommonModels.append("// based on the 'id' initialization which\n" );// NOI18N
-            myCommonModels.append("// sometimes is required to be initialized.\n");// NOI18N
-            myCommonModels.append("// So isNew() is rediefined here\n");   // NOI18N
+            myCommonModels.append(" // default isNew() method imlementation is\n");// NOI18N
+            myCommonModels.append(" // based on the 'id' initialization which\n" );// NOI18N
+            myCommonModels.append(" // sometimes is required to be initialized.\n");// NOI18N
+            myCommonModels.append(" // So isNew() is rediefined here\n");   // NOI18N
             myCommonModels.append("return this.notSynced;\n}");          // NOI18N
         }
           
@@ -178,7 +178,8 @@ class ModelGenerator {
         myCommonModels.append(myModelName);
         myCommonModels.append(",\nurl : \"");                        // NOI18N
         myCommonModels.append( getUrl( collectionPath ));
-        myCommonModels.append("\"\n");                               // NOI18N
+        myCommonModels.append("\",\n");                              // NOI18N
+        myCommonModels.append( getModifierdSync(""));
         myCommonModels.append("});\n\n");                            // NOI18N
     }
     
@@ -196,22 +197,26 @@ class ModelGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
+        return getModifierdSync( builder.toString() ).toString();
+    }
+    
+    private String getModifierdSync( String body ){
         StringBuilder result = new StringBuilder();
         result.append( "sync: function(method, model, options){\n");            // NOI18N
         result.append("options || (options = {});\n");                          // NOI18N
         result.append("var errorHandler = {\n");                                // NOI18N
         result.append("error: function (jqXHR, textStatus, errorThrown){\n");   // NOI18N
-        result.append("// TODO: put your error handling code here\n");          // NOI18N
-        result.append("// If you use the JS client from the different domain\n");// NOI18N
-        result.append("// (f.e. locally) then Cross-origin resource sharing \n");// NOI18N
-        result.append("// headers has to be set on the REST server side.\n");   // NOI18N
-        result.append("// Otherwise the JS client has to be copied into the\n");// NOI18N
-        result.append("// some (f.e. the same) Web project on the same domain\n");// NOI18N
+        result.append(" // TODO: put your error handling code here\n");          // NOI18N
+        result.append(" // If you use the JS client from the different domain\n");// NOI18N
+        result.append(" // (f.e. locally) then Cross-origin resource sharing \n");// NOI18N
+        result.append(" // headers has to be set on the REST server side.\n");   // NOI18N
+        result.append(" // Otherwise the JS client has to be copied into the\n");// NOI18N
+        result.append(" // some (f.e. the same) Web project on the same domain\n");// NOI18N
         result.append("alert('Unable to fulfil the request');\n}}\n\n");        // NOI18N
-        result.append( builder );
+        result.append( body );
         result.append("var result = Backbone.sync(method, model, ");            // NOI18N
         result.append("_.extend(options,errorHandler));\n");                    // NOI18N
-        result.append("return result;\n}\n");                                   // NOI18N
+        result.append("return result;\n}\n");    
         return result.toString();
     }
     
