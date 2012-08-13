@@ -44,7 +44,6 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {

@@ -45,7 +45,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
