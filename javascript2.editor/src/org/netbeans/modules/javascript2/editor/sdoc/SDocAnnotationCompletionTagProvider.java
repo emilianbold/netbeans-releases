@@ -88,9 +88,6 @@ public class SDocAnnotationCompletionTagProvider extends AnnotationCompletionTag
                 case TYPE_NAMED:
                     annotations.add(new TypeNamedTag(type.toString()));
                     break;
-                case TYPE_SIMPLE:
-                    annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
-                    break;
                 case TYPE_DESCRIBED:
                     annotations.add(new TypeDescribedTag(type.toString()));
                     break;

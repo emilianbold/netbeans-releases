@@ -96,9 +96,6 @@ public class JsDocAnnotationCompletionTagProvider extends AnnotationCompletionTa
                 case NAMED_PARAMETER:
                     annotations.add(new TypeNamedTag(type.toString()));
                     break;
-                case SIMPLE:
-                    annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
-                    break;
                 case UNNAMED_PARAMETER:
                     annotations.add(new TypeDescribedTag(type.toString()));
                     break;

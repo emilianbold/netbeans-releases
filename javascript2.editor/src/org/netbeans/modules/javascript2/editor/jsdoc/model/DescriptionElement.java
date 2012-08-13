@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
-import org.openide.util.Parameters;
-
 /**
  * Represents jsDoc elements with description text.
  * <p>
