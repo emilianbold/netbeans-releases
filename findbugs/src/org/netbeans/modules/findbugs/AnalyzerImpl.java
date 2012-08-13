@@ -136,7 +136,7 @@ public class AnalyzerImpl implements Analyzer {
         for (FileObject file : ctx.getScope().getFiles()) {
             if (cancel.get()) return Collections.emptyList();
             ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
-            FileObject sr = source.findOwnerRoot(file);
+            FileObject sr = source != null ? source.findOwnerRoot(file) : null;
             if (sr != null) {
                 for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], warnedAboutUncompilable)) {
                     if (FileUtil.isParentOf(file, ed.getFile()) || file == ed.getFile()) {
@@ -152,7 +152,7 @@ public class AnalyzerImpl implements Analyzer {
         for (NonRecursiveFolder nrf : ctx.getScope().getFolders()) {
             if (cancel.get()) return Collections.emptyList();
             ClassPath source = ClassPath.getClassPath(nrf.getFolder(), ClassPath.SOURCE);
-            FileObject sr = source.findOwnerRoot(nrf.getFolder());
+            FileObject sr = source != null ? source.findOwnerRoot(nrf.getFolder()) : null;
             if (sr != null) {
                 for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], warnedAboutUncompilable)) {
                     if (nrf.getFolder() == ed.getFile().getParent()) {
