@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc.completeion;
 
-import org.netbeans.modules.javascript2.editor.sdoc.completion.*;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
+package org.netbeans.modules.php.doctrine2.annotations.parser;
 
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -51,17 +51,17 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmInlineAnnotationLineParserTest extends NbTestCase {
+public class Doctrine2CommonLineAnnotationLineParserTest extends NbTestCase {
     private AnnotationLineParser parser;
 
-    public Doctrine2OrmInlineAnnotationLineParserTest(String name) {
+    public Doctrine2CommonLineAnnotationLineParserTest(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = Doctrine2OrmInlineAnnotationLineParser.getDefault();
+        this.parser = Doctrine2CommonLineAnnotationLineParser.getDefault();
     }
 
     public void testValidUseCase_01() throws Exception {
@@ -139,6 +139,48 @@ public class Doctrine2OrmInlineAnnotationLineParserTest extends NbTestCase {
     public void testInvalidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("    indexes={@Blah\\Blah(name=\"user_idx\", columns={\"email\"})} ");
         assertNull(parsedLine);
+    }
+
+    public void testWithTypedParam_01() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("    repositoryClass=\"MyProject\\UserRepository\", indexes={ @Index(keys={\"username\"=\"desc\"}, options={\"unique\"=true}) }, ");
+        assertNotNull(parsedLine);
+        assertEquals("", parsedLine.getName());
+        assertEquals("repositoryClass=\"MyProject\\UserRepository\", indexes={ @Index(keys={\"username\"=\"desc\"}, options={\"unique\"=true}) },", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(21, 45));
+        assertEquals("MyProject\\UserRepository", type1);
+        String type2 = types.get(new OffsetRange(59, 64));
+        assertEquals("Index", type2);
+    }
+
+    public void testWithTypedParam_02() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("    targetDocument=\"MyProject\\UserRepository\", indexes={ @Index(keys={\"username\"=\"desc\"}, options={\"unique\"=true}) }, ");
+        assertNotNull(parsedLine);
+        assertEquals("", parsedLine.getName());
+        assertEquals("targetDocument=\"MyProject\\UserRepository\", indexes={ @Index(keys={\"username\"=\"desc\"}, options={\"unique\"=true}) },", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(20, 44));
+        assertEquals("MyProject\\UserRepository", type1);
+        String type2 = types.get(new OffsetRange(58, 63));
+        assertEquals("Index", type2);
+    }
+
+    public void testWithTypedParam_03() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("    targetEntity=\"MyProject\\UserRepository\", indexes={ @Index(keys={\"username\"=\"desc\"}, options={\"unique\"=true}) }, ");
+        assertNotNull(parsedLine);
+        assertEquals("", parsedLine.getName());
+        assertEquals("targetEntity=\"MyProject\\UserRepository\", indexes={ @Index(keys={\"username\"=\"desc\"}, options={\"unique\"=true}) },", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(18, 42));
+        assertEquals("MyProject\\UserRepository", type1);
+        String type2 = types.get(new OffsetRange(56, 61));
+        assertEquals("Index", type2);
     }
 
 }

@@ -153,9 +153,8 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     @SuppressWarnings("LeakingThisInConstructor")
     public GlassFishAccountInstance(String name, String account, String userName,
             String userPassword, GlassFishCloud cloudEntity) {
-        super(name, GlassFishUrl.url(
-                GlassFishUrl.Id.CLOUD, name),
-                account, userName, userPassword, cloudEntity);
+        super(name, account, userName, userPassword,
+                GlassFishUrl.url(GlassFishUrl.Id.CLOUD, name), cloudEntity);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);

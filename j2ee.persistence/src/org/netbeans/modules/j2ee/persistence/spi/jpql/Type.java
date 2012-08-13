@@ -291,23 +291,10 @@ public class Type implements IType{
     }
     
     private TypeElement getTypeElement(final PersistentObject po){
-        if(true)return po.getTypeElement();
-        TypeElement te = null;
-       TypeRepository tr = (TypeRepository) this.repository;
-       final AnnotationModelHelper amh = tr.getAnnotationModelHelper();
-       if(amh!=null) {
-            try {
-                te = amh.runJavaSourceTask(new Callable<TypeElement>() {
-
-                @Override
-                public TypeElement call() throws Exception {
-                    return po.getTypeElement();
-                }
-            });
-            } catch (IOException ex) {
-               
-            }
-       }
-       return te;
+        if(((TypeRepository) repository).isValid()){
+            return po.getTypeElement();
+        } else {
+            return null;
+        }
     }
 }

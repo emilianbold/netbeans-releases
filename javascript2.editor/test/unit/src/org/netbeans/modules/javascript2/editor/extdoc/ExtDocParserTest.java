@@ -85,14 +85,14 @@ public class ExtDocParserTest extends JsTestBase {
         Source source = getTestSource(getTestFile("testfiles/extdoc/allTypesNoAsterisks.js"));
         List<? extends ExtDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         assertEquals(ExtDocElementType.DESCRIPTION, tags.get(0).getType());
-        assertEquals("This should be description.", ((ExtDocDescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This should be description.", ((ExtDocDescriptionElement) tags.get(0)).getDescription());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/extdoc/allTypesAsterisks.js"));
         List<? extends ExtDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         assertEquals(ExtDocElementType.DESCRIPTION, tags.get(0).getType());
-        assertEquals("This should be description.", ((ExtDocDescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This should be description.", ((ExtDocDescriptionElement) tags.get(0)).getDescription());
     }
 
     private void checkElementTypes(String filePath) throws Exception {

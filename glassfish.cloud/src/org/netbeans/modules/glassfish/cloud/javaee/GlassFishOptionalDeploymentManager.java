@@ -39,48 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 
 /**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * Abstract optional deployment manager for GlassFish cloud.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public class Doctrine2OrmInlineAnnotationLineParser implements AnnotationLineParser {
+public abstract class GlassFishOptionalDeploymentManager
+        extends OptionalDeploymentManagerFactory {
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented abstract methods                                           //
+    ////////////////////////////////////////////////////////////////////////////
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmInlineAnnotationLineParser();
-
-    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
-    static {
-        INLINE_ANNOTATIONS.add("Index"); //NOI18N
-        INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
-        INLINE_ANNOTATIONS.add("JoinColumn"); //NOI18N
-    }
-
-    private Doctrine2OrmInlineAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=501)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
-    }
-
+    /**
+     * Create StartServer for given DeploymentManager.
+     */
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        final Map<OffsetRange, String> extractInlineTypes = AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS);
-        if (!extractInlineTypes.isEmpty()) {
-            result = new ParsedLine("", extractInlineTypes, line.trim());
-        }
-        return result;
+    public StartServer getStartServer(DeploymentManager dm) {
+        return null;
     }
+
+    /** 
+     * Create IncrementalDeployment for given DeploymentManager.
+     */
+    @Override
+    public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
+        return null;
+    }
+
+    /** 
+     * Create FindJSPServlet for given DeploymentManager.
+     */
+    @Override
+    public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Overriden methods                                                      //
+    ////////////////////////////////////////////////////////////////////////////
 
 }

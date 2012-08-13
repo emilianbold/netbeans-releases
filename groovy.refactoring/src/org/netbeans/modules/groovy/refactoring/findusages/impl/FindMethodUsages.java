@@ -89,7 +89,7 @@ public class FindMethodUsages extends AbstractFindUsages {
         protected void visitConstructorOrMethod(MethodNode node, boolean isConstructor) {
             String className = ElementUtils.getDeclaringClassName(node);
             if (declaringClassName.equals(className)) {
-                if (isConstructor) {
+                if (isConstructor && declaringClassName.endsWith(findingMethod)) {
                     usages.add(node);
                 } else if (findingMethod.equals(node.getName())) {
                     usages.add(node);

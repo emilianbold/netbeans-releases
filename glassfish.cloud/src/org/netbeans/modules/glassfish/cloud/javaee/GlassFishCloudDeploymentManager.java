@@ -58,7 +58,7 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
 /**
- * Deployment manager for GlassFish local glassFish server registered
+ * Deployment manager for GlassFish local GlassFish server registered
  * with cloud.
  * <p/>
  * Provides the core set of functions a Java EE platform must provide for

@@ -179,14 +179,14 @@ public class APTUtils {
     }
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
-        if (_token instanceof APTBaseToken || _token instanceof APTLiteIdToken) {
+        if (_token instanceof APTBaseToken) {
             _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
             // no need to set text in const token
-        } else if (_token instanceof APTLiteConstTextToken) {
+        } else if (_token instanceof APTLiteConstTextToken || _token instanceof APTLiteIdToken) {
             // no need to set text in const token
         } else {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
@@ -238,12 +238,13 @@ public class APTUtils {
         return (APTDefineNode)nodeBuilder.getNode();
     }
 
-    public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
+    public static APTToken createAPTToken(int type, int startOffset, int endOffset, 
+            int startColumn, int startLine, int endColumn, int endLine, String text) {
         // TODO: optimize factory
         if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
-        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine)){
-            return new APTLiteIdToken(startOffset, startColumn, startLine);
+        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine, text)){
+            return new APTLiteIdToken(startOffset, startColumn, startLine, text);
         }
         APTToken out = createAPTToken(type);
         out.setType(type);

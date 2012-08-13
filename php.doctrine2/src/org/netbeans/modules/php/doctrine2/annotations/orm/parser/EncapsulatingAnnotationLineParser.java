@@ -62,9 +62,11 @@ public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
         tableInlineAnnotations.add("Index"); //NOI18N
         tableInlineAnnotations.add("UniqueConstraint"); //NOI18N
         ANNOTATIONS.put("Table", tableInlineAnnotations); //NOI18N
+
         Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
         joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
         ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
+        
         Set<String> joinTableInlineAnnotations = new HashSet<String>();
         joinTableInlineAnnotations.add("JoinColumn"); //NOI18N
         ANNOTATIONS.put("JoinTable", joinTableInlineAnnotations); //NOI18N

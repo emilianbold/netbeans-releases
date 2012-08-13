@@ -42,6 +42,14 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
+                <file name="ModuleConfigurationFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudModuleConfigurationFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <file name="OptionalDeploymentManagerFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudOptionalDeploymentManager"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
             </folder>
             <folder name="Glassfish Cloud">
                  <file name="Descriptor" url="nbclouddep.xml"/>
@@ -55,6 +63,14 @@
                 <file name="J2eePlatformFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+                <file name="ModuleConfigurationFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishAccountModuleConfigurationFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <file name="OptionalDeploymentManagerFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishAccountOptionalDeploymentManager"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                 </file>
             </folder>
         </folder>

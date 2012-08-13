@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
+import org.netbeans.modules.javascript2.editor.model.Type;
+
 
 /**
  * Represents jsDoc elements with declaration purpose.
@@ -51,9 +53,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
  */
 public class DeclarationElement extends JsDocElementImpl {
 
-    private final org.netbeans.modules.javascript2.editor.model.Type declaredType;
+    private final Type declaredType;
 
-    private DeclarationElement(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
+    private DeclarationElement(JsDocElementType type, Type declaredType) {
         super(type);
         this.declaredType = declaredType;
     }
@@ -61,7 +63,7 @@ public class DeclarationElement extends JsDocElementImpl {
     /**
      * Creates new {@code DeclarationElement}.
      */
-    public static DeclarationElement create(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
+    public static DeclarationElement create(JsDocElementType type, Type declaredType) {
         return new DeclarationElement(type, declaredType);
     }
 
@@ -69,7 +71,7 @@ public class DeclarationElement extends JsDocElementImpl {
      * Gets the type declared by this element.
      * @return declared type
      */
-    public org.netbeans.modules.javascript2.editor.model.Type getDeclaredType() {
+    public Type getDeclaredType() {
         return declaredType;
     }
 }
