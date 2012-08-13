@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import com.oracle.nashorn.ir.BinaryNode;
+import com.oracle.nashorn.ir.DoWhileNode;
 import com.oracle.nashorn.ir.ExecuteNode;
+import com.oracle.nashorn.ir.ForNode;
+import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
+import com.oracle.nashorn.ir.WhileNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +66,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
 import org.openide.util.NbBundle;
 
@@ -161,6 +167,27 @@ public class JsConventionRule implements Rule.AstRule{
             }
         }
 
+        @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
+        private void checkCondition(Node condition) {
+            if(condition instanceof BinaryNode) {
+                BinaryNode binaryNode = (BinaryNode)condition;
+                if (binaryNode.isAssignment()) {
+                    hints.add(new Hint(rule, Bundle.AssignmentCondition(), 
+                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                }
+            }
+        }
+
+        @Override
+        public Node visit(DoWhileNode doWhileNode, boolean onset) {
+            if (onset) {
+                checkCondition(doWhileNode.getTest());
+            }
+            return super.visit(doWhileNode, onset);
+        }
+        
+        
         @Override
         public Node visit(ExecuteNode executeNode, boolean onset) {
             if (onset) {
@@ -168,6 +195,24 @@ public class JsConventionRule implements Rule.AstRule{
             }
             return super.visit(executeNode, onset);
         }
+
+        @Override
+        public Node visit(ForNode forNode, boolean onset) {
+            if (onset) {
+                checkCondition(forNode.getTest());
+            }
+            return super.visit(forNode, onset);
+        }
+
+        @Override
+        public Node visit(IfNode ifNode, boolean onset) {
+            if (onset) {
+                checkCondition(ifNode.getTest());
+            }
+            return super.visit(ifNode, onset);
+        }
+        
+        
 
         @Override
         @NbBundle.Messages("Unexpected=Unexpected \"{0}\".")
@@ -198,7 +243,14 @@ public class JsConventionRule implements Rule.AstRule{
             }
             return super.visit(varNode, onset);
         }
-        
+
+        @Override
+        public Node visit(WhileNode whileNode, boolean onset) {
+            if (onset) {
+                checkCondition(whileNode.getTest());
+            }
+            return super.visit(whileNode, onset);
+        }
         
     }
 }
