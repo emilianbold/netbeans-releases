@@ -106,15 +106,25 @@ class Nodes {
             @NonNull final DeclaredType type,
             @NonNull final ClasspathInfo cpInfo,
             @NonNull final Context ctx) {
+        return superTypeHierarchy(type, cpInfo, ctx, 0);
+    }
+
+    private static Node superTypeHierarchy(
+            @NonNull final DeclaredType type,
+            @NonNull final ClasspathInfo cpInfo,
+            @NonNull final Context ctx,
+            final int order) {
         final TypeElement element = (TypeElement)type.asElement();
         final TypeMirror superClass = element.getSuperclass();
         final List<? extends TypeMirror> interfaces = element.getInterfaces();
         final List<Node> childNodes = new ArrayList<Node>(interfaces.size()+1);
+        int childOrder = 0;
         if (superClass.getKind() != TypeKind.NONE) {
-            childNodes.add(superTypeHierarchy((DeclaredType)superClass, cpInfo, ctx));
+            childNodes.add(superTypeHierarchy((DeclaredType)superClass, cpInfo, ctx, childOrder));
         }
         for (TypeMirror superInterface : interfaces) {
-            childNodes.add(superTypeHierarchy((DeclaredType)superInterface, cpInfo, ctx));
+            childOrder++;
+            childNodes.add(superTypeHierarchy((DeclaredType)superInterface, cpInfo, ctx, childOrder));
         }
         final Children cld;
         if (childNodes.isEmpty()) {
@@ -127,7 +137,8 @@ class Nodes {
             cld,
             new Description(
                 cpInfo,
-                ElementHandle.create(element)),
+                ElementHandle.create(element),
+                order),
             ctx,
             new Action[0]);
         
@@ -147,15 +158,18 @@ class Nodes {
 
         private final ClasspathInfo cpInfo;
         private final ElementHandle<TypeElement> handle;
+        private final int order;
 
 
         Description(
                 @NonNull final ClasspathInfo cpInfo,
-                @NonNull final ElementHandle<TypeElement> handle) {
+                @NonNull final ElementHandle<TypeElement> handle,
+                final int order) {
             assert cpInfo != null;
             assert handle != null;
             this.cpInfo = cpInfo;
             this.handle = handle;
+            this.order = order;
         }
 
         ClasspathInfo getClasspathInfo() {
@@ -164,6 +178,10 @@ class Nodes {
 
         ElementHandle<TypeElement> getHandle() {
             return handle;
+        }
+
+        int getSourceOrder() {
+            return order;
         }
 
     }
@@ -179,7 +197,7 @@ class Nodes {
         }
     }
 
-    private static class TypeNode extends AbstractNode implements PropertyChangeListener {
+    private static final class TypeNode extends AbstractNode implements PropertyChangeListener {
 
         private final Description description;
         private final Context ctx;
@@ -277,6 +295,10 @@ class Nodes {
             // Do nothing
         }
 
+        Description getDescription() {
+            return description;
+        }
+
         private synchronized Action getOpenAction() {
             if ( openAction == null) {
                 openAction = new OpenAction();
@@ -364,32 +386,32 @@ class Nodes {
                     }
             };
 
-    private static final Convertor<Description, DataObject> ConvertDescription2DataObject =
-            new InstanceContent.Convertor<Description, DataObject>(){
-                @Override
-                public DataObject convert(Description desc) {
-                    try {
-                        final FileObject file = SourceUtils.getFile(
-                                desc.getHandle(),
-                                desc.getClasspathInfo());
-                        return file == null ? null : DataObject.find(file);
-                    } catch (DataObjectNotFoundException ex) {
-                        return null;
+        private static final Convertor<Description, DataObject> ConvertDescription2DataObject =
+                new InstanceContent.Convertor<Description, DataObject>(){
+                    @Override
+                    public DataObject convert(Description desc) {
+                        try {
+                            final FileObject file = SourceUtils.getFile(
+                                    desc.getHandle(),
+                                    desc.getClasspathInfo());
+                            return file == null ? null : DataObject.find(file);
+                        } catch (DataObjectNotFoundException ex) {
+                            return null;
+                        }
                     }
-                }
-                @Override
-                public Class<? extends DataObject> type(Description desc) {
-                    return DataObject.class;
-                }
-                @Override
-                public String id(Description desc) {
-                    return "IL[" + desc.toString();
-                }
-                @Override
-                public String displayName(Description desc) {
-                    return id(desc);
-                }
-        };
+                    @Override
+                    public Class<? extends DataObject> type(Description desc) {
+                        return DataObject.class;
+                    }
+                    @Override
+                    public String id(Description desc) {
+                        return "IL[" + desc.toString();
+                    }
+                    @Override
+                    public String displayName(Description desc) {
+                        return id(desc);
+                    }
+            };
 
     }
 
@@ -409,7 +431,7 @@ class Nodes {
             if (ctx.isOrdered()) {
                 setComparator(new LexicographicComparator());
             } else {
-                setComparator(null);
+                setComparator(new OrderComparator());
             }
         }
 
@@ -426,6 +448,15 @@ class Nodes {
         @Override
         public int compare(Node n1, Node n2) {
             return n1.getDisplayName().compareTo(n2.getDisplayName());
+        }
+    }
+
+    private static final class OrderComparator implements Comparator<Node> {
+        @Override
+        public int compare(Node n1, Node n2) {
+            final int o1 = ((TypeNode)n1).getDescription().getSourceOrder();
+            final int o2 = ((TypeNode)n2).getDescription().getSourceOrder();
+            return o1 < o2 ? -1 : o1 == o2 ? 0 : 1;
         }
     }
 }

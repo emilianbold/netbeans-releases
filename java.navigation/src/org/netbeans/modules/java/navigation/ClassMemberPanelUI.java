@@ -38,8 +38,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
-import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortByNameAction;
-import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortBySourceAction;
+import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -127,8 +126,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         
         actions = new Action[] {            
-            new SortByNameAction( filters ),
-            new SortBySourceAction( filters ),
+            SortActions.createSortByNameAction(filters),
+            SortActions.createSortBySourceAction(filters),
             null,
             new FilterSubmenuAction(filters.getInstance())            
         };

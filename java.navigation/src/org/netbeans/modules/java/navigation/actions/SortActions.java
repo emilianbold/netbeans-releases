@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,95 +34,129 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.navigation.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
-import org.netbeans.modules.java.navigation.ClassMemberFilters;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.java.navigation.base.Filters;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.Parameters;
 import org.openide.util.actions.Presenter;
 
-/** "Radio button" type action, base class designed for subclassing
+/**
  *
- * @author Dafe Simonek
+ * @author Tomas Zezula
  */
-public abstract class SortActionSupport extends AbstractAction implements Presenter.Popup {
-    
-    private JRadioButtonMenuItem menuItem;
-    protected ClassMemberFilters filters;
-    
-    /** Creates a new instance of SortByNameAction */
-    public SortActionSupport ( ClassMemberFilters filters ) {
-        this.filters = filters;
+public class SortActions {
+    private SortActions() {
+        throw new IllegalStateException("No instance allowed.");    //NOI18N
     }
-    
-    public final JMenuItem getPopupPresenter() {
-        JMenuItem result = obtainMenuItem();
-        updateMenuItem();
-        return result;
+
+    @NonNull
+    public static Action createSortByNameAction(@NonNull final Filters<?> filters){
+        Parameters.notNull("filters", filters); //NOI18N
+        return new SortByNameAction(filters);
     }
-    
-    protected final JRadioButtonMenuItem obtainMenuItem () {
-        if (menuItem == null) {
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+
+
+    @NonNull
+    public static Action createSortBySourceAction(@NonNull final Filters<?> filters){
+        Parameters.notNull("filters", filters); //NOI18N
+        return new SortBySourceAction(filters);
+    }
+
+
+    private abstract static class BaseSortAction extends AbstractAction implements Presenter.Popup {
+
+        public static final String SELECTED = "selected";
+
+        protected final Filters<?> filters;
+        private JRadioButtonMenuItem menuItem;
+
+        /** Creates a new instance of SortByNameAction */
+        public BaseSortAction (@NonNull final Filters<?> filters) {
+            assert filters != null;
+            this.filters = filters;
         }
-        return menuItem;
+
+        @Override
+        @NonNull
+        public final JMenuItem getPopupPresenter() {
+            JMenuItem result = obtainMenuItem();
+            updateMenuItem();
+            return result;
+        }
+
+        @NonNull
+        protected final JRadioButtonMenuItem obtainMenuItem () {
+            if (menuItem == null) {
+                menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
+                menuItem.setAction(this);
+            }
+            return menuItem;
+        }
+
+        protected abstract void updateMenuItem();
     }
-    
-    protected abstract void updateMenuItem ();
-    
-    public static final String SELECTED = "selected";
-    
-    /** Enables sorting by names when selected
-     */
-    public static final class SortByNameAction extends SortActionSupport {
-        
-        public SortByNameAction ( ClassMemberFilters filters) {
+
+
+    private static final class SortByNameAction extends BaseSortAction {
+
+        @StaticResource
+        private static final String ICON = "org/netbeans/modules/java/navigation/resources/sortAlpha.png";  //NOI18N
+
+        public SortByNameAction (@NonNull final Filters filters) {
             super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortByNameAction.class, "LBL_SortByName")); //NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/sortAlpha.png", false)); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false));
         }
-    
+
+        @Override
         public void actionPerformed (ActionEvent e) {
             filters.setNaturalSort(false);
             updateMenuItem();
         }
 
+        @Override
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
             mi.setSelected(!filters.isNaturalSort());
         }
-    } // end of SortByNameAction
+    }
 
-    /** Enables sorting by names when selected
-     */
-    public static final class SortBySourceAction extends SortActionSupport {
-        
-        public SortBySourceAction ( ClassMemberFilters filters ) {
+
+    private static final class SortBySourceAction extends BaseSortAction {
+
+        @StaticResource
+        private static final String ICON = "org/netbeans/modules/java/navigation/resources/sortPosition.png";  //NOI18N
+
+        public SortBySourceAction (@NonNull final Filters filters ) {
             super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortBySourceAction.class, "LBL_SortBySource")); //NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/sortPosition.png", false)); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false)); //NOI18N
         }
-    
+
+        @Override
         public void actionPerformed (ActionEvent e) {
             filters.setNaturalSort(true);
             updateMenuItem();
         }
 
+        @Override
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
             mi.setSelected(filters.isNaturalSort());
         }
-    } // end of SortBySourceAction
-    
-    
+    }
 }

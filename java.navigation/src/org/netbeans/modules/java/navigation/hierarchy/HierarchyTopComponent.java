@@ -68,12 +68,18 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -90,6 +96,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
+import org.netbeans.modules.java.navigation.actions.SortActions;
+import org.netbeans.modules.java.navigation.base.FiltersDescription;
+import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.awt.ActionID;
@@ -135,9 +144,10 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
     @StaticResource
-    private static final String REFRESH_ICON = "org/netbeans/modules/java/navigation/resources/hierarchy_refresh.png";
+    private static final String REFRESH_ICON = "org/netbeans/modules/java/navigation/resources/hierarchy_refresh.png";  //NOI18N
     @StaticResource
-    private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";
+    private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
+    
     private static HierarchyTopComponent instance;
 
     private final ExplorerManager explorerManager;
@@ -150,7 +160,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final JComboBox historyCombo;
     private final JButton refreshButton;
     private final JButton jdocButton;
-
+    private final HierarchyFilters filters;
+    
     public HierarchyTopComponent() {
         explorerManager = new ExplorerManager();
         selectedNodes  = new InstanceContent();
@@ -176,6 +187,13 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         btw = createBeanTreeView();
         add(btw,BorderLayout.CENTER);
         lowerToolBar = new TapPanel();
+        lowerToolBar.setOrientation(TapPanel.DOWN);
+        filters = new HierarchyFilters(this);
+        final JComponent lowerButtons = filters.getComponent();
+        lowerButtons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
+        lowerToolBar.add(lowerButtons);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            lowerToolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         add(lowerToolBar, BorderLayout.SOUTH);
 
     }
@@ -218,19 +236,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             final TopComponent win = JavadocTopComponent.findInstance();
             win.open();
         } else if (historyCombo == e.getSource()) {
-            final Object selItem = historyCombo.getSelectedItem();
-            if (selItem instanceof Pair) {
-                final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
-                schedule(new Callable<Pair<URI, ElementHandle<TypeElement>>>() {
-                    @Override
-                    public Pair<URI, ElementHandle<TypeElement>> call() throws Exception {
-                        return pair;
-                    }
-                });
-            }
-            
+            refresh();
         } else if (viewTypeCombo == e.getSource()) {
-            
+            refresh();
         }
     }
 
@@ -250,6 +258,22 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
+    void sort() {
+        refresh();
+    }
+
+    private void refresh() {
+        final Object selItem = historyCombo.getSelectedItem();
+        if (selItem instanceof Pair) {
+            final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
+            schedule(new Callable<Pair<URI, ElementHandle<TypeElement>>>() {
+                @Override
+                public Pair<URI, ElementHandle<TypeElement>> call() throws Exception {
+                    return pair;
+                }
+            });
+        }
+    }
 
     @CheckForNull
     private static FileObject getFileObject(@NullAllowed final Document doc) {
@@ -567,7 +591,12 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         private volatile boolean ordered;
 
         ContextImpl() {
-            update();
+            this.fqn = false;
+            this.ordered = !filters.isNaturalSort();
+            final Object selItem = viewTypeCombo.getSelectedItem();
+            this.vt = selItem instanceof ViewType ?
+                    (ViewType) selItem :
+                    ViewType.SUPER_TYPE;
         }
 
         @Override
@@ -601,20 +630,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    update();
+                    fqn = false;
                 }
             });
         }
-
-        private void update() {
-            assert SwingUtilities.isEventDispatchThread();
-            this.fqn = false;
-            this.ordered = true;
-            final Object selItem = viewTypeCombo.getSelectedItem();
-            this.vt = selItem instanceof ViewType ?
-                    (ViewType) selItem :
-                    ViewType.SUPER_TYPE;
-        }
-
     }
 }
