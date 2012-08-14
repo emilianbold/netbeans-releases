@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
@@ -279,9 +280,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
                     TokenSequence<? extends JsDocumentationTokenId> jsDocTS = LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
                     if (jsDocTS != null) {
-                        jsDocTS.moveEnd();
-                        jsDocTS.movePrevious();
-                        if (jsDocTS.token().id() != JsDocumentationTokenId.COMMENT_END) {
+                        if (!endsCommentProperly(jsDocTS)) {
                             // Append end of the comment
                             sb.append("\n").append(IndentUtils.createIndentString(doc, indent)).append("*/"); //NOI18N
                         }
@@ -509,5 +508,17 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return new JsTypedBreakInterceptor();
         }
 
+    }
+
+    private static boolean endsCommentProperly(TokenSequence ts) {
+        while (ts.moveNext()) {
+            if (ts.token().id() == JsDocumentationTokenId.EOL) {
+                while (ts.moveNext() && ts.token().id() == JsDocumentationTokenId.WHITESPACE);
+                if (!CharSequenceUtilities.startsWith(ts.token().text(), "*")) {
+                    return false;
+                }
+            }
+        }
+        return ts.token().id() == JsDocumentationTokenId.COMMENT_END;
     }
 }
