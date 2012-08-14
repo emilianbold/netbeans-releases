@@ -1,4 +1,5 @@
-function weird(x) {
+function weird(x, y) {
+    var baf = 10;
     x = x;
     
 }

@@ -165,7 +165,11 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         }
                     } else {
                         if (object.getOccurrences().isEmpty()) {
-                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                            OffsetRange range = object.getDeclarationName().getOffsetRange();
+                            if (range.getStart() < range.getEnd()) {
+                                // some virtual variables (like arguments) doesn't have to be declared, but are in the model
+                                highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                            }
                         }
                     }
             }
