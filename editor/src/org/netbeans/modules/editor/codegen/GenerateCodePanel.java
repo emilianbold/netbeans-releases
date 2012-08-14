@@ -105,19 +105,22 @@ public class GenerateCodePanel extends javax.swing.JPanel {
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 4, 4, 4));
 
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                listMouseReleased(evt);
+            }
+        });
         jList1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 listMouseMoved(evt);
             }
         });
         jList1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                listKeyPressed(evt);
+            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 listKeyReleased(evt);
-            }
-        });
-        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                listMouseReleased(evt);
             }
         });
         jScrollPane1.setViewportView(jList1);
@@ -145,6 +148,29 @@ public class GenerateCodePanel extends javax.swing.JPanel {
         if (idx != jList1.getSelectedIndex())
             jList1.setSelectedIndex(idx);
     }//GEN-LAST:event_listMouseMoved
+
+    private void listKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyPressed
+        KeyStroke ks = KeyStroke.getKeyStrokeForEvent(evt);
+        if (ks.getKeyCode() == KeyEvent.VK_DOWN) {
+            int size = jList1.getModel().getSize();
+            if (size > 0) {
+                int idx = (jList1.getSelectedIndex() + 1) % size;
+                if (idx == size)
+                    idx = 0;
+                jList1.setSelectedIndex(idx);
+                jList1.ensureIndexIsVisible(idx);
+                evt.consume();
+            }
+        } else if (ks.getKeyCode() == KeyEvent.VK_UP) {
+            int size = jList1.getModel().getSize();
+            if (size > 0) {
+                int idx = (jList1.getSelectedIndex() - 1 + size) % size;
+                jList1.setSelectedIndex(idx);
+                jList1.ensureIndexIsVisible(idx);
+                evt.consume();
+            }
+        }
+    }//GEN-LAST:event_listKeyPressed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
