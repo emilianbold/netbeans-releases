@@ -210,8 +210,7 @@ public class JsFormatter implements Formatter {
                         case AFTER_CATCH_PARENTHESIS:
                         case AFTER_LEFT_PARENTHESIS:
                         case AFTER_ARRAY_LITERAL_BRACKET:
-                            i = handleSpace(tokens, i, formatContext,
-                                    !isSpace(token, formatContext));
+                            i = handleSpace(tokens, i, formatContext);
                             break;
                         // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
@@ -535,8 +534,7 @@ public class JsFormatter implements Formatter {
         return i;
     }
 
-    private int handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
+    private int handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext) {
 
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
@@ -579,6 +577,8 @@ public class JsFormatter implements Formatter {
         }
 
         if (start != null && end != null) {
+            boolean remove = !isSpace(token, formatContext);
+
             // we fetch the space or next token to start
             start = getNextNonVirtual(start);
 
