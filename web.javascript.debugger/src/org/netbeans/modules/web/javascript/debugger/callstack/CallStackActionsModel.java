@@ -63,10 +63,12 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 @NbBundle.Messages({
     "CTL_CallstackAction_Copy2CLBD_Label=Copy Stack",
-    "CTL_CallstackAction_MakeCurrent_Label=Make Current"
+    "CTL_CallstackAction_MakeCurrent_Label=Make Current",
+    "CTL_CallstackAction_RestartFrame_Label=Restart Frame"
 })
 @DebuggerServiceRegistration(path="javascript-debuggerengine/CallStackView", types={ NodeActionsProvider.class })
 public final class CallStackActionsModel extends ViewModelSupport implements 
@@ -87,6 +89,25 @@ public final class CallStackActionsModel extends ViewModelSupport implements
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
+    /*
+    private Action RESTART_FRAME_ACTION = Models.createAction (
+        Bundle.CTL_CallstackAction_RestartFrame_Label(),
+        new Models.ActionPerformer() {
+            @Override public boolean isEnabled (Object node) {
+                return node != null;
+            }
+            @Override public void perform (Object[] nodes) {
+                final CallFrame frame = (CallFrame) nodes [0];
+                RP.post(new Runnable() {
+                    @Override public void run() {
+                        debugger.restartFrame(frame);
+                    }
+                });
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+    */
     private final Action COPY_TO_CLBD_ACTION = Models.createAction (
             Bundle.CTL_CallstackAction_Copy2CLBD_Label(),
         new Models.ActionPerformer() {
@@ -100,7 +121,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
         Models.MULTISELECTION_TYPE_ANY
     );
 
-        
+    private RequestProcessor RP = new RequestProcessor(CallStackActionsModel.class.getName());
     
     public CallStackActionsModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
@@ -130,6 +151,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
             return new Action [] {
                 MAKE_CURRENT_ACTION,
                 GO_TO_SOURCE,
+                //RESTART_FRAME_ACTION,
                 COPY_TO_CLBD_ACTION,
             };
         } else {

@@ -292,6 +292,16 @@ public final class Debugger {
         pchs.firePropertyChange(PROP_CURRENT_FRAME, lastFrame, frame);
     }
     
+    /* not tested yet
+    public void restartFrame(CallFrame frame) {
+        JSONObject params = new JSONObject();
+        params.put("callFrameId", frame);
+        Response resp = transport.sendBlockingCommand(new Command("Debugger.restartFrame", params));
+        if (resp != null) {
+            notifyPaused((JSONArray)resp.getResponse().get("callFrames"), "", null);
+        }
+    }*/
+    
     @SuppressWarnings("unchecked")    
     public Breakpoint addLineBreakpoint(String url, int lineNumber, int columnNumber) {
         if (inLiveHTMLMode) {
