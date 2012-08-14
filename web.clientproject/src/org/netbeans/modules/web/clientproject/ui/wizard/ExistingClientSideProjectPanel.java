@@ -41,72 +41,82 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.Component;
+import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.util.ChangeSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
- * Panel just asking for basic info.
+ * Controller for existing project.
  */
-public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+public class ExistingClientSideProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private WizardDescriptor wizardDescriptor;
-    private ClientSideProjectPanelVisual component;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private volatile WizardDescriptor wizardDescriptor;
+    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
+    private volatile ExistingClientSideProject clientSideProject;
 
-    public ClientSideProjectWizardPanel() {
-    }
 
-    public Component getComponent() {
-        if (component == null) {
-            component = new ClientSideProjectPanelVisual(this);
-            component.setName(NbBundle.getMessage(ClientSideProjectWizardPanel.class, "LBL_CreateProjectStep"));
+    @Override
+    public ExistingClientSideProject getComponent() {
+        // assert EventQueue.isDispatchThread(); - not possible, see comment above (@GuardedBy())
+        if (clientSideProject == null) {
+            clientSideProject = new ExistingClientSideProject();
         }
-        return component;
+        return clientSideProject;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ClientSideProjectWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel"); // NOI18N
     }
 
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingProjectWizard.SITE_ROOT, getNormalizedFile(getComponent().getSiteRoot()));
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, getNormalizedFile(getComponent().getProjectDirectory()));
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
+    }
+
+    private File getNormalizedFile(String path) {
+        return FileUtil.normalizeFile(new File(path));
+    }
+
+    @Override
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        // error
+        String error = getComponent().getErrorMessage();
+        if (error != null && !error.isEmpty()) {
+            setErrorMessage(error);
+            return false;
+        }
+        // everything ok
+        setErrorMessage(""); // NOI18N
+        return true;
     }
 
-    public final void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+    private void setErrorMessage(String message) {
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
-    public final void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
     }
 
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
-    }
-
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
-    }
 }

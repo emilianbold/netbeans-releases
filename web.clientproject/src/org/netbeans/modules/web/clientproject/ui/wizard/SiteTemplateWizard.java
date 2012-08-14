@@ -66,7 +66,6 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -192,12 +191,6 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateDescriptionLabel.setEnabled(enabled);
         onlineTemplateList.setEnabled(enabled);
         onlineTemplateDescriptionTextPane.setEnabled(enabled);
-    }
-
-    @NbBundle.Messages("SiteTemplateWizard.name=Site Template")
-    @Override
-    public String getName() {
-        return Bundle.SiteTemplateWizard_name();
     }
 
     public void addChangeListener(ChangeListener listener) {

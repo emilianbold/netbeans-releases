@@ -262,12 +262,6 @@ public class JavaScriptLibrarySelection extends JPanel {
         });
     }
 
-    @NbBundle.Messages("JavaScriptLibrarySelection.name=JavaScript Libraries to install into project")
-    @Override
-    public String getName() {
-        return Bundle.JavaScriptLibrarySelection_name();
-    }
-
     public List<SelectedLibrary> getSelectedLibraries() {
         return selectedLibraries;
     }

@@ -42,71 +42,42 @@
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<WizardDescriptor>,
-        WizardDescriptor.FinishablePanel<WizardDescriptor> {
+/**
+ * Panel just asking for basic info.
+ */
+public class NewClientSideProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private final Object javaScriptLibrarySelectionLock = new Object();
-
-    // @GuardedBy("javaScriptLibrarySelectionLock")
-    private JavaScriptLibrarySelection javaScriptLibrarySelection;
     private volatile WizardDescriptor wizardDescriptor;
+    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
+    private volatile NewClientSideProject clientSideProject;
 
+
+    public NewClientSideProjectPanel() {
+    }
 
     @Override
-    public JavaScriptLibrarySelection getComponent() {
-        synchronized (javaScriptLibrarySelectionLock) {
-            if (javaScriptLibrarySelection == null) {
-                javaScriptLibrarySelection = new JavaScriptLibrarySelection();
-            }
-            return javaScriptLibrarySelection;
+    public NewClientSideProject getComponent() {
+        if (clientSideProject == null) {
+            clientSideProject = new NewClientSideProject();
         }
+        return clientSideProject;
     }
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel"); // NOI18N
-    }
-
-    @Override
-    public void readSettings(WizardDescriptor settings) {
-        wizardDescriptor = settings;
-        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().updateDefaults(siteTemplate.supportedLibraries());
-        }
-    }
-
-    @Override
-    public void storeSettings(WizardDescriptor settings) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, getComponent().getLibrariesFolder());
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SELECTED_LIBRARIES, getComponent().getSelectedLibraries());
-        }
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel"); // NOI18N
     }
 
     @Override
     public boolean isValid() {
         // error
-        String error;
-        synchronized (javaScriptLibrarySelectionLock) {
-            error = getComponent().getErrorMessage();
-        }
+        String error = getComponent().getErrorMessage();
         if (error != null && !error.isEmpty()) {
             setErrorMessage(error);
             return false;
-        }
-        // warning
-        String warning;
-        synchronized (javaScriptLibrarySelectionLock) {
-            warning = getComponent().getWarningMessage();
-        }
-        if (warning != null && !warning.isEmpty()) {
-            setErrorMessage(warning);
-            return true;
         }
         // everything ok
         setErrorMessage(""); // NOI18N
@@ -118,17 +89,24 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     }
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().addChangeListener(listener);
-        }
+    public final void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
     }
 
     @Override
-    public void removeChangeListener(ChangeListener listener) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().removeChangeListener(listener);
-        }
+    public final void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor wizardDescriptor) {
+        this.wizardDescriptor = wizardDescriptor;
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor wizardDescriptor) {
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, getComponent().getProjectDirectory());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
     }
 
     @Override

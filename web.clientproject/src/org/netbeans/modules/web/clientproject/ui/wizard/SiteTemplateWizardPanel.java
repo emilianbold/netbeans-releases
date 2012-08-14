@@ -44,7 +44,6 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
@@ -60,7 +59,6 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
         synchronized (siteTemplateWizardLock) {
             if (siteTemplateWizard == null) {
                 siteTemplateWizard = new SiteTemplateWizard();
-                siteTemplateWizard.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
             }
             return siteTemplateWizard;
         }
@@ -79,7 +77,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     @Override
     public void storeSettings(WizardDescriptor settings) {
         synchronized (siteTemplateWizardLock) {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.SITE_TEMPLATE, getComponent().getSiteTemplate());
+            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
             getComponent().prepareTemplate();
         }
     }
