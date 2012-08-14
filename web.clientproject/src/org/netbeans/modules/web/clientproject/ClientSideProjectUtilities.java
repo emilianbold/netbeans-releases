@@ -41,30 +41,36 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 
+// XXX use project mutex everywhere!
 /**
  *
  * @author david
  */
-public class ClientSideProjectUtilities {
+public final class ClientSideProjectUtilities {
+
+    private ClientSideProjectUtilities() {
+    }
 
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
         return h;
     }
-    
+
     public static void initializeProject(AntProjectHelper h) throws IOException {
-        initializeProject(h, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER, 
+        initializeProject(h, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER,
                 ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
     }
-    
+
     public static void initializeProject(AntProjectHelper h, String siteRoot, String test, String config) throws IOException {
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
@@ -77,7 +83,17 @@ public class ClientSideProjectUtilities {
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
     }
-    
+
+    // XXX "merge" with the method above
+    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot) throws IOException {
+        assert projectHelper.getProjectDirectory().getFileObject(siteRoot) != null : "Site root must exist: " + siteRoot;
+        EditableProperties editableProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        editableProperties.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, editableProperties);
+        Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
+        ProjectManager.getDefault().saveProject(project);
+    }
+
     public static FileObject getSiteRootFolder(AntProjectHelper h) throws IOException, IllegalArgumentException {
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String s = ep.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
@@ -86,4 +102,21 @@ public class ClientSideProjectUtilities {
         }
         return h.getProjectDirectory().getFileObject(s);
     }
+
+    /**
+     * Relativize the given {@code file} to the given {@code baseDir}.
+     * If the path cannot be relativized, the full absolute path of the {@code file} is returned.
+     * @param baseDir base directory
+     * @param file file to be relativized
+     * @return relative path or absolute path if relative path does not exist
+     * @see PropertyUtils#relativizeFile(File, File)
+     */
+    public static String relativizeFile(File baseDir, File file) {
+        String relPath = PropertyUtils.relativizeFile(baseDir, file);
+        if (relPath != null) {
+            return relPath;
+        }
+        return file.getAbsolutePath();
+    }
+
 }
