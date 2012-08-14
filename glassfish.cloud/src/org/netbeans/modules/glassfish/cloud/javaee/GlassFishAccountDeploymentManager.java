@@ -145,7 +145,7 @@ public class GlassFishAccountDeploymentManager
 
         ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, null);
         // call deploy
-        
+        ServerTasks.deploy(instance.getLocalServer(), moduleFile, progressObject);
         return progressObject;
     }
 
