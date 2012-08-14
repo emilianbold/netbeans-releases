@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.api.annotation.util;
 
 import java.util.Collections;
 import java.util.HashSet;
