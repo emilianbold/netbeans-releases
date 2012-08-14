@@ -46,7 +46,13 @@ package org.netbeans.modules.web.javascript.debugger.locals;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
@@ -59,31 +65,36 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
 import static org.netbeans.spi.debugger.ui.Constants.*;
-import org.netbeans.spi.viewmodel.*;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
-@NbBundle.Messages({"VariablesModel_Name=Name",
-"VariablesModel_Desc=Description"
+@NbBundle.Messages({
+    "VariablesModel_Name=Name",
+    "VariablesModel_Desc=Description"
 })
 public class VariablesModel extends ViewModelSupport implements TreeModel, ExtendedNodeModel,
-		TableModel, Debugger.Listener {
-	
+        TableModel, Debugger.Listener {
+
+    private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     public static final String GLOBAL = "org/netbeans/modules/web/javascript/debugger/resources/global_variable_16.png"; // NOI18N
     public static final String PROTO = "org/netbeans/modules/web/javascript/debugger/resources/proto_variable_16.png"; // NOI18N
-
+    
     protected final Debugger debugger;
     protected final EvaluatorService evaluator;
+    private ScopedRemoteObject globalScopeVar;
     
     protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
-
-    private AtomicReference<CallFrame>  currentStack = new AtomicReference<CallFrame>();
-
-    private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
-    
-    private RequestProcessor RP = new RequestProcessor();
+    private AtomicReference<CallFrame> currentStack = new AtomicReference<CallFrame>();
+    private Map<RemoteObject, List<ScopedRemoteObject>> variablesCache = new HashMap<RemoteObject, List<ScopedRemoteObject>>();
+    private RequestProcessor RP = new RequestProcessor(VariablesModel.class.getName());
 
     public VariablesModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
@@ -95,30 +106,29 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         } else {
             currentStack.set(null);
         }
-	}
+    }
 
-	// TreeModel implementation ................................................
+    // TreeModel implementation ................................................
+    @Override
+    public Object getRoot() {
+        return ROOT;
+    }
 
     @Override
-	public Object getRoot() {
-		return ROOT;
-	}
-
-    @Override
-	public Object[] getChildren(Object parent, int from, int to)
-			throws UnknownTypeException {
+    public Object[] getChildren(Object parent, int from, int to)
+            throws UnknownTypeException {
         CallFrame frame = currentStack.get();
         if (frame == null) {
             return new Object[0];
         }
-		if (parent == ROOT) {
+        if (parent == ROOT) {
             return getVariables(frame).subList(from, to).toArray();
-		} else if (parent instanceof ScopedRemoteObject) {
-            return getProperties((ScopedRemoteObject)parent).toArray();
-		} else {
-			throw new UnknownTypeException(parent);
-		}
-	}
+        } else if (parent instanceof ScopedRemoteObject) {
+            return getProperties((ScopedRemoteObject) parent).toArray();
+        } else {
+            throw new UnknownTypeException(parent);
+        }
+    }
 
     protected CallFrame getCurrentStack() {
         return currentStack.get();
@@ -136,16 +146,14 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
         return sortVariables(vars);
     }
-    
-    private ScopedRemoteObject globalScopeVar;
-    
+
     private ScopedRemoteObject getGlobalScopeVariable(RemoteObject obj, Scope scope) {
         if (globalScopeVar == null) {
             globalScopeVar = new ScopedRemoteObject(obj, scope);
         }
         return globalScopeVar;
     }
-    
+
     private List<ScopedRemoteObject> sortVariables(List<ScopedRemoteObject> vars) {
         Collections.sort(vars, new Comparator<ScopedRemoteObject>() {
             @Override
@@ -160,18 +168,18 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         });
         return vars;
     }
-    
+
     private Collection<? extends ScopedRemoteObject> getProperties(ScopedRemoteObject var) {
         return getProperties(var.getRemoteObject(), ViewScope.DEFAULT);
     }
-    
+
     private Collection<? extends ScopedRemoteObject> getProperties(RemoteObject prop, ViewScope scope) {
         List<ScopedRemoteObject> res = variablesCache.get(prop);
-            if (res != null) {
-                return res;
-            }
-            res = new ArrayList<ScopedRemoteObject>();
-            variablesCache.put(prop, res);
+        if (res != null) {
+            return res;
+        }
+        res = new ArrayList<ScopedRemoteObject>();
+        variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
                 if (desc.getValue() == null || desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
@@ -182,15 +190,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
         return sortVariables(res);
     }
-    
-    private Map<RemoteObject, List<ScopedRemoteObject>> variablesCache = new HashMap<RemoteObject, List<ScopedRemoteObject>>();
-    
+
     @Override
-	public boolean isLeaf(Object node) throws UnknownTypeException {
-		if (node == ROOT) {
-			return false;
-		} else if (node instanceof ScopedRemoteObject) {
-			RemoteObject var = ((ScopedRemoteObject)node).getRemoteObject();
+    public boolean isLeaf(Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            return false;
+        } else if (node instanceof ScopedRemoteObject) {
+            RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (var.getType() == RemoteObject.Type.OBJECT) {
                 if (var.hasFetchedProperties()) {
                     return var.getProperties().isEmpty();
@@ -200,11 +206,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 }
             }
             return true;
-		} else {
-			throw new UnknownTypeException(node);
-		}
-	}
-    
+        } else {
+            throw new UnknownTypeException(node);
+        }
+    }
+
     protected void updateNodeOnBackground(final Object node, final RemoteObject var) {
         RP.post(new Runnable() {
             @Override
@@ -218,79 +224,78 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         });
     }
 
-
     @Override
-	public int getChildrenCount(Object parent) throws UnknownTypeException {
+    public int getChildrenCount(Object parent) throws UnknownTypeException {
         CallFrame frame = currentStack.get();
         if (frame == null) {
             return 0;
         }
-		if (parent == ROOT) {
+        if (parent == ROOT) {
             return getVariables(frame).size();
-		} else if (parent instanceof ScopedRemoteObject) {
-            return getProperties((ScopedRemoteObject)parent).size();
-		} else {
-			throw new UnknownTypeException(parent);
-		}
-	}
+        } else if (parent instanceof ScopedRemoteObject) {
+            return getProperties((ScopedRemoteObject) parent).size();
+        } else {
+            throw new UnknownTypeException(parent);
+        }
+    }
 
-	// NodeModel implementation ................................................
+    // NodeModel implementation ................................................
+    @Override
+    public String getDisplayName(Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            return Bundle.VariablesModel_Name();
+        } else if (node instanceof ScopedRemoteObject) {
+            return ((ScopedRemoteObject) node).getObjectName();
+        } else {
+            throw new UnknownTypeException(node);
+        }
+    }
 
     @Override
-	public String getDisplayName(Object node) throws UnknownTypeException {
-		if (node == ROOT) {
-			return Bundle.VariablesModel_Name();
-		} else if (node instanceof ScopedRemoteObject) {
-			return ((ScopedRemoteObject) node).getObjectName();
-		} else {
-			throw new UnknownTypeException(node);
-		}
-	}
+    public String getIconBase(Object node) throws UnknownTypeException {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
-	public String getIconBase(Object node) throws UnknownTypeException {
-	    throw new UnsupportedOperationException();
-	}
-
-    @Override
-	public String getIconBaseWithExtension(Object node)
-			throws UnknownTypeException {
-		assert node != ROOT;
-		if (node instanceof ScopedRemoteObject) {
-			ScopedRemoteObject sv = (ScopedRemoteObject)node;
+    public String getIconBaseWithExtension(Object node)
+            throws UnknownTypeException {
+        assert node != ROOT;
+        if (node instanceof ScopedRemoteObject) {
+            ScopedRemoteObject sv = (ScopedRemoteObject) node;
             switch (sv.getScope()) {
-                case GLOBAL: return GLOBAL;
-                case PROTO : return PROTO;
+                case GLOBAL:
+                    return GLOBAL;
+                case PROTO:
+                    return PROTO;
             }
             return LOCAL;
-		} else {
-			throw new UnknownTypeException(node);
-		}
-	}
+        } else {
+            throw new UnknownTypeException(node);
+        }
+    }
 
     @Override
-	public String getShortDescription(Object node) throws UnknownTypeException {
-		if (node == ROOT) {
-			return Bundle.VariablesModel_Desc();
-		} else if (node instanceof ScopedRemoteObject) {
-			return ((ScopedRemoteObject) node).getObjectName();
-		} else {
-			throw new UnknownTypeException(node);
-		}
-	}
+    public String getShortDescription(Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            return Bundle.VariablesModel_Desc();
+        } else if (node instanceof ScopedRemoteObject) {
+            return ((ScopedRemoteObject) node).getObjectName();
+        } else {
+            throw new UnknownTypeException(node);
+        }
+    }
 
-	// TableModel implementation ...............................................
-
+    // TableModel implementation ...............................................
     @Override
-	public Object getValueAt(Object node, String columnID)
-			throws UnknownTypeException {
-		if (node == ROOT) {
-			return "";
-		} else if (node instanceof ScopedRemoteObject) {
-			RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
-			if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-			    return var.getValueAsString();
-			} else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
+    public Object getValueAt(Object node, String columnID)
+            throws UnknownTypeException {
+        if (node == ROOT) {
+            return "";
+        } else if (node instanceof ScopedRemoteObject) {
+            RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
+            if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+                return var.getValueAsString();
+            } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
                 if (var.getType() == RemoteObject.Type.OBJECT) {
                     String desc = var.getDescription();
                     if (desc == null) {
@@ -301,18 +306,18 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 } else {
                     return var.getType().getName();
                 }
-			} else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
+            } else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
                 return var.getValueAsString();
             }
-		}
-		throw new UnknownTypeException(node);
-	}
-    
+        }
+        throw new UnknownTypeException(node);
+    }
+
     @Override
     public boolean isReadOnly(Object node, String columnID)
             throws UnknownTypeException {
-        if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject ||
-            WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject) {
+        if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject
+                || WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject) {
 //            RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
 //            return !var.isMutable();
             return true;
@@ -325,49 +330,49 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             throws UnknownTypeException {
         if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject) {
             ScopedRemoteObject sro = (ScopedRemoteObject) node;
-            evaluator.evaluateExpression(getCurrentStack(), sro.getObjectName() + "=" + value+";", false);
+            evaluator.evaluateExpression(getCurrentStack(), sro.getObjectName() + "=" + value + ";", false);
             refresh();
         }
         throw new UnknownTypeException(node);
     }
 
     @Override
-	public boolean canRename(Object node) throws UnknownTypeException {
-		return false;
-	}
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
 
     @Override
-	public boolean canCopy(Object node) throws UnknownTypeException {
-		return false;
-	}
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
 
     @Override
-	public boolean canCut(Object node) throws UnknownTypeException {
-		return false;
-	}
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
 
     @Override
-	public Transferable clipboardCopy(Object node) throws IOException,
-			UnknownTypeException {
-		throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-	}
+    public Transferable clipboardCopy(Object node) throws IOException,
+            UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
 
     @Override
-	public Transferable clipboardCut(Object node) throws IOException,
-			UnknownTypeException {
-		throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-	}
+    public Transferable clipboardCut(Object node) throws IOException,
+            UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
 
     @Override
-	public PasteType[] getPasteTypes(Object node, Transferable t)
-			throws UnknownTypeException {
-		return null;
-	}
+    public PasteType[] getPasteTypes(Object node, Transferable t)
+            throws UnknownTypeException {
+        return null;
+    }
 
     @Override
-	public void setName(Object node, String name) throws UnknownTypeException {
-		throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-	}
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
 
     @Override
     public void paused(List<CallFrame> callStack, String reason) {
@@ -388,6 +393,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     }
 
     public static class ScopedRemoteObject {
+
         private RemoteObject var;
         private ViewScope scope;
         private String objectName;
@@ -395,7 +401,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         public ScopedRemoteObject(RemoteObject var, String name) {
             this(var, name, ViewScope.DEFAULT);
         }
-        
+
         public ScopedRemoteObject(RemoteObject var, Scope sc) {
             this.var = var;
             if (sc.isLocalScope()) {
@@ -427,15 +433,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         public String getObjectName() {
             return objectName;
         }
-        
     }
-    
+
     public static enum ViewScope {
-        
+
         LOCAL,
         GLOBAL,
         DEFAULT,
         PROTO,
-        
     }
 }
