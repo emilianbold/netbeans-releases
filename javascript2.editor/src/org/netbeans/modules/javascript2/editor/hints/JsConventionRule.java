@@ -78,17 +78,18 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class JsConventionRule implements Rule.AstRule{
-    public static final String JSCONVENTION_HINTS = "jsconvention.line.hints"; //NOI18N
+public class JsConventionRule extends JsAstRule {
     
-    void computeHintsImpl(JsRuleContext context, List<Hint> hints) {
+    
+    @Override
+    void computeHints(JsRuleContext context, List<Hint> hints) {
         ConventionVisitor conventionVisitor = new ConventionVisitor(this);
         conventionVisitor.process(context, hints);
     }
             
     @Override
     public Set<?> getKinds() {
-        return Collections.singleton(JSCONVENTION_HINTS);
+        return Collections.singleton(JsAstRule.JSCONVENTION_HINTS);
     }
 
     @Override
@@ -103,36 +104,11 @@ public class JsConventionRule implements Rule.AstRule{
     }
 
     @Override
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-    @Override
     @NbBundle.Messages("JsConventionHintDisplayName=JavaScript Code Convention")
     public String getDisplayName() {
         return Bundle.JsConventionHintDisplayName();
     }
 
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-    
     private static class ConventionVisitor extends PathNodeVisitor {
 
         private List<Hint> hints;

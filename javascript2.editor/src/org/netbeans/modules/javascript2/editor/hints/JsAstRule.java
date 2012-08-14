@@ -41,80 +41,47 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.Error;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsHintsProvider implements HintsProvider {
+public abstract class JsAstRule implements Rule.AstRule {
+    public static final String JSCONVENTION_HINTS = "jsconvention.line.hints"; //NOI18N
+
+    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints);
     
-    private volatile Boolean cancel = false;
     @Override
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        long startInit = System.currentTimeMillis();
-        Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
-        List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionRule.JSCONVENTION_HINTS);
-        if (conventionHints != null) {
-            for (Rule.AstRule astRule : conventionHints) {
-                if(cancel) {
-                    break;
-                }
-                if (manager.isEnabled(astRule)) {
-                    JsConventionRule rule = (JsConventionRule)astRule;
-                    rule.computeHints((JsRuleContext)context, hints);
-                }
-            }
-        }
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
     @Override
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
     @Override
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
-
+    public boolean appliesTo(RuleContext context) {
+        return true;
     }
 
     @Override
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-
+    public boolean showInTasklist() {
+        return false;
     }
 
     @Override
-    public void cancel() {
-        cancel = true;
-    }
-
-    @Override
-    public List<Rule> getBuiltinRules() {
-        return Collections.<Rule>emptyList();
-    }
-
-    @Override
-    public RuleContext createRuleContext() {
-        return new JsRuleContext();
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
     }
     
-    public static class JsRuleContext extends RuleContext {
-        private JsParserResult jsParserResult = null;
-
-        public JsParserResult getJsParserResult() {
-            if (jsParserResult == null) {
-                jsParserResult = (JsParserResult)parserResult;
-            }
-            return jsParserResult;
-        }
-        
-    }
+    
 }
