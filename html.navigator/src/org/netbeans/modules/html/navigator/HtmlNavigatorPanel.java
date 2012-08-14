@@ -52,6 +52,9 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,27 +82,9 @@ public class HtmlNavigatorPanel implements NavigatorPanel {
     }
 
     @Override
-    public void panelActivated(org.openide.util.Lookup context) {
-        FileObject file = context.lookup(FileObject.class);
-        if(file == null) {
-            return ;
-        }
-        Source source = Source.create(file);
-        if (source == null) {
-            return;
-        }
-        ui.activate();
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ui.setParserResult((HtmlParserResult)resultIterator.getParserResult());
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
+    public void panelActivated(final org.openide.util.Lookup context) {
+        ui.activate(context);
+        
     }
 
     @Override
@@ -111,6 +96,5 @@ public class HtmlNavigatorPanel implements NavigatorPanel {
     public org.openide.util.Lookup getLookup() {
         return ui.getLookup();
     }
-    
-    
+
 }

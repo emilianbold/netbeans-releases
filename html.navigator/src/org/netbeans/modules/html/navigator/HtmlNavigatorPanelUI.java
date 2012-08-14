@@ -50,6 +50,7 @@ import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -60,6 +61,11 @@ import javax.swing.border.EmptyBorder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -74,6 +80,9 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -117,6 +126,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 pageModelDocumentChanged();
             }
 
+        }
+    };
+
+    private final LookupListener ll = new LookupListener() {
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            refresh((Lookup.Result<FileObject>) ev.getSource());
         }
     };
     
@@ -272,7 +289,34 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
         return null;
     }
+    
+    private void refreshDOM() {
+        try {
+            final PageModel page = PageInspectorImpl.getDefault().getPage();
+            if (page==null)
+                return;
+            String inspectedURL = page.getDocumentURL();
 
+            URL url = new URL(inspectedURL);
+            final FileObject fo = inspectedFileObject != null ? inspectedFileObject : sourceDescription.getFileObject();
+            Project owner = FileOwnerQuery.getOwner(fo);
+            FileObject fromServer = ServerURLMapping.fromServer(owner, url);
+
+
+            if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
+                return;
+            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    refreshNodeDOMStatus();
+                }
+            });
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     private void refreshNodeDOMStatus() {
         LOGGER.info("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
@@ -284,6 +328,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 setSynchronizationState(true);
                 updateInspectedFileUI(); //set the status text back to the inspected file
             }
+            setPageModel(PageInspectorImpl.getDefault().getPage());
             //now apply to dom descriptions
             WebKitNodeDescription domDescription = new WebKitNodeDescription(null, Utils.getWebKitNode(pageModel.getDocumentNode()));
             root.setDescription(domDescription);
@@ -322,21 +367,59 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         return panelActions;
     }
 
-    void activate() {
-        showWaitNode();
+    void activate(Lookup context) {
+        Result<FileObject> fileResult = context.lookupResult(FileObject.class);
+        fileResult.addLookupListener(ll);
+        refresh(fileResult);
     }
+    
+    private void refresh(Lookup.Result<FileObject> fileResult) {
+        Collection<? extends FileObject> allInstances = fileResult.allInstances();
+        if (allInstances.isEmpty()) {
+            return;
+        }
+        final FileObject fo = allInstances.iterator().next();
+
+        Source source = Source.create(fo);
+        if (source == null) {
+            return;
+        }
+        showWaitNode();
+        
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    setParserResult((HtmlParserResult)resultIterator.getParserResult());
+                    inspectedFileObject = fo;
+                    refreshDOM();
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
 
     void deactivate() {
+        setPageModel(null);
+        //TODO: remove lookup listener
     }
 
     private void showWaitNode() {
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 view.setRootVisible(true);
                 manager.setRootContext(waitNode);
             }
-        });
+        };
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     public HtmlElementNode getRootNode() {
