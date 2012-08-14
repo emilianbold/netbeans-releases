@@ -476,6 +476,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         @Override
+        public boolean canRename() {
+            return false;
+        }
+        
+        @Override
         public Image getIcon(int type) {
             return computeIcon(nodeType, false, type);
         }
