@@ -132,8 +132,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
-            OffsetRange range = AstUtilities.getRange(astNode, document);
-            regions.add(range);
+            regions.add(AstUtilities.getRange(astNode, document));
         }
     }
 }
