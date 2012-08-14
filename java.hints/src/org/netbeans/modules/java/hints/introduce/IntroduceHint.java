@@ -103,6 +103,7 @@ import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -146,6 +147,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 
@@ -2432,22 +2434,30 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     }
     
-    private static boolean shouldReplaceDuplicate(Document doc, int startOff, int endOff) throws BadLocationException {
+    private static boolean shouldReplaceDuplicate(final Document doc, final int startOff, final int endOff) {
         introduceBag(doc).clear();
         introduceBag(doc).addHighlight(startOff, endOff, DUPE);
 
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
-        
-        if (c.getDocument() == doc) {
-            Rectangle start = c.modelToView(startOff);
-            Rectangle end = c.modelToView(endOff);
-            int sx = Math.min(start.x, end.x);
-            int dx = Math.max(start.x + start.width, end.x + end.width);
-            int sy = Math.min(start.y, end.y);
-            int dy = Math.max(start.y + start.height, end.y + end.height);
-            
-            c.scrollRectToVisible(new Rectangle(sx, sy, dx - sx, dy - sy));
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                JTextComponent c = EditorRegistry.lastFocusedComponent();
+
+                if (c != null && c.getDocument() == doc) {
+                    try {
+                        Rectangle start = c.modelToView(startOff);
+                        Rectangle end = c.modelToView(endOff);
+                        int sx = Math.min(start.x, end.x);
+                        int dx = Math.max(start.x + start.width, end.x + end.width);
+                        int sy = Math.min(start.y, end.y);
+                        int dy = Math.max(start.y + start.height, end.y + end.height);
+
+                        c.scrollRectToVisible(new Rectangle(sx, sy, dx - sx, dy - sy));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
 
         String title = NbBundle.getMessage(IntroduceHint.class, "TTL_DuplicateMethodPiece");
         String message = NbBundle.getMessage(IntroduceHint.class, "MSG_DuplicateMethodPiece");
