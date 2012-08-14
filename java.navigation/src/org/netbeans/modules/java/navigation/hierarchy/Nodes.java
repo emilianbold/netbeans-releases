@@ -105,14 +105,14 @@ class Nodes {
     static Node superTypeHierarchy(
             @NonNull final DeclaredType type,
             @NonNull final ClasspathInfo cpInfo,
-            @NonNull final Context ctx) {
-        return superTypeHierarchy(type, cpInfo, ctx, 0);
+            @NonNull final HierarchyFilters filters) {
+        return superTypeHierarchy(type, cpInfo, filters, 0);
     }
 
     private static Node superTypeHierarchy(
             @NonNull final DeclaredType type,
             @NonNull final ClasspathInfo cpInfo,
-            @NonNull final Context ctx,
+            @NonNull final HierarchyFilters filters,
             final int order) {
         final TypeElement element = (TypeElement)type.asElement();
         final TypeMirror superClass = element.getSuperclass();
@@ -120,17 +120,17 @@ class Nodes {
         final List<Node> childNodes = new ArrayList<Node>(interfaces.size()+1);
         int childOrder = 0;
         if (superClass.getKind() != TypeKind.NONE) {
-            childNodes.add(superTypeHierarchy((DeclaredType)superClass, cpInfo, ctx, childOrder));
+            childNodes.add(superTypeHierarchy((DeclaredType)superClass, cpInfo, filters, childOrder));
         }
         for (TypeMirror superInterface : interfaces) {
             childOrder++;
-            childNodes.add(superTypeHierarchy((DeclaredType)superInterface, cpInfo, ctx, childOrder));
+            childNodes.add(superTypeHierarchy((DeclaredType)superInterface, cpInfo, filters, childOrder));
         }
         final Children cld;
         if (childNodes.isEmpty()) {
             cld = Children.LEAF;
         } else {
-            cld = new SuperTypeChildren(ctx);
+            cld = new SuperTypeChildren(filters);
             cld.add(childNodes.toArray(new Node[childNodes.size()]));
         }
         return new TypeNode(
@@ -139,20 +139,12 @@ class Nodes {
                 cpInfo,
                 ElementHandle.create(element),
                 order),
-            ctx,
+            filters,
             new Action[0]);
         
     }
 
 
-    static interface Context {
-        String PROP_FQN = "fqn";    //NOI8N
-        String PROP_ORDERED = "ordered";    //NOI18N
-        boolean isFQN();
-        boolean isOrdered();
-        void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
-        void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
-    }
 
     private static final class Description {
 
@@ -200,7 +192,7 @@ class Nodes {
     private static final class TypeNode extends AbstractNode implements PropertyChangeListener {
 
         private final Description description;
-        private final Context ctx;
+        private final HierarchyFilters filters;
         private final Action[] globalActions;
         //@GuardedBy("this")
         private Action openAction;
@@ -208,16 +200,16 @@ class Nodes {
         TypeNode(
             @NonNull final Children cld,
             @NonNull final Description description,
-            @NonNull final Context ctx,
+            @NonNull final HierarchyFilters filters,
             @NonNull final Action[] globalActions) {
             super(cld, createLookup(description));
             assert description != null;
-            assert ctx != null;
+            assert filters != null;
             assert globalActions != null;
             this.description = description;
-            this.ctx = ctx;
+            this.filters = filters;
             this.globalActions = globalActions;
-            this.ctx.addPropertyChangeListener(this);
+            this.filters.addPropertyChangeListener(this);
             updateDisplayName();
         }
 
@@ -236,7 +228,7 @@ class Nodes {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (Context.PROP_FQN.equals(evt.getPropertyName())) {
+            if (HierarchyFilters.PROP_FQN.equals(evt.getPropertyName())) {
                 updateDisplayName();
             }
         }
@@ -308,7 +300,7 @@ class Nodes {
 
         private void updateDisplayName() {
             String name = description.handle.getQualifiedName();
-            if (!ctx.isFQN()) {
+            if (!filters.isFqn()) {
                 name = HierarchyHistory.getSimpleName(name);
             }
             setDisplayName(name);
@@ -417,27 +409,27 @@ class Nodes {
 
     private static class SuperTypeChildren extends Children.SortedArray implements PropertyChangeListener {
 
-        private final Context ctx;
+        private final HierarchyFilters hierarchy;
 
-        SuperTypeChildren(@NonNull final Context ctx) {
-            assert ctx != null;
-            this.ctx = ctx;
-            this.ctx.addPropertyChangeListener(this);
+        SuperTypeChildren(@NonNull final HierarchyFilters filters) {
+            assert filters != null;
+            this.hierarchy = filters;
+            this.hierarchy.addPropertyChangeListener(this);
             updateComparator();
         }
 
 
         private void updateComparator() {
-            if (ctx.isOrdered()) {
-                setComparator(new LexicographicComparator());
-            } else {
+            if (hierarchy.isNaturalSort()) {
                 setComparator(new OrderComparator());
+            } else {
+                setComparator(new LexicographicComparator());
             }
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (Context.PROP_ORDERED.equals(evt.getPropertyName())) {
+            if (HierarchyFilters.PROP_NATURAL_SORT.equals(evt.getPropertyName())) {
                 updateComparator();
             }
         }

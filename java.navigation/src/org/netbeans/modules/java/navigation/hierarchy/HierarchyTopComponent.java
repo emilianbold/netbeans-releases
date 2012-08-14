@@ -316,9 +316,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         assert resolver != null;
         final RunnableFuture<Pair<URI,ElementHandle<TypeElement>>> becomesType = new FutureTask<Pair<URI,ElementHandle<TypeElement>>>(resolver);
         RP.execute(becomesType);
-        final ContextImpl ctx = new ContextImpl();
-//        filters.addChangeListener(WeakListeners.change(ctx, filters));
-        final Runnable refreshTask = new RefreshTask(becomesType, ctx);
+        Object selItem = viewTypeCombo.getSelectedItem();
+        if (!(selItem instanceof ViewType)) {
+            selItem = ViewType.SUPER_TYPE;
+        }
+        final Runnable refreshTask = new RefreshTask(becomesType,(ViewType)selItem);
         RP.execute(refreshTask);
     }
 
@@ -543,15 +545,15 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final class RefreshTask implements Runnable {
 
         private final Future<Pair<URI,ElementHandle<TypeElement>>> toShow;
-        private final ContextImpl ctx;
+        private final ViewType viewType;
 
         RefreshTask(
             @NonNull final Future<Pair<URI,ElementHandle<TypeElement>>> toShow,
-            @NonNull final ContextImpl ctx) {
+            @NonNull final ViewType viewType) {
             assert toShow != null;
-            assert ctx != null;
+            assert viewType != null;
             this.toShow = toShow;
-            this.ctx = ctx;
+            this.viewType = viewType;
         }
 
         @Override
@@ -572,11 +574,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                                 final TypeElement te = pair.second.resolve(cc);
                                 if (te != null) {
                                     final Node root;
-                                    if (ctx.getViewType() == ViewType.SUPER_TYPE) {
+                                    if (viewType == ViewType.SUPER_TYPE) {
                                      root = Nodes.superTypeHierarchy(
                                             (DeclaredType)te.asType(),
                                             cc.getClasspathInfo(),
-                                            ctx);
+                                            filters);
                                     } else {
                                         root = null;
                                     }
@@ -603,74 +605,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
-
-    private class ContextImpl implements Nodes.Context, ChangeListener {
-
-        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-
-        private volatile ViewType vt;
-        private volatile boolean fqn;
-        private volatile boolean ordered;
-
-        ContextImpl() {            
-            final Object selItem = viewTypeCombo.getSelectedItem();
-            this.vt = selItem instanceof ViewType ?
-                    (ViewType) selItem :
-                    ViewType.SUPER_TYPE;
-            update();
-        }
-
-        @Override
-        public boolean isFQN() {
-            return fqn;
-        }
-
-        @Override
-        public boolean isOrdered() {
-            return ordered;
-        }
-
-        public ViewType getViewType() {
-            return vt;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            assert listener != null;
-            this.support.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            assert listener != null;
-            this.support.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    final boolean oldOrdered = ordered;
-                    final boolean oldFqn = fqn;
-                    update();
-                    if (oldOrdered ^ ordered) {
-                        support.firePropertyChange(PROP_ORDERED, oldOrdered, ordered);
-                    }
-                    if (oldFqn ^ fqn) {
-                        support.firePropertyChange(PROP_FQN, oldFqn, fqn);
-                    }
-                }
-            });
-        }
-
-        private void update() {
-            assert SwingUtilities.isEventDispatchThread();
-            this.ordered = !filters.isNaturalSort();
-            this.fqn = false;
-        }
-    }
+    }    
 
     private static class MainToolBar extends Box {
         MainToolBar(@NonNull final JComponent... components) {
