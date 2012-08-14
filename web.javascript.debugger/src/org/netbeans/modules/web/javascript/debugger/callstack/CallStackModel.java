@@ -50,8 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.SwingUtilities;
-
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
@@ -254,17 +252,12 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             Annotation anno;
             if (first) {
                 anno = new CurrentLineAnnotation(line);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
-                    }
-                });
+                MiscEditorUtil.showLine(line, true);
+                first = false;
             } else {
                 anno = new CallStackAnnotation(line);
             }
             annotations.add(anno);
-            first = false;
         }
     }
 
