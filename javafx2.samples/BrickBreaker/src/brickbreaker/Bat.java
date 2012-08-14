@@ -73,12 +73,12 @@ public class Bat extends Parent {
         double rightWidth = RIGHT.getWidth() - Config.SHADOW_WIDTH;
         double centerWidth = width - LEFT.getWidth() - rightWidth;
         centerImageView.setViewport(new Rectangle2D(
-                (CENTER.getWidth() - centerWidth) / 2, 0, centerWidth, CENTER.getHeight()));
+            (CENTER.getWidth() - centerWidth) / 2, 0, centerWidth, CENTER.getHeight()));
         rightImageView.setTranslateX(width - rightWidth);
     }
 
     public Bat() {
-        height = (int) CENTER.getHeight() - Config.SHADOW_HEIGHT;
+        height = (int)CENTER.getHeight() - Config.SHADOW_HEIGHT; 
         Group group = new Group();
         leftImageView = new ImageView();
         leftImageView.setImage(LEFT);

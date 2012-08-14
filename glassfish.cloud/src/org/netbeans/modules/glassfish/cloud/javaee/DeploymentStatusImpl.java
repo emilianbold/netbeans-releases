@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
-import org.netbeans.junit.NbTestCase;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * Implementation of javax interface DeploymentStatus. Holds information
+ * about command and its status.
  */
-public class AnnotationUtilsTest extends NbTestCase {
+public class DeploymentStatusImpl implements DeploymentStatus {
 
-    private static final String ANNOTATION_NAME = "Annotation";
+    private CommandType command;
+    private StateType state;
+    private ActionType action;
+    private String message;
 
-    public AnnotationUtilsTest(String name) {
-        super(name);
+    public DeploymentStatusImpl(CommandType command, StateType state, ActionType action, String message) {
+        this.command = command;
+        this.state = state;
+        this.action = action;
+        this.message = message;
+    }
+    
+    @Override
+    public StateType getState() {
+        return state;
     }
 
-    public void testValidUseCase_01() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    @Override
+    public CommandType getCommand() {
+        return command;
     }
 
-    public void testValidUseCase_02() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    @Override
+    public ActionType getAction() {
+        return action;
     }
 
-    public void testValidUseCase_03() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME, ANNOTATION_NAME));
+    @Override
+    public String getMessage() {
+        return message;
     }
 
-    public void testValidUseCase_04() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
+    @Override
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
     }
 
-    public void testValidUseCase_05() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
+    @Override
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
     }
 
-    public void testInvalidUseCase_01() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME + "\\Foo\\Bar\\Baz\\", ANNOTATION_NAME));
+    @Override
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
     }
 
-    public void testInvalidUseCase_02() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar" + ANNOTATION_NAME + "\\Baz\\", ANNOTATION_NAME));
+    @Override
+    public String toString() {
+        return "DeploymentStatusImpl{" + "command=" + command + ", state=" + state + ", action=" + action + ", message=" + message + '}';
     }
-
+    
 }

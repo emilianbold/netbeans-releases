@@ -45,7 +45,9 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
 /**
  * Find only direct subtypes for the given declaration class.
@@ -80,11 +82,19 @@ public class FindDirectSubtypesOnly extends AbstractFindUsages {
         }
 
         @Override
-        public void visitClass(ClassNode node) {
-            if (findingFqn.equals(node.getSuperClass().getName())) {
-                usages.add(node);
+        public void visitClass(ClassNode clazz) {
+            if (findingFqn.equals(ElementUtils.getTypeName(clazz.getSuperClass()))) {
+                // Oh my goodness I have absolutely no idea why the hack getSuperClass() doesn't return valid initiated superclass
+                // and the method with a weird name getUnresolvedSuperClass(false) is actually returning resolved super class (with
+                // line/column numbers set)
+                usages.add(new FakeASTNode(clazz.getUnresolvedSuperClass(false), clazz.getSuperClass().getNameWithoutPackage()));
             }
-            super.visitClass(node);
+            for (ClassNode interfaceNode : clazz.getInterfaces()) {
+                if (findingFqn.equals(ElementUtils.getTypeName(interfaceNode))) {
+                    usages.add(new FakeASTNode(ElementUtils.getType(interfaceNode), ElementUtils.getTypeName(interfaceNode)));
+                }
+            }
+            super.visitClass(clazz);
         }
     }
 }

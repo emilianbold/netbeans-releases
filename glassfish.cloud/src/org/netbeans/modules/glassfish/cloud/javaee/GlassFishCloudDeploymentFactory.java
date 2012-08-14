@@ -121,8 +121,8 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException(iae.getMessage());
         }
         switch(url.getType()) {
-            case CLOUD: return new GlassFishCloudDeploymentManager(url);
-            case LOCAL: return new GlassFishAccountDeploymentManager(url);
+            case CLOUD: return new GlassFishAccountDeploymentManager(url);
+            case LOCAL: return new GlassFishCloudDeploymentManager(url);
             // This is unrecheable. Being here means this class does not handle
             // all possible values correctly.
             default: throw new DeploymentManagerCreationException(

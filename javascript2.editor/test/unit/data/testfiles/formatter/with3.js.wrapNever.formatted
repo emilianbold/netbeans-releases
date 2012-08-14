@@ -16,5 +16,5 @@ with ((a)) {
 }
 with ((a & b)) test();
 
-with ((a + c).test());
+with ((a + c).test()) ;
 

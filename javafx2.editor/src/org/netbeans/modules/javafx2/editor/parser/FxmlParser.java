@@ -127,6 +127,7 @@ class FxmlParser extends Parser implements ErrorReporter {
         
         final ClasspathInfo cpInfo = ClasspathInfo.create(snapshot.getSource().getFileObject());
         
+        problems.addAll(tokenParser.getErrors());
         problems.addAll(builder.getErrors());
         model = builder.getModel();
         
