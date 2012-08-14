@@ -188,7 +188,7 @@ public class JsFormatter implements Formatter {
                         case BEFORE_WITH_BRACE:
                         case BEFORE_FUNCTION_DECLARATION_BRACE:
                         case BEFORE_ARRAY_LITERAL_BRACKET:
-                            i = handleSpaceBefore(tokens, i, formatContext,
+                            i = handleSpace(tokens, i, formatContext,
                                     !isSpace(token, formatContext));
                             break;
                         case AFTER_ASSIGNMENT_OPERATOR:
@@ -603,62 +603,6 @@ public class JsFormatter implements Formatter {
             // we have done everything needed so move forward
             if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
                 return moveForward(token, index, end, formatContext, false);
-            }
-        }
-        return index;
-    }
-
-    private int handleSpaceBefore(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
-
-        FormatToken token = tokens.get(index);
-        assert token.isVirtual();
-
-        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext, false);
-        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return index;
-        }
-
-        // now we have some BEFORE token, find previous non white token
-        FormatToken start = null;
-        boolean containsEol = false;
-
-        for (FormatToken current = token.previous(); current != null;
-                current = current.previous()) {
-
-            if (!current.isVirtual()) {
-                if (current.getKind() != FormatToken.Kind.WHITESPACE
-                        && current.getKind() != FormatToken.Kind.EOL) {
-                    start = current;
-                    break;
-                } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    containsEol = true;
-                }
-            }
-        }
-
-        if (start != null) {
-            // we fetch the space to start
-            start = getNextNonVirtual(start);
-            // and the token we are before
-            FormatToken theToken = getNextNonVirtual(token);
-            if (start.getKind() != FormatToken.Kind.WHITESPACE
-                    && start.getKind() != FormatToken.Kind.EOL) {
-                if (!remove) {
-                    formatContext.insert(start.getOffset(), " "); // NOI18N
-                }
-            } else if (!containsEol) {
-                if (remove) {
-                    formatContext.remove(start.getOffset(),
-                            theToken.getOffset() - start.getOffset());
-                } else if (theToken.getOffset() - start.getOffset() != 1 || start.getKind() == FormatToken.Kind.EOL) {
-                    formatContext.replace(start.getOffset(),
-                            theToken.getOffset() - start.getOffset(), " "); // NOI18N
-                }
-            }
-            // we have done everything needed so move forward
-            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, theToken, formatContext, false);
             }
         }
         return index;
