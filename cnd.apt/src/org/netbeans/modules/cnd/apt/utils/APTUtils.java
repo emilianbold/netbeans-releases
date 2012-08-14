@@ -239,12 +239,12 @@ public class APTUtils {
     }
 
     public static APTToken createAPTToken(int type, int startOffset, int endOffset, 
-            int startColumn, int startLine, int endColumn, int endLine, String text) {
+            int startColumn, int startLine, int endColumn, int endLine, int literalType) {
         // TODO: optimize factory
         if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
-        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine, text)){
-            return new APTLiteIdToken(startOffset, startColumn, startLine, text);
+        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine, literalType)){
+            return new APTLiteIdToken(startOffset, startColumn, startLine, literalType);
         }
         APTToken out = createAPTToken(type);
         out.setType(type);

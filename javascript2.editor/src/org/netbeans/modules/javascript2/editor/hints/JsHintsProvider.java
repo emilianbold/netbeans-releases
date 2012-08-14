@@ -69,8 +69,8 @@ public class JsHintsProvider implements HintsProvider {
                     break;
                 }
                 if (manager.isEnabled(astRule)) {
-                    JsConventionRule rule = (JsConventionRule)astRule;
-                    rule.computeHintsImpl((JsRuleContext)context, hints);
+                    JsAstRule rule = (JsAstRule)astRule;
+                    rule.computeHints((JsRuleContext)context, hints);
                 }
             }
         }

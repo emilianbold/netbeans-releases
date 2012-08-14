@@ -122,6 +122,9 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     /** The display name of GlassFish cloud server type. */
     private final String serverDisplayName;
 
+    /** Description of GlassFish cloud user account. */
+    private final String description;
+
     /** GlassFish Cloud GUI Node. */
     private volatile Node basicNode;
 
@@ -156,7 +159,9 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         super(name, account, userName, userPassword,
                 GlassFishUrl.url(GlassFishUrl.Id.CLOUD, name), cloudEntity);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
-                Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
+                Bundle.GLASSFISH_ACCOUNT_SERVER_TYPE, new Object[]{});
+        this.description = getMessage(GlassFishCloudInstance.class,
+                Bundle.GLASSFISH_ACCOUNT_DESCRIPTION, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
         this.loadListeners = new ChangeSupport(Event.LOAD);
         this.storeListeners = new ChangeSupport(Event.STORE);
@@ -189,6 +194,16 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     @Override
     public String getDisplayName() {
         return this.name;
+    }
+
+    /**
+     * Get description of GlassFish cloud user account.
+     * <p/>
+     * @return Description of GlassFish cloud user account.
+     */
+    @Override
+    public String getDescription() {
+        return this.description;
     }
 
     /**
