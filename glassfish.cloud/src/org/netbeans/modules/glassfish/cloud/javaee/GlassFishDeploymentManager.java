@@ -42,7 +42,7 @@
 package org.netbeans.modules.glassfish.cloud.javaee;
 
 import javax.enterprise.deploy.spi.Target;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
@@ -69,6 +69,10 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
     /** GlassFish cloud URL. */
     final GlassFishUrl url;
 
+    /** GlassFish instance interface. */
+    final GlassFishInstance instance;
+    
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -81,8 +85,13 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishDeploymentManager(GlassFishUrl url) {
+    GlassFishDeploymentManager(GlassFishUrl url, GlassFishInstance instance) {
         this.url = url;
+        this.instance = instance;
+        if (instance == null) {
+            throw new NullPointerException("There is no account instance named "
+                    + url.getName());
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////

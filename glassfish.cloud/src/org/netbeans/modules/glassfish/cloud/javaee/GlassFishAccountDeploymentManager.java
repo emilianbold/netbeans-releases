@@ -76,12 +76,18 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 public class GlassFishAccountDeploymentManager
         extends GlassFishDeploymentManager {
 
-    final GlassFishAccountInstance instance;
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud user account instance. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
+    private final GlassFishAccountInstance instance;
     
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
-
+   
     /**
      * Creates an instance of user account deployment manager for GlassFish
      * cloud.
@@ -91,12 +97,10 @@ public class GlassFishAccountDeploymentManager
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishAccountDeploymentManager(GlassFishUrl url) {
-        super(url);
-        instance = GlassFishAccountInstanceProvider.getAccountInstance(url.getName());
-        if (instance == null) {
-            throw new NullPointerException("There is no account instance named " + url.getName());
-        }
+    GlassFishAccountDeploymentManager(GlassFishUrl url) {        
+        super(url, GlassFishAccountInstanceProvider
+                .getAccountInstance(url.getName()));
+        this.instance = (GlassFishAccountInstance)super.instance;
     }
 
     ////////////////////////////////////////////////////////////////////////////

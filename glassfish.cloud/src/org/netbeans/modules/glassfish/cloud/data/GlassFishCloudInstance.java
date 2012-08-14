@@ -101,6 +101,9 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /** The display name of GlassFish cloud server type. */
     private final String serverDisplayName;
 
+    /** Description of GlassFish cloud CPAS interface and local server. */
+    private final String description;
+
     /** GlassFish Cloud GUI Node. */
     private volatile Node basicNode;
 
@@ -135,6 +138,8 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         super(name, host, port, localServer);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
+        this.description = getMessage(GlassFishCloudInstance.class,
+                Bundle.GLASSFISH_CLOUD_DESCRIPTION, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
         this.loadListeners = new ChangeSupport(Event.LOAD);
         this.storeListeners = new ChangeSupport(Event.STORE);
@@ -167,6 +172,16 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     @Override
     public String getDisplayName() {
         return this.name;
+    }
+
+    /**
+     * Get description of GlassFish cloud CPAS interface and local server.
+     * <p/>
+     * @return Description of GlassFish cloud CPAS interface and local server.
+     */
+    @Override
+    public String getDescription() {
+        return this.description;
     }
 
     /**

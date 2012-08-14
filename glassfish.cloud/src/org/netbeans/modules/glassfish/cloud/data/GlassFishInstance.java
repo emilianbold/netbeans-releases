@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import javax.enterprise.deploy.spi.Target;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.spi.server.ServerInstanceImplementation;
@@ -53,7 +54,8 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public interface GlassFishInstance extends ServerInstanceImplementation {
+public interface GlassFishInstance
+        extends ServerInstanceImplementation, Target {
 
     /**
      * GlassFish instance change events.

@@ -58,6 +58,18 @@ public class Bundle {
     static final String GLASSFISH_CLOUD_SERVER_TYPE
             = "GlassFish.cloud.type.displayName";
 
+    /** Description of GlassFish cloud server type. */
+    static final String GLASSFISH_CLOUD_DESCRIPTION
+            = "GlassFish.cloud.type.description";
+
+    /** Display name of GlassFish cloud user account server type. */
+    static final String GLASSFISH_ACCOUNT_SERVER_TYPE
+            = "GlassFish.cloud.userAccount.type.displayName";
+
+    /** Description name of GlassFish cloud user account server type. */
+    static final String GLASSFISH_ACCOUNT_DESCRIPTION
+            = "GlassFish.cloud.userAccount.type.description";
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
