@@ -76,7 +76,7 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
 
     @Override
     public void visitSource(FxModel model) {
-        importProcessor = new ImportProcessor(env.getHierarchy(), null, env.getTreeUtilities());
+        importProcessor = new ImportProcessor(env.getHierarchy(), env, env.getTreeUtilities());
         importProcessor.load(env.getCompilationInfo(), model);
         
         // try to resolve the fx:controller

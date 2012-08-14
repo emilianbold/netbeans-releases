@@ -93,6 +93,7 @@ public class NamedInstancesCollector extends FxNodeVisitor.ModelTreeTraversal im
                     i
                 ));
             }
+            super.visitBaseInstance(i);
             return;
         }
         if (instances == null) {
@@ -120,6 +121,7 @@ public class NamedInstancesCollector extends FxNodeVisitor.ModelTreeTraversal im
                 newInstances.put(i.getId(), i);
             }
         }
+        super.visitBaseInstance(i);
     }
     
     private FxNode parentNode;
