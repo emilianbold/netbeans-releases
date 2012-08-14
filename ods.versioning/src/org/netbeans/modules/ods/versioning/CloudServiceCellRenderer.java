@@ -136,12 +136,13 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
             return new JLabel();
         }
         ProjectHandle<ODSProject> projectHandle = ((ScmRepositoryListItem) value).projectHandle;
-        ScmRepository repository = ((ScmRepositoryListItem) value).repository;
+        ScmRepositoryListItem item = (ScmRepositoryListItem) value;
+        ScmRepository repository = item.repository;
 
         if (repository != null) {
             if (index == -1) {
                 projectNameLabel.setText(null);
-                projectRepoLabel.setText(repository.getUrl());
+                projectRepoLabel.setText(item.getUrl());
                 projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
                 projectRepoLabel.setForeground(list.getForeground());
                 repoTypeLabel.setText(null);
@@ -149,7 +150,7 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
                 projectNameLabel.setText(projectHandle.getDisplayName() + " (" + projectHandle.getId() + ")"); // NOI18N
                 projectNameLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
                 projectNameLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-                projectRepoLabel.setText(repository.getUrl());
+                projectRepoLabel.setText(item.getUrl());
                 projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
                 projectRepoLabel.setForeground(isSelected ? list.getSelectionForeground() : ColorManager.getDefault().getLinkColor());
                 repoTypeLabel.setText("(" + repository.getType().name() + ")"); // NOI18N

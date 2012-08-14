@@ -109,6 +109,7 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
             }
 
             final ScmRepository repository = sourcesInfo.repository;
+            final String url = sourcesInfo.url;
             final PasswordAuthentication passwdAuth = repository.getScmLocation() == ScmLocation.CODE2CLOUD
                     ? CloudUiServer.forServer(sourcesInfo.projectHandle.getTeamProject().getServer()).getPasswordAuthentication()
                     : null;
@@ -116,10 +117,10 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    NbPreferences.forModule(GetSourcesFromCloudAction.class).put("repository.scm.provider." + repository.getUrl(), prov.getClass().getName()); //NOI18N
-                    File cloneDest = prov.getSources(repository.getUrl(), passwdAuth);
+                    NbPreferences.forModule(GetSourcesFromCloudAction.class).put("repository.scm.provider." + url, prov.getClass().getName()); //NOI18N
+                    File cloneDest = prov.getSources(url, passwdAuth);
                     if (cloneDest != null && srcHandle != null) {
-                        srcHandle.setWorkingDirectory(repository.getUrl(), cloneDest);
+                        srcHandle.setWorkingDirectory(url, cloneDest);
                         srcHandle.refresh();
                     }
                 }

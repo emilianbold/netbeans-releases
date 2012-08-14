@@ -154,8 +154,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
     public GetSourcesInfo getSelectedSourcesInfo() {
         ScmRepositoryListItem item = (ScmRepositoryListItem) cloudRepoComboBox.getSelectedItem();
-        return (item != null) ? new GetSourcesInfo(item.projectHandle, item.repository) : null;
-        
+        return (item != null) ? new GetSourcesInfo(item.projectHandle, item.repository, item.getUrl()) : null;
     }
 
     ApiProvider getProvider () {
@@ -368,11 +367,11 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         lblError.setVisible(false);
     }
 
-    private void updateProviders (ScmRepository repository) {
+    private void updateProviders (ScmRepository repository, String url) {
         List<ApiProvider> providers = new ArrayList<ApiProvider>(providerList.size());
         ApiProvider preferredProvider = null, gitProvider = null;
         Preferences prefs = NbPreferences.forModule(GetSourcesFromCloudPanel.class);
-        String className = prefs.get("repository.scm.provider." + repository.getUrl(), ""); //NOI18N
+        String className = prefs.get("repository.scm.provider." + url, ""); //NOI18N
         for (ApiProvider p : providerList) {
             if (repository.getScmLocation() != ScmLocation.CODE2CLOUD || p.accepts(repository.getType().name())) {
                 providers.add(p);
@@ -430,7 +429,11 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                                         if (SourceAccessorImpl.isSupported(repository.getScmLocation() == ScmLocation.CODE2CLOUD
                                                 ? repository.getType()
                                                 : null)) {
-                                            items.add(new ScmRepositoryListItem(prjHandle, repository));
+                                            items.add(new ScmRepositoryListItem(prjHandle, repository, repository.getUrl()));
+                                            if (repository.getAlternateUrl() != null && !repository.getAlternateUrl().isEmpty()
+                                                    && !repository.getUrl().equals(repository.getAlternateUrl())) {
+                                                items.add(new ScmRepositoryListItem(prjHandle, repository, repository.getAlternateUrl()));
+                                            }
                                         }
                                     }
                                 }
@@ -442,7 +445,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                                                 addElement(item);
                                                 if (prjAndRepository != null &&
                                                     prjAndRepository.project.getId().equals(prjHandle.getId()) &&
-                                                    prjAndRepository.repository.getUrl().equals(item.repository.getUrl())) 
+                                                    prjAndRepository.repository.getUrl().equals(item.getUrl())) 
                                                 {
                                                     setSelectedItem(item);
                                                 }
@@ -499,17 +502,23 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
     public static class ScmRepositoryListItem {
 
-        ProjectHandle<ODSProject> projectHandle;
-        ScmRepository repository;
+        final ProjectHandle<ODSProject> projectHandle;
+        final ScmRepository repository;
+        final String url;
 
-        public ScmRepositoryListItem(ProjectHandle<ODSProject> prj, ScmRepository repo) {
+        public ScmRepositoryListItem(ProjectHandle<ODSProject> prj, ScmRepository repo, String url) {
             projectHandle = prj;
             repository = repo;
+            this.url = url;
         }
 
         @Override
         public String toString() {
-            return repository.getUrl();
+            return getUrl();
+        }
+
+        public String getUrl () {
+            return url;
         }
 
     }
@@ -518,10 +527,12 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
         public ProjectHandle<ODSProject> projectHandle;
         public ScmRepository repository;
+        final String url;
 
-        public GetSourcesInfo(ProjectHandle<ODSProject> projectHandle, ScmRepository repo) {
+        public GetSourcesInfo(ProjectHandle<ODSProject> projectHandle, ScmRepository repo, String url) {
             this.projectHandle = projectHandle;
             repository = repo;
+            this.url = url;
         }
 
     }
@@ -542,7 +553,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     repositoryType = LBL_GetSourceFromCloudPanel_repository_svn();
                 }
             }
-            updateProviders(item.repository);
+            updateProviders(item.repository, item.getUrl());
             if (repositoryType == null) {
                 repositoryType = LBL_GetSourceFromCloudPanel_repository_external();
             }
@@ -553,7 +564,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     private void updateRepoPath() {
         ScmRepositoryListItem selItem = (ScmRepositoryListItem) cloudRepoComboBox.getSelectedItem();
         if (!localFolderPathEdited && selItem != null) {
-            String urlString = selItem.repository.getUrl();
+            String urlString = selItem.getUrl();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
         }
     }

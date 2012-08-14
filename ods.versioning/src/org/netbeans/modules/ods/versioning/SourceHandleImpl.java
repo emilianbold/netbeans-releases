@@ -135,15 +135,14 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         try {
             String uriString = prefs.get(WORKINGDIR + repository.getUrl(), null); // NOI18N
             if (uriString!=null) {
-                URI uri = new URI(uriString);
-                final File file = Utilities.toFile(uri);
-                FileObject f = FileUtil.toFileObject(file);
-                if (f==null || !f.isValid())
-                    return null;
-                return file;
-            } else {
-                return guessWorkdir();
+                return getWorkDir(uriString);
+            } else if (repository.getAlternateUrl() != null && !repository.getAlternateUrl().isEmpty()) {
+                uriString = prefs.get(WORKINGDIR + repository.getAlternateUrl(), null);
+                if (uriString != null) {
+                    return getWorkDir(uriString);
+                }
             }
+            return guessWorkdir();
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
             return guessWorkdir();
@@ -260,9 +259,18 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (!location.endsWith("/")) {//NOI18N
             location+="/";//NOI18N
         }
+        String alternateLocation = repository.getAlternateUrl();
+        if (alternateLocation == null || alternateLocation.isEmpty()) {
+            alternateLocation = null;
+        } else if (!alternateLocation.endsWith("/")) {//NOI18N
+            alternateLocation+="/";//NOI18N
+        }
         String[] rls = remoteLocation.split(";");
         for (String rl : rls) {
             if(isUnder(rl, location)) {
+                return true;
+            }
+            if(alternateLocation != null && isUnder(rl, alternateLocation)) {
                 return true;
             }
         }
@@ -363,4 +371,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             SourceHandleImpl.this.remove(nbProjectHandle);
         }
     };    
+
+    private File getWorkDir (String uriString) throws IllegalArgumentException, URISyntaxException {
+        URI uri = new URI(uriString);
+        final File file = Utilities.toFile(uri);
+        FileObject f = FileUtil.toFileObject(file);
+        if (f==null || !f.isValid())
+            return null;
+        return file;
+    }
 }
