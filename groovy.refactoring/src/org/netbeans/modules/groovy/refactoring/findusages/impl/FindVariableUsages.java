@@ -85,7 +85,7 @@ public class FindVariableUsages extends AbstractFindUsages {
 
         @Override
         public void visitField(FieldNode field) {
-            if (variableName.equals(field.getName())) {
+            if (!field.isSynthetic() && variableName.equals(field.getName())) {
                 usages.add(field);
             }
             super.visitField(field);
@@ -93,8 +93,8 @@ public class FindVariableUsages extends AbstractFindUsages {
 
         @Override
         public void visitProperty(PropertyNode property) {
-            if (variableName.equals(property.getName())) {
-                usages.add(property);
+            if (!property.isSynthetic() && variableName.equals(property.getName())) {
+                usages.add(property.getField());
             }
             super.visitProperty(property);
         }

@@ -47,6 +47,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -97,6 +98,13 @@ public class FindUsagesPainter {
             beforeUsagePart = line.createPart(0, methodStart).getText();
             usagePart = line.createPart(methodStart, methodName.length()).getText();
             afterUsagePart = line.createPart(methodStart + methodName.length(), line.getText().length()).getText();
+        } else if (node instanceof FieldNode) {
+            String fieldName = ((FieldNode) node).getName();
+            int fieldStart = line.getText().indexOf(fieldName);
+
+            beforeUsagePart = line.createPart(0, fieldStart).getText();
+            usagePart = line.createPart(fieldStart, fieldName.length()).getText();
+            afterUsagePart = line.createPart(fieldStart + fieldName.length(), line.getText().length()).getText();
         }
 
         StringBuilder sb = new StringBuilder();
