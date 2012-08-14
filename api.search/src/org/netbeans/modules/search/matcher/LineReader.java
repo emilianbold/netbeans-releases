@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
  */
 class LineReader {
 
-    private static final int FILE_LENGTH_LIMIT = 100000;
+    private static final int LINE_LENGHT_LIMIT = 5 * (1 << 20); // 5 MB
     int lastChar = 0;
     int pos = 0;
     int line = 1;
@@ -163,7 +163,7 @@ class LineReader {
         private void appendCharacter(int c) throws IOException {
             sb.append((char) c);
             length++;
-            if (length > FILE_LENGTH_LIMIT) {
+            if (length > LINE_LENGHT_LIMIT) {
                 throw new IOException("Line is too long: " + number);
             }
         }

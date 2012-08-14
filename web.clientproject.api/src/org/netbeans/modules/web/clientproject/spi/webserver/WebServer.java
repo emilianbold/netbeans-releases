@@ -69,7 +69,7 @@ public final class WebServer {
 
     private static int PORT = 8383;
     
-    private WeakHashMap<Project, String> deployedApps = new WeakHashMap<Project, String>();
+    private WeakHashMap<Project, Pair> deployedApps = new WeakHashMap<Project, Pair>();
     private boolean init = false;
     private Server server;
     private static WebServer webServer;
@@ -94,12 +94,22 @@ public final class WebServer {
     /**
      * Start serving project's sources under given web context root.
      */
-    public void start(Project p, String webContextRoot) {
+    public void start(Project p, FileObject siteRoot, String webContextRoot) {
         checkStartedServer();
         deployedApps.remove(p);
-        deployedApps.put(p, webContextRoot);
+        deployedApps.put(p, new Pair(webContextRoot, siteRoot));
     }
 
+    private static class Pair {
+        String webContextRoot;
+        FileObject siteRoot;
+
+        public Pair(String webContextRoot, FileObject siteRoot) {
+            this.webContextRoot = webContextRoot;
+            this.siteRoot = siteRoot;
+        }
+    }
+    
     /**
      * Stop serving project's sources.
      */
@@ -122,17 +132,31 @@ public final class WebServer {
      */
     public URL toServer(FileObject projectFile) {
         Project p = FileOwnerQuery.getOwner(projectFile);
-        if (p == null) {
-            return null;
-        }
-        String webContext = deployedApps.get(p);
-        if (webContext != null) {
-            String path = webContext + (webContext.equals("/") ? "" : "/") + 
-                    FileUtil.getRelativePath(p.getProjectDirectory(), projectFile);
-            try {
-                return new URL("http://localhost:"+PORT+path);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+        if (p != null) {
+            Pair pair = deployedApps.get(p);
+            if (pair != null) {
+                String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                        FileUtil.getRelativePath(pair.siteRoot, projectFile);
+                try {
+                    return new URL("http://localhost:"+PORT+path);
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } else {
+            // fallback if project was not found:
+            for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
+                Pair pair = entry.getValue();
+                String relPath = FileUtil.getRelativePath(pair.siteRoot, projectFile);
+                if (relPath != null) {
+                    String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                            relPath;
+                    try {
+                        return new URL("http://localhost:"+PORT+path);
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         }
         return null;
@@ -146,14 +170,14 @@ public final class WebServer {
     }
 
     private FileObject fromServer(String serverURL) {
-        Map.Entry<Project, String> rootEntry = null;
-        for (Map.Entry<Project, String> entry : deployedApps.entrySet()) {
-            if ("/".equals(entry.getValue())) {
+        Map.Entry<Project, Pair> rootEntry = null;
+        for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
+            if ("/".equals(entry.getValue().webContextRoot)) {
                 rootEntry = entry;
                 // process this one as last one:
                 continue;
             }
-            if (serverURL.startsWith(entry.getValue())) {
+            if (serverURL.startsWith(entry.getValue().webContextRoot)) {
                 return findFile(entry, serverURL);
             }
         }
@@ -163,14 +187,14 @@ public final class WebServer {
         return null;
     }
 
-    private FileObject findFile(Entry<Project, String> entry, String serverURL) {
+    private FileObject findFile(Entry<Project, Pair> entry, String serverURL) {
         Project p = entry.getKey();
-        int index = entry.getValue().length()+1;
-        if (entry.getValue().equals("/")) {
+        int index = entry.getValue().webContextRoot.length()+1;
+        if (entry.getValue().webContextRoot.equals("/")) {
             index = 1;
         }
         String file = serverURL.substring(index);
-        return p.getProjectDirectory().getFileObject(file);
+        return entry.getValue().siteRoot.getFileObject(file);
     }
 
     private void startServer() {
@@ -258,10 +282,7 @@ public final class WebServer {
                         fis = fo.getInputStream();
                         out = new DataOutputStream(outputStream);
                         String mime = fo.getMIMEType();
-                        // #216136 - temporary hotfix
-                        if ("text/x-css".equals(mime)) {
-                            mime = "text/css";
-                        } else if ("content/unknown".equals(mime)) {
+                        if ("content/unknown".equals(mime)) {
                             mime = "text/plain";
                         }
                         out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"

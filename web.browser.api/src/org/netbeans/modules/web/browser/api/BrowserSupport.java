@@ -43,16 +43,12 @@ package org.netbeans.modules.web.browser.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.WebBrowserPane.WebBrowserPaneEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Helper class to be added to project's lookup and to be used to open URLs from
@@ -72,6 +68,7 @@ public final class BrowserSupport {
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
+    private boolean disableNetBeansIntegration;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -109,18 +106,24 @@ public final class BrowserSupport {
      * Creates a new instance of BrowserSupport for given browser.
      */
     public static BrowserSupport create(WebBrowser browser) {
-        return new BrowserSupport(browser);
+        return create(browser, false);
     }
+    
+    public static BrowserSupport create(WebBrowser browser, boolean disableNetBeansIntegration) {
+        return new BrowserSupport(browser, disableNetBeansIntegration);
+    }
+    
     /**
      * Use browser from IDE settings and change browser pane whenever default
      * browser changes in IDE options.
      */
     private BrowserSupport() {
-        this(null);
+        this(null, false);
     }
     
-    private BrowserSupport(WebBrowser browser) {
+    private BrowserSupport(WebBrowser browser, boolean disableNetBeansIntegration) {
         this.browser = browser;
+        this.disableNetBeansIntegration = disableNetBeansIntegration;
     }
     
     public void disablePageInspector() {
@@ -128,7 +131,7 @@ public final class BrowserSupport {
     }
     
     public void enabledLiveHTML() {
-        getWebBrowserPane().enablePageInspector();
+        getWebBrowserPane().enableLiveHTML();
     }
     
     private synchronized WebBrowserPane getWebBrowserPane() {
@@ -159,7 +162,7 @@ public final class BrowserSupport {
                 };
                 WebBrowsers.getInstance().addPropertyChangeListener(listener);
             }
-            pane = browser.createNewBrowserPane();
+            pane = browser.createNewBrowserPane(true, disableNetBeansIntegration);
         }
         return pane;
     }
@@ -176,6 +179,8 @@ public final class BrowserSupport {
         WebBrowserPane wbp = getWebBrowserPane();
         file = context;
         currentURL = url;
+        Project project = FileOwnerQuery.getOwner(context);
+        wbp.setProjectContext(project != null ? Lookups.singleton(project) : Lookup.EMPTY);
         wbp.showURL(url);
     }
     

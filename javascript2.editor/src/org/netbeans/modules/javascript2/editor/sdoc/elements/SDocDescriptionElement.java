@@ -60,8 +60,8 @@ public class SDocDescriptionElement extends SDocBaseElement {
     /**
      * Creates new {@code SDocDescriptionElement}.
      *
-     * @param type element type (tag), never null
-     * @param description description of the element, never null
+     * @param type element type (tag), never {@code null}
+     * @param description description of the element, never {@code null}
      */
     public static SDocDescriptionElement create(SDocElementType type, String description) {
         return new SDocDescriptionElement(type, description);

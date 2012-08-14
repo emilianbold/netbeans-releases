@@ -47,9 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -63,7 +61,8 @@ import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -231,12 +230,12 @@ public class SearchField extends JPanel implements ActionListener {
             pm.add(item);
         }
 
-        JMenuItem item = new JMenuItem(NbBundle.getMessage(KenaiComboModel.class, "CTL_AddNew"));
+        JMenuItem item = new JMenuItem(NbBundle.getMessage(SearchField.class, "CTL_AddNew"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 AddInstanceAction addInstanceAction = new AddInstanceAction();
                 addInstanceAction.actionPerformed(e);
-                Kenai last = addInstanceAction.getLastKenai();
+                Kenai last = ((KenaiServer) addInstanceAction.getTeamServer()).getKenai();
                 if (last!=null) {
                     selected = last;
                     setTooltip();

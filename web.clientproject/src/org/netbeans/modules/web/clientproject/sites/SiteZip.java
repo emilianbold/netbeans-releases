@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +53,9 @@ import java.util.zip.CRC32;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -103,20 +104,20 @@ public class SiteZip implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(FileObject projectRoot, ProgressHandle handle) throws IOException {
+    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied");
             return;
         }
-        SiteHelper.unzip(getArchiveFile(), FileUtil.toFile(projectRoot), handle);
+        SiteHelper.unzipProjectTemplate(helper, getArchiveFile(), handle);
         registerTemplate(cust.panel.getTemplate());
     }
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.emptyList();
+        return SiteHelper.listJsFilenamesFromZipFile(getArchiveFile());
     }
 
     private File getArchiveFile() {
@@ -129,7 +130,7 @@ public class SiteZip implements SiteTemplateImplementation {
         crc.update(template.getBytes());
         String filename = String.valueOf(crc.getValue()) + ".zip"; // NOI18N
         LOGGER.log(Level.INFO, "Remote URL \"{0}\" set, downloaded to {1}", new Object[] {template, filename});
-        return new File(SiteHelper.getJsLibDirectory(), filename);
+        return new File(SiteHelper.getJsLibsDirectory(), filename);
     }
 
     private boolean isRemoteUrl(String input) {

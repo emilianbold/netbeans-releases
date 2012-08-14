@@ -42,85 +42,90 @@
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
+import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelection.LibraryVersion;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
-@TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName",
-        description = "ClientSideProjectDescription.html",
-        iconBase = ClientSideProject.PROJECT_ICON )
-@Messages({"ClientSideProject_displayName=HTML Application",
-            "MSG_Progress1=Creating project"})
-public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+
+    private static final Logger LOGGER = Logger.getLogger(ClientSideProjectWizardIterator.class.getName());
+
+    private final Wizard wizard;
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
-    private WizardDescriptor wiz;
+    private WizardDescriptor wizardDescriptor;
 
-    private SiteTemplateWizardPanel sitesPanel;
-    private JavaScriptLibrarySelectionPanel librariesPanel;
 
-    public ClientSideProjectWizardIterator() {
+    private ClientSideProjectWizardIterator(Wizard wizard) {
+        assert wizard != null;
+        this.wizard = wizard;
     }
 
-    public static ClientSideProjectWizardIterator createIterator() {
-        return new ClientSideProjectWizardIterator();
+    @TemplateRegistration(folder="Project/ClientSide",
+            displayName="#ClientSideProjectWizardIterator.newProject.displayName",
+            description="../resources/NewClientSideProjectDescription.html",
+            iconBase=ClientSideProject.PROJECT_ICON,
+            position=100)
+    @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML Application")
+    public static ClientSideProjectWizardIterator newProject() {
+        return new ClientSideProjectWizardIterator(new NewProjectWizard());
     }
 
-    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
-        sitesPanel = new SiteTemplateWizardPanel();
-        librariesPanel = new JavaScriptLibrarySelectionPanel();
-        @SuppressWarnings("unchecked")
-        WizardDescriptor.Panel<WizardDescriptor>[] pnls = new WizardDescriptor.Panel[] {
-                    new ClientSideProjectWizardPanel(),
-                    sitesPanel,
-                    librariesPanel,
-        };
-        return pnls;
+    @TemplateRegistration(folder="Project/ClientSide",
+            displayName="#ClientSideProjectWizardIterator.existingProject.displayName",
+            description="../resources/ExistingClientSideProjectDescription.html",
+            iconBase=ClientSideProject.PROJECT_ICON,
+            position=200)
+    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML Application with Existing Sources")
+    public static ClientSideProjectWizardIterator existingProject() {
+        return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
 
-    private String[] createSteps() {
-        return new String[]{
-                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_CreateProjectStep"),
-                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_ChooseSiteStep"),
-                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_JavaScriptLibrarySelectionStep"),
-                };
-    }
-
+    @NbBundle.Messages("ClientSideProjectWizardIterator.progress.creatingProject=Creating project")
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
-        handle.progress(Bundle.MSG_Progress1());
+        handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
-        String name = (String) wiz.getProperty("name");
-        dirF.mkdirs();
+        File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
+        String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
+        if (!dirF.isDirectory() && !dirF.mkdirs()) {
+            throw new IOException("Cannot create project directory");
+        }
         FileObject dir = FileUtil.toFileObject(dirF);
-        ClientSideProjectUtilities.setupProject(dir, name);
+        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         resultSet.add(dir);
 
-        if (index >= 1) {
-            sitesPanel.apply(dir, handle);
-        }
-        if (index >= 2) {
-            librariesPanel.apply(dir, handle);
-        }
+        wizard.instantiate(resultSet, handle, wizardDescriptor, projectHelper);
 
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
@@ -138,42 +143,40 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
 
     @Override
     public void initialize(WizardDescriptor wiz) {
-        this.wiz = wiz;
+        this.wizardDescriptor = wiz;
         index = 0;
-        panels = createPanels();
+        panels = wizard.createPanels();
         // Make sure list of steps is accurate.
-        String[] steps = createSteps();
+        String[] steps = wizard.createSteps();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            if (steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
+            assert steps[i] != null : "Missing name for step: " + i;
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
 
     @Override
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir", null);
-        this.wiz.putProperty("name", null);
-        this.wiz = null;
+        wizardDescriptor.putProperty(Wizard.PROJECT_DIRECTORY, null);
+        wizardDescriptor.putProperty(Wizard.NAME, null);
+        wizard.uninitialize(wizardDescriptor);
         panels = null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - current step index",
+        "# {1} - number of steps",
+        "ClientSideProjectWizardIterator.name={0} of {1}"
+    })
     @Override
     public String name() {
-        return MessageFormat.format("{0} of {1}",
-                new Object[]{new Integer(index + 1), new Integer(panels.length)});
+        return Bundle.ClientSideProjectWizardIterator_name(Integer.valueOf(index + 1), Integer.valueOf(panels.length));
     }
 
     @Override
@@ -190,9 +193,6 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
-        }
-        if (current()==sitesPanel) {
-            librariesPanel.updateDefaults(sitesPanel.getSupportedLibraries());
         }
         index++;
     }
@@ -212,11 +212,178 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
 
     // If nothing unusual changes in the middle of the wizard, simply:
     @Override
-    public final void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
+        // noop
     }
 
     @Override
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
+        // noop
+    }
+
+    //~ Inner classes
+
+    public interface Wizard {
+        String PROJECT_DIRECTORY = "PROJECT_DIRECTORY"; // NOI18N
+        String NAME = "NAME"; // NOI18N
+
+        WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
+        String[] createSteps();
+        void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException;
+        void uninitialize(WizardDescriptor wizardDescriptor);
+    }
+
+    public static final class NewProjectWizard implements Wizard {
+
+        public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
+        public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
+        public static final String SELECTED_LIBRARIES = "SELECTED_LIBRARIES"; // NOI18N
+
+
+        @Override
+        public Panel<WizardDescriptor>[] createPanels() {
+            @SuppressWarnings("unchecked")
+            WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
+                new NewClientSideProjectPanel(),
+                new SiteTemplateWizardPanel(),
+                new JavaScriptLibrarySelectionPanel(),
+            };
+            return panels;
+        }
+
+        @NbBundle.Messages({
+            "NewProjectWizard.step.createProject=Name and Location",
+            "NewProjectWizard.step.chooseSite=Site Template",
+            "NewProjectWizard.step.selectJsLibrary=JavaScript Libraries"
+        })
+        @Override
+        public String[] createSteps() {
+            return new String[] {
+                Bundle.NewProjectWizard_step_createProject(),
+                Bundle.NewProjectWizard_step_chooseSite(),
+                Bundle.NewProjectWizard_step_selectJsLibrary(),
+            };
+        }
+
+        @Override
+        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+            // site template
+            SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
+            if (siteTemplate != null) {
+                // any site template selected
+                applySiteTemplate(projectHelper, siteTemplate, handle);
+            }
+
+            // get application dir:
+            FileObject siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
+            if (siteRootDir == null) {
+                ClientSideProjectUtilities.initializeProject(projectHelper);
+                siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
+                assert siteRootDir != null;
+             }
+
+            // js libs
+            @SuppressWarnings("unchecked")
+            List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries = (List<JavaScriptLibrarySelection.SelectedLibrary>) wizardDescriptor.getProperty(SELECTED_LIBRARIES);
+            if (selectedLibraries != null) {
+                // any libraries selected
+                applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
+            }
+        }
+
+        @Override
+        public void uninitialize(WizardDescriptor wizardDescriptor) {
+            wizardDescriptor.putProperty(SITE_TEMPLATE, null);
+            wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
+            wizardDescriptor.putProperty(SELECTED_LIBRARIES, null);
+        }
+
+        @NbBundle.Messages({
+            "# {0} - template name",
+            "ClientSideProjectWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
+        })
+        private void applySiteTemplate(AntProjectHelper helper, SiteTemplateImplementation siteTemplate, final ProgressHandle handle) {
+            assert !EventQueue.isDispatchThread();
+            final String templateName = siteTemplate.getName();
+            try {
+                siteTemplate.apply(helper, handle);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
+            }
+        }
+
+        @NbBundle.Messages({
+            "ClientSideProjectWizardIterator.error.copyingJsLib=Some of the library files could not be retrieved.",
+            "# {0} - library name",
+            "ClientSideProjectWizardIterator.msg.downloadingJsLib=Downloading {0}"
+        })
+        private void applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries, String jsLibFolder, FileObject siteRootDir,
+                ProgressHandle handle) throws IOException {
+            assert !EventQueue.isDispatchThread();
+            FileObject librariesRoot = null;
+            boolean someFilesAreMissing = false;
+            for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
+                if (selectedLibrary.isFromTemplate()) {
+                    // ignore files from site template (they are already applied)
+                    continue;
+                }
+                if (librariesRoot == null) {
+                    librariesRoot = FileUtil.createFolder(siteRootDir, jsLibFolder);
+                }
+                LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
+                Library library = libraryVersion.getLibrary();
+                handle.progress(Bundle.ClientSideProjectWizardIterator_msg_downloadingJsLib(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+                try {
+                    WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
+                } catch (MissingLibResourceException e) {
+                    someFilesAreMissing = true;
+                }
+            }
+            if (someFilesAreMissing) {
+                errorOccured(Bundle.ClientSideProjectWizardIterator_error_copyingJsLib());
+            }
+        }
+
+        private void errorOccured(String message) {
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        }
+
+    }
+
+    public static final class ExistingProjectWizard implements Wizard {
+
+        public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
+
+        @Override
+        public Panel<WizardDescriptor>[] createPanels() {
+            @SuppressWarnings("unchecked")
+            WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
+                new ExistingClientSideProjectPanel(),
+            };
+            return panels;
+        }
+
+        @NbBundle.Messages("ExistingProjectWizard.step.createProject=Name and Location")
+        @Override
+        public String[] createSteps() {
+            return new String[] {
+                Bundle.ExistingProjectWizard_step_createProject(),
+            };
+        }
+
+        @Override
+        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+            File projectDir = (File) wizardDescriptor.getProperty(PROJECT_DIRECTORY);
+            File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
+            ClientSideProjectUtilities.initializeProject(projectHelper, ClientSideProjectUtilities.relativizeFile(projectDir, siteRoot));
+        }
+
+        @Override
+        public void uninitialize(WizardDescriptor wizardDescriptor) {
+            wizardDescriptor.putProperty(SITE_ROOT, null);
+        }
+
     }
 
 }

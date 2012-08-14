@@ -57,6 +57,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.ui.FakeRootNode;
@@ -105,7 +106,35 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
      * Initializes the tree view.
      */
     private void initTreeView() {
-        treeView = new BeanTreeView();
+        treeView = new BeanTreeView() {
+            @Override
+            public void expandAll() {
+                // The original expandAll() doesn't work for us as it doesn't
+                // seem to wait for the calculation of sub-nodes.
+                Node root = manager.getRootContext();
+                expandAll(root);
+                // The view attempts to scroll to the expanded node
+                // and it does it with a delay. Hence, simple calls like
+                // tree.scrollRowToVisible(0) have no effect (are overriden
+                // later) => the dummy collapse and expansion attempts
+                // to work around that and keep the root node visible.
+                collapseNode(root);
+                expandNode(root);
+            }
+            /**
+             * Expands the whole sub-tree under the specified node.
+             *
+             * @param node root node of the sub-tree that should be expanded.
+             */
+            private void expandAll(Node node) {
+                treeView.expandNode(node);
+                for (Node subNode : node.getChildren().getNodes(true)) {
+                    if (!subNode.isLeaf()) {
+                        expandAll(subNode);
+                    }
+                }
+            }
+        };
         treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         treeView.setRootVisible(false);
@@ -178,22 +207,25 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
      *
      * @param webKit WebKit debugging.
      */
-    final void updateContent(final WebKitDebugging webKit) {
+    final void updateContent(final WebKitPageModel pageModel) {
         RP.post(new Runnable() {
             @Override
             public void run() {
                 Node root;
-                if (webKit == null) {
+                if (pageModel == null) {
                     // Using dummy node as the root to release the old root
                     root = new AbstractNode(Children.LEAF);
                 } else {
+                    WebKitDebugging webKit = pageModel.getWebKit();
+                    Project project = pageModel.getProject();
                     CSS css = webKit.getCSS();
                     filter.removePropertyChangeListeners();
-                    DocumentNode documentNode = new DocumentNode(css, filter);
+                    DocumentNode documentNode = new DocumentNode(project, css, filter);
                     root = new FakeRootNode<DocumentNode>(documentNode,
                             new Action[] { new RefreshAction() });
                 }
                 manager.setRootContext(root);
+                treeView.expandAll();
             }
         });
     }
@@ -226,11 +258,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
         @Override
         public void actionPerformed(ActionEvent e) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-            WebKitDebugging webKit = null;
-            if (pageModel instanceof WebKitPageModel) {
-                webKit = ((WebKitPageModel)pageModel).getWebKit();
-            }
-            updateContent(webKit);
+            updateContent(pageModel instanceof WebKitPageModel ? (WebKitPageModel)pageModel : null);
         }
 
     }

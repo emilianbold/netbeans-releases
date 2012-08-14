@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.29
+#Version 2.32.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -137,8 +137,8 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds NO_COOKIE,NO_EDITOR,NO_FILE,NO_FILE_CHANGE,context,currentEditorCookie,currentFile,currentFileChangeListener,currentFileChangeListenerWeak,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileChangeListener,mostRecentFileChangeListenerWeak,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
-hcls EditorLookupListener,EventFirer,FileRenameListener
+hfds NO_COOKIE,NO_EDITOR,NO_FILE,NO_FILE_CHANGE,ccrp,context,currentEditorCookie,currentFile,currentFileChangeListener,currentFileChangeListenerWeak,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,lookupCoalescedChange,mostRecentEditorCookieRef,mostRecentFileChangeListener,mostRecentFileChangeListenerWeak,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
+hcls AddRemoveFileListenerInEQThread,CoalescedChange,EditorLookupListener,EventFirer,FileRenameListener
 
 CLSS public org.netbeans.spi.debugger.ui.MethodChooser
 cons public init(java.lang.String,org.netbeans.spi.debugger.ui.MethodChooser$Segment[],int)

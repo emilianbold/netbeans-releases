@@ -49,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,9 +89,9 @@ public class WebBrowserImplProvider {
             }
         } catch(Throwable ex)  {
             log.log(Level.INFO, "JavaFX runtime is too old - "
-                    + "minimum version required is 2.2.0b08", ex);            
+                    + "minimum version required is 2.2.0b20", ex);
             return new NoWebBrowserImpl("JavaFX runtime is too old - "
-                    + "minimum version required is 2.2.0b08");
+                    + "minimum version required is 2.2.0b20");
         }
         try {
             if (cl != null) {
@@ -113,17 +114,18 @@ public class WebBrowserImplProvider {
     }
     
     private static String[] getFXClassPath() {
-        JFXRuntimePathProvider rtPathProvider = Lookup.getDefault().lookup(JFXRuntimePathProvider.class);
-        if (rtPathProvider == null) {
-            return null;
+        Collection<? extends JFXRuntimePathProvider> pathProviders = Lookup.getDefault().lookupAll( JFXRuntimePathProvider.class );
+        
+        for( JFXRuntimePathProvider rtPathProvider : pathProviders ) {
+            String rtPath = rtPathProvider.getJFXRuntimePath();
+            if (rtPath == null) {
+                continue;
+            }
+            return new String[] {
+                rtPath + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar" //NOI18N
+            };
         }
-        String rtPath = rtPathProvider.getJFXRuntimePath();
-        if (rtPath == null) {
-            return null;
-        }
-        return new String[] {
-            rtPath + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar" //NOI18N
-        };
+        return null;
     }
     
     private static ClassLoader getBrowserClassLoader(File runtimePath) {

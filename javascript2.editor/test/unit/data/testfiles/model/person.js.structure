@@ -11,9 +11,9 @@ Person:CONSTRUCTOR:[PUBLIC]:ESCAPED{Person}ESCAPED{(}PARAMETERS{ESCAPED{n}ESCAPE
   getRace:METHOD:[PROTECTED]:ESCAPED{getRace}ESCAPED{(}PARAMETERS{}ESCAPED{)}:
   legs:FIELD:[PUBLIC]:ESCAPED{legs}:
   makeOlder:METHOD:[PRIVATE]:ESCAPED{makeOlder}ESCAPED{(}PARAMETERS{}ESCAPED{)}:
-  maxAge:VARIABLE:[PRIVATE]:ESCAPED{maxAge}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}Number</font>:
+  maxAge:VARIABLE:[PRIVATE]:ESCAPED{maxAge}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}@exp;Math@exp;Mrandom@call;ath@call;roundESCAPED{|}@exp;Math@call;roundESCAPED{|}Number</font>:
   muchTimePasses:METHOD:[PROTECTED]:ESCAPED{muchTimePasses}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-  myName:VARIABLE:[PRIVATE]:ESCAPED{myName}<font color="#999999">ESCAPED{ : }Object</font>:
+  myName:VARIABLE:[PRIVATE]:ESCAPED{myName}<font color="#999999">ESCAPED{ : }n</font>:
   population:FIELD:[PUBLIC, STATIC]:ESCAPED{population}<font color="#999999">ESCAPED{ : }Number</font>:
   prototype:CLASS:[PUBLIC]:ESCAPED{prototype}:
     amputate:METHOD:[PUBLIC]:ESCAPED{amputate}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

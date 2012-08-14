@@ -45,10 +45,11 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -94,19 +95,19 @@ abstract class SiteInitializr implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) throws IOException {
+    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied");
             return;
         }
-        SiteHelper.unzip(libFile, FileUtil.toFile(p), handle);
+        SiteHelper.unzipProjectTemplate(helper, libFile, handle);
     }
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.emptyList();
+        return SiteHelper.listJsFilenamesFromZipFile(libFile);
     }
 
     //~ Inner classes
@@ -118,7 +119,7 @@ abstract class SiteInitializr implements SiteTemplateImplementation {
         public BootstrapSiteInitializr() {
             super(Bundle.BootstrapSiteInitializr_name(),
                     "http://www.initializr.com/builder?mode=less&boot-hero&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts", // NOI18N
-                    new File(SiteHelper.getJsLibDirectory(), "initializr-bootstrap-30.zip")); // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "initializr-bootstrap-30.zip")); // NOI18N
         }
 
     }
@@ -130,7 +131,7 @@ abstract class SiteInitializr implements SiteTemplateImplementation {
         public ClassicSiteInitializr() {
             super(Bundle.ClassicSiteInitializr_name(),
                     "http://www.initializr.com/builder?h5bp-content&modernizr&h5bp-htaccess&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries", // NOI18N
-                    new File(SiteHelper.getJsLibDirectory(), "initializr-classic-30.zip")); // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "initializr-classic-30.zip")); // NOI18N
         }
 
     }
@@ -142,7 +143,7 @@ abstract class SiteInitializr implements SiteTemplateImplementation {
         public ResponsiveSiteInitializr() {
             super(Bundle.ResponsiveSiteInitializr_name(),
                     "http://www.initializr.com/builder?izr-responsive&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript", // NOI18N
-                    new File(SiteHelper.getJsLibDirectory(), "initializr-responsive-30.zip")); // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "initializr-responsive-30.zip")); // NOI18N
         }
 
     }

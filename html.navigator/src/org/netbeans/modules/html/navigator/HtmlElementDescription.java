@@ -42,9 +42,12 @@
 package org.netbeans.modules.html.navigator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -58,66 +61,89 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
-public class HtmlElementDescription {
+/**
+ * Implementation of {@link Description} for html parse tree elements.
+ * 
+ * @author marekfukala
+ */
+public class HtmlElementDescription extends SourceDescription {
 
     private final String elementPath;
-    private final int attributesHash;
+    private final Map<String, String> attributes;
     private final int from, to;
     private final ElementType type;
     private final FileObject file;
     private List<HtmlElementDescription> children;
     private final boolean isLeaf;
     private final String name;
-    private String idAttr, classAttr;
 
-    public HtmlElementDescription(Element element, FileObject file) {
-        
-        this.elementPath = ElementUtils.encodeToString(new TreePath(element));
-        this.attributesHash = computeAttributesHash(element);
+    private HtmlElementDescription parent;
+    
+    public HtmlElementDescription(HtmlElementDescription parent, Element element, FileObject file) {
+        this.parent = parent;
         this.file = file;
         this.type = element.type();
         this.from = element.from();
         
-        this.isLeaf = element instanceof Node ? ((Node)element).children(OpenTag.class).isEmpty() : true;
-        
-        OpenTag openTag = element instanceof OpenTag ? (OpenTag)element : null;
-        
-        this.to = openTag != null ? openTag.semanticEnd() : element.to();
+        this.elementPath = ElementUtils.encodeToString(new TreePath(element));
         
         //acceptable, not 100% correct - may say it is not leaf, but then there 
         //won't be children if all children are virtual with no non-virtual ancestors
+        this.isLeaf = element instanceof Node ? ((Node)element).children(OpenTag.class).isEmpty() : true;
+        
+        OpenTag openTag = element instanceof OpenTag ? (OpenTag)element : null;
+        if(openTag != null) {
+            //init attributes map
+            Collection<Attribute> attrs = openTag.attributes();
+            if(attrs.isEmpty()) {
+                attributes = Collections.emptyMap();
+            } else {
+                attributes = new HashMap<String, String>();
+                for(Attribute a : attrs) {
+                    String key = a.name().toString().toLowerCase();
+                    String val = a.unquotedValue() != null ? a.unquotedValue().toString() : null;
+                    attributes.put(key, val);
+                }
+            }
+            
+        } else {
+            attributes = Collections.emptyMap();
+        }
+        
+        this.to = openTag != null ? openTag.semanticEnd() : element.to();
         this.name = openTag != null ? openTag.name().toString() : null;
         
-        if(openTag != null) {
-            Attribute ida = openTag.getAttribute("id"); //NOI18N
-            if(ida != null) {
-                CharSequence val = ida.unquotedValue();
-                idAttr = val != null ? val.toString() : null;
-            }
-            Attribute classa = openTag.getAttribute("class"); //NOI18N
-            if(classa != null) {
-                CharSequence val = classa.unquotedValue();
-                classAttr = val != null ? val.toString() : null;
-            }
-        }
     }
 
-    public String getElementPath() {
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof HtmlElementDescription)) {
+            return false;
+        }
+        HtmlElementDescription descr = (HtmlElementDescription)obj;
+        return Diff.equals(this, descr, false);
+    }
+
+    @Override
+    public int hashCode() {
+        return Diff.hashCode(this, false);
+    }
+
+    @Override
+    protected String getElementPath() {
         return elementPath;
     }
+
+    @Override
+    public Description getParent() {
+        return parent;
+    }
     
-    public String getIdAttr() {
-        return idAttr;
-    }
-
-    public String getClassAttr() {
-        return classAttr;
-    }
-
     public FileObject getFileObject() {
         return file;
     }
     
+    @Override
     public String getName() {
         return name;
     }
@@ -126,67 +152,25 @@ public class HtmlElementDescription {
         return isLeaf;
     }
     
-    public ElementType getType() {
+    public ElementType getElementType() {
         return type;
     }
 
+    @Override
     public int getFrom() {
         return from;
     }
 
+    @Override
     public int getTo() {
         return to;
     }
-    
-    private int computeAttributesHash(Element element) {
-        if(element.type() != ElementType.OPEN_TAG) {
-            return 0;
-        }
-        OpenTag node = (OpenTag)element;
-        
-        int hash = 11;
-        for(Attribute a : node.attributes()) {
-           hash = 37 * hash + a.name().hashCode();
-           CharSequence value = a.value();
-           hash = 37 * hash + (value != null ? value.hashCode() : 0);
-        }
-        return hash;
-    }
-
-    public boolean signatureEquals(HtmlElementDescription handle) {
-        return handle.elementPath.equals(elementPath);
-    }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + (this.elementPath != null ? this.elementPath.hashCode() : 0);
-        return hash;
+    protected Map<String, String> getAttributes() {
+        return attributes;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final HtmlElementDescription other = (HtmlElementDescription) obj;
-        if ((this.elementPath == null) ? (other.elementPath != null) : !this.elementPath.equals(other.elementPath)) {
-            return false;
-        }
-        if ((this.attributesHash != other.attributesHash)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return elementPath;
-    }
-    
     public Node resolve(ParserResult result) {
         if(!(result instanceof HtmlParserResult)) {
             return null;
@@ -195,7 +179,7 @@ public class HtmlElementDescription {
         HtmlParserResult htmlParserResult = (HtmlParserResult)result;
         Node root = htmlParserResult.root();
         
-        if(getType() == ElementType.ROOT) {
+        if(getElementType() == ElementType.ROOT) {
             return root;
         } else {
             return ElementUtils.query(root, elementPath);
@@ -233,6 +217,7 @@ public class HtmlElementDescription {
 
     }
 
+    @Override
     public synchronized List<HtmlElementDescription> getChildren() {
         if (children == null) {
             //lazy load the nested items
@@ -246,8 +231,11 @@ public class HtmlElementDescription {
                             children = new ArrayList<HtmlElementDescription>();
                             List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
                             for (OpenTag child : nonVirtualChildren) {
-                                children.add(new HtmlElementDescription(child, file));
+                                children.add(new HtmlElementDescription(HtmlElementDescription.this, child, file));
                             }
+                        } else {
+                            //cannot resolve the node
+                            children = Collections.emptyList();
                         }
                     }
                 });
@@ -278,4 +266,5 @@ public class HtmlElementDescription {
         public void run(HtmlParserResult result);
         
     }
+    
 }

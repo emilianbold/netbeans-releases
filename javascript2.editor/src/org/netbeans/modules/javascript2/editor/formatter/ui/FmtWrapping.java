@@ -65,10 +65,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         scrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
 
-        extendsImplementsKeywordCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsKeyword);
-        extendsImplementsKeywordCombo.addFocusListener(this);
-        extendsImplementsListCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsList);
-        extendsImplementsListCombo.addFocusListener(this);
+        statementCombo.putClientProperty(OPTION_ID, wrapStatement);
+        statementCombo.addFocusListener(this);
+        variablesCombo.putClientProperty(OPTION_ID, wrapVariables);
+        variablesCombo.addFocusListener(this);
         methodParamsCombo.putClientProperty(OPTION_ID, wrapMethodParams);
         methodParamsCombo.addFocusListener(this);
         methodCallArgsCombo.putClientProperty(OPTION_ID, wrapMethodCallArgs);
@@ -101,7 +101,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     public static PreferencesCustomizer.Factory getController() {
         String preview = "";
         try {
-            preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/Spaces.js"));
+            preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/Wrapping.js"));
         } catch (IOException ex) {
             // TODO log it
         }
@@ -126,10 +126,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         scrollPane = new javax.swing.JScrollPane();
         panel1 = new javax.swing.JPanel();
-        extendsImplemetsKeywordLabel = new javax.swing.JLabel();
-        extendsImplementsKeywordCombo = new javax.swing.JComboBox();
-        extendsImplementsListLabel = new javax.swing.JLabel();
-        extendsImplementsListCombo = new javax.swing.JComboBox();
+        statementLabel = new javax.swing.JLabel();
+        statementCombo = new javax.swing.JComboBox();
+        variablesLabel = new javax.swing.JLabel();
+        variablesCombo = new javax.swing.JComboBox();
         methodParamsLabel = new javax.swing.JLabel();
         methodParamsCombo = new javax.swing.JComboBox();
         methodCallArgsLabel = new javax.swing.JLabel();
@@ -165,11 +165,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         panel1.setFocusCycleRoot(true);
         panel1.setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
             public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return extendsImplementsKeywordCombo;
+                return statementCombo;
             }//end getDefaultComponent
 
             public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return extendsImplementsKeywordCombo;
+                return statementCombo;
             }//end getFirstComponent
 
             public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
@@ -186,14 +186,14 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 if(aComponent ==  methodParamsCombo){
                     return methodCallArgsCombo;
                 }
-                if(aComponent ==  extendsImplementsListCombo){
+                if(aComponent ==  variablesCombo){
                     return methodParamsCombo;
                 }
                 if(aComponent ==  doWhileStatementCombo){
                     return binaryOpsCombo;
                 }
-                if(aComponent ==  extendsImplementsKeywordCombo){
-                    return extendsImplementsListCombo;
+                if(aComponent ==  statementCombo){
+                    return variablesCombo;
                 }
                 if(aComponent ==  ternaryOpsCombo){
                     return assignOpsCombo;
@@ -216,7 +216,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 if(aComponent ==  forCombo){
                     return forStatementCombo;
                 }
-                return extendsImplementsKeywordCombo;//end getComponentAfter
+                return statementCombo;//end getComponentAfter
             }
             public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
                 if(aComponent ==  arrayInitCombo){
@@ -229,13 +229,13 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     return methodParamsCombo;
                 }
                 if(aComponent ==  methodParamsCombo){
-                    return extendsImplementsListCombo;
+                    return variablesCombo;
                 }
                 if(aComponent ==  binaryOpsCombo){
                     return doWhileStatementCombo;
                 }
-                if(aComponent ==  extendsImplementsListCombo){
-                    return extendsImplementsKeywordCombo;
+                if(aComponent ==  variablesCombo){
+                    return statementCombo;
                 }
                 if(aComponent ==  assignOpsCombo){
                     return ternaryOpsCombo;
@@ -263,15 +263,15 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             }});
             panel1.setOpaque(false);
 
-            extendsImplemetsKeywordLabel.setLabelFor(extendsImplementsKeywordCombo);
-            org.openide.awt.Mnemonics.setLocalizedText(extendsImplemetsKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsKeyword")); // NOI18N
+            statementLabel.setLabelFor(statementCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(statementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_statement")); // NOI18N
 
-            extendsImplementsKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+            statementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-            extendsImplementsListLabel.setLabelFor(extendsImplementsListCombo);
-            org.openide.awt.Mnemonics.setLocalizedText(extendsImplementsListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsList")); // NOI18N
+            variablesLabel.setLabelFor(variablesCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(variablesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsList")); // NOI18N
 
-            extendsImplementsListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+            variablesCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
             methodParamsLabel.setLabelFor(methodParamsCombo);
             org.openide.awt.Mnemonics.setLocalizedText(methodParamsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_methodParameters")); // NOI18N
@@ -341,13 +341,13 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGap(12, 12, 12)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addComponent(extendsImplemetsKeywordLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                            .addComponent(extendsImplementsKeywordCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(statementLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 157, Short.MAX_VALUE)
+                            .addComponent(statementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addComponent(extendsImplementsListLabel)
+                            .addComponent(variablesLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(extendsImplementsListCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(variablesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(methodParamsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -403,12 +403,12 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 .addGroup(panel1Layout.createSequentialGroup()
                     .addGap(8, 8, 8)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(extendsImplemetsKeywordLabel)
-                        .addComponent(extendsImplementsKeywordCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(statementLabel)
+                        .addComponent(statementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(12, 12, 12)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(extendsImplementsListLabel)
-                        .addComponent(extendsImplementsListCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(variablesLabel)
+                        .addComponent(variablesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(14, 14, 14)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(methodParamsLabel)
@@ -460,14 +460,14 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
-            extendsImplemetsKeywordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleName")); // NOI18N
-            extendsImplemetsKeywordLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleDescription")); // NOI18N
-            extendsImplementsKeywordCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsKeywordCombo.AccessibleContext.accessibleName")); // NOI18N
-            extendsImplementsKeywordCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsKeywordCombo.AccessibleContext.accessibleDescription")); // NOI18N
-            extendsImplementsListLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListLabel.AccessibleContext.accessibleName")); // NOI18N
-            extendsImplementsListLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListLabel.AccessibleContext.accessibleDescription")); // NOI18N
-            extendsImplementsListCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListCombo.AccessibleContext.accessibleName")); // NOI18N
-            extendsImplementsListCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListCombo.AccessibleContext.accessibleDescription")); // NOI18N
+            statementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementLabel.AccessibleContext.accessibleName")); // NOI18N
+            statementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+            statementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementCombo.AccessibleContext.accessibleName")); // NOI18N
+            statementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementCombo.AccessibleContext.accessibleDescription")); // NOI18N
+            variablesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesLabel.AccessibleContext.accessibleName")); // NOI18N
+            variablesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+            variablesCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesCombo.AccessibleContext.accessibleName")); // NOI18N
+            variablesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesCombo.AccessibleContext.accessibleDescription")); // NOI18N
             methodParamsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsLabel.AccessibleContext.accessibleName")); // NOI18N
             methodParamsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
             methodParamsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsCombo.AccessibleContext.accessibleName")); // NOI18N
@@ -540,10 +540,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel chainedMethodCallsLabel;
     private javax.swing.JComboBox doWhileStatementCombo;
     private javax.swing.JLabel doWhileStatementLabel;
-    private javax.swing.JComboBox extendsImplementsKeywordCombo;
-    private javax.swing.JComboBox extendsImplementsListCombo;
-    private javax.swing.JLabel extendsImplementsListLabel;
-    private javax.swing.JLabel extendsImplemetsKeywordLabel;
     private javax.swing.JComboBox forCombo;
     private javax.swing.JLabel forLabel;
     private javax.swing.JComboBox forStatementCombo;
@@ -556,8 +552,12 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel methodParamsLabel;
     private javax.swing.JPanel panel1;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JComboBox statementCombo;
+    private javax.swing.JLabel statementLabel;
     private javax.swing.JComboBox ternaryOpsCombo;
     private javax.swing.JLabel ternaryOpsLabel;
+    private javax.swing.JComboBox variablesCombo;
+    private javax.swing.JLabel variablesLabel;
     private javax.swing.JComboBox whileStatementComboBox;
     private javax.swing.JLabel whileStatementLabel;
     // End of variables declaration//GEN-END:variables

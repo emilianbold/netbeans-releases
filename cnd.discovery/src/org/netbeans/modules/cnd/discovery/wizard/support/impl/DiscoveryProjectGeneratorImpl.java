@@ -629,6 +629,7 @@ public class DiscoveryProjectGeneratorImpl {
     
     public Set<Project> makeProject(){
         if (projectBridge.isValid()) {
+            projectBridge.startModifications();
             process();
             return projectBridge.getResult();
         }

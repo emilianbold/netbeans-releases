@@ -68,10 +68,11 @@ public class GoToNodeSourceAction extends NodeAction  {
 
     @Override
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-        org.netbeans.modules.web.webkit.debugging.api.dom.Node node = activatedNodes[0]
+        org.openide.nodes.Node selection = activatedNodes[0];
+        org.netbeans.modules.web.webkit.debugging.api.dom.Node node = selection
                 .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
-        String documentURL = getDocumentURL(node);
-        FileObject fob = new Resource(documentURL).toFileObject();
+        Resource resource = getNodeOrigin(selection);
+        FileObject fob = resource.toFileObject();
         try {
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
@@ -83,13 +84,14 @@ public class GoToNodeSourceAction extends NodeAction  {
     @Override
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
-            org.netbeans.modules.web.webkit.debugging.api.dom.Node node = activatedNodes[0]
+            org.openide.nodes.Node selection = activatedNodes[0];
+            org.netbeans.modules.web.webkit.debugging.api.dom.Node node = selection
                     .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
             if (node == null) {
                 return false;
             }
-            String documentURL = getDocumentURL(node);
-            if (new Resource(documentURL).toFileObject() == null) {
+            Resource resource = getNodeOrigin(selection);
+            if (resource.toFileObject() == null) {
                 return false;
             }
         }
@@ -97,20 +99,20 @@ public class GoToNodeSourceAction extends NodeAction  {
     }
 
     /**
-     * Returns URL of a document the specified node belongs to.
-     *
-     * @param node node form the document in question.
-     * @return URL of a document the specified node belongs to.
+     * Returns the origin of the specified node.
+     * 
+     * @param node node whose origin should be returned.
+     * @return origin of the specified node.
      */
-    private String getDocumentURL(org.netbeans.modules.web.webkit.debugging.api.dom.Node node) {
-        String documentURL = node.getDocumentURL();
-        org.netbeans.modules.web.webkit.debugging.api.dom.Node parent = node.getParent();
-        while ((documentURL == null) && (parent != null) && (parent.getContentDocument() == null)) {
-            node = parent;
-            documentURL = node.getDocumentURL();
-            parent = node.getParent();
+    private Resource getNodeOrigin(org.openide.nodes.Node node) {
+        Resource resource = node.getLookup().lookup(Resource.class);
+        if (resource == null) {
+            org.openide.nodes.Node parent = node.getParentNode();
+            if (parent != null) {
+                resource = getNodeOrigin(parent);
+            }
         }
-        return documentURL;
+        return resource;
     }
 
     @Override

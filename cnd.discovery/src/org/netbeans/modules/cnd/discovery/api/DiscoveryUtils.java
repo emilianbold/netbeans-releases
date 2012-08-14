@@ -294,8 +294,10 @@ public class DiscoveryUtils {
             if (isScriptOutput == LogOrigin.BuildLog) {
                 if (option.startsWith("'") && option.endsWith("'") || // NOI18N
                     option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
-                    option = option.substring(1,option.length()-1);
-                    isQuote = true;
+                    if (option.length() >= 2) {
+                        option = option.substring(1,option.length()-1);
+                        isQuote = true;
+                    }
                 }
             }
             if (option.startsWith("-D")){ // NOI18N

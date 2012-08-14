@@ -70,9 +70,9 @@ public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
             GlassFishUrl url = deploymentManager.url;
             switch (url.getType()) {
                 case CLOUD:
-                    return new GlassFishCloudPlatformImpl(url);
-                case LOCAL:
                     return new GlassFishAccountPlatformImpl(url);
+                case LOCAL:
+                    return new GlassFishCloudPlatformImpl(url);
                 // This is unrecheable. Being here means this class does not handle
                 // all possible values correctly.
                 default:

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.34
+#Version 1.36.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -295,7 +295,7 @@ meth public void setName(java.lang.Object,java.lang.String) throws org.netbeans.
 meth public void setSelected(java.lang.Object,java.lang.Boolean) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void setValueAt(java.lang.Object,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 supr java.lang.Object
-hfds asynchModel,cnodeModel,columnModels,dndNodeModel,mainSubModel,nodeActionsProvider,nodeModel,propertiesHelpID,subModels,subModelsFilter,tableModel,tableRendererModel,treeExpansionModel,treeModel
+hfds asynchModel,cnodeModel,columnModels,dndNodeModel,mainSubModel,nodeActionsProvider,nodeModel,propertiesHelpID,subModels,subModelsFilter,tableModel,tableRendererModel,treeExpansionModel,treeModel,treeNodeDisplayFormat
 
 CLSS public abstract static org.netbeans.spi.viewmodel.Models$TreeFeatures
  outer org.netbeans.spi.viewmodel.Models

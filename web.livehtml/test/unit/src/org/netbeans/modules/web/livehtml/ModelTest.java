@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.livehtml;
 
+import org.netbeans.modules.web.domdiff.Change;
 import java.io.File;
 import java.io.IOException;
 import org.junit.After;
@@ -50,7 +51,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.web.livehtml.diff.DiffTest;
+import org.netbeans.modules.web.domdiff.DiffTest;
 
 /**
  *

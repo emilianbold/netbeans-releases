@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -80,7 +81,7 @@ class SeeLineParser implements AnnotationLineParser {
             description = createDescription();
             types = fetchTypes(description);
         }
-        return new SeeParsedLine(description, types);
+        return new ParsedLine(ANNOTATION_NAME, types, description, true);
     }
 
     private String createDescription() {

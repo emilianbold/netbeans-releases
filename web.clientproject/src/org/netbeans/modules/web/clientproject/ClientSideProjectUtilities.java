@@ -41,23 +41,103 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
  * @author david
  */
-public class ClientSideProjectUtilities {
+public final class ClientSideProjectUtilities {
 
-    public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
-        return h;
+    private ClientSideProjectUtilities() {
     }
-    
+
+    // XXX save project name
+    public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
+        return ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
+    }
+
+    public static void initializeProject(AntProjectHelper projectHelper) throws IOException {
+        initializeProject(projectHelper, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER,
+                ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+    }
+
+    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot, String test, String config) throws IOException {
+        // create dirs
+        projectHelper.getProjectDirectory().createFolder(siteRoot);
+        projectHelper.getProjectDirectory().createFolder(test);
+        projectHelper.getProjectDirectory().createFolder(config);
+        // save project
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        properties.put(ClientSideProjectConstants.PROJECT_TEST_FOLDER, test);
+        properties.put(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, config);
+        saveProjectProperties(projectHelper, properties);
+    }
+
+    // XXX "merge" with the method above
+    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot) throws IOException {
+        assert projectHelper.getProjectDirectory().getFileObject(siteRoot) != null : "Site root must exist: " + siteRoot;
+        Map<String, String> properties = Collections.singletonMap(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        saveProjectProperties(projectHelper, properties);
+    }
+
+    public static FileObject getSiteRootFolder(AntProjectHelper projectHelper) throws IOException {
+        EditableProperties properties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String siteRoot = properties.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (siteRoot == null || siteRoot.length() == 0) {
+            return null;
+        }
+        return projectHelper.getProjectDirectory().getFileObject(siteRoot);
+    }
+
+    /**
+     * Relativize the given {@code file} to the given {@code baseDir}.
+     * If the path cannot be relativized, the full absolute path of the {@code file} is returned.
+     * @param baseDir base directory
+     * @param file file to be relativized
+     * @return relative path or absolute path if relative path does not exist
+     * @see PropertyUtils#relativizeFile(File, File)
+     */
+    public static String relativizeFile(File baseDir, File file) {
+        String relPath = PropertyUtils.relativizeFile(baseDir, file);
+        if (relPath != null) {
+            return relPath;
+        }
+        return file.getAbsolutePath();
+    }
+
+    private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    EditableProperties projectProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        projectProperties.setProperty(entry.getKey(), entry.getValue());
+                    }
+                    projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+    }
+
 }

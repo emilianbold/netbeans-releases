@@ -70,12 +70,7 @@ public final class ServerURLMapping {
      *   not accessible
      */
     public static URL toServer(Project p, FileObject projectFile) {
-        ClientProjectConfigurationImplementation cfg = (ClientProjectConfigurationImplementation)
-                p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-        if (cfg == null) {
-            return null;
-        }
-        ServerURLMappingImplementation impl = cfg.getServerURLMapping();
+        ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             URL u = impl.toServer(projectFile);
             if (u != null) {
@@ -103,12 +98,7 @@ public final class ServerURLMapping {
      * @return returns null if nothing is known about this server URL
      */
     public static FileObject fromServer(Project p, URL serverURL) {
-        ClientProjectConfigurationImplementation cfg = (ClientProjectConfigurationImplementation)
-                p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-        if (cfg == null) {
-            return null;
-        }
-        ServerURLMappingImplementation impl = cfg.getServerURLMapping();
+        ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             FileObject fo = impl.fromServer(serverURL);
             if (fo != null) {

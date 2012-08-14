@@ -56,7 +56,7 @@ import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.EnhancedBrowser;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -93,6 +93,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     private boolean liveHTMLEnabled = false;
     
     private boolean running = false;
+    
+    private Lookup projectContext;
     
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
@@ -232,6 +234,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 ExternalBrowserPlugin.getInstance().close(tab, closeTab);
             }
         }
+    }
+
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        this.projectContext = projectContext;
+    }
+
+    public Lookup getProjectContext() {
+        return projectContext;
     }
     
     /** 

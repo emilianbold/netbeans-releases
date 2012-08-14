@@ -132,11 +132,19 @@ class ModelGenerator {
             else {
                 myDisplayNameAlias = myIdAttribute.getName();
             }
-            myCommonModels.append(",\n initialize: function(){\n");      // NOI18N
-            myCommonModels.append("// displayName property is used to render item in the list\n");// NOI18N
-            myCommonModels.append("this.set('displayName', this.get('"); // NOI18N
+            myCommonModels.append(",\n toViewJson: function(){\n");      // NOI18N
+            myCommonModels.append("var result = this.toJSON();");        // NOI18N
+            myCommonModels.append(" // displayName property is used to render item in the list\n");// NOI18N
+            myCommonModels.append("result.displayName = this.get('");    // NOI18N
             myCommonModels.append(myDisplayNameAlias);
-            myCommonModels.append("'));\n}");                          // NOI18N
+            myCommonModels.append("');\n return result;\n},\n");         // NOI18N
+            
+            myCommonModels.append("isNew: function(){\n");           // NOI18N
+            myCommonModels.append(" // default isNew() method imlementation is\n");// NOI18N
+            myCommonModels.append(" // based on the 'id' initialization which\n" );// NOI18N
+            myCommonModels.append(" // sometimes is required to be initialized.\n");// NOI18N
+            myCommonModels.append(" // So isNew() is rediefined here\n");   // NOI18N
+            myCommonModels.append("return this.notSynced;\n}");          // NOI18N
         }
           
         String sync = overrideSync( url, httpPaths , useIds); 
@@ -170,7 +178,8 @@ class ModelGenerator {
         myCommonModels.append(myModelName);
         myCommonModels.append(",\nurl : \"");                        // NOI18N
         myCommonModels.append( getUrl( collectionPath ));
-        myCommonModels.append("\"\n");                               // NOI18N
+        myCommonModels.append("\",\n");                              // NOI18N
+        myCommonModels.append( getModifierdSync(""));
         myCommonModels.append("});\n\n");                            // NOI18N
     }
     
@@ -188,17 +197,27 @@ class ModelGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
-        if ( builder.length()>0 || getDisplayNameAlias() != null){
-            builder.insert(0, "sync: function(method, model, options){\n");         // NOI18N
-            builder.append("var result = Backbone.sync(method, model, options);\n");// NOI18N
-            if ( getDisplayNameAlias()!= null ){
-                builder.append("this.set('displayName',this.get('");                // NOI18N
-                builder.append(getDisplayNameAlias());
-                builder.append("'));\n");                                           // NOI18N
-            }
-            builder.append("return result;\n}\n");                                  // NOI18N
-        }
-        return builder.toString();
+        return getModifierdSync( builder.toString() ).toString();
+    }
+    
+    private String getModifierdSync( String body ){
+        StringBuilder result = new StringBuilder();
+        result.append( "sync: function(method, model, options){\n");            // NOI18N
+        result.append("options || (options = {});\n");                          // NOI18N
+        result.append("var errorHandler = {\n");                                // NOI18N
+        result.append("error: function (jqXHR, textStatus, errorThrown){\n");   // NOI18N
+        result.append(" // TODO: put your error handling code here\n");          // NOI18N
+        result.append(" // If you use the JS client from the different domain\n");// NOI18N
+        result.append(" // (f.e. locally) then Cross-origin resource sharing \n");// NOI18N
+        result.append(" // headers has to be set on the REST server side.\n");   // NOI18N
+        result.append(" // Otherwise the JS client has to be copied into the\n");// NOI18N
+        result.append(" // some (f.e. the same) Web project on the same domain\n");// NOI18N
+        result.append("alert('Unable to fulfil the request');\n}}\n\n");        // NOI18N
+        result.append( body );
+        result.append("var result = Backbone.sync(method, model, ");            // NOI18N
+        result.append("_.extend(options,errorHandler));\n");                    // NOI18N
+        result.append("return result;\n}\n");    
+        return result.toString();
     }
     
     private String getUrl( String relativePath ) throws IOException {
@@ -252,7 +271,7 @@ class ModelGenerator {
         VariableElement id = null;
         for (VariableElement field : fields) {
             if ( JSClientGenerator.getAnnotation(field, ID) != null ){
-                boolean has = attributes.contains(field.getSimpleName().toString());
+                boolean has = attributes.remove(field.getSimpleName().toString());
                 if ( has ){
                     id = field;
                     break;
@@ -447,7 +466,7 @@ class ModelGenerator {
                 builder.append("'){\n");                                // NOI18N
                 builder.append("options.url = '");                      // NOI18N
                 builder.append(path);
-                builder.append("'+id;\n");                              // NOI18N
+                builder.append("'+model.id;\n");                        // NOI18N
                 builder.append("}\n");                                  // NOI18N
             }
         }

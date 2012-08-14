@@ -45,7 +45,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
@@ -143,5 +142,5 @@ public class Utilities {
             }
         }
     }
-    
+
 }

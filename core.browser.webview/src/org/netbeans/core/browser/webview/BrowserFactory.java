@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.IDESettings;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.EnhancedBrowserFactory;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Lookup;

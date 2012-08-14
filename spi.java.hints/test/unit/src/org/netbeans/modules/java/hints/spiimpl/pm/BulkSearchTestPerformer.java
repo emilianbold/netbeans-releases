@@ -448,6 +448,14 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
                     Collections.singletonMap("public void test() {$stmts$;}", Arrays.asList("public void test() { clone(); }")),
                     Collections.<String>emptyList());
     }
+    
+    public void testEfficientMultiMatching() throws Exception {
+        String code = "package test; public class Test { private void m() {} }";
+
+        performTest(code,
+                    Collections.<String, List<String>>emptyMap(),
+                    Collections.singletonList("$mods$ class $name implements $i$ { }"));
+    }
 
     private long measure(String baseCode, String toInsert, int repetitions, String pattern) throws Exception {
         int pos = baseCode.indexOf('|');

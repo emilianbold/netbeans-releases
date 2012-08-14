@@ -275,6 +275,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.javascript2.editor</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.web.domdiff</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>

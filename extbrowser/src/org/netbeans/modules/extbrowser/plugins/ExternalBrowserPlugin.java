@@ -70,6 +70,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJa
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -429,6 +430,7 @@ public final class ExternalBrowserPlugin {
                 }
                 browserTab.registerKeyForFeature(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, key);
                 final Lookup context = browserTab.browserImpl.getLookup();
+                final Lookup projectContext = browserTab.browserImpl.getProjectContext();
                 RemoteScriptExecutor executor = context.lookup(RemoteScriptExecutor.class);
                 if (executor != null) {
                     executor.activate();
@@ -437,7 +439,7 @@ public final class ExternalBrowserPlugin {
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        inspector.inspectPage(context);
+                        inspector.inspectPage(new ProxyLookup(context, projectContext));
                     }
                 });
             }
@@ -658,6 +660,10 @@ public final class ExternalBrowserPlugin {
                 return;
             }
             initialized = true;
+            
+            // lookup which contains Project instance if URL being opened is from a project:
+            Lookup projectContext = browserImpl.getProjectContext();
+            
             WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
             WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
             NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
@@ -670,11 +676,11 @@ public final class ExternalBrowserPlugin {
             } else {
                 webkitDebugger.getDebugger().enable();
             }
-            session = factory.createDebuggingSession(webkitDebugger);
+            session = factory.createDebuggingSession(webkitDebugger, projectContext);
 
             PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
-                inspector.inspectPage(browserImpl.getLookup());
+                inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }
 

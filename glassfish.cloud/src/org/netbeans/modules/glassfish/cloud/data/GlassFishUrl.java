@@ -54,8 +54,11 @@ import org.glassfish.tools.ide.utils.StringPrefixTree;
  * GlassFish cloud URL syntax:
  * <ul>
  * <li>URL :: &lt;identifier&gt; &lt;separator&gt; &lt;name&gt;</li>
- * <li>&lt;identifier&gt; :: {@see GlassFishCloudInstance.URL_PREFIX}
- * | {@see GlassFishAccountInstance.URL_PREFIX}</li>
+ * <li>&lt;identifier&gt; :: {@see GlassFishCloudInstance#URL_PREFIX}
+ * | {@see GlassFishAccountInstance#URL_PREFIX}</li>
+ * <li>&lt;separator&gt; :: ':'</li>
+ * <li>&lt;name&gt; :: GlassFish server name (key attribute to identify
+ * GlassFish instance in IDE)</li>
  * </ul></p>
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
@@ -76,7 +79,7 @@ public class GlassFishUrl {
      * <code>J2EE::DeploymentPlugins::GlassFish Local Server::Factory.instance
      * </code> regular expression in <code>layer.xml</code> file.
      * Actually <code>^gfc[r|l]:.*$</code> describes all strings used for local
-     * GlassFish server {@see LOCAL_STR} and GlassFish cloud {@see CLOUD_STR}.
+     * GlassFish server {@see #LOCAL_STR} and GlassFish cloud {@see #CLOUD_STR}.
      */
     public static enum Id {
         ////////////////////////////////////////////////////////////////////////

@@ -83,6 +83,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -101,6 +102,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     private final Object SOURCE_ROOT_LOCK = new Object();
     private SourceRootsChangedListener srChListener;
     private PropertyChangeListener weakSrChListener;
+    private BreakpointsClassFilter classFilter;
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
@@ -109,7 +111,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         JPDADebuggerImpl debugger,
         Session session
     ) {
-        super (breakpoint, null, debugger, session);
+        this (breakpoint, null, debugger, session);
     }
     
     public ClassBasedBreakpoint (
@@ -119,6 +121,11 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         Session session
     ) {
         super (breakpoint, reader, debugger, session);
+        classFilter = new CompoundClassFilter(session.lookup(null, BreakpointsClassFilter.class));
+    }
+    
+    protected final BreakpointsClassFilter getClassFilter() {
+        return classFilter;
     }
     
     protected final void setSourceRoot(String sourceRoot) {
@@ -227,7 +234,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return compareSourceRoots(sourceRoot, urlRoot);
     }
     
-    protected void setClassRequests (
+    protected final void setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,
         int breakpointType
@@ -235,7 +242,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         setClassRequests(classFilters, classExclusionFilters, breakpointType, true);
     }
     
-    protected void setClassRequests (
+    protected final void setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,
         int breakpointType,
@@ -244,39 +251,37 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         try {
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED) != 0
             ) {
-                ClassPrepareRequest cpr = EventRequestManagerWrapper.
-                        createClassPrepareRequest (getEventRequestManager());
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassPrepareRequest cpr = EventRequestManagerWrapper.
+                            createClassPrepareRequest (getEventRequestManager());
                     ClassPrepareRequestWrapper.addClassFilter (cpr, classFilters [i]);
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Set class load request: " + classFilters [i]);
+                    for (String exclusionFilter : classExclusionFilters) {
+                        ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, exclusionFilter);
+                        if (logger.isLoggable(Level.FINE))
+                            logger.fine("Set class load exclusion request: " + exclusionFilter);
+                    }
+                    addEventRequest (cpr, ignoreHitCountOnClassLoad);
                 }
-                k = classExclusionFilters.length;
-                for (i = 0; i < k; i++) {
-                    ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, classExclusionFilters [i]);
-                    if (logger.isLoggable(Level.FINE))
-                        logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
-                }
-                addEventRequest (cpr, ignoreHitCountOnClassLoad);
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
             ) {
-                ClassUnloadRequest cur = EventRequestManagerWrapper.
-                        createClassUnloadRequest (getEventRequestManager());
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassUnloadRequest cur = EventRequestManagerWrapper.
+                            createClassUnloadRequest (getEventRequestManager());
                     ClassUnloadRequestWrapper.addClassFilter (cur, classFilters [i]);
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Set class unload request: " + classFilters [i]);
+                    for (String exclusionFilter : classExclusionFilters) {
+                        ClassUnloadRequestWrapper.addClassExclusionFilter (cur, exclusionFilter);
+                        if (logger.isLoggable(Level.FINE))
+                            logger.fine("Set class unload exclusion request: " + exclusionFilter);
+                    }
+                    addEventRequest (cur, false);
                 }
-                k = classExclusionFilters.length;
-                for (i = 0; i < k; i++) {
-                    ClassUnloadRequestWrapper.addClassExclusionFilter (cur, classExclusionFilters [i]);
-                    if (logger.isLoggable(Level.FINE))
-                        logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
-                }
-                addEventRequest (cur, false);
             }
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
@@ -401,6 +406,24 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     }
                 });
             }
+        }
+        
+    }
+    
+    private class CompoundClassFilter extends BreakpointsClassFilter {
+        
+        private List<? extends BreakpointsClassFilter> filters;
+        
+        public CompoundClassFilter(List<? extends BreakpointsClassFilter> filters) {
+            this.filters = filters;
+        }
+
+        @Override
+        public ClassNames filterClassNames(ClassNames classNames, JPDABreakpoint breakpoint) {
+            for (BreakpointsClassFilter f : filters) {
+                classNames = f.filterClassNames(classNames, breakpoint);
+            }
+            return classNames;
         }
         
     }

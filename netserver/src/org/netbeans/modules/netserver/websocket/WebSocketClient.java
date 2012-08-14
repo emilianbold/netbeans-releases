@@ -90,8 +90,12 @@ public class WebSocketClient extends SocketClient {
     }
     
     public void sendMessage( String message){
+        SelectionKey key = getKey();
+        if ( key == null ){
+            return;
+        }
         byte[] bytes = getHandler().createTextFrame( message);
-        send(bytes , getKey()); 
+        send(bytes , key); 
     }
     
     public void setWebSocketReadHandler( WebSocketReadHandler handler ){
@@ -108,6 +112,9 @@ public class WebSocketClient extends SocketClient {
     
     @Override
     public void close( SelectionKey key ) throws IOException {
+        if ( key == null){
+            return;
+        }
         super.close(key);
         stop();
     }

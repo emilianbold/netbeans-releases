@@ -32,7 +32,7 @@ FormattingToken{kind=EOL, offset=41, text=
 }
 FormattingToken{kind=TEXT, offset=42, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=44, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=;}
@@ -61,7 +61,7 @@ FormattingToken{kind=EOL, offset=64, text=
 }
 FormattingToken{kind=TEXT, offset=65, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=67, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=68, text=;}
@@ -154,7 +154,7 @@ FormattingToken{kind=TEXT, offset=149, text=sss}
 FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=152, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=153, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=154, text=;}
@@ -203,7 +203,7 @@ FormattingToken{kind=TEXT, offset=192, text=)}
 FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=193, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=194, text=
 }
 FormattingToken{kind=WHITESPACE, offset=195, text=       }
@@ -211,6 +211,7 @@ FormattingToken{kind=TEXT, offset=202, text=print}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=207, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=208, text="}
 FormattingToken{kind=TEXT, offset=209, text=ok}
 FormattingToken{kind=TEXT, offset=211, text="}

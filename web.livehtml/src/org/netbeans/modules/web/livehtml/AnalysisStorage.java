@@ -166,7 +166,7 @@ public class AnalysisStorage {
             
             makeAllAsFinished();
             
-            analysis = new Analysis(null);
+            analysis = new Analysis();
             analysis.setSourceUrl(url);
 
             addAnalysis(analysis);

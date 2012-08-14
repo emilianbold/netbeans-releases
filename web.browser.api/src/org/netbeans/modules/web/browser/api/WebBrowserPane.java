@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -68,19 +69,21 @@ public final class WebBrowserPane {
     private HtmlBrowserComponent topComponent;
     private boolean wrapEmbeddedBrowserInTopComponent;
     private boolean createTopComponent = false;
+    private Lookup lastProjectContext = null;
     
 //    WebBrowserPane(HtmlBrowserComponent comp) {
 //        this(comp.getBrowserImpl(), null, false, comp);
 //    }
     
     WebBrowserPane(WebBrowserFactoryDescriptor desc, 
-            boolean wrapEmbeddedBrowserInTopComponent) 
+            boolean wrapEmbeddedBrowserInTopComponent, boolean disableNetBeansIntegration) 
     {
-        this(desc, wrapEmbeddedBrowserInTopComponent, null);
+        this(desc, wrapEmbeddedBrowserInTopComponent, null, disableNetBeansIntegration);
     }
     
     private WebBrowserPane(WebBrowserFactoryDescriptor descriptor, 
-            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
+            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp, 
+            boolean disableNetBeansIntegration) 
     {
         this.descriptor = descriptor;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
@@ -117,7 +120,8 @@ public final class WebBrowserPane {
             }
             else {
                 impl = descriptor.getFactory().createHtmlBrowserImpl();
-                if ( impl instanceof EnhancedBrowser ){
+                if ( impl instanceof EnhancedBrowser && !disableNetBeansIntegration
+                        && descriptor.getBrowserFamily().hasNetBeansAdvancedIntegration()){
                     ((EnhancedBrowser) impl).setEnhancedMode( true );
                 }
                 impl.addPropertyChangeListener(listener);
@@ -132,7 +136,7 @@ public final class WebBrowserPane {
         }
     }
     
-    public void enablePageInspector() {
+    public void enableLiveHTML() {
         assert impl instanceof EnhancedBrowser;
         if ( impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).enableLiveHTML();
@@ -162,11 +166,7 @@ public final class WebBrowserPane {
      * Is this embedded or external browser.
      */
     public boolean isEmbedded() {
-        /*
-         *  XXX : that's handle only WebView case in a hacky way. But there is 
-         *  no currently API to determine embedded browser in appropriate way. 
-         */
-        return descriptor.getId()!= null && descriptor.getId().contains("webviewBrowser");  // NOI18N
+        return descriptor.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW;  // NOI18N
     }
 
     /**
@@ -212,6 +212,11 @@ public final class WebBrowserPane {
                 if (comp != null) {
                     comp.setURLAndOpen(u);
                     impl = topComponent.getBrowserImpl();
+                    // initialize component with project context because 
+                    // comp.setURLAndOpen() may have created a new browser instance
+                    if ( impl instanceof EnhancedBrowser ){
+                        ((EnhancedBrowser) impl).setProjectContext(lastProjectContext);
+                    }
                     if ( impl!= null){
                         impl.addPropertyChangeListener(listener);
                     }
@@ -224,6 +229,13 @@ public final class WebBrowserPane {
             r.run();
         } else {
             SwingUtilities.invokeLater(r);
+        }
+    }
+    
+    void setProjectContext(Lookup projectContext) {
+        lastProjectContext = projectContext;
+        if ( impl != null && impl instanceof EnhancedBrowser ){
+            ((EnhancedBrowser) impl).setProjectContext(projectContext);
         }
     }
 

@@ -70,6 +70,8 @@ public class DeveloperToolbar {
     private final ItemListener resizeListener;
     private boolean ignoreSelectionChanges;
     private final JComboBox comboZoom = new JComboBox();
+    private JToolBar customToolbar;
+    private final ContainerListener toolbarListener;
 
     private DeveloperToolbar() {
         panel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
@@ -98,6 +100,18 @@ public class DeveloperToolbar {
                 comboZoom.setSelectedItem( newZoom );
             }
         });
+        toolbarListener = new ContainerListener() {
+
+            @Override
+            public void componentAdded( ContainerEvent e ) {
+                initActions( customToolbar );
+            }
+
+            @Override
+            public void componentRemoved( ContainerEvent e ) {
+                //TODO remove action from TC's map
+            }
+        };
     }
 
     public static DeveloperToolbar create() {
@@ -136,6 +150,11 @@ public class DeveloperToolbar {
         bar.add( comboZoom );
 
         initActions(bar);
+
+        if( null != customToolbar )
+            customToolbar.removeContainerListener( toolbarListener );
+        bar.addContainerListener( toolbarListener );
+        customToolbar = bar;
     }
 
     private Lookup getLookup() {
@@ -261,6 +280,9 @@ public class DeveloperToolbar {
     /**
      * If any action in the toolbar has an ACCELERATOR_KEY value set it will be
      * added to browser's TC input map.
+     * If there's a JToggleButton in the toolbar and it has client property Action.ACCELERATOR_KEY
+     * set to requested KeyStroke, the shortcut will be added to browser's TC input map as well.
+     * The toggle button must also have a non-null name.
      */
     private void initActions(JToolBar bar) {
         final HtmlBrowserComponent tc = ( HtmlBrowserComponent ) SwingUtilities.getAncestorOfClass( HtmlBrowserComponent.class, panel );
@@ -271,6 +293,21 @@ public class DeveloperToolbar {
         InputMap im = tc.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
         for( Component c : bar.getComponents() ) {
             if( c instanceof AbstractButton ) {
+                if( c instanceof JToggleButton ) {
+                    final JToggleButton toggle = ( JToggleButton ) c;
+                    Object ks = toggle.getClientProperty( Action.ACCELERATOR_KEY );
+                    if( ks instanceof KeyStroke && null != toggle.getName() ) {
+                        KeyStroke key = ( KeyStroke ) ks;
+                        im.put( key, toggle.getName() );
+                        am.put( toggle.getName(), new AbstractAction() {
+                            @Override
+                            public void actionPerformed( ActionEvent e ) {
+                                toggle.setSelected( !toggle.isSelected() );
+                            }
+                        });
+                        continue;
+                    }
+                }
                 AbstractButton button = ( AbstractButton ) c;
                 Action a = button.getAction();
                 if( null == a || null == a.getValue( Action.ACCELERATOR_KEY ) 

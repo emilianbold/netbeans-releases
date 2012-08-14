@@ -218,23 +218,25 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 result = assignments.get(position);
             }
         }
-        if (!result.isEmpty()) {
+        if (result.isEmpty()) {
+//            Collection<TypeUsage> resolved = new HashSet();
+//            for(TypeUsage item : result) {
+//                TypeUsageImpl type = (TypeUsageImpl)item;
+//                if (type.isResolved()) {
+//                    resolved.add(type);
+//                } else {
+//                    JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
+//                    if(jsObject != null) {
+//                        resolved.addAll(resolveAssignments(jsObject, offset));
+//                    }
+//                }
+//            }
+//            if(resolved.isEmpty()) {
+//                // keep somthink in the assignments. 
+//                resolved.add(new TypeUsageImpl("Object", offset, true));
+//            }
             Collection<TypeUsage> resolved = new HashSet();
-            for(TypeUsage item : result) {
-                TypeUsageImpl type = (TypeUsageImpl)item;
-                if (type.isResolved()) {
-                    resolved.add(type);
-                } else {
-                    JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
-                    if(jsObject != null) {
-                        resolved.addAll(resolveAssignments(jsObject, offset));
-                    }
-                }
-            }
-            if(resolved.isEmpty()) {
-                // keep somthink in the assignments. 
-                resolved.add(new TypeUsageImpl("Object", offset, true));
-            }
+            //resolved.add(new TypeUsageImpl("Object", offset, true));
             result = resolved;
         }
         
@@ -349,7 +351,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 obAssignment.addOccurrence(getDeclarationName().getOffsetRange());
             }
             
-            for(Occurrence occurrence: occurrences) {
+            for(Occurrence occurrence: new ArrayList<Occurrence>(occurrences)) {
                 obAssignment = findRightTypeAssignment(occurrence.getOffsetRange().getStart(), global);
                 if(obAssignment != null) {
                     obAssignment.addOccurrence(occurrence.getOffsetRange());

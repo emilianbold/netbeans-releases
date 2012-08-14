@@ -268,6 +268,16 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override
+    public void using_declaration(int kind, Token token) {
+        orig.using_declaration(kind, convertToken(token));
+    }
+
+    @Override
+    public void end_using_declaration(Token semicolonToken) {
+        orig.end_using_declaration(convertToken(semicolonToken));
+    }
+    
+    @Override
     public void parameter_declaration_list() {
         orig.parameter_declaration_list();
     }
@@ -315,6 +325,21 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override
     public void end_using_directive(Token semicolonToken) {
         orig.end_using_directive(convertToken(semicolonToken));
+    }
+    
+    @Override
+    public void namespace_alias_definition(Token namespaceToken, Token identToken, Token assignequalToken) {
+        orig.namespace_alias_definition(convertToken(namespaceToken), convertToken(identToken), convertToken(assignequalToken));
+    }
+
+    @Override
+    public void end_namespace_alias_definition(Token semicolonToken) {
+        orig.end_namespace_alias_definition(convertToken(semicolonToken));
+    }
+
+    @Override
+    public void qualified_namespace_specifier(int kind, Token token) {
+        orig.qualified_namespace_specifier(kind, convertToken(token));
     }
     
 }

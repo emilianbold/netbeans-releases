@@ -45,8 +45,10 @@
 
 package org.netbeans.modules.options;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -60,8 +62,10 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.OptionsPanel.OptionsQSCallback;
 import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -71,6 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.QuickSearch;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -106,6 +111,7 @@ public class OptionsDisplayerImpl {
     private JButton btnExport;
     /** Import Options button */
     private JButton btnImport;
+    private JPanel quickSearch;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -172,9 +178,22 @@ public class OptionsDisplayerImpl {
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
             options[1] = isMac ? bOK : DialogDescriptor.CANCEL_OPTION;
             descriptor = new DialogDescriptor(optionsPanel,title,modal,options,DialogDescriptor.OK_OPTION,DialogDescriptor.DEFAULT_ALIGN, null, null, false);
-            descriptor.setAdditionalOptions(new Object[] {bClassic, btnExport, btnImport});
+            
+            quickSearch = new JPanel(new BorderLayout());
+            QuickSearch qs = QuickSearch.attach(quickSearch, null, optionsPanel.new OptionsQSCallback());
+            qs.setAlwaysShown(true);
+            
+            // by-passing EqualFlowLayout manager in NbPresenter
+            JPanel additionalOptionspanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            additionalOptionspanel.add(bClassic);
+            additionalOptionspanel.add(btnExport);
+            additionalOptionspanel.add(btnImport);
+            additionalOptionspanel.add(quickSearch);
+            setUpButtonListeners(optionsPanel);
+            
+            descriptor.setAdditionalOptions(new Object[] {additionalOptionspanel});
             descriptor.setHelpCtx(optionsPanel.getHelpCtx());
-            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bClassic, btnExport, btnImport);
+            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK);
             descriptor.setButtonListener(listener);
             optionsPanel.addPropertyChangeListener(listener);
             synchronized(lookupListener) {
@@ -201,6 +220,60 @@ public class OptionsDisplayerImpl {
         }
         log.fine("setting Options Dialog visible");
         dialog.setVisible (true);     
+    }
+    
+    private void setUpButtonListeners(OptionsPanel optionsPanel) {
+        btnExport.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsChooserPanel.showExportDialog();
+            }
+        });
+        btnImport.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsChooserPanel.showImportDialog();
+            }
+        });
+        final OptionsPanel finalOptionsPanel = optionsPanel;
+        bClassic.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                log.fine("Options Dialog - Classic pressed."); //NOI18N
+                Dialog d = dialog;
+                dialog = null;
+                if (finalOptionsPanel.isChanged()) {
+                    Confirmation confirmationDescriptor = new Confirmation(
+                            loc("CTL_Some_values_changed"),
+                            NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE);
+                    Object result = DialogDisplayer.getDefault().
+                            notify(confirmationDescriptor);
+                    if (result == NotifyDescriptor.YES_OPTION) {
+                        finalOptionsPanel.save();
+                        d.dispose();
+                    } else if (result == NotifyDescriptor.NO_OPTION) {
+                        finalOptionsPanel.cancel();
+                        d.dispose();
+                    } else {
+                        dialog = d;
+                        return;
+                    }
+                } else {
+                    d.dispose();
+                    finalOptionsPanel.cancel();
+                }
+                try {
+                    CallableSystemAction a = SystemAction.get(OptionsAction.class);
+                    a.putValue("additionalActionName", loc("CTL_Modern"));
+                    a.putValue("optionsDialogTitle", loc("CTL_Classic_Title"));
+                    a.putValue("additionalActionListener", new OpenOptionsListener());
+                    a.performAction();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
     /** Set visibility of Advanced Options button (AKA classic) according to
@@ -298,25 +371,16 @@ public class OptionsDisplayerImpl {
         private DialogDescriptor    descriptor;
         private OptionsPanel        optionsPanel;
         private JButton             bOK;
-        private JButton             bClassic;
-        private JButton             btnExport;
-        private JButton             btnImport;
         
         
         OptionsPanelListener (
             DialogDescriptor    descriptor, 
             OptionsPanel        optionsPanel,
-            JButton             bOK,
-            JButton             bClassic,
-            JButton             btnExport,
-            JButton             btnImport
+            JButton             bOK
         ) {
             this.descriptor = descriptor;
             this.optionsPanel = optionsPanel;
             this.bOK = bOK;
-            this.bClassic = bClassic;
-            this.btnExport = btnExport;
-            this.btnImport = btnImport;
         }
         
         public void propertyChange (PropertyChangeEvent ev) {
@@ -349,49 +413,6 @@ public class OptionsDisplayerImpl {
                 optionsPanel.cancel ();
                 bOK.setEnabled(true);
                 d.dispose ();                
-            } else
-            if (e.getSource () == bClassic) {
-                log.fine("Options Dialog - Classic pressed."); //NOI18N
-                Dialog d = dialog;
-                dialog = null;
-                if (optionsPanel.isChanged ()) {
-                    Confirmation confirmationDescriptor = new Confirmation (
-                        loc ("CTL_Some_values_changed"), 
-                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                        NotifyDescriptor.QUESTION_MESSAGE
-                    );
-                    Object result = DialogDisplayer.getDefault ().
-                        notify (confirmationDescriptor);
-                    if (result == NotifyDescriptor.YES_OPTION) {
-                        optionsPanel.save ();
-                        d.dispose ();                        
-                    } else
-                    if (result == NotifyDescriptor.NO_OPTION) {
-                        optionsPanel.cancel ();
-                        d.dispose ();                        
-                    } else {
-                        dialog = d;
-                        return;
-                    }
-                } else {
-                    d.dispose ();
-                    optionsPanel.cancel ();
-                }
-                try {
-                    CallableSystemAction a = SystemAction.get(OptionsAction.class);
-                    a.putValue ("additionalActionName", loc ("CTL_Modern"));
-                    a.putValue ("optionsDialogTitle", loc ("CTL_Classic_Title"));
-                    a.putValue ("additionalActionListener", new OpenOptionsListener ()
-                    );
-                    a.performAction ();
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } // classic
-            else if (e.getSource() == btnExport) {
-                OptionsChooserPanel.showExportDialog();
-            } else if (e.getSource() == btnImport) {
-                OptionsChooserPanel.showImportDialog();
             }
         }
     }

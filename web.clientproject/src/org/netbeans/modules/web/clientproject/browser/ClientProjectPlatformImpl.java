@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -96,26 +97,30 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         support.removePropertyChangeListener(lst);
     }
 
-    private ClientProjectConfigurationImpl create(WebBrowser browser) {
-        if (browser.getId().endsWith("webviewBrowser")) {
-            return new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this);
-        } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) {
-            return new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this);
-        } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) {
-            return new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this);
-        } else {
-            return null;
-        }
-    }
-
     private List<ClientProjectConfigurationImpl> getBrowserConfigurations() {
         List<ClientProjectConfigurationImpl> l = new ArrayList<ClientProjectConfigurationImpl>();
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll()) {
-            ClientProjectConfigurationImpl c = create(browser);
-            if (c != null) {
-                l.add(c);
+        int chrome = 200;
+        int chromium = 300;
+        int others = 400;
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
+            if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, 100, false));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) {
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, chrome++, false));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.FALSE, chrome++, true));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) {
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, chromium++, false));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.FALSE, chromium++, true));
+            } else {
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, null, others++, false));
             }
         }
+        Collections.sort(l, new Comparator<ClientProjectConfigurationImpl>() {
+            @Override
+            public int compare(ClientProjectConfigurationImpl o1, ClientProjectConfigurationImpl o2) {
+                return o1.getOrder() - o2.getOrder();
+            }
+        });
         return l;
     }
 

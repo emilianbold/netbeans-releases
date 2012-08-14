@@ -53,9 +53,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
@@ -71,12 +73,12 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
@@ -86,7 +88,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Jan Stola
  */
-public class CSSStylesPanel extends JPanel {
+public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** Action command for switching to document view. */
     static final String DOCUMENT_ACTION_COMMAND = "document"; // NOI18N
     /** Action command for switching to selection view. */
@@ -98,7 +100,7 @@ public class CSSStylesPanel extends JPanel {
     /** Document section of CSS Styles view. */
     private CSSStylesDocumentPanel documentPanel = new CSSStylesDocumentPanel();
     /** Selection section of CSS Styles view. */
-    private JPanel selectionPanel = new JPanel();
+    private CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
     WebKitPageModel pageModel;
     /** Lookup of this panel. */
@@ -114,8 +116,8 @@ public class CSSStylesPanel extends JPanel {
         add(createToolbar(), BorderLayout.PAGE_START);
         PageInspectorImpl.getDefault().addPropertyChangeListener(getListener());
         updatePageModel();
+        add(documentPanel, BorderLayout.CENTER);
         updateVisiblePanel(false);
-        putClientProperty("lookup", lookup); // NOI18N
         ruleLookupResult = lookup.lookupResult(Rule.class);
         ruleLookupResult.addLookupListener(getListener());
     }
@@ -135,12 +137,14 @@ public class CSSStylesPanel extends JPanel {
         ButtonGroup buttonGroup = new ButtonGroup();
 
         // Document button
-        JToggleButton documentButton = new JToggleButton("D"); // PENDING
+        JToggleButton documentButton = new JToggleButton();
+        documentButton.setText(NbBundle.getMessage(CSSStylesPanel.class, "CSSStylesPanel.document")); // NOI18N
         documentButton.setActionCommand(DOCUMENT_ACTION_COMMAND);
         initToolbarButton(documentButton, toolBar, buttonGroup);
 
         // Selection button
-        JToggleButton selectionButton = new JToggleButton("S"); // PENDING
+        JToggleButton selectionButton = new JToggleButton();
+        selectionButton.setText(NbBundle.getMessage(CSSStylesPanel.class, "CSSStylesPanel.selection")); // NOI18N
         selectionButton.setActionCommand(SELECTION_ACTION_COMMAND);
         initToolbarButton(selectionButton, toolBar, buttonGroup);
         selectionButton.setSelected(true);
@@ -220,8 +224,7 @@ public class CSSStylesPanel extends JPanel {
             } else {
                 remove(documentPanel);
                 add(selectionPanel, BorderLayout.CENTER);
-                // PENDING
-                // lookup.updateLookup(selectionPanel.getLookup());
+                lookup.updateLookup(selectionPanel.getLookup());
             }
         }
         revalidate();
@@ -232,9 +235,8 @@ public class CSSStylesPanel extends JPanel {
      * Updates the content of this panel.
      */
     void updateContent() {
-        WebKitDebugging webKit = (pageModel == null) ? null : pageModel.getWebKit();
-        documentPanel.updateContent(webKit);
-        //selectionPanel.updateContent(newDocument);
+        documentPanel.updateContent(pageModel);
+        selectionPanel.updateContent(pageModel);
     }
 
     /**
@@ -243,8 +245,6 @@ public class CSSStylesPanel extends JPanel {
      * @param rules rules selected in this panel.
      */
     void updateRulesEditor(final Collection<? extends Rule> rules) {
-        Resource resource = lookup.lookup(Resource.class);
-        final String resourceName = (resource == null) ? null : resource.getName();
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -253,14 +253,23 @@ public class CSSStylesPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        FileObject fob = new Resource(resourceName).toFileObject();
-                        if ((fob != null) && (rules.size() == 1)) {
+                        if (rules.size() == 1) {
                             Rule rule = rules.iterator().next();
-                            try {
-                                Source source = Source.create(fob);
-                                ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, controller));
-                            } catch (ParseException ex) {
-                                Logger.getLogger(CSSStylesPanel.class.getName()).log(Level.INFO, null, ex);
+                            String resourceName = rule.getSourceURL();
+                            Project project = null;
+                            if (pageModel != null) {
+                                project = pageModel.getProject();
+                            }
+                            FileObject fob = new Resource(project, resourceName).toFileObject();
+                            if (fob == null) {
+                                controller.setNoRuleState();
+                            } else {
+                                try {
+                                    Source source = Source.create(fob);
+                                    ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, controller));
+                                } catch (ParseException ex) {
+                                    Logger.getLogger(CSSStylesPanel.class.getName()).log(Level.INFO, null, ex);
+                                }
                             }
                         } else {
                             controller.setNoRuleState();
@@ -269,6 +278,25 @@ public class CSSStylesPanel extends JPanel {
                 });
             }
         });
+    }
+
+    @Override
+    public JComponent getView() {
+        return this;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public void activated() {
+        updateRulesEditor(ruleLookupResult.allInstances());
+    }
+
+    @Override
+    public void deactivated() {
     }
 
     /**

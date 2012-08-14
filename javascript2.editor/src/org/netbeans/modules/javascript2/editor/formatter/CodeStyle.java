@@ -537,13 +537,13 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
 
-    public WrapStyle wrapExtendsImplementsKeyword() {
-        String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
+    public WrapStyle wrapStatement() {
+        String wrap = preferences.get(wrapStatement, getDefaultAsString(wrapStatement));
         return WrapStyle.valueOf(wrap);
     }
 
-    public WrapStyle wrapExtendsImplementsList() {
-        String wrap = preferences.get(wrapExtendsImplementsList, getDefaultAsString(wrapExtendsImplementsList));
+    public WrapStyle wrapVariables() {
+        String wrap = preferences.get(wrapVariables, getDefaultAsString(wrapVariables));
         return WrapStyle.valueOf(wrap);
     }
 

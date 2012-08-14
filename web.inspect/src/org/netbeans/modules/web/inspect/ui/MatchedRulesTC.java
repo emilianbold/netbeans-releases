@@ -44,7 +44,6 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
@@ -52,7 +51,6 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -92,6 +90,8 @@ public final class MatchedRulesTC extends TopComponent {
     public static final String ID = "MatchedRulesTC"; // NOI18N
     /** Label shown when no styles information is available. */
     private JLabel noStylesLabel;
+    /** Current view shown in this {@code TopComponent}.  */
+    private PageModel.CSSStylesView currentView;
 
     /**
      * Creates a new {@code MatchedRulesTC}.
@@ -130,10 +130,12 @@ public final class MatchedRulesTC extends TopComponent {
             removeAll();
             if (noPage) {
                 add(noStylesLabel, BorderLayout.CENTER);
+                currentView = null;
             } else {
-                JComponent stylesView = pageModel.getCSSStylesView();
+                PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
                 ((MatchedRulesLookup)getLookup()).setView(stylesView);
-                add(stylesView, BorderLayout.CENTER);
+                add(stylesView.getView(), BorderLayout.CENTER);
+                currentView = stylesView;
             }
         }
         revalidate();
@@ -157,27 +159,38 @@ public final class MatchedRulesTC extends TopComponent {
         };
     }
 
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        if (currentView != null) {
+            currentView.activated();
+        }
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        if (currentView != null) {
+            currentView.deactivated();
+        }
+    }
+
     /**
      * Lookup of CSS Styles view.
      */
     private static class MatchedRulesLookup extends ProxyLookup {
 
         /**
-         * Updates the lookup according to the actual panel
+         * Updates the lookup according to the view
          * that shows the style information.
          *
-         * @param view component that displays the style information
+         * @param view view that displays the style information
          * within the CSS Styles view.
          */
-        void setView(JComponent view) {
-            Object lookup = view.getClientProperty("lookup"); // NOI18N
-            if (lookup instanceof Lookup) {
-                setLookups((Lookup)lookup);
-            } else {
-                setLookups();
-            }
+        void setView(PageModel.CSSStylesView view) {
+            setLookups(view.getLookup());
         }
-        
+
     }
 
 }

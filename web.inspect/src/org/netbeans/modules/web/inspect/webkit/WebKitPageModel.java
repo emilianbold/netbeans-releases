@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
@@ -83,9 +83,15 @@ public class WebKitPageModel extends PageModel {
     private DOM.Listener domListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
-
+    /** Owner project of the inspected page. */
+    private Project project;
+    /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
+    private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
+    /**
+     * Map with content documents in the inspected page. Maps node ID of
+     * the document node to the corresponding {@code RemoteObject}.
+     */
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
-
     /** Logger used by this class */
     static final Logger LOG = Logger.getLogger(WebKitPageModel.class.getName());
 
@@ -96,6 +102,7 @@ public class WebKitPageModel extends PageModel {
      */
     public WebKitPageModel(Lookup pageContext) {
         this.webKit = pageContext.lookup(WebKitDebugging.class);
+        this.project = pageContext.lookup(Project.class);
         addPropertyChangeListener(new WebPaneSynchronizer());
 
         // Register DOM domain listener
@@ -127,6 +134,7 @@ public class WebKitPageModel extends PageModel {
                 // init
                 String initScript = Files.getScript("initialization"); // NOI18N
                 webKit.getRuntime().evaluate(initScript);
+                cSSUpdater.start(webKit);
             }
         }
     }
@@ -140,10 +148,20 @@ public class WebKitPageModel extends PageModel {
         return webKit;
     }
 
+    /**
+     * Returns the owner project of the inspected page.
+     * 
+     * @return the owner project of the inspected page.
+     */
+    public Project getProject() {
+        return project;
+    }
+
     @Override
     protected void dispose() {
         DOM dom = webKit.getDOM();
         dom.removeListener(domListener);
+        cSSUpdater.stop();
     }
 
     @Override
@@ -232,6 +250,8 @@ public class WebKitPageModel extends PageModel {
                     nodes.clear();
                     contentDocumentMap.clear();
                     documentNode = null;
+                    selectedNodes = Collections.EMPTY_LIST;
+                    highlightedNodes = Collections.EMPTY_LIST;
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
@@ -481,16 +501,7 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
-    public JComponent getCSSStylesView() {
-        if (!Boolean.getBoolean("org.netbeans.modules.web.inspect.showCSSStyles")) {
-            javax.swing.JLabel label = new javax.swing.JLabel("Coming soon ...");
-            label.setBackground(java.awt.Color.WHITE);
-            label.setEnabled(false);
-            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-            label.setOpaque(true);
-            return label;
-        }
+    public CSSStylesView getCSSStylesView() {
         return CSSStylesPanel.getDefault();
     }
 

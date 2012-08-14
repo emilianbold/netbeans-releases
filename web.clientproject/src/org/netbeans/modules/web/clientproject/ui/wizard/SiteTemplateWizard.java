@@ -59,14 +59,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -186,14 +188,9 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     private void setOnlineTemplateEnabled(boolean enabled) {
+        onlineTemplateDescriptionLabel.setEnabled(enabled);
         onlineTemplateList.setEnabled(enabled);
         onlineTemplateDescriptionTextPane.setEnabled(enabled);
-    }
-
-    @NbBundle.Messages("SiteTemplateWizard.name=Site Template")
-    @Override
-    public String getName() {
-        return Bundle.SiteTemplateWizard_name();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -202,10 +199,16 @@ public class SiteTemplateWizard extends JPanel {
         archiveSiteCustomizer.addChangeListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        assert EventQueue.isDispatchThread();
+    public void removeChangeListener(final ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
-        archiveSiteCustomizer.removeChangeListener(listener);
+        // #216283 - can be called form non-EDT thread
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                archiveSiteCustomizer.removeChangeListener(listener);
+            }
+        });
     }
 
     @NbBundle.Messages("SiteTemplateWizard.error.noTemplateSelected=No online template selected.")
@@ -245,7 +248,6 @@ public class SiteTemplateWizard extends JPanel {
         "SiteTemplateWizard.error.preparing=<html>Cannot prepare template \"{0}\".<br><br>See IDE log for more details."
     })
     public void prepareTemplate() {
-        assert EventQueue.isDispatchThread();
         final String templateName;
         synchronized (siteTemplateLock) {
             if (siteTemplate.isPrepared()) {
@@ -254,7 +256,7 @@ public class SiteTemplateWizard extends JPanel {
             }
             templateName = siteTemplate.getName();
         }
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+        Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -266,26 +268,19 @@ public class SiteTemplateWizard extends JPanel {
                     errorOccured(Bundle.SiteTemplateWizard_error_preparing(templateName));
                 }
             }
-        }, Bundle.SiteTemplateWizard_template_preparing(templateName));
-    }
-
-    @NbBundle.Messages({
-        "# {0} - template name",
-        "SiteTemplateWizard.error.applying=Cannot apply template \"{0}\"..."
-    })
-    public void apply(final FileObject p, final ProgressHandle handle) {
-        assert !EventQueue.isDispatchThread();
-        final String templateName;
-        synchronized (siteTemplateLock) {
-            templateName = siteTemplate.getName();
-        }
-        try {
-            synchronized (siteTemplateLock) {
-                siteTemplate.apply(p, handle);
+        };
+        if (EventQueue.isDispatchThread()) {
+            // going to the next step
+            ProgressUtils.showProgressDialogAndRun(task, Bundle.SiteTemplateWizard_template_preparing(templateName));
+        } else {
+            // #216283 - finish from the current step
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
+            progressHandle.start();
+            try {
+                task.run();
+            } finally {
+                progressHandle.finish();
             }
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            errorOccured(Bundle.SiteTemplateWizard_error_applying(templateName));
         }
     }
 
@@ -297,9 +292,9 @@ public class SiteTemplateWizard extends JPanel {
         changeSupport.fireChange();
     }
 
-    Collection<String> getSupportedLibraries() {
+    public SiteTemplateImplementation getSiteTemplate() {
         synchronized (siteTemplateLock) {
-            return siteTemplate.supportedLibraries();
+            return siteTemplate;
         }
     }
 
@@ -326,11 +321,11 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateRadioButton = new javax.swing.JRadioButton();
         onlineTemplateScrollPane = new javax.swing.JScrollPane();
         onlineTemplateList = new javax.swing.JList();
+        onlineTemplateDescriptionLabel = new javax.swing.JLabel();
         onlineTemplateDescriptionScrollPane = new javax.swing.JScrollPane();
         onlineTemplateDescriptionTextPane = new javax.swing.JTextPane();
 
         org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.infoLabel.text")); // NOI18N
-        infoLabel.setEnabled(false);
 
         templateButtonGroup.add(noTemplateRadioButton);
         noTemplateRadioButton.setSelected(true);
@@ -347,6 +342,9 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         onlineTemplateScrollPane.setViewportView(onlineTemplateList);
 
+        onlineTemplateDescriptionLabel.setLabelFor(onlineTemplateDescriptionTextPane);
+        org.openide.awt.Mnemonics.setLocalizedText(onlineTemplateDescriptionLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.onlineTemplateDescriptionLabel.text")); // NOI18N
+
         onlineTemplateDescriptionScrollPane.setViewportView(onlineTemplateDescriptionTextPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -359,13 +357,16 @@ public class SiteTemplateWizard extends JPanel {
                     .addComponent(noTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(archiveTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(onlineTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(21, 21, 21)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.Alignment.LEADING))))
-                .addContainerGap())
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(onlineTemplateDescriptionLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(onlineTemplateScrollPane)
+                            .addComponent(onlineTemplateDescriptionScrollPane))))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -382,6 +383,8 @@ public class SiteTemplateWizard extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(onlineTemplateDescriptionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -391,6 +394,7 @@ public class SiteTemplateWizard extends JPanel {
     private javax.swing.JRadioButton archiveTemplateRadioButton;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JRadioButton noTemplateRadioButton;
+    private javax.swing.JLabel onlineTemplateDescriptionLabel;
     private javax.swing.JScrollPane onlineTemplateDescriptionScrollPane;
     private javax.swing.JTextPane onlineTemplateDescriptionTextPane;
     private javax.swing.JList onlineTemplateList;
@@ -431,7 +435,7 @@ public class SiteTemplateWizard extends JPanel {
         }
 
         @Override
-        public void apply(FileObject projectRoot, ProgressHandle handle) {
+        public void apply(AntProjectHelper helper, ProgressHandle handle) {
             // noop
         }
 

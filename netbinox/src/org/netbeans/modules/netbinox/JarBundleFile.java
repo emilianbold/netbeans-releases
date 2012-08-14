@@ -43,8 +43,11 @@ package org.netbeans.modules.netbinox;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -275,37 +278,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
         if (arr == null && !name.equals("/")) {
             return null;
         }
-        return new BundleEntry() {
-            @Override
-            public InputStream getInputStream() throws IOException {
-                return new ByteArrayInputStream(arr);
-            }
-
-            @Override
-            public long getSize() {
-                return arr.length;
-            }
-
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public long getTime() {
-                return getBaseFile().lastModified();
-            }
-
-            @Override
-            public URL getLocalURL() {
-                return findEntry("getLocalURL", name).getLocalURL(); // NOI18N
-            }
-
-            @Override
-            public URL getFileURL() {
-                return findEntry("getFileURL", name).getFileURL(); // NOI18N
-            }
-        };
+        return new CachingEntry(arr, name);
     }
 
     @Override
@@ -334,5 +307,56 @@ final class JarBundleFile extends BundleFile implements BundleContent {
     @Override
     public boolean containsDir(String path) {
         return path.endsWith("/") && getEntry(path) != null;
+    }
+
+    private class CachingEntry extends BundleEntry {
+        private final String name;
+        private final int size;
+        private final Reference<byte[]> arr;
+
+        public CachingEntry(byte[] arr, String name) {
+            this.size = arr.length;
+            this.name = name;
+            this.arr = new SoftReference<byte[]>(arr);
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            byte[] data = arr.get();
+            // once used, let the array go...
+            arr.clear();
+            if (data == null) {
+                data = getCachedEntry(name);
+            }
+            if (data == null) {
+                throw new FileNotFoundException();
+            }
+            return new ByteArrayInputStream(data);
+        }
+
+        @Override
+        public long getSize() {
+            return size;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public long getTime() {
+            return getBaseFile().lastModified();
+        }
+
+        @Override
+        public URL getLocalURL() {
+            return findEntry("getLocalURL", name).getLocalURL(); // NOI18N
+        }
+
+        @Override
+        public URL getFileURL() {
+            return findEntry("getFileURL", name).getFileURL(); // NOI18N
+        }
     }
 }

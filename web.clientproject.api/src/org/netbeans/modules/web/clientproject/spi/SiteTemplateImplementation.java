@@ -46,6 +46,7 @@ import java.util.Collection;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -81,11 +82,10 @@ public interface SiteTemplateImplementation {
      * Apply site template (e.g. copy {@link #prepare() prepared} files) to the given directory.
      * <p>
      * This method is never called in the UI thread.
-     * @param projectRoot directory where site template should be applied
      * @param handle progress handle, can be {@code null}
      * @throws IOException if any error occurs
      */
-    void apply(FileObject projectRoot, @NullAllowed ProgressHandle handle) throws IOException;
+    void apply(AntProjectHelper helper, @NullAllowed ProgressHandle handle) throws IOException;
 
     Collection<String> supportedLibraries();
 }

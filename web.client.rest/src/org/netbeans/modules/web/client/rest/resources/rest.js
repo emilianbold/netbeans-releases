@@ -77,7 +77,7 @@ var app = {
         },
         
         render:function (eventName) {
-            $(this.el).html(this.template(this.model.toJSON()));
+            $(this.el).html(this.template(this.model.toViewJson()));
             return this;
         },
         
@@ -95,7 +95,7 @@ var app = {
         },
  
         render:function (eventName) {
-            $(this.el).html(this.template(this.model.toJSON()));
+            $(this.el).html(this.template(this.model.toViewJson()));
             return this;
         },
         
@@ -127,10 +127,12 @@ var app = {
             // TODO : put save code here
             var hash = this.options.getHashObject();
             this.model.set(hash);
-            if (this.model.isNew() && this.collection) {
+            if ( this.model.isNew() && this.collection) {
                 var self = this;
                 this.collection.create(this.model,{
                     success: function(){
+                        // see isNew() method implementation in the model
+                        self.model.notSynced = false;
                         self.options.navigate(self.model.id);
                     }
                 });

@@ -114,6 +114,51 @@ public class SQLLexerTest extends NbTestCase {
         assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
     }
 
+    /**
+     * Check correct handling of multiline comments (bug #)
+     *
+     * @throws Exception
+     */
+    public void testMultiLineComment() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("/**/\n"
+                + "select * from test;");
+        assertTokens(seq, SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE);
+        seq = getTokenSequence("/****/\n"
+                + "select * from test;");
+        assertTokens(seq, SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE);
+        // Bug #: The following sequences led to only one token
+        seq = getTokenSequence("/***/\n"
+                + "select * from test;");
+        assertTokens(seq, SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE);
+        seq = getTokenSequence("/*****/\n"
+                + "select * from test;");
+        assertTokens(seq, SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE);
+        seq = getTokenSequence("/*** Test **/\n"
+                + "select * from test;");
+        assertTokens(seq, SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE);
+        seq = getTokenSequence("/*** \n*  Test\n **/\n"
+                + "select * from test;");
+        assertTokens(seq, SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE);
+    }
+
     private static TokenSequence<SQLTokenId> getTokenSequence(String sql) throws BadLocationException {
         Document doc = new ModificationTextDocument();
         doc.insertString(0, sql, null);

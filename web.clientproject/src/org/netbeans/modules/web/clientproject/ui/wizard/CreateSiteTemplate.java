@@ -58,7 +58,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -370,7 +372,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                     return null;
                 }
             }
-            createZipFile(f, p.getProjectDirectory(), panel.comp.manager.getRootContext());
+            createZipFile(f, p, panel.comp.manager.getRootContext());
             return null;
         }
 
@@ -541,17 +543,40 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         
     }
     
-    private static void createZipFile(File templateFile, FileObject root, Node rootNode) throws IOException {
+    private static void createZipFile(File templateFile, ClientSideProject project, Node rootNode) throws IOException {
         if (!templateFile.exists()) {
             templateFile.createNewFile();
         }
         ZipOutputStream str = new ZipOutputStream(new FileOutputStream(templateFile));
         try {
-            writeChildren(str, root, rootNode.getChildren());
+            writeProjectMetadata(str, project);
+            writeChildren(str, project.getProjectDirectory(), rootNode.getChildren());
         } finally {
             str.close();
         }
         SiteZip.registerTemplate(templateFile);
+    }
+
+    private static void writeProjectMetadata(ZipOutputStream str, ClientSideProject project) throws IOException {
+        ZipEntry ze = new ZipEntry(ClientSideProjectConstants.TEMPLATE_DESCRIPTOR);
+        str.putNextEntry(ze);
+        EditableProperties ep = new EditableProperties(false);
+        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (s == null) {
+            s = "";
+        }
+        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, s);
+        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+        if (s == null) {
+            s = "";
+        }
+        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, s);
+        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
+        if (s == null) {
+            s = "";
+        }
+        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, s);
+        ep.store(str);
     }
 
     private static void writeChildren(ZipOutputStream str, FileObject root, Children children) throws IOException {

@@ -101,7 +101,7 @@ public class GlassFishAccountInstanceProvider
      * Return existing singleton instance of this class or create a new one
      * when no instance exists.
      * <p>
-     * @return <code>AdminFactoryHttp</code> singleton instance.
+     * @return <code>GlassFishAccountInstanceProvider</code> singleton instance.
      */
     public static GlassFishAccountInstanceProvider getInstance() {
         if (instance != null) {

@@ -58,5 +58,9 @@ public enum BrowserFamilyId {
     SAFARI,
     IE,
     JAVAFX_WEBVIEW,
-    UNKNOWN
+    UNKNOWN;
+    
+    public boolean hasNetBeansAdvancedIntegration() {
+        return this == CHROME || this == CHROMIUM || this == JAVAFX_WEBVIEW;
+    }
 }

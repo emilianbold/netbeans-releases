@@ -64,6 +64,9 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -71,6 +74,9 @@ import org.openide.util.Exceptions;
  *
  * @author Radek Matous
  */
+
+@ActionReferences({
+    @ActionReference(id = @ActionID(category = "Refactoring", id = "org.netbeans.modules.refactoring.api.ui.WhereUsedAction"), path = "Loaders/text/x-php5/Actions", position = 1700)})
 public final class WhereUsedSupport {
 
     private ASTNode node;

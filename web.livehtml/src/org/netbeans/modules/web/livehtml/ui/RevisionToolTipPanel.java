@@ -43,12 +43,14 @@ package org.netbeans.modules.web.livehtml.ui;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import javax.swing.JLabel;
+import javax.swing.SingleSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.livehtml.Revision;
-import org.openide.util.Lookup;
+import org.netbeans.modules.web.livehtml.ui.data.DataToolTipProvider;
+import org.netbeans.modules.web.livehtml.ui.stacktrace.StackTraceToolTipProvider;
 
 /**
  *
@@ -56,56 +58,62 @@ import org.openide.util.Lookup;
  */
 public class RevisionToolTipPanel extends javax.swing.JPanel {
     
-    private Revision revision = null;
+    private List<RevisionToolTipService> revisionToolTipServices = new ArrayList<RevisionToolTipService>();
+    private Component lastUserSelectedTab = null;
 
     /**
      * Creates new form RevisionToolTipPanel
      */
     public RevisionToolTipPanel() {
         initComponents();
+        
+        revisionToolTipServices.add(new StackTraceToolTipProvider());
+//        revisionToolTipServices.add(new ChangesToolTipProvider());
+        revisionToolTipServices.add(new DataToolTipProvider());
+        
+        SingleSelectionModel singleSelectionModel = toolTipTabbedPane.getModel();
+        if (singleSelectionModel != null) {
+            singleSelectionModel.addChangeListener(new PrivateChangeListener());
+        }
     }
 
-    public void setRevision(Revision revision, String toolTipTitle, boolean reformatContent) {
-        this.revision = revision;
+    public void setRevision(final Revision revision, final String toolTipTitle, final boolean reformatContent) {
         
-        titleLabel.setText(toolTipTitle);
-        final int tabCount = toolTipTabbedPane.getTabCount();
-        
-        final List<? extends RevisionToolTipService> revisionToolTipServices = 
-                new ArrayList<RevisionToolTipService>(Lookup.getDefault().lookupAll(RevisionToolTipService.class));
-        Collections.sort(revisionToolTipServices);
-        
-        if (tabCount == 0) {
-            int i = 0;
-            for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
-                Component component = revisionToolTipService.createToolTip(revision, reformatContent);
-                if (component == null) {
-                    component = new JLabel();
-                    component.setEnabled(revisionToolTipService.canProcess(revision));
-                }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                titleLabel.setText(toolTipTitle);
+                titleLabel.setToolTipText(toolTipTitle);
+
+                toolTipTabbedPane.removeAll();
                 
-                toolTipTabbedPane.addTab(revisionToolTipService.getDisplayName(), component);
-                toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
-                
-                i += 1;
-            }
-        } else {
-            for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
-                for (int i = 0; i < tabCount; i++) {
-                    Component component = toolTipTabbedPane.getComponentAt(i);
-                    if (revisionToolTipService.getDisplayName().equals(toolTipTabbedPane.getTitleAt(i))) {
-                        revisionToolTipService.updateComponent(component, revision, reformatContent);
-                        toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
+                if (revision != null) {
+                    for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
+                        final boolean canProcess = revisionToolTipService.canProcess(revision, reformatContent);
+                        if (canProcess) {
+                            revisionToolTipService.setRevision(revision, reformatContent);
+                            toolTipTabbedPane.addTab(revisionToolTipService.getDisplayName(), revisionToolTipService);
+                        } else {
+                            revisionToolTipService.clearRevision();
+                        }
+                        revisionToolTipService.revalidate();
+                        revisionToolTipService.repaint();
                     }
                 }
+
+                if (lastUserSelectedTab != null) {
+                    final int index = toolTipTabbedPane.indexOfComponent(lastUserSelectedTab);
+                    if (index > 0) {
+                        toolTipTabbedPane.setSelectedComponent(lastUserSelectedTab);
+                    }
+                }
+
+                revalidate();
+                repaint();
             }
-        }
+        });
         
-        toolTipTabbedPane.revalidate();
-        toolTipTabbedPane.repaint();
-        
-        revalidate();
-        repaint();
     }
         
     /**
@@ -120,6 +128,7 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
         toolTipTabbedPane = new javax.swing.JTabbedPane();
         titleLabel = new javax.swing.JLabel();
 
+        setMaximumSize(new java.awt.Dimension(350, 250));
         setMinimumSize(new java.awt.Dimension(200, 200));
         setPreferredSize(new java.awt.Dimension(350, 250));
 
@@ -129,18 +138,18 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE))
+                .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -148,4 +157,20 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
     private javax.swing.JLabel titleLabel;
     private javax.swing.JTabbedPane toolTipTabbedPane;
     // End of variables declaration//GEN-END:variables
+
+    private class PrivateChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            final Component selectedComponent = toolTipTabbedPane.getSelectedComponent();
+            final int selectedIndex = toolTipTabbedPane.getSelectedIndex();
+            if (selectedComponent != null && 
+                    selectedIndex >= 0 && 
+                    toolTipTabbedPane.getTabCount() > 1) { // this eliminate selection when first Tab is added (and selected).
+                lastUserSelectedTab = selectedComponent;
+            }
+        }
+        
+    }
+    
 }

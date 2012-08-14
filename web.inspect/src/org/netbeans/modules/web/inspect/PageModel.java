@@ -44,9 +44,9 @@ package org.netbeans.modules.web.inspect;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JComponent;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Model of an inspected web-page.
@@ -54,6 +54,7 @@ import org.openide.nodes.Node;
  * @author Jan Stola
  */
 public abstract class PageModel {
+    /** Name of the property that is fired when a new document is loaded into the inspected browser pane. */
     public static final String PROP_DOCUMENT = "document"; // NOI18N
     /** Name of the property that is fired when the set of selected elements is changed. */
     public static final String PROP_SELECTED_NODES = "selectedNodes"; // NOI18N
@@ -123,13 +124,11 @@ public abstract class PageModel {
     public abstract List<? extends Node> getHighlightedNodes();
 
     /**
-     * Returns CSS Styles view for this page. If the view needs to affect
-     * the lookup of the enclosing {@code TopComponent} it may do so using
-     * the value of its {@code "lookup"} client property.
+     * Returns CSS Styles view for this page.
      *
      * @return CSS Styles view for this page.
      */
-    public abstract JComponent getCSSStylesView();
+    public abstract CSSStylesView getCSSStylesView();
 
     /**
      * Disposes this page model.
@@ -166,150 +165,34 @@ public abstract class PageModel {
     }
 
     /**
-     * Information about a resource (like script, image or style sheet) used by a page.
+     * CSS Styles view.
      */
-    public static class ResourceInfo {
-        /** Type of the resource. */
-        private Type type;
-        /** URL of the resource. */
-        private String url;
+    public static interface CSSStylesView {
 
         /**
-         * Creates a new {@code ResourceInfo}.
-         * 
-         * @param type type of the resource.
-         * @param url URL of the resource.
+         * Returns the visual representation of CSS Styles.
+         *
+         * @return visual representation of CSS Styles.
          */
-        public ResourceInfo(Type type, String url) {
-            this.type = type;
-            this.url = url;
-        }
+        JComponent getView();
 
         /**
-         * Returns the type of the resource.
-         * 
-         * @return type of the resource.
+         * Lookup of the view (to include in the enclosing {@code TopComponent}).
+         *
+         * @return lookup of the view.
          */
-        public Type getType() {
-            return type;
-        }
+        Lookup getLookup();
 
         /**
-         * Returns the URL of the resource.
-         * 
-         * @return URL of the resource.
+         * The enclosing {@code TopComponent} has been activated.
          */
-        public String getURL() {
-            return url;
-        }
+        void activated();
 
         /**
-         * Type of a resource.
+         * The enclosing {@code TopComponent} has been deactivated.
          */
-        public enum Type {
-            /** HTML of the page itself. */
-            HTML("html"), // NOI18N
-            /** Style sheet. */
-            STYLESHEET("styleSheet"), // NOI18N
-            /** Script. */
-            SCRIPT("script"), // NOI18N
-            /** Image. */
-            IMAGE("image"); // NOI18N
+        void deactivated();
 
-            /** Code of the resource type. */
-            private String code;
-
-            /**
-             * Creates a new {@code Type}.
-             * 
-             * @param code code of the resource type.
-             */
-            private Type(String code) {
-                this.code = code;
-            }
-
-            /**
-             * Returns the code of this resource type.
-             * 
-             * @return code of this resource type.
-             */
-            public String getCode() {
-                return code;
-            }
-
-            /**
-             * Returns type of a resource from its code.
-             * 
-             * @param code code of the resource type.
-             * @return type of a resource from its code.
-             */
-            public static Type fromCode(String code) {
-                Type result = null;
-                for (Type type : values()) {
-                    if (type.code.equals(code)) {
-                        result = type;
-                        break;
-                    }
-                }
-                return result;
-            }
-        };
     }
 
-    /**
-     * Information about a CSS/style rule.
-     */
-    public static class RuleInfo {
-        /** URL of the style sheet this rule comes from. */
-        private String sourceURL;
-        /** Selector of this rule. */
-        private String selector;
-        /**
-         * Style information of the rule - maps the name of style attribute
-         * (specified by this rule) to its value.
-         */
-        private Map<String,String> style;
-
-        /**
-         * Creates a new {@code RuleInfo}.
-         * 
-         * @param sourceURL URL of the style sheet the rule comes from.
-         * @param selector selector of the rule.
-         * @param style style information of the rule.
-         */
-        public RuleInfo(String sourceURL, String selector, Map<String,String> style) {
-            this.sourceURL = sourceURL;
-            this.selector = selector;
-            this.style = style;
-        }
-
-        /**
-         * Returns URL of the style sheet this rule comes from.
-         * 
-         * @return URL of the style sheet this rule comes from.
-         */
-        public String getSourceURL() {
-            return sourceURL;
-        }
-
-        /**
-         * Returns the selector of this rule.
-         * 
-         * @return selector of this rule.
-         */
-        public String getSelector() {
-            return selector;
-        }
-
-        /**
-         * Returns style information of the rule.
-         * 
-         * @return style information of the rule.
-         */
-        public Map<String,String> getStyle() {
-            return style;
-        }
-        
-    }
-    
 }

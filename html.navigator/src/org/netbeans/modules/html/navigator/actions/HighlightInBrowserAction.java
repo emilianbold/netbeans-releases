@@ -47,7 +47,8 @@ package org.netbeans.modules.html.navigator.actions;
 import java.awt.event.*;
 import java.util.Collections;
 import javax.swing.*;
-import org.netbeans.modules.html.navigator.HtmlElementDescription;
+import org.netbeans.modules.html.navigator.Description;
+import org.netbeans.modules.html.navigator.HtmlElementNode;
 import org.netbeans.modules.html.navigator.HtmlNavigatorPanelUI;
 import org.netbeans.modules.html.navigator.Utils;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -59,23 +60,26 @@ import org.openide.util.*;
         )
 public final class HighlightInBrowserAction extends AbstractAction {
     
-    
-    private HtmlElementDescription description;
+    private HtmlElementNode node;
     private HtmlNavigatorPanelUI ui;
     
-    public HighlightInBrowserAction(HtmlElementDescription description, HtmlNavigatorPanelUI ui) {
-        this.description = description;
+    public HighlightInBrowserAction(HtmlElementNode node, HtmlNavigatorPanelUI ui) {
+        this.node = node;
         this.ui = ui;
         putValue ( Action.NAME, Bundle.highlight_element() ); //NOI18N
         setEnabled(false);
     }
     
+    private Description getDesDescription() {
+        return node.getDescription(Description.DOM);
+    }
+    
     @Override
     public void actionPerformed (ActionEvent ev) {
         final PageModel model = ui.getPageModel();
-        Node node = model.getDocumentNode();
+        Node rootNode = model.getDocumentNode();
         //find node corresponding to this HtmlElementDescription in the DOM tree
-        final Node match = Utils.findNode(node, description);
+        final Node match = Utils.findNode(rootNode, getDesDescription());
         if(match != null) {
             HtmlNavigatorPanelUI.RP.post(new Runnable() {
 
@@ -86,7 +90,12 @@ public final class HighlightInBrowserAction extends AbstractAction {
                 
             });
         }
-        
     }
+    
+    @Override
+    public boolean isEnabled() {
+        return getDesDescription() != null;
+    }
+    
     
 }

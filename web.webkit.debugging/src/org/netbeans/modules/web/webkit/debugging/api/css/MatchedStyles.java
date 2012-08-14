@@ -73,6 +73,7 @@ public class MatchedStyles {
                 Rule rule = new Rule((JSONObject)o);
                 matchedRules.add(rule);
             }
+            Collections.reverse(matchedRules);
         } else {
             matchedRules = Collections.EMPTY_LIST;
         }
@@ -83,7 +84,6 @@ public class MatchedStyles {
                 PseudoIdRules rule = new PseudoIdRules((JSONObject)o);
                 pseudoRules.add(rule);
             }
-
         }
         if (styles.containsKey("inherited")) { // NOI18N
             JSONArray rules = (JSONArray)styles.get("inherited"); // NOI18N

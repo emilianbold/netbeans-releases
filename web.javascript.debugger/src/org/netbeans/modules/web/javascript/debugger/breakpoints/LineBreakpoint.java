@@ -49,6 +49,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -140,11 +141,36 @@ public class LineBreakpoint extends AbstractBreakpoint {
         return FileOwnerQuery.getOwner( fileObject );
     }
 
+    /**
+     * Difference from getURLString method is that project's local file URL 
+     * (eg file://myproject/src/foo.html) is not converted into project's
+     * deployment URL (ie http://localhost/smth/foo.html). When persisting 
+     * breakpoints they should always be persisted in form of project's local
+     * file URL.
+     */
+    String getURLStringToPersist() {
+        return getURLStringImpl(false);
+    }
+    
+    /**
+     * See also getURLStringToPersist().
+     */
     String getURLString() {
+        return getURLStringImpl(true);
+    }
+    
+    private String getURLStringImpl(boolean applyInternalServerMapping) {
         FileObject fo = getLine().getLookup().lookup(FileObject.class);
         String url;
         URL remoteURL = RemoteFileCache.isRemoteFile(fo);
         if (remoteURL == null) {
+            // should "file://foo.bar" be translated into "http://localhost/smth/foo.bar"?
+            if (applyInternalServerMapping) {
+                URL internalServerURL = ServerURLMapping.toServer(getProject(), fo);
+                if (internalServerURL != null) {
+                    return internalServerURL.toExternalForm();
+                }
+            }
             url = fo.toURL().toExternalForm();
         } else {
             url = remoteURL.toExternalForm();

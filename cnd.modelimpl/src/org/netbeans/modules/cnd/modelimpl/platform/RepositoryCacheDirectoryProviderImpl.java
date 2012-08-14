@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author vk155633
  */
-@ServiceProvider(service=RepositoryCacheDirectoryProvider.class)
+@ServiceProvider(service=RepositoryCacheDirectoryProvider.class, position=1000)
 public class RepositoryCacheDirectoryProviderImpl implements RepositoryCacheDirectoryProvider  {
 
     @Override

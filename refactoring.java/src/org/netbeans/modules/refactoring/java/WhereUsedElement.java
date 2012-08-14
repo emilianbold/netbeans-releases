@@ -44,18 +44,24 @@
 package org.netbeans.modules.refactoring.java;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
+import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
+import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters.ReadWrite;
 import org.netbeans.modules.refactoring.java.ui.UIUtilities;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedPanel;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -65,21 +71,40 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public class WhereUsedElement extends SimpleRefactoringElementImplementation {
+public class WhereUsedElement extends SimpleRefactoringElementImplementation implements FiltersManager.Filterable {
     private PositionBounds bounds;
     private String displayText;
     private FileObject parentFile;
-    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info) {
+    private final JavaWhereUsedFilters.ReadWrite access;
+    private final boolean inComment;
+    private final boolean inImport;
+    private final boolean inTestclass;
+
+//    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info) {
+//        this(bounds, displayText, parentFile, tp, info, null, false, true);
+//    }
+//    
+//    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info, JavaWhereUsedFilters.ReadWrite access) {
+//        this(bounds, displayText, parentFile, tp, info, access, false, false);
+//    }
+    
+    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info, ReadWrite access, boolean inTestclass, boolean inComment, boolean inImport) {
         this.bounds = bounds;
         this.displayText = displayText;
         this.parentFile = parentFile;
-        if (tp!=null) {
+        if (tp != null) {
             ElementGripFactory.getDefault().put(parentFile, tp, info);
         }
+        ElementGripFactory.getDefault().put(parentFile, inTestclass);
+        this.access = access;
+        this.inTestclass = inTestclass;
+        this.inComment = inComment;
+        this.inImport = inImport;
     }
 
     @Override
@@ -93,7 +118,26 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         if (composite==null) {
             composite = parentFile;
         }
-        return Lookups.singleton(composite);
+        Icon icon = null;
+        if(access != null) {
+            switch(access) {
+                case WRITE:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_write.png", false);
+                    break;
+                case READ_WRITE:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_readwrite.png", false);
+                    break;
+                default:
+                case READ:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_read.png", false);
+                    break;
+            }
+        } else if(inComment) {
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false);
+        } else if(inImport) {
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_import.png", false);
+        }
+        return icon != null ? Lookups.fixed(composite, icon) : Lookups.singleton(composite);
     }
 
     @Override
@@ -114,8 +158,20 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     public FileObject getParentFile() {
         return parentFile;
     }
+
+    public JavaWhereUsedFilters.ReadWrite getAccess() {
+        return access;
+    }
     
-    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree) {
+    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, boolean inTest) {
+        return create(compiler, tree, null, inTest, new AtomicBoolean());
+    }
+    
+    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, boolean inTest, AtomicBoolean inImport) {
+        return create(compiler, tree, null, inTest, inImport);
+    }
+    
+    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, JavaWhereUsedFilters.ReadWrite access, boolean inTest, AtomicBoolean inImport) {
         CompilationUnitTree unit = tree.getCompilationUnit();
         CharSequence content = compiler.getSnapshot().getText();
         SourcePositions sp = compiler.getTrees().getSourcePositions();
@@ -134,6 +190,15 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 tree = getEnclosingTree(tree.getParentPath());
             }
             t = tree.getLeaf();
+        }
+        
+        boolean elementInImport = false;
+        if(t.getKind() == Tree.Kind.IDENTIFIER || t.getKind() == Tree.Kind.MEMBER_SELECT) {
+            TreePath enclosingTree = getEnclosingImportTree(tree);
+            if(enclosingTree != null) {
+                elementInImport = true;
+                inImport.set(true);
+            }
         }
 
         if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
@@ -231,7 +296,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 end = start;
             }
         }
-                
+
         assert start>0:"Cannot find start position in file " + unit.getSourceFile().getName() + "\n tree=" + tree.toString();
         assert end>0:"Cannot find end position in file " + unit.getSourceFile().getName() + "\n tree=" + tree.toString();
         LineMap lm = tree.getCompilationUnit().getLineMap();
@@ -264,7 +329,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 start==end && anonClassNameBug128074 ? NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"):sb.toString().trim(),
                 compiler.getFileObject(),
                 tr,
-                compiler);
+                compiler, access, inTest, false, elementInImport);
     }
     
     private static String trimStart(String s) {
@@ -289,7 +354,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return "";
     }
     
-    public static WhereUsedElement create(int start, int end, CompilationInfo compiler) {
+    public static WhereUsedElement create(int start, int end, CompilationInfo compiler, boolean inTest) {
         CharSequence content = compiler.getSnapshot().getText();
         LineMap lm = compiler.getCompilationUnit().getLineMap();
         long line = lm.getLineNumber(start);
@@ -315,9 +380,19 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
         PositionBounds bounds = new PositionBounds(ref1, ref2);
-        return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), null, compiler);
+        return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), null, compiler, null, inTest, true, false);
     }
     
+    private static TreePath getEnclosingImportTree(TreePath tp) {
+        while(tp != null) {
+            Tree tree = tp.getLeaf();
+            if (tree.getKind() == Tree.Kind.IMPORT) {
+                return tp;
+            } 
+            tp = tp.getParentPath();
+        }
+        return null;
+    }
     
     private static TreePath getEnclosingTree(TreePath tp) {
         while(tp != null) {
@@ -330,4 +405,20 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return null;
     }
 
+    @Override
+    public boolean filter(FiltersManager manager) {
+        if(!inTestclass || (inTestclass && manager.isSelected(JavaWhereUsedFilters.TESTFILE.getKey()))) { 
+            if (access != null) {
+                return manager.isSelected(access.getKey());
+            } else if (inComment) {
+                return manager.isSelected(JavaWhereUsedFilters.COMMENT.getKey());
+            } else if (inImport) {
+                return manager.isSelected(JavaWhereUsedFilters.IMPORT.getKey());
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
 }

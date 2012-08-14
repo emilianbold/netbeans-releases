@@ -88,18 +88,17 @@ public class GoToRuleSourceAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
+        boolean enabled = false;
         if (activatedNodes.length == 1) {
             Lookup lookup = activatedNodes[0].getLookup();
-            Resource resource = lookup.lookup(Resource.class);
-            if (resource.toFileObject() == null) {
-                return false;
-            }
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
-            return (rule != null);
-        } else {
-            return false;
+            if (rule != null) {
+                Resource resource = lookup.lookup(Resource.class);
+                enabled = (resource != null) && (resource.toFileObject() != null);
+            }
         }
+        return enabled;
     }
 
     @Override
@@ -109,7 +108,7 @@ public class GoToRuleSourceAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleAction.displayName"); // NOI18N
+        return NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleSourceAction.displayName"); // NOI18N
     }
 
     @Override

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import org.netbeans.modules.web.clientproject.browser.ServerURLMappingImpl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
@@ -55,6 +54,7 @@ import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.GenericSources;
@@ -62,6 +62,7 @@ import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -113,16 +114,70 @@ public class ClientSideProject implements Project {
     public ClientSideConfigurationProvider getProjectConfigurations() {
         return configurationProvider;
     }
+    
+    public EditableProperties getProjectProperties() {
+        return getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+    }
             
     private RefreshOnSaveListener getRefreshOnSaveListener() {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
             return cfg.getRefreshOnSaveListener();
-            } else {
+        } else {
             return null;
-            }
         }
+    }
 
+    public boolean isUsingEmbeddedServer() {
+        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
+    }
+    
+    public FileObject getSiteRootFolder() {
+        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (s == null) {
+            s = "";
+        }
+        if (s.length() == 0) {
+            return getProjectDirectory();
+        }
+        return helper.resolveFileObject(s);
+    }
+    
+    public FileObject getTestsFolder() {
+        String tests = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+        if (tests == null || tests.trim().length() == 0) {
+            return null;
+        }
+        return getProjectDirectory().getFileObject(tests);
+    }
+
+    public FileObject getConfigFolder() {
+        String config = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
+        if (config == null || config.trim().length() == 0) {
+            return null;
+        }
+        return getProjectDirectory().getFileObject(config);
+    }
+
+    public String getStartFile() {
+        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
+        if (s == null) {
+            s = "index.html";
+        }
+        return s;
+    }
+    
+    public String getWebContextRoot() {
+        String ctx = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT);
+        if (ctx == null) {
+            ctx = "/"+getProjectDirectory().getName();
+        }
+        if (!ctx.startsWith("/")) {
+            ctx = "/" + ctx;
+        }
+        return ctx;
+    }
+    
     public RemoteFiles getRemoteFiles() {
         return remoteFiles;
     }
@@ -141,7 +196,7 @@ public class ClientSideProject implements Project {
         return lookup;
     }
 
-    PropertyEvaluator getEvaluator() {
+    public PropertyEvaluator getEvaluator() {
         return eval;
     }
     
@@ -160,6 +215,8 @@ public class ClientSideProject implements Project {
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
        return Lookups.fixed(new Object[] {
                this,
+               new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
+               new ServerURLMappingImpl(this),
                configuration,
                helper.createCacheDirectoryProvider(),
                helper.createAuxiliaryProperties(),
@@ -173,7 +230,8 @@ public class ClientSideProject implements Project {
                //getBrowserSupport(),
                new ClassPathProviderImpl(this),
                configurationProvider,
-               GenericSources.genericOnly(this)
+               new PageInspectorCustomizerImpl(this),
+               new ClientSideProjectSources(this, helper, eval)
        });
     }
 
@@ -305,6 +363,6 @@ public class ClientSideProject implements Project {
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
-
+        
     }
 }

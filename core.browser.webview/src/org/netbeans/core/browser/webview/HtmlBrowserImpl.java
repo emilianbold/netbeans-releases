@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.EnhancedBrowser;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
@@ -57,6 +57,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJa
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * HTML browser implementation which uses embedded native browser component.
@@ -69,9 +70,8 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     private WebBrowser browser;
     private final Object LOCK = new Object();
     private Session session;
-    private boolean enhancedMode;
     private boolean disablePageInspector = false;
-
+    private Lookup projectContext;
 
     public HtmlBrowserImpl() {
         super();
@@ -95,6 +95,14 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         }
     }
 
+    private EnhancedBrowser getEnhancedBrowser() {
+        WebBrowser wb = getBrowser();
+        if (wb instanceof EnhancedBrowser) {
+            return (EnhancedBrowser)wb;
+        }
+        return null;
+    }
+    
     @Override
     public void reloadDocument() {
         getBrowser().reloadDocument();
@@ -117,6 +125,9 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             return;
         }
         initialized = true;
+
+        // projectContext lookup contains Project instance if URL being opened is from a project
+
         getBrowser();
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
@@ -129,11 +140,11 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             public void run() {
                 transport.attach();
                 webkitDebugger.getDebugger().enable();
-                session = debuggerFactory.createDebuggingSession(webkitDebugger);
+                session = debuggerFactory.createDebuggingSession(webkitDebugger, projectContext);
 
                 PageInspector inspector = PageInspector.getDefault();
                 if (inspector != null && !disablePageInspector) {
-                    inspector.inspectPage(getLookup());
+                    inspector.inspectPage(new ProxyLookup(getLookup(), projectContext));
                 }
             }
         });
@@ -267,28 +278,51 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
 
     @Override
     public boolean hasEnhancedMode() {
-        return this.enhancedMode;
+        if (getEnhancedBrowser() != null) {
+            return getEnhancedBrowser().hasEnhancedMode();
+        }
+        return false;
     }
 
     @Override
     public void setEnhancedMode(boolean mode) {
-        this.enhancedMode = mode;
+        if (getEnhancedBrowser() != null) {
+            getEnhancedBrowser().setEnhancedMode(mode);
+        }
     }
 
     @Override
     public void disablePageInspector() {
         disablePageInspector = true;
+        if (getEnhancedBrowser() != null) {
+            getEnhancedBrowser().disablePageInspector();
+        }
     }
 
     @Override
     public void enableLiveHTML() {
+        if (getEnhancedBrowser() != null) {
+            getEnhancedBrowser().enableLiveHTML();
+        }
     }
 
     @Override
     public void close(boolean closeTab) {
+        if (getEnhancedBrowser() != null) {
+            getEnhancedBrowser().close(closeTab);
+        }
         destroy();
         if (closeTab) {
             // TBD
         }
     }
+
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        this.projectContext = projectContext;
+        if (getEnhancedBrowser() != null) {
+            getEnhancedBrowser().setProjectContext(projectContext);
+        }
+    }
+    
 }

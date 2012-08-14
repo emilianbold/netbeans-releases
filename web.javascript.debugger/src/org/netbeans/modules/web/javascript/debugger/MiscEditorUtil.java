@@ -48,11 +48,15 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.cookies.EditorCookie;
@@ -104,13 +108,28 @@ public final class MiscEditorUtil {
         }
     }
 
-    public static Line getLineAnnotable(final String filePath,
-            final int lineNumber) {
-        Line line = getLine(filePath, lineNumber);
-        return line;
-    }
-
+    /**
+     * Call this method only when local file is concerned (eg file://myproject/src/foo.html) 
+     * and no project specific URL conversion is required. For example deserializing 
+     * file:// protocol URLs or handling local file URLs directly entered by user.
+     */
     public static Line getLine(final String filePath, final int lineNumber) {
+        return getLineImpl(null, filePath, lineNumber);
+    }
+    
+    /**
+     * Call this method for all URLs which are coming from browser and which 
+     * potentially needs to be converted from project's deployment URL 
+     * (eg http://localhost/smth/foo.html) into project's local file URL 
+     * (ie file://myproject/src/foo.html).
+     * As this happens mainly when URL is coming from browser the Script parameter
+     * is used in this method signature.
+     */
+    public static Line getLine(final Project project, final Script script, final int lineNumber) {
+        return getLineImpl(project, script.getURL(), lineNumber);
+    }
+    
+    private static Line getLineImpl(Project project, final String filePath, final int lineNumber) {
         if (filePath == null || lineNumber < 0) {
             return null;
         }
@@ -118,7 +137,13 @@ public final class MiscEditorUtil {
         FileObject fileObject = null;
         if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
             try {
-                fileObject = RemoteFileCache.getRemoteFile(URI.create(filePath).toURL());
+                URL url = URI.create(filePath).toURL();
+                if (project != null) {
+                    fileObject = ServerURLMapping.fromServer(project, url);
+                }
+                if (fileObject == null) {
+                    fileObject = RemoteFileCache.getRemoteFile(url);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -231,7 +256,7 @@ public final class MiscEditorUtil {
         MiscEditorUtil.showLine(line);
     }
     
-    public static Action createDebuggerGoToAction () {
+    public static Action createDebuggerGoToAction (final Project project) {
         Models.ActionPerformer actionPerform =  new Models.ActionPerformer () {
             @Override
             public boolean isEnabled (Object object) {
@@ -251,7 +276,7 @@ public final class MiscEditorUtil {
                     MiscEditorUtil.openFileObject(fileObject);
                 } else*/ if ( node instanceof CallFrame ){
                     CallFrame cf = ((CallFrame)node);
-                    Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
+                    Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
                     if ( line != null ) {
                         showLine(line, true);
                     }

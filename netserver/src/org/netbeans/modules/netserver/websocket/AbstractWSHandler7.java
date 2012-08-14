@@ -44,16 +44,25 @@ package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Random;
+import java.util.logging.Level;
+
+import javax.xml.bind.DatatypeConverter;
+
+import org.netbeans.modules.netserver.SocketFramework;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
+abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSHandler<T> 
+    implements WebSocketChanelHandler 
+{
 
     protected static final String SALT = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";     // NOI18N
     
@@ -81,6 +90,11 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
      * "Extended payload length" section 
      */
     protected static final int LENGTH_LEVEL  = 0x10000;  
+    
+    AbstractWSHandler7(T t){
+        super( t );
+        myRandom = new Random( hashCode() );
+    }
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
@@ -173,6 +187,30 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
         else {
             return maskedMessage;
         }
+    }
+    
+    protected String generateAcceptKey(String key ){
+        StringBuilder builder = new StringBuilder( key );
+        builder.append(SALT);
+        try {
+            return DatatypeConverter.printBase64Binary( MessageDigest.getInstance(
+                    "SHA").digest(builder.toString().getBytes(  // NOI18N
+                            Charset.forName(Utils.UTF_8))));
+        }
+        catch (NoSuchAlgorithmException e) {
+            WebSocketServer.LOG.log(Level.WARNING, null , e);
+            return null;
+        } 
+    }
+    
+    /*
+     * Method could be used in {@link #createTextFrame(String)} for setting 
+     * mask ( currently trivial static mask is used ) instead of {@link #isClient()}
+     * method usage and for 16 bit sec-websocket key in initial WS client request   
+     * 
+     */
+    protected Random getRandom(){
+        return myRandom;
     }
     
     private boolean readFinalFrame( ByteBuffer byteBuffer,
@@ -328,14 +366,10 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
      */
     protected abstract boolean isClient();
     
-    protected abstract SelectionKey getKey();
-    
-    protected abstract void close() throws IOException;
-    
     protected abstract void readDelegate( byte[] bytes , int dataType ) ;
     
     protected abstract boolean verifyMask( boolean hasMask ) throws IOException ;
     
-    protected abstract boolean isStopped();
-
+    private Random myRandom;
+    
 }

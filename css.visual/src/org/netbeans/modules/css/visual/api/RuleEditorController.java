@@ -43,6 +43,7 @@ package org.netbeans.modules.css.visual.api;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
@@ -147,9 +148,21 @@ public final class RuleEditorController {
      * 
      * @param rule a non null instance of {@link Rule). <b>MUST belong to the selected css model instance!</b>
      */
-    public void setRule(Rule rule) {
+    public void setRule(final Rule rule) {
         Parameters.notNull("rule", rule);
-        peer.setRule(rule);
+        
+        if(SwingUtilities.isEventDispatchThread()) {
+            peer.setRule(rule);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    peer.setRule(rule);
+                }
+                
+            });
+        }
     }
     
     /**
@@ -157,7 +170,18 @@ public final class RuleEditorController {
      * The panel will show some informational message instead of the css rule properties.
      */
     public void setNoRuleState() {
-        peer.setNoRuleState();
+        if(SwingUtilities.isEventDispatchThread()) {
+            peer.setNoRuleState();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    peer.setNoRuleState();
+                }
+                
+            });
+        }
     }
     
     /**

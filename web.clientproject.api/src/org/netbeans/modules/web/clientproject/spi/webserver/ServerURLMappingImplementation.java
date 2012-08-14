@@ -47,7 +47,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Provides mapping between project's source file and its location on server
- * and vice versa.
+ * and vice versa. To be registered in project's lookup.
  */
 public interface ServerURLMappingImplementation {
 

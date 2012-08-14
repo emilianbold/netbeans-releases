@@ -63,10 +63,10 @@ public class RuleNode extends AbstractNode {
      * Creates a new {@code RuleNode}.
      *
      * @param rule rule represented by the node.
-     * @param styleSheetSourceURL URL of the stylesheet the rule belongs to.
+     * @param ruleOrigin origin of the rule.
      */
-    RuleNode(Rule rule, String styleSheetSourceURL) {
-        super(Children.LEAF, Lookups.fixed(rule, new Resource(styleSheetSourceURL)));
+    RuleNode(Rule rule, Resource ruleOrigin) {
+        super(Children.LEAF, Lookups.fixed(rule, ruleOrigin));
         setDisplayName(rule.getSelector());
         setIconBaseWithExtension(ICON_BASE);
     }

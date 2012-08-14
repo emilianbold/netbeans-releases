@@ -45,10 +45,11 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -58,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(SiteHtml5Boilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibDirectory(), "html5-boilerplate-301.zip"); // NOI18N
+    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-301.zip"); // NOI18N
 
 
     @NbBundle.Messages("SiteHtml5Boilerplate.name=HTML5 Boilerplate")
@@ -86,19 +87,19 @@ public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) throws IOException {
+    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied");
             return;
         }
-        SiteHelper.unzip(LIB_FILE, FileUtil.toFile(p), handle);
+        SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);
     }
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.emptyList();
+        return SiteHelper.listJsFilenamesFromZipFile(LIB_FILE);
     }
 
 }

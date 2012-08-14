@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsRevisionFilterPanel;
 import java.awt.Rectangle;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,6 +59,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
@@ -67,33 +70,29 @@ import org.netbeans.modules.web.livehtml.AnalysisListener;
 import org.netbeans.modules.web.livehtml.AnalysisModel;
 import org.netbeans.modules.web.livehtml.AnalysisModelListener;
 import org.netbeans.modules.web.livehtml.AnalysisStorage;
-import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.domdiff.Change;
+import org.netbeans.modules.web.livehtml.ReformatSupport;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFilteredAnalysis;
+import org.netbeans.modules.web.livehtml.filter.RevisionFilterPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author petr-podzimek
  */
-@NbBundle.Messages({
-    "CTL_RevisionLabel_ToolTip=Revision index", 
-    "CTL_StartAnalysisButton_ToolTip=Start analysis of selected URL or file",
-    "CTL_ReformatRevisionsButton_ToolTip=Revision is reformated when pressed",
-    "CTL_AnalysisComboBox_ToolTip=Select existing analysis of enter URL for analysis"})
 public class AnalysisPanel extends javax.swing.JPanel {
     
     private static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
     
     private static final boolean SHOW_FILTER_BUTTON = true;
+    private static final boolean SHOW_PREVIEW_BUTTON = true;
     
     private AnalysisModel analysisModel = new AnalysisModel();
     private RevisionToolTipPanel revisionToolTipPanel = null;
@@ -106,6 +105,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
     private AnalysisModelListener analysisModelListener = new PrivateAnalysisModelListener();
     private AnalysisListener analysisListener = new PrivateAnalysisListener();
     
+    private static BrowserSupport previewBrowserSupport = null;
+
     /**
      * Creates new form AnalysisPanel
      */
@@ -198,11 +199,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
         
         if (selectedAnalysis != null && revision != null) {
             int index = revision.getIndex();
+            
             revisionLabel.setText(selectedAnalysisItem.getRevisionLabel(index));
-            if (selectedAnalysisItem.getFilteredAnalysis() != null) {
-                final GroupScriptsFilteredAnalysis filteredAnalysis = (GroupScriptsFilteredAnalysis) selectedAnalysisItem.getFilteredAnalysis();
-                revisionLabel.setToolTipText(filteredAnalysis.getGroupedRevision().toString());
-            }
             
             revisionSlider.setEnabled(selectedAnalysis.getRevisionsCount() > 1);
             revisionSlider.setMaximum(selectedAnalysis.getRevisionsCount());
@@ -215,6 +213,33 @@ public class AnalysisPanel extends javax.swing.JPanel {
             revisionEditorPane.getDocument().putProperty(Change.class, revision.getChanges());
             
             revisionEditorPane.scrollRectToVisible(visibleRect);
+            
+            if (revision.resolvePreviewContent(reformatRevisionButton.isSelected()) == null) {
+                final Document document = revisionEditorPane.getDocument();
+                final Map<Integer, Integer> indexesOfJavaScript = ReformatSupport.getIndexesOfJavaScript(document);
+
+                StringBuilder documentText = null;
+                try {
+                    documentText = new StringBuilder(document.getText(0, document.getLength()));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                if (documentText != null) {
+                    final StringBuilder replaceBySpaces = ReformatSupport.replaceBySpaces(indexesOfJavaScript, documentText);
+                    
+                    final Analysis analysis = selectedAnalysisItem.resolveAnalysis();
+                    if (reformatRevisionButton.isSelected()) {
+                        analysis.store(Analysis.FORMATTED_NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
+                    } else {
+                        analysis.store(Analysis.NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
+                    }
+                    revision.updatePreviewContent(replaceBySpaces, reformatRevisionButton.isSelected());
+
+                }
+            }
+            
+            
         } else {
             revisionLabel.setText("- / -");
             
@@ -381,6 +406,49 @@ public class AnalysisPanel extends javax.swing.JPanel {
         return revisionToolTipPanel;
     }
     
+    private void previewRevision(Revision revision) {
+        if (revision == null) {
+            return;
+        }
+        
+        final StringBuilder documentText = revision.resolvePreviewContent(reformatRevisionButton.isSelected());
+        
+        if (documentText == null) {
+            return;
+        }
+        
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File f = File.createTempFile("livehtml", "dummy");
+                    FileWriter fileWriter = new FileWriter(f);
+                    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                    
+                    bufferedWriter.write(documentText.toString());
+                    bufferedWriter.close();
+                    
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+                    
+                    //TODO: This part of code must be changed - now it will open Chrome Tab for every "file". 
+                    getPreviewBrowserSupport().disablePageInspector();
+                    getPreviewBrowserSupport().load(fo.toURL(), fo);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
+    
+    private synchronized BrowserSupport getPreviewBrowserSupport() {
+        if (previewBrowserSupport == null) {
+            previewBrowserSupport = BrowserSupport.create();
+            previewBrowserSupport.disablePageInspector();
+            previewBrowserSupport.enabledLiveHTML();
+        }
+        return previewBrowserSupport;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -395,13 +463,14 @@ public class AnalysisPanel extends javax.swing.JPanel {
         reformatRevisionButton = new javax.swing.JToggleButton();
         startAnalysisButton = new javax.swing.JButton();
         filterButton = new javax.swing.JButton();
+        previewRevisionToggleButton = new javax.swing.JToggleButton();
         mainPanel = new javax.swing.JPanel();
         revisionScrollPane = new javax.swing.JScrollPane();
         revisionEditorPane = new javax.swing.JEditorPane();
         revisionLabel = new javax.swing.JLabel();
         revisionSlider = new javax.swing.JSlider();
 
-        analysisComboBox.setToolTipText(Bundle.CTL_AnalysisComboBox_ToolTip());
+        analysisComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.analysisComboBox.toolTip")); // NOI18N
         analysisComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 analysisComboBoxItemStateChanged(evt);
@@ -409,9 +478,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
         });
 
         reformatRevisionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/pretty.png"))); // NOI18N
-        reformatRevisionButton.setToolTipText(Bundle.CTL_ReformatRevisionsButton_ToolTip());
-        reformatRevisionButton.setBorderPainted(false);
-        reformatRevisionButton.setFocusable(false);
+        reformatRevisionButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.reformatRevisionsButton.toolTipText")); // NOI18N
+        reformatRevisionButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         reformatRevisionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reformatRevisionButtonActionPerformed(evt);
@@ -419,9 +487,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
         });
 
         startAnalysisButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
-        startAnalysisButton.setToolTipText(Bundle.CTL_StartAnalysisButton_ToolTip());
-        startAnalysisButton.setBorderPainted(false);
-        startAnalysisButton.setFocusable(false);
+        startAnalysisButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.startAnalysisButton.toolTipText")); // NOI18N
+        startAnalysisButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         startAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 startAnalysisButtonActionPerformed(evt);
@@ -429,11 +496,20 @@ public class AnalysisPanel extends javax.swing.JPanel {
         });
 
         filterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/filter.png"))); // NOI18N
-        filterButton.setBorderPainted(false);
-        filterButton.setFocusable(false);
+        filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.filterButton.toolTipText")); // NOI18N
+        filterButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filterButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterButtonActionPerformed(evt);
+            }
+        });
+
+        previewRevisionToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/preview.png"))); // NOI18N
+        previewRevisionToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.previewRevisionButton.toolTipText")); // NOI18N
+        previewRevisionToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        previewRevisionToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                previewRevisionToggleButtonActionPerformed(evt);
             }
         });
 
@@ -448,24 +524,27 @@ public class AnalysisPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(reformatRevisionButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(filterButton))
+                .addComponent(filterButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(previewRevisionToggleButton))
         );
         toolBarPanelLayout.setVerticalGroup(
             toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(toolBarPanelLayout.createSequentialGroup()
-                .addGroup(toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(analysisComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(startAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reformatRevisionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(filterButton))
+                .addGroup(toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(analysisComboBox)
+                    .addComponent(startAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(reformatRevisionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(filterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(previewRevisionToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
         filterButton.setVisible(SHOW_FILTER_BUTTON);
+        previewRevisionToggleButton.setVisible(SHOW_PREVIEW_BUTTON);
 
         revisionEditorPane.setEditable(false);
         revisionEditorPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/html"));
-        revisionEditorPane.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "CTL_Clear_analyses_Label")); // NOI18N
         revisionEditorPane.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 revisionEditorPaneMouseMoved(evt);
@@ -474,7 +553,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
         revisionScrollPane.setViewportView(revisionEditorPane);
 
         revisionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        revisionLabel.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "CTL_Revision_index_Label")); // NOI18N
 
         revisionSlider.setMinimum(1);
         revisionSlider.setMinorTickSpacing(1);
@@ -527,6 +605,11 @@ public class AnalysisPanel extends javax.swing.JPanel {
             Revision lastSelectedRevision = getSelectedRevision();
             lastSelectedRevisions.put(getSelectedAnalysis(), lastSelectedRevision);
             selectRevision(lastSelectedRevision);
+            
+            
+            if (previewRevisionToggleButton.isSelected()) {
+                previewRevision(lastSelectedRevision);
+            }
         }
     }//GEN-LAST:event_revisionSliderStateChanged
 
@@ -565,9 +648,17 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_revisionEditorPaneMouseMoved
 
     private void startAnalysisButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startAnalysisButtonActionPerformed
+        final AnalysisItem selectedAnalysisItem = getSelectedAnalysisItem();
+        Analysis selectedAnalysis = null;
+        if (selectedAnalysisItem != null) {
+            selectedAnalysisItem.setFilteredAnalysis(null);
+            selectedAnalysis = selectedAnalysisItem.getAnalysis();
+        }
         
-        if (getSelectedAnalysis() == null) {
+        if (selectedAnalysis == null) {
             analysisComboBox.actionPerformed(evt);
+        } else {
+            selectedAnalysis.makeFinished();
         }
         
         URL url_;
@@ -576,7 +667,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
         if (analysisModel.getSourceUrl() == null) {
             String selectedUrl = getSelectedUrl();
             if (selectedUrl == null || selectedUrl.isEmpty()) {
-                Analysis selectedAnalysis = getSelectedAnalysis();
                 if (selectedAnalysis == null) {
                     selectedUrl = "http://www.netbeans.org/";
                 } else {
@@ -620,7 +710,11 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_startAnalysisButtonActionPerformed
 
     private void reformatRevisionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reformatRevisionButtonActionPerformed
-        selectRevision(getSelectedRevision());
+        final Revision selectedRevision = getSelectedRevision();
+        selectRevision(selectedRevision);
+        if (previewRevisionToggleButton.isSelected()) {
+            previewRevision(selectedRevision);
+        }
     }//GEN-LAST:event_reformatRevisionButtonActionPerformed
 
     private void analysisComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_analysisComboBoxItemStateChanged
@@ -641,12 +735,9 @@ public class AnalysisPanel extends javax.swing.JPanel {
         }
         FilteredAnalysis filteredAnalysis = selectedAnalysisItem.getFilteredAnalysis();
         
-        RevisionFilterPanel revisionFilterPanel = new GroupScriptsRevisionFilterPanel();
+        RevisionFilterPanel revisionFilterPanel = new RevisionFilterPanel();
         revisionFilterPanel.setAnalysis(selectedAnalysis);
-        
-        if (revisionFilterPanel.canProcess(filteredAnalysis)) {
-            revisionFilterPanel.setFilteredAnalysis(filteredAnalysis);
-        }
+        revisionFilterPanel.setFilteredAnalysis(filteredAnalysis);
         
         DialogDescriptor dialogDescriptor = new DialogDescriptor(revisionFilterPanel, "Revision filter");
         
@@ -661,16 +752,25 @@ public class AnalysisPanel extends javax.swing.JPanel {
             selectedAnalysisItem.setFilteredAnalysis(null);
             updateAnalysis(getSelectedAnalysis());
         } else {
-            filteredAnalysis.applyFilter();
             AnalysisStorage.getInstance().addFilteredAnalysis(filteredAnalysis);
         }
         
     }//GEN-LAST:event_filterButtonActionPerformed
 
+    private void previewRevisionToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRevisionToggleButtonActionPerformed
+        if (previewRevisionToggleButton.isSelected()) {
+            previewRevision(getSelectedRevision());
+        } else {
+            previewRevision(null);
+        }
+        
+    }//GEN-LAST:event_previewRevisionToggleButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox analysisComboBox;
     private javax.swing.JButton filterButton;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JToggleButton previewRevisionToggleButton;
     private javax.swing.JToggleButton reformatRevisionButton;
     private javax.swing.JEditorPane revisionEditorPane;
     private javax.swing.JLabel revisionLabel;
@@ -716,7 +816,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
             if (analysis == selectedFilteredAnalysis) {
                 lastSelectedRevisions.remove(selectedFilteredAnalysis);
                 updateRevisions(selectedFilteredAnalysis);
-                return;
             }
         }
 

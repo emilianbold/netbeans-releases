@@ -352,6 +352,21 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testInstanceOfIsNullCheck() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void t(@NullAllowed Object obj) {\n" +
+                       "        if (obj instanceof String) {\n" +
+                       "            System.err.println(obj.toString());\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
