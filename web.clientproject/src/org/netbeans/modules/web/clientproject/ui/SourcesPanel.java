@@ -198,7 +198,7 @@ public class SourcesPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBrowseSiteRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseSiteRootButtonActionPerformed
-        browse(jSiteRootFolderTextField, true, project.getSiteRootFolder());
+        browse(jSiteRootFolderTextField, true, project.getProjectDirectory());
     }//GEN-LAST:event_jBrowseSiteRootButtonActionPerformed
 
     private void browse(JTextField tf, boolean allowNonProjectFolders, FileObject baseFolder) {
