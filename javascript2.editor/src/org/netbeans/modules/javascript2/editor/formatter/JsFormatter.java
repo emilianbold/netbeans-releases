@@ -42,7 +42,9 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -71,6 +73,8 @@ public class JsFormatter implements Formatter {
     private final Language<JsTokenId> language;
 
     private int lastOffsetDiff = 0;
+
+    private Set<FormatToken> processed = new HashSet<FormatToken>();
 
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;
@@ -153,7 +157,10 @@ public class JsFormatter implements Formatter {
                         initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
-                    
+
+                    if (processed.contains(token)) {
+                        continue;
+                    }
                     switch (token.getKind()) {
                         case BEFORE_ASSIGNMENT_OPERATOR:
                         case BEFORE_BINARY_OPERATOR:
@@ -210,8 +217,7 @@ public class JsFormatter implements Formatter {
                         case AFTER_CATCH_PARENTHESIS:
                         case AFTER_LEFT_PARENTHESIS:
                         case AFTER_ARRAY_LITERAL_BRACKET:
-                            i = handleSpace(tokens, i, formatContext,
-                                    !isSpace(token, formatContext));
+                            handleSpace(tokens, i, formatContext);
                             break;
                         // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
@@ -535,15 +541,13 @@ public class JsFormatter implements Formatter {
         return i;
     }
 
-    private int handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
-
+    private void handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext) {
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
 
         CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext, true);
         if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return index;
+            return;
         }
 
         boolean containsEol = false;
@@ -578,7 +582,16 @@ public class JsFormatter implements Formatter {
             }
         }
 
+        for (FormatToken current = start; current != end; current = current.next()) {
+            if (current.isVirtual() && !current.isIndentationMarker() && getLineWrap(current, formatContext) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
+                processed.add(current);
+            }
+        }
+
+        // FIXME if end is null we might be at EOF
         if (start != null && end != null) {
+            boolean remove = !isSpace(token, formatContext, true);
+
             // we fetch the space or next token to start
             start = getNextNonVirtual(start);
 
@@ -597,12 +610,7 @@ public class JsFormatter implements Formatter {
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
             }
-            // we have done everything needed so move forward
-            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, end, formatContext, false);
-            }
         }
-        return index;
     }
 
     private boolean isContinuation(FormatToken token, boolean noRealEol) {
