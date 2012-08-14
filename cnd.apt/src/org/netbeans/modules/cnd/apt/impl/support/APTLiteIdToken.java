@@ -49,17 +49,26 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  * @author Egor Ushakov
  */
 public final class APTLiteIdToken extends APTTokenAbstact {
-    private static final int COL_BITS  = 9;
+    private static final int COL_BITS  = 10;
     private static final int MAX_COL   = (1<<COL_BITS) - 1;
     private static final int LINE_BITS = 14;
     private static final int MAX_LINE  = (1<<LINE_BITS) - 1;
-    private static final int TYPE_BITS = 9;
+    private static final int TYPE_BITS = 8;
     private static final int MAX_TYPE  = (1<<TYPE_BITS) - 1;
     private final int offset;
     private final int columnLineType;
+    
+    static {
+        // check that MX_TYPE is enough for all literals
+        assert APTTokenTypes.LAST_LITERAL_TOKEN - APTTokenTypes.FIRST_LITERAL_TOKEN < MAX_TYPE
+                : TYPE_BITS + " bits is not enough for " + (APTTokenTypes.LAST_LITERAL_TOKEN - APTTokenTypes.FIRST_LITERAL_TOKEN) + " literals"; //NOI18N
+    }
 
-    public static boolean isApplicable(int type, int offset, int column, int line, String text) {
-        if (type == APTTokenTypes.IDENT && line <= MAX_LINE && column <= MAX_COL && APTConstTextToken.text2id.get(text) != null) {
+    public static boolean isApplicable(int type, int offset, int column, int line, int literalType) {
+        if (type != APTTokenTypes.IDENT || line > MAX_LINE || column > MAX_COL) {
+            return false;
+        }
+        if (literalType > APTTokenTypes.FIRST_LITERAL_TOKEN && literalType < APTTokenTypes.LAST_LITERAL_TOKEN) {
             return true;
         }
         return false;
@@ -68,19 +77,21 @@ public final class APTLiteIdToken extends APTTokenAbstact {
     /**
      * Creates a new instance of APTConstTextToken
      */
-    public APTLiteIdToken(int offset, int column, int line, String text) {
+    public APTLiteIdToken(int offset, int column, int line, int literalType) {
         this.offset = offset;
-        Integer textId = APTConstTextToken.text2id.get(text);
-        assert textId != null; // checked already in isApplicable
-        columnLineType = ((((column & MAX_COL)<<LINE_BITS) + (line & MAX_LINE))<<TYPE_BITS) + (textId & MAX_TYPE);
+        int type = literalType - APTTokenTypes.FIRST_LITERAL_TOKEN;
+        assert type > 0 && type < MAX_TYPE;
+        columnLineType = ((((column & MAX_COL)<<LINE_BITS) 
+                       + (line & MAX_LINE))<<TYPE_BITS) 
+                       + (type & MAX_TYPE);
         assert column == getColumn();
         assert line == getLine();
-        assert textId == getTextType();
+        assert literalType == getLiteralType();
     }
-
+    
     @Override
     public String getText() {
-        return APTConstTextToken.constText[columnLineType & MAX_TYPE];
+        return APTConstTextToken.constText[getLiteralType()];
     }
 
     @Override
@@ -95,7 +106,7 @@ public final class APTLiteIdToken extends APTTokenAbstact {
 
     @Override
     public CharSequence getTextID() {
-        return APTConstTextToken.constTextID[columnLineType & MAX_TYPE];
+        return APTConstTextToken.constTextID[getLiteralType()];
     }
 
     @Override
@@ -116,8 +127,8 @@ public final class APTLiteIdToken extends APTTokenAbstact {
     /**
      * @return token type as defined by the text
      */
-    public int getTextType() {
-        return columnLineType & MAX_TYPE;
+    public int getLiteralType() {
+        return (columnLineType & MAX_TYPE) + APTTokenTypes.FIRST_LITERAL_TOKEN;
     }
 
     @Override
