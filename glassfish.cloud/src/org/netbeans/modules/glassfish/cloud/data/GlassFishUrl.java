@@ -45,8 +45,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.enterprise.deploy.spi.Target;
 import org.glassfish.tools.ide.data.DataException;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
+import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
 
 /**
  * GlassFish cloud URL representing key attribute in JavaEE server registry.
@@ -357,6 +359,10 @@ public class GlassFishUrl {
      */
     public String getName() {
         return name;
+    }
+    
+    public Target getTarget() {
+        return new Hk2Target(name, url(type, name));
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -44,6 +44,10 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -54,7 +58,17 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandDeploy;
+import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.ServerAdmin;
+import org.glassfish.tools.ide.data.IdeContext;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
+import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
 /**
@@ -73,6 +87,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 public class GlassFishAccountDeploymentManager
         extends GlassFishDeploymentManager {
 
+    final GlassFishAccountInstance instance;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -88,6 +104,10 @@ public class GlassFishAccountDeploymentManager
      */
     GlassFishAccountDeploymentManager(GlassFishUrl url) {
         super(url);
+        instance = GlassFishAccountInstanceProvider.getAccountInstance(url.getName());
+        if (instance == null) {
+            throw new NullPointerException("There is no account instance named " + url.getName());
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -129,7 +149,31 @@ public class GlassFishAccountDeploymentManager
     @Override
     public ProgressObject distribute(Target[] targetList,
             DeploymentContext deployment) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File moduleFile = deployment.getModuleFile();
+        if (moduleFile.isDirectory()) {
+            throw new UnsupportedOperationException("Directory deployment not supported.");
+        }
+        Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleFile.getName(),
+                null, moduleFile.getAbsolutePath());
+        CloudDeployProgressObject progressObject = new CloudDeployProgressObject(this, moduleId);
+        // call deploy
+        CommandDeploy deployCommand = new CommandDeploy(null, null, moduleFile, null, null, null);
+        try {
+            Future<ResultString> future =
+                    ServerAdmin.<ResultString>exec(instance.getLocalServer(), deployCommand, new IdeContext(), progressObject);
+            try {
+                ResultString result = future.get();
+                //assertNotNull(result.getValue());
+                //assertEquals(result.state, TaskState.COMPLETED);
+            } catch (InterruptedException e) {
+                Logger.getLogger("glassfish-javaee").log(Level.SEVERE, "exception during deployment", e);
+            } catch (ExecutionException e) {
+                Logger.getLogger("glassfish-javaee").log(Level.SEVERE, "exception during deployment", e);
+            }
+        } catch (GlassFishIdeException e) {
+            Logger.getLogger("glassfish-javaee").log(Level.SEVERE, "exception during deployment", e);
+        }
+        return progressObject;
     }
 
     /**

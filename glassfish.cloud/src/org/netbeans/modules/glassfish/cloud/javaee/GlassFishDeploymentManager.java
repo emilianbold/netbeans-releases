@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.cloud.javaee;
 
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
@@ -99,7 +100,7 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
      */
     @Override
     public Target[] getTargets() throws IllegalStateException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Target[] {url.getTarget()};
     }
 
 }
