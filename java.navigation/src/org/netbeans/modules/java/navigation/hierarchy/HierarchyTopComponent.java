@@ -50,7 +50,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -82,8 +81,6 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -162,7 +159,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final JButton refreshButton;
     private final JButton jdocButton;
     private final HierarchyFilters filters;
-    
+
+    @NbBundle.Messages({
+        "TXT_RefreshContent=Refresh",
+        "TXT_OpenJDoc=Open Javadoc Window"
+    })
     public HierarchyTopComponent() {
         explorerManager = new ExplorerManager();
         selectedNodes  = new InstanceContent();
@@ -178,9 +179,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
         refreshButton.setFocusable(false);
+        refreshButton.setToolTipText(Bundle.TXT_RefreshContent());
         jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
         jdocButton.addActionListener(this);
         jdocButton.setFocusable(false);
+        jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
         final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, jdocButton);        
         add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
         btw = createBeanTreeView();
