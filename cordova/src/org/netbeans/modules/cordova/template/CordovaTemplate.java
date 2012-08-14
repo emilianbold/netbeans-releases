@@ -56,6 +56,7 @@ import org.netbeans.modules.cordova.android.AndroidPlatform;
 import org.netbeans.modules.cordova.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -80,8 +81,9 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) {
+    public void apply(AntProjectHelper helper, ProgressHandle handle) {
         try {
+            FileObject p = helper.getProjectDirectory();
             File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");
             FileObject examples = FileUtil.toFileObject(examplesFolder);
             FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");

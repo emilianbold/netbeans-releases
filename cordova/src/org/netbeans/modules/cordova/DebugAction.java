@@ -50,9 +50,8 @@ import org.netbeans.modules.cordova.ios.IOSDebugTransport;
 import org.netbeans.modules.cordova.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
-import org.netbeans.modules.web.webkit.debugging.APIFactory;
-import org.netbeans.modules.web.webkit.debugging.TransportHelper;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -102,9 +101,8 @@ public final class DebugAction extends AbstractAction implements ContextAwareAct
             @Override
             public void run() {
                 final MobileDebugTransport safariDebugTransport = transport;
-                final TransportHelper transportHelper = new TransportHelper(safariDebugTransport);
                 safariDebugTransport.attach();
-                WebKitDebugging webKitDebugging = APIFactory.createWebKitDebugging(transportHelper);
+                WebKitDebugging webKitDebugging = Factory.createWebKitDebugging(transport);
                 webKitDebugging.getDebugger().enable();
                 NetBeansJavaScriptDebuggerFactory fact = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
                 org.netbeans.api.debugger.Session debuggerSession = fact.createDebuggingSession(webKitDebugging, Lookups.singleton(p));
