@@ -86,6 +86,7 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -317,11 +318,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return index;
     }
 
-    private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
-
-        int MAX_MAX_CLAUSE = 1<<11;  // conservative maximum for too general queries, like "c:*class*"
+    private @CheckForNull IteratorSearchResponse repeatedPagedSearch(Query q, final List<IndexingContext> contexts, int count) throws IOException {
+        IteratorSearchRequest isr = new IteratorSearchRequest(q, contexts, new NoJavadocSourceFilter());
+        if (count > 0) {
+            isr.setCount(count);
+        }
         
-        Query q = fsr.getQuery();
+        int MAX_MAX_CLAUSE = 1<<11;  // conservative maximum for too general queries, like "c:*class*"
+
         if (q instanceof BooleanQuery) {
             BooleanClause[] c = ((BooleanQuery)q).getClauses();
             if (c.length==1) {
@@ -340,22 +344,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             int max = oldMax;
             while (true) {
-                FlatSearchResponse response;
+                IteratorSearchResponse response;
                 try {
                     BooleanQuery.setMaxClauseCount(max);
-                    response = searcher.searchFlatPaged(fsr, contexts);
+                    response = searcher.searchIteratorPaged(isr, contexts);
                     LOGGER.log(Level.FINE, "passed on {0} clauses processing {1} with {2} hits", new Object[] {max, q, response.getTotalHitsCount()});
                     return response;
                 } catch (BooleanQuery.TooManyClauses exc) {
                     LOGGER.log(Level.FINE, "TooManyClauses on {0} clauses processing {1}", new Object[] {max, q});
                     max *= 2;
                     if (max > MAX_MAX_CLAUSE) {
-                        if (shouldThrow) {
-                            throw exc;
-                        } else {
-                            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, q});
-                            return null;
-                        }
+                        LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, q});
+                        return null;
                     } else {
                         continue;
                     }
@@ -844,10 +844,16 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS + version + ArtifactInfo.FS;
                 bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = searcher.searchFlatPaged(fsr, Collections.singletonList(context));
-                infos.addAll(convertToNBVersionInfo(response.getResults()));
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
+                if (response != null) {
+                   try {
+                        for (ArtifactInfo ai : response.iterator()) {
+                            infos.add(convertToNBVersionInfo(ai));
+                        }
+                    } finally {
+                        response.close();
+                    }
+                }
             }
         }, skipAction, skipUnIndexed);
         Collections.sort(infos);
@@ -874,11 +880,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS;
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
+                    try {
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.artifactId);
+                    }
+                    } finally {
+                        response.close();
                     }
                 }
             }
@@ -905,10 +914,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS;
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                   try {
+                        for (ArtifactInfo ai : response.iterator()) {
+                            infos.add(convertToNBVersionInfo(ai));
+                        }
+                    } finally {
+                        response.close();
+                    }
                 }
             }
         }, skipAction, skipUnIndexed);
@@ -934,14 +948,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 String clsname = className.replace(".", "/");
-                FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(
-                        indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)))),
-                        ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                Query q = setBooleanRewrite(
+                        indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH))));       
+                IteratorSearchResponse response = repeatedPagedSearch(q, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    infos.addAll(convertToNBVersionInfo(postProcessClasses(response.getResults(),
-                            clsname)));
+                    try {
+                        infos.addAll(postProcessClasses(response.getResults(), clsname));
+                    } finally {
+                        response.close();
+                    }
                 }
             }
         }, skipAction, skipUnIndexed);
@@ -1004,11 +1019,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
-                FlatSearchRequest fsr = new FlatSearchRequest(q, ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(q, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    try {
+                        for (ArtifactInfo ai : response.iterator()) {
+                            infos.add(convertToNBVersionInfo(ai));
+                        }
+                    } finally {
+                        response.close();
+                    }
                 }
             }
         }, skipAction, skipUnIndexed);
@@ -1094,11 +1113,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(MAVEN.SHA1, new StringSearchExpression(sha1)))), BooleanClause.Occur.SHOULD));
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    try {
+                        for (ArtifactInfo ai : response.iterator()) {
+                            infos.add(convertToNBVersionInfo(ai));
+                        }
+                    } finally {
+                        response.close();
+                    }
                 }
             }
         }, skipAction, skipUnIndexed);
@@ -1130,10 +1153,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 /* There are >512 archetypes in Central, and we want them all in ChooseArchetypePanel
                 fsr.setCount(MAX_RESULT_COUNT);
                 */
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), -1);
                 if (response != null) {
-                    List<NBVersionInfo> results = convertToNBVersionInfo(response.getResults());
-                    infos.addAll(results);
+                    try {
+                        for (ArtifactInfo ai : response.iterator()) {
+                            infos.add(convertToNBVersionInfo(ai));
+                        }
+                    } finally {
+                        response.close();
+                    }
                 }
             }
         }, skipAction, skipUnIndexed);
@@ -1162,12 +1190,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 String id = groupId + ArtifactInfo.FS + prefix;
                 bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.artifactId);
+                    try {
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.artifactId);
+                        }
+                    } finally {
+                        response.close();
                     }
                 }
             }
@@ -1197,12 +1227,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (prefix.length() > 0) { //heap out of memory otherwise
                     bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.GROUP_ID, prefix))), BooleanClause.Occur.MUST));
                 }
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.groupId);
+                    try {
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.groupId);
+                        }
+                    } finally {
+                        response.close();
                     }
                 }
             }
@@ -1229,16 +1261,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + prefix;
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.artifactId);
+                    try {
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.artifactId);
+                        }
+                    } finally {
+                        response.close();
                     }
                 }
             }
-        }, skipAction, skipUnIndexed);
+        }, skipAction, skipUnIndexed);       
         ACCESSOR.setStringResults(result, artifacts);
         return result;
     }
@@ -1302,10 +1336,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         //queries for each field.
                     }
                 }
-                FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
-                if (response != null) {
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                IteratorSearchResponse resp = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
+                if (resp != null) {
+                    try {
+                        for (ArtifactInfo ai : resp.iterator()) {
+                            infos.add(convertToNBVersionInfo(ai));
+                        }
+                    } finally {
+                        resp.close();
+                    }
                 }
             }
         }, skipAction, skipUnIndexed);
@@ -1349,11 +1388,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return field;
     }
 
-    private Collection<ArtifactInfo> postProcessClasses(Collection<ArtifactInfo> artifactInfos, String classname) {
+    private Collection<NBVersionInfo> postProcessClasses(IteratorResultSet artifactInfos, String classname) {
+        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         int patter = Pattern.DOTALL + Pattern.MULTILINE;
         boolean isPath = classname.contains("/");
         if (isPath) {
-            return artifactInfos;
+            for (ArtifactInfo i : artifactInfos) {
+                toRet.add(convertToNBVersionInfo(i));
+            }
+            return toRet;
         }
         //if I got it right, we need an exact match of class name, which the query doesn't provide? why?
         String pattStr = ".*/" + classname + "$.*";
@@ -1366,15 +1409,26 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 it.remove();
             }
         }
-        return artifactInfos;
+        for (ArtifactInfo i : artifactInfos) {
+            toRet.add(convertToNBVersionInfo(i));
+        }
+        return toRet;
     }
 
     static List<NBVersionInfo> convertToNBVersionInfo(Collection<ArtifactInfo> artifactInfos) {
         List<NBVersionInfo> bVersionInfos = new ArrayList<NBVersionInfo>();
         for (ArtifactInfo ai : artifactInfos) {
+            NBVersionInfo nbvi = convertToNBVersionInfo(ai);
+            if (nbvi != null) {
+              bVersionInfos.add(nbvi);
+            }
+        }
+        return bVersionInfos;
+    }
+    static NBVersionInfo convertToNBVersionInfo(ArtifactInfo ai) {
             if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) { //NOI18N
                 // we don't want javadoc and sources shown anywhere, we use the getJavadocExists(), getSourceExists() methods.
-                continue;
+            return null;
             }
             // fextension != packaging - e.g a pom could be packaging "bundle" but from type/extension "jar"
             NBVersionInfo nbvi = new NBVersionInfo(ai.repository, ai.groupId, ai.artifactId,
@@ -1386,10 +1440,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 //            nbvi.setSha(ai.sha1);
             nbvi.setLastModified(ai.lastModified);
             nbvi.setSize(ai.size);
-            bVersionInfos.add(nbvi);
+        nbvi.setLuceneScore(ai.getLuceneScore());
+        return nbvi;
         }
-        return bVersionInfos;
-    }
     
     private static Query setBooleanRewrite (final Query q) {
         if (q instanceof MultiTermQuery) {
@@ -1414,6 +1467,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
             //indexing context is always null here..
             ACCESSOR.addSkipped(result, repo);
+        }
+        
+    }
+
+    private static class NoJavadocSourceFilter implements ArtifactInfoFilter {
+
+        @Override
+        public boolean accepts(IndexingContext ctx, ArtifactInfo ai) {
+            if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) {
+                return false;
+}
+            return true;
         }
         
     }

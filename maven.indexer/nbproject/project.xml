@@ -190,6 +190,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.lucene.messages</package>
                 <package>org.apache.lucene.queryParser</package>
                 <package>org.apache.lucene.search</package>
+                <package>org.apache.lucene.search.highlight</package>
                 <package>org.apache.lucene.search.function</package>
                 <package>org.apache.lucene.search.payloads</package>
                 <package>org.apache.lucene.search.spans</package>
@@ -211,6 +212,10 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/maven/lucene-core-3.0.3.jar</runtime-relative-path>
                 <binary-origin>external/lucene-core-3.0.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven/lucene-highlighter-3.0.3.jar</runtime-relative-path>
+                <binary-origin>external/lucene-highlighter-3.0.3.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
