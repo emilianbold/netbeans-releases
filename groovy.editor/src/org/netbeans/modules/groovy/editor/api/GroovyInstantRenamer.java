@@ -45,8 +45,8 @@ package org.netbeans.modules.groovy.editor.api;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Variable;
@@ -64,12 +64,13 @@ import org.openide.util.NbBundle;
  */
 public class GroovyInstantRenamer implements InstantRenamer {
 
-    private final Logger LOG = Logger.getLogger(GroovyInstantRenamer.class.getName());
+    private static final Logger LOG = Logger.getLogger(GroovyInstantRenamer.class.getName());
 
     public GroovyInstantRenamer() {
         super();
     }
 
+    @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         LOG.log(Level.FINEST, "isRenameAllowed()"); //NOI18N
 
@@ -89,6 +90,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
         return false;
     }
 
+    @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         LOG.log(Level.FINEST, "getRenameRegions()"); //NOI18N
 
@@ -134,6 +136,4 @@ public class GroovyInstantRenamer implements InstantRenamer {
             regions.add(range);
         }
     }
-
-
 }
