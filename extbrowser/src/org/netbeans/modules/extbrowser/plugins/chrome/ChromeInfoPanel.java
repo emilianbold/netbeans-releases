@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
+import java.io.File;
+
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -56,8 +58,12 @@ class ChromeInfoPanel extends javax.swing.JPanel {
     ChromeInfoPanel(String pluginPath, final PluginLoader loader) {
         initComponents();
         
+        File file = new File(pluginPath);
+        String name = file.getName();
+        String parent = file.getParent();
         myEditorPane.setText(org.openide.util.NbBundle.getMessage(
-                ChromeInfoPanel.class, "TXT_PluginIstallationIssue" , pluginPath)); // NOI18N
+                ChromeInfoPanel.class, "TXT_PluginIstallationIssue" , 
+                "file:///"+parent, name ));             // NOI18N
         
         HyperlinkListener listener = new HyperlinkListener() {
             

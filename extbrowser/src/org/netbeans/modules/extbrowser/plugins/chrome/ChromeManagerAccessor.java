@@ -169,13 +169,14 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             
             try {
-                String pluginPath = "file:///"+extensionFile.getCanonicalPath();
-                
                 DialogDescriptor descriptor = new DialogDescriptor(
-                        new ChromeInfoPanel(pluginPath, loader), 
+                        new ChromeInfoPanel(extensionFile.getCanonicalPath(), loader), 
                         NbBundle.getMessage(ChromeExtensionManager.class, 
                                 "TTL_InstallExtension"));                            // NOI18N
-                DialogDisplayer.getDefault().notify(descriptor);
+                Object result = DialogDisplayer.getDefault().notify(descriptor);
+                if (result != NotifyDescriptor.OK_OPTION) {
+                    return false;
+                }
             }
             catch( IOException e ){
                 Logger.getLogger( ChromeExtensionManager.class.getCanonicalName()).
