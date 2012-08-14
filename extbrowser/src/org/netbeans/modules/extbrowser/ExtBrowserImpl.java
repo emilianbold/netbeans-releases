@@ -141,7 +141,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         List<Lookup> lookups = new ArrayList<Lookup>();
         lookups.add(Lookups.fixed(
                     new MessageDispatcherImpl(),
-                    new RemoteScriptExecutor(this)
+                    new RemoteScriptExecutor(this),
+                    new PageInspectionHandleImpl(this)
                 ));
         if (extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROME || 
                 extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM) {

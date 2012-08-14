@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
+import org.netbeans.modules.web.browser.spi.PageInspectionHandle;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -77,7 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Stola
  */
 @ServiceProvider(service=PageInspector.class)
-public class PageInspectorImpl extends PageInspector implements PropertyChangeListener {
+public class PageInspectorImpl extends PageInspector {
     /** Name of the property that is fired when the page model changes. */
     public static final String PROP_MODEL = "model"; // NOI18N
     /** Name of the toolbar component responsible for selection mode switching. */
@@ -92,7 +93,10 @@ public class PageInspectorImpl extends PageInspector implements PropertyChangeLi
     private MessageDispatcher messageDispatcher;
     /** Lock guarding access to modifiable fields. */
     private final Object LOCK = new Object();
+    /** Page inspector customizer for the inspected page. */
     private PageInspectorCustomizer pageInspectorCustomizer;
+    /** Listener for a page inspector customizer. */
+    private PropertyChangeListener pageInspectorCustomizerListener;
 
     /**
      * Creates a new {@code PageInspectorImpl}.
@@ -119,17 +123,9 @@ public class PageInspectorImpl extends PageInspector implements PropertyChangeLi
                 if (messageDispatcher != null) {
                     messageDispatcher.removeMessageListener(messageListener);
                 }
-            }
-            if (pageInspectorCustomizer != null) {
-                pageInspectorCustomizer.removePropertyChangeListener(this);
-            }
-            Project p = pageContext.lookup(Project.class);
-            if (p != null) {
-                pageInspectorCustomizer = p.getLookup().lookup(PageInspectorCustomizer.class);
-            }
-            if (pageInspectorCustomizer != null) {
-                pageInspectorCustomizer.addPropertyChangeListener(this);
-                updateHighlightMode();
+                if (pageInspectorCustomizer != null) {
+                    pageInspectorCustomizer.removePropertyChangeListener(pageInspectorCustomizerListener);
+                }
             }
             WebKitDebugging webKit = pageContext.lookup(WebKitDebugging.class);
             if (webKit != null) {
@@ -140,13 +136,62 @@ public class PageInspectorImpl extends PageInspector implements PropertyChangeLi
                     messageDispatcher.addMessageListener(messageListener);
                 }
                 initSelectionMode(pageContext.lookup(JToolBar.class), pageModel);
+                Project p = pageContext.lookup(Project.class);
+                if (p != null) {
+                    pageInspectorCustomizer = p.getLookup().lookup(PageInspectorCustomizer.class);
+                    if (pageInspectorCustomizer != null) {
+                        pageInspectorCustomizerListener = createPageInspectorCustomizerListener(pageModel, pageInspectorCustomizer);
+                        pageInspectorCustomizer.addPropertyChangeListener(pageInspectorCustomizerListener);
+                        pageModel.setSynchronizeSelection(pageInspectorCustomizer.isHighlightSelectionEnabled());
+                    }
+                }
+                final PageInspectionHandle inspectionHandle = pageContext.lookup(PageInspectionHandle.class);
+                if (inspectionHandle != null) {
+                    final PageModel model = pageModel;
+                    pageModel.addPropertyChangeListener(new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            String propertyName = evt.getPropertyName();
+                            if (PageModel.PROP_SELECTION_MODE.equals(propertyName)) {
+                                inspectionHandle.setSelectionMode(model.isSelectionMode());
+                            } else if (PageModel.PROP_SYNCHRONIZE_SELECTION.equals(propertyName)) {
+                                inspectionHandle.setSynchronizeSelection(model.isSynchronizeSelection());
+                            }
+                        }
+                    });
+                    inspectionHandle.setSelectionMode(model.isSelectionMode());
+                    inspectionHandle.setSynchronizeSelection(model.isSynchronizeSelection());
+                }
             } else {
                 pageModel = null;
                 messageDispatcher = null;
                 messageListener = null;
+                pageInspectorCustomizer = null;
+                pageInspectorCustomizerListener = null;
             }
         }
         firePropertyChange(PROP_MODEL, null, null);
+    }
+
+    /**
+     * Creates a listener for a page inspector customizer changes.
+     *
+     * @param pageModel page model the customizer belongs to.
+     * @param customizer customizer to observe.
+     * @return listener for the specified page inspector customizer.
+     */
+    PropertyChangeListener createPageInspectorCustomizerListener(final PageModel pageModel,
+            final PageInspectorCustomizer customizer) {
+        return new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (PageInspectorCustomizer.PROPERTY_HIGHLIGHT_SELECTION.equals(propertyName)) {
+                    boolean synchronize = customizer.isHighlightSelectionEnabled();
+                    pageModel.setSynchronizeSelection(synchronize);
+                }
+            }
+        };
     }
 
     /**
@@ -170,11 +215,10 @@ public class PageInspectorImpl extends PageInspector implements PropertyChangeLi
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
                         public void run() {
-                            pageModel.setSelectionMode(selectionMode);
                             if (!selectionMode) {
                                 pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
-                                pageModel.setSelectedNodes(Collections.EMPTY_LIST);
                             }
+                            pageModel.setSelectionMode(selectionMode);
                         }
                     });
                 }
@@ -191,26 +235,21 @@ public class PageInspectorImpl extends PageInspector implements PropertyChangeLi
                                 selectionModeButton.setSelected(selectionMode);
                             }
                         });
+                    } else if (PageModel.PROP_SYNCHRONIZE_SELECTION.equals(propName)) {
+                        final boolean synchronizeSelection = pageModel.isSynchronizeSelection();
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                selectionModeButton.setVisible(synchronizeSelection);
+                            }
+                        });
                     }
                 }
             });
             toolBar.add(selectionModeButton);
+            selectionModeButton.setSelected(pageModel.isSelectionMode());
+            selectionModeButton.setVisible(pageModel.isSynchronizeSelection());
         }
-    }
-    
-    private void updateHighlightMode() {
-        PageInspectorCustomizer pic = pageInspectorCustomizer;
-        if (pic != null) {
-            boolean b = pic.isHighlightSelectionEnabled();
-            
-            // TODO: XXX: do something with the b
-            
-        }
-    }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        updateHighlightMode();
     }
 
     /**
@@ -335,11 +374,10 @@ public class PageInspectorImpl extends PageInspector implements PropertyChangeLi
                     // Message about selection mode modification
                     if (MESSAGE_SELECTION_MODE.equals(type)) {
                         boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
-                        pageModel.setSelectionMode(selectionMode);
                         if (!selectionMode) {
                             pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
-                            pageModel.setSelectedNodes(Collections.EMPTY_LIST);
                         }
+                        pageModel.setSelectionMode(selectionMode);
                     }
                 } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())
