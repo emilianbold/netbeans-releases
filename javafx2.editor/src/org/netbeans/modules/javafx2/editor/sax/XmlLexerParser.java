@@ -501,7 +501,7 @@ public class XmlLexerParser implements ContentLocator {
     
     @NbBundle.Messages({
         "# {0} - tag name",
-        "ERR_unexpectedTag=Unexpected closing tag: {0}",
+        "ERR_unexpectedTag=Unexpected closing tag: {0}"
     })
     private void parseClosingTag(String tagName) throws SAXException {
         this.elementOffset = seq.offset();
