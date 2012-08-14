@@ -547,6 +547,7 @@ public class JsFormatter implements Formatter {
         assert token.isVirtual();
 
         CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext, true);
+        // wrapping will take care of everything
         if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
             return;
         }
@@ -583,6 +584,7 @@ public class JsFormatter implements Formatter {
             }
         }
 
+        // we mark space and WRAP_NEVER tokens as processed
         for (FormatToken current = start; current != end; current = current.next()) {
             if (current.isVirtual() && !current.isIndentationMarker() && getLineWrap(current, formatContext) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
                 processed.add(current);
