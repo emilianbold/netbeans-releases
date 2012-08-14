@@ -67,6 +67,8 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -269,19 +271,22 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.addChoosableFileFilter(new FileNameExtensionFilter("HTML Documents", "html"));
         chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-        File file = new File(FileUtil.toFile(project.getProjectDirectory()), jFileToRunTextField.getText());
+        File file = new File(FileUtil.toFile(project.getSiteRootFolder()), jFileToRunTextField.getText());
         if (file.exists()) {
             chooser.setSelectedFile(file);
         } else {
-            chooser.setCurrentDirectory(FileUtil.toFile(project.getProjectDirectory()));
+            chooser.setCurrentDirectory(FileUtil.toFile(project.getSiteRootFolder()));
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
             FileObject fo = FileUtil.toFileObject(selected);
             if (fo != null) {
-                String rel = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                String rel = FileUtil.getRelativePath(project.getSiteRootFolder(), fo);
                 if (rel != null) {
                     jFileToRunTextField.setText(rel);
+                } else {
+                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                        "Selected file must be located under Project's Site Root."));
                 }
             }
         }
