@@ -87,6 +87,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
@@ -123,6 +124,13 @@ class Nodes {
         throw new IllegalStateException();
     }
 
+    static Node rootNode(
+            @NonNull final Children cld,
+            @NonNull final HierarchyFilters filters) {
+        assert filters != null;
+        return new RootNode(cld, globalActions(filters));
+    }
+
     static Node waitNode() {
         return WAIT_NODE;
     }
@@ -131,6 +139,9 @@ class Nodes {
             @NonNull final DeclaredType type,
             @NonNull final ClasspathInfo cpInfo,
             @NonNull final HierarchyFilters filters) {
+        assert type != null;
+        assert cpInfo != null;
+        assert filters != null;
         return superTypeHierarchy(type, cpInfo, filters, 0);
     }
 
@@ -165,11 +176,18 @@ class Nodes {
                 ElementHandle.create(element),
                 order),
             filters,
-            new Action[0]);
+            globalActions(filters));
         
     }
 
-
+    private static Action[] globalActions(@NonNull final HierarchyFilters filters) {
+        return new Action[]{
+            NameActions.createSimpleNameAction(filters),
+            NameActions.createFullyQualifiedNameAction(filters),
+            SortActions.createSortByNameAction(filters),
+            SortActions.createSortBySourceAction(filters)
+        };
+    }
 
     private static final class Description {
 
@@ -201,6 +219,24 @@ class Nodes {
             return order;
         }
 
+    }
+
+    private static class RootNode extends AbstractNode {
+
+        private Action[] globalActions;
+
+        RootNode(
+            @NonNull final Children cld,
+            @NonNull final Action[] globalActions) {
+            super(cld);
+            assert globalActions != null;
+            this.globalActions = globalActions;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return globalActions;
+        }
     }
     
     private static class WaitNode extends AbstractNode {
