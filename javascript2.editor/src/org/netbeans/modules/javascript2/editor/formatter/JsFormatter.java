@@ -241,6 +241,7 @@ public class JsFormatter implements Formatter {
                             break;
                         case SOURCE_START:
                         case EOL:
+                            processed.clear();
                             // XXX refactor eol token WRAP_IF_LONG handling
                             if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                                 // search for token which will be present just before eol
