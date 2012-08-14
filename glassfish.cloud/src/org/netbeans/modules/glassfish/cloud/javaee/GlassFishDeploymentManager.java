@@ -109,7 +109,7 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
      */
     @Override
     public Target[] getTargets() throws IllegalStateException {
-        return new Target[] {};
+        return new Target[] {instance};
     }
 
 }
