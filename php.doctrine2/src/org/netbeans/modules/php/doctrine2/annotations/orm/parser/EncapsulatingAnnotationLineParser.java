@@ -46,7 +46,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.api.annotation.util.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -66,7 +66,7 @@ public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
         Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
         joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
         ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
-        
+
         Set<String> joinTableInlineAnnotations = new HashSet<String>();
         joinTableInlineAnnotations.add("JoinColumn"); //NOI18N
         ANNOTATIONS.put("JoinTable", joinTableInlineAnnotations); //NOI18N
