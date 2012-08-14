@@ -352,6 +352,9 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             if( isOpened() ) {
                 if( null != login ) {
                     startLoadingMemberProjects(false);
+                    if (!otherProjectsLoaded) {
+                        startLoadingAllProjects(false);
+                    }
                 }
                 switchContent();
             }
