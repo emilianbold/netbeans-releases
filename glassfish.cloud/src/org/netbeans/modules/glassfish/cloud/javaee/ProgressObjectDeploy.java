@@ -58,24 +58,30 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.glassfish.tools.ide.admin.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
-import org.netbeans.modules.glassfish.javaee.ide.Hk2DeploymentStatus;
 
 /**
+ * Adapter between TaskStateListener and ProgressObject interface.
+ * Receives events from command runner about execution of command
+ * and notifies registered listeners with new <code>DeploymentStatusImpl</code>.
  *
- * @author piotro
+ * @author Peter Benedikovic, Tomas Kraus
  */
-public class CloudDeployProgressObject implements ProgressObject, TaskStateListener {
+public class ProgressObjectDeploy implements ProgressObject, TaskStateListener {
 
-    private Hk2DeploymentStatus status;
+    /* Actual status of command. */
+    private DeploymentStatus status;
+    /* Registered listeners. */
     private LinkedList<ProgressListener> listeners;
+    /* DeploymentManager that is executing the deployment.*/
     private DeploymentManager dm;
+    /* ID of module which is the subject of deploy command.*/
     private TargetModuleID moduleID; 
     
 
-    public CloudDeployProgressObject(DeploymentManager dm, TargetModuleID moduleID) {
+    public ProgressObjectDeploy(DeploymentManager dm, TargetModuleID moduleID) {
         this.dm = dm;
         this.moduleID = moduleID;
-        this.status = new Hk2DeploymentStatus(CommandType.DISTRIBUTE, 
+        this.status = new DeploymentStatusImpl(CommandType.DISTRIBUTE, 
                 StateType.RUNNING, ActionType.EXECUTE, "Initializing...");
         listeners = new LinkedList<ProgressListener>();
     }
@@ -133,8 +139,11 @@ public class CloudDeployProgressObject implements ProgressObject, TaskStateListe
         // Suppress message except in cases of failure.  Returning an empty
         // string prevents status from being displayed in build output window.
         String relayedMessage = TaskState.FAILED.equals(ts) ? message : "";
-        notifyListeners(new Hk2DeploymentStatus(CommandType.DISTRIBUTE,
-                translateState(ts), ActionType.EXECUTE, relayedMessage));
+        status = new DeploymentStatusImpl(CommandType.DISTRIBUTE,
+                translateState(ts), ActionType.EXECUTE, relayedMessage);
+        notifyListeners();
+//        notifyListeners(new Hk2DeploymentStatus(CommandType.DISTRIBUTE,
+//                translateState(ts), ActionType.EXECUTE, relayedMessage));
     }
     
     private StateType translateState(TaskState commonState) {
@@ -147,7 +156,7 @@ public class CloudDeployProgressObject implements ProgressObject, TaskStateListe
         }
     }
     
-    private void notifyListeners(DeploymentStatus status) {
+    private void notifyListeners() {
         ProgressEvent event = new ProgressEvent(dm, null, status);
         for (ProgressListener listener : listeners) {
             listener.handleProgressEvent(event);
