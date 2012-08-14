@@ -117,6 +117,13 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                     for(JsObject param: ((JsFunction)object).getParameters()) {
                         count(result, param, highlights);
+                        if(param.getOccurrences().isEmpty()) {
+                            OffsetRange range = param.getDeclarationName().getOffsetRange();
+                            if (range.getStart() < range.getEnd()) {
+                                // only for declared parameters
+                                highlights.put(range, ColoringAttributes.UNUSED_SET);
+                            }
+                        }
                     }
                     break;
                 case PROPERTY_GETTER:
