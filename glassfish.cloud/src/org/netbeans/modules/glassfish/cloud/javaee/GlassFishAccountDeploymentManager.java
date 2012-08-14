@@ -54,6 +54,9 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.glassfish.tools.ide.server.ServerTasks;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
@@ -73,6 +76,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 public class GlassFishAccountDeploymentManager
         extends GlassFishDeploymentManager {
 
+    final GlassFishAccountInstance instance;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -88,6 +93,10 @@ public class GlassFishAccountDeploymentManager
      */
     GlassFishAccountDeploymentManager(GlassFishUrl url) {
         super(url);
+        instance = GlassFishAccountInstanceProvider.getAccountInstance(url.getName());
+        if (instance == null) {
+            throw new NullPointerException("There is no account instance named " + url.getName());
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -129,7 +138,15 @@ public class GlassFishAccountDeploymentManager
     @Override
     public ProgressObject distribute(Target[] targetList,
             DeploymentContext deployment) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File moduleFile = deployment.getModuleFile();
+        if (moduleFile.isDirectory()) {
+            throw new UnsupportedOperationException("Directory deployment not supported.");
+        }
+
+        ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, null);
+        // call deploy
+        
+        return progressObject;
     }
 
     /**
