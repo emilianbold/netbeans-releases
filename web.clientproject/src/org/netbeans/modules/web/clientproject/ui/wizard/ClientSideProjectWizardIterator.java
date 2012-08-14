@@ -106,7 +106,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             position=200)
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingProject() {
-        return new ClientSideProjectWizardIterator(null);
+        return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
 
     @NbBundle.Messages("ClientSideProjectWizardIterator.progress.creatingProject=Creating project")
@@ -117,7 +117,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
-        if (!dirF.mkdirs()) {
+        if (!dirF.isDirectory() && !dirF.mkdirs()) {
             throw new IOException("Cannot create project directory");
         }
         FileObject dir = FileUtil.toFileObject(dirF);
@@ -347,6 +347,41 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private void errorOccured(String message) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        }
+
+    }
+
+    public static final class ExistingProjectWizard implements Wizard {
+
+        public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
+
+        @Override
+        public Panel<WizardDescriptor>[] createPanels() {
+            @SuppressWarnings("unchecked")
+            WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
+                new ExistingClientSideProjectPanel(),
+            };
+            return panels;
+        }
+
+        @NbBundle.Messages("ExistingProjectWizard.step.createProject=Name and Location")
+        @Override
+        public String[] createSteps() {
+            return new String[] {
+                Bundle.ExistingProjectWizard_step_createProject(),
+            };
+        }
+
+        @Override
+        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+            File projectDir = (File) wizardDescriptor.getProperty(PROJECT_DIRECTORY);
+            File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
+            ClientSideProjectUtilities.initializeProject(projectHelper, ClientSideProjectUtilities.relativizeFile(projectDir, siteRoot));
+        }
+
+        @Override
+        public void uninitialize(WizardDescriptor wizardDescriptor) {
+            wizardDescriptor.putProperty(SITE_ROOT, null);
         }
 
     }
