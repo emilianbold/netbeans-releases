@@ -128,24 +128,26 @@ public abstract class PushMapping extends ItemSelector.Item {
     
     public static final class PushBranchMapping extends PushMapping {
         private final GitBranch localBranch;
-        private final GitBranch remoteBranch;
+        private final String remoteBranchName;
+        private final String remoteBranchId;
         
-        public PushBranchMapping (GitBranch remoteBranch, GitBranch localBranch, boolean conflict, boolean preselected) {
+        public PushBranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, boolean conflict, boolean preselected) {
             super(localBranch.getName(), localBranch.getId(), 
-                    remoteBranch == null ? null : remoteBranch.getName(), 
-                    remoteBranch == null ? null : remoteBranch.getId(),
+                    remoteBranchName, 
+                    remoteBranchId,
                     conflict,
                     preselected);
             this.localBranch = localBranch;
-            this.remoteBranch = remoteBranch;
+            this.remoteBranchName = remoteBranchName;
+            this.remoteBranchId = remoteBranchId;
         }
 
         public String getRemoteRepositoryBranchName () {
-            return remoteBranch == null ? localBranch.getName() : remoteBranch.getName();
+            return remoteBranchName == null ? localBranch.getName() : remoteBranchName;
         }
 
         public String getRemoteRepositoryBranchHeadId () {
-            return remoteBranch == null ? null : remoteBranch.getId();
+            return remoteBranchId;
         }
 
         public String getLocalRepositoryBranchHeadId () {
@@ -154,7 +156,7 @@ public abstract class PushMapping extends ItemSelector.Item {
 
         @Override
         public String getRefSpec () {
-            return GitUtils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
+            return GitUtils.getPushRefSpec(localBranch.getName(), remoteBranchName == null ? localBranch.getName() : remoteBranchName);
         }
     }
     

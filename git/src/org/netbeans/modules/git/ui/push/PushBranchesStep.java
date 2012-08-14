@@ -150,7 +150,9 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                             }
                         }
                         boolean preselected = !conflicted && remoteBranch != null && !remoteBranch.getId().equals(branch.getId());
-                        l.add(new PushMapping.PushBranchMapping(remoteBranch, branch, conflicted, preselected));
+                        l.add(new PushMapping.PushBranchMapping(remoteBranch == null ? null : remoteBranch.getName(),
+                                remoteBranch == null ? null : remoteBranch.getId(),
+                                branch, conflicted, preselected));
                     }
                 }
                 for (GitTag tag : localTags.values()) {

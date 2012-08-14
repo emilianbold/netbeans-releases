@@ -42,19 +42,25 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class ChoosingSchemaPanel implements AddConnectionWizard.Panel, WizardDescriptor.FinishablePanel<AddConnectionWizard> {
+public class ChoosingConnectionNamePanel implements AddConnectionWizard.Panel {
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private SchemaPanel component;
+    private ConnectionNamePanel component;
     private AddConnectionWizard pw;
-    private static HelpCtx CHOOSING_SCHEMA_PANEL_HELPCTX = new HelpCtx(ChoosingSchemaPanel.class);
+    private static HelpCtx CHOOSING_SCHEMA_PANEL_HELPCTX = new HelpCtx(ChoosingConnectionNamePanel.class);
+    private boolean blockEventListener = false;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -66,15 +72,16 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel, WizardDes
             if (pw == null) {
                 return null;
             }
-            assert pw != null : "ChoosingSchemaPanel must be initialized.";
-            component = new SchemaPanel(pw, pw.getDatabaseConnection());
-            component.setSchemas(pw.getSchemas(), pw.getCurrentSchema());
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 2);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
-            component.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.FALSE);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.FALSE);
-            component.setName(pw.getSteps()[2]);
+            assert pw != null : "ChoosingConnectionNamePanel must be initialized.";
+            component = new ConnectionNamePanel(pw, pw.getDatabaseConnection().getDisplayName());
+            component.setName(pw.getSteps()[3]);
+            component.addPropertyChangeListener(ConnectionNamePanel.PROP_CONNECTION_NAME,
+                    new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent pce) {
+                    fireChangeEvent();
+                }
+            });
         }
         return component;
     }
@@ -86,45 +93,34 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel, WizardDes
 
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
+        return component != null && (! component.getConntionName().isEmpty());
     }
-
-    @Override
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    @Override
-    public final void removeChangeListener(ChangeListener l) {
-    }
-    /*
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+
+    @Override
     public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
-    }
+
     public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
-    }
+
     protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
+        if(blockEventListener) return;
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -133,15 +129,13 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel, WizardDes
     @Override
     public void readSettings(AddConnectionWizard settings) {
         this.pw = settings;
+        blockEventListener = true;
+        ((ConnectionNamePanel) getComponent()).setConnectionName(pw.getDatabaseConnection().getDisplayName());
+        blockEventListener = false;
     }
 
     @Override
     public void storeSettings(AddConnectionWizard settings) {
-        pw.setCurrentSchema(component.getSchema());
-    }
-
-    @Override
-    public boolean isFinishPanel() {
-        return true;
+        pw.getDatabaseConnection().setDisplayName(((ConnectionNamePanel) getComponent()).getConntionName());
     }
 }
