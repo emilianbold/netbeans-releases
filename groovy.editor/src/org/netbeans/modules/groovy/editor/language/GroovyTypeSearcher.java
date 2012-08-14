@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
 import org.netbeans.modules.csl.api.IndexSearcher.Helper;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.support.api.GroovySources;
