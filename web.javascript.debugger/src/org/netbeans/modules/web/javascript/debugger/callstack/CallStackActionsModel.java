@@ -52,6 +52,7 @@ import java.util.List;
 
 import javax.swing.Action;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -74,7 +75,8 @@ import org.openide.util.RequestProcessor;
 public final class CallStackActionsModel extends ViewModelSupport implements 
         NodeActionsProvider {
 
-    private Debugger debugger;    
+    private Debugger debugger;
+    private Project project;
 
     private Action GO_TO_SOURCE;
     private Action MAKE_CURRENT_ACTION = Models.createAction (
@@ -125,7 +127,8 @@ public final class CallStackActionsModel extends ViewModelSupport implements
     
     public CallStackActionsModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
-        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction();
+        project = contextProvider.lookupFirst(null, Project.class);
+        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction(project);
     }
 
     // NodeActionsProvider implementation ......................................
@@ -138,7 +141,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
             if (frame != debugger.getCurrentCallFrame()) {
                 debugger.setCurrentCallFrame(frame);
             } else {
-                Line line = MiscEditorUtil.getLine(frame.getScript().getURL(), frame.getLineNumber());
+                Line line = MiscEditorUtil.getLine(project, frame.getScript(), frame.getLineNumber());
                 MiscEditorUtil.showLine(line, true);
             }
         }

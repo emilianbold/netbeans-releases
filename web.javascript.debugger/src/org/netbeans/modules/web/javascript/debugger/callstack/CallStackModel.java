@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
@@ -79,7 +80,8 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     public static final String CURRENT_CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
 
-    private Debugger debugger;    
+    private Debugger debugger;
+    private Project project;
 
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
@@ -88,6 +90,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
+        project = contextProvider.lookupFirst(null, Project.class);
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
@@ -244,7 +247,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         annotations.clear();
         boolean first = true;
         for (CallFrame cf : stackTrace.get()) {
-            final Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
+            final Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
             if (line == null) {
                 first = false;
                 continue;
@@ -286,7 +289,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             refresh();
             CallFrame cf = (CallFrame) evt.getNewValue();
             if (cf != null) {
-                Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
+                Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
                 MiscEditorUtil.showLine(line, true);
             }
         }
