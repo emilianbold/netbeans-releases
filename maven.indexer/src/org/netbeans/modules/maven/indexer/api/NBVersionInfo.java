@@ -63,6 +63,7 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
 //    private String sha;
     private long lastModified;
     private long size;
+    private float luceneScore = 0f;
 
     //-----
     private boolean sourcesExists;
@@ -187,6 +188,10 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
     }
 
     public @Override int compareTo(NBVersionInfo o) {
+//        int c = Float.compare(luceneScore, o.luceneScore);
+//        if (c != 0) {
+//            return c;
+//        }
         int c = groupId.compareTo(o.groupId);
         if (c != 0) {
             return c;
@@ -213,4 +218,11 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         return "" + classifier + type + repoId;
     }
     
+    public float getLuceneScore() {
+        return luceneScore;
+}
+
+    public void setLuceneScore(float luceneScore) {
+        this.luceneScore = luceneScore;
+    }
 }
