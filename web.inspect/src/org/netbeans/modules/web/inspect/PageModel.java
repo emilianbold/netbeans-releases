@@ -62,6 +62,8 @@ public abstract class PageModel {
     public static final String PROP_HIGHLIGHTED_NODES = "highlightedNodes"; // NOI18N
     /** Name of the property that is fired when the selection mode is switched on/off. */
     public static final String PROP_SELECTION_MODE = "selectionMode"; // NOI18N
+    /** Name of the property that is fired when the synchronization of the selection is switched on/off. */
+    public static final String PROP_SYNCHRONIZE_SELECTION = "synchronizeSelection"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
@@ -115,6 +117,24 @@ public abstract class PageModel {
      * returns {@code false} otherwise.
      */
     public abstract boolean isSelectionMode();
+
+    /**
+     * Sets whether the selection between the IDE and the browser pane should
+     * be synchronized or not.
+     *
+     * @param synchronizeSelection determines whether the selection should
+     * be synchronized or not.
+     */
+    public abstract void setSynchronizeSelection(boolean synchronizeSelection);
+
+    /**
+     * Determines whether the selection between the IDE and the browser pane
+     * should be synchronized or not.
+     *
+     * @return {@code true} when the selection should be synchronized,
+     * returns {@code false} otherwise.
+     */
+    public abstract boolean isSynchronizeSelection();
 
     /**
      * Returns highlighted nodes.
