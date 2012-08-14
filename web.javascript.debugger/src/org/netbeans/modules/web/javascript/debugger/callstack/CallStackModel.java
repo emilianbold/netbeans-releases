@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.web.javascript.debugger.callstack;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,7 +74,7 @@ import org.openide.util.NbBundle;
 })
 @DebuggerServiceRegistration(path="javascript-debuggerengine/CallStackView", types={ TreeModel.class, NodeModel.class, TableModel.class })
 public final class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
-        TableModel, Debugger.Listener {
+        TableModel, Debugger.Listener, PropertyChangeListener {
 
     public static final String CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
@@ -83,30 +85,25 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
 
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
-    private AtomicReference<? extends CallFrame>  myCurrentStack;
     
     private List<Annotation> annotations = new ArrayList<Annotation>();
     
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         debugger.addListener(this);
+        debugger.addPropertyChangeListener(this);
         // update now:
         setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : new ArrayList<CallFrame>());
         updateAnnotations();
     }
 
-    public void setStackTrace(List<? extends CallFrame> stackTrace) {
+    private void setStackTrace(List<? extends CallFrame> stackTrace) {
         List<CallFrame> l = new ArrayList<CallFrame>();
         this.stackTrace = new AtomicReference<List<? extends CallFrame>>(l);
         for (CallFrame cf : stackTrace) {
             if (cf.getScript() != null) {
                 l.add(cf);
             }
-        }
-        if (stackTrace.size() > 0) {
-            myCurrentStack = new AtomicReference<CallFrame>(l.get(0));
-        } else {
-            myCurrentStack = null;
         }
     }
     
@@ -169,8 +166,13 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         if (node == ROOT) {
             return Bundle.CTL_CallstackModel_Column_Name_Name();
         } else if (node instanceof CallFrame) {
-            CallFrame frame = (CallFrame)node;
-            return frame.getFunctionName();
+            CallFrame frame = (CallFrame) node;
+            String frameName = frame.getFunctionName();
+            if (frame == debugger.getCurrentCallFrame()) {
+                return toHTML(frameName, true, false, null);
+            } else {
+                return frameName;
+            }
         } else {
             throw new UnknownTypeException(node);
         }
@@ -179,15 +181,13 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof CallFrame) {
-            CallFrame curStack = myCurrentStack.get();
-            if( curStack == node) {
+            CallFrame curStack = debugger.getCurrentCallFrame();
+            if (curStack == node) {
                 return CURRENT_CALL_STACK;
-            }
-            else {
+            } else {
                 return CALL_STACK;
             }
-        }
-        else if (node == ROOT) {
+        } else if (node == ROOT) {
             return null;
         }
         throw new UnknownTypeException(node);
@@ -286,4 +286,17 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     public void reset() {
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (Debugger.PROP_CURRENT_FRAME.equals(propertyName)) {
+            refresh();
+            CallFrame cf = (CallFrame) evt.getNewValue();
+            if (cf != null) {
+                Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
+                MiscEditorUtil.showLine(line, true);
+            }
+        }
+    }
+    
 }

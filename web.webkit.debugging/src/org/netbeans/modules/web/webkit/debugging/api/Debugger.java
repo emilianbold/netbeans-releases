@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,8 @@ import org.openide.util.RequestProcessor;
  * See Debugger section of WebKit Remote Debugging Protocol for more details.
  */
 public final class Debugger {
+    
+    public static final String PROP_CURRENT_FRAME = "currentFrame";     // NOI18N
 
     private TransportHelper transport;
     private boolean enabled = false;
@@ -72,9 +77,11 @@ public final class Debugger {
     private Callback callback;
     private boolean initDOMLister = true;
     private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     private Map<String, Script> scripts = new HashMap<String, Script>();
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
+    private CallFrame currentCallFrame = null;
     //private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
@@ -161,16 +168,33 @@ public final class Debugger {
         return enabled;
     }
     
+    /**
+     * Add a listener for debugger state changes.
+     * @param l a state change listener
+     */
     public void addListener(Listener l) {
         listeners.add(l);
     }
     
+    /**
+     * Remove a listener for debugger state changes.
+     * @param l a state change listener
+     */
     public void removeListener(Listener l) {
         listeners.remove(l);
     }
     
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pchs.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pchs.removePropertyChangeListener(l);
+    }
+    
     private void notifyResumed() {
         suspended = false;
+        setCurrentCallFrame(null);
         for (Listener l : listeners ) {
             l.resumed();
         }
@@ -192,6 +216,11 @@ public final class Debugger {
         suspended = true;
         List<CallFrame> callStack = createCallStack(callFrames);
         setCurrentCallStack(callStack);
+        if (!callStack.isEmpty()) {
+            setCurrentCallFrame(callStack.get(0));
+        } else {
+            setCurrentCallFrame(null);
+        }
         for (Listener l : listeners ) {
             l.paused(callStack, reason);
         }
@@ -237,6 +266,30 @@ public final class Debugger {
     
     private synchronized void setCurrentCallStack(List<CallFrame> callstack) {
         this.currentCallStack = callstack;
+    }
+    
+    public synchronized CallFrame getCurrentCallFrame() {
+        return currentCallFrame;
+    }
+    
+    /**
+     * Set the current call frame.
+     * @param frame the actual call frame
+     * @throws IllegalArgumentException when the frame is not on the current call stack.
+     */
+    public void setCurrentCallFrame(CallFrame frame) {
+        CallFrame lastFrame;
+        synchronized (this) {
+            if (frame != null) {
+                assert isSuspended();
+                if (!currentCallStack.contains(frame)) {
+                    throw new IllegalArgumentException("Unknown frame: "+frame);
+                }
+            }
+            lastFrame = this.currentCallFrame;
+            this.currentCallFrame = frame;
+        }
+        pchs.firePropertyChange(PROP_CURRENT_FRAME, lastFrame, frame);
     }
     
     @SuppressWarnings("unchecked")    
@@ -405,17 +458,17 @@ public final class Debugger {
     /**
      * Debugger state listener.
      */
-    public interface Listener {
+    public interface Listener extends EventListener {
         
         /**
          * Execution was suspended.
-         * @param callStack current callstack
+         * @param callStack current call stack
          * @param reason what triggered this suspense
          */
         void paused(List<CallFrame> callStack, String reason);
         
         /**
-         * Exeuction was resumed.
+         * Execution was resumed.
          */
         void resumed();
         

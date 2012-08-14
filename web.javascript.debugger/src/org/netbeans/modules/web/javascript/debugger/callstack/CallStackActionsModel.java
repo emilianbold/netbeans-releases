@@ -59,13 +59,15 @@ import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
-    "CTL_CallstackAction_Copy2CLBD_Label=Copy Stack"
+    "CTL_CallstackAction_Copy2CLBD_Label=Copy Stack",
+    "CTL_CallstackAction_MakeCurrent_Label=Make Current"
 })
 @DebuggerServiceRegistration(path="javascript-debuggerengine/CallStackView", types={ NodeActionsProvider.class })
 public final class CallStackActionsModel extends ViewModelSupport implements 
@@ -74,6 +76,19 @@ public final class CallStackActionsModel extends ViewModelSupport implements
     private Debugger debugger;    
 
     private Action GO_TO_SOURCE;
+    private Action MAKE_CURRENT_ACTION = Models.createAction (
+        Bundle.CTL_CallstackAction_MakeCurrent_Label(),
+        new Models.ActionPerformer() {
+            @Override public boolean isEnabled (Object node) {
+                return node != debugger.getCurrentCallFrame();
+            }
+            @Override public void perform (Object[] nodes) {
+                debugger.setCurrentCallFrame((CallFrame) nodes [0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+        
     
     public CallStackActionsModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
@@ -87,8 +102,12 @@ public final class CallStackActionsModel extends ViewModelSupport implements
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame)node;
-            Line line = MiscEditorUtil.getLine(frame.getScript().getURL(), frame.getLineNumber());
-            MiscEditorUtil.showLine(line, true);
+            if (frame != debugger.getCurrentCallFrame()) {
+                debugger.setCurrentCallFrame(frame);
+            } else {
+                Line line = MiscEditorUtil.getLine(frame.getScript().getURL(), frame.getLineNumber());
+                MiscEditorUtil.showLine(line, true);
+            }
         }
     }
 
@@ -96,12 +115,15 @@ public final class CallStackActionsModel extends ViewModelSupport implements
     public Action[] getActions(Object node)
             throws UnknownTypeException {
         if (node instanceof CallFrame ) {
-            return new Action [] {GO_TO_SOURCE/*, COPY_TO_CLBD_ACTION*/};
+            return new Action [] {
+                MAKE_CURRENT_ACTION,
+                GO_TO_SOURCE,
+                /*COPY_TO_CLBD_ACTION*/};
         }
         return new Action[]{};
         
     }
-
+    
     private final Action COPY_TO_CLBD_ACTION = new AbstractAction(
             Bundle.CTL_CallstackAction_Copy2CLBD_Label()) {
         private static final long serialVersionUID = 1L;

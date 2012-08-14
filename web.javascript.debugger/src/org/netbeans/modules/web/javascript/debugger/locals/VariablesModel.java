@@ -45,6 +45,8 @@
 package org.netbeans.modules.web.javascript.debugger.locals;
 
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -80,7 +82,7 @@ import org.openide.util.datatransfer.PasteType;
     "VariablesModel_Desc=Description"
 })
 public class VariablesModel extends ViewModelSupport implements TreeModel, ExtendedNodeModel,
-        TableModel, Debugger.Listener {
+        TableModel, Debugger.Listener, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
@@ -100,9 +102,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         evaluator = contextProvider.lookupFirst(null, EvaluatorService.class);
         debugger.addListener(this);
+        debugger.addPropertyChangeListener(this);
         // update now:
         if (debugger.isSuspended()) {
-            currentStack.set(debugger.getCurrentCallStack().get(0));
+            currentStack.set(debugger.getCurrentCallFrame());
         } else {
             currentStack.set(null);
         }
@@ -376,7 +379,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 
     @Override
     public void paused(List<CallFrame> callStack, String reason) {
-        currentStack.set(callStack.get(0));
+        currentStack.set(debugger.getCurrentCallFrame());
         refresh();
     }
 
@@ -392,6 +395,16 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     public void reset() {
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (Debugger.PROP_CURRENT_FRAME.equals(propertyName)) {
+            currentStack.set(debugger.getCurrentCallFrame());
+            refresh();
+        }
+    }
+    
+    
     public static class ScopedRemoteObject {
 
         private RemoteObject var;
