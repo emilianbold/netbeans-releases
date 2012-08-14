@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -29,74 +29,60 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package htmleditorapp;
+package colorpicker;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.HTMLEditor;
+import javafx.scene.layout.VBoxBuilder;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- * A sample that demonstrates the HTML Editor. You can make changes to the
- * example text, and the resulting generated HTML is displayed.
+ * A sample that demonstrates the ColorPicker.
+ * (Requires JavaFX 2.2+)
  *
- * @related controls/text/SimpleLabel
- * @see javafx.scene.web.HTMLEditor
+ * @see javafx.scene.control.ColorPicker
  */
-public class HTMLEditorApp extends Application {
-    private HTMLEditor htmlEditor = null;
-    private final String INITIAL_TEXT = "<html><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-            +"Nam tortor felis, pulvinar in scelerisque cursus, pulvinar at ante. Nulla consequat "
-            + "congue lectus in sodales. Nullam eu est a felis ornare bibendum et nec tellus. "
-            + "Vivamus non metus tempus augue auctor ornare. Duis pulvinar justo ac purus adipiscing "
-            + "pulvinar. Integer congue faucibus dapibus. Integer id nisl ut elit aliquam sagittis "
-            + "gravida eu dolor. Etiam sit amet ipsum sem.</body></html>";
-            
-    
+public class ColorPickerDemo extends Application {
     private void init(Stage primaryStage) {
         Group root = new Group();
         primaryStage.setScene(new Scene(root));
-        VBox vRoot = new VBox();
+        final ColorPicker colorPicker = new ColorPicker(Color.GRAY);
+        ToolBar standardToolbar = ToolBarBuilder.create().items(colorPicker).build();
 
-        vRoot.setPadding(new Insets(8, 8, 8, 8));
-        vRoot.setSpacing(5);
+        final Text coloredText = new Text("Colors");
+        Font font = new Font(53);
+        coloredText.setFont(font);
+        final Button coloredButton = new Button("Colored Control");
+        Color c = colorPicker.getValue();
+        coloredText.setFill(c);
+        coloredButton.setStyle(createRGBString(c));
 
-        htmlEditor = new HTMLEditor();
-        htmlEditor.setPrefSize(500, 245);
-        htmlEditor.setHtmlText(INITIAL_TEXT);
-        vRoot.getChildren().add(htmlEditor);
+        colorPicker.setOnAction(new EventHandler() {
 
-        final Label htmlLabel = new Label();
-        htmlLabel.setMaxWidth(500);
-        htmlLabel.setWrapText(true);
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.getStyleClass().add("noborder-scroll-pane");
-        scrollPane.setContent(htmlLabel);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(180);
-
-        Button showHTMLButton = new Button("Show the HTML below");
-        vRoot.setAlignment(Pos.CENTER);
-        showHTMLButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                htmlLabel.setText(htmlEditor.getHtmlText());
+            public void handle(Event t) {
+                Color newColor = colorPicker.getValue();
+                coloredText.setFill(newColor);                          
+                coloredButton.setStyle(createRGBString(newColor));
             }
         });
 
-        vRoot.getChildren().addAll(showHTMLButton, scrollPane);
-        root.getChildren().addAll(vRoot);
+        VBox coloredObjectsVBox = VBoxBuilder.create().alignment(Pos.CENTER).spacing(20).children(coloredText, coloredButton).build();        
+        VBox outerVBox = VBoxBuilder.create().alignment(Pos.CENTER).spacing(150).padding(new Insets(0, 0, 120, 0)).children(standardToolbar, coloredObjectsVBox).build();
+        root.getChildren().add(outerVBox);
+    }
+
+    private String createRGBString(Color c) {
+        return "-fx-base: rgb(" + (c.getRed() * 255) + "," + (c.getGreen() * 255) + "," + (c.getBlue() * 255) + ");";
     }
 
     @Override public void start(Stage primaryStage) throws Exception {

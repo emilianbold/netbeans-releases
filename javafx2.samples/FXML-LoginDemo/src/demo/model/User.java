@@ -34,21 +34,9 @@ package demo.model;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Data object for a User
- */
 public class User {
+
     private static final Map<String, User> USERS = new HashMap<String, User>();
-
-    private String id;
-    private String email;
-    private String phone;
-    private boolean subscribed;
-    private String address;
-
-    private User(String id) {
-        this.id = id;
-    }
 
     public static User of(String id) {
         User user = USERS.get(id);
@@ -59,9 +47,18 @@ public class User {
         return user;
     }
 
+    private User(String id) {
+        this.id = id;
+    }
+    private String id;
+
     public String getId() {
         return id;
     }
+    private String email = "";
+    private String phone = "";
+    private boolean subscribed;
+    private String address = "";
 
     /**
      * @return the email
