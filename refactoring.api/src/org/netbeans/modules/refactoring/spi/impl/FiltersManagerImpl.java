@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.util.Mutex;
 
 /**
@@ -242,7 +243,7 @@ public final class FiltersManagerImpl extends FiltersManager {
          */
         private void initPanel() {
             // configure toolbar
-            toolbar = new JToolBar(JToolBar.VERTICAL);
+            toolbar = new ToolbarWithOverflow(JToolBar.VERTICAL);
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
             toolbar.setBorderPainted(true);

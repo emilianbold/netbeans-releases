@@ -3,11 +3,12 @@ package org.netbeans.test.java.editor.codetemplates;
 public class Main {
 
     public static void main(String[] args) {
-        for (int idx = 0; idx < arr.length; idx++) {
-            Object elem = arr[idx];
+        for (int i = 0; i < args.length; i++) {
+            String string = args[i];
             
-        }while (en.hasMoreElements()) {
-            Object elem = en.nextElement();
+        }
+        while (en.hasMoreElements()) {
+            Object object = en.nextElement();
             
         }
     }

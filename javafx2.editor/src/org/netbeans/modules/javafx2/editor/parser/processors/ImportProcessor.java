@@ -221,6 +221,9 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
     private void handleWildcard(String packName, boolean add) {
         PackageElement el = info.getElements().getPackageElement(packName);
         if (el == null) {
+            if (current == null) {
+                return;
+            }
             int[] offsets = findPiContentOffsets(current);
             addError(
                 new ErrorMark(offsets[0], offsets[1] - offsets[0], 
@@ -228,6 +231,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
                 ERR_importPackageNotExists(packName),
                 packName)
             );
+            return;
         }
         if (add) {
             allPackages.add(packName);
@@ -299,6 +303,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
         while (cont && seq.moveNext()) {
             Token<XMLTokenId> token = seq.token();
             switch (token.id()) {
+                case PI_TARGET:
                 case PI_START:
                 case WS:
                     break;
