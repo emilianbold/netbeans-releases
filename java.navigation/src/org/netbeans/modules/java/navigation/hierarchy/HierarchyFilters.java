@@ -41,16 +41,16 @@
  */
 package org.netbeans.modules.java.navigation.hierarchy;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import javax.swing.AbstractButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.navigation.base.Filters;
 import org.netbeans.modules.java.navigation.base.FiltersDescription;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
-import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
 /**
@@ -59,9 +59,10 @@ import org.openide.util.NbPreferences;
  */
 final class HierarchyFilters extends Filters<Object> {
 
-    private static final String PROP_FQN = "fqn";   //NOI18N
+    static final String PROP_NATURAL_SORT = "naturalSort";  //NOI18N
+    static final String PROP_FQN = "fqn";                   //NOI18N
 
-    private final ChangeSupport support;
+    private final PropertyChangeSupport support;
     private volatile boolean fqn;
     private JToggleButton simpleNameButton;
     private JToggleButton fqNameButton;
@@ -69,7 +70,7 @@ final class HierarchyFilters extends Filters<Object> {
 
     HierarchyFilters() {
         fqn = NbPreferences.forModule(HierarchyFilters.class).getBoolean(PROP_FQN, false);
-        this.support = new ChangeSupport(this);
+        this.support = new PropertyChangeSupport(this);
     }
 
     @Override
@@ -77,33 +78,17 @@ final class HierarchyFilters extends Filters<Object> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void addChangeListener(@NonNull final ChangeListener listener) {
-        support.addChangeListener(listener);
+    public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
     }
 
-    public void removeChangeListener(@NonNull final ChangeListener listener) {
-        support.removeChangeListener(listener);
-    }
-
-    boolean isFqn() {
-        return fqn;
-    }
-
-    void setFqn(final boolean fqn) {
-        this.fqn = fqn;
-        NbPreferences.forModule(HierarchyFilters.class).putBoolean(PROP_FQN, fqn);
-        if(null != simpleNameButton) {
-            simpleNameButton.setSelected(!fqn);
-        }
-        if(null != fqNameButton) {
-            fqNameButton.setSelected(fqn);
-        }
-        support.fireChange();
+    public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
     }
 
     @Override
     protected void sortUpdated() {
-        support.fireChange();
+        support.firePropertyChange(PROP_NATURAL_SORT,null,null);
     }
 
     @Override
@@ -134,5 +119,21 @@ final class HierarchyFilters extends Filters<Object> {
         }
         res[1] = fqNameButton;
         return res;
+    }
+
+    boolean isFqn() {
+        return fqn;
+    }
+
+    void setFqn(final boolean fqn) {
+        this.fqn = fqn;
+        NbPreferences.forModule(HierarchyFilters.class).putBoolean(PROP_FQN, fqn);
+        if(null != simpleNameButton) {
+            simpleNameButton.setSelected(!fqn);
+        }
+        if(null != fqNameButton) {
+            fqNameButton.setSelected(fqn);
+        }
+        support.firePropertyChange(PROP_FQN,null,null);
     }
 }

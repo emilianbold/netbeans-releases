@@ -43,6 +43,9 @@ package org.netbeans.modules.java.navigation.hierarchy;
 
 import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -75,6 +78,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -95,6 +100,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
+import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.awt.ActionID;
@@ -114,7 +120,6 @@ import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.WindowManager;
@@ -150,7 +155,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final ExplorerManager explorerManager;
     private final InstanceContent selectedNodes;
     private final Lookup lookup;
-    private final Box upperToolBar;
     private final BeanTreeView btw;
     private final TapPanel lowerToolBar;
     private final JComboBox viewTypeCombo;
@@ -166,21 +170,19 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         explorerManager.addPropertyChangeListener(this);
         initComponents();
         setName(Bundle.CTL_HierarchyTopComponent());
-        setToolTipText(Bundle.HINT_HierarchyTopComponent());
-        upperToolBar = new Box(BoxLayout.X_AXIS);
+        setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
         historyCombo = new JComboBox(HierarchyHistoryUI.createModel());
         historyCombo.setRenderer(HierarchyHistoryUI.createRenderer());
         historyCombo.addActionListener(this);
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
+        refreshButton.setFocusable(false);
         jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
         jdocButton.addActionListener(this);
-        upperToolBar.add(viewTypeCombo);
-        upperToolBar.add(historyCombo);
-        upperToolBar.add(refreshButton);
-        upperToolBar.add(jdocButton);
-        add(upperToolBar, BorderLayout.NORTH);
+        jdocButton.setFocusable(false);
+        final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, jdocButton);        
+        add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
         btw = createBeanTreeView();
         add(btw,BorderLayout.CENTER);
         lowerToolBar = new TapPanel();
@@ -188,10 +190,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         filters = new HierarchyFilters();
         final JComponent lowerButtons = filters.getComponent();
         lowerButtons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
-        lowerToolBar.add(lowerButtons);
-        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            lowerToolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-        add(lowerToolBar, BorderLayout.SOUTH);
+        lowerToolBar.add(lowerButtons);        
+        add(updateBackground(lowerToolBar), BorderLayout.SOUTH);
 
     }
 
@@ -255,19 +255,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
-    private void refresh() {
-        final Object selItem = historyCombo.getSelectedItem();
-        if (selItem instanceof Pair) {
-            final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
-            schedule(new Callable<Pair<URI, ElementHandle<TypeElement>>>() {
-                @Override
-                public Pair<URI, ElementHandle<TypeElement>> call() throws Exception {
-                    return pair;
-                }
-            });
-        }
-    }
-
     @CheckForNull
     private static FileObject getFileObject(@NullAllowed final Document doc) {
         if (doc == null) {
@@ -290,6 +277,35 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         return btw;
     }
 
+    @NonNull
+    private static <T extends JComponent> T updateBackground(@NonNull final T comp) {
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
+        return comp;
+    }
+
+    @NonNull
+    private static JPanel decorateAsUpperPanel(@NonNull final JComponent comp) {
+        final JPanel wrapper = new JPanel();
+        wrapper.setLayout(new GridBagLayout());
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.insets = new Insets(0, 0, 0, 0);
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        c.weighty = 0;
+        wrapper.add(comp,c);
+        wrapper.setBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0,
+                    UIManager.getColor("NbSplitPane.background")));//NOI18N
+        return updateBackground(wrapper);
+    }
+
     private void showBusy() {
         btw.setRootVisible(true);
         explorerManager.setRootContext(Nodes.waitNode());
@@ -301,9 +317,22 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         final RunnableFuture<Pair<URI,ElementHandle<TypeElement>>> becomesType = new FutureTask<Pair<URI,ElementHandle<TypeElement>>>(resolver);
         RP.execute(becomesType);
         final ContextImpl ctx = new ContextImpl();
-        filters.addChangeListener(WeakListeners.change(ctx, filters));
+//        filters.addChangeListener(WeakListeners.change(ctx, filters));
         final Runnable refreshTask = new RefreshTask(becomesType, ctx);
         RP.execute(refreshTask);
+    }
+
+    private void refresh() {
+        final Object selItem = historyCombo.getSelectedItem();
+        if (selItem instanceof Pair) {
+            final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
+            schedule(new Callable<Pair<URI, ElementHandle<TypeElement>>>() {
+                @Override
+                public Pair<URI, ElementHandle<TypeElement>> call() throws Exception {
+                    return pair;
+                }
+            });
+        }
     }
 
     public static synchronized HierarchyTopComponent findDefault() {
@@ -640,6 +669,24 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             assert SwingUtilities.isEventDispatchThread();
             this.ordered = !filters.isNaturalSort();
             this.fqn = false;
+        }
+    }
+
+    private static class MainToolBar extends Box {
+        MainToolBar(@NonNull final JComponent... components) {
+            super(BoxLayout.X_AXIS);
+            setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
+            final JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorderPainted(false);
+            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setOpaque(false);
+            toolbar.setFocusable(false);
+            for (JComponent component : components) {
+                toolbar.add(component);
+            }
+            add (toolbar);
         }
     }
 }
