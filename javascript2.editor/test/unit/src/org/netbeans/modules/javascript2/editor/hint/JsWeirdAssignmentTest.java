@@ -39,48 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations;
+package org.netbeans.modules.javascript2.editor.hint;
 
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.hints.JsConventionRule;
+import org.netbeans.modules.javascript2.editor.hints.WeirdAssignment;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Petr Pisl
  */
-public class AnnotationUtilsTest extends NbTestCase {
+public class JsWeirdAssignmentTest extends HintTestBase {
 
-    private static final String ANNOTATION_NAME = "Annotation";
-
-    public AnnotationUtilsTest(String name) {
-        super(name);
+    public JsWeirdAssignmentTest(String testName) {
+        super(testName);
     }
-
-    public void testValidUseCase_01() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    
+    
+    private Rule createRule() {
+        return new WeirdAssignment();
     }
-
-    public void testValidUseCase_02() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    
+    public void testSimple01() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/weirdAssignment.js", null);
     }
-
-    public void testValidUseCase_03() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_04() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_05() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_01() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME + "\\Foo\\Bar\\Baz\\", ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_02() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar" + ANNOTATION_NAME + "\\Baz\\", ANNOTATION_NAME));
-    }
-
 }

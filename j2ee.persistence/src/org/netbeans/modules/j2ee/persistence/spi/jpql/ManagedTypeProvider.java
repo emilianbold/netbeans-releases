@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.lang.model.util.Elements;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
@@ -68,15 +69,18 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     private ITypeRepository typeRepository;
     private final EntityMappings mappings;
     private boolean valid = true;//used to conrol long tasks, if not valid long tasks should be either terminated or goes short way
+    private final Elements elements;
 
-    public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData) {
+    public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData, Elements elements) {
         this.project = project;
         this.mappings = metaData.getRoot();
+        this.elements = elements;
     }
     
-    public ManagedTypeProvider(Project project, EntityMappings mappings) {
+    public ManagedTypeProvider(Project project, EntityMappings mappings, Elements elements) {
         this.project = project;
         this.mappings = mappings;
+        this.elements = elements;
     }
     
     @Override
@@ -116,7 +120,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public ITypeRepository getTypeRepository() {
         if (typeRepository == null) {
-            typeRepository = new TypeRepository(project, this);
+            typeRepository = new TypeRepository(project, this, elements);
         }
         return typeRepository;
     }
@@ -145,6 +149,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public void invalidate() {
         valid = false;
         //TODO: may have sense to clean stored data
+        ((TypeRepository)typeRepository).invalidate();
     }
 
     private void initializeManagedTypes() {

@@ -54,6 +54,9 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.glassfish.tools.ide.server.ServerTasks;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
@@ -74,9 +77,17 @@ public class GlassFishAccountDeploymentManager
         extends GlassFishDeploymentManager {
 
     ////////////////////////////////////////////////////////////////////////////
-    // Constructors                                                           //
+    // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** GlassFish cloud user account instance. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
+    private final GlassFishAccountInstance instance;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+   
     /**
      * Creates an instance of user account deployment manager for GlassFish
      * cloud.
@@ -86,8 +97,10 @@ public class GlassFishAccountDeploymentManager
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishAccountDeploymentManager(GlassFishUrl url) {
-        super(url);
+    GlassFishAccountDeploymentManager(GlassFishUrl url) {        
+        super(url, GlassFishAccountInstanceProvider
+                .getAccountInstance(url.getName()));
+        this.instance = (GlassFishAccountInstance)super.instance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -129,7 +142,15 @@ public class GlassFishAccountDeploymentManager
     @Override
     public ProgressObject distribute(Target[] targetList,
             DeploymentContext deployment) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File moduleFile = deployment.getModuleFile();
+        if (moduleFile.isDirectory()) {
+            throw new UnsupportedOperationException("Directory deployment not supported.");
+        }
+
+        ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, null);
+        // call deploy
+        ServerTasks.deploy(instance.getLocalServer(), moduleFile, progressObject);
+        return progressObject;
     }
 
     /**

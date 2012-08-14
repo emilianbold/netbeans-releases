@@ -4,6 +4,5 @@ public class testReformatIncompleteStatement2 {
 
     public void method() {
         System.out
-    
     }
 }

@@ -54,6 +54,8 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
@@ -74,6 +76,14 @@ public class GlassFishCloudDeploymentManager
         extends GlassFishDeploymentManager {
 
     ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud and local server instance. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
+    private final GlassFishCloudInstance instance;
+
+    ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +96,9 @@ public class GlassFishCloudDeploymentManager
      * @param url GlassFish cloud URL.
      */
     GlassFishCloudDeploymentManager(GlassFishUrl url) {
-        super(url);
+        super(url, GlassFishCloudInstanceProvider
+                .getCloudInstance(url.getName()));
+        this.instance = (GlassFishCloudInstance)super.instance;
     }
 
     ////////////////////////////////////////////////////////////////////////////

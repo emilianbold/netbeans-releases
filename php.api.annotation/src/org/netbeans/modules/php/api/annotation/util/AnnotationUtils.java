@@ -39,13 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.api.annotation.util;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.util.Parameters;
 
@@ -53,6 +54,7 @@ import org.openide.util.Parameters;
  * Utility class for handling annotations.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @since 0.3
  */
 public class AnnotationUtils {
 
@@ -70,7 +72,7 @@ public class AnnotationUtils {
      * @param annotationName name of possible type annotation; never {@code null}
      * @return {@code true} if {@code lineToCheck} contains type annotation of name {@code annotationName}; {@code false} otherwise
      */
-    public static boolean isTypeAnnotation(final String lineToCheck, final String annotationName) {
+    public static boolean isTypeAnnotation(@NonNull final String lineToCheck, @NonNull final String annotationName) {
         Parameters.notNull("lineToCheck", lineToCheck); //NOI18N
         Parameters.notNull("annotationName", annotationName); //NOI18N
         return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
@@ -93,7 +95,7 @@ public class AnnotationUtils {
      * @param parameterNameRegexs regular expressions which describe parameter name (left side of a parameter assignment); never {@code null}
      * @return offset ranges and corresponding type names; never {@code null}
      */
-    public static Map<OffsetRange, String> extractTypesFromParameters(final String line, final Set<String> parameterNameRegexs) {
+    public static Map<OffsetRange, String> extractTypesFromParameters(@NonNull final String line, @NonNull final Set<String> parameterNameRegexs) {
         Parameters.notNull("line", line); //NOI18N
         Parameters.notNull("parameterNameRegexs", parameterNameRegexs); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
@@ -115,7 +117,7 @@ public class AnnotationUtils {
      * @param expectedAnnotations annotation names which one expects in a passed PHPDoc {@code line} without leading "at" sign (@); never {@code null}
      * @return offset ranges and corresponding annotation names; never {@code null}
      */
-    public static Map<OffsetRange, String> extractInlineAnnotations(final String line, final Set<String> expectedAnnotations) {
+    public static Map<OffsetRange, String> extractInlineAnnotations(@NonNull final String line, @NonNull final Set<String> expectedAnnotations) {
         Parameters.notNull("line", line); //NOI18N
         Parameters.notNull("expectedAnnotations", expectedAnnotations); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
@@ -135,7 +137,7 @@ public class AnnotationUtils {
      * @param expectedTypes types which one expects; never {@code null}
      * @return {@code true} if passed {@code typeName} is one of {@code expectedTypes}; {@code false} otherwise
      */
-    private static boolean isExpectedType(final String typeName, final Set<String> expectedTypes) {
+    private static boolean isExpectedType(@NonNull final String typeName, @NonNull final Set<String> expectedTypes) {
         Parameters.notNull("typeName", typeName); //NOI18N
         Parameters.notNull("expectedTypes", expectedTypes); //NOI18N
         boolean result = false;

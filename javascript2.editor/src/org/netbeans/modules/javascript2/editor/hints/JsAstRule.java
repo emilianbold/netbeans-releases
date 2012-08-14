@@ -39,19 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations;
+package org.netbeans.modules.javascript2.editor.hints;
+
+import java.util.List;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Petr Pisl
  */
-public class AnnotationUtils {
+public abstract class JsAstRule implements Rule.AstRule {
+    public static final String JSCONVENTION_HINTS = "jsconvention.line.hints"; //NOI18N
 
-    private AnnotationUtils() {
+    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints);
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
-    public static boolean isTypeAnnotation(final String lineToCheck, final String annotationName) {
-        return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return true;
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+    
+    
 }

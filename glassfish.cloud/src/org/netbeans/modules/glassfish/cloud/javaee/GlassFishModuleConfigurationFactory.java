@@ -55,6 +55,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 public abstract class GlassFishModuleConfigurationFactory
         implements ModuleConfigurationFactory2 {
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented interface methods                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * Creates a {@link ModuleConfiguration} instance associated with the
      * specified J2EE module.

@@ -243,6 +243,22 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 //        insertBreak("x = /*^\n*/", "x = /*\n *^\n*/");
 //    }
 
+    public void testContComment19() throws Exception {
+        insertBreak("x = /**^\n*/", "x = /**\n * ^\n*/");
+    }
+
+    public void testContComment20() throws Exception {
+        insertBreak("/**^", "/**\n * ^\n */");
+    }
+
+    public void testContComment21() throws Exception {
+        insertBreak("/**^\nvar a = 5;", "/**\n * ^\n */\nvar a = 5;");
+    }
+
+    public void testContComment22() throws Exception {
+        insertBreak("/**^\nvar a = 5;/**\n*/", "/**\n * ^\n */\nvar a = 5;/**\n*/");
+    }
+
     public void testNoContComment() throws Exception {
         // No auto-// on new lines
         insertBreak("foo // ^", "foo // \n^");

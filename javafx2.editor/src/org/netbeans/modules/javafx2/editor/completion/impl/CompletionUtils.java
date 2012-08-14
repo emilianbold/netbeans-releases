@@ -82,7 +82,7 @@ public class CompletionUtils {
             do {
                 index = findNextUpper(prefix, lastIndex + 1);
                 String token = prefix.substring(lastIndex, index == -1 ? prefix.length(): index);
-                sb.append(token); 
+                sb.append(Pattern.quote(token)); 
                 sb.append(index != -1 ? "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
                 lastIndex = index;
             } while (index != -1);

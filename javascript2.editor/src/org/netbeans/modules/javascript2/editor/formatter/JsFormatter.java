@@ -42,7 +42,9 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -71,6 +73,8 @@ public class JsFormatter implements Formatter {
     private final Language<JsTokenId> language;
 
     private int lastOffsetDiff = 0;
+
+    private Set<FormatToken> processed = new HashSet<FormatToken>();
 
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;
@@ -153,227 +157,67 @@ public class JsFormatter implements Formatter {
                         initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
-                    
+
+                    if (processed.contains(token)) {
+                        continue;
+                    }
                     switch (token.getKind()) {
                         case BEFORE_ASSIGNMENT_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundAssignOps());
-                            break;
-                        case AFTER_ASSIGNMENT_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundAssignOps());
-                            break;
                         case BEFORE_BINARY_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundBinaryOps());
-                            break;
-                        case AFTER_BINARY_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundBinaryOps());
-                            break;
                         case BEFORE_COMMA:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeComma());
-                            break;
-                        case AFTER_COMMA:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAfterComma());
-                            break;
-                        case AFTER_IF_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeIfParen());
-                            break;
-                        case AFTER_WHILE_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWhileParen());
-                            break;
-                        case AFTER_FOR_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeForParen());
-                            break;
-                        case AFTER_WITH_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWithParen());
-                            break;
-                        case AFTER_SWITCH_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeSwitchParen());
-                            break;
-                        case AFTER_CATCH_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeCatchParen());
-                            break;
                         case BEFORE_WHILE_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWhile());
-                            break;
                         case BEFORE_ELSE_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeElse());
-                            break;
                         case BEFORE_CATCH_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeCatch());
-                            break;
                         case BEFORE_FINALLY_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeFinally());
-                            break;
                         case BEFORE_SEMICOLON:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeSemi());
-                            break;
-                        case AFTER_SEMICOLON:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAfterSemi());
-                            break;
                         case BEFORE_UNARY_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundUnaryOps());
-                            break;
-                        case AFTER_UNARY_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundUnaryOps());
-                            break;
                         case BEFORE_TERNARY_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundTernaryOps());
-                            break;
-                        case AFTER_TERNARY_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundTernaryOps());
-                            break;
                         case BEFORE_FUNCTION_DECLARATION:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeMethodDeclParen());
-                            break;
                         case BEFORE_FUNCTION_CALL:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeMethodCallParen());
-                            break;
-                        case AFTER_FUNCTION_DECLARATION_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodDeclParens());
-                            break;
                         case BEFORE_FUNCTION_DECLARATION_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodDeclParens());
-                            break;
-                        case AFTER_FUNCTION_CALL_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodCallParens());
-                            break;
                         case BEFORE_FUNCTION_CALL_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodCallParens());
-                            break;
-                        case AFTER_IF_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinIfParens());
-                            break;
                         case BEFORE_IF_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinIfParens());
-                            break;
-                        case AFTER_WHILE_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWhileParens());
-                            break;
                         case BEFORE_WHILE_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWhileParens());
-                            break;
-                        case AFTER_FOR_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinForParens());
-                            break;
                         case BEFORE_FOR_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinForParens());
-                            break;
-                        case AFTER_WITH_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWithParens());
-                            break;
                         case BEFORE_WITH_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWithParens());
-                            break;
-                        case AFTER_SWITCH_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinSwitchParens());
-                            break;
                         case BEFORE_SWITCH_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinSwitchParens());
-                            break;
-                        case AFTER_CATCH_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinCatchParens());
-                            break;
                         case BEFORE_CATCH_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinCatchParens());
-                            break;
-                        case AFTER_LEFT_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinParens());
-                            break;
                         case BEFORE_RIGHT_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinParens());
-                            break;
                         case BEFORE_IF_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeIfLeftBrace());
-                            break;
                         case BEFORE_ELSE_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeElseLeftBrace());
-                            break;
                         case BEFORE_WHILE_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWhileLeftBrace());
-                            break;
                         case BEFORE_FOR_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeForLeftBrace());
-                            break;
                         case BEFORE_DO_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeDoLeftBrace());
-                            break;
                         case BEFORE_TRY_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeTryLeftBrace());
-                            break;
                         case BEFORE_CATCH_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeCatchLeftBrace());
-                            break;
                         case BEFORE_FINALLY_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeFinallyLeftBrace());
-                            break;
                         case BEFORE_SWITCH_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeSwitchLeftBrace());
-                            break;
                         case BEFORE_WITH_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWithLeftBrace());
-                            break;
                         case BEFORE_FUNCTION_DECLARATION_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeMethodDeclLeftBrace());
-                            break;
-                        case AFTER_ARRAY_LITERAL_BRACKET:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
-                            break;
                         case BEFORE_ARRAY_LITERAL_BRACKET:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
+                        case AFTER_ASSIGNMENT_OPERATOR:
+                        case AFTER_BINARY_OPERATOR:
+                        case AFTER_COMMA:
+                        case AFTER_IF_KEYWORD:
+                        case AFTER_WHILE_KEYWORD:
+                        case AFTER_FOR_KEYWORD:
+                        case AFTER_WITH_KEYWORD:
+                        case AFTER_SWITCH_KEYWORD:
+                        case AFTER_CATCH_KEYWORD:
+                        case AFTER_SEMICOLON:
+                        case AFTER_UNARY_OPERATOR:
+                        case AFTER_TERNARY_OPERATOR:
+                        case AFTER_FUNCTION_DECLARATION_PARENTHESIS:
+                        case AFTER_FUNCTION_CALL_PARENTHESIS:
+                        case AFTER_IF_PARENTHESIS:
+                        case AFTER_WHILE_PARENTHESIS:
+                        case AFTER_FOR_PARENTHESIS:;
+                        case AFTER_WITH_PARENTHESIS:
+                        case AFTER_SWITCH_PARENTHESIS:
+                        case AFTER_CATCH_PARENTHESIS:
+                        case AFTER_LEFT_PARENTHESIS:
+                        case AFTER_ARRAY_LITERAL_BRACKET:
+                            handleSpace(tokens, i, formatContext);
                             break;
                         // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
@@ -397,6 +241,7 @@ public class JsFormatter implements Formatter {
                             break;
                         case SOURCE_START:
                         case EOL:
+                            processed.clear();
                             // XXX refactor eol token WRAP_IF_LONG handling
                             if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                                 // search for token which will be present just before eol
@@ -697,84 +542,19 @@ public class JsFormatter implements Formatter {
         return i;
     }
 
-    private int handleSpaceAfter(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
-
+    private void handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext) {
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
 
         CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext, true);
+        // wrapping will take care of everything
         if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return index;
+            return;
         }
 
-        // now we have some AFTER token, find next non white token
-        FormatToken end = null;
         boolean containsEol = false;
 
-        for (FormatToken current = token.next(); current != null;
-                current = current.next()) {
-
-            if (!current.isVirtual()) {
-                if (current.getKind() != FormatToken.Kind.WHITESPACE
-                        && current.getKind() != FormatToken.Kind.EOL) {
-                    end = current;
-                    break;
-                } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    containsEol = true;
-                }
-            }
-        }
-
-        // this avoids collision of after and before rules on same whitespace
-        for (FormatToken virtual = end; virtual != null && virtual != token;
-                virtual = virtual.previous()) {
-            // the before marker should win anyway
-            if (virtual.isSpaceBeforeMarker()) {
-                return index;
-            }
-        }
-        //XXX
-        FormatToken start = getNextNonVirtual(token);
-
-        if (start != null && end != null) {
-            if (start.getKind() != FormatToken.Kind.WHITESPACE
-                    && start.getKind() != FormatToken.Kind.EOL) {
-                if (!remove) {
-                    formatContext.insert(start.getOffset(), " "); // NOI18N
-                }
-            } else if (!containsEol) {
-                if (remove) {
-                    formatContext.remove(start.getOffset(),
-                            end.getOffset() - start.getOffset());
-                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
-                    formatContext.replace(start.getOffset(),
-                            end.getOffset() - start.getOffset(), " "); // NOI18N
-                }
-            }
-            // we have done everything needed so move forward
-            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, end, formatContext, false);
-            }
-        }
-        return index;
-    }
-
-    private int handleSpaceBefore(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
-
-        FormatToken token = tokens.get(index);
-        assert token.isVirtual();
-
-        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext, false);
-        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return index;
-        }
-
-        // now we have some BEFORE token, find previous non white token
         FormatToken start = null;
-        boolean containsEol = false;
-
         for (FormatToken current = token.previous(); current != null;
                 current = current.previous()) {
 
@@ -789,31 +569,53 @@ public class JsFormatter implements Formatter {
             }
         }
 
-        if (start != null) {
-            // we fetch the space to start
+        FormatToken end = null;
+        for (FormatToken current = token.next(); current != null;
+                current = current.next()) {
+
+            if (!current.isVirtual()) {
+                if (current.getKind() != FormatToken.Kind.WHITESPACE
+                        && current.getKind() != FormatToken.Kind.EOL) {
+                    end = current;
+                    break;
+                } else if (current.getKind() == FormatToken.Kind.EOL) {
+                    containsEol = true;
+                }
+            }
+        }
+
+        // we mark space and WRAP_NEVER tokens as processed
+        for (FormatToken current = start; current != end; current = current.next()) {
+            if (current.isVirtual()
+                    && !current.isIndentationMarker()
+                    && getLineWrap(current, formatContext) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
+                processed.add(current);
+            }
+        }
+
+        // FIXME if end is null we might be at EOF
+        if (start != null && end != null) {
+            boolean remove = !isSpace(token, formatContext, true);
+
+            // we fetch the space or next token to start
             start = getNextNonVirtual(start);
-            // and the token we are before
-            FormatToken theToken = getNextNonVirtual(token);
+
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
+                assert start == end : start;
                 if (!remove) {
                     formatContext.insert(start.getOffset(), " "); // NOI18N
                 }
             } else if (!containsEol) {
                 if (remove) {
                     formatContext.remove(start.getOffset(),
-                            theToken.getOffset() - start.getOffset());
-                } else if (theToken.getOffset() - start.getOffset() != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                            end.getOffset() - start.getOffset());
+                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
                     formatContext.replace(start.getOffset(),
-                            theToken.getOffset() - start.getOffset(), " "); // NOI18N
+                            end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
             }
-            // we have done everything needed so move forward
-            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, theToken, formatContext, false);
-            }
         }
-        return index;
     }
 
     private boolean isContinuation(FormatToken token, boolean noRealEol) {
@@ -996,6 +798,137 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapWithStatement();
             default:
                 return null;
+        }
+    }
+
+    private static Boolean isSpace(FormatToken token, FormatContext context,
+            boolean skipWitespace) {
+        assert token.isVirtual() || skipWitespace && token.getKind() == FormatToken.Kind.WHITESPACE: token;
+
+        FormatToken next = token;
+        while (next != null && (next.isVirtual() || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE)) {
+            if (next.getKind() != FormatToken.Kind.WHITESPACE && isSpace(next, context)) {
+                return true;
+            }
+            next = next.next();
+        }
+        return false;
+    }
+
+    private static boolean isSpace(FormatToken token, FormatContext formatContext) {
+        switch (token.getKind()) {
+            case BEFORE_ASSIGNMENT_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundAssignOps();
+            case AFTER_ASSIGNMENT_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundAssignOps();
+            case BEFORE_BINARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundBinaryOps();
+            case AFTER_BINARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundBinaryOps();
+            case BEFORE_COMMA:
+                return CodeStyle.get(formatContext).spaceBeforeComma();
+            case AFTER_COMMA:
+                return CodeStyle.get(formatContext).spaceAfterComma();
+            case AFTER_IF_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeIfParen();
+            case AFTER_WHILE_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeWhileParen();
+            case AFTER_FOR_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeForParen();
+            case AFTER_WITH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeWithParen();
+            case AFTER_SWITCH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeSwitchParen();
+            case AFTER_CATCH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeCatchParen();
+            case BEFORE_WHILE_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeWhile();
+            case BEFORE_ELSE_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeElse();
+            case BEFORE_CATCH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeCatch();
+            case BEFORE_FINALLY_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeFinally();
+            case BEFORE_SEMICOLON:
+                return CodeStyle.get(formatContext).spaceBeforeSemi();
+            case AFTER_SEMICOLON:
+                return CodeStyle.get(formatContext).spaceAfterSemi();
+            case BEFORE_UNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundUnaryOps();
+            case AFTER_UNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundUnaryOps();
+            case BEFORE_TERNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundTernaryOps();
+            case AFTER_TERNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundTernaryOps();
+            case BEFORE_FUNCTION_DECLARATION:
+                return CodeStyle.get(formatContext).spaceBeforeMethodDeclParen();
+            case BEFORE_FUNCTION_CALL:
+                return CodeStyle.get(formatContext).spaceBeforeMethodCallParen();
+            case AFTER_FUNCTION_DECLARATION_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodDeclParens();
+            case BEFORE_FUNCTION_DECLARATION_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodDeclParens();
+            case AFTER_FUNCTION_CALL_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodCallParens();
+            case BEFORE_FUNCTION_CALL_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodCallParens();
+            case AFTER_IF_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinIfParens();
+            case BEFORE_IF_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinIfParens();
+            case AFTER_WHILE_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWhileParens();
+            case BEFORE_WHILE_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWhileParens();
+            case AFTER_FOR_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinForParens();
+            case BEFORE_FOR_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinForParens();
+            case AFTER_WITH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWithParens();
+            case BEFORE_WITH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWithParens();
+            case AFTER_SWITCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinSwitchParens();
+            case BEFORE_SWITCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinSwitchParens();
+            case AFTER_CATCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinCatchParens();
+            case BEFORE_CATCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinCatchParens();
+            case AFTER_LEFT_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinParens();
+            case BEFORE_RIGHT_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinParens();
+            case BEFORE_IF_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeIfLeftBrace();
+            case BEFORE_ELSE_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeElseLeftBrace();
+            case BEFORE_WHILE_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeWhileLeftBrace();
+            case BEFORE_FOR_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeForLeftBrace();
+            case BEFORE_DO_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeDoLeftBrace();
+            case BEFORE_TRY_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeTryLeftBrace();
+            case BEFORE_CATCH_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeCatchLeftBrace();
+            case BEFORE_FINALLY_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeFinallyLeftBrace();
+            case BEFORE_SWITCH_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeSwitchLeftBrace();
+            case BEFORE_WITH_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeWithLeftBrace();
+            case BEFORE_FUNCTION_DECLARATION_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeMethodDeclLeftBrace();
+            case AFTER_ARRAY_LITERAL_BRACKET:
+                return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
+            case BEFORE_ARRAY_LITERAL_BRACKET:
+                return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
+            default:
+                return false;
         }
     }
 
