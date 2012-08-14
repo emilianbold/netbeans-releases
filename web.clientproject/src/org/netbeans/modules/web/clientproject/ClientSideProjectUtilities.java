@@ -43,6 +43,9 @@ package org.netbeans.modules.web.clientproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -50,8 +53,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
-// XXX use project mutex everywhere!
 /**
  *
  * @author david
@@ -62,45 +66,41 @@ public final class ClientSideProjectUtilities {
     }
 
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
-        return h;
+        return ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
     }
 
-    public static void initializeProject(AntProjectHelper h) throws IOException {
-        initializeProject(h, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER,
+    public static void initializeProject(AntProjectHelper projectHelper) throws IOException {
+        initializeProject(projectHelper, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER,
                 ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
     }
 
-    public static void initializeProject(AntProjectHelper h, String siteRoot, String test, String config) throws IOException {
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
-        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, test);
-        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, config);
-        h.getProjectDirectory().createFolder(siteRoot);
-        h.getProjectDirectory().createFolder(test);
-        h.getProjectDirectory().createFolder(config);
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(p);
+    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot, String test, String config) throws IOException {
+        // create dirs
+        projectHelper.getProjectDirectory().createFolder(siteRoot);
+        projectHelper.getProjectDirectory().createFolder(test);
+        projectHelper.getProjectDirectory().createFolder(config);
+        // save project
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        properties.put(ClientSideProjectConstants.PROJECT_TEST_FOLDER, test);
+        properties.put(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, config);
+        saveProjectProperties(projectHelper, properties);
     }
 
     // XXX "merge" with the method above
     public static void initializeProject(AntProjectHelper projectHelper, String siteRoot) throws IOException {
         assert projectHelper.getProjectDirectory().getFileObject(siteRoot) != null : "Site root must exist: " + siteRoot;
-        EditableProperties editableProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        editableProperties.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
-        projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, editableProperties);
-        Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(project);
+        Map<String, String> properties = Collections.singletonMap(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        saveProjectProperties(projectHelper, properties);
     }
 
-    public static FileObject getSiteRootFolder(AntProjectHelper h) throws IOException, IllegalArgumentException {
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String s = ep.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null || s.length() == 0) {
+    public static FileObject getSiteRootFolder(AntProjectHelper projectHelper) throws IOException {
+        EditableProperties properties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String siteRoot = properties.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (siteRoot == null || siteRoot.length() == 0) {
             return null;
         }
-        return h.getProjectDirectory().getFileObject(s);
+        return projectHelper.getProjectDirectory().getFileObject(siteRoot);
     }
 
     /**
@@ -117,6 +117,26 @@ public final class ClientSideProjectUtilities {
             return relPath;
         }
         return file.getAbsolutePath();
+    }
+
+    private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    EditableProperties projectProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        projectProperties.setProperty(entry.getKey(), entry.getValue());
+                    }
+                    projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
     }
 
 }
