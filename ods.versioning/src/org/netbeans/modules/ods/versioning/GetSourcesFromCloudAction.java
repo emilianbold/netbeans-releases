@@ -54,9 +54,17 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.ods.versioning.SourceAccessorImpl.ProjectAndRepository;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
+@ActionID(id = "org.netbeans.modules.ods.versioning.GetSourcesFromCloudAction", category = "Team")
+@ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-ods-versioning-GetSourcesFromCloudAction.instance")
+@ActionReference(path="Menu/Versioning/Team/ODS", position=400)
+@Messages("Actions/Team/org-netbeans-modules-ods-versioning-GetSourcesFromCloudAction.instance=Get Sources...")
 public final class GetSourcesFromCloudAction extends AbstractAction {
 
     private ProjectAndRepository prjAndRepository;
@@ -65,6 +73,10 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
     private String dialogTitle = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudTitle");
     private String getOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.GetFromKenai.option");
     private String cancelOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.Cancel.option");
+    
+    public GetSourcesFromCloudAction () {
+        this(null, null);
+    }
 
     public GetSourcesFromCloudAction(ProjectAndRepository prjRepo, SourceHandleImpl src) {
         prjAndRepository = prjRepo;

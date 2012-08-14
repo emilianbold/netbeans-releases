@@ -122,6 +122,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         } else {
             server = CloudUiServer.forServer(prjAndRepository.project.getTeamProject().getServer());
             cloudCombo.setSelectedItem(server);
+            cloudCombo.setEnabled(false);
         }
 
         refreshUsername();
@@ -249,28 +250,25 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(cloudRepoLabel)
+                    .addComponent(loggedInLabel))
+                .addGap(4, 4, 4)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(loggedInLabel)
-                        .addGap(33, 33, 33)
                         .addComponent(cloudCombo, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
                         .addGap(4, 4, 4)
                         .addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(cloudRepoLabel)
-                        .addGap(4, 4, 4)
+                        .addComponent(projectPreviewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addComponent(cloudRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(projectPreviewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(104, 104, 104))
-                            .addComponent(cloudRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                                    .addComponent(lblError)
-                                    .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 123, Short.MAX_VALUE)))))
-                .addContainerGap())
+                            .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblError))
+                        .addGap(0, 135, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -294,7 +292,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                         .addGap(13, 13, 13)
                         .addComponent(cloudRepoComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(7, 7, 7)
-                .addComponent(projectPreviewLabel, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE)
+                .addComponent(projectPreviewLabel, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -319,6 +317,9 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         if (loginSuccess) {
             refreshUsername();
             TeamUIUtils.activateTeamDashboard();
+            comboModel = new CloudRepositoriesComboModel();
+            cloudRepoComboBox.setModel(comboModel);
+            cloudRepoComboBox.setSelectedItem(server);
         } else {
             // login failed, do nothing
         }
@@ -422,24 +423,32 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                                 if(repositories == null) {
                                     continue;
                                 }
+                                final List<ScmRepositoryListItem> items = new ArrayList<ScmRepositoryListItem>(repositories.size() * 2);
                                 for (final ScmRepository repository : repositories) {
-                                    if (SourceAccessorImpl.isSupported(repository.getScmLocation() == ScmLocation.CODE2CLOUD
-                                            ? repository.getType()
-                                            : null)) {
-                                        final ScmRepositoryListItem item = new ScmRepositoryListItem(prjHandle, repository);
-                                        EventQueue.invokeLater(new Runnable() {
-                                            @Override
-                                            public void run() {
+                                    if (prjAndRepository == null || prjAndRepository.project.getId().equals(prjHandle.getId()) &&
+                                                    prjAndRepository.repository.getUrl().equals(repository.getUrl())) {
+                                        if (SourceAccessorImpl.isSupported(repository.getScmLocation() == ScmLocation.CODE2CLOUD
+                                                ? repository.getType()
+                                                : null)) {
+                                            items.add(new ScmRepositoryListItem(prjHandle, repository));
+                                        }
+                                    }
+                                }
+                                if (!items.isEmpty()) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            for (ScmRepositoryListItem item : items) {
                                                 addElement(item);
                                                 if (prjAndRepository != null &&
                                                     prjAndRepository.project.getId().equals(prjHandle.getId()) &&
-                                                    prjAndRepository.repository.getUrl().equals(repository.getUrl())) 
+                                                    prjAndRepository.repository.getUrl().equals(item.repository.getUrl())) 
                                                 {
                                                     setSelectedItem(item);
                                                 }
                                             }
-                                        });
-                                    }
+                                        }
+                                    });
                                 }
                             } catch (ODSException ex) {
                                 Exceptions.printStackTrace(ex);
@@ -600,14 +609,6 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }
-    }
-
-    private synchronized void setComboModel(DefaultComboBoxModel model) {
-        comboModel = model;
-    }
-
-    private synchronized DefaultComboBoxModel getComboModel() {
-        return comboModel;
     }
 
 }
