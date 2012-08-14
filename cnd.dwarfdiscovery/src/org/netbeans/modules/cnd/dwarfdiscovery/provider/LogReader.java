@@ -1026,14 +1026,16 @@ public class LogReader {
             } else if (languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
-                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
-                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                    if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
-                        language = ItemProperties.LanguageKind.CPP;
-                    }
-                } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                    if (li.getLanguage() != ItemProperties.LanguageKind.C) {
-                        language = ItemProperties.LanguageKind.C;
+                if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
+                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                        if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
+                            language = ItemProperties.LanguageKind.CPP;
+                        }
+                    } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                        if (li.getLanguage() != ItemProperties.LanguageKind.C) {
+                            language = ItemProperties.LanguageKind.C;
+                        }
                     }
                 }
             }
