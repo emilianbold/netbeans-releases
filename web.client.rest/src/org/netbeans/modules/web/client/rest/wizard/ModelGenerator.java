@@ -466,7 +466,7 @@ class ModelGenerator {
                 builder.append("'){\n");                                // NOI18N
                 builder.append("options.url = '");                      // NOI18N
                 builder.append(path);
-                builder.append("'+id;\n");                              // NOI18N
+                builder.append("'+model.id;\n");                        // NOI18N
                 builder.append("}\n");                                  // NOI18N
             }
         }
