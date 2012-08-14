@@ -83,8 +83,8 @@ public class Bonus extends Parent {
         getChildren().add(content);
         this.type = type;
         Image image = Config.getBonusesImages().get(type);
-        width = (int) image.getWidth() - Config.SHADOW_WIDTH;
-        height = (int) image.getHeight() - Config.SHADOW_HEIGHT;
+        width = (int)image.getWidth() - Config.SHADOW_WIDTH;
+        height = (int)image.getHeight() - Config.SHADOW_HEIGHT;
         content.setImage(image);
         setMouseTransparent(true);
     }

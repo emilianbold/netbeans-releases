@@ -45,15 +45,14 @@ public class Main extends Application {
         return mainFrame;
     }
     
-    @Override
-    public void start(Stage stage) {
+    @Override public void start(Stage stage) {
         Config.initialize();
         Group root = new Group();
         mainFrame = new MainFrame(root);
         stage.setTitle("Brick Breaker");
         stage.setResizable(false);
-        stage.setWidth(Config.SCREEN_WIDTH + 2 * Config.WINDOW_BORDER);
-        stage.setHeight(Config.SCREEN_HEIGHT + 2 * Config.WINDOW_BORDER + Config.TITLE_BAR_HEIGHT);
+        stage.setWidth(Config.SCREEN_WIDTH + 2*Config.WINDOW_BORDER);
+        stage.setHeight(Config.SCREEN_HEIGHT+ 2*Config.WINDOW_BORDER + Config.TITLE_BAR_HEIGHT);
         Scene scene = new Scene(root);
         scene.setFill(Color.BLACK);
         stage.setScene(scene);
@@ -61,16 +60,23 @@ public class Main extends Application {
         stage.show();
     }
 
+    public static void main(String[] args) {
+        Application.launch(args);
+    }
+
     public class MainFrame {
         // Instance of scene root node
-
         private Group root;
+
         // Instance of splash (if exists)
         private Splash splash;
+
         // Instance of level (if exists)
         private Level level;
+
         // Number of lifes
         private int lifeCount;
+
         // Current score
         private int score;
 
@@ -108,6 +114,7 @@ public class Main extends Application {
             score = 0;
             changeState(1);
         }
+
         // Current state of the game. The next values are available
         // 0 - Splash
         public static final int SPLASH = 0;
@@ -138,15 +145,5 @@ public class Main extends Application {
         }
     }
 
-    /**
-     * The main() method is ignored in correctly deployed JavaFX 
-     * application. main() serves only as fallback in case the 
-     * application can not be launched through deployment artifacts,
-     * e.g., in IDEs with limited FX support. NetBeans ignores main().
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
 

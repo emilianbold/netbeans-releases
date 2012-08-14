@@ -71,12 +71,11 @@ public class Splash extends Parent {
         timeline = new Timeline();
         timeline.setCycleCount(Timeline.INDEFINITE);
         KeyFrame kf = new KeyFrame(Config.ANIMATION_TIME, new EventHandler<ActionEvent>() {
-
             public void handle(ActionEvent event) {
                 if (state == STATE_SHOW_TITLE) {
                     stateArg++;
                     int center = Config.SCREEN_WIDTH / 2;
-                    int offset = (int) (Math.cos(stateArg / 4.0) * (40 - stateArg) / 40 * center);
+                    int offset = (int)(Math.cos(stateArg / 4.0) * (40 - stateArg) / 40 * center);
                     brick.setTranslateX(center - brick.getImage().getWidth() / 2 + offset);
                     breaker.setTranslateX(center - breaker.getImage().getWidth() / 2 - offset);
                     if (stateArg == 40) {
@@ -94,8 +93,8 @@ public class Splash extends Parent {
                     }
                     stateArg++;
                     double coef = stateArg / 30f;
-                    brick.setTranslateX(breaker.getTranslateX()
-                            + (breaker.getImage().getWidth() - brick.getImage().getWidth()) / 2f * (1 - coef));
+                    brick.setTranslateX(breaker.getTranslateX() +
+                        (breaker.getImage().getWidth() - brick.getImage().getWidth()) / 2f * (1 - coef));
                     strike.setScaleX(coef);
                     strike.setScaleY(coef);
                     strike.setRotate((30 - stateArg) * 2);
@@ -126,16 +125,16 @@ public class Splash extends Parent {
                 sun.setRotate(-stateArg);
                 for (int i = 0; i < NODES.length; i++) {
                     NODES_SHADOWS[i].setOpacity(y / SUN_AMPLITUDE_Y / 2);
-                    NODES_SHADOWS[i].setTranslateX(NODES[i].getTranslateX()
-                            + (NODES[i].getTranslateX() + NODES[i].getImage().getWidth() / 2 - sunX) / 20);
-                    NODES_SHADOWS[i].setTranslateY(NODES[i].getTranslateY()
-                            + (NODES[i].getTranslateY() + NODES[i].getImage().getHeight() / 2 - sunY) / 20);
+                    NODES_SHADOWS[i].setTranslateX(NODES[i].getTranslateX() +
+                        (NODES[i].getTranslateX() + NODES[i].getImage().getWidth() / 2 - sunX) / 20);
+                    NODES_SHADOWS[i].setTranslateY(NODES[i].getTranslateY() +
+                        (NODES[i].getTranslateY() + NODES[i].getImage().getHeight() / 2 - sunY) / 20);
                 }
             }
         });
         timeline.getKeyFrames().add(kf);
     }
-
+    
     public void start() {
         background.requestFocus();
         timeline.play();
@@ -180,8 +179,8 @@ public class Splash extends Parent {
         breakerShadow.setTranslateX(-1000);
         strike = new ImageView();
         strike.setImage(Config.getImages().get(Config.IMAGE_SPLASH_STRIKE));
-        strike.setTranslateY(brick.getTranslateY()
-                - (strike.getImage().getHeight() - brick.getImage().getHeight()) / 2);
+        strike.setTranslateY(brick.getTranslateY() -
+            (strike.getImage().getHeight() - brick.getImage().getHeight()) / 2);
         strike.setVisible(false);
         pressanykey = new ImageView();
         pressanykey.setImage(Config.getImages().get(Config.IMAGE_SPLASH_PRESSANYKEY));
@@ -198,8 +197,8 @@ public class Splash extends Parent {
         sun = new ImageView();
         sun.setImage(Config.getImages().get(Config.IMAGE_SPLASH_SUN));
         sun.setTranslateX(-1000);
-        NODES = new ImageView[]{brick, breaker, strike, pressanykey};
-        NODES_SHADOWS = new ImageView[]{brickShadow, breakerShadow, strikeShadow, pressanykeyShadow};
+        NODES = new ImageView[] {brick, breaker, strike, pressanykey};
+        NODES_SHADOWS = new ImageView[] {brickShadow, breakerShadow, strikeShadow, pressanykeyShadow};
         Group group = new Group();
         group.getChildren().add(background);
         group.getChildren().addAll(NODES_SHADOWS);
