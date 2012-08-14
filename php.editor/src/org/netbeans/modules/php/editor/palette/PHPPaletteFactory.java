@@ -52,23 +52,23 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Petr Pisl
  */
-
 public class PHPPaletteFactory {
 
     public static final String PHP_PALETTE_FOLDER = "Palettes/PHP";  //NOI18N
-
     private static volatile PaletteController palette = null;
 
     public static PaletteController getPalette() throws IOException {
-        if (palette == null)
+        if (palette == null) {
             palette = PaletteFactory.createPalette(PHP_PALETTE_FOLDER, new PHPPaletteActions(),
                     null, new PHPDnDHandler());
+        }
         return palette;
     }
 
     private static class PHPDnDHandler extends DragAndDropHandler {
+
         public PHPDnDHandler() {
-            super( true );
+            super(true);
         }
 
         @Override

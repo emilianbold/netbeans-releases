@@ -61,31 +61,36 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-
-
 public class PHPPaletteActions extends PaletteActions {
 
-    /** Creates a new instance of jbossddPaletteActions */
+    /**
+     * Creates a new instance of jbossddPaletteActions
+     */
     public PHPPaletteActions() {
     }
 
+    @Override
     public Action[] getImportActions() {
         return new Action[0];
     }
 
+    @Override
     public Action[] getCustomCategoryActions(Lookup category) {
         return new Action[0];
     }
 
+    @Override
     public Action[] getCustomItemActions(Lookup item) {
         return new Action[0];
     }
 
+    @Override
     public Action[] getCustomPaletteActions() {
         return new Action[0];
     }
 
-    public Action getPreferredAction( Lookup item ) {
+    @Override
+    public Action getPreferredAction(Lookup item) {
         return new MFPaletteInsertAction(item);
     }
 
@@ -97,6 +102,7 @@ public class PHPPaletteActions extends PaletteActions {
             this.item = item;
         }
 
+        @Override
         public void actionPerformed(ActionEvent event) {
 
             ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
@@ -108,25 +114,22 @@ public class PHPPaletteActions extends PaletteActions {
                 return;
             }
             if (drop == null) {
-                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, item.getClass() + " doesn't provide " + ActiveEditorDrop.class);//NOI18N
+                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, "{0} doesn''t provide {1}", new Object[]{item.getClass(), ActiveEditorDrop.class});//NOI18N
                 return;
             }
             try {
                 drop.handleTransfer(target);
-            }
-            finally {
+            } finally {
                 Utilities.requestFocus(target);
             }
 
             try {
                 PaletteController paletteController = PHPPaletteFactory.getPalette();
                 paletteController.clearSelection();
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, null, ioe);
             }
 
         }
     }
-
 }
