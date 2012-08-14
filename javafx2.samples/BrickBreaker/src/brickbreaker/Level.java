@@ -31,8 +31,6 @@
  */
 package brickbreaker;
 
-import brickbreaker.Main.MainFrame;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -55,6 +53,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import brickbreaker.Main.MainFrame;
 
 public class Level extends Parent {
 
@@ -105,7 +104,6 @@ public class Level extends Parent {
     private void initStartingTimeline() {
         startingTimeline = new Timeline();
         KeyFrame kf1 = new KeyFrame(Duration.millis(500), new EventHandler<ActionEvent>() {
-
             public void handle(ActionEvent event) {
                 message.setVisible(true);
                 state = STARTING_LEVEL;
@@ -116,7 +114,6 @@ public class Level extends Parent {
         KeyFrame kf2 = new KeyFrame(Duration.millis(1500), new KeyValue(message.opacityProperty(), 1));
         KeyFrame kf3 = new KeyFrame(Duration.millis(3000), new KeyValue(message.opacityProperty(), 1));
         KeyFrame kf4 = new KeyFrame(Duration.millis(4000), new EventHandler<ActionEvent>() {
-
             public void handle(ActionEvent event) {
                 message.setVisible(false);
 
@@ -139,7 +136,6 @@ public class Level extends Parent {
         timeline = new Timeline();
         timeline.setCycleCount(Timeline.INDEFINITE);
         KeyFrame kf = new KeyFrame(Config.ANIMATION_TIME, new EventHandler<ActionEvent>() {
-
             public void handle(ActionEvent event) {
                 // Process fadeBricks
                 Iterator<Brick> brickIterator = fadeBricks.iterator();
@@ -165,10 +161,10 @@ public class Level extends Parent {
                         group.getChildren().remove(bonus);
                     } else {
                         bonus.setTranslateY(bonus.getTranslateY() + Config.BONUS_SPEED);
-                        if (bonus.getTranslateX() + bonus.getWidth() > bat.getTranslateX()
-                                && bonus.getTranslateX() < bat.getTranslateX() + bat.getWidth()
-                                && bonus.getTranslateY() + bonus.getHeight() > bat.getTranslateY()
-                                && bonus.getTranslateY() < bat.getTranslateY() + bat.getHeight()) {
+                        if (bonus.getTranslateX() + bonus.getWidth() > bat.getTranslateX() &&
+                                bonus.getTranslateX() < bat.getTranslateX() + bat.getWidth() &&
+                                bonus.getTranslateY() + bonus.getHeight() > bat.getTranslateY() &&
+                                bonus.getTranslateY() < bat.getTranslateY() + bat.getHeight()) {
                             // Bonus is catched
                             updateScore(100);
                             catchedBonus = bonus.getType();
@@ -238,11 +234,11 @@ public class Level extends Parent {
                     inverseY = true;
                 }
                 // Determine hit bat and ball
-                if (ballDirY > 0
-                        && ball.getTranslateY() + ball.getDiameter() < Config.BAT_Y
-                        && newY + ball.getDiameter() >= Config.BAT_Y
-                        && newX >= bat.getTranslateX() - ball.getDiameter()
-                        && newX < bat.getTranslateX() + bat.getWidth() + ball.getDiameter()) {
+                if (ballDirY > 0 &&
+                        ball.getTranslateY() + ball.getDiameter() < Config.BAT_Y &&
+                        newY + ball.getDiameter() >= Config.BAT_Y &&
+                        newX >= bat.getTranslateX() - ball.getDiameter() &&
+                        newX < bat.getTranslateX() + bat.getWidth() + ball.getDiameter()) {
                     inverseY = true;
                     // Speed up ball
                     double speed = Math.sqrt(ballDirX * ballDirX + ballDirY * ballDirY);
@@ -253,13 +249,13 @@ public class Level extends Parent {
                     // Don't change direction if center of bat was used
                     if (Math.abs(offsetX) > bat.getWidth() / 4) {
                         ballDirX += offsetX / 5;
-                        double MAX_COORD_SPEED = Math.sqrt(speed * speed
-                                - Config.BALL_MIN_COORD_SPEED * Config.BALL_MIN_COORD_SPEED);
+                        double MAX_COORD_SPEED = Math.sqrt(speed * speed -
+                            Config.BALL_MIN_COORD_SPEED * Config.BALL_MIN_COORD_SPEED);
                         if (Math.abs(ballDirX) > MAX_COORD_SPEED) {
                             ballDirX = Utils.sign(ballDirX) * MAX_COORD_SPEED;
                         }
-                        ballDirY = Utils.sign(ballDirY)
-                                * Math.sqrt(speed * speed - ballDirX * ballDirX);
+                        ballDirY = Utils.sign(ballDirY) *
+                            Math.sqrt(speed * speed - ballDirX * ballDirX);
                     }
                     correctBallSpeed();
                     if (catchedBonus == Bonus.TYPE_CATCH) {
@@ -268,10 +264,10 @@ public class Level extends Parent {
                     }
                 }
                 // Determine hit ball and brick
-                int firstCol = (int) (newX / Config.BRICK_WIDTH);
-                int secondCol = (int) ((newX + ball.getDiameter()) / Config.BRICK_WIDTH);
-                int firstRow = (int) ((newY - Config.FIELD_Y) / Config.BRICK_HEIGHT);
-                int secondRow = (int) ((newY - Config.FIELD_Y + ball.getDiameter()) / Config.BRICK_HEIGHT);
+                int firstCol = (int)(newX / Config.BRICK_WIDTH);
+                int secondCol = (int)((newX + ball.getDiameter()) / Config.BRICK_WIDTH);
+                int firstRow = (int)((newY - Config.FIELD_Y) / Config.BRICK_HEIGHT);
+                int secondRow = (int)((newY - Config.FIELD_Y + ball.getDiameter()) / Config.BRICK_HEIGHT);
                 if (ballDirX > 0) {
                     int temp = secondCol;
                     secondCol = firstCol;
@@ -290,8 +286,8 @@ public class Level extends Parent {
                         inverseY = true;
                     }
                 }
-                if (horBrick != null
-                        && (firstCol != secondCol || firstRow != secondRow)) {
+                if (horBrick != null &&
+                        (firstCol != secondCol || firstRow != secondRow)) {
                     kickBrick(secondRow, firstCol);
                     if (catchedBonus != Bonus.TYPE_STRIKE) {
                         inverseX = true;
@@ -299,11 +295,11 @@ public class Level extends Parent {
                 }
                 if (firstCol != secondCol || firstRow != secondRow) {
                     Brick diagBrick = getBrick(firstRow, firstCol);
-                    if (diagBrick != null && diagBrick != vertBrick
-                            && diagBrick != horBrick) {
+                    if (diagBrick != null && diagBrick != vertBrick &&
+                            diagBrick != horBrick) {
                         kickBrick(firstRow, firstCol);
-                        if (vertBrick == null && horBrick == null
-                                && catchedBonus != Bonus.TYPE_STRIKE) {
+                        if (vertBrick == null && horBrick == null &&
+                                catchedBonus != Bonus.TYPE_STRIKE) {
                             inverseX = true;
                             inverseY = true;
                         }
@@ -312,10 +308,10 @@ public class Level extends Parent {
                 ball.setTranslateX(newX);
                 ball.setTranslateY(newY);
                 if (inverseX) {
-                    ballDirX = -ballDirX;
+                    ballDirX = - ballDirX;
                 }
                 if (inverseY) {
-                    ballDirY = -ballDirY;
+                    ballDirY = - ballDirY;
                 }
                 if (ball.getTranslateY() > Config.SCREEN_HEIGHT) {
                     // Ball was lost
@@ -435,10 +431,10 @@ public class Level extends Parent {
             Bonus lifeBonus = new Bonus(Bonus.TYPE_LIFE);
             lifeBonus.setScaleX(scale);
             lifeBonus.setScaleY(scale);
-            lifeBonus.setTranslateX(livesCaption.getTranslateX()
-                    + livesCaption.getBoundsInLocal().getWidth() + (life % 3) * lifeBonus.getWidth());
-            lifeBonus.setTranslateY(livesCaption.getTranslateY()
-                    + (life / 3) * lifeBonus.getHeight() * MOB_SCALING);
+            lifeBonus.setTranslateX(livesCaption.getTranslateX() +
+                livesCaption.getBoundsInLocal().getWidth() + (life % 3) * lifeBonus.getWidth());
+            lifeBonus.setTranslateY(livesCaption.getTranslateY() +
+                (life / 3) * lifeBonus.getHeight() * MOB_SCALING);
             lives.add(lifeBonus);
             infoPanel.getChildren().add(lifeBonus);
         }
@@ -473,8 +469,8 @@ public class Level extends Parent {
             bat.setVisible(false);
             message.setImage(Config.getImages().get(Config.IMAGE_GAMEOVER));
             message.setTranslateX((Config.FIELD_WIDTH - message.getImage().getWidth()) / 2);
-            message.setTranslateY(Config.FIELD_Y
-                    + (Config.FIELD_HEIGHT - message.getImage().getHeight()) / 2);
+            message.setTranslateY(Config.FIELD_Y +
+                (Config.FIELD_HEIGHT - message.getImage().getHeight()) / 2);
             message.setVisible(true);
             message.setOpacity(1);
         } else {
@@ -487,7 +483,7 @@ public class Level extends Parent {
             state = BALL_CATCHED;
             catchedBonus = 0;
             ballDirX = (Utils.random(2) * 2 - 1) * Config.BALL_MIN_COORD_SPEED;
-            ballDirY = -Config.BALL_MIN_SPEED;
+            ballDirY = - Config.BALL_MIN_SPEED;
         }
     }
 
@@ -502,8 +498,8 @@ public class Level extends Parent {
         roundCaption.setTranslateX(30);
         roundCaption.setTranslateY(128);
         round = new Text();
-        round.setTranslateX(roundCaption.getTranslateX()
-                + roundCaption.getBoundsInLocal().getWidth() + Config.INFO_TEXT_SPACE);
+        round.setTranslateX(roundCaption.getTranslateX() +
+            roundCaption.getBoundsInLocal().getWidth() + Config.INFO_TEXT_SPACE);
         round.setTranslateY(roundCaption.getTranslateY());
         round.setText(levelNumber + "");
         round.setTextOrigin(VPos.TOP);
@@ -517,8 +513,8 @@ public class Level extends Parent {
         scoreCaption.setTextOrigin(VPos.TOP);
         scoreCaption.setFont(f);
         score = new Text();
-        score.setTranslateX(scoreCaption.getTranslateX()
-                + scoreCaption.getBoundsInLocal().getWidth() + Config.INFO_TEXT_SPACE);
+        score.setTranslateX(scoreCaption.getTranslateX() +
+            scoreCaption.getBoundsInLocal().getWidth() + Config.INFO_TEXT_SPACE);
         score.setTranslateY(scoreCaption.getTranslateY());
         score.setFill(Color.rgb(0, 204, 102));
         score.setTextOrigin(VPos.TOP);
@@ -538,7 +534,7 @@ public class Level extends Parent {
         black.setHeight(Config.SCREEN_HEIGHT);
         black.setFill(Color.BLACK);
         ImageView verLine = new ImageView();
-        verLine.setImage(new Image(Config.IMAGE_DIR + "vline.png"));
+        verLine.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR+"vline.png")));
         verLine.setTranslateX(3);
         ImageView logo = new ImageView();
         logo.setImage(Config.getImages().get(Config.IMAGE_LOGO));
@@ -563,8 +559,8 @@ public class Level extends Parent {
             text.setTextOrigin(VPos.TOP);
             text.setFont(new Font("Arial", 12));
             bonus.setTranslateX(30 + (820 - 750 - bonus.getWidth()) / 2);
-            bonus.setTranslateY(text.getTranslateY()
-                    - (bonus.getHeight() - text.getBoundsInLocal().getHeight()) / 2);
+            bonus.setTranslateY(text.getTranslateY() -
+                (bonus.getHeight() - text.getBoundsInLocal().getHeight()) / 2);
             // Workaround JFXC-2379
             infoPanel.getChildren().addAll(bonus, text);
         }
@@ -588,8 +584,8 @@ public class Level extends Parent {
         message = new ImageView();
         message.setImage(Config.getImages().get(Config.IMAGE_READY));
         message.setTranslateX((Config.FIELD_WIDTH - message.getImage().getWidth()) / 2);
-        message.setTranslateY(Config.FIELD_Y
-                + (Config.FIELD_HEIGHT - message.getImage().getHeight()) / 2);
+        message.setTranslateY(Config.FIELD_Y +
+            (Config.FIELD_HEIGHT - message.getImage().getHeight()) / 2);
         message.setVisible(false);
         initLevel();
         initStartingTimeline();
@@ -601,20 +597,17 @@ public class Level extends Parent {
         background.setFitWidth(Config.SCREEN_WIDTH);
         background.setFitHeight(Config.SCREEN_HEIGHT);
         background.setOnMouseMoved(new EventHandler<MouseEvent>() {
-
             public void handle(MouseEvent me) {
                 moveBat(me.getX() - bat.getWidth() / 2);
             }
         });
         background.setOnMouseDragged(new EventHandler<MouseEvent>() {
-
             public void handle(MouseEvent me) {
                 // Support touch-only devices like some mobile phones
                 moveBat(me.getX() - bat.getWidth() / 2);
             }
         });
         background.setOnMousePressed(new EventHandler<MouseEvent>() {
-
             public void handle(MouseEvent me) {
                 if (state == PLAYING) {
                     // Support touch-only devices like some mobile phones
@@ -629,13 +622,12 @@ public class Level extends Parent {
             }
         });
         background.setOnKeyPressed(new EventHandler<KeyEvent>() {
-
             public void handle(KeyEvent ke) {
                 if ((ke.getCode() == KeyCode.POWER) || (ke.getCode() == KeyCode.X)) {
                     Platform.exit();
                 }
-                if (state == BALL_CATCHED && (ke.getCode() == KeyCode.SPACE
-                        || ke.getCode() == KeyCode.ENTER || ke.getCode() == KeyCode.PLAY)) {
+                if (state == BALL_CATCHED && (ke.getCode() == KeyCode.SPACE ||
+                        ke.getCode() == KeyCode.ENTER || ke.getCode() == KeyCode.PLAY)) {
                     state = PLAYING;
                 }
                 if (state == GAME_OVER) {
@@ -647,7 +639,7 @@ public class Level extends Parent {
                     return;
                 }
                 if ((ke.getCode() == KeyCode.LEFT || ke.getCode() == KeyCode.TRACK_PREV)) {
-                    batDirection = -Config.BAT_SPEED;
+                    batDirection = - Config.BAT_SPEED;
                 }
                 if ((ke.getCode() == KeyCode.RIGHT || ke.getCode() == KeyCode.TRACK_NEXT)) {
                     batDirection = Config.BAT_SPEED;
@@ -655,16 +647,15 @@ public class Level extends Parent {
             }
         });
         background.setOnKeyReleased(new EventHandler<KeyEvent>() {
-
             public void handle(KeyEvent ke) {
-                if (ke.getCode() == KeyCode.LEFT || ke.getCode() == KeyCode.RIGHT
-                        || ke.getCode() == KeyCode.TRACK_PREV || ke.getCode() == KeyCode.TRACK_NEXT) {
+                if (ke.getCode() == KeyCode.LEFT || ke.getCode() == KeyCode.RIGHT ||
+                    ke.getCode() == KeyCode.TRACK_PREV || ke.getCode() == KeyCode.TRACK_NEXT) {
                     batDirection = 0;
                 }
             }
         });
         group.getChildren().add(background);
-        for (int row = 0; row < bricks.size() / Config.FIELD_BRICK_IN_ROW; row++) {
+        for (int row = 0; row < bricks.size()/Config.FIELD_BRICK_IN_ROW; row++) {
             for (int col = 0; col < Config.FIELD_BRICK_IN_ROW; col++) {
                 Brick b = getBrick(row, col);
                 if (b != null) { //tmp
