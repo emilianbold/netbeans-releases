@@ -108,6 +108,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -160,6 +161,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final JButton refreshButton;
     private final JButton jdocButton;
     private final HierarchyFilters filters;
+    private final RootChildren rootChildren;
 
     @NbBundle.Messages({
         "TXT_RefreshContent=Refresh",
@@ -169,6 +171,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         jdocFinder = new JDocFinder();
         jdocTask = RP.create(jdocFinder);
         explorerManager = new ExplorerManager();
+        rootChildren = new RootChildren();
+        filters = new HierarchyFilters();
+        explorerManager.setRootContext(Nodes.rootNode(rootChildren, filters));
         selectedNodes  = new InstanceContent();
         lookup = new AbstractLookup(selectedNodes);
         explorerManager.addPropertyChangeListener(this);
@@ -193,7 +198,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         add(btw,BorderLayout.CENTER);
         lowerToolBar = new TapPanel();
         lowerToolBar.setOrientation(TapPanel.DOWN);
-        filters = new HierarchyFilters();
         final JComponent lowerButtons = filters.getComponent();
         lowerButtons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         lowerToolBar.add(lowerButtons);        
@@ -318,8 +322,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     private void showBusy() {
-        btw.setRootVisible(true);
-        explorerManager.setRootContext(Nodes.waitNode());
+        rootChildren.set(Nodes.waitNode());
     }
 
     private void schedule(@NonNull final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver) {
@@ -601,7 +604,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                                         @Override
                                         public void run() {
                                             historyCombo.getModel().setSelectedItem(pair);
-                                            explorerManager.setRootContext(root);
+                                            rootChildren.set(root);
                                             btw.expandAll();
                                         }
                                     });
@@ -719,6 +722,14 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 toolbar.add(component);
             }
             add (toolbar);
+        }
+    }
+
+    private static class RootChildren extends Children.Array {
+        
+        void set (Node node) {
+            remove(getNodes(true));
+            add(new Node[] {node});
         }
     }
 }
