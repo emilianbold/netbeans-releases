@@ -60,6 +60,8 @@ NetBeans.STATUS_MANAGED = 2;
 NetBeans.STATUS_NOT_MANAGED = 3;
 
 NetBeans.selectionMode = false;
+NetBeans.synchronizeSelection = false;
+NetBeans.pageInspectionListeners = [];
 
 NetBeans.tabStatus = function(tabId) {
     var tabInfo = this.managedTabs[tabId];
@@ -205,6 +207,8 @@ NetBeans.processMessage = function(message) {
         this.processLoadResizeOptionsMessage(message);
     } else if (type === 'save_resize_options') {
         this.processSaveResizeOptionsMessage(message);
+    } else if (type === 'pageInspectionPropertyChange') {
+        this.processPageInspectionPropertyChange(message);
     } else {
         console.log('Unsupported message!');
         console.log(message);
@@ -324,6 +328,26 @@ NetBeans.processSaveResizeOptionsMessage = function(message) {
     });
 }
 
+NetBeans.processPageInspectionPropertyChange = function(message) {
+    var name = message.propertyName;
+    var value = message.propertyValue;
+    if (name === 'selectionMode') {
+        this.selectionMode = value;
+    } else if (name === 'synchronizeSelection') {
+        this.synchronizeSelection = value;
+    }
+    for (var i=0; i<this.pageInspectionListeners.length; i++) {
+        this.pageInspectionListeners[i]({
+            name: name,
+            value: value
+        });
+    }
+}
+
+NetBeans.addPageInspectionPropertyListener = function(listener) {
+    this.pageInspectionListeners.push(listener);
+}
+
 NetBeans.sendDebuggingResponse = function(tabId, response) {
     this.sendMessage({
         message: 'debugger_command_response',
@@ -386,6 +410,10 @@ NetBeans.setSelectionMode = function(selectionMode) {
 
 NetBeans.getSelectionMode = function() {
     return this.selectionMode;
+}
+
+NetBeans.getSynchronizeSelection = function() {
+    return this.synchronizeSelection;
 }
 
 /**

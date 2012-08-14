@@ -161,6 +161,22 @@ NetBeans_Presets.presetsChanged = function() {
     }
 }
 
+// Updates info-bar according to changes of page-inspection properties
+NetBeans.addPageInspectionPropertyListener(function(event) {
+    var name = event.name;
+    var value = event.value;
+    var views = chrome.extension.getViews({type: "infobar"});
+    for (var i in views) {
+        var view = views[i];
+        if (view.NetBeans_Infobar) {
+            if (name === 'selectionMode') {
+                view.NetBeans_Infobar.setSelectionMode(value);
+            } else if (name === 'synchronizeSelection') {
+                view.NetBeans_Infobar.setSynchronizeSelection(value);
+            }
+        }
+    }
+});
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});

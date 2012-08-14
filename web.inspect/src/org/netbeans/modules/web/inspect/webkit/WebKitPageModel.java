@@ -83,6 +83,8 @@ public class WebKitPageModel extends PageModel {
     private DOM.Listener domListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
+    /** Determines whether the selection between the IDE and the browser pane is synchronized. */
+    private boolean synchronizeSelection;
     /** Owner project of the inspected page. */
     private Project project;
     /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
@@ -450,6 +452,24 @@ public class WebKitPageModel extends PageModel {
         }
     }
 
+    @Override
+    public void setSynchronizeSelection(boolean synchronizeSelection) {
+        synchronized (this) {
+            if (this.synchronizeSelection == synchronizeSelection) {
+                return;
+            }
+            this.synchronizeSelection = synchronizeSelection;
+        }
+        firePropertyChange(PROP_SYNCHRONIZE_SELECTION, !synchronizeSelection, synchronizeSelection);
+    }
+
+    @Override
+    public boolean isSynchronizeSelection() {
+        synchronized (this) {
+            return synchronizeSelection;
+        }
+    }
+
     /**
      * Invoke the specified script in all content documents.
      *
@@ -513,21 +533,46 @@ public class WebKitPageModel extends PageModel {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                updateHighlight();
+                if (shouldSynchronize()) {
+                    updateHighlight();
+                }
             } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                updateSelection();
+                if (shouldSynchronize()) {
+                    updateSelection();
+                }
             } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
                 updateSelectionMode();
+                updateSynchronization();
+            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                updateSelectionMode();
+                updateSynchronization();
             } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
                 initializePage();
                 updateSelectionMode();
             }
         }
 
-        private void updateHighlight() {
-            synchronized (LOCK_HIGHLIGHT) {
-                List<? extends org.openide.nodes.Node> nodes = getHighlightedNodes();
+        private boolean shouldSynchronize() {
+            return isSynchronizeSelection() && isSelectionMode();
+        }
 
+        private void updateSynchronization() {
+            if (shouldSynchronize()) {
+                updateSelection();
+                updateHighlight();
+            } else {
+                updateSelection(Collections.EMPTY_LIST);
+                updateHighlight(Collections.EMPTY_LIST);
+            }
+        }
+
+        private void updateHighlight() {
+            List<? extends org.openide.nodes.Node> nodes = getHighlightedNodes();
+            updateHighlight(nodes);
+        }
+
+        private void updateHighlight(List<? extends org.openide.nodes.Node> nodes) {
+            synchronized (LOCK_HIGHLIGHT) {
                 // Initialize the next highlight in all content documents
                 invokeInAllDocuments("NetBeans.initNextHighlight();"); // NOI18N
 
@@ -547,9 +592,12 @@ public class WebKitPageModel extends PageModel {
         }
 
         private void updateSelection() {
-            synchronized (LOCK_SELECTION) {
-                List<? extends org.openide.nodes.Node> nodes = getSelectedNodes();
+            List<? extends org.openide.nodes.Node> nodes = getSelectedNodes();
+            updateSelection(nodes);
+        }
 
+        private void updateSelection(List<? extends org.openide.nodes.Node> nodes) {
+            synchronized (LOCK_SELECTION) {
                 // Initialize the next selection in all content documents
                 invokeInAllDocuments("NetBeans.initNextSelection();"); // NOI18N
 
@@ -569,7 +617,7 @@ public class WebKitPageModel extends PageModel {
         }
 
         private synchronized void updateSelectionMode() {
-            boolean selectionMode = isSelectionMode();
+            boolean selectionMode = isSelectionMode() && isSynchronizeSelection();
             
             // PENDING notify Chrome extension that the selection mode has changed
 

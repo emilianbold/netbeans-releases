@@ -78,7 +78,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class ExternalBrowserPlugin {
     /** ID of 'reload of save' feature. */
-    private static final String FEATURE_ROS = "RoS"; // NOI18N
+    static final String FEATURE_ROS = "RoS"; // NOI18N
     
     public static final String UTF_8 = "UTF-8";                    // NOI18N
 
