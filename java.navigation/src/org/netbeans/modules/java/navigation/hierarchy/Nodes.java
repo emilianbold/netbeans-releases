@@ -48,10 +48,24 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -61,23 +75,34 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.SearchKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -450,5 +475,485 @@ class Nodes {
             final int o2 = ((TypeNode)n2).getDescription().getSourceOrder();
             return o1 < o2 ? -1 : o1 == o2 ? 0 : 1;
         }
+    }
+
+    static Node subTypeHierarchy(
+            @NonNull final TypeElement element,
+            @NonNull final CompilationInfo info,
+            @NonNull final HierarchyFilters filters,
+            @NonNull final AtomicBoolean cancel) {
+        try {
+            FileObject thisSourceRoot = findSourceRoot(SourceUtils.getFile(element, info.getClasspathInfo()));
+            ElementHandle<TypeElement> elementHandle = ElementHandle.create(element);
+            TypeDescription td = new TypeDescription(info.getClasspathInfo(), elementHandle);
+            
+            Map<TypeDescription, Set<TypeDescription>> subclassesJoined = new ComputeSubClasses(cancel).computeUsers(info, thisSourceRoot, Collections.singleton(td), new long[1], false);
+            
+            if (subclassesJoined == null) return null;
+            
+            List<TypeDescription> inOrder = Utilities.topologicalSort(subclassesJoined.keySet(), subclassesJoined);
+            
+            Collections.reverse(inOrder);
+            
+            Map<TypeDescription, Node> type2Node = new HashMap<TypeDescription, Node>();
+            
+            for (TypeDescription toProcess : inOrder) {
+                Set<TypeDescription> subclasses = subclassesJoined.get(toProcess);
+                List<Node> childNodes = new ArrayList<Node>(subclasses.size());
+                
+                for (TypeDescription subclass : subclasses) {
+                    Node subNode = type2Node.get(subclass);
+                    
+                    assert subNode != null;
+                    
+                    childNodes.add(subNode);
+                }
+                
+                final Children cld;
+                if (childNodes.isEmpty()) {
+                    cld = Children.LEAF;
+                } else {
+                    cld = new SuperTypeChildren(filters);
+                    cld.add(childNodes.toArray(new Node[childNodes.size()]));
+                }
+                type2Node.put(toProcess, new TypeNode(
+                    cld,
+                    new Description(
+                        toProcess.cpInfo,
+                        toProcess.element,
+                        /*XXX:*/0),
+                    filters,
+                    new Action[0]));
+            }
+
+            return type2Node.get(td);
+        } catch (TopologicalSortException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+
+    private static FileObject findSourceRoot(FileObject file) {
+        final ClassPath cp = file != null ? ClassPath.getClassPath(file, ClassPath.SOURCE) : null;
+        //Null is a valid value for files which have no source path (default filesystem).
+        return cp != null ? cp.findOwnerRoot(file) : null;
+    }
+
+    static final class ComputeSubClasses {
+        private final AtomicBoolean cancel;
+
+        public ComputeSubClasses(AtomicBoolean cancel) {
+            this.cancel = cancel;
+        }
+        
+        Map<TypeDescription, Set<TypeDescription>> computeUsers(CompilationInfo info, FileObject thisSourceRoot, Set<TypeDescription> baseHandles, long[] classIndexCumulative, boolean interactive) {
+            Map<URL, List<URL>> sourceDeps = getDependencies(false);
+            Map<URL, List<URL>> binaryDeps = getDependencies(true);
+
+            if (sourceDeps == null || binaryDeps == null) {
+    //            if (interactive) {
+    //                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GoToImplementation.class, "ERR_NoDependencies"), NotifyDescriptor.ERROR_MESSAGE);
+    //
+    //                DialogDisplayer.getDefault().notifyLater(nd);
+    //            } else {
+                    LOG.log(Level.FINE, "No dependencies");
+    //            }
+
+                return null;
+            }
+
+            URL thisSourceRootURL;
+
+            try {
+                thisSourceRootURL = thisSourceRoot.getURL();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+
+            Map<URL, List<URL>> rootPeers = getRootPeers();
+            List<URL> sourceRoots = reverseSourceRootsInOrder(info, thisSourceRootURL, thisSourceRoot, sourceDeps, binaryDeps, rootPeers, interactive);
+
+            if (sourceRoots == null) {
+                return null;
+            }
+
+            baseHandles = new HashSet<TypeDescription>(baseHandles);
+
+            for (Iterator<TypeDescription> it = baseHandles.iterator(); it.hasNext(); ) {
+                if (cancel.get()) return null;
+                if (it.next().element.getBinaryName().contentEquals("java.lang.Object")) {
+                    it.remove();
+                    break;
+                }
+            }
+
+            Map<TypeDescription, Set<TypeDescription>> result = new HashMap<TypeDescription, Set<TypeDescription>>();
+            Map<TypeDescription, Set<TypeDescription>> auxHandles = new HashMap<TypeDescription, Set<TypeDescription>>();
+
+            if (!sourceDeps.containsKey(thisSourceRootURL)) {
+                Set<URL> binaryRoots = new HashSet<URL>();
+
+                for (URL sr : sourceRoots) {
+                    List<URL> deps = sourceDeps.get(sr);
+
+                    if (deps != null) {
+                        binaryRoots.addAll(deps);
+                    }
+                }
+
+                binaryRoots.retainAll(binaryDeps.keySet());
+
+                for (TypeDescription handle : baseHandles) {
+                    Set<TypeDescription> types = computeUsers(ClasspathInfo.create(ClassPath.EMPTY, ClassPathSupport.createClassPath(binaryRoots.toArray(new URL[0])), ClassPath.EMPTY), SearchScope.DEPENDENCIES, Collections.singleton(handle), classIndexCumulative, result);
+
+                    if (types == null/*canceled*/ || cancel.get()) {
+                        return null;
+                    }
+
+                    auxHandles.put(handle, types);
+                }
+            }
+
+            Map<URL, Map<TypeDescription, Set<TypeDescription>>> root2SubClasses = new LinkedHashMap<URL, Map<TypeDescription, Set<TypeDescription>>>();
+
+            for (URL file : sourceRoots) {
+                for (TypeDescription base : baseHandles) {
+                    if (cancel.get()) return null;
+
+                    Set<TypeDescription> baseTypes = new HashSet<TypeDescription>();
+
+                    baseTypes.add(base);
+
+                    Set<TypeDescription> aux = auxHandles.get(base);
+
+                    if (aux != null) {
+                        baseTypes.addAll(aux);
+                    }
+
+                    for (URL dep : sourceDeps.get(file)) {
+                        Map<TypeDescription, Set<TypeDescription>> depTypesMulti = root2SubClasses.get(dep);
+                        Set<TypeDescription> depTypes = depTypesMulti != null ? depTypesMulti.get(base) : null;
+
+                        if (depTypes != null) {
+                            baseTypes.addAll(depTypes);
+                        }
+                    }
+
+                    Set<TypeDescription> types = computeUsers(file, baseTypes, classIndexCumulative, result);
+
+                    if (types == null/*canceled*/ || cancel.get()) {
+                        return null;
+                    }
+
+                    types.removeAll(baseTypes);
+
+                    Map<TypeDescription, Set<TypeDescription>> currentUsers = root2SubClasses.get(file);
+
+                    if (currentUsers == null) {
+                        root2SubClasses.put(file, currentUsers = new LinkedHashMap<TypeDescription, Set<TypeDescription>>());
+                    }
+
+                    currentUsers.put(base, types);
+                }
+            }
+
+            return result;
+        }
+        private static final Logger LOG = Logger.getLogger(Nodes.class.getName());
+
+        static Map<URL, List<URL>> dependenciesOverride;
+
+        private static Map<URL, List<URL>> getDependencies(boolean binary) {
+            if (dependenciesOverride != null) {
+                return dependenciesOverride;
+            }
+
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+
+            if (l == null) {
+                return null;
+            }
+
+            Class clazz = null;
+            String method = null;
+
+            try {
+                clazz = l.loadClass("org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController");
+                method = binary ? "getBinaryRootDependencies" : "getRootDependencies";
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.FINE, null, ex);
+                try {
+                    clazz = l.loadClass("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater");
+                    method = binary ? "getDependencies" : "doesnotexist";
+                } catch (ClassNotFoundException inner) {
+                    LOG.log(Level.FINE, null, inner);
+                    return null;
+                }
+            }
+
+            try {
+                Method getDefault = clazz.getDeclaredMethod("getDefault");
+                Object instance = getDefault.invoke(null);
+                Method dependenciesMethod = clazz.getDeclaredMethod(method);
+
+                return (Map<URL, List<URL>>) dependenciesMethod.invoke(instance);
+            } catch (IllegalAccessException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (IllegalArgumentException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (InvocationTargetException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (NoSuchMethodException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (SecurityException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (ClassCastException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            }
+        }
+
+        static Map<URL, List<URL>> rootPeers;
+
+        private static Map<URL, List<URL>> getRootPeers() {
+            if (rootPeers != null) {
+                return rootPeers;
+            }
+
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+
+            if (l == null) {
+                return null;
+            }
+
+            Class clazz = null;
+            String method = null;
+
+            try {
+                clazz = l.loadClass("org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController");
+                method = "getRootPeers";
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            }
+
+            try {
+                Method getDefault = clazz.getDeclaredMethod("getDefault");
+                Object instance = getDefault.invoke(null);
+                Method peersMethod = clazz.getDeclaredMethod(method);
+
+                return (Map<URL, List<URL>>) peersMethod.invoke(instance);
+            } catch (IllegalAccessException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (IllegalArgumentException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (InvocationTargetException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (NoSuchMethodException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (SecurityException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            } catch (ClassCastException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            }
+        }
+
+        static List<URL> reverseSourceRootsInOrderOverride;
+
+        private List<URL> reverseSourceRootsInOrder(CompilationInfo info, URL thisSourceRoot, FileObject thisSourceRootFO, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, Map<URL, List<URL>> rootPeers, boolean interactive) {
+            if (reverseSourceRootsInOrderOverride != null) {
+                return reverseSourceRootsInOrderOverride;
+            }
+
+            Set<URL> sourceRootsSet;
+
+            if (sourceDeps.containsKey(thisSourceRoot)) {
+                sourceRootsSet = findReverseSourceRoots(thisSourceRoot, sourceDeps, rootPeers, info.getFileObject());
+            } else {
+                sourceRootsSet = new HashSet<URL>();
+
+                for (URL binary : findBinaryRootsForSourceRoot(thisSourceRootFO, binaryDeps)) {
+                    List<URL> deps = binaryDeps.get(binary);
+
+                    if (deps != null) {
+                        sourceRootsSet.addAll(deps);
+                    }
+                }
+            }
+
+            List<URL> sourceRoots;
+            try {
+                sourceRoots = new LinkedList<URL>(Utilities.topologicalSort(sourceDeps.keySet(), sourceDeps));
+            } catch (TopologicalSortException ex) {
+                if (interactive) {
+    //                Exceptions.attachLocalizedMessage(ex,NbBundle.getMessage(GoToImplementation.class, "ERR_CycleInDependencies"));
+                    Exceptions.printStackTrace(ex);
+                } else {
+                    LOG.log(Level.FINE, null, ex);
+                }
+                return null;
+            }
+
+            sourceRoots.retainAll(sourceRootsSet);
+
+            Collections.reverse(sourceRoots);
+
+            return sourceRoots;
+        }
+
+        private static Set<URL> findReverseSourceRoots(final URL thisSourceRoot, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> rootPeers, final FileObject thisFile) {
+            long startTime = System.currentTimeMillis();
+
+            try {
+                //TODO: from SourceUtils (which filters out source roots that do not belong to open projects):
+                //Create inverse dependencies
+                final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+                for (Map.Entry<URL,List<URL>> entry : sourceDeps.entrySet()) {
+                    final URL u1 = entry.getKey();
+                    final List<URL> l1 = entry.getValue();
+                    for (URL u2 : l1) {
+                        List<URL> l2 = inverseDeps.get(u2);
+                        if (l2 == null) {
+                            l2 = new ArrayList<URL>();
+                            inverseDeps.put (u2,l2);
+                        }
+                        l2.add (u1);
+                    }
+                }
+                //Collect dependencies
+                final Set<URL> result = new HashSet<URL>();
+                final LinkedList<URL> todo = new LinkedList<URL> ();
+                todo.add (thisSourceRoot);
+                List<URL> peers = rootPeers != null ? rootPeers.get(thisSourceRoot) : null;
+                if (peers != null)
+                    todo.addAll(peers);
+                while (!todo.isEmpty()) {
+                    final URL u = todo.removeFirst();
+                    if (!result.contains(u)) {
+                        result.add (u);
+                        final List<URL> ideps = inverseDeps.get(u);
+                        if (ideps != null) {
+                            todo.addAll (ideps);
+                        }
+                    }
+                }
+                return result;
+            } finally {
+                long endTime = System.currentTimeMillis();
+
+                Logger.getLogger("TIMER").log(Level.FINE, "Find Reverse Source Roots", //NOI18N
+                        new Object[]{thisFile, endTime - startTime});
+            }
+        }
+
+        private Set<URL> findBinaryRootsForSourceRoot(FileObject sourceRoot, Map<URL, List<URL>> binaryDeps) {
+    //      BinaryForSourceQuery.findBinaryRoots(thisSourceRoot).getRoots();
+            Set<URL> result = new HashSet<URL>();
+
+            for (URL bin : binaryDeps.keySet()) {
+                if (cancel.get()) return Collections.emptySet();
+                for (FileObject s : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
+                    if (s == sourceRoot) {
+                        result.add(bin);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private Set<TypeDescription> computeUsers(URL source, Set<TypeDescription> base, long[] classIndexCumulative, Map<TypeDescription, Set<TypeDescription>> output) {
+            ClasspathInfo cpinfo = ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, ClassPathSupport.createClassPath(source));
+
+            return computeUsers(cpinfo, ClassIndex.SearchScope.SOURCE, base, classIndexCumulative, output);
+        }
+
+        private Set<TypeDescription> computeUsers(ClasspathInfo cpinfo, SearchScope scope, Set<TypeDescription> base, long[] classIndexCumulative, Map<TypeDescription, Set<TypeDescription>> output) {
+            long startTime = System.currentTimeMillis();
+
+            try {
+                List<TypeDescription> l = new LinkedList<TypeDescription>(base);
+                Set<TypeDescription> result = new HashSet<TypeDescription>();
+
+                while (!l.isEmpty()) {
+                    if (cancel.get()) return null;
+
+                    TypeDescription eh = l.remove(0);
+
+                    result.add(eh);
+                    Set<ElementHandle<TypeElement>> typeElements = cpinfo.getClassIndex().getElements(eh.element, Collections.singleton(SearchKind.IMPLEMENTORS), EnumSet.of(scope));
+
+
+                    //XXX: Canceling
+                    if (typeElements != null) {
+                        Set<TypeDescription> outputElements = output.get(eh);
+
+                        if (outputElements == null) {
+                            output.put(eh, outputElements = new HashSet<TypeDescription>());
+                        }
+
+                        for (ElementHandle<TypeElement> te : typeElements) {
+                            TypeDescription currentTD = new TypeDescription(cpinfo, te);
+                            outputElements.add(currentTD);
+                            l.add(currentTD);
+                        }
+                    }
+                }
+                return result;
+            } finally {
+                classIndexCumulative[0] += (System.currentTimeMillis() - startTime);
+            }
+        }
+
+    }
+    
+    private static final class TypeDescription {
+        private final ClasspathInfo cpInfo;
+        private final ElementHandle<TypeElement> element;
+
+        public TypeDescription(ClasspathInfo cpInfo, ElementHandle<TypeElement> element) {
+            this.cpInfo = cpInfo;
+            this.element = element;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + (this.cpInfo != null ? this.cpInfo.hashCode() : 0);
+            hash = 79 * hash + (this.element != null ? this.element.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TypeDescription other = (TypeDescription) obj;
+            if (this.cpInfo != other.cpInfo && (this.cpInfo == null || !this.cpInfo.equals(other.cpInfo))) {
+                return false;
+            }
+            if (this.element != other.element && (this.element == null || !this.element.equals(other.element))) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

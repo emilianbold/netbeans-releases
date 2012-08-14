@@ -60,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -108,6 +109,8 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -176,6 +179,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setName(Bundle.CTL_HierarchyTopComponent());
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
+        viewTypeCombo.addActionListener(this);
         historyCombo = new JComboBox(HierarchyHistoryUI.createModel());
         historyCombo.setRenderer(HierarchyHistoryUI.createRenderer());
         historyCombo.addActionListener(this);
@@ -595,7 +599,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                                             cc.getClasspathInfo(),
                                             filters);
                                     } else {
-                                        root = null;
+                                        Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, new AtomicBoolean());
+                                        
+                                        root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
                                     }
                                     SwingUtilities.invokeLater(new Runnable() {
                                         @Override
