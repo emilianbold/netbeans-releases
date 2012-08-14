@@ -41,26 +41,17 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import org.eclipse.persistence.jpa.jpql.TypeHelper;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -69,15 +60,18 @@ import org.openide.filesystems.FileObject;
 public class TypeRepository implements ITypeRepository {
     private final Project project;
     private final Map<String, IType[]> types;
+    private final Map<String, Boolean> packages;
     private MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper;
     private final ManagedTypeProvider mtp;
-    private AnnotationModelHelper amh;
+    private final Elements elements;
 
 
-    TypeRepository(Project project, ManagedTypeProvider mtp) {
+    TypeRepository(Project project, ManagedTypeProvider mtp, Elements elements) {
         this.project = project;
         this.mtp = mtp;
+        this.elements = elements;
         types = new HashMap<String, IType[]>();
+        packages = new HashMap<String, Boolean>();
     }
     
     @Override
@@ -90,7 +84,30 @@ public class TypeRepository implements ITypeRepository {
             if(mainPart != null){
                 IType[] mainType = types.get(mainPart);
                 if(mainType == null){
-                    fillTypeElement(mainPart);
+                    //first check packages
+                    int mainFirstPoint = mainPart.indexOf('.');
+                    int mainLastPoint = mainPart.lastIndexOf('.');
+                    
+                    if(mainFirstPoint != mainLastPoint && mainFirstPoint>-1){
+                        //we have at least 2 points and at least one for package (we may have nested enums)
+                        for(int packagePartIndex = mainFirstPoint;packagePartIndex<mainLastPoint && packagePartIndex>-1;packagePartIndex = mainPart.indexOf('.', packagePartIndex+1)){
+                            String packageStr = mainPart.substring(0,packagePartIndex);
+                            Boolean exist = packages.get(packageStr);
+                            if(exist == null){
+                                packages.put(packageStr, elements.getPackageElement(packageStr)!=null);
+                                exist = packages.get(packageStr);
+                            }
+                            if(Boolean.FALSE.equals(exist)){
+                                mainType = new Type[]{null};
+                                types.put(mainPart, mainType);
+                                break;
+                            }
+                        }
+                    }
+                    //
+                    if(mainType == null){
+                        fillTypeElement(mainPart);
+                    }
                 }
                 mainType = types.get(mainPart);
                 if(mainType[0] != null){
@@ -137,7 +154,7 @@ public class TypeRepository implements ITypeRepository {
             }
             ret = types.get(fqn);
         }
-        return ret[0];
+        return ret!=null ? ret[0] : null;
     }
 
     @Override
@@ -148,25 +165,10 @@ public class TypeRepository implements ITypeRepository {
     private void fillTypeElement(final String fqn){
         types.put(fqn, new Type[]{null});
         if(isValid()){ 
-            getAnnotationModelHelper();
-            if(amh != null && isValid()) {
-                try {
-                    amh.runJavaSourceTask(new Callable<Void>() {
-
-                        @Override
-                        public Void call() throws Exception {
-                                if(isValid()) {//model will be filled with nulls  after provider invalidation and with values only if valid provider
-                                    TypeElement te = amh.getCompilationController().getElements().getTypeElement(fqn);
-                                    if(te!=null) {
-                                        PersistentObject po = new PersistentObject(amh, te) {};
-                                        types.put(fqn, new Type[]{new Type(TypeRepository.this, po)});
-                                    }
-                                }
-                                return null;
-                        }
-                    });
-                } catch (IOException ex) {
-                    //TODO: any logging?
+            if(isValid()) {
+                TypeElement te = elements.getTypeElement(fqn);
+                if(te!=null) {
+                    types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
                 }
             }
         }
@@ -174,22 +176,13 @@ public class TypeRepository implements ITypeRepository {
     private void fillTypeElement(Class<?> type){
         types.put(type.getName(), new Type[]{new Type(TypeRepository.this, type)});
     }
-    
-    AnnotationModelHelper getAnnotationModelHelper() {
-        if(amh == null) {
-                Sources sources=ProjectUtils.getSources(project);
-                SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if(groups != null && groups.length>0){
-                    SourceGroup firstGroup=groups[0];
-                    FileObject fo=firstGroup.getRootFolder();
-                    ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
-                    amh = AnnotationModelHelper.create(classpathInfo);
-                }            
-        }
-        return amh;
-    }
+   
     
     boolean isValid(){
         return mtp.isValid();
+    }
+
+    void invalidate() {
+        
     }
 }
