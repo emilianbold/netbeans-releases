@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.enterprise.deploy.spi.Target;
 import org.glassfish.tools.ide.data.DataException;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
 

@@ -86,6 +86,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
@@ -365,7 +366,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         stopButton.addActionListener(getButtonListener());
         
         // create toolbar
-        JToolBar toolbar = new JToolBar(JToolBar.VERTICAL);
+        JToolBar toolbar = new ToolbarWithOverflow(JToolBar.VERTICAL);
         toolbar.setFloatable(false);
 
         toolbar.add(refreshButton);
@@ -777,16 +778,15 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                 } else {
                                     hidden++;
                                 }
+                                final int occurrences = i + 1;
+                                final int hiddenOccurrences = hidden;
+                                size.set(occurrences);
                                 if (isQuery && showParametersPanel) {
                                     if (cancelRequest.get()) {
                                         break;
                                     }
-
+                                    final boolean finished = APIAccessor.DEFAULT.isFinished(session);
                                     final boolean last = !it.hasNext();
-                                    final int occurrences = i + 1;
-                                    final int hiddenOccurrences = hidden;
-                                    size.set(occurrences);
-                                    boolean finished = APIAccessor.DEFAULT.isFinished(session);
                                     if ((occurrences % 10 == 0 && !finished) || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override

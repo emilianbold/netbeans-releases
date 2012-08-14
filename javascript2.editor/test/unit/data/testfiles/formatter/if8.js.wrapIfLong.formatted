@@ -1,4 +1,4 @@
-if (a);
+if (a) ;
 else if (b) c;
 
 if (z) "dfdfd";

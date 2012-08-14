@@ -86,6 +86,7 @@
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.symfony2</friend>
                 <package>org.netbeans.modules.php.api.annotation</package>
+                <package>org.netbeans.modules.php.api.annotation.util</package>
                 <package>org.netbeans.modules.php.spi.annotation</package>
             </friend-packages>
         </data>

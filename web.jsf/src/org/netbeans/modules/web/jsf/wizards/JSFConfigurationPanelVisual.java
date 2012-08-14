@@ -412,7 +412,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
     private void removeUserDefinedLibraries(Vector<String> registeredItems) {
         for (LibraryItem item : jsfLibraries) {
-            if (item.getLibrary().getContent("maven-pom").isEmpty()) { //NOI18N
+            Map<String, String> properties = item.getLibrary().getProperties();
+            if (!properties.containsKey("maven-dependencies") //NOI18N
+                    || properties.get("maven-dependencies").trim().isEmpty()) { //NOI18N
                 registeredItems.remove(item.getLibrary().getDisplayName());
             }
         }

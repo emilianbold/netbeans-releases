@@ -211,9 +211,12 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
 
     public void testEditActionsTestCase_9() {
         // 09 -- test CTRL+u -- delete the line break
+        editor.setCaretPosition(9,2);
         txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
         txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
-        txtOper.typeKey(' ');
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
+//        txtOper.typeKey(' ');
         String errMsg = compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_900", "testEditActions09", "testEditActions09");
         if (errMsg != null) {
             setEditorStateWithGoldenFile(editor, "testEditActions09.pass", 8, 6, errMsg);
@@ -233,6 +236,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
         // 11 -- test delete selected block and selecting to end of the line
         txtOper.pushKey(KeyEvent.VK_END, KeyEvent.SHIFT_DOWN_MASK);
         txtOper.pushKey(KeyEvent.VK_DELETE);
+        txtOper.typeText("   ");
         String errMsg = compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1100", "testEditActions11", "testEditActions11");
         if (errMsg != null) {
             setEditorStateWithGoldenFile(editor, "testEditActions11.pass", 8, 5, errMsg);
