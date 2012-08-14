@@ -44,14 +44,18 @@ package org.netbeans.modules.javascript2.editor;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
@@ -83,6 +87,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
     @Override
     public void insert(MutableContext context) throws BadLocationException {
         BaseDocument doc = (BaseDocument) context.getDocument();
+        TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(doc);
         int offset = context.getCaretOffset();
         boolean insertMatching = isInsertMatchingEnabled(doc);
 
@@ -94,7 +99,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return;
         }
 
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
 
         if (ts == null) {
             return;
@@ -266,25 +271,41 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 if (isBlockStart) {
                     indent++;
                 }
+                int carretPosition = 0;
                 sb.append(IndentUtils.createIndentString(doc, indent));
-                sb.append("*"); // NOI18N
-                // Copy existing indentation
-                int afterStar = isBlockStart ? begin+2 : begin+1;
-                line = doc.getText(afterStar, Utilities.getRowEnd(doc, afterStar)-afterStar);
-                for (int i = 0; i < line.length(); i++) {
-                    char c = line.charAt(i);
-                    if (c == ' ' || c == '\t') {
-                        sb.append(c);
-                    } else {
-                        break;
+                if (isBlockStart) {
+                    // First comment should be propertly indented
+                    sb.append("* "); //NOI18N
+                    carretPosition = sb.length();
+
+                    TokenSequence<? extends JsDocumentationTokenId> jsDocTS = LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
+                    if (jsDocTS != null) {
+                        if (!endsCommentProperly(jsDocTS)) {
+                            // Append end of the comment
+                            sb.append("\n").append(IndentUtils.createIndentString(doc, indent)).append("*/"); //NOI18N
+                        }
                     }
+                } else {
+                    // Copy existing indentation inside the block
+                    sb.append("*"); //NOI18N
+                    int afterStar = isBlockStart ? begin+2 : begin+1;
+                    line = doc.getText(afterStar, Utilities.getRowEnd(doc, afterStar)-afterStar);
+                    for (int i = 0; i < line.length(); i++) {
+                        char c = line.charAt(i);
+                        if (c == ' ' || c == '\t') { //NOI18N
+                            sb.append(c);
+                        } else {
+                            break;
+                        }
+                    }
+                    carretPosition = sb.length();
                 }
 
                 if (offset == begin && offset > 0) {
                     context.setText(sb.toString(), -1, sb.length());
                     return;
                 }
-                context.setText(sb.toString(), -1, sb.length());
+                context.setText(sb.toString(), -1, carretPosition);
                 return;
             }
         }
@@ -476,7 +497,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         return false;
     }
 
-    @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = JsDocumentationTokenId.MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    })
     public static class Factory implements TypedBreakInterceptor.Factory {
 
         @Override
@@ -484,5 +508,17 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return new JsTypedBreakInterceptor();
         }
 
+    }
+
+    private static boolean endsCommentProperly(TokenSequence ts) {
+        while (ts.moveNext()) {
+            if (ts.token().id() == JsDocumentationTokenId.EOL) {
+                while (ts.moveNext() && ts.token().id() == JsDocumentationTokenId.WHITESPACE);
+                if (!CharSequenceUtilities.startsWith(ts.token().text(), "*")) {
+                    return false;
+                }
+            }
+        }
+        return ts.token().id() == JsDocumentationTokenId.COMMENT_END;
     }
 }

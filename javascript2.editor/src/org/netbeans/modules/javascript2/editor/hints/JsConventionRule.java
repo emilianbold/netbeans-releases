@@ -50,23 +50,17 @@ import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
-import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
-import com.oracle.nashorn.parser.TokenType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -78,17 +72,18 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class JsConventionRule implements Rule.AstRule{
-    public static final String JSCONVENTION_HINTS = "jsconvention.line.hints"; //NOI18N
+public class JsConventionRule extends JsAstRule {
     
-    void computeHintsImpl(JsRuleContext context, List<Hint> hints) {
+    
+    @Override
+    void computeHints(JsRuleContext context, List<Hint> hints) {
         ConventionVisitor conventionVisitor = new ConventionVisitor(this);
         conventionVisitor.process(context, hints);
     }
             
     @Override
     public Set<?> getKinds() {
-        return Collections.singleton(JSCONVENTION_HINTS);
+        return Collections.singleton(JsAstRule.JSCONVENTION_HINTS);
     }
 
     @Override
@@ -103,36 +98,11 @@ public class JsConventionRule implements Rule.AstRule{
     }
 
     @Override
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-    @Override
     @NbBundle.Messages("JsConventionHintDisplayName=JavaScript Code Convention")
     public String getDisplayName() {
         return Bundle.JsConventionHintDisplayName();
     }
 
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-    
     private static class ConventionVisitor extends PathNodeVisitor {
 
         private List<Hint> hints;
