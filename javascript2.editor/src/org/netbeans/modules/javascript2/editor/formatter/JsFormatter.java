@@ -213,7 +213,7 @@ public class JsFormatter implements Formatter {
                         case AFTER_CATCH_PARENTHESIS:
                         case AFTER_LEFT_PARENTHESIS:
                         case AFTER_ARRAY_LITERAL_BRACKET:
-                            i = handleSpaceAfter(tokens, i, formatContext,
+                            i = handleSpace(tokens, i, formatContext,
                                     !isSpace(token, formatContext));
                             break;
                         // line wrap and eol handling
@@ -538,7 +538,7 @@ public class JsFormatter implements Formatter {
         return i;
     }
 
-    private int handleSpaceAfter(List<FormatToken> tokens, int index, FormatContext formatContext,
+    private int handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext,
             boolean remove) {
 
         FormatToken token = tokens.get(index);
@@ -549,10 +549,24 @@ public class JsFormatter implements Formatter {
             return index;
         }
 
-        // now we have some AFTER token, find next non white token
-        FormatToken end = null;
         boolean containsEol = false;
 
+        FormatToken start = null;
+        for (FormatToken current = token.previous(); current != null;
+                current = current.previous()) {
+
+            if (!current.isVirtual()) {
+                if (current.getKind() != FormatToken.Kind.WHITESPACE
+                        && current.getKind() != FormatToken.Kind.EOL) {
+                    start = current;
+                    break;
+                } else if (current.getKind() == FormatToken.Kind.EOL) {
+                    containsEol = true;
+                }
+            }
+        }
+
+        FormatToken end = null;
         for (FormatToken current = token.next(); current != null;
                 current = current.next()) {
 
@@ -567,20 +581,13 @@ public class JsFormatter implements Formatter {
             }
         }
 
-        // this avoids collision of after and before rules on same whitespace
-        for (FormatToken virtual = end; virtual != null && virtual != token;
-                virtual = virtual.previous()) {
-            // the before marker should win anyway
-            if (virtual.isSpaceBeforeMarker()) {
-                return index;
-            }
-        }
-        //XXX
-        FormatToken start = getNextNonVirtual(token);
-
         if (start != null && end != null) {
+            // we fetch the space or next token to start
+            start = getNextNonVirtual(start);
+
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
+                assert start == end : start;
                 if (!remove) {
                     formatContext.insert(start.getOffset(), " "); // NOI18N
                 }
