@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,6 +67,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  * @author Petr Pisl
  */
 public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
+    //public static final EnumSet<ColoringAttributes> UNUSED_VARIABLE_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.VA);
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -160,6 +162,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                        }
+                    } else {
+                        if (object.getOccurrences().isEmpty()) {
+                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
                         }
                     }
             }
