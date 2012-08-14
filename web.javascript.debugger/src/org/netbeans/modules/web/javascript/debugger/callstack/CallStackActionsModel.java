@@ -48,9 +48,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
+import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
@@ -88,6 +87,19 @@ public final class CallStackActionsModel extends ViewModelSupport implements
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
+    private final Action COPY_TO_CLBD_ACTION = Models.createAction (
+            Bundle.CTL_CallstackAction_Copy2CLBD_Label(),
+        new Models.ActionPerformer() {
+            @Override public boolean isEnabled (Object node) {
+                return true;
+            }
+            @Override public void perform (Object[] nodes) {
+                stackToCLBD();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
         
     
     public CallStackActionsModel(final ContextProvider contextProvider) {
@@ -118,54 +130,48 @@ public final class CallStackActionsModel extends ViewModelSupport implements
             return new Action [] {
                 MAKE_CURRENT_ACTION,
                 GO_TO_SOURCE,
-                /*COPY_TO_CLBD_ACTION*/};
+                COPY_TO_CLBD_ACTION,
+            };
+        } else {
+            return new Action[]{
+                COPY_TO_CLBD_ACTION,
+            };
         }
-        return new Action[]{};
-        
     }
     
-    private final Action COPY_TO_CLBD_ACTION = new AbstractAction(
-            Bundle.CTL_CallstackAction_Copy2CLBD_Label()) {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            stackToCLBD();
-        }
-    };
-
     private void stackToCLBD() {
         // JPDAThread t = debugger.getCurrentThread();
         StringBuilder frameStr = new StringBuilder(50);
-//        JSCallStackFrame[] stack = debugger.getCallStackFrames();
-//        if (stack != null) {
-//            int i, k = stack.length;
-//
-//            for (i = 0; i < k; i++) {
-//                // frameStr.append(stack[i].getNameSpace());
-//                // frameStr.append(".");
-//                frameStr.append(stack[i].getFunctionName());
-//                String sourceName = stack[i].getURI().toString();
-//                frameStr.append("(");
-//                frameStr.append(sourceName);
-//                int line = stack[i].getLineNumber();
-//                if (line > 0) {
-//                    frameStr.append(":");
-//                    frameStr.append(line);
-//                }
-//                frameStr.append(")");
-//                if (i != k - 1)
-//                    frameStr.append('\n');
-//            }
-//        }
+        List<CallFrame> stack = debugger.getCurrentCallStack();
+        if (stack != null) {
+            for (CallFrame frame : stack) {
+                String functionName = frame.getFunctionName();
+                if (functionName.isEmpty()) {
+                    functionName = "(anonymous function)";
+                }
+                frameStr.append(functionName);
+                String sourceName = frame.getScript().getURL().toString();
+                int sourceNameIndex = sourceName.lastIndexOf('/');
+                if (sourceNameIndex > 0) {
+                    sourceName = sourceName.substring(sourceNameIndex + 1);
+                }
+                frameStr.append(" (");
+                frameStr.append(sourceName);
+                int line = frame.getLineNumber();
+                if (line > 0) {
+                    frameStr.append(":");
+                    frameStr.append(line + 1);
+                }
+                frameStr.append(")\n");
+            }
+        }
         Clipboard systemClipboard = getClipboard();
         Transferable transferableText = new StringSelection(frameStr.toString());
         systemClipboard.setContents(transferableText, null);
     }
         
     private static Clipboard getClipboard() {
-        Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(
-                Clipboard.class);
+        Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
         if (clipboard == null) {
             clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         }
