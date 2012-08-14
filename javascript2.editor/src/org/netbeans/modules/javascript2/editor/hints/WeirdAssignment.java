@@ -41,80 +41,81 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import com.oracle.nashorn.ir.BinaryNode;
+import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.Node;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.Error;
+import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsHintsProvider implements HintsProvider {
-    
-    private volatile Boolean cancel = false;
+public class WeirdAssignment extends JsAstRule {
+
     @Override
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        long startInit = System.currentTimeMillis();
-        Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
-        List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionRule.JSCONVENTION_HINTS);
-        if (conventionHints != null) {
-            for (Rule.AstRule astRule : conventionHints) {
-                if(cancel) {
-                    break;
-                }
-                if (manager.isEnabled(astRule)) {
-                    JsAstRule rule = (JsAstRule)astRule;
-                    rule.computeHints((JsRuleContext)context, hints);
-                }
-            }
-        }
+    void computeHints(JsRuleContext context, List<Hint> hints) {
+        WeirdVisitor conventionVisitor = new WeirdVisitor(this);
+        conventionVisitor.process(context, hints);
     }
 
     @Override
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-
+    public Set<?> getKinds() {
+        return Collections.singleton(JsAstRule.JSCONVENTION_HINTS);
     }
 
     @Override
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
-
+    public String getId() {
+        return "jsweirdassignment.hint";
     }
 
+    @NbBundle.Messages("JsWeirdAssignmentDesc=Weird assignment hint informs you about assignments like x = x.")
     @Override
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-
+    public String getDescription() {
+        return Bundle.JsWeirdAssignmentDesc();
     }
 
+    @NbBundle.Messages("JsWeirdAssignmentDN=Weird assignment")
     @Override
-    public void cancel() {
-        cancel = true;
-    }
-
-    @Override
-    public List<Rule> getBuiltinRules() {
-        return Collections.<Rule>emptyList();
-    }
-
-    @Override
-    public RuleContext createRuleContext() {
-        return new JsRuleContext();
+    public String getDisplayName() {
+        return Bundle.JsWeirdAssignmentDN();
     }
     
-    public static class JsRuleContext extends RuleContext {
-        private JsParserResult jsParserResult = null;
-
-        public JsParserResult getJsParserResult() {
-            if (jsParserResult == null) {
-                jsParserResult = (JsParserResult)parserResult;
-            }
-            return jsParserResult;
+    private static class WeirdVisitor extends PathNodeVisitor {
+        private List<Hint> hints;
+        private JsRuleContext context;
+        private final Rule rule;
+        
+        public WeirdVisitor(Rule rule) {
+            this.rule = rule;
         }
         
+        public void process(JsRuleContext context, List<Hint> hints) {
+            this.hints = hints;
+            this.context = context;
+            FunctionNode root = context.getJsParserResult().getRoot();
+            if (root != null) {
+                context.getJsParserResult().getRoot().accept(this);
+            }
+        }
+
+        @Override
+        public Node visit(BinaryNode binaryNode, boolean onset) {
+            if (onset) {
+                if (binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
+                    hints.add(new Hint(rule, Bundle.JsWeirdAssignmentDN(), 
+                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                            ModelUtils.documentOffsetRange(context.getJsParserResult(), binaryNode.getStart(), binaryNode.getFinish()), null, 500));
+                }
+            }
+            return super.visit(binaryNode, onset);
+        }
     }
 }
