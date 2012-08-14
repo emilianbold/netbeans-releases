@@ -188,9 +188,6 @@ public class JsFormatter implements Formatter {
                         case BEFORE_WITH_BRACE:
                         case BEFORE_FUNCTION_DECLARATION_BRACE:
                         case BEFORE_ARRAY_LITERAL_BRACKET:
-                            i = handleSpace(tokens, i, formatContext,
-                                    !isSpace(token, formatContext));
-                            break;
                         case AFTER_ASSIGNMENT_OPERATOR:
                         case AFTER_BINARY_OPERATOR:
                         case AFTER_COMMA:
