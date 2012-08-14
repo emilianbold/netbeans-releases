@@ -1,4 +1,4 @@
-function |>METHOD:weird<|(x, y) {
+function |>METHOD:weird<|(x, |>UNUSED:y<|) {
     var |>UNUSED:baf<| = 10;
     x = x;
     
