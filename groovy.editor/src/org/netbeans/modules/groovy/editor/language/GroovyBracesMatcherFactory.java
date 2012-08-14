@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;

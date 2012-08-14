@@ -40,13 +40,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Variable;
@@ -54,6 +54,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.util.NbBundle;
@@ -64,12 +67,13 @@ import org.openide.util.NbBundle;
  */
 public class GroovyInstantRenamer implements InstantRenamer {
 
-    private final Logger LOG = Logger.getLogger(GroovyInstantRenamer.class.getName());
+    private static final Logger LOG = Logger.getLogger(GroovyInstantRenamer.class.getName());
 
     public GroovyInstantRenamer() {
         super();
     }
 
+    @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         LOG.log(Level.FINEST, "isRenameAllowed()"); //NOI18N
 
@@ -89,6 +93,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
         return false;
     }
 
+    @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         LOG.log(Level.FINEST, "getRenameRegions()"); //NOI18N
 
@@ -130,10 +135,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
-            OffsetRange range = AstUtilities.getRange(astNode, document);
-            regions.add(range);
+            regions.add(AstUtilities.getRange(astNode, document));
         }
     }
-
-
 }

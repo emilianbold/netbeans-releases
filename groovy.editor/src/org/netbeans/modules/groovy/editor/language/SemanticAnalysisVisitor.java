@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -62,6 +62,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
 
 /**
  *
