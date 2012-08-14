@@ -65,6 +65,7 @@ public final class ClientSideProjectUtilities {
     private ClientSideProjectUtilities() {
     }
 
+    // XXX save project name
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         return ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
     }
