@@ -94,14 +94,14 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.TapPanel;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -129,17 +129,16 @@ import org.openide.windows.WindowManager;
 autostore = false)
 @TopComponent.Description(
     preferredID = "HierarchyTopComponent",
-//iconBase="SET/PATH/TO/ICON/HERE", 
+iconBase="org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif", 
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "rightSlidingSide", openAtStartup = false)
-@ActionID(category = "Window", id = "org.netbeans.modules.java.navigation.hierarchy.HierarchyTopComponent")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
 @Messages({
     "CTL_HierarchyTopComponent=Hierarchy",
     "HINT_HierarchyTopComponent=This is a Hierarchy window"
 })
 public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 
+    private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
     @StaticResource
@@ -149,6 +148,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     
     private static HierarchyTopComponent instance;
 
+    private final JDocFinder jdocFinder;
+    private final RequestProcessor.Task jdocTask;
     private final ExplorerManager explorerManager;
     private final InstanceContent selectedNodes;
     private final Lookup lookup;
@@ -165,6 +166,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         "TXT_OpenJDoc=Open Javadoc Window"
     })
     public HierarchyTopComponent() {
+        jdocFinder = new JDocFinder();
+        jdocTask = RP.create(jdocFinder);
         explorerManager = new ExplorerManager();
         selectedNodes  = new InstanceContent();
         lookup = new AbstractLookup(selectedNodes);
@@ -248,15 +251,20 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             for (Node n: (Node[])evt.getOldValue()) {
                 selectedNodes.remove(n);
             }
-            for (Node n: (Node[])evt.getNewValue()) {
+            final Node[] newNodes = (Node[])evt.getNewValue();
+            for (Node n : newNodes) {
                 selectedNodes.add(n);
+            }
+            if (newNodes.length > 0 && JavadocTopComponent.shouldUpdate()) {
+                jdocFinder.cancel();
+                jdocTask.schedule(JDOC_TIME);
             }
         } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
             NbPreferences.forModule(HierarchyTopComponent.class).putBoolean(
                     "filtersPanelTap.expanded", //NOI18N
                     lowerToolBar.isExpanded());
         }
-    }
+    }    
 
     @CheckForNull
     private static FileObject getFileObject(@NullAllowed final Document doc) {
@@ -318,12 +326,16 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         showBusy();
         assert resolver != null;
         final RunnableFuture<Pair<URI,ElementHandle<TypeElement>>> becomesType = new FutureTask<Pair<URI,ElementHandle<TypeElement>>>(resolver);
+        jdocTask.cancel();
+        jdocFinder.cancel();
         RP.execute(becomesType);
         Object selItem = viewTypeCombo.getSelectedItem();
         if (!(selItem instanceof ViewType)) {
             selItem = ViewType.SUPER_TYPE;
         }
         final Runnable refreshTask = new RefreshTask(becomesType,(ViewType)selItem);
+        jdocTask.cancel();
+        jdocFinder.cancel();
         RP.execute(refreshTask);
     }
 
@@ -608,7 +620,89 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 Exceptions.printStackTrace(ex);
             }
         }
-    }    
+    }
+
+    private class JDocFinder implements Runnable, Callable<Boolean>, Task<CompilationController> {
+
+        //@NotThreadSafe
+        private ElementHandle<?> handle;
+        //@NotThreadSafe
+        private ElementJavadoc doc;
+        private volatile boolean cancelled;
+
+        @Override
+        public void run() {
+            cancelled = false;
+            if (JavadocTopComponent.shouldUpdate()) {
+                final ElementJavadoc documentation = getJavaDoc();
+                if (documentation != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            final JavadocTopComponent tc = JavadocTopComponent.findInstance();
+                            if (tc != null) {
+                                tc.open();
+                                tc.setJavadoc(documentation);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            if (cancelled) {
+                return;
+            }
+            cc.toPhase( JavaSource.Phase.UP_TO_DATE );
+            if (cancelled) {
+                return;
+            }
+            final Element e = handle.resolve(cc);
+            if (e != null && !cancelled) {
+                doc = ElementJavadoc.create(cc, e, this);
+            }
+        }
+
+        @Override
+        @NonNull
+        public Boolean call() throws Exception {
+            return cancelled;
+        }
+
+        void cancel() {
+            cancelled = true;
+        }
+
+        @CheckForNull
+        private ElementJavadoc getJavaDoc() {
+            final Node node = getLookup().lookup(Node.class);
+            if (node == null) {
+                return null;
+            }
+            final TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+            if (tph == null) {
+                return null;
+            }
+            final FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                return null;
+            }
+            final JavaSource js = JavaSource.forFileObject(fo);
+            if (js == null) {
+                return null;
+            }
+            handle = tph.getElementHandle();
+            try {
+                js.runUserActionTask(this, true);
+            } catch( IOException ioE ) {
+                Exceptions.printStackTrace(ioE);
+                return null;
+            }
+            return doc;
+        }
+    };
 
     private static class MainToolBar extends Box {
         MainToolBar(@NonNull final JComponent... components) {
