@@ -902,12 +902,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
         showFQNToggleButton.setSelected(true);
-        showFQNToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showFQNToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q))));
+        showFQNToggleButton.setToolTipText(NbBundle.getMessage(JavaMembersPanel.class, "TOOLTIP_showFQNToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q))));
         filtersToolbar.add(showFQNToggleButton);
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
         showInnerToggleButton.setSelected(true);
-        showInnerToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showInnerToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_I))));
+        showInnerToggleButton.setToolTipText(NbBundle.getMessage(JavaMembersPanel.class, "TOOLTIP_showInnerToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_I))));
         filtersToolbar.add(showInnerToggleButton);
 
         showConstructorsToggleButton.setIcon(JavaMembersAndHierarchyIcons.CONSTRUCTOR_ICON);
@@ -982,7 +982,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     .addComponent(caseSensitiveFilterCheckBox)
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(signatureEditorPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

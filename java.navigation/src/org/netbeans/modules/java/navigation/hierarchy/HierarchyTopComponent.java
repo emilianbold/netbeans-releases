@@ -208,17 +208,24 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
 
     }
 
-    public void setContext (@NonNull final JavaSource context) {
-        final Collection<FileObject> fos = context.getFileObjects();
+    public void setContext(
+            @NonNull final JavaSource js,
+            @NonNull final JTextComponent tc) {
+        final Collection<FileObject> fos = js.getFileObjects();
         assert fos.size() == 1;
         final FileObject fo = fos.iterator().next();
-        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver;
-        if (lastFocusedComponent != null && fo.equals(getFileObject(Utilities.getDocument(lastFocusedComponent)))) {
-            resolver = new EditorResolver(context, fo, lastFocusedComponent.getCaret().getDot());
-        } else {
-            resolver = new FileResolver(context, fo);
-        }
+        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver = new EditorResolver(
+                js,
+                fo,
+                tc.getCaret().getDot());
+        schedule(resolver);
+    }
+
+    public void setContext (@NonNull final JavaSource js) {
+        final Collection<FileObject> fos = js.getFileObjects();
+        assert fos.size() == 1;
+        final FileObject fo = fos.iterator().next();
+        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver = new FileResolver(js, fo);
         schedule(resolver);
 
     }
@@ -240,7 +247,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             final JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
             final JavaSource js = JavaSource.forDocument(Utilities.getDocument(lastFocusedComponent));
             if (js != null) {
-                setContext(js);
+                setContext(js, lastFocusedComponent);
             }
         } else if (jdocButton == e.getSource()) {
             final TopComponent win = JavadocTopComponent.findInstance();
