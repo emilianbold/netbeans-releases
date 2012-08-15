@@ -126,6 +126,9 @@ public class JsConventionRule extends JsAstRule {
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
         private void checkSemicolon(int offset) {
             int fileOffset = context.parserResult.getSnapshot().getOriginalOffset(offset);
+            if (fileOffset == -1) {
+                return;
+            }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
             ts.move(fileOffset);
             if(ts.movePrevious() && ts.moveNext()) {
@@ -177,6 +180,9 @@ public class JsConventionRule extends JsAstRule {
         private void checkDuplicateLabels(ObjectNode objectNode) {
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
             int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+            if (startOffset == -1 || endOffset == -1) {
+                return;
+            }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, startOffset);
             ts.move(startOffset);
             State state = State.BEFORE_COLON;
@@ -261,17 +267,19 @@ public class JsConventionRule extends JsAstRule {
             if (onset) {
                 checkDuplicateLabels(objectNode);
                 int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                ts.move(offset);
-                if(ts.movePrevious() && ts.moveNext()) {
-                    LexUtilities.findPrevious(ts, Arrays.asList(
-                            JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                            JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                            JsTokenId.BLOCK_COMMENT));
-                    if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                        hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                if (offset > -1) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
+                    ts.move(offset);
+                    if(ts.movePrevious() && ts.moveNext()) {
+                        LexUtilities.findPrevious(ts, Arrays.asList(
+                                JsTokenId.EOL, JsTokenId.WHITESPACE, 
+                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                JsTokenId.BLOCK_COMMENT));
+                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                            hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
+                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                        }
                     }
                 }
             }
