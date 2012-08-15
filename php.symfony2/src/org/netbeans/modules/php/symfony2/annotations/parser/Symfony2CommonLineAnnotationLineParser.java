@@ -39,10 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.validators.parser;
+package org.netbeans.modules.php.symfony2.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.annotation.util.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -50,21 +54,46 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ValidatorsAnnotationLineParser implements AnnotationLineParser {
+public class Symfony2CommonLineAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Symfony2ValidatorsAnnotationLineParser();
+    private static final AnnotationLineParser INSTANCE = new Symfony2CommonLineAnnotationLineParser();
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
     static {
-        PARSERS.add(new ParameterizedAnnotationLineParser());
-        PARSERS.add(new TypeAnnotationLineParser());
-        PARSERS.add(new EncapsulatingAnnotationLineParser());
+        INLINE_ANNOTATIONS.add("NotBlank"); //NOI18N
+        INLINE_ANNOTATIONS.add("Blank"); //NOI18N
+        INLINE_ANNOTATIONS.add("NotNull"); //NOI18N
+        INLINE_ANNOTATIONS.add("Null"); //NOI18N
+        INLINE_ANNOTATIONS.add("True"); //NOI18N
+        INLINE_ANNOTATIONS.add("False"); //NOI18N
+        INLINE_ANNOTATIONS.add("Email"); //NOI18N
+        INLINE_ANNOTATIONS.add("MinLength"); //NOI18N
+        INLINE_ANNOTATIONS.add("MaxLength"); //NOI18N
+        INLINE_ANNOTATIONS.add("Url"); //NOI18N
+        INLINE_ANNOTATIONS.add("Regex"); //NOI18N
+        INLINE_ANNOTATIONS.add("Ip"); //NOI18N
+        INLINE_ANNOTATIONS.add("Max"); //NOI18N
+        INLINE_ANNOTATIONS.add("Min"); //NOI18N
+        INLINE_ANNOTATIONS.add("Date"); //NOI18N
+        INLINE_ANNOTATIONS.add("DateTime"); //NOI18N
+        INLINE_ANNOTATIONS.add("Time"); //NOI18N
+        INLINE_ANNOTATIONS.add("Choice"); //NOI18N
+        INLINE_ANNOTATIONS.add("UniqueEntity"); //NOI18N
+        INLINE_ANNOTATIONS.add("Language"); //NOI18N
+        INLINE_ANNOTATIONS.add("Locale"); //NOI18N
+        INLINE_ANNOTATIONS.add("Country"); //NOI18N
+        INLINE_ANNOTATIONS.add("File"); //NOI18N
+        INLINE_ANNOTATIONS.add("Image"); //NOI18N
+        INLINE_ANNOTATIONS.add("Callback"); //NOI18N
+        INLINE_ANNOTATIONS.add("Valid"); //NOI18N
     }
 
-    private Symfony2ValidatorsAnnotationLineParser() {
+    private static final Set<String> TYPED_PARAMETERS = new HashSet<String>();
+    static {
+        TYPED_PARAMETERS.add("type"); //NOI18N
     }
 
-    @AnnotationLineParser.Registration(position=350)
+    @AnnotationLineParser.Registration(position=351)
     public static AnnotationLineParser getDefault() {
         return INSTANCE;
     }
@@ -72,11 +101,11 @@ public class Symfony2ValidatorsAnnotationLineParser implements AnnotationLinePar
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
+        types.putAll(AnnotationUtils.extractTypesFromParameters(line, TYPED_PARAMETERS));
+        if (!types.isEmpty()) {
+            result = new AnnotationParsedLine.ParsedLine("", types, line.trim());
         }
         return result;
     }

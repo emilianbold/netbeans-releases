@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.validators.parser;
+package org.netbeans.modules.php.symfony2.annotations.parser;
 
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -47,98 +47,69 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TypeAnnotationLineParserTest extends NbTestCase {
+public class Symfony2CommonLineAnnotationLineParserTest extends NbTestCase {
     private AnnotationLineParser parser;
 
-    public TypeAnnotationLineParserTest(String name) {
+    public Symfony2CommonLineAnnotationLineParserTest(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        parser = Symfony2ValidatorsAnnotationLineParser.getDefault();
-    }
-
-    public void testTypeParser() {
-        assertNotNull(parser.parse("Type"));
-    }
-
-    public void testReturnValueIsNull() throws Exception {
-        assertNull(parser.parse("Types"));
+        this.parser = Symfony2CommonLineAnnotationLineParser.getDefault();
     }
 
     public void testValidUseCase_01() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Type");
+        AnnotationParsedLine parsedLine = parser.parse("    \"short_bio\" = {@Assert\\NotBlank(), @Assert\\MaxLength(limit = 100, ");
         assertNotNull(parsedLine);
-        assertEquals("Type", parsedLine.getName());
-        assertEquals("", parsedLine.getDescription());
+        assertEquals("", parsedLine.getName());
+        assertEquals("\"short_bio\" = {@Assert\\NotBlank(), @Assert\\MaxLength(limit = 100,", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
         Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertNotNull(types);
-        assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 4));
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(20, 35));
         assertNotNull(type1);
-        assertEquals("Type", type1);
+        assertEquals("Assert\\NotBlank", type1);
+        String type2 = types.get(new OffsetRange(40, 56));
+        assertNotNull(type2);
+        assertEquals("Assert\\MaxLength", type2);
     }
 
     public void testValidUseCase_02() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Type()  ");
+        AnnotationParsedLine parsedLine = parser.parse("    @Assert\\NotBlank, @Assert\\MinLength(5), ");
         assertNotNull(parsedLine);
-        assertEquals("Type", parsedLine.getName());
-        assertEquals("()", parsedLine.getDescription());
+        assertEquals("", parsedLine.getName());
+        assertEquals("@Assert\\NotBlank, @Assert\\MinLength(5),", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
         Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertNotNull(types);
-        assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 4));
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(5, 20));
         assertNotNull(type1);
-        assertEquals("Type", type1);
+        assertEquals("Assert\\NotBlank", type1);
+        String type2 = types.get(new OffsetRange(23, 39));
+        assertNotNull(type2);
+        assertEquals("Assert\\MinLength", type2);
     }
 
     public void testValidUseCase_03() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Annotations\\Type");
+        AnnotationParsedLine parsedLine = parser.parse("    @Assert\\NotBlank, type=\"Foo\\Bar\" ");
         assertNotNull(parsedLine);
-        assertEquals("Type", parsedLine.getName());
-        assertEquals("", parsedLine.getDescription());
+        assertEquals("", parsedLine.getName());
+        assertEquals("@Assert\\NotBlank, type=\"Foo\\Bar\"", parsedLine.getDescription());
+        assertFalse(parsedLine.startsWithAnnotation());
         Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertNotNull(types);
-        assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 16));
-        assertNotNull(type1);
-        assertEquals("Annotations\\Type", type1);
-    }
-
-    public void testValidUseCase_04() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Type(type=\"integer\", message=\"The value\")");
-        assertNotNull(parsedLine);
-        assertEquals("Type", parsedLine.getName());
-        assertEquals("(type=\"integer\", message=\"The value\")", parsedLine.getDescription());
-        Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertNotNull(types);
-        assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 4));
-        assertNotNull(type1);
-        assertEquals("Type", type1);
-    }
-
-    public void testValidUseCase_05() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Type(type=\"Foo\\Bar\\Baz\", message=\"The value\")");
-        assertNotNull(parsedLine);
-        assertEquals("Type", parsedLine.getName());
-        assertEquals("(type=\"Foo\\Bar\\Baz\", message=\"The value\")", parsedLine.getDescription());
-        Map<OffsetRange, String> types = parsedLine.getTypes();
-        assertNotNull(types);
         assertEquals(2, types.size());
-        String type1 = types.get(new OffsetRange(0, 4));
+        String type1 = types.get(new OffsetRange(5, 20));
         assertNotNull(type1);
-        assertEquals("Type", type1);
-        String type2 = types.get(new OffsetRange(11, 22));
+        assertEquals("Assert\\NotBlank", type1);
+        String type2 = types.get(new OffsetRange(28, 35));
         assertNotNull(type2);
-        assertEquals("Foo\\Bar\\Baz", type2);
+        assertEquals("Foo\\Bar", type2);
     }
 
 }
