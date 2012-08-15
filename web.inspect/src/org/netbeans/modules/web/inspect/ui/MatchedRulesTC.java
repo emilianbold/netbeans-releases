@@ -54,7 +54,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * CSS Styles view.
@@ -101,7 +100,6 @@ public final class MatchedRulesTC extends TopComponent {
         setToolTipText(Bundle.HINT_MatchedRulesTC());
         setLayout(new BorderLayout());
         initNoStylesLabel();
-        associateLookup(new MatchedRulesLookup());
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
     }
@@ -133,7 +131,6 @@ public final class MatchedRulesTC extends TopComponent {
                 currentView = null;
             } else {
                 PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
-                ((MatchedRulesLookup)getLookup()).setView(stylesView);
                 add(stylesView.getView(), BorderLayout.CENTER);
                 currentView = stylesView;
             }
@@ -173,24 +170,6 @@ public final class MatchedRulesTC extends TopComponent {
         if (currentView != null) {
             currentView.deactivated();
         }
-    }
-
-    /**
-     * Lookup of CSS Styles view.
-     */
-    private static class MatchedRulesLookup extends ProxyLookup {
-
-        /**
-         * Updates the lookup according to the view
-         * that shows the style information.
-         *
-         * @param view view that displays the style information
-         * within the CSS Styles view.
-         */
-        void setView(PageModel.CSSStylesView view) {
-            setLookups(view.getLookup());
-        }
-
     }
 
 }

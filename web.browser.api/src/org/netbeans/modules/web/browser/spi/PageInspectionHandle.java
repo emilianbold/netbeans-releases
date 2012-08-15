@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.17",
+package org.netbeans.modules.web.browser.spi;
 
-  "background_page": "html/main.html",
+/**
+ * A handle that allows page inspection to notify the inspected browser pane
+ * about changes in page inspection options.
+ *
+ * @author Jan Stola
+ */
+public interface PageInspectionHandle {
 
-  "options_page": "html/options.html",
+    /**
+     * Set selection mode.
+     *
+     * @param selectionMode new value of selection mode.
+     */
+    void setSelectionMode(boolean selectionMode);
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
-
-  "permissions": [
-    "tabs",
-    "debugger"
-  ],
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  }
+    /**
+     * Set selection synchronization.
+     *
+     * @param synchronizeSelection new value of selection synchronization.
+     */
+    void setSynchronizeSelection(boolean synchronizeSelection);
 
 }

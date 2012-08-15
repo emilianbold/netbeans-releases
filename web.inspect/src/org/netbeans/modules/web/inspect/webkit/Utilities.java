@@ -78,9 +78,11 @@ public class Utilities {
             final Model sourceModel, StyleSheet styleSheet, Rule rule) {
         String selector = CSSUtils.normalizeSelector(rule.getSelector());
         String mediaQuery = null;
-        if (!rule.getMedia().isEmpty()) {
-            mediaQuery = rule.getMedia().get(0).getText();
-            mediaQuery = CSSUtils.normalizeSelector(mediaQuery);
+        for (org.netbeans.modules.web.webkit.debugging.api.css.Media media : rule.getMedia()) {
+            if (media.getSource() == org.netbeans.modules.web.webkit.debugging.api.css.Media.Source.MEDIA_RULE) {
+                mediaQuery = media.getText();
+                mediaQuery = CSSUtils.normalizeSelector(mediaQuery);
+            }
         }
         Set<String> properties = new HashSet<String>();
         for (Property property : rule.getStyle().getProperties()) {
