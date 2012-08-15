@@ -175,4 +175,22 @@ public class AllLineParserTest extends NbTestCase {
         }
     }
 
+    public void testValidUseCase_07() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("Assert\\All({@Assert\\NotBlank, @Assert\\MinLength(5)})  \t");
+        assertEquals("All", parsedLine.getName());
+        assertEquals("({@Assert\\NotBlank, @Assert\\MinLength(5)})", parsedLine.getDescription());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertNotNull(types);
+        assertEquals(3, types.size());
+        String type1 = types.get(new OffsetRange(0, 10));
+        assertNotNull(type1);
+        assertEquals("Assert\\All", type1);
+        String type2 = types.get(new OffsetRange(13, 28));
+        assertNotNull(type1);
+        assertEquals("Assert\\NotBlank", type2);
+        String type3 = types.get(new OffsetRange(31, 47));
+        assertNotNull(type1);
+        assertEquals("Assert\\MinLength", type3);
+    }
+
 }

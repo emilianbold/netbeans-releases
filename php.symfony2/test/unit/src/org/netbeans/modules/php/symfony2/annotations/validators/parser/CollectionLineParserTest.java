@@ -175,4 +175,19 @@ public class CollectionLineParserTest extends NbTestCase {
         }
     }
 
+    public void testValidUseCase_07() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("Assert\\Collection( fields = { \"personal_email\" = @Assert\\Email })  \t");
+        assertEquals("Collection", parsedLine.getName());
+        assertEquals("( fields = { \"personal_email\" = @Assert\\Email })", parsedLine.getDescription());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertNotNull(types);
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(0, 17));
+        assertNotNull(type1);
+        assertEquals("Assert\\Collection", type1);
+        String type2 = types.get(new OffsetRange(50, 62));
+        assertNotNull(type1);
+        assertEquals("Assert\\Email", type2);
+    }
+
 }
