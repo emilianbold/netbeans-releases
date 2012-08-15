@@ -45,9 +45,9 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
 /**
  * Find only direct subtypes for the given declaration class.

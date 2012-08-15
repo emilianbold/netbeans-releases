@@ -388,7 +388,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (continueComment) {
                 // Line comments should continue
                 int indent = GsfUtilities.getLineIndent(doc, offset);
-                StringBuilder sb = new StringBuilder("\n");
+                StringBuilder sb = new StringBuilder();
+                if (offset != begin || offset <= 0) {
+                    sb.append("\n");
+                }
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
@@ -404,7 +407,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 }
 
                 if (offset == begin && offset > 0) {
-                    context.setText(sb.toString(), -1, sb.length());
+                    int caretPosition = sb.length();
+                    sb.append("\n");
+                    context.setText(sb.toString(), -1, caretPosition);
                     return;
                 }
                 context.setText(sb.toString(), -1, sb.length());

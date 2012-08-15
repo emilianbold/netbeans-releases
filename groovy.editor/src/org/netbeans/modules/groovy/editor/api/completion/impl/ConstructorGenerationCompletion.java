@@ -48,13 +48,13 @@ import java.util.logging.Level;
 import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 
 /**
  * This should complete constructor generation.
@@ -80,7 +80,7 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
             LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
             return false;
         }
-        String className = NbUtilities.stripPackage(requestedClass.getName());
+        String className = GroovyUtils.stripPackage(requestedClass.getName());
 
         boolean camelCaseMatch = CamelCaseUtil.compareCamelCase(className, request.prefix);
         if (camelCaseMatch) {

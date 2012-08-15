@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;

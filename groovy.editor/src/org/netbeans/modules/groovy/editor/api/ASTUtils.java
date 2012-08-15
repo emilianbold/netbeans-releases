@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import org.netbeans.modules.groovy.editor.utils.ASTChildrenVisitor;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import groovyjarjarasm.asm.Opcodes;
 import java.util.*;
 import java.util.logging.Level;
@@ -82,9 +84,9 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-public class AstUtilities {
+public class ASTUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(AstUtilities.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ASTUtils.class.getName());
 
     public static int getAstOffset(Parser.Result info, int lexOffset) {
         GroovyParserResult result = getParseResult(info);
@@ -279,8 +281,8 @@ public class AstUtilities {
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + constantExpression.getText().length());
         } else if (node instanceof FakeASTNode) {
-            int startOffset = AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            int endOffset = AstUtilities.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+            int startOffset = ASTUtils.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            int endOffset = ASTUtils.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
             
             return new OffsetRange(startOffset, endOffset);
         }
@@ -371,7 +373,7 @@ public class AstUtilities {
         } else if (root instanceof PropertyNode) {
             // FIXME (?)
         } else if (root != null) {
-            AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
+            ASTChildrenVisitor astChildrenSupport = new ASTChildrenVisitor();
             root.visit(astChildrenSupport);
             children = astChildrenSupport.children();
         }
@@ -411,7 +413,7 @@ public class AstUtilities {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                    GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
                     
                     String signature = o.getSignature();
                     if (signature == null) {
@@ -729,76 +731,6 @@ public class AstUtilities {
             limit = docLength;
         }
         return limit;
-    }
-
-    public static boolean isCaretOnClassNode(ClassNode superType, BaseDocument doc, int cursorOffset) {
-        if (getClassNodeRange(superType, doc, cursorOffset) != OffsetRange.NONE) {
-            return true;
-        }
-        return false;
-    }
-
-    private static OffsetRange getClassNodeRange(ClassNode superType, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, superType.getLineNumber(), superType.getColumnNumber());
-        OffsetRange range = AstUtilities.getNextIdentifierByName(doc, superType.getNameWithoutPackage(), offset);
-        if (range.containsInclusive(cursorOffset)) {
-            return range;
-        }
-        return OffsetRange.NONE;
-    }
-
-    public static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
-        if (getMethodReturnType(method, doc, cursorOffset) != OffsetRange.NONE) {
-            return true;
-        }
-        return false;
-    }
-
-    public static OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, method.getLineNumber(), method.getColumnNumber());
-        if (!method.isDynamicReturnType()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), offset);
-            if (range.containsInclusive(cursorOffset)) {
-                return range;
-            }
-        }
-        return OffsetRange.NONE;
-    }
-
-    public static boolean isCaretOnFieldType(FieldNode field, BaseDocument doc, int cursorOffset) {
-        if (getFieldRange(field, doc, cursorOffset) != OffsetRange.NONE) {
-            return true;
-        }
-        return false;
-    }
-
-    private static OffsetRange getFieldRange(FieldNode field, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, field.getLineNumber(), field.getColumnNumber());
-        if (!field.isDynamicTyped()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, field.getType().getNameWithoutPackage(), offset);
-            if (range.containsInclusive(cursorOffset)) {
-                return range;
-            }
-        }
-        return OffsetRange.NONE;
-    }
-
-    public static boolean isCaretOnParamType(Parameter param, BaseDocument doc, int cursorOffset) {
-        if (getParameterRange(param, doc, cursorOffset) != OffsetRange.NONE) {
-            return true;
-        }
-        return false;
-    }
-
-    private static OffsetRange getParameterRange(Parameter param, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, param.getLineNumber(), param.getColumnNumber());
-        if (!param.isDynamicTyped()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, param.getType().getNameWithoutPackage(), offset);
-            if (range.containsInclusive(cursorOffset)) {
-                return range;
-            }
-        }
-        return OffsetRange.NONE;
     }
 
     /**
