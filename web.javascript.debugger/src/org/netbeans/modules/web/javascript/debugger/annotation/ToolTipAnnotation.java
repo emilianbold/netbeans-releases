@@ -176,11 +176,10 @@ public class ToolTipAnnotation extends Annotation
         if (expression != null) {
             Debugger d = getDebugger();
             if (d != null && d.isSuspended()) {
-                List<? extends CallFrame> l = d.getCurrentCallStack();
-                if (l == null || l.isEmpty()) {
+                CallFrame frame = d.getCurrentCallFrame();
+                if (frame == null) {
                     return;
                 }
-                CallFrame frame = l.get(0);
                 VariablesModel.ScopedRemoteObject sv = Evaluator.evaluateExpression(frame, expression, true);
                 if (sv != null) {
                     RemoteObject var = sv.getRemoteObject();
