@@ -61,13 +61,13 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
 /**
- * Deployment manager for GlassFish remote or local GlassFish server with
- * user account on cloud.
+ * Deployment manager for GlassFish remote or local GlassFish server with user
+ * account on cloud.
  * <p/>
- * Provides the core set of functions a Java EE platform must provide for
- * Java EE application deployment. It provides server related information,
- * such as list of deployment targets and GlassFish cloud unique runtime
- * configuration information.
+ * Provides the core set of functions a Java EE platform must provide for Java
+ * EE application deployment. It provides server related information, such as
+ * list of deployment targets and GlassFish cloud unique runtime configuration
+ * information.
  * <p/>
  * Based on API that will be made optional in JavaEE 7 platform.
  * <p/>
@@ -79,15 +79,15 @@ public class GlassFishAccountDeploymentManager
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
-
-    /** GlassFish cloud user account instance. */
+    /**
+     * GlassFish cloud user account instance.
+     */
     @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     private final GlassFishAccountInstance instance;
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
-   
     /**
      * Creates an instance of user account deployment manager for GlassFish
      * cloud.
@@ -97,28 +97,27 @@ public class GlassFishAccountDeploymentManager
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishAccountDeploymentManager(GlassFishUrl url) {        
+    GlassFishAccountDeploymentManager(GlassFishUrl url) {
         super(url, GlassFishAccountInstanceProvider
                 .getAccountInstance(url.getName()));
-        this.instance = (GlassFishAccountInstance)super.instance;
+        this.instance = (GlassFishAccountInstance) super.instance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
-
     /**
-     * The redeploy method provides a means for updating currently deployed
-     * Java EE applications.
+     * The redeploy method provides a means for updating currently deployed Java
+     * EE applications.
      * <p/>
      * This is an optional method for GlassFish cloud implementation.
      * <p/>
-     * @param targetList  A list of server targets the user is specifying
-     *                    this application be deployed to.
-     * @param deployment  Context describing everything necessary for a module
-     *                    deployment.
+     * @param targetList A list of server targets the user is specifying this
+     * application be deployed to.
+     * @param deployment Context describing everything necessary for a module
+     * deployment.
      * @return An object that tracks and reports the status of the distribution
-     *         process. 
+     * process.
      */
     @Override
     public ProgressObject redeploy(TargetModuleID[] targetList,
@@ -130,14 +129,14 @@ public class GlassFishAccountDeploymentManager
      * Distribute method performs three tasks: it validates the deployment
      * configuration data, generates all container specific classes and
      * interfaces, and moves the fully baked archive to the designated
-     * deployment targets. 
+     * deployment targets.
      * <p/>
-     * @param targetList  A list of server targets the user is specifying
-     *                    this application be deployed to.
-     * @param deployment  Context describing everything necessary for a module
-     *                    deployment.
+     * @param targetList A list of server targets the user is specifying this
+     * application be deployed to.
+     * @param deployment Context describing everything necessary for a module
+     * deployment.
      * @return An object that tracks and reports the status of the distribution
-     *         process. 
+     * process.
      */
     @Override
     public ProgressObject distribute(Target[] targetList,
@@ -146,25 +145,25 @@ public class GlassFishAccountDeploymentManager
         if (moduleFile.isDirectory()) {
             throw new UnsupportedOperationException("Directory deployment not supported.");
         }
-
-        ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, null);
+        GlassFishModuleId moduleID = new GlassFishModuleId(instance, moduleFile);
+        ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, moduleID);
         // call deploy
         ServerTasks.deploy(instance.getLocalServer(), moduleFile, progressObject);
         return progressObject;
     }
 
     /**
-     * Retrieve the list of Java EE application modules distributed to
-     * the identified targets and that are currently running on the
-     * associated server or servers.
+     * Retrieve the list of Java EE application modules distributed to the
+     * identified targets and that are currently running on the associated
+     * server or servers.
      * <p/>
      * @param moduleType Predefined designator for a Java EE module type.
      * @param targetList List of deployment Target designators the user wants
-     *                   checked for module running status.
+     * checked for module running status.
      * @return An array of TargetModuleID objects representing the running
-     *         modules or <code>null</code> if there are none. 
+     * modules or <code>null</code> if there are none.
      * @throws TargetException Is thrown when the method is called when running
-     *         in disconnected mode. 
+     * in disconnected mode.
      * @throws IllegalStateException An invalid Target designator encountered.
      */
     @Override
@@ -174,17 +173,17 @@ public class GlassFishAccountDeploymentManager
     }
 
     /**
-     * Retrieve the list of Java EE application modules distributed to
-     * the identified targets and that are currently not running on the
-     * associated server or servers.
+     * Retrieve the list of Java EE application modules distributed to the
+     * identified targets and that are currently not running on the associated
+     * server or servers.
      * <p/>
      * @param moduleType Predefined designator for a Java EE module type.
      * @param targetList List of deployment Target designators the user wants
-     *                   checked for module not running status.
+     * checked for module not running status.
      * @return An array of TargetModuleID objects representing the non running
-     *         modules or <code>null</code> if there are none. 
+     * modules or <code>null</code> if there are none.
      * @throws TargetException Is thrown when the method is called when running
-     *         in disconnected mode. 
+     * in disconnected mode.
      * @throws IllegalStateException An invalid Target designator encountered.
      */
     @Override
@@ -199,13 +198,13 @@ public class GlassFishAccountDeploymentManager
      * <p/>
      * @param moduleType Predefined designator for a Java EE module type.
      * @param targetList List of deployment Target designators the user wants
-     *                   checked for module not running status. 
+     * checked for module not running status.
      * @return An array of TargetModuleID objects representing all deployed
-     *         modules running or not or <code>null</code> if there are no
-     *         deployed modules. 
+     * modules running or not or <code>null</code> if there are no deployed
+     * modules.
      * @throws TargetException An invalid Target designator encountered.
      * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode. 
+     * running in disconnected mode.
      */
     @Override
     public TargetModuleID[] getAvailableModules(ModuleType moduleType,
@@ -214,14 +213,14 @@ public class GlassFishAccountDeploymentManager
     }
 
     /**
-     * Retrieve an object that provides server-specific deployment
-     * configuration information for the Java EE deployable component.
+     * Retrieve an object that provides server-specific deployment configuration
+     * information for the Java EE deployable component.
      * <p/>
      * @param dObj An object representing a Java EE deployable component.
-     * @return An object that provides server-specific deployment
-     *         configuration information for the Java EE deployable component.
+     * @return An object that provides server-specific deployment configuration
+     * information for the Java EE deployable component.
      * @throws InvalidModuleException DeployableObject is an unknown or
-     *         unsupported component for this configuration tool.
+     * unsupported component for this configuration tool.
      */
     @Override
     public DeploymentConfiguration createConfiguration(DeployableObject dObj)
@@ -233,19 +232,18 @@ public class GlassFishAccountDeploymentManager
      * Distribute method performs three tasks: it validates the deployment
      * configuration data, generates all container specific classes and
      * interfaces, and moves the fully baked archive to the designated
-     * deployment targets. 
+     * deployment targets.
      * <p/>
-     * @param targetList     A list of server targets the user is specifying
-     *                       this application be deployed to.
-     * @param moduleArchive  The file name of the application archive to be
-     *                       disTributed.
+     * @param targetList A list of server targets the user is specifying this
+     * application be deployed to.
+     * @param moduleArchive The file name of the application archive to be
+     * disTributed.
      * @param deploymentPlan The XML file containing the runtime configuration
-     *                       information associated with this application
-     *                       archive.
+     * information associated with this application archive.
      * @return An object that tracks and reports the status of the distribution
-     *         process. 
+     * process.
      * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
+     * running in disconnected mode.
      */
     @Override
     public ProgressObject distribute(Target[] targetList, File moduleArchive,
@@ -257,22 +255,21 @@ public class GlassFishAccountDeploymentManager
      * Distribute method performs three tasks: it validates the deployment
      * configuration data, generates all container specific classes and
      * interfaces, and moves the fully baked archive to the designated
-     * deployment targets. 
+     * deployment targets.
      * <p/>
      * This method is no more supported and will always throw
      * <code>UnsupportedOperationException</code>
      * <p/>
-     * @param targetList     A list of server targets the user is specifying
-     *                       this application be deployed to.
-     * @param moduleArchive  Input stream containing the application archive
-     *                       to be distributed.
+     * @param targetList A list of server targets the user is specifying this
+     * application be deployed to.
+     * @param moduleArchive Input stream containing the application archive to
+     * be distributed.
      * @param deploymentPlan Input stream containing the deployment
-     *                       configuration information associated with this
-     *                       application archive.
+     * configuration information associated with this application archive.
      * @return An object that tracks and reports the status of the distribution
-     *         process.
+     * process.
      * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
+     * running in disconnected mode.
      * @deprecated as of Java EE 5, replaced with {@link #distribute(
      *             javax.enterprise.deploy.spi.Target[],
      *             javax.enterprise.deploy.shared.ModuleType,
@@ -290,20 +287,19 @@ public class GlassFishAccountDeploymentManager
      * Distribute method performs three tasks: it validates the deployment
      * configuration data, generates all container specific classes and
      * interfaces, and moves the fully baked archive to the designated
-     * deployment targets. 
+     * deployment targets.
      * <p/>
-     * @param targetList     A list of server targets the user is specifying
-     *                       this application be deployed to.
-     * @param type           Module type of this application archive.
-     * @param moduleArchive  Input stream containing the application archive
-     *                       to be distributed.
+     * @param targetList A list of server targets the user is specifying this
+     * application be deployed to.
+     * @param type Module type of this application archive.
+     * @param moduleArchive Input stream containing the application archive to
+     * be distributed.
      * @param deploymentPlan Input stream containing the deployment
-     *                       configuration information associated with this
-     *                       application archive.
+     * configuration information associated with this application archive.
      * @return An object that tracks and reports the status of the distribution
-     *         process.
+     * process.
      * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
+     * running in disconnected mode.
      */
     @Override
     public ProgressObject distribute(Target[] targetList, ModuleType type,
@@ -316,15 +312,16 @@ public class GlassFishAccountDeploymentManager
      * Start the application running.
      * <p/>
      * Only the TargetModuleIDs which represent a root module are valid for
-     * being started. A root TargetModuleID has no parent. A TargetModuleID
-     * with a parent can not be individually started. A root TargetModuleID
-     * module and all its child modules will be started.
-     * @param moduleIDList An array of TargetModuleID objects representing
-     *                     the modules to be started. 
+     * being started. A root TargetModuleID has no parent. A TargetModuleID with
+     * a parent can not be individually started. A root TargetModuleID module
+     * and all its child modules will be started.
+     *
+     * @param moduleIDList An array of TargetModuleID objects representing the
+     * modules to be started.
      * @return An object that tracks and reports the status of the start
-     *         operation. 
+     * operation.
      * @throws IllegalStateException Is thrown when the method is called when
-     *                               running in disconnected mode.
+     * running in disconnected mode.
      */
     @Override
     public ProgressObject start(TargetModuleID[] moduleIDList) throws IllegalStateException {
@@ -334,12 +331,12 @@ public class GlassFishAccountDeploymentManager
     /**
      * Stop the application running.
      * <p/>
-     * @param moduleIDList An array of TargetModuleID objects representing
-     *                     the modules to be stopped.
+     * @param moduleIDList An array of TargetModuleID objects representing the
+     * modules to be stopped.
      * @return An object that tracks and reports the status of the stop
-     *         operation. 
+     * operation.
      * @throws IllegalStateException Is thrown when the method is called when
-     *                               running in disconnected mode.
+     * running in disconnected mode.
      */
     @Override
     public ProgressObject stop(TargetModuleID[] moduleIDList)
@@ -356,11 +353,11 @@ public class GlassFishAccountDeploymentManager
      * child modules will be undeployed. The root TargetModuleID module and all
      * its child modules must stopped before they can be undeployed.
      * <p/>
-     * @param moduleIDList An array of TargetModuleID objects representing
-     *                     the root modules to be stopped. 
-     * @return Object that tracks and reports the status of the stop operation. 
+     * @param moduleIDList An array of TargetModuleID objects representing the
+     * root modules to be stopped.
+     * @return Object that tracks and reports the status of the stop operation.
      * @throws IllegalStateException Is thrown when the method is called when
-     *                               running in disconnected mode.
+     * running in disconnected mode.
      */
     @Override
     public ProgressObject undeploy(TargetModuleID[] moduleIDList)
@@ -372,9 +369,9 @@ public class GlassFishAccountDeploymentManager
      * This method designates whether this platform vendor provides application
      * redeployment functionality.
      * <p/>
-     * @return Value of <true>true</true> means redeployment is supported
-     *         by this vendor's DeploymentManager. Value of <code>false</code>
-     *         means it is not.
+     * @return Value of <true>true</true> means redeployment is supported by
+     * this vendor's DeploymentManager. Value of <code>false</code> means it is
+     * not.
      */
     @Override
     public boolean isRedeploySupported() {
@@ -382,24 +379,24 @@ public class GlassFishAccountDeploymentManager
     }
 
     /**
-     * The redeploy method provides a means for updating currently deployed
-     * Java EE applications.
+     * The redeploy method provides a means for updating currently deployed Java
+     * EE applications.
      * <p/>
      * This is an optional method for GlassFish cloud implementation.
      * <p/>
-     * @param moduleIDList   An array of designators of the applications to
-     *                       be updated.
-     * @param moduleArchive  The file name of the application archive to
-     *                       be disrtibuted.
+     * @param moduleIDList An array of designators of the applications to be
+     * updated.
+     * @param moduleArchive The file name of the application archive to be
+     * disrtibuted.
      * @param deploymentPlan The deployment configuration information associated
-     *                       with this application archive.
+     * with this application archive.
      * @returns An object that tracks and reports the status of the redeploy
-     *          operation.
-     * @throws IllegalStateException         Is thrown when the method is called
-     *                                       when running in disconnected mode.
+     * operation.
+     * @throws IllegalStateException Is thrown when the method is called when
+     * running in disconnected mode.
      * @throws UnsupportedOperationException This optional command is not
-     *                                       supported by this implementation.
-     */    
+     * supported by this implementation.
+     */
     @Override
     public ProgressObject redeploy(TargetModuleID[] moduleIDList,
             File moduleArchive, File file1)
@@ -408,44 +405,42 @@ public class GlassFishAccountDeploymentManager
     }
 
     /**
-     * The redeploy method provides a means for updating currently deployed
-     * Java EE applications.
+     * The redeploy method provides a means for updating currently deployed Java
+     * EE applications.
      * <p/>
      * This is an optional method for GlassFish cloud implementation.
      * <p/>
-     * @param moduleIDList   An array of designators of the applications
-     *                       to be updated.
-     * @param moduleArchive  The input stream containing the application archive
-     *                       to be distributed.
+     * @param moduleIDList An array of designators of the applications to be
+     * updated.
+     * @param moduleArchive The input stream containing the application archive
+     * to be distributed.
      * @param deploymentPlan The input stream containing the runtime
-     *                       configuration information associated with this
-     *                       application archive. 
+     * configuration information associated with this application archive.
      * @returns An object that tracks and reports the status of the redeploy
-     *          operation.
-     * @throws IllegalStateException         Is thrown when the method is called
-     *                                       when running in disconnected mode.
+     * operation.
+     * @throws IllegalStateException Is thrown when the method is called when
+     * running in disconnected mode.
      * @throws UnsupportedOperationException This optional command is not
-     *                                       supported by this implementation.
+     * supported by this implementation.
      */
     @Override
     public ProgressObject redeploy(TargetModuleID[] tmids, InputStream in, InputStream in1) throws UnsupportedOperationException, IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-
     /**
      * The release method is the mechanism by which the tool signals to the
      * DeploymentManager that the tool does not need it to continue running
      * connected to the platform.
      * <p/>
-     * The tool may be signaling it wants to run in a disconnected mode
-     * or it is planning to shutdown. When release is called
-     * the DeploymentManager may close any Java EE resource connections
-     * it had for deployment configuration and perform other related
-     * resource cleanup. It should not accept any new operation requests
-     * (i.e., distribute, start stop, undeploy, redeploy. It should finish
-     * any operations that are currently in process. Each ProgressObject
-     * associated with a running operation should be marked as released.
+     * The tool may be signaling it wants to run in a disconnected mode or it is
+     * planning to shutdown. When release is called the DeploymentManager may
+     * close any Java EE resource connections it had for deployment
+     * configuration and perform other related resource cleanup. It should not
+     * accept any new operation requests (i.e., distribute, start stop,
+     * undeploy, redeploy. It should finish any operations that are currently in
+     * process. Each ProgressObject associated with a running operation should
+     * be marked as released.
      */
     @Override
     public void release() {
@@ -454,7 +449,7 @@ public class GlassFishAccountDeploymentManager
 
     /**
      * Returns the default locale supported by this implementation of
-     * <code>javax.enterprise.deploy.spi</code> sub packages. 
+     * <code>javax.enterprise.deploy.spi</code> sub packages.
      * <p/>
      * @return Default locale for this implementation.
      */
@@ -501,7 +496,7 @@ public class GlassFishAccountDeploymentManager
      * <p/>
      * @param locale
      * @return Value of <code>true</code> means it is supported and
-     *         <code>false</code> it is not.
+     * <code>false</code> it is not.
      */
     @Override
     public boolean isLocaleSupported(Locale locale) {
@@ -516,7 +511,7 @@ public class GlassFishAccountDeploymentManager
      * Java EE platform.
      * <p/>
      * @return DConfigBeanVersionType object representing the platform version
-     *         number for which these beans are provided.
+     * number for which these beans are provided.
      */
     @Override
     public DConfigBeanVersionType getDConfigBeanVersion() {
@@ -524,13 +519,12 @@ public class GlassFishAccountDeploymentManager
     }
 
     /**
-     * Returns if the configuration beans support the Java EE platform
-     * version specified.
+     * Returns if the configuration beans support the Java EE platform version
+     * specified.
      * <p/>
      * @param version DConfigBeanVersionType object representing the Java EE
-     *                platform version for which support is requested.
-     * @return Value of <code>true</code> if the version is supported
-     *         and <code>false</code> if is not.
+     * platform version for which support is requested.
+     * @return Value of <code>true</code> if the version is supported and <code>false</code> if is not.
      */
     @Override
     public boolean isDConfigBeanVersionSupported(
@@ -543,14 +537,13 @@ public class GlassFishAccountDeploymentManager
      * specified.
      * <p/>
      * @param version DConfigBeanVersionType object representing the Java EE
-     *                platform version for which support is requested. 
+     * platform version for which support is requested.
      * @throws DConfigBeanVersionUnsupportedException When the requested bean
-     *                                                version is not supported.
+     * version is not supported.
      */
     @Override
     public void setDConfigBeanVersion(DConfigBeanVersionType version)
             throws DConfigBeanVersionUnsupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }
