@@ -57,7 +57,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
-import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;

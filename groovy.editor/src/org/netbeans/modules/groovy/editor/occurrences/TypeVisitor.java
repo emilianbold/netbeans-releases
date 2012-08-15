@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.occurrences;
 
 import java.util.Iterator;
 import org.codehaus.groovy.ast.*;
@@ -54,6 +54,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.utils.OccurrencesUtil;
@@ -131,7 +132,7 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                         // whole code, because it's out of the variable scope - and in that case we returns
                         boolean isParamType = false;
                         for (Parameter param : method.getParameters()) {
-                            if (helper.isCaretOnParamType(param)) {
+                            if (helper.isCaretOnParamType(param) || helper.isCaretOnGenericType(param.getType())) {
                                 isParamType = true;
                             }
                         }

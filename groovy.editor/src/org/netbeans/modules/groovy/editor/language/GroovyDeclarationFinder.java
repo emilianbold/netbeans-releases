@@ -105,7 +105,7 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.Methods;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.java.ElementDeclaration;
 import org.netbeans.modules.groovy.editor.java.ElementSearch;

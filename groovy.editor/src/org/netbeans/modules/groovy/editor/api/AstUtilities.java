@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import groovyjarjarasm.asm.Opcodes;
 import java.util.*;
 import java.util.logging.Level;

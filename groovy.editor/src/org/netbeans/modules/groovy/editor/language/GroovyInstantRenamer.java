@@ -56,7 +56,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.util.NbBundle;
