@@ -141,6 +141,7 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 })
 public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 
+    private static final int NOW = 0;
     private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
@@ -251,7 +252,10 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             }
         } else if (jdocButton == e.getSource()) {
             final TopComponent win = JavadocTopComponent.findInstance();
-            win.open();
+            if (win != null && !win.isShowing()) {
+                win.open();
+                jdocTask.schedule(NOW);
+            }
         } else if (historyCombo == e.getSource()) {
             refresh();
         } else if (viewTypeCombo == e.getSource()) {
@@ -278,22 +282,18 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                     "filtersPanelTap.expanded", //NOI18N
                     lowerToolBar.isExpanded());
         }
-    }    
-
-    @CheckForNull
-    private static FileObject getFileObject(@NullAllowed final Document doc) {
-        if (doc == null) {
-            return null;
-        }
-        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof FileObject) {
-            return (FileObject)sdp;
-        }
-        if (sdp instanceof DataObject) {
-            return ((DataObject)sdp).getPrimaryFile();
-        }
-        return null;
     }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        if (JavadocTopComponent.shouldUpdate() && getLookup().lookup(Node.class) != null) {
+            jdocFinder.cancel();
+            jdocTask.schedule(NOW);
+        }
+    }
+
+
 
     @NonNull
     private static BeanTreeView createBeanTreeView() {
