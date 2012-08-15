@@ -238,10 +238,9 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 //        insertBreak("function foo() {\n  // cmnt1\n^  // cmnt2\n}\n", "function foo() {\n  // cmnt1\n  // ^\n  // cmnt2\n}\n");
 //    }
 
-// BROKEN - since JsDoc introduction, asterisk must not be used, investigate later
-//    public void testContComment18() throws Exception {
-//        insertBreak("x = /*^\n*/", "x = /*\n *^\n*/");
-//    }
+    public void testContComment18() throws Exception {
+        insertBreak("x = /*^\n*/", "x = /*\n * ^\n*/");
+    }
 
     public void testContComment19() throws Exception {
         insertBreak("x = /**^\n*/", "x = /**\n * ^\n*/");
