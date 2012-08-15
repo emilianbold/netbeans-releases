@@ -44,6 +44,8 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -54,7 +56,12 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.glassfish.tools.ide.server.ServerTasks;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.Command;
+import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.ServerAdmin;
+import org.glassfish.tools.ide.admin.cloud.CommandCloudDeploy;
+import org.glassfish.tools.ide.data.IdeContext;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
@@ -148,7 +155,16 @@ public class GlassFishAccountDeploymentManager
         GlassFishModuleId moduleID = new GlassFishModuleId(instance, moduleFile);
         ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, moduleID);
         // call deploy
-        ServerTasks.deploy(instance.getLocalServer(), moduleFile, progressObject);
+        Command command = new CommandCloudDeploy(null, moduleFile);
+        Future<ResultString> future =
+                ServerAdmin.<ResultString>exec(instance.getLocalServer(), command, new IdeContext(), progressObject);
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            throw new GlassFishIdeException("Instance or cluster stop failed.", e);
+        } catch (ExecutionException e) {
+            throw new GlassFishIdeException("Instance or cluster stop failed.", e);
+        }
         return progressObject;
     }
 
