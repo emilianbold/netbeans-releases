@@ -199,14 +199,16 @@ public abstract class Group {
         projectsLoaded = true;
     }
     private static final ThreadLocal<Boolean> switchingGroup = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
+        @Override 
+        protected Boolean initialValue() {
             return false;
         }
     };
     static {
         LOG.fine("initializing open projects listener");
         OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override public void propertyChange(PropertyChangeEvent evt) {
+            @Override 
+            public void propertyChange(PropertyChangeEvent evt) {
                 if (!projectsLoaded || switchingGroup.get()) {
                     return;
                 }
@@ -385,30 +387,30 @@ public abstract class Group {
         }
         final ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
         try {
-        h.start(200);
-        ProjectUtilities.WaitCursor.show();
-        final OpenProjectList opl = OpenProjectList.getDefault();
-        Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
-        Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
-        final Set<Project> toClose = new HashSet<Project>(oldOpen);
-        toClose.removeAll(newOpen);
-        final Set<Project> toOpen = new HashSet<Project>(newOpen);
-        toOpen.removeAll(oldOpen);
-        assert !toClose.contains(null) : toClose;
-        assert !toOpen.contains(null) : toOpen;
-        IndexingBridge.Lock lock = IndexingBridge.getDefault().protectedMode();
-        try {
-        h.progress(Group_progress_closing(toClose.size()), 110);
-        opl.close(toClose.toArray(new Project[toClose.size()]), false);
-        h.switchToIndeterminate();
-        h.progress(Group_progress_opening(toOpen.size()));
-        opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
-        if (g != null) {
-            opl.setMainProject(g.getMainProject());
-        }
-        } finally {
+            h.start(200);
+            ProjectUtilities.WaitCursor.show();
+            final OpenProjectList opl = OpenProjectList.getDefault();
+            Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
+            Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
+            final Set<Project> toClose = new HashSet<Project>(oldOpen);
+            toClose.removeAll(newOpen);
+            final Set<Project> toOpen = new HashSet<Project>(newOpen);
+            toOpen.removeAll(oldOpen);
+            assert !toClose.contains(null) : toClose;
+            assert !toOpen.contains(null) : toOpen;
+            IndexingBridge.Lock lock = IndexingBridge.getDefault().protectedMode();
+            try {
+                h.progress(Group_progress_closing(toClose.size()), 110);
+                opl.close(toClose.toArray(new Project[toClose.size()]), false);
+                h.switchToIndeterminate();
+                h.progress(Group_progress_opening(toOpen.size()));
+                opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
+                if (g != null) {
+                    opl.setMainProject(g.getMainProject());
+                }
+            } finally {
                 lock.release();
-        }
+            }
         } finally {
             ProjectUtilities.WaitCursor.hide();
             h.finish();
@@ -418,8 +420,8 @@ public abstract class Group {
 
     protected void openProjectsEvent(String propertyName) {
         if (propertyName.equals(OpenProjects.PROPERTY_MAIN_PROJECT)) {
-        setMainProject(OpenProjects.getDefault().getMainProject());
-    }
+            setMainProject(OpenProjects.getDefault().getMainProject());
+        }
     }
 
     /**
@@ -447,7 +449,8 @@ public abstract class Group {
     public static Comparator<Group> displayNameComparator() {
         return new Comparator<Group>() {
             Collator COLLATOR = Collator.getInstance();
-            @Override public int compare(Group g1, Group g2) {
+            @Override 
+            public int compare(Group g1, Group g2) {
                 return COLLATOR.compare(g1.getName(), g2.getName());
             }
         };
