@@ -45,6 +45,7 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -165,8 +166,16 @@ public class FindTypeUsages extends AbstractFindUsages {
         }
 
         private void addIfEquals(ASTNode node) {
+            final ClassNode type = ElementUtils.getType(node);
             if (isEquals(node)) {
-                usages.add(new FakeASTNode(ElementUtils.getType(node), ElementUtils.getTypeName(node)));
+                usages.add(new FakeASTNode(type, ElementUtils.getTypeName(node)));
+            }
+
+            final GenericsType[] genericTypes = type.getGenericsTypes();
+            if (genericTypes != null && genericTypes.length > 0) {
+                for (GenericsType genericType : genericTypes) {
+                    addIfEquals(genericType.getType());
+                }
             }
         }
 

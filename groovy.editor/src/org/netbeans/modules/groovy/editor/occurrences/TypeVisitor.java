@@ -55,9 +55,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.utils.OccurrencesUtil;
 
 /**
  *
@@ -65,7 +65,6 @@ import org.netbeans.modules.groovy.editor.utils.OccurrencesUtil;
  */
 public class TypeVisitor extends ClassCodeVisitorSupport {
 
-    protected final OccurrencesUtil helper;
     protected final SourceUnit sourceUnit;
     protected final AstPath path;
     protected final ASTNode leaf;
@@ -82,7 +81,6 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
         this.doc = doc;
         this.cursorOffset = cursorOffset;
         this.visitOtherClasses = visitOtherClasses;
-        this.helper = OccurrencesUtil.create(doc, cursorOffset);
     }
 
     @Override
@@ -131,10 +129,8 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                         // location on the method parameter itself (not the type) we don't want to go through the
                         // whole code, because it's out of the variable scope - and in that case we returns
                         boolean isParamType = false;
-                        for (Parameter param : method.getParameters()) {
-                            if (helper.isCaretOnParamType(param) || helper.isCaretOnGenericType(param.getType())) {
-                                isParamType = true;
-                            }
+                        if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
+                            isParamType = true;
                         }
                         if (!isParamType) {
                             super.visitMethod(method);
