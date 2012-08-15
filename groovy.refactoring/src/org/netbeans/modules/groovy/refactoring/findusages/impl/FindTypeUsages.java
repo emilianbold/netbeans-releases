@@ -58,7 +58,6 @@ import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
-import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
