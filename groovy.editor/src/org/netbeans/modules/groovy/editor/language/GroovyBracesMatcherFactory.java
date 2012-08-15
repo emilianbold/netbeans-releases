@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,60 +34,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.openide.filesystems.FileObject;
-
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
- * Utilities related to NetBeans - finding active editor, opening a file location, etc.
  *
- * @author Tor Norbye
+ * @author Marek Slama
  */
-public class NbUtilities {
-
-    private NbUtilities() {
-    }
-
-   // Copied from UiUtils. Shouldn't this be in a common library somewhere?
-    public static boolean open(final FileObject fo, final int offset, final String search) {
-        return GsfUtilities.open(fo, offset, search);
-    }
-
-    /**
-     * Return substring after last dot.
-     * @param fqn fully qualified type name
-     * @return singe typename without package, or method without type
-     */
-    public static String stripPackage(String fqn) {
-
-        if (fqn.contains(".")) {
-            int idx = fqn.lastIndexOf(".");
-            fqn = fqn.substring(idx + 1);
-        }
-
-        // every now and than groovy comes with tailing
-        // semicolons. We got to get rid of them.
-
-        return fqn.replace(";", "");
-            }
-
-    public static ClasspathInfo getClasspathInfoForFileObject ( FileObject fo) {
-        
-        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-
-        if (bootPath == null || compilePath == null || srcPath == null) {
-            return null;
-        }
-        
-        return ClasspathInfo.create(bootPath, compilePath, srcPath);
+public final class GroovyBracesMatcherFactory implements BracesMatcherFactory {
+    
+    public BracesMatcher createMatcher(MatcherContext context) {
+        return new GroovyBracesMatcher(context);
     }
     
 }

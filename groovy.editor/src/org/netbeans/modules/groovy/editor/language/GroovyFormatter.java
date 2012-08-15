@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,16 +76,16 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  * @author Gopalakrishnan Sankaran
  */
-public class Formatter implements org.netbeans.modules.csl.api.Formatter {
+public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
     private boolean isGspDocument;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;
 
-    public Formatter() {
+    public GroovyFormatter() {
         this.codeStyle = null;
     }
     
-    public Formatter(CodeStyle codeStyle, int rightMarginOverride) {
+    public GroovyFormatter(CodeStyle codeStyle, int rightMarginOverride) {
         assert codeStyle != null;
         this.codeStyle = codeStyle;
         this.rightMarginOverride = rightMarginOverride;
@@ -101,7 +101,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
         if (codeStyle != null) {
             reindent(context, null, true);
         } else {
-            Formatter f = new Formatter(CodeStyle.get(context.document()), -1);
+            GroovyFormatter f = new GroovyFormatter(CodeStyle.get(context.document()), -1);
             f.reindent(context, null, true);
         }
     }
@@ -111,7 +111,7 @@ public class Formatter implements org.netbeans.modules.csl.api.Formatter {
         if (codeStyle != null) {
             reindent(context, compilationInfo, false);
         } else {
-            Formatter f = new Formatter(CodeStyle.get(context.document()), -1);
+            GroovyFormatter f = new GroovyFormatter(CodeStyle.get(context.document()), -1);
             f.reindent(context, compilationInfo, false);
         }
     }

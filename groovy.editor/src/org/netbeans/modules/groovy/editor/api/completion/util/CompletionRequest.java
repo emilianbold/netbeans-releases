@@ -55,8 +55,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.GroovyTypeAnalyzer;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
@@ -146,7 +145,7 @@ public class CompletionRequest {
      */
     private AstPath getPathFromRequest() {
         // figure out which class we are dealing with:
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         // in some cases we can not repair the code, therefore root == null
         // therefore we can not complete. See # 131317
@@ -595,7 +594,7 @@ public class CompletionRequest {
         }
 
         int lexOffset = ts.offset();
-        int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        int astOffset = ASTUtils.getAstOffset(info, lexOffset);
         AstPath realPath = getPath(info, doc, astOffset);
 
         return new DotCompletionContext(lexOffset, astOffset, realPath, methodsOnly);
@@ -603,7 +602,7 @@ public class CompletionRequest {
 
     private AstPath getPath(ParserResult info, BaseDocument doc, int astOffset) {
         // figure out which class we are dealing with:
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         // in some cases we can not repair the code, therefore root == null
         // therefore we can not complete. See # 131317

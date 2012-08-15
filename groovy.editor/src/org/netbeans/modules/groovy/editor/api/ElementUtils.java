@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.utils;
+package org.netbeans.modules.groovy.editor.api;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -61,7 +61,6 @@ import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -72,13 +71,13 @@ public final class ElementUtils {
     private ElementUtils() {
     }
 
-    public static ElementKind getKind(AstPath path, FileObject fo, BaseDocument doc, int caret) {
+    public static ElementKind getKind(AstPath path, BaseDocument doc, int caret) {
         ASTNode node = path.leaf();
         ASTNode leafParent = path.leafParent();
 
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
-            FindTypeUtils.isCaretOnClassNode(path, doc, fo, caret)) {
+            FindTypeUtils.isCaretOnClassNode(path, doc, caret)) {
             return ElementKind.CLASS;
         } else if ((node instanceof MethodNode)) {
             if ("<init>".equals(((MethodNode) node).getName())) { // NOI18N

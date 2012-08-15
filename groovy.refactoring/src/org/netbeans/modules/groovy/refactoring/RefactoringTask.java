@@ -45,16 +45,15 @@ package org.netbeans.modules.groovy.refactoring;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
+import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
-import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
-import org.netbeans.modules.groovy.refactoring.utils.FindTypeUtils;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -110,8 +109,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult parserResult = AstUtilities.getParseResult(resultIterator.getParserResult());
-            ASTNode root = AstUtilities.getRoot(parserResult);
+            GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
+            ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
                 return;
             }
@@ -122,8 +121,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
             BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
             AstPath path = new AstPath(root, caret, doc);
-            ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, fileObject, caret);;
-            ElementKind kind = ElementUtils.getKind(path, fileObject, doc, caret);
+            ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);;
+            ElementKind kind = ElementUtils.getKind(path, doc, caret);
 
             GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
             if (element != null && element.getName() != null) {
@@ -160,8 +159,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult parserResult = AstUtilities.getParseResult(resultIterator.getParserResult());
-            ASTNode root = AstUtilities.getRoot(parserResult);
+            GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
+            ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
                 return;
             }

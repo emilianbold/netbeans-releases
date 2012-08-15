@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +64,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
@@ -74,7 +76,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class BracketCompleter implements KeystrokeHandler {
+public class GroovyBracketCompleter implements KeystrokeHandler {
 
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
@@ -1455,15 +1457,15 @@ public class BracketCompleter implements KeystrokeHandler {
     }
 
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         if (root == null) {
             return Collections.emptyList();
         }
 
-        GroovyParserResult gpr = AstUtilities.getParseResult(info);
+        GroovyParserResult gpr = ASTUtils.getParseResult(info);
 
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        int astOffset = ASTUtils.getAstOffset(info, caretOffset);
         if (astOffset == -1) {
             return Collections.emptyList();
         }
@@ -1579,7 +1581,7 @@ public class BracketCompleter implements KeystrokeHandler {
     //                continue;
     //            }
 
-                OffsetRange range = AstUtilities.getRange(node, doc);
+                OffsetRange range = ASTUtils.getRange(node, doc);
 
                 // The contains check should be unnecessary, but I end up getting
                 // some weird positions for some Rhino AST nodes

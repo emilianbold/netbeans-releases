@@ -40,14 +40,17 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.utils;
+package org.netbeans.modules.groovy.editor.api;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
@@ -57,8 +60,8 @@ import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.utils.FindMethodUtils;
 
 /**
  * Utility class for "find type usages". It provides some method for the correct
@@ -67,14 +70,14 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Janicek
  */
-public class FindTypeUtils {
+public final class FindTypeUtils {
 
     private FindTypeUtils() {
     }
 
 
     /**
-     * Finds out whether we are on type of the field, property, method, etc. or
+     * Finds out whether we are on the type of the field, property, method, etc. or
      * not. Typically if we can have declaration like <code>private String something</code>.
      * For that example this method returns true in following case:<br/>
      *      <code>private St^ring something</code>
@@ -90,18 +93,17 @@ public class FindTypeUtils {
      *
      * @param path AST path to the current location
      * @param doc document
-     * @param fo file object we are working on
      * @param caret caret position
      * @return true if we are directly on the type, false otherwise
      */
-    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int caret) {
-        if (findCurrentNode(path, doc, fo, caret) instanceof ClassNode) {
+    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, int caret) {
+        if (findCurrentNode(path, doc, caret) instanceof ClassNode) {
             return true;
         }
         return false;
     }
 
-    public static ASTNode findCurrentNode(AstPath path, BaseDocument doc, FileObject fo, int caret) {
+    public static ASTNode findCurrentNode(AstPath path, BaseDocument doc, int caret) {
         ASTNode leaf = path.leaf();
         ASTNode leafParent = path.leafParent();
 
@@ -120,56 +122,77 @@ public class FindTypeUtils {
                 }
             }
         } else if (leaf instanceof FieldNode) {
-            if (!isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
-                return leaf;
+            FieldNode field = (FieldNode) leaf;
+            if (isCaretOnFieldType(field, doc, caret)) {
+                return ElementUtils.getType(leaf);
+            } else if (isCaretOnGenericType(field.getType(), doc, caret)) {
+                return getGenericType(field.getType(), doc, caret);
             }
         } else if (leaf instanceof PropertyNode) {
-            if (!isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
-                return leaf;
+            PropertyNode property = (PropertyNode) leaf;
+            if (isCaretOnFieldType(property.getField(), doc, caret)) {
+                return ElementUtils.getType(leaf);
+            } else if (isCaretOnGenericType(property.getField().getType(), doc, caret)) {
+                return getGenericType(property.getField().getType(), doc, caret);
             }
         } else if (leaf instanceof MethodNode) {
             MethodNode method = ((MethodNode) leaf);
-            if (!isCaretOnReturnType(method, doc, caret)) {
-                return leaf;
-            }
-
-            for (Parameter param : method.getParameters()) {
-                if (!isCaretOnParamType(param, doc, caret)) {
-                    return param;
-                }
+            if (isCaretOnReturnType(method, doc, caret)) {
+                return ElementUtils.getType(leaf);
+            } else if (isCaretOnGenericType(method.getReturnType(), doc, caret)) {
+                return getGenericType(method.getReturnType(), doc, caret);
             }
         } else if (leaf instanceof Parameter) {
-            if (!isCaretOnParamType(((Parameter) leaf), doc, caret)) {
-                return leaf;
-            }
-        } else if (leaf instanceof DeclarationExpression) {
-            if (!isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
-                return leaf;
-            }
-        } else if (leaf instanceof VariableExpression) {
-            if (!isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
-                return leaf;
+            Parameter param = (Parameter) leaf;
+            if (isCaretOnParamType(param, doc, caret)) {
+                return ElementUtils.getType(leaf);
+            } else if (isCaretOnGenericType(param.getType(), doc, caret)) {
+                return getGenericType(param.getType(), doc, caret);
             }
         } else if (leaf instanceof ForStatement) {
-            if (!isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
-                return ((ForStatement) leaf).getVariable();
-            } else {
+            if (isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
                 return ((ForStatement) leaf).getVariableType();
+            } else {
+                return ((ForStatement) leaf).getVariable();
+            }
+        } else if (leaf instanceof ClassExpression) {
+            if (isCaretOnClassExpressionType(((ClassExpression) leaf), doc, caret)) {
+                return ElementUtils.getType(leaf);
+            }
+        } else if (leaf instanceof VariableExpression) {
+            if (isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
+                return ElementUtils.getType(leaf);
+            }
+        } else if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression declaration = (DeclarationExpression) leaf;
+            if (isCaretOnDeclarationType(declaration, doc, caret)) {
+                return ElementUtils.getType(leaf);
+            } else {
+                ClassNode declarationType;
+                if (!declaration.isMultipleAssignmentDeclaration()) {
+                    declarationType = declaration.getVariableExpression().getType();
+                } else {
+                    declarationType = declaration.getTupleExpression().getType();
+                }
+                if (isCaretOnGenericType(declarationType, doc, caret)) {
+                    return getGenericType(declarationType, doc, caret);
+                }
+            }
+        } else if (leaf instanceof ArrayExpression) {
+            if (isCaretOnArrayExpressionType(((ArrayExpression) leaf), doc, caret)) {
+                return ElementUtils.getType(leaf);
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
             MethodNode method = FindMethodUtils.findMethod(path, (MethodCallExpression) leafParent);
             if (method != null) {
                 return method;
-            } else {
-                return AstUtilities.getOwningClass(path);
             }
         } else if (leaf instanceof ConstructorCallExpression) {
+            ClassNode constructorType = ((ConstructorCallExpression) leaf).getType();
+            if (isCaretOnGenericType(constructorType, doc, caret)) {
+                return getGenericType(constructorType, doc, caret);
+            }
             return leaf;
-        }
-
-        ClassNode currentType = ElementUtils.getType(leaf);
-        if (currentType != null) {
-            return currentType;
         }
         return leaf;
     }
@@ -216,6 +239,67 @@ public class FindTypeUtils {
         return false;
     }
 
+    private static boolean isCaretOnClassExpressionType(ClassExpression expression, BaseDocument doc, int cursorOffset) {
+        if (getClassExpressionRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnArrayExpressionType(ArrayExpression expression, BaseDocument doc, int cursorOffset) {
+        if (getArrayExpressionRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
+        if (getVariableRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnGenericType(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        GenericsType[] genericsTypes = classNode.getGenericsTypes();
+        if (genericsTypes != null && genericsTypes.length > 0) {
+            for (GenericsType genericsType : genericsTypes) {
+                if (getGenericTypeRange(genericsType, doc, cursorOffset) != OffsetRange.NONE) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnGenericType(GenericsType genericsType, BaseDocument doc, int cursorOffset) {
+        if (getGenericTypeRange(genericsType, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static ClassNode getGenericType(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        GenericsType[] genericsTypes = classNode.getGenericsTypes();
+        if (genericsTypes != null && genericsTypes.length > 0) {
+            for (GenericsType genericsType : genericsTypes) {
+                if (isCaretOnGenericType(genericsType, doc, cursorOffset)) {
+                    return genericsType.getType();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static OffsetRange getGenericTypeRange(GenericsType genericType, BaseDocument doc, int cursorOffset) {
+        final int offset = ASTUtils.getOffset(doc, genericType.getLineNumber(), genericType.getColumnNumber());
+        final OffsetRange range = ASTUtils.getNextIdentifierByName(doc, genericType.getType().getNameWithoutPackage(), offset);
+        if (range.containsInclusive(cursorOffset)) {
+            return range;
+        }
+        return OffsetRange.NONE;
+    }
+
     private static OffsetRange getDeclarationExpressionRange(DeclarationExpression expression, BaseDocument doc, int cursorOffset) {
         OffsetRange range;
         if (!expression.isMultipleAssignmentDeclaration()) {
@@ -227,11 +311,12 @@ public class FindTypeUtils {
         return range;
     }
 
-    private static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
-        if (getVariableRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
-            return true;
-        }
-        return false;
+    private static OffsetRange getClassExpressionRange(ClassExpression expression, BaseDocument doc, int cursorOffset) {
+        return getRange(expression.getType(), doc, cursorOffset);
+    }
+
+    private static OffsetRange getArrayExpressionRange(ArrayExpression expression, BaseDocument doc, int cursorOffset) {
+        return getRange(expression.getElementType(), doc, cursorOffset);
     }
 
     private static OffsetRange getMethodRange(MethodNode method, BaseDocument doc, int cursorOffset) {
@@ -271,7 +356,7 @@ public class FindTypeUtils {
     }
 
     private static OffsetRange getRange(ASTNode node, BaseDocument doc, int cursorOffset) {
-        OffsetRange range = AstUtilities.getNextIdentifierByName(doc, ElementUtils.getTypeNameWithoutPackage(node), getOffset(node, doc));
+        OffsetRange range = ASTUtils.getNextIdentifierByName(doc, ElementUtils.getTypeNameWithoutPackage(node), getOffset(node, doc));
         if (range.containsInclusive(cursorOffset)) {
             return range;
         }
@@ -279,6 +364,6 @@ public class FindTypeUtils {
     }
 
     private static int getOffset(ASTNode node, BaseDocument doc) {
-        return AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+        return ASTUtils.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
     }
 }

@@ -59,12 +59,12 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.java.Utilities;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.util.ImageUtilities;
 
@@ -199,7 +199,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             this.className = className;
             this.simpleName = simpleName;
             this.parameterString = parameterString;
-            this.returnType = NbUtilities.stripPackage(returnType);
+            this.returnType = GroovyUtils.stripPackage(returnType);
             this.modifiers = modifiers;
             this.emphasise = emphasise;
             this.nameOnly = nameOnly;
@@ -295,7 +295,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             // no FQN return types but only the classname, please:
 
             String retType = type;
-            retType = NbUtilities.stripPackage(retType);
+            retType = GroovyUtils.stripPackage(retType);
 
             formatter.appendText(retType);
 
@@ -377,7 +377,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
                     if (buf.length() > 0) {
                         buf.append(", ");
                     }
-                    buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
+                    buf.append(GroovyUtils.stripPackage(Utilities.translateClassLoaderTypeName(param)));
                 }
 
                 String simpleSig = buf.toString();
@@ -396,7 +396,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             // no FQN return types but only the classname, please:
 
             String retType = returnType;
-            retType = NbUtilities.stripPackage(retType);
+            retType = GroovyUtils.stripPackage(retType);
 
             formatter.appendText(retType);
 
@@ -492,7 +492,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
                     if (buf.length() > 0) {
                         buf.append(", ");
                     }
-                    buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
+                    buf.append(GroovyUtils.stripPackage(Utilities.translateClassLoaderTypeName(param)));
                 }
 
                 String simpleSig = buf.toString();
@@ -512,7 +512,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             // no FQN return types but only the classname, please:
 
             String retType = method.getReturnType().getSimpleName();
-            retType = NbUtilities.stripPackage(retType);
+            retType = GroovyUtils.stripPackage(retType);
 
             formatter.appendText(retType);
 
@@ -1006,7 +1006,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            return NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(var.getType().getName()));
+            return GroovyUtils.stripPackage(Utilities.translateClassLoaderTypeName(var.getType().getName()));
         }
 
         @Override

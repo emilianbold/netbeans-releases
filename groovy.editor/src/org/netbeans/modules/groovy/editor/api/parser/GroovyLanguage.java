@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.groovy.editor.api.parser;
 
+import org.netbeans.modules.groovy.editor.language.GroovySemanticAnalyzer;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -62,11 +63,11 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.groovy.editor.api.BracketCompleter;
-import org.netbeans.modules.groovy.editor.api.GroovyDeclarationFinder;
+import org.netbeans.modules.groovy.editor.language.GroovyBracketCompleter;
+import org.netbeans.modules.groovy.editor.language.GroovyDeclarationFinder;
 import org.netbeans.modules.groovy.editor.api.GroovyIndexer;
-import org.netbeans.modules.groovy.editor.api.GroovyInstantRenamer;
-import org.netbeans.modules.groovy.editor.api.GroovyTypeSearcher;
+import org.netbeans.modules.groovy.editor.language.GroovyInstantRenamer;
+import org.netbeans.modules.groovy.editor.language.GroovyTypeSearcher;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
@@ -173,12 +174,12 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-        return new org.netbeans.modules.groovy.editor.api.Formatter();
+        return new org.netbeans.modules.groovy.editor.language.GroovyFormatter();
     }
 
     @Override
     public KeystrokeHandler getKeystrokeHandler() {
-        return new BracketCompleter();
+        return new GroovyBracketCompleter();
     }
 
     @Override
