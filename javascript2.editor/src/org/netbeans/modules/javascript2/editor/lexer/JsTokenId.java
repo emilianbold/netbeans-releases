@@ -233,7 +233,7 @@ public enum JsTokenId implements TokenId {
                         LanguagePath languagePath, InputAttributes inputAttributes) {
                     JsTokenId id = token.id();
 
-                    if (id == DOC_COMMENT) {
+                    if (id == DOC_COMMENT || id == BLOCK_COMMENT) {
                         return LanguageEmbedding.create(JsDocumentationTokenId.language(), 0, 0);
                     }
 

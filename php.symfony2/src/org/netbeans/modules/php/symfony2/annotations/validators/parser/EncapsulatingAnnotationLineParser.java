@@ -54,48 +54,55 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TypeAnnotationLineParser implements AnnotationLineParser {
+public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
 
-    private static final String ANNOTATION_NAME = "Type"; //NOI18N
-
-    private static final Set<String> PARAM_REGEX = new HashSet<String>();
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
     static {
-        PARAM_REGEX.add("type"); //NOI18N
+        Set<String> inlineAnnotations = new HashSet<String>();
+        inlineAnnotations.add("NotBlank"); //NOI18N
+        inlineAnnotations.add("Blank"); //NOI18N
+        inlineAnnotations.add("NotNull"); //NOI18N
+        inlineAnnotations.add("Null"); //NOI18N
+        inlineAnnotations.add("True"); //NOI18N
+        inlineAnnotations.add("False"); //NOI18N
+        inlineAnnotations.add("Email"); //NOI18N
+        inlineAnnotations.add("MinLength"); //NOI18N
+        inlineAnnotations.add("MaxLength"); //NOI18N
+        inlineAnnotations.add("Url"); //NOI18N
+        inlineAnnotations.add("Regex"); //NOI18N
+        inlineAnnotations.add("Ip"); //NOI18N
+        inlineAnnotations.add("Max"); //NOI18N
+        inlineAnnotations.add("Min"); //NOI18N
+        inlineAnnotations.add("Date"); //NOI18N
+        inlineAnnotations.add("DateTime"); //NOI18N
+        inlineAnnotations.add("Time"); //NOI18N
+        inlineAnnotations.add("Choice"); //NOI18N
+        inlineAnnotations.add("UniqueEntity"); //NOI18N
+        inlineAnnotations.add("Language"); //NOI18N
+        inlineAnnotations.add("Locale"); //NOI18N
+        inlineAnnotations.add("Country"); //NOI18N
+        inlineAnnotations.add("File"); //NOI18N
+        inlineAnnotations.add("Image"); //NOI18N
+        inlineAnnotations.add("Callback"); //NOI18N
+        inlineAnnotations.add("Valid"); //NOI18N
+        ANNOTATIONS.put("Collection", inlineAnnotations); //NOI18N
+        ANNOTATIONS.put("All", inlineAnnotations); //NOI18N
     }
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
+    public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
         String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            types.putAll(extractTypes(line));
-            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
-        }
-        return result;
-    }
-
-    private static Map<OffsetRange, String> extractTypes(final String line) {
-        Map<OffsetRange, String> result = AnnotationUtils.extractTypesFromParameters(line, PARAM_REGEX);
-        for (Map.Entry<OffsetRange, String> entry : result.entrySet()) {
-            if (isPhpDatatype(entry.getValue())) {
-                result.remove(entry.getKey());
+        for (Map.Entry<String, Set<String>> entry : ANNOTATIONS.entrySet()) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                types.putAll(AnnotationUtils.extractInlineAnnotations(line, entry.getValue()));
+                result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
+                break;
             }
-        }
-        return result;
-    }
-
-    private static boolean isPhpDatatype(final String type) {
-        boolean result = false;
-        if ("array".equalsIgnoreCase(type) || "bool".equalsIgnoreCase(type) || "callable".equalsIgnoreCase(type)
-                || "float".equalsIgnoreCase(type) || "double".equalsIgnoreCase(type) || "int".equalsIgnoreCase(type)
-                || "integer".equalsIgnoreCase(type) || "long".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)
-                || "numeric".equalsIgnoreCase(type) || "object".equalsIgnoreCase(type) || "real".equalsIgnoreCase(type)
-                || "resource".equalsIgnoreCase(type) || "scalar".equalsIgnoreCase(type) || "string".equalsIgnoreCase(type)) { //NOI18N
-            result = true;
         }
         return result;
     }

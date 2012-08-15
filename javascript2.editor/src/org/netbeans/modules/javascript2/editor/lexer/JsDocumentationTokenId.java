@@ -62,10 +62,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum JsDocumentationTokenId implements TokenId {
 
-    // IMPORTANT - Categories of JavaScript tokenIds should be shared across
-    //  all JavaScript documentation tools to preserve coloring settings.
-    // comment tokens
-    COMMENT_START(null, "COMMENT"),
+    COMMENT_DOC_START(null, "COMMENT"),
+    COMMENT_BLOCK_START(null, "COMMENT"),
     COMMENT_END(null, "COMMENT"),
 
     // represents one char tokens
