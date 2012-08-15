@@ -350,7 +350,7 @@ public final class FindTypeUtils {
         if (variable.isDynamicTyped()) {
             return OffsetRange.NONE;
         }
-        return getRange(variable.getAccessedVariable().getType(), doc, cursorOffset);
+        return getRange(variable.getAccessedVariable().getOriginType(), doc, cursorOffset);
     }
 
     private static OffsetRange getRange(ASTNode node, BaseDocument doc, int cursorOffset) {
