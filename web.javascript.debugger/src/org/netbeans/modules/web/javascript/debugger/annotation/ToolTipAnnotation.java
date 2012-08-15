@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.web.javascript.debugger.annotation;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -50,6 +52,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -57,8 +60,13 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.PopupManager;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.web.javascript.debugger.eval.Evaluator;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
+import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ScopedRemoteObject;
 import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
@@ -171,41 +179,86 @@ public class ToolTipAnnotation extends Annotation
             column,
             offset
         );
-        if (expression == null) return;
-
-        if (expression != null) {
-            Debugger d = getDebugger();
-            if (d != null && d.isSuspended()) {
-                CallFrame frame = d.getCurrentCallFrame();
-                if (frame == null) {
-                    return;
+        if (expression == null) {
+            return;
+        }
+        
+        ScopedRemoteObject tooltipVariable = null;
+        String tooltipText = null;
+        Debugger d = getDebugger();
+        if (d != null && d.isSuspended()) {
+            CallFrame frame = d.getCurrentCallFrame();
+            if (frame == null) {
+                return;
+            }
+            VariablesModel.ScopedRemoteObject sv = Evaluator.evaluateExpression(frame, expression, true);
+            if (sv != null) {
+                RemoteObject var = sv.getRemoteObject();
+                String value = var.getValueAsString();
+                Type type = var.getType();
+                switch (type) {
+                    case STRING:
+                        value = "\"" + value + "\"";
+                        break;
+                    case FUNCTION:
+                        return ; // No tooltip for functions
+                    case OBJECT:
+                        value = "("+type.getName()+") "+value;
+                        tooltipVariable = sv;
+                        // TODO: add (class type) and obj ID
                 }
-                VariablesModel.ScopedRemoteObject sv = Evaluator.evaluateExpression(frame, expression, true);
-                if (sv != null) {
-                    RemoteObject var = sv.getRemoteObject();
-                    String value = var.getValueAsString();
-                    Type type = var.getType();
-                    switch (type) {
-                        case STRING:
-                            value = "\"" + value + "\"";
-                            break;
-                        case FUNCTION:
-                            return ; // No tooltip for functions
-                        case OBJECT:
-                            // TODO: add (class type) and obj ID
+                if (type != Type.UNDEFINED) {
+                    tooltipText = expression + " = " + value;
+                } else {
+                    tooltipText = var.getDescription();
+                    if (tooltipText == null) {
+                        tooltipText = Bundle.var_undefined(expression);
                     }
-                    String tooltipText;
-                    if (type != Type.UNDEFINED) {
-                        tooltipText = expression + " = " + value;
-                    } else {
-                        tooltipText = var.getDescription();
-                        if (tooltipText == null) {
-                            tooltipText = Bundle.var_undefined(expression);
-                        }
-                    }
-                    firePropertyChange(PROP_SHORT_DESCRIPTION, null, tooltipText);
                 }
             }
+        } else {
+            return;
+        }
+        if (tooltipVariable != null) {
+            final ScopedRemoteObject var = tooltipVariable;
+            final String toolTip = tooltipText;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip);
+                    et.addExpansionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
+                            et.removeAll();
+                            et.setWidthCheck(false);
+                            final ToolTipView ttView = ToolTipView.getToolTipView(expression, var);
+                            et.add(ttView);
+                            et.revalidate();
+                            et.repaint();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public @Override void run() {
+                                    EditorUI eui = Utilities.getEditorUI(ep);
+                                    if (eui != null) {
+                                        ttView.setToolTipSupport(eui.getToolTipSupport());
+                                        eui.getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+                                    } else {
+                                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    EditorUI eui = Utilities.getEditorUI(ep);
+                    if (eui != null) {
+                        eui.getToolTipSupport().setToolTip(et);
+                    } else {
+                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                    }
+                }
+            });
+        } else {
+            firePropertyChange(PROP_SHORT_DESCRIPTION, null, tooltipText);
         }
         //TODO: review, replace the code depending on lexer.model - part I
     }
