@@ -1,1 +1,1 @@
-token #0 T_TWIG_OTHER [FOO\n{% include "foo.twig" %}\n\nBAR\n\nFOOBAR\n]
+token #0 T_TWIG_OTHER [FOO\n{% include "foo.twig" %}\n\nBAR\n\nFOOBAR]
