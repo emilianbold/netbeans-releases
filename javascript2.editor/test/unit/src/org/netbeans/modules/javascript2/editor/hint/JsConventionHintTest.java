@@ -86,4 +86,8 @@ public class JsConventionHintTest extends HintTestBase {
     public void testDuplicateName02() throws Exception {
         checkHints(this, createRule(), "testfiles/hints/duplicateName02.js", null);
     }
+    
+    public void testDuplicateName03() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/duplicateName03.js", null);
+    }
 }
