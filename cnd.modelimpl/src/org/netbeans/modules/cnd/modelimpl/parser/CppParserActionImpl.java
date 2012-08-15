@@ -1048,4 +1048,198 @@ public class CppParserActionImpl implements CppParserActionEx {
         };
         currentContext.file.addReference(ref, definition);
     }   
+    
+    @Override public void translation_unit(Token token) {}
+    @Override public void end_translation_unit(Token token) {}
+    @Override public void statement(Token token) {}
+    @Override public void end_statement(Token token) {}
+    @Override public void labeled_statement(Token token) {}
+    @Override public void labeled_statement(int kind, Token token) {}
+    @Override public void labeled_statement(int kind, Token token1, Token token2) {}
+    @Override public void end_labeled_statement(Token token) {}
+    @Override public void expression_statement(Token token) {}
+    @Override public void end_expression_statement(Token token) {}
+    @Override public void selection_statement(Token token) {}
+    @Override public void selection_statement(int kind, Token token) {}
+    @Override public void end_selection_statement(Token token) {}
+    @Override public void condition(Token token) {}
+    @Override public void condition(int kind, Token token) {}
+    @Override public void end_condition(Token token) {}
+    @Override public void iteration_statement(Token token) {}
+    @Override public void iteration_statement(int kind, Token token) {}
+    @Override public void end_iteration_statement(Token token) {}
+    @Override public void for_init_statement(Token token) {}
+    @Override public void end_for_init_statement(Token token) {}
+    @Override public void for_range_declaration(Token token) {}
+    @Override public void end_for_range_declaration(Token token) {}
+    @Override public void for_range_initializer(Token token) {}
+    @Override public void end_for_range_initializer(Token token) {}
+    @Override public void jump_statement(Token token) {}
+    @Override public void jump_statement(int kind, Token token) {}
+    @Override public void jump_statement(int kind, Token token1, Token token2) {}
+    @Override public void end_jump_statement(Token token) {}
+    @Override public void declaration_statement(Token token) {}
+    @Override public void end_declaration_statement(Token token) {}
+    @Override public void declaration(Token token) {}
+    @Override public void end_declaration(Token token) {}
+    @Override public void block_declaration(Token token) {}
+    @Override public void end_block_declaration(Token token) {}
+    @Override public void id_expression(Token token) {}
+    @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
+    @Override public void end_alias_declaration(Token token) {}
+    @Override public void function_specifier(int kind, Token token) {}
+    @Override public void type_specifier(Token token) {}
+    @Override public void end_type_specifier(Token token) {}
+    @Override public void trailing_type_specifier(Token token) {}
+    @Override public void end_trailing_type_specifier(Token token) {}
+    @Override public void decltype_specifier(Token token) {}
+    @Override public void decltype_specifier(int kind, Token token) {}
+    @Override public void end_decltype_specifier(Token token) {}
+    @Override public void end_elaborated_type_specifier(Token token) {}
+    @Override public void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken) {}
+    @Override public void linkage_specification(Token externToken, Token stringToken) {}
+    @Override public void linkage_specification(int kind, Token token) {}
+    @Override public void end_linkage_specification(Token token) {}
+    @Override public void init_declarator_list(Token token) {}
+    @Override public void init_declarator_list(int kind, Token token) {}
+    @Override public void end_init_declarator_list(Token token) {}
+    @Override public void init_declarator(Token token) {}
+    @Override public void end_init_declarator(Token token) {}
+    @Override public void declarator(Token token) {}
+    @Override public void end_declarator(Token token) {}
+    @Override public void noptr_declarator(Token token) {}
+    @Override public void noptr_declarator(int kind, Token token) {}
+    @Override public void end_noptr_declarator(Token token) {}
+    @Override public void function_declarator(Token token) {}
+    @Override public void end_function_declarator(Token token) {}
+    @Override public void constructor_declarator(Token token) {}
+    @Override public void end_constructor_declarator(Token token) {}
+    @Override public void function_declarator(int kind, Token token) {}
+    @Override public void noptr_abstract_declarator(Token token) {}
+    @Override public void noptr_abstract_declarator(int kind, Token token) {}
+    @Override public void end_noptr_abstract_declarator(Token token) {}
+    @Override public void universal_declarator(Token token) {}
+    @Override public void end_universal_declarator(Token token) {}
+    @Override public void greedy_declarator(Token token) {}
+    @Override public void end_greedy_declarator(Token token) {}
+    @Override public void greedy_nonptr_declarator(Token token) {}
+    @Override public void greedy_nonptr_declarator(int kind, Token token) {}
+    @Override public void end_greedy_nonptr_declarator(Token token) {}
+    @Override public void ptr_operator(Token token) {}
+    @Override public void ptr_operator(int kind, Token token) {}
+    @Override public void end_ptr_operator(Token token) {}
+    @Override public void cv_qualifier(int kind, Token token) {}
+    @Override public void ref_qualifier(int kind, Token token) {}
+    @Override public void declarator_id(Token token) {}
+    @Override public void declarator_id(int kind, Token token) {}
+    @Override public void end_declarator_id(Token token) {}
+    @Override public void type_id(Token token) {}
+    @Override public void end_type_id(Token token) {}
+    @Override public void parameters_and_qualifiers(Token token) {}
+    @Override public void parameters_and_qualifiers(int kind, Token token) {}
+    @Override public void end_parameters_and_qualifiers(Token token) {}
+    @Override public void parameter_declaration_clause(Token token) {}
+    @Override public void parameter_declaration_clause(int kind, Token token) {}
+    @Override public void end_parameter_declaration_clause(Token token) {}
+    @Override public void parameter_declaration_list(Token token) {}
+    @Override public void end_parameter_declaration_list(int kind, Token token) {}
+    @Override public void end_parameter_declaration_list(Token token) {}
+    @Override public void parameter_declaration(Token token) {}
+    @Override public void parameter_declaration(int kind, Token token) {}
+    @Override public void end_parameter_declaration(Token token) {}
+    @Override public void function_definition_after_declarator(Token token) {}
+    @Override public void function_definition_after_declarator(int kind, Token token) {}
+    @Override public void end_function_definition_after_declarator(Token token) {}
+    @Override public void function_declaration(Token token) {}
+    @Override public void end_function_declaration(Token token) {}
+    @Override public void function_definition(Token token) {}
+    @Override public void end_function_definition(Token token) {}
+    @Override public void function_body(Token token) {}
+    @Override public void end_function_body(Token token) {}
+    @Override public void initializer(Token token) {}
+    @Override public void initializer(int kind, Token token) {}
+    @Override public void end_initializer(Token token) {}
+    @Override public void brace_or_equal_initializer(Token token) {}
+    @Override public void brace_or_equal_initializer(int kind, Token token) {}
+    @Override public void end_brace_or_equal_initializer(Token token) {}
+    @Override public void initializer_clause(Token token) {}
+    @Override public void end_initializer_clause(Token token) {}
+    @Override public void initializer_list(Token token) {}
+    @Override public void initializer_list(int kind, Token token) {}
+    @Override public void end_initializer_list(Token token) {}
+    @Override public void braced_init_list(Token token) {}
+    @Override public void braced_init_list(int kind, Token token) {}
+    @Override public void end_braced_init_list(Token token) {}
+    @Override public void end_class_name(Token token) {}
+    @Override public void optionally_qualified_name(Token token) {}
+    @Override public void end_optionally_qualified_name(Token token) {}
+    @Override public void class_head(Token token) {}
+    @Override public void end_class_head(Token token) {}
+    @Override public void class_virtual_specifier(int kind, Token token) {}
+    @Override public void member_specification(Token token) {}
+    @Override public void member_specification(int kind, Token token) {}
+    @Override public void end_member_specification(Token token) {}
+    @Override public void member_declarator(Token token) {}
+    @Override public void end_member_declarator(Token token) {}
+    @Override public void pure_specifier(Token token) {}
+    @Override public void end_pure_specifier(Token token) {}
+    @Override public void constant_initializer(Token token) {}
+    @Override public void end_constant_initializer(Token token) {}
+    @Override public void virt_specifier(int kind, Token token) {}
+    @Override public void base_clause(Token token) {}
+    @Override public void end_base_clause(Token token) {}
+    @Override public void base_specifier_list(Token token) {}
+    @Override public void base_specifier_list(int kind, Token token) {}
+    @Override public void end_base_specifier_list(Token token) {}
+    @Override public void class_or_decltype(Token token) {}
+    @Override public void class_or_decltype(int kind, Token token) {}
+    @Override public void end_class_or_decltype(Token token) {}
+    @Override public void base_type_specifier(Token token) {}
+    @Override public void end_base_type_specifier(Token token) {}
+    @Override public void access_specifier(int kind, Token token) {}
+    @Override public void conversion_function_id(Token token) {}
+    @Override public void end_conversion_function_id(Token token) {}
+    @Override public void conversion_type_id(Token token) {}
+    @Override public void end_conversion_type_id(Token token) {}
+    @Override public void ctor_initializer(Token token) {}
+    @Override public void end_ctor_initializer(Token token) {}
+    @Override public void mem_initializer_list(Token token) {}
+    @Override public void mem_initializer_list(int kind, Token token) {}
+    @Override public void end_mem_initializer_list(Token token) {}
+    @Override public void mem_initializer(Token token) {}
+    @Override public void mem_initializer(int kind, Token token) {}
+    @Override public void end_mem_initializer(Token token) {}
+    @Override public void mem_initializer_id(Token token) {}
+    @Override public void end_mem_initializer_id(Token token) {}
+    @Override public void mem_operator_function_id(Token token) {}
+    @Override public void operator_function_id(int kind, Token token) {}
+    @Override public void end_operator_function_id(Token token) {}
+    @Override public void operator_id(Token token) {}
+    @Override public void end_operator_id(Token token) {}
+    @Override public void literal_operator_id(Token operatorToken, Token stringToken, Token identToken) {}
+    @Override public void template_declaration(Token token) {}
+    @Override public void end_template_declaration(Token token) {}
+    @Override public void template_parameter_list(Token token) {}
+    @Override public void template_parameter_list(int kind, Token token) {}
+    @Override public void end_template_parameter_list(Token token) {}
+    @Override public void template_parameter(Token token) {}
+    @Override public void end_template_parameter(Token token) {}
+    @Override public void type_parameter(int kind, Token token) {}
+    @Override public void template_argument_list(Token token) {}
+    @Override public void template_argument_list(int kind, Token token) {}
+    @Override public void end_template_argument_list(Token token) {}
+    @Override public void template_argument(Token token) {}
+    @Override public void end_template_argument(Token token) {}
+    @Override public void explicit_instantiation(Token token) {}
+    @Override public void explicit_instantiation(int kind, Token token) {}
+    @Override public void end_explicit_instantiation(Token token) {}
+    @Override public void explicit_specialization(Token templateToken, Token lessthenToken, Token greaterthenToken) {}
+    @Override public void end_explicit_specialization(Token token) {}
+    @Override public void try_block(Token token) {}
+    @Override public void end_try_block(Token token) {}
+    @Override public void function_try_block(Token token) {}
+    @Override public void end_function_try_block(Token token) {}
+    @Override public void handler(Token token) {}
+    @Override public void handler(int kind, Token token) {}
+    @Override public void end_handler(Token token) {}
 }

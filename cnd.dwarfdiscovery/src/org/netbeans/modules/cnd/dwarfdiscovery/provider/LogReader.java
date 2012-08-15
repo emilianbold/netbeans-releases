@@ -1037,6 +1037,12 @@ public class LogReader {
                             language = ItemProperties.LanguageKind.C;
                         }
                     }
+                } else if (language == LanguageKind.C &&
+                          (li.compiler.equals("gcc") || li.compiler.equals("clang") || li.compiler.equals("icc"))) {
+                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                        language = ItemProperties.LanguageKind.CPP;
+                    }
                 }
             }
             for(String lang : languageArtifacts) {
