@@ -56,21 +56,11 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  */
 public class TypeAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new TypeAnnotationLineParser();
-
     private static final String ANNOTATION_NAME = "Type"; //NOI18N
 
     private static final Set<String> PARAM_REGEX = new HashSet<String>();
     static {
         PARAM_REGEX.add("type"); //NOI18N
-    }
-
-    private TypeAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=351)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
     }
 
     @Override

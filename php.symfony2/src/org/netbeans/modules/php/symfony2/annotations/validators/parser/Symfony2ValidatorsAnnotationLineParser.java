@@ -41,12 +41,8 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.validators.parser;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.api.annotation.util.AnnotationUtils;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -58,36 +54,11 @@ public class Symfony2ValidatorsAnnotationLineParser implements AnnotationLinePar
 
     private static final AnnotationLineParser INSTANCE = new Symfony2ValidatorsAnnotationLineParser();
 
-    private static final Set<String> ANNOTATIONS = new HashSet<String>();
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
     static {
-        ANNOTATIONS.add("NotBlank"); //NOI18N
-        ANNOTATIONS.add("Blank"); //NOI18N
-        ANNOTATIONS.add("NotNull"); //NOI18N
-        ANNOTATIONS.add("Null"); //NOI18N
-        ANNOTATIONS.add("True"); //NOI18N
-        ANNOTATIONS.add("False"); //NOI18N
-        ANNOTATIONS.add("Email"); //NOI18N
-        ANNOTATIONS.add("MinLength"); //NOI18N
-        ANNOTATIONS.add("MaxLength"); //NOI18N
-        ANNOTATIONS.add("Url"); //NOI18N
-        ANNOTATIONS.add("Regex"); //NOI18N
-        ANNOTATIONS.add("Ip"); //NOI18N
-        ANNOTATIONS.add("Max"); //NOI18N
-        ANNOTATIONS.add("Min"); //NOI18N
-        ANNOTATIONS.add("Date"); //NOI18N
-        ANNOTATIONS.add("DateTime"); //NOI18N
-        ANNOTATIONS.add("Time"); //NOI18N
-        ANNOTATIONS.add("Choice"); //NOI18N
-        ANNOTATIONS.add("Collection"); //NOI18N
-        ANNOTATIONS.add("UniqueEntity"); //NOI18N
-        ANNOTATIONS.add("Language"); //NOI18N
-        ANNOTATIONS.add("Locale"); //NOI18N
-        ANNOTATIONS.add("Country"); //NOI18N
-        ANNOTATIONS.add("File"); //NOI18N
-        ANNOTATIONS.add("Image"); //NOI18N
-        ANNOTATIONS.add("Callback"); //NOI18N
-        ANNOTATIONS.add("All"); //NOI18N
-        ANNOTATIONS.add("Valid"); //NOI18N
+        PARSERS.add(new ParameterizedAnnotationLineParser());
+        PARSERS.add(new TypeAnnotationLineParser());
+        PARSERS.add(new EncapsulatingAnnotationLineParser());
     }
 
     private Symfony2ValidatorsAnnotationLineParser() {
@@ -101,14 +72,9 @@ public class Symfony2ValidatorsAnnotationLineParser implements AnnotationLinePar
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        String[] tokens = line.split(line.contains("(") ? "\\(" : "[ \t]+"); //NOI18N
-        for (String annotationName : ANNOTATIONS) {
-            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
-                String annotation = tokens[0].trim();
-                String description = line.substring(annotation.length()).trim();
-                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-                types.put(new OffsetRange(0, annotation.length()), annotation);
-                result = new AnnotationParsedLine.ParsedLine(annotationName, types, description, true);
+        for (AnnotationLineParser annotationLineParser : PARSERS) {
+            result = annotationLineParser.parse(line);
+            if (result != null) {
                 break;
             }
         }
