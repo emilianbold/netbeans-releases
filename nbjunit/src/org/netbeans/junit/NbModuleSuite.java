@@ -97,6 +97,7 @@ import junit.framework.TestResult;
  *   public void testABC() { ... }
  * }
  * </pre>
+ * For more advanced configuration see {@link #emptyConfiguration()} and {@link Configuration}.
  *
  * @since 1.46
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
@@ -113,10 +114,12 @@ public class NbModuleSuite {
     
     
     /** Settings object that allows one to configure execution of
-     * whole {@link NbModuleSuite}.
+     * whole {@link NbModuleSuite}. Chain the method invocations
+     * (each method returns new instance of {@link Configuration})
+     * and call {@link #suite()} at the end to generate the final
+     * JUnit test class.
      * 
      * @since 1.48
-     * 
      */
     public static final class Configuration extends Object {
         final List<Item> tests;
