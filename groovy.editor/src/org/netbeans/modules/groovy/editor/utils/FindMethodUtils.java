@@ -51,7 +51,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.Methods;
 
 /**
@@ -91,7 +91,7 @@ public final class FindMethodUtils {
     private static MethodNode getThisMethodNode(AstPath path, MethodCallExpression methodCall) {
         String findingMethod = methodCall.getMethodAsString();
         Expression arguments = methodCall.getArguments();
-        ClassNode owningClass = AstUtilities.getOwningClass(path);
+        ClassNode owningClass = ASTUtils.getOwningClass(path);
 
         if (owningClass != null) {
             MethodNode findedMethod = owningClass.tryFindPossibleMethod(findingMethod, arguments);

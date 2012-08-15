@@ -49,7 +49,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 
 /**
  *
@@ -80,8 +80,8 @@ public class OccurrencesUtil {
     }
 
     private OffsetRange getClassNodeRange(ClassNode superType) {
-        int offset = AstUtilities.getOffset(doc, superType.getLineNumber(), superType.getColumnNumber());
-        OffsetRange range = AstUtilities.getNextIdentifierByName(doc, superType.getNameWithoutPackage(), offset);
+        int offset = ASTUtils.getOffset(doc, superType.getLineNumber(), superType.getColumnNumber());
+        OffsetRange range = ASTUtils.getNextIdentifierByName(doc, superType.getNameWithoutPackage(), offset);
         if (range.containsInclusive(cursorOffset)) {
             return range;
         }
@@ -96,9 +96,9 @@ public class OccurrencesUtil {
     }
 
     public OffsetRange getMethodReturnType(MethodNode method) {
-        int offset = AstUtilities.getOffset(doc, method.getLineNumber(), method.getColumnNumber());
+        int offset = ASTUtils.getOffset(doc, method.getLineNumber(), method.getColumnNumber());
         if (!method.isDynamicReturnType()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), offset);
+            OffsetRange range = ASTUtils.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), offset);
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
@@ -114,9 +114,9 @@ public class OccurrencesUtil {
     }
 
     private OffsetRange getFieldRange(FieldNode field) {
-        int offset = AstUtilities.getOffset(doc, field.getLineNumber(), field.getColumnNumber());
+        int offset = ASTUtils.getOffset(doc, field.getLineNumber(), field.getColumnNumber());
         if (!field.isDynamicTyped()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, field.getType().getNameWithoutPackage(), offset);
+            OffsetRange range = ASTUtils.getNextIdentifierByName(doc, field.getType().getNameWithoutPackage(), offset);
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
@@ -132,9 +132,9 @@ public class OccurrencesUtil {
     }
 
     private OffsetRange getParameterRange(Parameter param) {
-        int offset = AstUtilities.getOffset(doc, param.getLineNumber(), param.getColumnNumber());
+        int offset = ASTUtils.getOffset(doc, param.getLineNumber(), param.getColumnNumber());
         if (!param.isDynamicTyped()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, param.getType().getNameWithoutPackage(), offset);
+            OffsetRange range = ASTUtils.getNextIdentifierByName(doc, param.getType().getNameWithoutPackage(), offset);
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
@@ -174,8 +174,8 @@ public class OccurrencesUtil {
     }
 
     private OffsetRange getGenericTypeRange(GenericsType genericType) {
-        final int offset = AstUtilities.getOffset(doc, genericType.getLineNumber(), genericType.getColumnNumber());
-        final OffsetRange range = AstUtilities.getNextIdentifierByName(doc, genericType.getType().getNameWithoutPackage(), offset);
+        final int offset = ASTUtils.getOffset(doc, genericType.getLineNumber(), genericType.getColumnNumber());
+        final OffsetRange range = ASTUtils.getNextIdentifierByName(doc, genericType.getType().getNameWithoutPackage(), offset);
         if (range.containsInclusive(cursorOffset)) {
             return range;
         }

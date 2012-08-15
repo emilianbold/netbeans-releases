@@ -71,10 +71,10 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.Methods;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.utils.FindTypeUtils;
+import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 
 /**
  * Visitor for finding occurrences of the class types, variables and methods.

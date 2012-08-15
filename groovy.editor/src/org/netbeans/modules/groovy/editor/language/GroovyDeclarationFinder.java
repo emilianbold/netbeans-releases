@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
-import javax.swing.text.Document;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -61,6 +60,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -83,33 +83,33 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
-import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
-import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
-import org.netbeans.modules.groovy.editor.api.lexer.Call;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.Methods;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
+import org.netbeans.modules.groovy.editor.api.lexer.Call;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.java.ElementDeclaration;
 import org.netbeans.modules.groovy.editor.java.ElementSearch;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
     
 /**
  *
@@ -163,7 +163,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
     }
 
     public DeclarationLocation findDeclaration(ParserResult info, int lexOffset) {
-        GroovyParserResult gpr = AstUtilities.getParseResult(info);
+        GroovyParserResult gpr = ASTUtils.getParseResult(info);
 
         try {
             Document document = LexUtilities.getDocument(gpr, false);
@@ -173,7 +173,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             TokenHierarchy<Document> th = TokenHierarchy.get(document);
             BaseDocument doc = (BaseDocument)document;
 
-            int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+            int astOffset = ASTUtils.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
                 return DeclarationLocation.NONE;
             }
@@ -188,7 +188,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             // click on a link for the left or the right?
             boolean leftSide = range.getEnd() <= lexOffset;
 
-            ASTNode root = AstUtilities.getRoot(info);
+            ASTNode root = ASTUtils.getRoot(info);
 
             // FIXME parsing API - source & binary IDs
             GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(),
@@ -276,7 +276,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     scopeVisitor.collect();
                 }
                 if (type == null) {
-                    String fqn = AstUtilities.getFqnName(path);
+                    String fqn = ASTUtils.getFqnName(path);
                     if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
                         fqn = "java.lang.Object"; // NOI18N
                     }
@@ -286,12 +286,12 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
             } else if (closest instanceof VariableExpression) {
                 VariableExpression variableExpression = (VariableExpression) closest;
-                ASTNode scope = AstUtilities.getScope(path, variableExpression);
+                ASTNode scope = ASTUtils.getScope(path, variableExpression);
                 if (scope != null) {
-                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression.getName(), path, doc, lexOffset);
+                    ASTNode variable = ASTUtils.getVariable(scope, variableExpression.getName(), path, doc, lexOffset);
                     if (variable != null) {
                         // I am using getRange and not getOffset, because getRange is adding 'def_' to offset of field
-                        int offset = AstUtilities.getRange(variable, doc).getStart();
+                        int offset = ASTUtils.getRange(variable, doc).getStart();
                         // FIXME parsing API
                         return new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), offset);
                     }
@@ -307,14 +307,14 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         && property instanceof ConstantExpression) {
 
                     if (objectExpression instanceof VariableExpression && "this".equals(((VariableExpression) objectExpression).getName())) { // NOI18N
-                        ASTNode scope = AstUtilities.getOwningClass(path);
+                        ASTNode scope = ASTUtils.getOwningClass(path);
                         if (scope == null) {
                             // we are in script?
                             scope = (ModuleNode) path.root();
                         }
-                        ASTNode variable = AstUtilities.getVariable(scope, ((ConstantExpression) property).getText(), path, doc, lexOffset);
+                        ASTNode variable = ASTUtils.getVariable(scope, ((ConstantExpression) property).getText(), path, doc, lexOffset);
                         if (variable != null) {
-                            int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
+                            int offset = ASTUtils.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
                             // FIXME parsing API
                             return new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), offset);
                         }
@@ -404,7 +404,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
         if (doc != null && range != null) {
             String text = doc.getText(range.getStart(), range.getLength());
 
-            if(!NbUtilities.stripPackage(fqName).equals(text)){
+            if(!GroovyUtils.stripPackage(fqName).equals(text)){
                 // check for inner classes
                 String[] parts = fqName.split(Pattern.quote("$")); // NOI18N
                 if (parts.length < 2) {
@@ -415,7 +415,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 StringBuilder builder = new StringBuilder();
                 for (String part : parts) {
                     builder.append(part).append("$");
-                    if (NbUtilities.stripPackage(part).equals(text)) {
+                    if (GroovyUtils.stripPackage(part).equals(text)) {
                         found = true;
                         break;
                     }
@@ -440,11 +440,11 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 index.getClasses(fqName, QuerySupport.Kind.EXACT, true, false, false);
 
             for (IndexedClass indexedClass : classes) {
-                ASTNode node = AstUtilities.getForeignNode(indexedClass);
+                ASTNode node = ASTUtils.getForeignNode(indexedClass);
                 if (node != null) {
                     OffsetRange defRange = null;
                     try {
-                        defRange = AstUtilities.getRange(node, (BaseDocument) indexedClass.getDocument());
+                        defRange = ASTUtils.getRange(node, (BaseDocument) indexedClass.getDocument());
                     } catch (IOException ex) {
                         LOG.log(Level.FINEST, "IOException while getting destination range : {0}", ex.getMessage()); // NOI18N
                     }
@@ -590,10 +590,10 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
         if (candidate != null) {
             IndexedElement com = candidate;
-            ASTNode node = AstUtilities.getForeignNode(com);
+            ASTNode node = ASTUtils.getForeignNode(com);
 
             DeclarationLocation loc = new DeclarationLocation(com.getFileObject(),
-                AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber()), com);
+                ASTUtils.getOffset(doc, node.getLineNumber(), node.getColumnNumber()), com);
 
             return loc;
         }
@@ -702,10 +702,10 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 return DeclarationLocation.NONE;
             }
 
-            ASTNode node = AstUtilities.getForeignNode(candidate);
+            ASTNode node = ASTUtils.getForeignNode(candidate);
             // negative line/column can happen due to bugs in groovy parser
             int nodeOffset = (node != null && node.getLineNumber() > 0 && node.getColumnNumber() > 0)
-                    ? AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber())
+                    ? ASTUtils.getOffset(doc, node.getLineNumber(), node.getColumnNumber())
                     : 0;
 
             DeclarationLocation loc = new DeclarationLocation(
@@ -728,7 +728,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             if (clz == null) {
                 return null;
             }
-            ASTNode node = AstUtilities.getForeignNode(clz);
+            ASTNode node = ASTUtils.getForeignNode(clz);
 
             if (node != null) {
                 return clz;
@@ -762,7 +762,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
         while (!methods.isEmpty()) {
             IndexedMethod method =
                 findBestMethodMatchHelper(name, methods, doc, astOffset, lexOffset, path, call, index);
-            ASTNode node = method == null ? null : AstUtilities.getForeignNode(method);
+            ASTNode node = method == null ? null : ASTUtils.getForeignNode(method);
 
             if (node != null) {
                 return method;
@@ -805,7 +805,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             if (objectExpression instanceof VariableExpression) {
                 VariableExpression variable = (VariableExpression) objectExpression;
                 if ("this".equals(variable.getName())) { // NOI18N
-                    fqn = AstUtilities.getFqnName(path);
+                    fqn = ASTUtils.getFqnName(path);
                 } else {
                     fqn = variable.getType().getName();
                 }

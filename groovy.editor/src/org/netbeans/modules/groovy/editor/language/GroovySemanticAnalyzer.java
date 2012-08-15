@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.language.SemanticAnalysisVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
@@ -111,7 +111,7 @@ public class GroovySemanticAnalyzer extends SemanticAnalyzer<GroovyParserResult>
             return;
         }
 
-        ASTNode root = AstUtilities.getRoot(result);
+        ASTNode root = ASTUtils.getRoot(result);
 
         if (root == null) {
             return;

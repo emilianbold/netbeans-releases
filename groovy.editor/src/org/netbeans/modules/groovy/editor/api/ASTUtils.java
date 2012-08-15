@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import org.netbeans.modules.groovy.editor.utils.ASTChildrenVisitor;
 import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import groovyjarjarasm.asm.Opcodes;
 import java.util.*;
@@ -83,9 +84,9 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-public class AstUtilities {
+public class ASTUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(AstUtilities.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ASTUtils.class.getName());
 
     public static int getAstOffset(Parser.Result info, int lexOffset) {
         GroovyParserResult result = getParseResult(info);
@@ -280,8 +281,8 @@ public class AstUtilities {
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + constantExpression.getText().length());
         } else if (node instanceof FakeASTNode) {
-            int startOffset = AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            int endOffset = AstUtilities.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+            int startOffset = ASTUtils.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            int endOffset = ASTUtils.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
             
             return new OffsetRange(startOffset, endOffset);
         }
@@ -372,7 +373,7 @@ public class AstUtilities {
         } else if (root instanceof PropertyNode) {
             // FIXME (?)
         } else if (root != null) {
-            AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
+            ASTChildrenVisitor astChildrenSupport = new ASTChildrenVisitor();
             root.visit(astChildrenSupport);
             children = astChildrenSupport.children();
         }
@@ -412,7 +413,7 @@ public class AstUtilities {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                    GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
                     
                     String signature = o.getSignature();
                     if (signature == null) {

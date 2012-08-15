@@ -65,7 +65,7 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
@@ -1457,15 +1457,15 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
     }
 
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         if (root == null) {
             return Collections.emptyList();
         }
 
-        GroovyParserResult gpr = AstUtilities.getParseResult(info);
+        GroovyParserResult gpr = ASTUtils.getParseResult(info);
 
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        int astOffset = ASTUtils.getAstOffset(info, caretOffset);
         if (astOffset == -1) {
             return Collections.emptyList();
         }
@@ -1581,7 +1581,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
     //                continue;
     //            }
 
-                OffsetRange range = AstUtilities.getRange(node, doc);
+                OffsetRange range = ASTUtils.getRange(node, doc);
 
                 // The contains check should be unnecessary, but I end up getting
                 // some weird positions for some Rhino AST nodes
