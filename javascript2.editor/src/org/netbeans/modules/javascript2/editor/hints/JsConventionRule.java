@@ -320,7 +320,19 @@ public class JsConventionRule extends JsAstRule {
         @Override
         public Node visit(VarNode varNode, boolean onset) {
             if (onset) {
-                checkSemicolon(varNode.getFinish());
+                boolean check = true;
+                Node previous = getPath().get(getPath().size() - 1);
+                if (previous instanceof Block) {
+                    Block block = (Block)previous;
+                    if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
+                        check = false;
+                    }
+                } else if (previous instanceof ForNode) {
+                    check = false;
+                }
+                if (check) {
+                    checkSemicolon(varNode.getFinish());
+                }
             }
             return super.visit(varNode, onset);
         }
