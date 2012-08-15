@@ -381,7 +381,7 @@ NetBeans.tabUpdated = function(tab) {
             // Navigation in a managed tab => send "urlchange" message
             this.sendUrlChangeMessage(tab.id, tab.url);
             this.showPageIcon(tab.id);
-            this.showInfoBar(tab.id);
+            //this.showInfoBar(tab.id);
         }
     }
 }

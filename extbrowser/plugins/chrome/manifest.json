@@ -41,7 +41,7 @@
  */
 {
   "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.16",
+  "version": "0.4.17",
 
   "background_page": "html/main.html",
 
@@ -54,7 +54,6 @@
   },
 
   "permissions": [
-    "experimental",
     "tabs",
     "debugger"
   ],
