@@ -81,7 +81,6 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    
     public void testCommonBlockComment03() {
         String text = "/* \n\n */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
@@ -93,7 +92,7 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
-    
+
     public void testCommonDocComment01() {
         String text = "/** comment */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
