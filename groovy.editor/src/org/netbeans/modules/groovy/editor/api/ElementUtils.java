@@ -46,6 +46,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -140,6 +141,8 @@ public final class ElementUtils {
            return ((Parameter) node).getType();
         } else if (node instanceof ForStatement) {
             return ((ForStatement) node).getVariableType();
+        } else if (node instanceof ImportNode) {
+            return ((ImportNode) node).getType();
         } else if (node instanceof ClassExpression) {
             return ((ClassExpression) node).getType();
         } else if (node instanceof VariableExpression) {
@@ -176,6 +179,8 @@ public final class ElementUtils {
             name = ((Parameter) node).getName();
         } else if (node instanceof ForStatement) {
             name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
+        } else if (node instanceof ImportNode) {
+            name = ((ImportNode) node).getClassName();
         } else if (node instanceof ClassExpression) {
             name = ((ClassExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
@@ -215,6 +220,8 @@ public final class ElementUtils {
             return ((Parameter) node).getDeclaringClass();
         } else if (node instanceof ForStatement) {
             return ((ForStatement) node).getVariableType().getDeclaringClass();
+        } else if (node instanceof ImportNode) {
+            return ((ImportNode) node).getDeclaringClass();
         } else if (node instanceof ClassExpression) {
             return ((ClassExpression) node).getType().getDeclaringClass();
         } else if (node instanceof VariableExpression) {
