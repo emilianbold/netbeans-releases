@@ -72,7 +72,7 @@ public class LogReaderTest extends TestCase {
     }
 
     public void testCppCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C", 1);
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C", 1);
     }
 
     public void testCppCompilerInvocation2() {
