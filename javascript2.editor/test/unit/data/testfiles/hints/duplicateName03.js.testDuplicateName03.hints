@@ -1,15 +1,12 @@
-        },
-         -
-HINT:Unexpected ",".
         key: "tommorow"
         ---
 HINT:Duplicate name of property "key".
-    },
-     -
-HINT:Unexpected ",".
     TODAY : {
     -----
 HINT:Duplicate name of property "TODAY".
         supercedes:["pagedate"],
                                -
+HINT:Unexpected ",".
+    },
+     -
 HINT:Unexpected ",".

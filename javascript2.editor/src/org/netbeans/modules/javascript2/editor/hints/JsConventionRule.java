@@ -298,7 +298,7 @@ public class JsConventionRule extends JsAstRule {
                 if (offset > -1) {
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
                     ts.move(offset);
-                    if(ts.movePrevious() && ts.moveNext()) {
+                    if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
                         LexUtilities.findPrevious(ts, Arrays.asList(
                                 JsTokenId.EOL, JsTokenId.WHITESPACE, 
                                 JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,

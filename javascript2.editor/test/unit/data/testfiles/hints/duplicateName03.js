@@ -21,5 +21,5 @@ var CONFIG = {
         key:"today", 
         value:new Date(), 
         supercedes:["pagedate"],
-    }
+    },
 };
