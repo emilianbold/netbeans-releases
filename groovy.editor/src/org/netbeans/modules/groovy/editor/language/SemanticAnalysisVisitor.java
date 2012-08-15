@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -62,6 +62,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 
 /**
  *
@@ -103,7 +104,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     @Override
     public void visitField(FieldNode node) {
         if (isInSource(node)) {
-            OffsetRange range = AstUtilities.getRange(node, doc);
+            OffsetRange range = ASTUtils.getRange(node, doc);
             EnumSet<ColoringAttributes> attributes = EnumSet.of(ColoringAttributes.FIELD);
 
             if (node.isStatic()) {
@@ -119,7 +120,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
         if (isInSource(node)) {
             // Beware, a ConstructorNode is a MethodNode as well, (see below)
             // but we have to catch the Constructors first.
-            OffsetRange range = AstUtilities.getRange(node, doc);
+            OffsetRange range = ASTUtils.getRange(node, doc);
             highlights.put(range, ColoringAttributes.CONSTRUCTOR_SET);
         }
         super.visitConstructor(node);
@@ -128,7 +129,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     @Override
     public void visitMethod(MethodNode node) {
         if (isInSource(node)) {
-            OffsetRange range = AstUtilities.getRange(node, doc);
+            OffsetRange range = ASTUtils.getRange(node, doc);
             EnumSet<ColoringAttributes> attributes = EnumSet.of(ColoringAttributes.METHOD);
 
             if (node.isStatic()) {
@@ -152,7 +153,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     @Override
     public void visitClass(ClassNode node) {
         if (isInSource(node)) {
-            OffsetRange range = AstUtilities.getRange(node, doc);
+            OffsetRange range = ASTUtils.getRange(node, doc);
             highlights.put(range, ColoringAttributes.CLASS_SET);
         }
         super.visitClass(node);
@@ -164,7 +165,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
         if (var instanceof FieldNode) {
             if (isInSource(node)) {
-                OffsetRange range = AstUtilities.getRange(node, doc);
+                OffsetRange range = ASTUtils.getRange(node, doc);
                 highlights.put(range, ColoringAttributes.FIELD_SET);
             }
         }

@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.language;
 
+import org.netbeans.modules.groovy.editor.language.GroovyBracketCompleter;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
@@ -460,7 +461,7 @@ public class BracketCompleterTest extends GroovyTestBase {
     }
 
     public void testContComment() throws Exception {
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (GroovyBracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("// ^", "// \n// ^");
         } else {
             insertBreak("// ^", "// \n^");
@@ -469,7 +470,7 @@ public class BracketCompleterTest extends GroovyTestBase {
 
     public void testContComment2() throws Exception {
         // No auto-# on new lines
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (GroovyBracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("   //  ^", "   //  \n   //  ^");
         } else {
             insertBreak("   //  ^", "   //  \n   ^");
@@ -478,7 +479,7 @@ public class BracketCompleterTest extends GroovyTestBase {
 
     public void testContComment3() throws Exception {
         // No auto-# on new lines
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (GroovyBracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("   //\t^", "   //\t\n   //\t^");
         } else {
             insertBreak("   //\t^", "   //\t\n   ^");
@@ -491,7 +492,7 @@ public class BracketCompleterTest extends GroovyTestBase {
 
     public void testContComment5() throws Exception {
         // No auto-# on new lines
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (GroovyBracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("      // ^", "      // \n      // ^");
         } else {
             insertBreak("      // ^", "      // \n      ^");
@@ -649,7 +650,7 @@ public class BracketCompleterTest extends GroovyTestBase {
 
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
-        BracketCompleter bc = new BracketCompleter();
+        GroovyBracketCompleter bc = new GroovyBracketCompleter();
         for (int i = s.length(); i >= 1; i--) {
             String shortened = s.substring(0, i);
             BaseDocument doc = getDocument(shortened);

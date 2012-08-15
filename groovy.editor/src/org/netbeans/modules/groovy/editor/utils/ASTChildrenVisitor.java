@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,7 +58,7 @@ import org.codehaus.groovy.classgen.BytecodeExpression;
  * 
  * @author Martin Adamek
  */
-public class AstChildrenSupport implements GroovyCodeVisitor {
+public class ASTChildrenVisitor implements GroovyCodeVisitor {
 
     private List<ASTNode> children = new ArrayList<ASTNode>();
     

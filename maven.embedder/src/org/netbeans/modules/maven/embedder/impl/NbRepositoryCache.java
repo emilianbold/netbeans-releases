@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,28 +34,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.maven.embedder.impl;
+
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.util.DefaultRepositoryCache;
 
 /**
  *
- * @author Jan Lahoda
+ * @author mkleint
  */
-public final class Pair<A, B> {
+public class NbRepositoryCache extends DefaultRepositoryCache {
+    
+    private static final Object LOCK = new Object();
+    
+    //org.eclipse.aether.internal.impl.ObjectPool instances, containing a weakhashmap with weak value references.
+    //to be considered harmless..
+    private static Object artifacts;
+    private static Object dependencies;
+    
+    //as in DataPool class..
+    private static final String ARTIFACT_POOL = "org.sonatype.aether.impl.internal.DataPool$Artifact";
+    private static final String DEPENDENCY_POOL = "org.sonatype.aether.impl.internal.DataPool$Dependency";    
 
-    private A a;
-    private B b;
-
-    public Pair(A a, B b) {
-        this.a = a;
-        this.b = b;
+    @Override
+    public Object get(RepositorySystemSession session, Object key) {
+        if (ARTIFACT_POOL.equals(key)) {
+            synchronized (LOCK) {
+                return artifacts;
+            }
+        }
+        if (DEPENDENCY_POOL.equals(key)) {
+            synchronized (LOCK) {
+                return dependencies;
+            }
+        }
+        return super.get(session, key);
     }
 
-    public A getA() {
-        return a;
+    @Override
+    public void put(RepositorySystemSession session, Object key, Object data) {
+        //we just let the pools to get overriden to new value, the worst that can happen is that
+        //2 pools will coexist
+        if (ARTIFACT_POOL.equals(key)) {
+            synchronized (LOCK) {
+                artifacts = data;
+            }
+            return;
+        }
+        if (DEPENDENCY_POOL.equals(key)) {
+            synchronized (LOCK) {
+                dependencies = data;
+            }
+            return;
+        }
+        super.put(session, key, data);
     }
-
-    public B getB() {
-        return b;
-    }
+    
 }

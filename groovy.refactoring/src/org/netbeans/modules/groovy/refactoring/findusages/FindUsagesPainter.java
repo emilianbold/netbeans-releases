@@ -80,39 +80,37 @@ public class FindUsagesPainter {
         final int columnStart = node.getColumnNumber();
         final int columnEnd = node.getLastColumnNumber();
 
-        String beforeUsagePart = line.createPart(0, columnStart - 1).getText();
-        String usagePart = line.createPart(columnStart - 1, columnEnd - columnStart).getText();
-        String afterUsagePart = line.createPart(columnEnd - 1, line.getText().length()).getText();
-
         if (node instanceof ConstructorNode) {
-            String constructorName = ((ConstructorNode) node).getDeclaringClass().getNameWithoutPackage();
-            int constructorStart = line.getText().indexOf(constructorName);
-
-            beforeUsagePart = line.createPart(0, constructorStart).getText();
-            usagePart = line.createPart(constructorStart, constructorName.length()).getText();
-            afterUsagePart = line.createPart(constructorStart + constructorName.length(), line.getText().length()).getText();
+            return colorLine(line, ((ConstructorNode) node).getDeclaringClass().getNameWithoutPackage());
         } else if (node instanceof MethodNode) {
-            String methodName = ((MethodNode) node).getName();
-            int methodStart = line.getText().indexOf(methodName);
-
-            beforeUsagePart = line.createPart(0, methodStart).getText();
-            usagePart = line.createPart(methodStart, methodName.length()).getText();
-            afterUsagePart = line.createPart(methodStart + methodName.length(), line.getText().length()).getText();
+            return colorLine(line, ((MethodNode) node).getName());
         } else if (node instanceof FieldNode) {
-            String fieldName = ((FieldNode) node).getName();
-            int fieldStart = line.getText().indexOf(fieldName);
-
-            beforeUsagePart = line.createPart(0, fieldStart).getText();
-            usagePart = line.createPart(fieldStart, fieldName.length()).getText();
-            afterUsagePart = line.createPart(fieldStart + fieldName.length(), line.getText().length()).getText();
+            return colorLine(line, ((FieldNode) node).getName());
         }
 
+        final String beforePart = line.createPart(0, columnStart - 1).getText();
+        final String usagePart = line.createPart(columnStart - 1, columnEnd - columnStart).getText();
+        final String afterPart = line.createPart(columnEnd - 1, line.getText().length()).getText();
+
+        return buildHTML(beforePart, usagePart, afterPart);
+    }
+
+    private static String colorLine(final Line line, final String name) {
+        final int start = line.getText().indexOf(name);
+        final String beforePart = line.createPart(0, start).getText();
+        final String usagePart = line.createPart(start, name.length()).getText();
+        final String afterPart = line.createPart(start + name.length(), line.getText().length()).getText();
+        
+        return buildHTML(beforePart, usagePart, afterPart);
+    }
+
+    private static String buildHTML(final String beforePart, final String usagePart, final String afterPart) {
         StringBuilder sb = new StringBuilder();
-        sb.append(getHtml(trimStart(beforeUsagePart)));
+        sb.append(getHtml(trimStart(beforePart)));
         sb.append("<b>"); //NOI18N
         sb.append(usagePart);
         sb.append("</b>");//NOI18N
-        sb.append(getHtml(trimEnd(afterUsagePart)));
+        sb.append(getHtml(trimEnd(afterPart)));
 
         return sb.toString().trim();
     }

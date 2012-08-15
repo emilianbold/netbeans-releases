@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.occurrences;
 
 import java.util.Iterator;
 import org.codehaus.groovy.ast.*;
@@ -54,7 +54,8 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 
@@ -128,10 +129,8 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                         // location on the method parameter itself (not the type) we don't want to go through the
                         // whole code, because it's out of the variable scope - and in that case we returns
                         boolean isParamType = false;
-                        for (Parameter param : method.getParameters()) {
-                            if (AstUtilities.isCaretOnParamType(param, doc, cursorOffset)) {
-                                isParamType = true;
-                            }
+                        if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
+                            isParamType = true;
                         }
                         if (!isParamType) {
                             super.visitMethod(method);

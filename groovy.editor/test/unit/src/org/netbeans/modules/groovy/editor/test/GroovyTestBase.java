@@ -64,7 +64,7 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.groovy.editor.api.Formatter;
+import org.netbeans.modules.groovy.editor.language.GroovyFormatter;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
@@ -127,7 +127,7 @@ public class GroovyTestBase extends CslTestBase {
 //        prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
 //        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
         
-        Formatter formatter = new Formatter();//codeStyle, 80);
+        GroovyFormatter formatter = new GroovyFormatter();//codeStyle, 80);
         
         return formatter;
     }

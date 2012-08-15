@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
@@ -91,7 +91,7 @@ public class GroovyHintsProvider implements HintsProvider {
             return;
         }
         
-        ASTNode root = AstUtilities.getRoot(parserResult);
+        ASTNode root = ASTUtils.getRoot(parserResult);
 
         if (root == null) {
             return;
@@ -118,7 +118,7 @@ public class GroovyHintsProvider implements HintsProvider {
         LOG.log(Level.FINEST, "@@@ computeErrors()");
 
         ParserResult info = context.parserResult;
-        GroovyParserResult rpr = AstUtilities.getParseResult(info);
+        GroovyParserResult rpr = ASTUtils.getParseResult(info);
         
         if (rpr == null) {
             return;
