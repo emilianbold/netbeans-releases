@@ -46,6 +46,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -106,6 +107,14 @@ public final class FindTypeUtils {
         ASTNode leafParent = path.leafParent();
 
         if (leaf instanceof ClassNode) {
+            for (ImportNode importNode : ((ClassNode) leaf).getModule().getImports()) {
+                if (isCaretOnImportStatement(importNode, doc, caret)) {
+                    if (!importNode.isStar()) {
+                        return ElementUtils.getType(importNode);
+                    }
+                }
+            }
+
             ClassNode classNode = ((ClassNode) leaf);
             if (isCaretOnClassNode(classNode, doc, caret)) {
                 return classNode;
@@ -230,6 +239,13 @@ public final class FindTypeUtils {
         return false;
     }
 
+    private static boolean isCaretOnImportStatement(ImportNode importNode, BaseDocument doc, int cursorOffset) {
+        if (getImportRange(importNode, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
     private static boolean isCaretOnDeclarationType(DeclarationExpression expression, BaseDocument doc, int cursorOffset) {
         if (getDeclarationExpressionRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
@@ -344,6 +360,10 @@ public final class FindTypeUtils {
 
     private static OffsetRange getForLoopRange(ForStatement forLoop, BaseDocument doc, int cursorOffset) {
         return getRange(forLoop.getVariableType(), doc, cursorOffset);
+    }
+
+    private static OffsetRange getImportRange(ImportNode importNode, BaseDocument doc, int cursorOffset) {
+        return getRange(importNode.getType(), doc, cursorOffset);
     }
 
     private static OffsetRange getVariableRange(VariableExpression variable, BaseDocument doc, int cursorOffset) {
