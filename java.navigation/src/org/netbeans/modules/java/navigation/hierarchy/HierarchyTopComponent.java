@@ -599,6 +599,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
                             public void run(CompilationController cc) throws Exception {
+                                cc.toPhase(Phase.ELEMENTS_RESOLVED);
                                 final TypeElement te = pair.second.resolve(cc);
                                 if (te != null) {
                                     final Node root;

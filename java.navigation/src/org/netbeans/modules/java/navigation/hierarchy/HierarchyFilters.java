@@ -64,7 +64,6 @@ final class HierarchyFilters extends Filters<Object> {
 
     private final PropertyChangeSupport support;
     private volatile boolean fqn;
-    private JToggleButton simpleNameButton;
     private JToggleButton fqNameButton;
 
 
@@ -100,24 +99,15 @@ final class HierarchyFilters extends Filters<Object> {
     @Override
     protected AbstractButton[] createCustomButtons() {
         assert SwingUtilities.isEventDispatchThread();
-        AbstractButton[] res = new AbstractButton[2];
-        if( null == simpleNameButton ) {
-            simpleNameButton = new JToggleButton(NameActions.createSimpleNameAction(this));
-            simpleNameButton.setToolTipText(simpleNameButton.getText());
-            simpleNameButton.setText(null);
-            simpleNameButton.setSelected( !isFqn());
-            simpleNameButton.setFocusable( false );
-        }
-        res[0] = simpleNameButton;
-
-        if( null == fqNameButton ) {
+        AbstractButton[] res = new AbstractButton[1];
+        if(null == fqNameButton) {
             fqNameButton = new JToggleButton(NameActions.createFullyQualifiedNameAction(this));
             fqNameButton.setToolTipText(fqNameButton.getText());
             fqNameButton.setText(null);
             fqNameButton.setSelected(isFqn());
             fqNameButton.setFocusable( false );
         }
-        res[1] = fqNameButton;
+        res[0] = fqNameButton;
         return res;
     }
 
@@ -128,9 +118,6 @@ final class HierarchyFilters extends Filters<Object> {
     void setFqn(final boolean fqn) {
         this.fqn = fqn;
         NbPreferences.forModule(HierarchyFilters.class).putBoolean(PROP_FQN, fqn);
-        if(null != simpleNameButton) {
-            simpleNameButton.setSelected(!fqn);
-        }
         if(null != fqNameButton) {
             fqNameButton.setSelected(fqn);
         }

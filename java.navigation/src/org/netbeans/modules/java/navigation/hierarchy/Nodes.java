@@ -181,8 +181,7 @@ class Nodes {
     }
 
     private static Action[] globalActions(@NonNull final HierarchyFilters filters) {
-        return new Action[]{
-            NameActions.createSimpleNameAction(filters),
+        return new Action[] {
             NameActions.createFullyQualifiedNameAction(filters),
             SortActions.createSortByNameAction(filters),
             SortActions.createSortBySourceAction(filters)

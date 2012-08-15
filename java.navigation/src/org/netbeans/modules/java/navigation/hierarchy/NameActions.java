@@ -42,16 +42,12 @@
 package org.netbeans.modules.java.navigation.hierarchy;
 
 import java.awt.event.ActionEvent;
-import java.util.EnumSet;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -73,22 +69,28 @@ class NameActions {
     }
 
 
-    static Action createSimpleNameAction(@NonNull final HierarchyFilters filters) {
-        assert filters != null;
-        return new SimpleNameAction(filters);
-    }
+    private static final class FullyQualifiedNameAction extends AbstractAction implements Presenter.Popup {
 
+        @StaticResource
+        private static final String ICON = "org/netbeans/modules/java/navigation/resources/fqn.gif";  //NOI18N
 
-
-    private abstract static class BaseNameAction extends AbstractAction implements Presenter.Popup {
-
-        protected final HierarchyFilters filters;
+        private final HierarchyFilters filters;
         private JRadioButtonMenuItem menuItem;
 
-        /** Creates a new instance of SortByNameAction */
-        public BaseNameAction (@NonNull final HierarchyFilters filters) {
+        @NbBundle.Messages({
+            "LBL_FullyQualifiedName=Fully Qualified Names"
+        })
+        public FullyQualifiedNameAction (@NonNull final HierarchyFilters filters) {
             assert filters != null;
             this.filters = filters;
+            putValue(Action.NAME, Bundle.LBL_FullyQualifiedName());
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false)); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            filters.setFqn(!filters.isFqn());
+            updateMenuItem();
         }
 
         @Override
@@ -98,70 +100,19 @@ class NameActions {
             updateMenuItem();
             return result;
         }
+        
+        private void updateMenuItem () {
+            final JRadioButtonMenuItem mi = obtainMenuItem();
+            mi.setSelected(filters.isFqn());
+        }
 
         @NonNull
-        protected final JRadioButtonMenuItem obtainMenuItem () {
+        private JRadioButtonMenuItem obtainMenuItem () {
             if (menuItem == null) {
                 menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
                 menuItem.setAction(this);
             }
             return menuItem;
-        }
-
-        protected abstract void updateMenuItem();
-    }
-
-
-    private static final class SimpleNameAction extends BaseNameAction {
-
-        @NbBundle.Messages({
-            "LBL_SimpleName=Simple Names"
-        })
-        public SimpleNameAction (@NonNull final HierarchyFilters filters) {
-            super(filters);
-            putValue(Action.NAME, Bundle.LBL_SimpleName());
-            putValue(Action.SMALL_ICON,
-                ElementIcons.getElementIcon(ElementKind.CLASS,EnumSet.of(Modifier.PUBLIC)));
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e) {
-            filters.setFqn(false);
-            updateMenuItem();
-        }
-
-        @Override
-        protected void updateMenuItem () {
-            JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(!filters.isFqn());
-        }
-    }
-
-
-    private static final class FullyQualifiedNameAction extends BaseNameAction {
-
-        @StaticResource
-        private static final String ICON = "org/netbeans/modules/java/navigation/resources/fqn.gif";  //NOI18N
-
-        @NbBundle.Messages({
-            "LBL_FullyQualifiedName=Fully Qualified Names"
-        })
-        public FullyQualifiedNameAction (@NonNull final HierarchyFilters filters ) {
-            super(filters);
-            putValue(Action.NAME, Bundle.LBL_FullyQualifiedName());
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false)); //NOI18N
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e) {
-            filters.setFqn(true);
-            updateMenuItem();
-        }
-
-        @Override
-        protected void updateMenuItem () {
-            JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(filters.isFqn());
         }
     }
 }
