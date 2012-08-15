@@ -46,7 +46,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.JComponent;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  * Model of an inspected web-page.
@@ -195,13 +194,6 @@ public abstract class PageModel {
          * @return visual representation of CSS Styles.
          */
         JComponent getView();
-
-        /**
-         * Lookup of the view (to include in the enclosing {@code TopComponent}).
-         *
-         * @return lookup of the view.
-         */
-        Lookup getLookup();
 
         /**
          * The enclosing {@code TopComponent} has been activated.

@@ -286,11 +286,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     }
 
     @Override
-    public Lookup getLookup() {
-        return lookup;
-    }
-
-    @Override
     public void activated() {
         updateRulesEditor(ruleLookupResult.allInstances());
     }
