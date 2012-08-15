@@ -55,21 +55,19 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
     protected TwigTopLexerState state;
     protected final TokenFactory<TwigTopTokenId> tokenFactory;
     protected final LexerInput input;
-    static String OPEN_INSTRUCTION = "{%";
-    static String OPEN_VARIABLE = "{{";
-    static String OPEN_COMMENT = "{#";
-    static String CLOSE_INSTRUCTION = "%}";
-    static String CLOSE_VARIABLE = "}}";
-    static String CLOSE_COMMENT = "#}";
-    static Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw");
-    static Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$");
+    static String OPEN_INSTRUCTION = "{%"; //NOI18N
+    static String OPEN_VARIABLE = "{{"; //NOI18N
+    static String OPEN_COMMENT = "{#"; //NOI18N
+    static String CLOSE_INSTRUCTION = "%}"; //NOI18N
+    static String CLOSE_VARIABLE = "}}"; //NOI18N
+    static String CLOSE_COMMENT = "#}"; //NOI18N
+    static Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw"); //NOI18N
+    static Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$"); //NOI18N
 
     private TwigTopLexer(LexerRestartInfo<TwigTopTokenId> info) {
-
         tokenFactory = info.tokenFactory();
         input = info.input();
         state = info.state() == null ? new TwigTopLexerState() : new TwigTopLexerState((TwigTopLexerState) info.state());
-
     }
 
     public static synchronized TwigTopLexer create(LexerRestartInfo<TwigTopTokenId> info) {
@@ -78,10 +76,8 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
 
     @Override
     public Token<TwigTopTokenId> nextToken() {
-
         TwigTopTokenId tokenId = findNextToken();
         return tokenId == null ? null : tokenFactory.createToken(tokenId);
-
     }
 
     @Override
@@ -134,7 +130,7 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
 
             switch (state.main) {
                 case RAW:
-                    if (CharSequenceUtilities.endsWith(text, "%}")) {
+                    if (CharSequenceUtilities.endsWith(text, "%}")) { //NOI18N
                         Matcher matcher = END_RAW.matcher(text);
                         if (matcher.find()) {
                             String captured = matcher.group();

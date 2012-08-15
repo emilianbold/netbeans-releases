@@ -61,13 +61,10 @@ public class TwigLexer implements Lexer<TwigTokenId> {
     protected final LexerInput input;
 
     private TwigLexer(LexerRestartInfo<TwigTokenId> info) {
-
         tokenFactory = info.tokenFactory();
         input = info.input();
         state = info.state() == null ? new TwigLexerState() : new TwigLexerState((TwigLexerState) info.state());
-
         initialize();
-
     }
 
     public static synchronized TwigLexer create(LexerRestartInfo<TwigTokenId> info) {
@@ -90,51 +87,46 @@ public class TwigLexer implements Lexer<TwigTokenId> {
     @Override
     public void release() {
     }
-    static protected String INSTRUCTION_START = "{%";
-    static protected String COMMENT_START = "{#";
-    static protected String VARIABLE_START = "{{";
-    static protected String INSTRUCTION_END = "{%";
-    static protected String COMMENT_END = "{#";
-    static protected String VARIABLE_END = "{{";
-    static protected String PUNCTUATION = "|()[]{}?:.,";
-    static protected Pattern REGEX_ALPHANUM_END = Pattern.compile("[A-Za-z0-9]$");
-    static protected Pattern REGEX_WHITESPACE_END = Pattern.compile("[\\s]+$");
+    static protected String INSTRUCTION_START = "{%"; //NOI18N
+    static protected String COMMENT_START = "{#"; //NOI18N
+    static protected String VARIABLE_START = "{{"; //NOI18N
+    static protected String INSTRUCTION_END = "{%"; //NOI18N
+    static protected String COMMENT_END = "{#"; //NOI18N
+    static protected String VARIABLE_END = "{{"; //NOI18N
+    static protected String PUNCTUATION = "|()[]{}?:.,"; //NOI18N
+    static protected Pattern REGEX_ALPHANUM_END = Pattern.compile("[A-Za-z0-9]$"); //NOI18N
+    static protected Pattern REGEX_WHITESPACE_END = Pattern.compile("[\\s]+$"); //NOI18N
     protected Pattern REGEX_OPERATOR = null;
     int OPERATOR_LENGTH = 0;
     final static List<String> OPERATORS = new ArrayList<String>();
-
     static {
-
-        OPERATORS.add("import");
-        OPERATORS.add("from");
-        OPERATORS.add("as");
-        OPERATORS.add("=");
-        OPERATORS.add("not");
-        OPERATORS.add("+");
-        OPERATORS.add("-");
-        OPERATORS.add("or");
-        OPERATORS.add("and");
-        OPERATORS.add("==");
-        OPERATORS.add("!=");
-        OPERATORS.add(">");
-        OPERATORS.add("<");
-        OPERATORS.add(">=");
-        OPERATORS.add("<=");
-        OPERATORS.add("not in");
-        OPERATORS.add("in");
-        OPERATORS.add("~");
-        OPERATORS.add("*");
-        OPERATORS.add("/");
-        OPERATORS.add("//");
-        OPERATORS.add("%");
-        OPERATORS.add("is");
-        OPERATORS.add("is not");
-        OPERATORS.add("..");
-        OPERATORS.add("**");
-
+        OPERATORS.add("import"); //NOI18N
+        OPERATORS.add("from"); //NOI18N
+        OPERATORS.add("as"); //NOI18N
+        OPERATORS.add("="); //NOI18N
+        OPERATORS.add("not"); //NOI18N
+        OPERATORS.add("+"); //NOI18N
+        OPERATORS.add("-"); //NOI18N
+        OPERATORS.add("or"); //NOI18N
+        OPERATORS.add("and"); //NOI18N
+        OPERATORS.add("=="); //NOI18N
+        OPERATORS.add("!="); //NOI18N
+        OPERATORS.add(">"); //NOI18N
+        OPERATORS.add("<"); //NOI18N
+        OPERATORS.add(">="); //NOI18N
+        OPERATORS.add("<="); //NOI18N
+        OPERATORS.add("not in"); //NOI18N
+        OPERATORS.add("in"); //NOI18N
+        OPERATORS.add("~"); //NOI18N
+        OPERATORS.add("*"); //NOI18N
+        OPERATORS.add("/"); //NOI18N
+        OPERATORS.add("//"); //NOI18N
+        OPERATORS.add("%"); //NOI18N
+        OPERATORS.add("is"); //NOI18N
+        OPERATORS.add("is not"); //NOI18N
+        OPERATORS.add(".."); //NOI18N
+        OPERATORS.add("**"); //NOI18N
     }
-
-    ;
 
     protected class SortOperators implements Comparator<String> {
 
@@ -157,17 +149,13 @@ public class TwigLexer implements Lexer<TwigTokenId> {
         return s;
     }
 
-    protected void initialize() {
-
+    private void initialize() {
         Collections.sort(OPERATORS, new SortOperators());
         Collections.reverse(OPERATORS);
-
         ArrayList<String> regex = new ArrayList<String>();
-
         for (String operator : OPERATORS) {
-
             if (REGEX_ALPHANUM_END.matcher(operator).find()) {
-                regex.add(Pattern.quote(operator) + "[ ()]");
+                regex.add(Pattern.quote(operator) + "[ ()]"); //NOI18N
                 if (operator.length() + 1 > OPERATOR_LENGTH) {
                     OPERATOR_LENGTH = operator.length() + 1;
                 }
@@ -177,11 +165,8 @@ public class TwigLexer implements Lexer<TwigTokenId> {
                     OPERATOR_LENGTH = operator.length();
                 }
             }
-
         }
-
-        REGEX_OPERATOR = Pattern.compile("^" + implode(regex, "|^"));
-
+        REGEX_OPERATOR = Pattern.compile("^" + implode(regex, "|^")); //NOI18N
     }
 
     public TwigTokenId findNextToken() {

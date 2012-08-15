@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.twig.editor.parsing;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.ParserResult;

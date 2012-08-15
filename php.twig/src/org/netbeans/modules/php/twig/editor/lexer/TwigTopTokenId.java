@@ -59,10 +59,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 public enum TwigTopTokenId implements TokenId {
 
-    T_HTML(null, "twig_html"),
-    T_ERROR(null, "twig_error"),
-    T_TWIG(null, "twig"),
-    T_TWIG_RAW(null, "twig_raw");
+    T_HTML(null, "twig_html"), //NOI18N
+    T_ERROR(null, "twig_error"), //NOI18N
+    T_TWIG(null, "twig"), //NOI18N
+    T_TWIG_RAW(null, "twig_raw"); //NOI18N
+    
     private String fixedText;
     private String primaryCategory;
 

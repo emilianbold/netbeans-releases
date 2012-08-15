@@ -63,34 +63,34 @@ public class TwigParser extends Parser {
 
     Snapshot snapshot;
     TwigParserResult result;
-    final static List<String> parseElements = new ArrayList<String>();
+    final static List<String> PARSE_ELEMENTS = new ArrayList<String>();
 
     static {
-        parseElements.add("for");
-        parseElements.add("endfor");
+        PARSE_ELEMENTS.add("for"); //NOI18N
+        PARSE_ELEMENTS.add("endfor"); //NOI18N
 
-        parseElements.add("if");
+        PARSE_ELEMENTS.add("if"); //NOI18N
         //parseElements.add( "else" ); // TODO: Check for enclosing if block!
         //parseElements.add( "elseif" ); // TODO: Same as above!
-        parseElements.add("endif");
+        PARSE_ELEMENTS.add("endif"); //NOI18N
 
-        parseElements.add("block");
-        parseElements.add("endblock");
+        PARSE_ELEMENTS.add("block"); //NOI18N
+        PARSE_ELEMENTS.add("endblock"); //NOI18N
 
-        parseElements.add("set");
-        parseElements.add("endset");
+        PARSE_ELEMENTS.add("set"); //NOI18N
+        PARSE_ELEMENTS.add("endset"); //NOI18N
 
-        parseElements.add("macro");
-        parseElements.add("endmacro");
+        PARSE_ELEMENTS.add("macro"); //NOI18N
+        PARSE_ELEMENTS.add("endmacro"); //NOI18N
 
-        parseElements.add("filter");
-        parseElements.add("endfilter");
+        PARSE_ELEMENTS.add("filter"); //NOI18N
+        PARSE_ELEMENTS.add("endfilter"); //NOI18N
 
-        parseElements.add("autoescape");
-        parseElements.add("endautoescape");
+        PARSE_ELEMENTS.add("autoescape"); //NOI18N
+        PARSE_ELEMENTS.add("endautoescape"); //NOI18N
 
-        parseElements.add("spaceless");
-        parseElements.add("endspaceless");
+        PARSE_ELEMENTS.add("spaceless"); //NOI18N
+        PARSE_ELEMENTS.add("endspaceless"); //NOI18N
 
     }
 
@@ -98,18 +98,13 @@ public class TwigParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
         this.snapshot = snapshot;
         result = new TwigParserResult(snapshot);
-
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
-
         LanguagePath twigPath = null;
-
         for (LanguagePath path : tokenHierarchy.languagePaths()) {
-
-            if (path.mimePath().endsWith("twig-markup")) {
+            if (path.mimePath().endsWith("twig-markup")) { //NOI18N
                 twigPath = path;
                 break;
             }
-
         }
 
         if (twigPath != null) {
@@ -166,9 +161,9 @@ public class TwigParser extends Parser {
 
                             }
 
-                            if (parseElements.contains(instruction.function.toString())) {
+                            if (PARSE_ELEMENTS.contains(instruction.function.toString())) {
                                 /* Have we captured a standalone instruction? */
-                                if (CharSequenceUtilities.equals(instruction.function, "block")) {
+                                if (CharSequenceUtilities.equals(instruction.function, "block")) { //NOI18N
 
                                     boolean standalone = false;
                                     int names = 0;
@@ -192,10 +187,10 @@ public class TwigParser extends Parser {
                                     if (!standalone) {
                                         instructionList.add(instruction);
                                     } else { // add a inline "block" immediately to the result set
-                                        result.addBlock("*inline-block", instruction.from, instruction.length, instruction.extra);
+                                        result.addBlock("*inline-block", instruction.from, instruction.length, instruction.extra); //NOI18N
                                     }
 
-                                } else if (CharSequenceUtilities.equals(instruction.function, "set")) {
+                                } else if (CharSequenceUtilities.equals(instruction.function, "set")) { //NOI18N
 
                                     boolean standalone = false;
 
@@ -237,7 +232,7 @@ public class TwigParser extends Parser {
 
             for (Instruction instruction : instructionList) {
 
-                if (CharSequenceUtilities.startsWith(instruction.function, "end")) {
+                if (CharSequenceUtilities.startsWith(instruction.function, "end")) { //NOI18N
 
                     if (instructionStack.empty()) { // End tag, but no more tokens on stack!
 

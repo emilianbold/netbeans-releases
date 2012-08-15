@@ -63,43 +63,36 @@ import org.openide.filesystems.FileObject;
  * @author sebastian
  */
 public class TwigStructureItem implements StructureItem {
-
+    private static final String BLOCK = "Block";  //NOI18N
     List<TwigStructureItem> blocks;
     TwigParserResult.Block item;
     Snapshot snapshot;
 
     public TwigStructureItem(Snapshot snapshot, TwigParserResult.Block item, List<TwigParserResult.Block> blocks) {
-
         this.item = item;
         this.blocks = new ArrayList<TwigStructureItem>();
         this.snapshot = snapshot;
-
         for (TwigParserResult.Block current : blocks) {
-
             if (item.getOffset() < current.getOffset()
                     && current.getOffset() + current.getLength() < item.getOffset() + item.getLength()) {
-
                 this.blocks.add(new TwigStructureItem(snapshot, current, blocks));
-
             }
-
         }
-
     }
 
     @Override
     public String getName() {
-        return "Block " + item.getExtra();
+        return BLOCK + " " + item.getExtra();
     }
 
     @Override
     public String getSortText() {
-        return "Block " + item.getDescription();
+        return BLOCK + " " + item.getDescription();
     }
 
     @Override
     public String getHtml(HtmlFormatter hf) {
-        return "Block " + item.getExtra();
+        return BLOCK + " " + item.getExtra(); //NOI18N
     }
 
     @Override
@@ -167,12 +160,12 @@ public class TwigStructureItem implements StructureItem {
 
         @Override
         public String getName() {
-            return "Block " + item.getExtra();
+            return BLOCK + " " + item.getExtra();
         }
 
         @Override
         public String getIn() {
-            return "Block " + item.getExtra();
+            return BLOCK + " " + item.getExtra();
         }
 
         @Override

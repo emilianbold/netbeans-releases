@@ -79,12 +79,12 @@ public class TwigLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "Twig";
+        return "Twig"; //NOI18N
     }
 
     @Override
     public String getPreferredExtension() {
-        return "twig";
+        return "twig"; //NOI18N
     }
 
     // Service registrations

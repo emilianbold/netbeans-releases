@@ -44,7 +44,6 @@ package org.netbeans.modules.php.twig.editor.lexer;
 public class TwigLexerState {
 
     public enum Main {
-
         INIT,
         COMMENT,
         VARIABLE,
@@ -52,9 +51,9 @@ public class TwigLexerState {
     };
 
     public enum Sub {
-
         NONE, INIT
     };
+    
     Main main;
     Sub sub;
 

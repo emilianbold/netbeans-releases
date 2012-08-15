@@ -42,9 +42,9 @@
 package org.netbeans.modules.php.twig.editor.parsing;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -65,16 +65,11 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
 
     @Override
     public void run(Result r, SchedulerEvent se) {
-
         TwigParserResult result = (TwigParserResult) r;
         Document document = result.getSnapshot().getSource().getDocument(false);
-
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-
         for (TwigParserResult.Error error : result.getErrors()) {
-
             try {
-
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.ERROR,
                         error.getDescription(),
@@ -86,10 +81,7 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
             }
 
         }
-
-        HintsController.setErrors(document, "Twig", errors);
-
-
+        HintsController.setErrors(document, "Twig", errors); //NOI18N
         cancelled = false;
     }
 

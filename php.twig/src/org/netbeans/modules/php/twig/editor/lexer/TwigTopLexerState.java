@@ -44,7 +44,6 @@ package org.netbeans.modules.php.twig.editor.lexer;
 public class TwigTopLexerState {
 
     public enum Main {
-
         INIT,
         HTML,
         OPEN,
@@ -55,15 +54,18 @@ public class TwigTopLexerState {
     };
 
     public enum Type {
-
-        NONE, INSTRUCTION, VARIABLE, COMMENT
+        NONE,
+        INSTRUCTION,
+        VARIABLE,
+        COMMENT
     };
+
     Main main;
     Type type;
 
     public TwigTopLexerState() {
         main = Main.INIT;
-        type = type.NONE;
+        type = Type.NONE;
     }
 
     public TwigTopLexerState(TwigTopLexerState copy) {

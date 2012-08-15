@@ -54,7 +54,6 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
 
