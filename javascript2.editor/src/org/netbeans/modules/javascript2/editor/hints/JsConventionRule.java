@@ -175,7 +175,7 @@ public class JsConventionRule extends JsAstRule {
             }
         }
 
-        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN};
+        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN, AFTER_BRACKET};
         @NbBundle.Messages("DuplicateName=Duplicate name of property \"{0}\".")
         private void checkDuplicateLabels(ObjectNode objectNode) {
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
@@ -188,6 +188,7 @@ public class JsConventionRule extends JsAstRule {
             State state = State.BEFORE_COLON;
             int curlyBalance = 0;
             int parenBalance = 0;
+            int bracketBalance = 0;
             if (ts.movePrevious() && ts.moveNext()) {
                 HashSet<String> names = new HashSet<String>();
                 while (ts.moveNext() && ts.offset() < endOffset) {
@@ -211,6 +212,8 @@ public class JsConventionRule extends JsAstRule {
                                 state = State.AFTER_CURLY;
                             } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
                                 state = State.AFTER_PAREN;
+                            } else if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                state = State.AFTER_BRACKET;
                             }
                             break;
                         case AFTER_CURLY:
@@ -232,6 +235,17 @@ public class JsConventionRule extends JsAstRule {
                                     state = State.AFTER_COLON;
                                 } else {
                                     parenBalance--;
+                                }
+                            }
+                            break;
+                       case AFTER_BRACKET :
+                            if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                bracketBalance++;
+                            } else if (id == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                if (bracketBalance == 0) {
+                                    state = State.AFTER_COLON;
+                                } else {
+                                    bracketBalance--;
                                 }
                             }
                             break;
