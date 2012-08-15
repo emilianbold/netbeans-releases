@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.spi.extexecution.open;
 
-package org.netbeans.api.extexecution;
-
-import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.extexecution.WrapperProcess;
-import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
-import org.openide.util.Lookup;
-import org.openide.util.Parameters;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
+import org.openide.filesystems.FileObject;
 
 /**
- * Utility class capable of properly terminating external process along with any
- * child processes created during execution.
+ * Defines a handler for file opening. May be used by default
+ * {@link LineConvertor}s provided by {@link LineConvertors}.
  *
- * @author mkleint
- * @since 1.16
+ * @author Petr Hejl
+ * @since 1.33
  */
-public final class ExternalProcessSupport {
-
-    private ExternalProcessSupport() {
-        super();
-    }
+public interface FileOpenHandler {
 
     /**
-     * Destroys the process passed as parameter and attempts to terminate all child
-     * processes created during the process' execution.
-     * <p>
-     * Any process running in environment containing the same variables
-     * with the same values as those passed in <code>env</code> (all of them)
-     * is supposed to be part of the process tree and may be terminated.
+     * Opens a file at the given line.
      *
-     * @param process process to kill
-     * @param env map containing the variables and their values which the
-     *             process must have to be considered being part of
-     *             the tree to kill
+     * @param file the file to open
+     * @param line the line of the while which should be make visible
      */
-    public static void destroy(@NonNull Process process, @NonNull Map<String, String> env) {
-        Parameters.notNull("process", process);
-        Parameters.notNull("env", env);
-
-        if (process instanceof WrapperProcess) {
-            process.destroy();
-            return;
-        }
-        ProcessDestroyPerformer pdp = Lookup.getDefault().lookup(ProcessDestroyPerformer.class);
-        if (pdp != null) {
-            pdp.destroy(process, env);
-        } else {
-            process.destroy();
-        }
-    }
+    void open(@NonNull FileObject file, int line);
 }
