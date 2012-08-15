@@ -540,7 +540,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                 language = ItemProperties.LanguageKind.C;
                             }
                         } else if(language == LanguageKind.C &&
-                                 (compiler.equals("gcc") || compiler.equals("clang") || compiler.equals("icc"))){
+                                 (compiler.equals("gcc") || compiler.equals("clang") || compiler.equals("icc"))){ // NOI18N
                             String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
                             if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
                                 language = ItemProperties.LanguageKind.CPP;
