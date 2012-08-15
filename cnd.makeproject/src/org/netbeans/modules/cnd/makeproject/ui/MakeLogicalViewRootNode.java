@@ -139,7 +139,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         children.setMakeLogicalViewRootNode(MakeLogicalViewRootNode.this);
         this.ic = ic;
         this.folder = folder;
-        this.provider = provider;
+        this.provider = provider;        
 //        setChildren(new ProjectRootChildren(folder, provider));
         setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
         setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
@@ -568,6 +568,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
+        MoreBuildActionsAction mba = null;        
+        if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            mba = new MoreBuildActionsAction(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+            });
+        } else {
+            mba = new MoreBuildActionsAction(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+            });
+        }
+        
         Action[] result = new Action[]{
             CommonProjectActions.newFileAction(),
             null,
@@ -577,12 +591,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             //new AddExternalItemAction(project),
             null,
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-            new MoreBuildActionsAction(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            }),
+            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N            
+            mba,
             new SetConfigurationAction(getProject()),
             new RemoteDevelopmentAction(getProject()),
             null,
@@ -612,6 +622,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
+        MoreBuildActionsAction mba = null;        
+        if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            mba = new MoreBuildActionsAction(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+            });
+        } else {
+            mba = new MoreBuildActionsAction(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+            });
+        }
+        
         Action[] result = new Action[]{
             CommonProjectActions.newFileAction(),
             //null,
@@ -619,11 +643,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             null,
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-            new MoreBuildActionsAction(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            }),
+            mba,
             new SetConfigurationAction(getProject()),
             new RemoteDevelopmentAction(getProject()),
             null,
