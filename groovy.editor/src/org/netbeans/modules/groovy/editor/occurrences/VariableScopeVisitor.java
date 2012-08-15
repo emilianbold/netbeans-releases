@@ -66,6 +66,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.api.lexer.Token;
@@ -416,6 +417,14 @@ public final class VariableScopeVisitor extends TypeVisitor {
             addOccurrences(forLoop.getVariableType(), (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
         }
         super.visitForLoop(forLoop);
+    }
+
+    @Override
+    public void visitCatchStatement(CatchStatement statement) {
+        if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
+            addOccurrences(statement.getExceptionType(), (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
+        }
+        super.visitCatchStatement(statement);
     }
 
     private void addOccurrences(ClassNode visitedType, ClassNode findingType) {
