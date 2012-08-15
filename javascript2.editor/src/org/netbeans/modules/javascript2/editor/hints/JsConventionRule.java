@@ -140,10 +140,13 @@ public class JsConventionRule extends JsAstRule {
                     id = ts.token().id();
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
-                    hints.add(new Hint(rule, Bundle.MissingSemicolon(ts.token().text().toString()), 
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                    id = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE)).id();
+                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
+                        // check again whether there is not semicolon
+                        hints.add(new Hint(rule, Bundle.MissingSemicolon(ts.token().text().toString()), 
+                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                    }
                 }
             }
         }
