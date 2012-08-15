@@ -81,8 +81,8 @@ class BrowserResizeButton extends JToggleButton {
 
     static Icon toIcon( ResizeOption.Type type ) {
         switch( type ) {
+            case CUSTOM:
             case DESKTOP: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"desktop.png", true ); //NOI18N
-            case CUSTOM: return new DummyIcon( Color.yellow );
             case NETBOOK: return new DummyIcon( Color.green );
             case SMARTPHONE_LANDSCAPE: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"handheldLandscape.png", true ); //NOI18N
             case SMARTPHONE_PORTRAIT: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"handheldPortrait.png", true ); //NOI18N

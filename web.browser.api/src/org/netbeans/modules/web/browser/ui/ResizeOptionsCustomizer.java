@@ -103,7 +103,6 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
         combo.addItem( ResizeOption.Type.SMARTPHONE_PORTRAIT );
         combo.addItem( ResizeOption.Type.WIDESCREEN );
         combo.addItem( ResizeOption.Type.NETBOOK );
-        combo.addItem( ResizeOption.Type.CUSTOM );
         combo.setRenderer( new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
