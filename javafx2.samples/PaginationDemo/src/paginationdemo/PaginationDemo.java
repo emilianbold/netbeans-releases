@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -29,74 +29,77 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package htmleditorapp;
+package paginationdemo;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
- * A sample that demonstrates the HTML Editor. You can make changes to the
- * example text, and the resulting generated HTML is displayed.
+ * A sample that demonstrates pagination
  *
- * @related controls/text/SimpleLabel
- * @see javafx.scene.web.HTMLEditor
+ * @see javafx.scene.control.Pagination 
+ * @resource animal1.jpg
+ * @resource animal2.jpg
+ * @resource animal3.jpg
+ * @resource animal4.jpg
+ * @resource animal5.jpg
+ * @resource animal6.jpg
+ * @resource animal7.jpg
+ * @resource animal8.jpg
  */
-public class HTMLEditorApp extends Application {
-    private HTMLEditor htmlEditor = null;
-    private final String INITIAL_TEXT = "<html><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-            +"Nam tortor felis, pulvinar in scelerisque cursus, pulvinar at ante. Nulla consequat "
-            + "congue lectus in sodales. Nullam eu est a felis ornare bibendum et nec tellus. "
-            + "Vivamus non metus tempus augue auctor ornare. Duis pulvinar justo ac purus adipiscing "
-            + "pulvinar. Integer congue faucibus dapibus. Integer id nisl ut elit aliquam sagittis "
-            + "gravida eu dolor. Etiam sit amet ipsum sem.</body></html>";
-            
-    
+public class PaginationDemo extends Application {
+
+    private Pagination pagination;
+    private Image[] images = new Image[7];
+
     private void init(Stage primaryStage) {
         Group root = new Group();
         primaryStage.setScene(new Scene(root));
-        VBox vRoot = new VBox();
+        VBox outerBox = new VBox();
+        outerBox.setAlignment(Pos.CENTER);
+        //Images for our pages
+        for (int i = 0; i < 7; i++) {
+            images[i] = new Image(PaginationDemo.class.getResource("animal" + (i + 1) + ".jpg").toExternalForm(), false);
+        }
 
-        vRoot.setPadding(new Insets(8, 8, 8, 8));
-        vRoot.setSpacing(5);
-
-        htmlEditor = new HTMLEditor();
-        htmlEditor.setPrefSize(500, 245);
-        htmlEditor.setHtmlText(INITIAL_TEXT);
-        vRoot.getChildren().add(htmlEditor);
-
-        final Label htmlLabel = new Label();
-        htmlLabel.setMaxWidth(500);
-        htmlLabel.setWrapText(true);
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.getStyleClass().add("noborder-scroll-pane");
-        scrollPane.setContent(htmlLabel);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(180);
-
-        Button showHTMLButton = new Button("Show the HTML below");
-        vRoot.setAlignment(Pos.CENTER);
-        showHTMLButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                htmlLabel.setText(htmlEditor.getHtmlText());
+        pagination = PaginationBuilder.create().pageCount(7).pageFactory(new Callback<Integer, Node>() {           
+            @Override public Node call(Integer pageIndex) {
+                return createAnimalPage(pageIndex);
             }
-        });
+        }).build();
+        //Style can be numeric page indicators or bullet indicators
+        Button styleButton = ButtonBuilder.create().text("Toggle pagination style").onAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent me) {
+                if (!pagination.getStyleClass().contains(Pagination.STYLE_CLASS_BULLET)) {
+                    pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
+                } else {
+                    pagination.getStyleClass().remove(Pagination.STYLE_CLASS_BULLET);
+                }
+            }
+        }).build();
 
-        vRoot.getChildren().addAll(showHTMLButton, scrollPane);
-        root.getChildren().addAll(vRoot);
+        outerBox.getChildren().addAll(pagination, styleButton);
+        root.getChildren().add(outerBox);
+    }
+    //Creates the page content
+    private VBox createAnimalPage(int pageIndex) {
+        VBox box = new VBox();
+        ImageView iv = new ImageView(images[pageIndex]);
+        box.setAlignment(Pos.CENTER);
+        Label desc = new Label("PAGE " + (pageIndex + 1));
+        box.getChildren().addAll(iv, desc);
+        return box;
     }
 
     @Override public void start(Stage primaryStage) throws Exception {

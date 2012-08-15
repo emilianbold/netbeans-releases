@@ -44,9 +44,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBuilder;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.LabelBuilder;
 import javafx.scene.control.Slider;
+import javafx.scene.control.SliderBuilder;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -104,7 +107,7 @@ public class AdvancedMedia extends Application {
         mediaPlayer.stop();
     }
 
-    static class MediaControl extends BorderPane {
+    public class MediaControl extends BorderPane {
         private MediaPlayer mp;
         private MediaView mediaView;
         private final boolean repeat = false;
@@ -115,10 +118,13 @@ public class AdvancedMedia extends Application {
         private Label playTime;
         private Slider volumeSlider;
         private HBox mediaBar;
-        private static final Image PlayButtonImage = new Image(AdvancedMedia.class.getResourceAsStream("playbutton.png"));
-        private static final Image PauseButtonImage = new Image(AdvancedMedia.class.getResourceAsStream("pausebutton.png"));
+        private final Image PlayButtonImage = new Image(AdvancedMedia.class.getResourceAsStream("playbutton.png"));
+        private final Image PauseButtonImage = new Image(AdvancedMedia.class.getResourceAsStream("pausebutton.png"));
         ImageView imageViewPlay = new ImageView(PlayButtonImage);
         ImageView imageViewPause = new ImageView(PauseButtonImage);
+        private Pane mvPane;
+        private Stage newStage;
+        private boolean fullScreen = false;
 
         @Override protected void layoutChildren() {
             if (mediaView != null && getBottom() != null) {
@@ -126,7 +132,7 @@ public class AdvancedMedia extends Application {
                 mediaView.setFitHeight(getHeight() - getBottom().prefHeight(-1));
             }
             super.layoutChildren();
-            if (mediaView != null) {
+            if (mediaView != null && getCenter() != null) {
                 mediaView.setTranslateX((((Pane)getCenter()).getWidth() - mediaView.prefWidth(-1)) / 2);
                 mediaView.setTranslateY((((Pane)getCenter()).getHeight() - mediaView.prefHeight(-1)) / 2);
             }
@@ -153,21 +159,22 @@ public class AdvancedMedia extends Application {
         @Override protected double computeMaxHeight(double width) { return Double.MAX_VALUE; }
 
         public MediaControl(final MediaPlayer mp) {
-            this.mp = mp;
+            this.mp=mp;
             setStyle("-fx-background-color: #bfc2c7;"); // TODO: Use css file
             mediaView = new MediaView(mp);
-            Pane mvPane = new Pane() {
-
-            };
+            mvPane = new Pane();
             mvPane.getChildren().add(mediaView);
             mvPane.setStyle("-fx-background-color: black;"); // TODO: Use css file
             setCenter(mvPane);
-            mediaBar = new HBox();
+            mediaBar = new HBox(5.0);
             mediaBar.setPadding(new Insets(5, 10, 5, 10));
             mediaBar.setAlignment(Pos.CENTER_LEFT);
             BorderPane.setAlignment(mediaBar, Pos.CENTER);
 
-            final Button playButton  = new Button();
+            final Button playButton  = ButtonBuilder.create()
+                    .minWidth(Control.USE_PREF_SIZE)
+                    .build();
+            
             playButton.setGraphic(imageViewPlay);
             playButton.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent e) {
@@ -209,7 +216,7 @@ public class AdvancedMedia extends Application {
             });
             mp.setOnPlaying(new Runnable() {
                 public void run() {
-                    //System.out.println("onPlaying");
+                    
                     if (stopRequested) {
                         mp.pause();
                         stopRequested = false;
@@ -221,7 +228,7 @@ public class AdvancedMedia extends Application {
             });
             mp.setOnPaused(new Runnable() {
                 public void run() {
-                    //System.out.println("onPaused");
+                    
                     playButton.setGraphic(imageViewPlay);
                     //playButton.setText("||");
                 }
@@ -245,18 +252,19 @@ public class AdvancedMedia extends Application {
                 }
             });
             mediaBar.getChildren().add(playButton);
-            // Add spacer
-            Label spacer = new Label("   ");
-            mediaBar.getChildren().add(spacer);
+            
             // Time label
-            Label timeLabel = new Label("Time: ");
+            Label timeLabel = new Label("Time");
             timeLabel.setMinWidth(Control.USE_PREF_SIZE);
             mediaBar.getChildren().add(timeLabel);
+            
+            
             // Time slider
-            timeSlider = new Slider();
+            timeSlider = SliderBuilder.create()
+                    .minWidth(30)
+                    .maxWidth(Double.MAX_VALUE)
+                    .build();
             HBox.setHgrow(timeSlider, Priority.ALWAYS);
-            timeSlider.setMinWidth(50);
-            timeSlider.setMaxWidth(Double.MAX_VALUE);
             timeSlider.valueProperty().addListener(new InvalidationListener() {
                 public void invalidated(Observable ov) {
                     if (timeSlider.isValueChanging()) {
@@ -270,20 +278,85 @@ public class AdvancedMedia extends Application {
                 }
             });
             mediaBar.getChildren().add(timeSlider);
+            
             // Play label
-            playTime = new Label();
-            playTime.setPrefWidth(130);
-            playTime.setMinWidth(50);
+            playTime = LabelBuilder.create()
+                    //.prefWidth(130)
+                    .minWidth(Control.USE_PREF_SIZE)
+                    .build();
+            
             mediaBar.getChildren().add(playTime);
+            
+            
+            //Fullscreen button
+            
+            Button buttonFullScreen = ButtonBuilder.create()
+                    .text("Full Screen")
+                    .minWidth(Control.USE_PREF_SIZE)
+                    .build();
+            
+            buttonFullScreen.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    if (!fullScreen){
+                    newStage = new Stage();
+                    newStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {
+                            onFullScreen(); 
+                        }
+                    });
+                    final BorderPane borderPane = new BorderPane(){
+                        @Override protected void layoutChildren(){
+                            if (mediaView != null && getBottom() != null) {
+                                    mediaView.setFitWidth(getWidth());
+                                    mediaView.setFitHeight(getHeight() - getBottom().prefHeight(-1));
+                            }
+                            super.layoutChildren();
+                            if (mediaView != null) {
+                                mediaView.setTranslateX((((Pane)getCenter()).getWidth() - mediaView.prefWidth(-1)) / 2);
+                                mediaView.setTranslateY((((Pane)getCenter()).getHeight() - mediaView.prefHeight(-1)) / 2);
+                            }
+                        };
+                    };
+                   
+                    setCenter(null);
+                    setBottom(null);
+                    borderPane.setCenter(mvPane);
+                    borderPane.setBottom(mediaBar);
+                    
+                    Scene newScene = new Scene(borderPane);
+                    newStage.setScene(newScene);
+                    //Workaround for disposing stage when exit fullscreen
+                    newStage.setX(-100000);
+                    newStage.setY(-100000);
+                    
+                    newStage.setFullScreen(true);
+                    fullScreen = true;
+                    newStage.show();
+                    
+                }
+                    else{
+                        //toggle FullScreen
+                        fullScreen = false;
+                        newStage.setFullScreen(false);
+                        
+                    }
+                }
+                
+            });
+            mediaBar.getChildren().add(buttonFullScreen);
+            
             // Volume label
-            Label volumeLabel = new Label("Vol: ");
+            Label volumeLabel = new Label("Vol");
             volumeLabel.setMinWidth(Control.USE_PREF_SIZE);
             mediaBar.getChildren().add(volumeLabel);
+            
             // Volume slider
-            volumeSlider = new Slider();
-            volumeSlider.setPrefWidth(70);
-            volumeSlider.setMaxWidth(Region.USE_PREF_SIZE);
-            volumeSlider.setMinWidth(30);
+            volumeSlider = SliderBuilder.create()
+                    .prefWidth(70)
+                    .minWidth(30)
+                    .maxWidth(Region.USE_PREF_SIZE)
+                    .build();
             volumeSlider.valueProperty().addListener(new InvalidationListener() {
                 public void invalidated(Observable ov) {
                 }
@@ -297,9 +370,26 @@ public class AdvancedMedia extends Application {
                 }
             });
             mediaBar.getChildren().add(volumeSlider);
+            
             setBottom(mediaBar);
+            
         }
 
+        protected void onFullScreen(){
+            if (!newStage.isFullScreen()){
+                
+                fullScreen = false;
+                setCenter(mvPane);
+                setBottom(mediaBar);
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        newStage.close();
+                        }
+                    });
+                
+            }
+        }
+        
         protected void updateValues() {
             if (playTime != null && timeSlider != null && volumeSlider != null && duration != null) {
                 Platform.runLater(new Runnable() {
@@ -318,7 +408,8 @@ public class AdvancedMedia extends Application {
             }
         }
 
-        private static String formatTime(Duration elapsed, Duration duration) {
+        
+        private String formatTime(Duration elapsed, Duration duration) {
             int intElapsed = (int)Math.floor(elapsed.toSeconds());
             int elapsedHours = intElapsed / (60 * 60);
             if (elapsedHours > 0) {
