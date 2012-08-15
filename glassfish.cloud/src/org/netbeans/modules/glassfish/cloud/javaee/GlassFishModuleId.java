@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 
 /**
  * Unique identifier for a deployed application module on GlassFish server.
@@ -99,7 +101,7 @@ public class GlassFishModuleId implements TargetModuleID {
     public GlassFishModuleId(String url, String id, Target target,
             Collection<GlassFishModuleId> children) {
         try {
-            this.url = new URL(url);
+            this.url = url != null ? new URL(url) : null;
         } catch (MalformedURLException mue) {
             throw new IllegalArgumentException(mue);
         }
@@ -109,6 +111,28 @@ public class GlassFishModuleId implements TargetModuleID {
         this.children = children != null
                 ? new LinkedList<GlassFishModuleId>(children)
                 : new LinkedList<GlassFishModuleId>();
+    }
+    
+    /**
+     * Convenient constructor of unique identifier for a deployed application module
+     * on GlassFish server.
+     * @param target Target server where the module is deployed.
+     * @param module 
+     */
+    public GlassFishModuleId(GlassFishAccountInstance target, File module) {
+        this.url = null;
+        if (module.getName().endsWith(".war")) {
+            try {
+            this.url = constructUrl("http", target.getCloudEntity().getHost(), 
+                    target.getCloudEntity().getPort(), null);
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        this.id = id;
+        this.target = target;
+        this.parent = null;
+        this.children = null;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -198,6 +222,33 @@ public class GlassFishModuleId implements TargetModuleID {
     public void addChildTargetModuleID(GlassFishModuleId child) {
         children.add(child);
         child.setParentTargetModuleID(this);
+    }
+    
+    
+     ////////////////////////////////////////////////////////////////////////////
+    // Helper methods                                       //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Constructs URL for given attributes.
+     * 
+     * @param protocol
+     * @param host
+     * @param port
+     * @param contextRoot - has to begin with slash
+     * @return 
+     */
+    private static URL constructUrl(String protocol, String host, Integer port, String contextRoot) throws MalformedURLException {
+        StringBuilder builder = new StringBuilder(128);
+        builder.append(protocol);
+        builder.append("://"); // NOI18N
+        builder.append(host);
+        builder.append(":"); // NOI18N
+        builder.append(port);
+        if (contextRoot != null && contextRoot.length() > 0) {
+            builder.append(contextRoot);
+        }
+        return new URL(builder.toString());
     }
 
 }

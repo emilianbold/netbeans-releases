@@ -40,12 +40,13 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.utils;
+package org.netbeans.modules.groovy.editor.api;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -61,7 +62,6 @@ import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -72,13 +72,13 @@ public final class ElementUtils {
     private ElementUtils() {
     }
 
-    public static ElementKind getKind(AstPath path, FileObject fo, BaseDocument doc, int caret) {
+    public static ElementKind getKind(AstPath path, BaseDocument doc, int caret) {
         ASTNode node = path.leaf();
         ASTNode leafParent = path.leafParent();
 
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
-            FindTypeUtils.isCaretOnClassNode(path, doc, fo, caret)) {
+            FindTypeUtils.isCaretOnClassNode(path, doc, caret)) {
             return ElementKind.CLASS;
         } else if ((node instanceof MethodNode)) {
             if ("<init>".equals(((MethodNode) node).getName())) { // NOI18N
@@ -141,6 +141,8 @@ public final class ElementUtils {
            return ((Parameter) node).getType();
         } else if (node instanceof ForStatement) {
             return ((ForStatement) node).getVariableType();
+        } else if (node instanceof ImportNode) {
+            return ((ImportNode) node).getType();
         } else if (node instanceof ClassExpression) {
             return ((ClassExpression) node).getType();
         } else if (node instanceof VariableExpression) {
@@ -177,6 +179,8 @@ public final class ElementUtils {
             name = ((Parameter) node).getName();
         } else if (node instanceof ForStatement) {
             name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
+        } else if (node instanceof ImportNode) {
+            name = ((ImportNode) node).getClassName();
         } else if (node instanceof ClassExpression) {
             name = ((ClassExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
@@ -216,6 +220,8 @@ public final class ElementUtils {
             return ((Parameter) node).getDeclaringClass();
         } else if (node instanceof ForStatement) {
             return ((ForStatement) node).getVariableType().getDeclaringClass();
+        } else if (node instanceof ImportNode) {
+            return ((ImportNode) node).getDeclaringClass();
         } else if (node instanceof ClassExpression) {
             return ((ClassExpression) node).getType().getDeclaringClass();
         } else if (node instanceof VariableExpression) {

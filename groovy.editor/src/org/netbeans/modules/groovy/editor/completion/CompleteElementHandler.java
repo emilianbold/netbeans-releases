@@ -54,7 +54,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
@@ -253,7 +253,7 @@ public final class CompleteElementHandler {
 
         if (!classes.isEmpty()) {
             IndexedClass indexed = classes.iterator().next();
-            ASTNode astNode = AstUtilities.getForeignNode(indexed);
+            ASTNode astNode = ASTUtils.getForeignNode(indexed);
             if (astNode instanceof ClassNode) {
                 return new ClassDefinition((ClassNode) astNode, indexed);
             }
