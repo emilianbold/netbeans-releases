@@ -139,7 +139,7 @@ public class JsConventionRule extends JsAstRule {
                 if (id == JsTokenId.EOL && ts.movePrevious()) {
                     id = ts.token().id();
                 }
-                if (id != JsTokenId.OPERATOR_SEMICOLON) {
+                if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                     LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
                     hints.add(new Hint(rule, Bundle.MissingSemicolon(ts.token().text().toString()), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
