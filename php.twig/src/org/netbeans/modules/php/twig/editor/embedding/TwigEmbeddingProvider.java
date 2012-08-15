@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.embedding;
 
 import java.util.ArrayList;
@@ -66,34 +65,38 @@ public class TwigEmbeddingProvider extends EmbeddingProvider {
 
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TwigTopTokenId.language());
         TokenSequence<TwigTopTokenId> sequence = th.tokenSequence(TwigTopTokenId.language());
-        if (sequence == null) return Collections.emptyList();
+        if (sequence == null) {
+            return Collections.emptyList();
+        }
 
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
 
         int offset = -1;
         int length = 0;
-        while ( sequence.moveNext() ) {
+        while (sequence.moveNext()) {
             Token t = sequence.token();
 
-            if ( t.id() == TwigTopTokenId.T_HTML ) {
-                if ( offset < 0 ) offset = sequence.offset();
+            if (t.id() == TwigTopTokenId.T_HTML) {
+                if (offset < 0) {
+                    offset = sequence.offset();
+                }
                 length += t.length();
-            } else if ( offset >= 0 ) {
-                embeddings.add( snapshot.create( offset, length, "text/html" ) );
+            } else if (offset >= 0) {
+                embeddings.add(snapshot.create(offset, length, "text/html"));
                 offset = -1;
                 length = 0;
             }
         }
 
-        if ( offset >= 0 ) {
-            embeddings.add( snapshot.create( offset, length, "text/html" ) );
+        if (offset >= 0) {
+            embeddings.add(snapshot.create(offset, length, "text/html"));
         }
 
         if (embeddings.isEmpty()) {
-            return Collections.singletonList( snapshot.create( "", "text/html" ) );
+            return Collections.singletonList(snapshot.create("", "text/html"));
         } else {
-            return Collections.singletonList( Embedding.create(embeddings) );
+            return Collections.singletonList(Embedding.create(embeddings));
         }
     }
 
@@ -103,7 +106,8 @@ public class TwigEmbeddingProvider extends EmbeddingProvider {
     }
 
     @Override
-    public void cancel() {}
+    public void cancel() {
+    }
 
     public static final class Factory extends TaskFactory {
 
@@ -112,5 +116,4 @@ public class TwigEmbeddingProvider extends EmbeddingProvider {
             return Collections.<SchedulerTask>singletonList(new TwigEmbeddingProvider());
         }
     }
-
 }

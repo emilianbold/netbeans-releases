@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.gsf;
 
 import java.util.ArrayList;
@@ -64,36 +63,35 @@ import org.openide.filesystems.FileObject;
 public class TwigStructureScanner implements StructureScanner {
 
     @Override
-    public List<? extends StructureItem> scan( ParserResult info ) {
-        TwigParserResult result = (TwigParserResult)info;
+    public List<? extends StructureItem> scan(ParserResult info) {
+        TwigParserResult result = (TwigParserResult) info;
         List<TwigParserResult.Block> blocks = new ArrayList<TwigParserResult.Block>();
         List<TwigStructureItem> items = new ArrayList<TwigStructureItem>();
 
-        for ( TwigParserResult.Block item : result.getBlocks() ) {
-            if ( CharSequenceUtilities.equals( item.getDescription(), "block" ) || CharSequenceUtilities.equals( item.getDescription(), "*inline-block" ) ) {
-                blocks.add( item );
+        for (TwigParserResult.Block item : result.getBlocks()) {
+            if (CharSequenceUtilities.equals(item.getDescription(), "block") || CharSequenceUtilities.equals(item.getDescription(), "*inline-block")) {
+                blocks.add(item);
             }
         }
 
         boolean isTopLevel = false;
 
-        for ( TwigParserResult.Block item : blocks ) {
+        for (TwigParserResult.Block item : blocks) {
 
             isTopLevel = true;
 
-            for ( TwigParserResult.Block check : blocks ) {
+            for (TwigParserResult.Block check : blocks) {
 
-                if ( item.getOffset() > check.getOffset() &&
-                     item.getOffset() + item.getLength() < check.getOffset() + check.getLength()
-                ) {
+                if (item.getOffset() > check.getOffset()
+                        && item.getOffset() + item.getLength() < check.getOffset() + check.getLength()) {
                     isTopLevel = false;
                     break;
                 }
 
             }
 
-            if ( isTopLevel ) {
-                items.add( new TwigStructureItem( result.getSnapshot(), item, blocks ) );
+            if (isTopLevel) {
+                items.add(new TwigStructureItem(result.getSnapshot(), item, blocks));
             }
 
         }
@@ -103,20 +101,19 @@ public class TwigStructureScanner implements StructureScanner {
     }
 
     @Override
-    public Map<String, List<OffsetRange>> folds( ParserResult info ) {
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
 
-        TwigParserResult result = (TwigParserResult)info;
+        TwigParserResult result = (TwigParserResult) info;
         List<OffsetRange> ranges = new ArrayList<OffsetRange>();
 
-        for ( TwigParserResult.Block block : result.getBlocks() ) {
+        for (TwigParserResult.Block block : result.getBlocks()) {
 
-            ranges.add( new OffsetRange(
-                    block.getOffset(), block.getOffset() + block.getLength()
-            ) );
+            ranges.add(new OffsetRange(
+                    block.getOffset(), block.getOffset() + block.getLength()));
 
         }
 
-        return Collections.singletonMap( "tags", ranges );
+        return Collections.singletonMap("tags", ranges);
 
     }
 
@@ -124,5 +121,4 @@ public class TwigStructureScanner implements StructureScanner {
     public Configuration getConfiguration() {
         return null;
     }
-
 }

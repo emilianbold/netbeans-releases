@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor;
 
 import java.io.IOException;
@@ -68,5 +67,4 @@ public class TwigEditorKit extends NbEditorKit {
     public String getContentType() {
         return TwigLanguage.TWIG_MIME_TYPE;
     }
-
 }

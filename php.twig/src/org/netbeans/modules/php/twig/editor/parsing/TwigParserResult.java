@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.parsing;
 
 import java.util.ArrayList;
@@ -53,24 +52,27 @@ import org.openide.filesystems.FileObject;
 public class TwigParserResult extends ParserResult {
 
     boolean valid = true;
-
     List<Error> errorList = new ArrayList<Error>();
     List<Block> blockList = new ArrayList<Block>();
 
-    TwigParserResult( Snapshot snapshot ) {
-        super( snapshot );
+    TwigParserResult(Snapshot snapshot) {
+        super(snapshot);
     }
 
-    public List<Error> getErrors() { return errorList; }
-
-    public void addError( String description, int offset, int length ) {
-        errorList.add( new Error( description, offset, length, getSnapshot() ) );
+    public List<Error> getErrors() {
+        return errorList;
     }
 
-    public List<Block> getBlocks() { return blockList; }
+    public void addError(String description, int offset, int length) {
+        errorList.add(new Error(description, offset, length, getSnapshot()));
+    }
 
-    public void addBlock( CharSequence function, int offset, int length, CharSequence extra ) {
-        blockList.add( new Block( function, offset, length, extra ) );
+    public List<Block> getBlocks() {
+        return blockList;
+    }
+
+    public void addBlock(CharSequence function, int offset, int length, CharSequence extra) {
+        blockList.add(new Block(function, offset, length, extra));
     }
 
     @Override
@@ -94,7 +96,7 @@ public class TwigParserResult extends ParserResult {
         int length;
         Snapshot snapshot;
 
-        public Error( String description, int offset, int length, Snapshot snapshot ) {
+        public Error(String description, int offset, int length, Snapshot snapshot) {
             this.description = description;
             this.offset = offset;
             this.length = length;
@@ -153,7 +155,6 @@ public class TwigParserResult extends ParserResult {
         public Object[] getParameters() {
             return null;
         }
-
     }
 
     public class Block {
@@ -163,14 +164,16 @@ public class TwigParserResult extends ParserResult {
         int length;
         CharSequence extra;
 
-        public Block( CharSequence function, int offset, int length, CharSequence extra ) {
+        public Block(CharSequence function, int offset, int length, CharSequence extra) {
             this.function = function;
             this.offset = offset;
             this.length = length;
             this.extra = extra;
         }
 
-        public CharSequence getExtra() { return extra; }
+        public CharSequence getExtra() {
+            return extra;
+        }
 
         public CharSequence getDescription() {
             return function;
@@ -183,7 +186,5 @@ public class TwigParserResult extends ParserResult {
         public int getLength() {
             return length;
         }
-
     }
-
 }

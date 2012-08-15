@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.parsing;
 
 import java.util.ArrayList;
@@ -65,30 +64,30 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
     boolean cancelled = false;
 
     @Override
-    public void run( Result r, SchedulerEvent se ) {
+    public void run(Result r, SchedulerEvent se) {
 
-        TwigParserResult result = (TwigParserResult)r;
-        Document document = result.getSnapshot().getSource().getDocument( false );
+        TwigParserResult result = (TwigParserResult) r;
+        Document document = result.getSnapshot().getSource().getDocument(false);
 
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription> ();
+        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
 
-        for ( TwigParserResult.Error error : result.getErrors() ) {
+        for (TwigParserResult.Error error : result.getErrors()) {
 
             try {
 
-                errors.add( ErrorDescriptionFactory.createErrorDescription(
-                    Severity.ERROR,
-                    error.getDescription(),
-                    document,
-                    document.createPosition( error.getOffset() ),
-                    document.createPosition( error.getOffset() + error.getLength() )
-                ) );
+                errors.add(ErrorDescriptionFactory.createErrorDescription(
+                        Severity.ERROR,
+                        error.getDescription(),
+                        document,
+                        document.createPosition(error.getOffset()),
+                        document.createPosition(error.getOffset() + error.getLength())));
 
-            } catch ( BadLocationException ex ) {}
+            } catch (BadLocationException ex) {
+            }
 
         }
 
-        HintsController.setErrors( document, "Twig", errors );
+        HintsController.setErrors(document, "Twig", errors);
 
 
         cancelled = false;
@@ -113,9 +112,7 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snpsht) {
-            return Collections.singleton( new TwigSyntaxValidationTask() );
+            return Collections.singleton(new TwigSyntaxValidationTask());
         }
-
     }
-
 }

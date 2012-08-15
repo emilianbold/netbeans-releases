@@ -39,27 +39,25 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.lexer;
 
 public class TwigTopLexerState {
 
     public enum Main {
+
         INIT,
         HTML,
-
         OPEN,
         TWIG,
         CLOSE,
-
         CLOSE_RAW,
         RAW
     };
 
     public enum Type {
+
         NONE, INSTRUCTION, VARIABLE, COMMENT
     };
-
     Main main;
     Type type;
 
@@ -68,12 +66,12 @@ public class TwigTopLexerState {
         type = type.NONE;
     }
 
-    public TwigTopLexerState( TwigTopLexerState copy ) {
+    public TwigTopLexerState(TwigTopLexerState copy) {
         main = copy.main;
         type = copy.type;
     }
 
-    public TwigTopLexerState( Main main, Type type ) {
+    public TwigTopLexerState(Main main, Type type) {
         this.main = main;
         this.type = type;
     }
@@ -87,13 +85,20 @@ public class TwigTopLexerState {
     }
 
     @Override
-    public boolean equals( Object object ) {
-        if ( object == null ) return false;
-        if ( getClass() != object.getClass() ) return false;
+    public boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
         TwigTopLexerState compare = (TwigTopLexerState) object;
-        if ( main != compare.main ) return false;
-        if ( type != compare.type ) return false;
+        if (main != compare.main) {
+            return false;
+        }
+        if (type != compare.type) {
+            return false;
+        }
         return true;
     }
-
 }

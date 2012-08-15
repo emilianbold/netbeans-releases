@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.gsf;
 
 import java.util.ArrayList;
@@ -69,20 +68,18 @@ public class TwigStructureItem implements StructureItem {
     TwigParserResult.Block item;
     Snapshot snapshot;
 
-    public TwigStructureItem( Snapshot snapshot, TwigParserResult.Block item, List<TwigParserResult.Block> blocks ) {
+    public TwigStructureItem(Snapshot snapshot, TwigParserResult.Block item, List<TwigParserResult.Block> blocks) {
 
         this.item = item;
         this.blocks = new ArrayList<TwigStructureItem>();
         this.snapshot = snapshot;
 
-        for ( TwigParserResult.Block current : blocks ) {
+        for (TwigParserResult.Block current : blocks) {
 
-            if (
-                item.getOffset() < current.getOffset() &&
-                current.getOffset() + current.getLength() < item.getOffset() + item.getLength()
-            ) {
+            if (item.getOffset() < current.getOffset()
+                    && current.getOffset() + current.getLength() < item.getOffset() + item.getLength()) {
 
-                this.blocks.add( new TwigStructureItem( snapshot, current, blocks ) );
+                this.blocks.add(new TwigStructureItem(snapshot, current, blocks));
 
             }
 
@@ -107,7 +104,7 @@ public class TwigStructureItem implements StructureItem {
 
     @Override
     public ElementHandle getElementHandle() {
-        return new TwigElementHandle( item, snapshot );
+        return new TwigElementHandle(item, snapshot);
     }
 
     @Override
@@ -117,8 +114,9 @@ public class TwigStructureItem implements StructureItem {
 
     @Override
     public Set<Modifier> getModifiers() {
-        if ( CharSequenceUtilities.startsWith( item.getDescription(), "*" ) )
-            return Collections.singleton( Modifier.STATIC );
+        if (CharSequenceUtilities.startsWith(item.getDescription(), "*")) {
+            return Collections.singleton(Modifier.STATIC);
+        }
         return Collections.emptySet();
     }
 
@@ -152,7 +150,7 @@ public class TwigStructureItem implements StructureItem {
         TwigParserResult.Block item;
         Snapshot snapshot;
 
-        public TwigElementHandle( TwigParserResult.Block item, Snapshot snapshot ) {
+        public TwigElementHandle(TwigParserResult.Block item, Snapshot snapshot) {
             this.item = item;
             this.snapshot = snapshot;
         }
@@ -184,24 +182,26 @@ public class TwigStructureItem implements StructureItem {
 
         @Override
         public Set<Modifier> getModifiers() {
-            if ( CharSequenceUtilities.startsWith( item.getDescription(), "*" ) )
-                return Collections.singleton( Modifier.STATIC );
+            if (CharSequenceUtilities.startsWith(item.getDescription(), "*")) {
+                return Collections.singleton(Modifier.STATIC);
+            }
             return Collections.emptySet();
         }
 
         @Override
         public boolean signatureEquals(ElementHandle eh) {
-            if ( !(eh instanceof TwigElementHandle) ) return false;
-            if ( eh.getName().equals(this.getName()) ) return true;
+            if (!(eh instanceof TwigElementHandle)) {
+                return false;
+            }
+            if (eh.getName().equals(this.getName())) {
+                return true;
+            }
             return false;
         }
 
         @Override
-        public OffsetRange getOffsetRange( ParserResult pr ) {
-            return new OffsetRange( item.getOffset(), item.getOffset() + item.getLength() );
+        public OffsetRange getOffsetRange(ParserResult pr) {
+            return new OffsetRange(item.getOffset(), item.getOffset() + item.getLength());
         }
-
-
     }
-
 }

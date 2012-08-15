@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.completion;
 
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
-    public CodeCompletionResult complete( CodeCompletionContext ccc ) {
+    public CodeCompletionResult complete(CodeCompletionContext ccc) {
         return CodeCompletionResult.NONE;
     }
 
@@ -75,12 +74,12 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
-    public String getPrefix( ParserResult info, int offset, boolean upToOffset ) {
+    public String getPrefix(ParserResult info, int offset, boolean upToOffset) {
         return "";
     }
 
     @Override
-    public QueryType getAutoQuery( JTextComponent jtc, String string ) {
+    public QueryType getAutoQuery(JTextComponent jtc, String string) {
         return QueryType.ALL_COMPLETION;
     }
 
@@ -96,7 +95,6 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public ParameterInfo parameters(ParserResult pr, int i, CompletionProposal cp) {
-        return new ParameterInfo( new ArrayList<String>(), 0, 0 );
+        return new ParameterInfo(new ArrayList<String>(), 0, 0);
     }
-
 }

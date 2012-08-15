@@ -39,20 +39,22 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.lexer;
 
 public class TwigLexerState {
 
     public enum Main {
+
         INIT,
         COMMENT,
         VARIABLE,
         INSTRUCTION
     };
 
-    public enum Sub { NONE, INIT };
+    public enum Sub {
 
+        NONE, INIT
+    };
     Main main;
     Sub sub;
 
@@ -61,23 +63,31 @@ public class TwigLexerState {
         sub = Sub.NONE;
     }
 
-    public TwigLexerState( TwigLexerState copy ) {
+    public TwigLexerState(TwigLexerState copy) {
         main = copy.main;
         sub = copy.sub;
     }
 
-    public TwigLexerState( Main main, Sub sub ) {
+    public TwigLexerState(Main main, Sub sub) {
         this.main = main;
         this.sub = sub;
     }
 
     @Override
-    public boolean equals( Object object ) {
-        if ( object == null ) return false;
-        if ( getClass() != object.getClass() ) return false;
+    public boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
         TwigLexerState compare = (TwigLexerState) object;
-        if ( main != compare.main ) return false;
-        if ( sub != compare.sub ) return false;
+        if (main != compare.main) {
+            return false;
+        }
+        if (sub != compare.sub) {
+            return false;
+        }
         return true;
     }
 
@@ -88,5 +98,4 @@ public class TwigLexerState {
         hash = 97 * hash + (this.sub != null ? this.sub.hashCode() : 0);
         return hash;
     }
-
 }
