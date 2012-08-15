@@ -191,7 +191,9 @@ public class ProjectNodeFactory {
             descriptions.add(createArchiverDescription(lookup));
         }
 
-        descriptions.add(createPackagingDescription(lookup));
+        if (((MakeConfigurationDescriptor) context.getConfigurationDescriptor()).getActiveConfiguration() != null && ((MakeConfigurationDescriptor) context.getConfigurationDescriptor()).getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+            descriptions.add(createPackagingDescription(lookup));
+        }
 
         return new BuildCustomizerNode(
                 "Build", getString("LBL_Config_Build"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N

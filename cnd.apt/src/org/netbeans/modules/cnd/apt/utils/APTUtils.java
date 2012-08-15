@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteIdToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteLiteralToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
@@ -179,14 +180,14 @@ public class APTUtils {
     }
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
-        if (_token instanceof APTBaseToken) {
+        if (_token instanceof APTBaseToken || _token instanceof APTLiteIdToken) {
             _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
             // no need to set text in const token
-        } else if (_token instanceof APTLiteConstTextToken || _token instanceof APTLiteIdToken) {
+        } else if (_token instanceof APTLiteConstTextToken || _token instanceof APTLiteLiteralToken) {
             // no need to set text in const token
         } else {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
@@ -243,8 +244,10 @@ public class APTUtils {
         // TODO: optimize factory
         if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
-        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine, literalType)){
-            return new APTLiteIdToken(startOffset, startColumn, startLine, literalType);
+        } else if (APTLiteLiteralToken.isApplicable(type, startOffset, startColumn, startLine, literalType)){
+            return new APTLiteLiteralToken(startOffset, startColumn, startLine, literalType);
+        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine)){
+            return new APTLiteIdToken(startOffset, startColumn, startLine);
         }
         APTToken out = createAPTToken(type);
         out.setType(type);
