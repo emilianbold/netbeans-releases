@@ -331,8 +331,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     @Override
     public void visitConstructorCallExpression(ConstructorCallExpression call) {
-        if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
-            addOccurrences(call.getType(), (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
+        if (helper.isCaretOnGenericType(call.getType())) {
+            addOccurrences(call.getType(), helper.getGenericType(call.getType()));
         } else {
             if (leaf instanceof ConstructorNode) {
                 ConstructorNode constructor = (ConstructorNode) leaf;
