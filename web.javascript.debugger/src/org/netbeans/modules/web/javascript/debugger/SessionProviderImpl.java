@@ -52,6 +52,7 @@ import org.netbeans.spi.debugger.SessionProvider;
  *
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
+@SessionProvider.Registration(path="javascript-debuggerinfo")
 public class SessionProviderImpl extends SessionProvider {
 	
     private WebKitDebugging webkit;

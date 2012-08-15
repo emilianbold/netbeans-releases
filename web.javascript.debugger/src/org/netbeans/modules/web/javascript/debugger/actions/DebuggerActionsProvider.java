@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -66,6 +67,7 @@ import org.openide.util.NbBundle;
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
 @NbBundle.Messages({"MSG_WILL_PAUSE=The debugger will suspend on next JavaScript execution."})
+@ActionsProvider.Registration(path="javascript-debuggerengine", activateForMIMETypes={ "text/html", "text/javascript" })
 public class DebuggerActionsProvider extends ActionsProviderSupport 
                                          implements Debugger.Listener {
     static final String JAVASCRIPT_MIMETYPE = "text/javascript";

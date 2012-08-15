@@ -44,10 +44,13 @@ package org.netbeans.modules.web.javascript.debugger.callstack;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.TreeModel;
 
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class CallStackAnnotationListener extends DebuggerManagerAdapter {
     
     @Override

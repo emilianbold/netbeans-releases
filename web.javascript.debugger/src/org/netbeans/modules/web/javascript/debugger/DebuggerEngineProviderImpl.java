@@ -49,6 +49,7 @@ import static org.netbeans.modules.web.javascript.debugger.DebuggerConstants.*;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
+@DebuggerEngineProvider.Registration(path="javascript-session")
 public class DebuggerEngineProviderImpl extends DebuggerEngineProvider {
     
     private DebuggerEngine.Destructor destructor;

@@ -54,10 +54,15 @@ import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import static org.netbeans.spi.debugger.ui.Constants.*;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
+@DebuggerServiceRegistration(path="javascript-debuggerengine/WatchesView", types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
 public final class WatchesModel extends VariablesModel {
 
     public static final String WATCH =

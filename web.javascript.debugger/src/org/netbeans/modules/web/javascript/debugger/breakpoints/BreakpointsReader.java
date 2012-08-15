@@ -50,12 +50,14 @@ import java.util.Set;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.text.Line;
 
 /**
  *
  * @author ads
  */
+@DebuggerServiceRegistration(path="", types=Properties.Reader.class)
 public class BreakpointsReader implements Properties.Reader {
 
     private static final String LINE_NUMBER     = "lineNumber";                 // NOI18N

@@ -51,7 +51,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  * Listens on DebuggerManager and:
@@ -61,6 +63,7 @@ import org.netbeans.api.debugger.Properties;
  *
  * @author ads
  */
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class PersistenceManager extends  DebuggerManagerAdapter {
     public static final Logger LOGGER = Logger.getLogger(PersistenceManager.class.getName());
     private static final String DEBUGGER = "debugger";      // NOI18N

@@ -53,6 +53,8 @@ import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
@@ -68,6 +70,7 @@ import org.openide.util.Lookup;
  * @author ads
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     implements PropertyChangeListener, AnnotationProvider
 {

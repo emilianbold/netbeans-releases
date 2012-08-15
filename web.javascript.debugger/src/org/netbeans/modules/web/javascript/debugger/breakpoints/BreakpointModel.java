@@ -44,14 +44,8 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
-import java.util.Map;
-import java.util.Stack;
-import java.util.WeakHashMap;
-
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
-import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.filesystems.FileObject;
@@ -60,6 +54,7 @@ import org.openide.util.NbBundle;
 /**
  *
  */
+@DebuggerServiceRegistration(path="BreakpointsView", types=NodeModel.class)
 public class BreakpointModel extends ViewModelSupport
         implements NodeModel { 
 

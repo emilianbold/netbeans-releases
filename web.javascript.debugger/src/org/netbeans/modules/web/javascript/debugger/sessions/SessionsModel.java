@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -61,6 +62,7 @@ import org.openide.util.NbBundle;
     "Session_paused=Paused",
     "Session_none="
 })
+@DebuggerServiceRegistration(path="SessionsView", types=TableModelFilter.class)
 public final class SessionsModel extends ViewModelSupport implements TableModelFilter, Debugger.Listener  {
 
     private Debugger d;

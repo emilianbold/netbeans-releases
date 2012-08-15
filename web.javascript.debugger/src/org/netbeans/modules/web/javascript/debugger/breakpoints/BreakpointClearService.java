@@ -45,12 +45,15 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 
 /**
  * @author ads
  *
  */
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class BreakpointClearService extends DebuggerManagerAdapter {
     
     /* (non-Javadoc)
