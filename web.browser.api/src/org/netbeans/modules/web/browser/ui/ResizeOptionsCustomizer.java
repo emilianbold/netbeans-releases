@@ -86,14 +86,14 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
         DefaultTableCellRenderer colorRenderer = new DefaultTableCellRenderer() {
             @Override
             public void setValue( Object value ) {
-                if( value instanceof ResizeOption.Type ) {
-                    Icon icon = BrowserResizeButton.toIcon( (ResizeOption.Type)value );
+                if( value instanceof ResizeOption ) {
+                    Icon icon = BrowserResizeButton.toIcon( (ResizeOption)value );
                     setIcon( icon );
                     setHorizontalAlignment( JLabel.CENTER );
                 }
             }
         };
-        tblOptions.setDefaultRenderer( ResizeOption.Type.class, colorRenderer );
+        tblOptions.setDefaultRenderer( ResizeOption.class, colorRenderer );
 
         JComboBox combo = new JComboBox();
         combo.addItem( ResizeOption.Type.DESKTOP );
@@ -115,7 +115,7 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
             }
         });
 
-        tblOptions.setDefaultEditor( ResizeOption.Type.class, new DefaultCellEditor( combo ) );
+        tblOptions.setDefaultEditor( ResizeOption.class, new DefaultCellEditor( combo ) );
 
         tblOptions.setRowHeight( combo.getPreferredSize().height );
     }
@@ -307,7 +307,7 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
             ResizeOption ro = options.get( rowIndex );
             switch( columnIndex ) {
                 case 0:
-                    return ro.getType();
+                    return ro;
                 case 1:
                     return ro.getDisplayName();
                 case 2:
@@ -323,7 +323,7 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
         @Override
         public Class<?> getColumnClass( int columnIndex ) {
             if( 0 == columnIndex )
-                return ResizeOption.Type.class;
+                return ResizeOption.class;
             if( 4 == columnIndex )
                 return Boolean.class;
             return super.getColumnClass( columnIndex );
