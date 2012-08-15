@@ -175,7 +175,7 @@ public class JsConventionRule extends JsAstRule {
             }
         }
 
-        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY};
+        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN};
         @NbBundle.Messages("DuplicateName=Duplicate name of property \"{0}\".")
         private void checkDuplicateLabels(ObjectNode objectNode) {
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
@@ -187,6 +187,7 @@ public class JsConventionRule extends JsAstRule {
             ts.move(startOffset);
             State state = State.BEFORE_COLON;
             int curlyBalance = 0;
+            int parenBalance = 0;
             if (ts.movePrevious() && ts.moveNext()) {
                 HashSet<String> names = new HashSet<String>();
                 while (ts.moveNext() && ts.offset() < endOffset) {
@@ -208,6 +209,8 @@ public class JsConventionRule extends JsAstRule {
                                 state = State.BEFORE_COLON;
                             } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
                                 state = State.AFTER_CURLY;
+                            } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                                state = State.AFTER_PAREN;
                             }
                             break;
                         case AFTER_CURLY:
@@ -215,9 +218,20 @@ public class JsConventionRule extends JsAstRule {
                                 curlyBalance++;
                             } else if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
                                 if (curlyBalance == 0) {
-                                    state = State.BEFORE_COLON;
+                                    state = State.AFTER_COLON;
                                 } else {
                                     curlyBalance--;
+                                }
+                            }
+                            break;
+                        case AFTER_PAREN :
+                            if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                                parenBalance++;
+                            } else if (id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                if (parenBalance == 0) {
+                                    state = State.AFTER_COLON;
+                                } else {
+                                    parenBalance--;
                                 }
                             }
                             break;
