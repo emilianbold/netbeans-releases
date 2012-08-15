@@ -45,43 +45,24 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <classpath>
             <fileset dir="modules">
                 <include name="javax\..+\.jar"/>
-                <include name="grizzly-.+\.jar" />
+                <include name="bean-validator.jar"/>
+                <include name="jaxb-osgi.jar"/>
+                <include name="jaxr-api-osgi.jar"/>
+                <include name="jaxrpc-api-osgi.jar"/>
+                <include name="jsr250-api.jar"/>
+                <include name="webservices-osgi.jar"/>
+                <include name="weld-osgi-bundle.jar"/>
+            </fileset>            
+            <fileset dir="modules/endorsed">
+                <include name=".+\.jar"/>
             </fileset>
-            <fileset dir="modules/ejb">
-                <include name="javax.*.jar"/>
-            </fileset>
-            <fileset dir="modules/web">
-                <include name="javax.*.jar"/>
-            </fileset>
-            <file path="modules/glassfish-api.jar"/>
-        </classpath>
-        <javadocs>
-            <fileset dir="modules/web">
-                <include name="javax.*.jar"/>
-            </fileset>
-        </javadocs>
-        <sources>
-            <fileset dir="modules/web">
-                <include name="javax.*.jar"/>
-            </fileset>
-        </sources>
-    </library>
-    
-    <library id="jersey">
-        <classpath>
-            <fileset dir="modules">
-                <include name="jersey-.*\.jar"/>
+            <fileset dir="../mq/lib">
+                <include name="jaxm-api.jar"/>
             </fileset>
         </classpath>
         <javadocs>
-            <fileset dir="modules/web">
-                <include name="javax.*.jar"/>
-            </fileset>
         </javadocs>
         <sources>
-            <fileset dir="modules/web">
-                <include name="javax.*.jar"/>
-            </fileset>
         </sources>
     </library>
 </server>
