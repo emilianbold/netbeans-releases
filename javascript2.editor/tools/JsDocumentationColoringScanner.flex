@@ -131,7 +131,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 /* states */
-%state DOCTOOL
+%state DOCBLOCK
+%state DOCBLOCK_START
 %state AT
 %state STRING
 %state STRINGEND
@@ -145,7 +146,7 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 WhiteSpace = [ \t\f\u00A0\u000B]+
 
 /* comment types */
-DocumentationComment = "/**"
+CommentStart = "/*"
 CommentEnd = ["*"]+ + "/"
 
 
@@ -153,12 +154,17 @@ CommentEnd = ["*"]+ + "/"
 
 <YYINITIAL> {
 
-    {DocumentationComment}          { yybegin(DOCTOOL); return JsDocumentationTokenId.COMMENT_START; }
+    {CommentStart}                  { yybegin(DOCBLOCK_START); }
     {CommentEnd}                    { return JsDocumentationTokenId.COMMENT_END; }
     {AnyChar}                       { }
 }
 
-<DOCTOOL> {
+<DOCBLOCK_START> {
+    "*"                             { yybegin(DOCBLOCK); return JsDocumentationTokenId.COMMENT_DOC_START; }
+    {AnyChar}                       { yypushback(1); yybegin(DOCBLOCK); return JsDocumentationTokenId.COMMENT_BLOCK_START; }
+}
+
+<DOCBLOCK> {
     {CommentEnd}                    { return JsDocumentationTokenId.COMMENT_END; }
     {WhiteSpace}                    { return JsDocumentationTokenId.WHITESPACE; }
     {LineTerminator}                { return JsDocumentationTokenId.EOL; }
@@ -192,7 +198,7 @@ CommentEnd = ["*"]+ + "/"
 
     /* escape sequences */
     \\.                             { }
-    {LineTerminator}                { yypushback(1); yybegin(DOCTOOL);
+    {LineTerminator}                { yypushback(1); yybegin(DOCBLOCK);
                                         if (tokenLength - 1 > 0) {
                                             return JsDocumentationTokenId.UNKNOWN;
                                         }
@@ -200,12 +206,12 @@ CommentEnd = ["*"]+ + "/"
 }
 
 <STRINGEND> {
-    \"                              { yybegin(DOCTOOL); return JsDocumentationTokenId.STRING_END; }
+    \"                              { yybegin(DOCBLOCK); return JsDocumentationTokenId.STRING_END; }
 }
 
 <AT> {
-    "@"{Identifier}                 { yybegin(DOCTOOL); return JsDocumentationTokenId.KEYWORD; }
-    {AnyChar}                       { yybegin(DOCTOOL); return JsDocumentationTokenId.AT; }
+    "@"{Identifier}                 { yybegin(DOCBLOCK); return JsDocumentationTokenId.KEYWORD; }
+    {AnyChar}                       { yybegin(DOCBLOCK); return JsDocumentationTokenId.AT; }
 }
 
 <<EOF>> {
