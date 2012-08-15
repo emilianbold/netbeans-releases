@@ -944,6 +944,7 @@ public class NbModuleSuite {
             Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
             Method getDefault = lifeClazz.getMethod("getDefault"); // NOI18N
             Method exit = lifeClazz.getMethod("exit");
+            LOG.log(Level.FINE, "Closing via LifecycleManager loaded by {0}", lifeClazz.getClassLoader());
             Object life = getDefault.invoke(null);
             if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
                 System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
@@ -1416,7 +1417,7 @@ public class NbModuleSuite {
         }
 
         private static void writeModule(File file, String xml) throws IOException {
-            String previous = null;
+            String previous;
             if (file.exists()) {
                 previous = asString(new FileInputStream(file), true);
                 if (previous.equals(xml)) {
@@ -1424,10 +1425,10 @@ public class NbModuleSuite {
                 }
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "rewrite module file: {0}", file);
-                    charDump(previous);
-                    LOG.fine("new----");
-                    charDump(xml);
-                    LOG.fine("end----");
+                    charDump(Level.FINEST, previous);
+                    LOG.finest("new----");
+                    charDump(Level.FINEST, xml);
+                    LOG.finest("end----");
                 }
             }
             FileOutputStream os = new FileOutputStream(file);
@@ -1435,7 +1436,7 @@ public class NbModuleSuite {
             os.close();
         }
 
-        private static void charDump(String text) {
+        private static void charDump(Level logLevel, String text) {
             StringBuilder sb = new StringBuilder(5 * text.length());
             for (int i = 0; i < text.length(); i++) {
                 if (i % 8 == 0) {
@@ -1454,7 +1455,7 @@ public class NbModuleSuite {
                 }
             }
             sb.append('\n');
-            LOG.fine(sb.toString());
+            LOG.log(logLevel, sb.toString());
         }
 
         private static String two(String s) {

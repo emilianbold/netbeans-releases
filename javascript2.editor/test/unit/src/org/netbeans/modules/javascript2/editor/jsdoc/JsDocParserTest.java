@@ -106,6 +106,12 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
     }
 
+    public void testNoTagsInBlockComment() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/blockComment.js"));
+        Iterator<Entry<Integer, JsDocComment>> iterator = JsDocParser.parse(source.createSnapshot()).entrySet().iterator();
+        assertTrue(!iterator.hasNext());
+    }
+
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();

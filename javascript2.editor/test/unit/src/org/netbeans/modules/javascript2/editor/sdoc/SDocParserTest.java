@@ -96,6 +96,12 @@ public class SDocParserTest extends JsTestBase {
         assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription());
     }
 
+    public void testNoTagsInBlockComment() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/sdoc/blockComment.js"));
+        Iterator<Entry<Integer, SDocComment>> iterator = SDocParser.parse(source.createSnapshot()).entrySet().iterator();
+        assertTrue(!iterator.hasNext());
+    }
+
     private void checkElementTypes(String filePath) throws Exception {
         Source source = getTestSource(getTestFile(filePath));
         List<? extends SDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();

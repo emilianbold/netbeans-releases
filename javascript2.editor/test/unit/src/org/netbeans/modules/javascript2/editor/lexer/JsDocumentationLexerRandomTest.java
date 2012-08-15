@@ -84,6 +84,7 @@ public class JsDocumentationLexerRandomTest extends TestCase {
             FixedTextDescriptor.create("/**/", 0.1),
             FixedTextDescriptor.create("/***/", 0.1),
             FixedTextDescriptor.create("/*", 0.1),
+            FixedTextDescriptor.create("/**", 0.1),
             FixedTextDescriptor.create("//", 0.1),
             FixedTextDescriptor.create("*/", 0.1),
         };
