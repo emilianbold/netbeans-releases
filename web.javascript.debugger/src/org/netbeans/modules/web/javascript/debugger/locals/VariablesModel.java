@@ -299,14 +299,18 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         } else if (node instanceof ScopedRemoteObject) {
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-                return var.getValueAsString();
+                String value = var.getValueAsString();
+                if (value.isEmpty() && var.getType() == RemoteObject.Type.OBJECT) {
+                    value = var.getDescription();
+                }
+                return value;
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
                 if (var.getType() == RemoteObject.Type.OBJECT) {
-                    String desc = var.getDescription();
-                    if (desc == null) {
+                    String clazz = var.getClassName();
+                    if (clazz == null) {
                         return var.getType().getName();
                     } else {
-                        return desc;
+                        return clazz;
                     }
                 } else {
                     return var.getType().getName();

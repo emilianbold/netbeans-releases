@@ -203,9 +203,16 @@ public class ToolTipAnnotation extends Annotation
                     case FUNCTION:
                         return ; // No tooltip for functions
                     case OBJECT:
-                        value = "("+type.getName()+") "+value;
+                        String clazz = var.getClassName();
+                        if (clazz == null) {
+                            clazz = type.getName();
+                        }
+                        if (value.isEmpty()) {
+                            value = var.getDescription();
+                        }
+                        value = "("+clazz+") "+value;
                         tooltipVariable = sv;
-                        // TODO: add (class type) and obj ID
+                        // TODO: add obj ID
                 }
                 if (type != Type.UNDEFINED) {
                     tooltipText = expression + " = " + value;

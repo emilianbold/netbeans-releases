@@ -60,6 +60,12 @@ import org.openide.util.NbBundle;
  */
 public class RemoteObject extends AbstractObject {
     
+    private static final String PROP_TYPE = "type";                 // NOI18N
+    private static final String PROP_VALUE = "value";               // NOI18N
+    private static final String PROP_DESCRIPTION = "description";   // NOI18N
+    private static final String PROP_CLASS_NAME = "className";      // NOI18N
+    private static final String PROP_OBJECT_ID = "objectId";        // NOI18N
+    
     public static enum Type {
         OBJECT(Bundle.TYPE_OBJECT()),
 // object subtype hints: probably not neede now
@@ -98,7 +104,7 @@ public class RemoteObject extends AbstractObject {
     }
 
     public Type getType() {
-        String t = (String)getObject().get("type");
+        String t = (String)getObject().get(PROP_TYPE);
         if ("object".equals(t)) {
             return Type.OBJECT;
         } else if ("function".equals(t)) {
@@ -121,8 +127,12 @@ public class RemoteObject extends AbstractObject {
         return property;
     }
     
+    public String getClassName() {
+        return (String)getObject().get(PROP_CLASS_NAME);
+    }
+    
     public String getDescription() {
-        return (String)getObject().get("description");
+        return (String)getObject().get(PROP_DESCRIPTION);
     }
     
     public boolean isMutable() {
@@ -130,17 +140,21 @@ public class RemoteObject extends AbstractObject {
                 getType() == Type.BOOLEAN);
     }
     
+    private Object getValue() {
+        return getObject().get(PROP_VALUE);
+    }
+    
     public String getValueAsString() {
         switch (getType()) {
-            case STRING: return (String)getObject().get("value");
+            case STRING: return (String)getValue();
             case NUMBER: 
-                Number n = (Number)getObject().get("value");
+                Number n = (Number)getValue();
                 if (n == null) {
                     return "";
                 }
                 return n.toString();
             case BOOLEAN: 
-                Boolean b = (Boolean)getObject().get("value");
+                Boolean b = (Boolean)getValue();
                 if (b == null) {
                     return "";
                 }
@@ -150,7 +164,7 @@ public class RemoteObject extends AbstractObject {
     }
 
     public String getObjectID() {
-        String remoteObjectId = (String)getObject().get("objectId");
+        String remoteObjectId = (String)getObject().get(PROP_OBJECT_ID);
         if (remoteObjectId == null) {
             return null;
         }
