@@ -466,6 +466,9 @@ public final class JPQLEditorTopComponent extends TopComponent {
     public void setResult(JPQLResult result, ClassLoader ccl) {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ccl);
+        if(result.getSqlQuery() != null) {
+            sqlEditorPane.setText(result.getSqlQuery());
+        }
         if (result.getExceptions().isEmpty()) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
@@ -528,6 +531,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
             }
 
         }
+        
         ph.progress(99);
         ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionDone"));
 
