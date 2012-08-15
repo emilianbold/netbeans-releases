@@ -681,7 +681,12 @@ public class NbModuleSuite {
         public void run(final TestResult result) {
             result.runProtected(this, new Protectable() {
                 public @Override void protect() throws Throwable {
-                    runInRuntimeContainer(result);
+                    ClassLoader before = Thread.currentThread().getContextClassLoader();
+                    try {
+                        runInRuntimeContainer(result);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(before);
+                    }
                 }
             });
         }
