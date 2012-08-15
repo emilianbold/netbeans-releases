@@ -102,9 +102,9 @@ public class JsDocParser {
     }
 
     private static boolean isTextToken(Token<? extends JsDocumentationTokenId> token) {
-        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_START);
+        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_DOC_START);
 //        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_SHARED_BEGIN
-//                && token.id() != JsDocumentationTokenId.COMMENT_START);
+//                && token.id() != JsDocumentationTokenId.COMMENT_DOC_START);
     }
 
     private static TokenSequence getEmbeddedJsDocTS(TokenSequence ts) {

@@ -1683,6 +1683,9 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writePackagingScript(MakeConfiguration conf) {
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            return;
+        }
         if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             // Nothing to do
             return;

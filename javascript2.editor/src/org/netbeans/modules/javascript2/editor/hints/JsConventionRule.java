@@ -126,6 +126,9 @@ public class JsConventionRule extends JsAstRule {
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
         private void checkSemicolon(int offset) {
             int fileOffset = context.parserResult.getSnapshot().getOriginalOffset(offset);
+            if (fileOffset == -1) {
+                return;
+            }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
             ts.move(fileOffset);
             if(ts.movePrevious() && ts.moveNext()) {
@@ -136,7 +139,7 @@ public class JsConventionRule extends JsAstRule {
                 if (id == JsTokenId.EOL && ts.movePrevious()) {
                     id = ts.token().id();
                 }
-                if (id != JsTokenId.OPERATOR_SEMICOLON) {
+                if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                     LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
                     hints.add(new Hint(rule, Bundle.MissingSemicolon(ts.token().text().toString()), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
@@ -172,15 +175,20 @@ public class JsConventionRule extends JsAstRule {
             }
         }
 
-        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY};
+        private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN, AFTER_BRACKET};
         @NbBundle.Messages("DuplicateName=Duplicate name of property \"{0}\".")
         private void checkDuplicateLabels(ObjectNode objectNode) {
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
             int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+            if (startOffset == -1 || endOffset == -1) {
+                return;
+            }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, startOffset);
             ts.move(startOffset);
             State state = State.BEFORE_COLON;
             int curlyBalance = 0;
+            int parenBalance = 0;
+            int bracketBalance = 0;
             if (ts.movePrevious() && ts.moveNext()) {
                 HashSet<String> names = new HashSet<String>();
                 while (ts.moveNext() && ts.offset() < endOffset) {
@@ -202,6 +210,10 @@ public class JsConventionRule extends JsAstRule {
                                 state = State.BEFORE_COLON;
                             } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
                                 state = State.AFTER_CURLY;
+                            } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                                state = State.AFTER_PAREN;
+                            } else if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                state = State.AFTER_BRACKET;
                             }
                             break;
                         case AFTER_CURLY:
@@ -209,9 +221,31 @@ public class JsConventionRule extends JsAstRule {
                                 curlyBalance++;
                             } else if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
                                 if (curlyBalance == 0) {
-                                    state = State.BEFORE_COLON;
+                                    state = State.AFTER_COLON;
                                 } else {
                                     curlyBalance--;
+                                }
+                            }
+                            break;
+                        case AFTER_PAREN :
+                            if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                                parenBalance++;
+                            } else if (id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                if (parenBalance == 0) {
+                                    state = State.AFTER_COLON;
+                                } else {
+                                    parenBalance--;
+                                }
+                            }
+                            break;
+                       case AFTER_BRACKET :
+                            if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                bracketBalance++;
+                            } else if (id == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                if (bracketBalance == 0) {
+                                    state = State.AFTER_COLON;
+                                } else {
+                                    bracketBalance--;
                                 }
                             }
                             break;
@@ -261,17 +295,19 @@ public class JsConventionRule extends JsAstRule {
             if (onset) {
                 checkDuplicateLabels(objectNode);
                 int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                ts.move(offset);
-                if(ts.movePrevious() && ts.moveNext()) {
-                    LexUtilities.findPrevious(ts, Arrays.asList(
-                            JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                            JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                            JsTokenId.BLOCK_COMMENT));
-                    if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                        hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                if (offset > -1) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
+                    ts.move(offset);
+                    if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                        LexUtilities.findPrevious(ts, Arrays.asList(
+                                JsTokenId.EOL, JsTokenId.WHITESPACE, 
+                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                JsTokenId.BLOCK_COMMENT));
+                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                            hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
+                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                        }
                     }
                 }
             }

@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.utils.ui;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -80,10 +79,11 @@ public class FileChooser extends JFileChooser {
         File feedFilePathFile = null;
         if (feedFilePath != null && feedFilePath.length() > 0) {
             feedFilePathFile = new File(feedFilePath);
-            try {
-                feedFilePathFile = feedFilePathFile.getCanonicalFile();
-            } catch (IOException e) {
-            }
+            // Does not canonize path, see Bug #216910
+            //try {
+            //    feedFilePathFile = feedFilePathFile.getCanonicalFile();
+            //} catch (IOException e) {
+            //}
         }
         if (feedFilePathFile != null && feedFilePathFile.exists()) {
             FileChooser.setCurrentChooserFile(feedFilePathFile);
