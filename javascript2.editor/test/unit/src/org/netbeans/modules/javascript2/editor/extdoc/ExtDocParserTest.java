@@ -95,6 +95,12 @@ public class ExtDocParserTest extends JsTestBase {
         assertEquals("This should be description.", ((ExtDocDescriptionElement) tags.get(0)).getDescription());
     }
 
+    public void testNoTagsInBlockComment() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/extdoc/blockComment.js"));
+        Iterator<Entry<Integer, ExtDocComment>> iterator = ExtDocParser.parse(source.createSnapshot()).entrySet().iterator();
+        assertTrue(!iterator.hasNext());
+    }
+
     private void checkElementTypes(String filePath) throws Exception {
         Source source = getTestSource(getTestFile(filePath));
         List<? extends ExtDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();

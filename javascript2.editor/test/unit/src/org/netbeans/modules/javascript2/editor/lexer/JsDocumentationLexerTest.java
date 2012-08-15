@@ -61,34 +61,64 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    @SuppressWarnings("unchecked")
+    public void testCommonBlockComment01() {
+        String text = "/* comment */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
+        TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_BLOCK_START, "/*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "comment");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
+    }
+
+    public void testCommonBlockComment02() {
+        String text = "/*comment*/";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
+        TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_BLOCK_START, "/*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "comment");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
+    }
+
+    
+    public void testCommonBlockComment03() {
+        String text = "/* \n\n */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
+        TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_BLOCK_START, "/*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
+    }
+    
     public void testCommonDocComment01() {
         String text = "/** comment */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "comment");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment02() {
         String text = "/**comment*/";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "comment");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment03() {
         String text = "/** \n\n */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
@@ -96,36 +126,33 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment04() {
         String text = "/**   @  */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, "   ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.AT, "@");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment05() {
         String text = "/** @p */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.KEYWORD, "@p");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment06() {
         String text = "/** \n * @param */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
@@ -136,12 +163,11 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment07() {
         String text = "/** \n *@param */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
@@ -151,12 +177,11 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment08() {
         String text = "/** \n *@ */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
@@ -166,12 +191,11 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommonDocComment09() {
         String text = "/**\n * @param {String, Date} [myDate] Specifies the date, if applicable. */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.ASTERISK, "*");
@@ -203,20 +227,28 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testUnfinishedComment01() {
         String text = "/* \n var Carrot = {";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.UNKNOWN, "/* \n var Carrot = {");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_BLOCK_START, "/*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "var");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "Carrot");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.BRACKET_LEFT_CURLY, "{");
     }
 
-    @SuppressWarnings("unchecked")
     public void testUnfinishedComment02() {
         String text = "/** getColor: function () {}, ";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "getColor:");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
@@ -228,12 +260,11 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.BRACKET_RIGHT_CURLY, "}");
     }
 
-    @SuppressWarnings("unchecked")
     public void testHtmlComment01() {
         String text = "/** <b>text</b> */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<b>");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "text");
@@ -242,12 +273,11 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testHtmlComment02() {
         String text = "/** <a href=\"mailto:marfous@netbeans.org\">href</a> */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<a href=\"mailto:marfous@netbeans.org\">");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "href");
@@ -256,33 +286,30 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testHtmlComment03() {
         String text = "/** <a */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<a ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
     public void testHtmlComment04() {
         String text = "/** < ";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "< ");
     }
 
-    @SuppressWarnings("unchecked")
     public void testCommentWithString() {
         String text = "/** @param ident \"cokoliv\" \n @param */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.KEYWORD, "@param");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
