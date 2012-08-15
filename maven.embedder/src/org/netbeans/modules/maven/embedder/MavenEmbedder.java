@@ -106,6 +106,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.embedder.impl.NBModelBuilder;
+import org.netbeans.modules.maven.embedder.impl.NbRepositoryCache;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -429,6 +430,7 @@ public final class MavenEmbedder {
             Exceptions.printStackTrace(x);
         }
         req.setOffline(isOffline());
+        req.setRepositoryCache(new NbRepositoryCache());
 
         return req;
     }
