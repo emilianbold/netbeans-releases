@@ -48,6 +48,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
 import org.netbeans.modules.web.javascript.debugger.DebuggerEngineProviderImpl;
+import org.netbeans.modules.web.javascript.debugger.EngineDestructorProvider;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
@@ -62,7 +63,9 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
     public Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext) {
         Debugger debugger = webkit.getDebugger();
         Project project = projectContext.lookup(Project.class);
-        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO, new Object[]{webkit, debugger, project});
+        EngineDestructorProvider edp = new EngineDestructorProvider();
+        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO,
+                new Object[]{webkit, debugger, project, edp});
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
         Session session = engine.lookupFirst(null, Session.class);
         return session;
@@ -73,8 +76,7 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
         DebuggerEngine engine = session.lookupFirst(null, DebuggerEngine.class);
         assert engine != null;
         session.kill();
-        ((DebuggerEngineProviderImpl) engine.lookupFirst(null,
-                DebuggerEngineProvider.class)).getDestructor().killEngine();
+        engine.lookupFirst(null, EngineDestructorProvider.class).getDestructor().killEngine();
     }
     
 }

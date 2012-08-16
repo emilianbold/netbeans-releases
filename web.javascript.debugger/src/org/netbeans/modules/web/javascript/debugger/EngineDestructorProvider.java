@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,48 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.javascript.debugger;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
-import static org.netbeans.modules.web.javascript.debugger.DebuggerConstants.*;
 
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
-
-@DebuggerEngineProvider.Registration(path="javascript-session")
-public class DebuggerEngineProviderImpl extends DebuggerEngineProvider {
+/**
+ * Container of engine destructor. Available in engine's lookup.
+ * @author Martin
+ */
+public class EngineDestructorProvider {
     
-    private EngineDestructorProvider edp;
-    
-    public DebuggerEngineProviderImpl(ContextProvider contextProvider) {
-        edp = contextProvider.lookupFirst(null, EngineDestructorProvider.class);
+    private DebuggerEngine.Destructor destructor;
+
+    public Destructor getDestructor() {
+        return destructor;
     }
 
-    @Override
-    public String[] getLanguages() {
-        return new String[] {JAVASCRIPT};
-    }
-
-    @Override
-    public String getEngineTypeID() {
-        return ENGINE;
-    }
-
-    @Override
-    public Object[] getServices() {
-        return new Object[0];
-    }
-
-    @Override
     public void setDestructor(Destructor destructor) {
-        edp.setDestructor(destructor);
+        this.destructor = destructor;
     }
-    
+
 }
