@@ -82,6 +82,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
     private final HashMap<String,J2MEPlatform.J2MEProfile> name2profile;
     private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     private String reqCfg, reqProf;
+    private boolean embedded;
     private TemplateWizard wiz;
     private int firstConfigWidth = -1;
     private boolean finishable = true;
@@ -201,10 +202,11 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         }
     }
     
-    public synchronized void setValues(final TemplateWizard wiz, final J2MEPlatform platform, final J2MEPlatform.Device device, final String config, final String profile) {
+    public synchronized void setValues(final TemplateWizard wiz, final J2MEPlatform platform, final J2MEPlatform.Device device, final String config, final String profile, final boolean embedded) {
         this.wiz = wiz;
         reqCfg = config;
         reqProf = profile;
+        this.embedded = embedded;
         jComboBoxTarget.setSelectedItem(platform);
         updateDevices(device, config, profile);
     }
@@ -219,12 +221,42 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         deviceModel.setSelectedItem(null);
         deviceModel.removeAllElements();
         if (platform != null) {
+            J2MEPlatform.Device select = null;
             final J2MEPlatform.Device devices[] = platform.getDevices();
             for (int i=0; i<devices.length; i++) {
-                deviceModel.addElement(devices[i]);
-                if (devices[i].getName().equals(deviceName)) deviceModel.setSelectedItem(devices[i]);
+                final J2MEPlatform.J2MEProfile p[] = devices[i].getProfiles();
+                for (int j=0; j<p.length; j++) {
+                    if (!embedded || profile == null ||
+                            (p[j].isDefault() && 
+                            J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[j].getType()) && 
+                            p[j].getName().equals(profile))) 
+                    {
+                        deviceModel.addElement(devices[i]);
+                        if (devices[i].getName().equals(deviceName)) deviceModel.setSelectedItem(devices[i]);
+                        if(select == null) select = devices[i];
+                        j = p.length;
+                    }
+                }
+                    
             }
-            if (deviceModel.getSelectedItem() == null && devices.length > 0) deviceModel.setSelectedItem(devices[0]);
+            if(embedded && profile != null && profile.equals("IMP-NG") && select == null) { // NOI18N
+                // no NG embedded support in this SDK
+                for (int i=0; i<devices.length; i++) {
+                    final J2MEPlatform.J2MEProfile p[] = devices[i].getProfiles();
+                    for (int j=0; j<p.length; j++) {
+                        if (p[j].isDefault() && J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[j].getType()) && 
+                                p[j].getName().equals("IMP"))
+                        {
+                            deviceModel.addElement(devices[i]);
+                            if (devices[i].getName().equals(deviceName)) deviceModel.setSelectedItem(devices[i]);
+                            if(select == null) select = devices[i];
+                            j = p.length;
+                        }
+                    }
+
+                }
+            }
+            if (deviceModel.getSelectedItem() == null && select != null) deviceModel.setSelectedItem(select);
         }
         updateConfigsAndProfiles(config, profile);
     }

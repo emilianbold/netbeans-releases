@@ -254,6 +254,17 @@ made subject to such option by the copyright holder.
                     <attr boolvalue="true" name="application"/>
                 </file>
 
+                <file name="MobileEmbeddedApplication">
+                    <attr name="position" intvalue="150"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.NewProjectIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/emptyIMPNGProject.html"/>
+                    <attr boolvalue="true" name="application"/>
+                    <attr boolvalue="true" name="embedded"/>
+                </file>
+
                 <file name="MobileLibrary">
                     <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>

@@ -73,6 +73,8 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = 4589834546983L;
 
     private static final String IS_LIBRARY = "is_library";//NOI18N
+    private static final String IS_EMBEDDED = "is_embedded";//NOI18N
+    
     boolean platformInstall;
     int currentIndex;
     PlatformInstallPanel.WizardPanel platformPanel;
@@ -125,22 +127,26 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         boolean create = true;
         if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) // NOI18N
             create = false;
+        boolean embedded = true;
+        if (!(Templates.getTemplate(templateWizard).getAttribute("embedded") instanceof Boolean)) // NOI18N
+            embedded = false;
         
         platformInstall =  PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
         if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
-            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"));
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary")); // NOI18N
         }
         projectPanel = new ProjectPanel.WizardPanel(create);
-        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"));
+        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary")); // NOI18N
         
         psPanel = new PlatformSelectionPanel();
         csPanel = new ConfigurationsSelectionPanel();
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, null);
-        templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, null);
+        templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, embedded ? "IMP-NG" : null); // NOI18N
         templateWizard.putProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION, null);
         templateWizard.putProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES, null);
         templateWizard.putProperty(IS_LIBRARY, !create);
+        templateWizard.putProperty(IS_EMBEDDED, embedded);
         final DataObject dao = templateWizard.getTemplate();
         templateWizard.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
         currentIndex = 0;
