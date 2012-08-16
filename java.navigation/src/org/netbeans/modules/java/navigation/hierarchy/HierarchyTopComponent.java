@@ -153,6 +153,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
     private static final String NON_ACTIVE_CONTENT = "non-active-content";  //NOI18N
     private static final String ACTIVE_CONTENT = "active-content";  //NOI18N
+    private static final String PROP_LOWER_TOOLBAR_EXPANDED = "filtersPanelTap.expanded"; //NOI18N
     
     private static HierarchyTopComponent instance;
 
@@ -220,7 +221,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         lowerToolBar.setOrientation(TapPanel.DOWN);
         final JComponent lowerButtons = filters.getComponent();
         lowerButtons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
-        lowerToolBar.add(lowerButtons);        
+        lowerToolBar.add(lowerButtons);
+        final boolean expanded = NbPreferences.forModule(HierarchyTopComponent.class).
+                getBoolean(PROP_LOWER_TOOLBAR_EXPANDED, true); //NOI18N
+        lowerToolBar.setExpanded(expanded);
+        lowerToolBar.addPropertyChangeListener(this);
         add(updateBackground(lowerToolBar), BorderLayout.SOUTH);
 
     }
@@ -298,7 +303,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             }
         } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
             NbPreferences.forModule(HierarchyTopComponent.class).putBoolean(
-                    "filtersPanelTap.expanded", //NOI18N
+                    PROP_LOWER_TOOLBAR_EXPANDED,
                     lowerToolBar.isExpanded());
         }
     }
