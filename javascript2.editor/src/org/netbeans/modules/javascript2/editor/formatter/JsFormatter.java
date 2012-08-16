@@ -588,7 +588,7 @@ public class JsFormatter implements Formatter {
         // we mark space and WRAP_NEVER tokens as processed
         for (FormatToken current = start; current != end; current = current.next()) {
             if (current.isVirtual()
-                    && !current.isIndentationMarker()
+                    && !current.getKind().isIndentationMarker()
                     && getLineWrap(current, formatContext) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
                 processed.add(current);
             }
@@ -633,7 +633,7 @@ public class JsFormatter implements Formatter {
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
                     || current.getKind() == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
-                    || current.isIndentationMarker()) {
+                    || current.getKind().isIndentationMarker()) {
                 return false;
             }
         }
@@ -664,7 +664,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.AFTER_PROPERTY
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
-                    || previous.isIndentationMarker()) {
+                    || kind.isIndentationMarker()) {
                 result = previous;
                 break;
             }
@@ -675,7 +675,7 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
-                || result.isIndentationMarker()) {
+                || result.getKind().isIndentationMarker()) {
             return false;
         }
 
