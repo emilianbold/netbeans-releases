@@ -124,7 +124,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
+            } else if (PageModel.PROP_NODE.equals(propName)) {
+                //TODO: only partial reload
+                pageModelDocumentChanged();
             }
+
 
         }
     };
@@ -587,6 +591,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
 
     private Project getCurrentProject() {
+        if (inspectedFileObject!=null) {
+            return FileOwnerQuery.getOwner(inspectedFileObject);
+        }
+        if (sourceDescription!=null) {
+            return FileOwnerQuery.getOwner(sourceDescription.getFileObject());
+        }
         Node rootContext = manager.getRootContext();
         FileObject fo = null;
         if (rootContext instanceof HtmlElementNode) {

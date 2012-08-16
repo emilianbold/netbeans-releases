@@ -202,21 +202,30 @@ public class WebKitPageModel extends PageModel {
         return new DOM.Listener() {
             @Override
             public void childNodesSet(Node parent) {
+                final DOMNode domNode;
                 synchronized(WebKitPageModel.this) {
                     int nodeId = parent.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
+                    domNode = nodes.get(nodeId);
                     if (domNode != null) {
                         updateNodes(parent);
                         domNode.updateChildren(parent);
                     }
                 }
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        firePropertyChange(PROP_NODE, null, domNode);
+                    }
+                });
+
             }
 
             @Override
             public void childNodeRemoved(Node parent, Node child) {
+                final DOMNode domNode;
                 synchronized(WebKitPageModel.this) {
                     int nodeId = parent.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
+                    domNode = nodes.get(nodeId);
                     if (domNode != null) {
                         domNode.updateChildren(parent);
                     }
@@ -231,18 +240,33 @@ public class WebKitPageModel extends PageModel {
                     } else {
                         contentDocumentMap.remove(contentDocument.getNodeId());
                     }
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            firePropertyChange(PROP_NODE, null, domNode);
+                        }
+                    });
+                    
                 }
             }
 
             @Override
             public void childNodeInserted(Node parent, Node child) {
+                final DOMNode domNode;
                 synchronized(WebKitPageModel.this) {
                     int nodeId = parent.getNodeId();
                     updateNodes(child);
-                    DOMNode domNode = nodes.get(nodeId);
+                    domNode = nodes.get(nodeId);
                     if (domNode != null) {
                         domNode.updateChildren(parent);
                     }
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            firePropertyChange(PROP_NODE, null, domNode);
+                        }
+                    });
+                    
                 }
             }
 
