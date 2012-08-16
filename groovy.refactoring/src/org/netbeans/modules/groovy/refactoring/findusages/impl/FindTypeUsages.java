@@ -46,6 +46,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -128,6 +129,17 @@ public class FindTypeUsages extends AbstractFindUsages {
         }
 
         @Override
+        public void visitImports(ModuleNode node) {
+            for (ImportNode importNode : node.getImports()) {
+                if (!importNode.isStar()) {
+                    // ImportNode itself doesn't contain line/column information, so we need to pass it's type
+                    addIfEquals(importNode.getType());
+                }
+            }
+            super.visitImports(node);
+        }
+
+        @Override
         public void visitClass(ClassNode clazz) {
             if (isEquals(clazz.getSuperClass())) {
                 // Oh my goodness I have absolutely no idea why the hack getSuperClass() doesn't return valid initiated superclass
@@ -167,7 +179,7 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         private void addIfEquals(ASTNode node) {
             final ClassNode type = ElementUtils.getType(node);
-            if (isEquals(node)) {
+            if (isEquals(node) && node.getColumnNumber() != -1 && node.getLineNumber() != -1) {
                 usages.add(new FakeASTNode(type, ElementUtils.getTypeName(node)));
             }
 

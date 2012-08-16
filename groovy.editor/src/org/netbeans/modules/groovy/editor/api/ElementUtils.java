@@ -62,7 +62,6 @@ import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.AstPath;
 
 /**
  *
@@ -186,7 +185,7 @@ public final class ElementUtils {
         } else if (node instanceof CatchStatement) {
             name = ((CatchStatement) node).getVariable().getName();
         } else if (node instanceof ImportNode) {
-            name = ((ImportNode) node).getClassName();
+            name = ((ImportNode) node).getType().getNameWithoutPackage();
         } else if (node instanceof ClassExpression) {
             name = ((ClassExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
