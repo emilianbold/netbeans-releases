@@ -89,6 +89,7 @@ FormattingToken{kind=WHITESPACE, offset=71, text= }
 FormattingToken{kind=TEXT, offset=72, text=(}
 FormattingToken{kind=AFTER_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=73, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=76, text= }
 FormattingToken{kind=TEXT, offset=77, text=x}
 FormattingToken{kind=WHITESPACE, offset=78, text= }
@@ -206,6 +207,7 @@ FormattingToken{kind=TEXT, offset=171, text=(}
 FormattingToken{kind=AFTER_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=172, text= }
 FormattingToken{kind=TEXT, offset=173, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=176, text= }
 FormattingToken{kind=TEXT, offset=177, text=i}
 FormattingToken{kind=WHITESPACE, offset=178, text= }

@@ -1,6 +1,7 @@
 FormattingToken{kind=SOURCE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=0, text=  }
 FormattingToken{kind=TEXT, offset=2, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=5, text= }
 FormattingToken{kind=TEXT, offset=6, text=ctverec}
 FormattingToken{kind=WHITESPACE, offset=13, text= }
@@ -18,6 +19,7 @@ FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=36, text=
 }
 FormattingToken{kind=TEXT, offset=37, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=40, text= }
 FormattingToken{kind=TEXT, offset=41, text=obdelnik}
 FormattingToken{kind=WHITESPACE, offset=49, text= }
@@ -37,6 +39,7 @@ FormattingToken{kind=EOL, offset=73, text=
 FormattingToken{kind=EOL, offset=74, text=
 }
 FormattingToken{kind=TEXT, offset=75, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=78, text= }
 FormattingToken{kind=TEXT, offset=79, text=a}
 FormattingToken{kind=WHITESPACE, offset=80, text= }
@@ -195,6 +198,7 @@ FormattingToken{kind=EOL, offset=310, text=
 }
 FormattingToken{kind=WHITESPACE, offset=311, text=    }
 FormattingToken{kind=TEXT, offset=315, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=318, text= }
 FormattingToken{kind=TEXT, offset=319, text=space}
 FormattingToken{kind=WHITESPACE, offset=324, text= }
@@ -406,6 +410,7 @@ FormattingToken{kind=EOL, offset=610, text=
 }
 FormattingToken{kind=WHITESPACE, offset=611, text=    }
 FormattingToken{kind=TEXT, offset=615, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=618, text= }
 FormattingToken{kind=TEXT, offset=619, text=ctverec}
 FormattingToken{kind=WHITESPACE, offset=626, text= }
@@ -718,6 +723,7 @@ FormattingToken{kind=EOL, offset=1148, text=
 FormattingToken{kind=EOL, offset=1149, text=
 }
 FormattingToken{kind=TEXT, offset=1150, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1153, text= }
 FormattingToken{kind=TEXT, offset=1154, text=motor}
 FormattingToken{kind=WHITESPACE, offset=1159, text= }

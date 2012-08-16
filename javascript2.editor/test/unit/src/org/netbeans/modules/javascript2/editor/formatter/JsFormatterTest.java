@@ -1019,6 +1019,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/var3.js", options, ".wrapIfLong.formatted");
     }
 
+    public void testVar4() throws Exception {
+        reformatFileContents("testfiles/formatter/var4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testVar4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/var4.js");
+    }
+
     protected void dumpFormatTokens(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);

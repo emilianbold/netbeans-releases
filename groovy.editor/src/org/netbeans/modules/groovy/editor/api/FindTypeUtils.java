@@ -57,6 +57,7 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -162,6 +163,11 @@ public final class FindTypeUtils {
             } else {
                 return ((ForStatement) leaf).getVariable();
             }
+        } else if (leaf instanceof CatchStatement) {
+            CatchStatement catchStatement = (CatchStatement) leaf;
+            if (isCaretOnCatchStatement(catchStatement, doc, caret)) {
+                return catchStatement.getVariable().getType();
+            }
         } else if (leaf instanceof ClassExpression) {
             if (isCaretOnClassExpressionType(((ClassExpression) leaf), doc, caret)) {
                 return ElementUtils.getType(leaf);
@@ -234,6 +240,13 @@ public final class FindTypeUtils {
 
     private static boolean isCaretOnForStatementType(ForStatement forLoop, BaseDocument doc, int cursorOffset) {
         if (getForLoopRange(forLoop, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnCatchStatement(CatchStatement catchStatement, BaseDocument doc, int cursorOffset) {
+        if (getCatchStatementRange(catchStatement, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
         }
         return false;
@@ -326,7 +339,7 @@ public final class FindTypeUtils {
     }
 
     private static OffsetRange getClassExpressionRange(ClassExpression expression, BaseDocument doc, int cursorOffset) {
-        return getRange(expression.getType(), doc, cursorOffset);
+        return getRange(expression, doc, cursorOffset);
     }
 
     private static OffsetRange getArrayExpressionRange(ArrayExpression expression, BaseDocument doc, int cursorOffset) {
@@ -360,6 +373,10 @@ public final class FindTypeUtils {
 
     private static OffsetRange getForLoopRange(ForStatement forLoop, BaseDocument doc, int cursorOffset) {
         return getRange(forLoop.getVariableType(), doc, cursorOffset);
+    }
+
+    private static OffsetRange getCatchStatementRange(CatchStatement catchStatement, BaseDocument doc, int cursorOffset) {
+        return getRange(catchStatement.getVariable().getOriginType(), doc, cursorOffset);
     }
 
     private static OffsetRange getImportRange(ImportNode importNode, BaseDocument doc, int cursorOffset) {

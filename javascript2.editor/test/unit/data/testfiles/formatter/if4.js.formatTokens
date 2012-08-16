@@ -18,6 +18,7 @@ FormattingToken{kind=EOL, offset=20, text=
 FormattingToken{kind=WHITESPACE, offset=21, text=  }
 FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=23, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=26, text= }
 FormattingToken{kind=TEXT, offset=27, text=Element}
 FormattingToken{kind=WHITESPACE, offset=34, text= }

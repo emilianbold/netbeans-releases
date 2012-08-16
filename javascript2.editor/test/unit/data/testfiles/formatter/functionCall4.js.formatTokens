@@ -23,6 +23,7 @@ FormattingToken{kind=EOL, offset=25, text=
 FormattingToken{kind=EOL, offset=26, text=
 }
 FormattingToken{kind=TEXT, offset=27, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=30, text= }
 FormattingToken{kind=TEXT, offset=31, text=escapedString}
 FormattingToken{kind=WHITESPACE, offset=44, text= }

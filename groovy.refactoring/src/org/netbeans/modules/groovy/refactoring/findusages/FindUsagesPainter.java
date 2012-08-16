@@ -48,6 +48,7 @@ import javax.swing.text.StyleConstants;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -55,6 +56,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.swing.plaf.LFCustoms;
@@ -86,6 +88,13 @@ public class FindUsagesPainter {
             return colorLine(line, ((MethodNode) node).getName());
         } else if (node instanceof FieldNode) {
             return colorLine(line, ((FieldNode) node).getName());
+        } else if (node instanceof FakeASTNode) {
+            // I know this isn't the nicest way, but I can't pass ImportNode directly and
+            // don't see easier way how to find out if the FakeASTNode is based on ImportNode
+            ASTNode originalNode = ((FakeASTNode) node).getOriginalNode();
+            if (originalNode instanceof ImportNode) {
+                return colorLine(line, ((ImportNode) originalNode).getAlias());
+            }
         }
 
         final String beforePart = line.createPart(0, columnStart - 1).getText();
