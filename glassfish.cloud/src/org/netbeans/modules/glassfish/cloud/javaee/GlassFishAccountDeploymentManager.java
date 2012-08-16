@@ -106,13 +106,15 @@ public class GlassFishAccountDeploymentManager
      */
     GlassFishAccountDeploymentManager(GlassFishUrl url) {
         super(url, GlassFishAccountInstanceProvider
-                .getAccountInstance(url.getName()));
+                .getAccountInstance(url.getName()),
+                new GlassFishAccountStartServer());
         this.instance = (GlassFishAccountInstance) super.instance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
+
     /**
      * The redeploy method provides a means for updating currently deployed Java
      * EE applications.
@@ -120,11 +122,11 @@ public class GlassFishAccountDeploymentManager
      * This is an optional method for GlassFish cloud implementation.
      * <p/>
      * @param targetList A list of server targets the user is specifying this
-     * application be deployed to.
+     *                   application be deployed to.
      * @param deployment Context describing everything necessary for a module
-     * deployment.
+     *                   deployment.
      * @return An object that tracks and reports the status of the distribution
-     * process.
+     *         process.
      */
     @Override
     public ProgressObject redeploy(TargetModuleID[] targetList,
@@ -139,31 +141,37 @@ public class GlassFishAccountDeploymentManager
      * deployment targets.
      * <p/>
      * @param targetList A list of server targets the user is specifying this
-     * application be deployed to.
+     *                   application be deployed to.
      * @param deployment Context describing everything necessary for a module
-     * deployment.
+     *                   deployment.
      * @return An object that tracks and reports the status of the distribution
-     * process.
+     *         process.
      */
     @Override
     public ProgressObject distribute(Target[] targetList,
             DeploymentContext deployment) {
         File moduleFile = deployment.getModuleFile();
         if (moduleFile.isDirectory()) {
-            throw new UnsupportedOperationException("Directory deployment not supported.");
+            throw new UnsupportedOperationException(
+                    "Directory deployment not supported.");
         }
-        GlassFishModuleId moduleID = new GlassFishModuleId(instance, moduleFile);
-        ProgressObjectDeploy progressObject = new ProgressObjectDeploy(this, moduleID);
+        GlassFishModuleId moduleID
+                = new GlassFishModuleId(instance, moduleFile);
+        ProgressObjectDeploy progressObject
+                = new ProgressObjectDeploy(this, moduleID);
         // call deploy
         Command command = new CommandCloudDeploy(null, moduleFile);
         Future<ResultString> future =
-                ServerAdmin.<ResultString>exec(instance.getLocalServer(), command, new IdeContext(), progressObject);
+                ServerAdmin.<ResultString>exec(instance, command,
+                new IdeContext(), progressObject);
         try {
             future.get();
         } catch (InterruptedException e) {
-            throw new GlassFishIdeException("Instance or cluster stop failed.", e);
+            throw new GlassFishIdeException(
+                    "Instance or cluster stop failed.", e);
         } catch (ExecutionException e) {
-            throw new GlassFishIdeException("Instance or cluster stop failed.", e);
+            throw new GlassFishIdeException(
+                    "Instance or cluster stop failed.", e);
         }
         return progressObject;
     }
@@ -460,7 +468,7 @@ public class GlassFishAccountDeploymentManager
      */
     @Override
     public void release() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Do nothing.
     }
 
     /**
