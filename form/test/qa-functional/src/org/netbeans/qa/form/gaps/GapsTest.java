@@ -41,19 +41,19 @@
  */
 package org.netbeans.qa.form.gaps;
 
+import java.awt.Container;
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import org.netbeans.qa.form.gridbagcustomizer.GridBagCustomizerTest;
 
 /**
  *
@@ -73,6 +73,7 @@ public class GapsTest extends ExtJellyTestCase {
     private ProjectsTabOperator pto;
     ProjectRootNode prn;
     FormDesignerOperator opDesigner;
+    ContainerOperator jfo;
 
     public GapsTest(String testName) {
         super(testName);
@@ -105,7 +106,7 @@ public class GapsTest extends ExtJellyTestCase {
     
      public void testOpenCloseGapDialog() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
-        opDesigner.clickMouse(100, 100, 2);
+        opDesigner.clickMouse(35, 70, 2);
 
         EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
         elso.Cancel();
@@ -113,7 +114,7 @@ public class GapsTest extends ExtJellyTestCase {
      
      public void testpopUpDialogInvoke() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
-        opDesigner.clickForPopup(100, 100);
+        opDesigner.clickForPopup(35, 70);
         JPopupMenuOperator jpmo= new JPopupMenuOperator();
         waitNoEvent(500);
         jpmo.pushMenuNoBlock("Edit Layout Space...");
@@ -125,7 +126,7 @@ public class GapsTest extends ExtJellyTestCase {
 
     public void testNewSizeOfGap() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
-        opDesigner.clickMouse(100, 100, 2);
+        opDesigner.clickMouse(35 , 70, 2);
 
         EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
         elso.setSizeOfGap("800");

@@ -80,6 +80,45 @@ public class SQLLexerTest extends NbTestCase {
                 SQLTokenId.WHITESPACE);
     }
 
+    public void testSimpleSQL99Quoting() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("select -/ from 'a''' + 1, dto");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
+                SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.KEYWORD,
+                SQLTokenId.WHITESPACE, SQLTokenId.STRING, SQLTokenId.WHITESPACE,
+                SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.INT_LITERAL,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.WHITESPACE);
+    }
+
+    public void testQuotedIdentifiersSQL99Quote() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("select \"\"\"derby\", `mysql`, [mssql], `quo + ted`");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.WHITESPACE);
+    }
+
+    public void testIncompleteIdentifier() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("select \"\"\"derby\", `mysql`, [mssql], `quo + ted");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.INCOMPLETE_IDENTIFIER);
+        seq = getTokenSequence("select \"\"\"derby\", `mysql`, [mssql");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.INCOMPLETE_IDENTIFIER);
+        seq = getTokenSequence("select \"\"\"derby\", `mysql`, [mssql]");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER,
+                SQLTokenId.WHITESPACE);
+        seq = getTokenSequence("select \"\"\"derby");
+        assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.INCOMPLETE_IDENTIFIER);
+    }
+
     public void testComments() throws Exception {
         TokenSequence<SQLTokenId> seq = getTokenSequence("-- line comment\n# mysql comment\n/* block \ncomment*/\n#notComment");
         assertTokens(seq, SQLTokenId.LINE_COMMENT, SQLTokenId.LINE_COMMENT,
