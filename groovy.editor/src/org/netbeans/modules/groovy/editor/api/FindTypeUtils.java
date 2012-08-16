@@ -339,7 +339,7 @@ public final class FindTypeUtils {
     }
 
     private static OffsetRange getClassExpressionRange(ClassExpression expression, BaseDocument doc, int cursorOffset) {
-        return getRange(expression.getType(), doc, cursorOffset);
+        return getRange(expression, doc, cursorOffset);
     }
 
     private static OffsetRange getArrayExpressionRange(ArrayExpression expression, BaseDocument doc, int cursorOffset) {
