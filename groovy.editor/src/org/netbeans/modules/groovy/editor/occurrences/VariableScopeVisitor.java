@@ -75,6 +75,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.Methods;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
@@ -330,8 +331,14 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     @Override
     public void visitConstructorCallExpression(ConstructorCallExpression call) {
-        if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
-            addOccurrences(call.getType(), (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
+        // This might happened for constructor call with generics e.g. "new ArrayList<String>()"
+        // In that case we want to highligt only in situation where the caret
+        // is on "String" type, but not if the caret location is on ArrayList
+         if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
+             ClassNode findingNode = (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset);
+             if (!ElementUtils.getNameWithoutPackage(call).equals(findingNode.getNameWithoutPackage())) {
+                addOccurrences(call.getType(), findingNode);
+             }
         } else {
             if (leaf instanceof ConstructorNode) {
                 ConstructorNode constructor = (ConstructorNode) leaf;

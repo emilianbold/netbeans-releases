@@ -43,6 +43,7 @@ FormattingToken{kind=EOL, offset=36, text=
 FormattingToken{kind=EOL, offset=37, text=
 }
 FormattingToken{kind=TEXT, offset=38, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=41, text= }
 FormattingToken{kind=TEXT, offset=42, text=x}
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -106,6 +107,7 @@ FormattingToken{kind=EOL, offset=89, text=
 FormattingToken{kind=EOL, offset=90, text=
 }
 FormattingToken{kind=TEXT, offset=91, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=94, text= }
 FormattingToken{kind=TEXT, offset=95, text=test}
 FormattingToken{kind=WHITESPACE, offset=99, text= }
