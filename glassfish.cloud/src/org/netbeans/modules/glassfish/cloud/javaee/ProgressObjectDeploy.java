@@ -50,11 +50,7 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.enterprise.deploy.spi.status.*;
 import org.glassfish.tools.ide.admin.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
@@ -134,7 +130,7 @@ public class ProgressObjectDeploy implements ProgressObject, TaskStateListener {
 
     @Override
     public void operationStateChanged(TaskState ts, TaskEvent te, String... strings) {
-        String message = strings != null ? strings[0] : "";
+        String message = strings != null && strings.length > 0 ? strings[0] : "";
         Logger.getLogger("glassfish-cloud").log(Level.FINE, message);
         // Suppress message except in cases of failure.  Returning an empty
         // string prevents status from being displayed in build output window.

@@ -15,4 +15,8 @@ function addTest(a, b) {
     do {
         +b;
     } while (a == 20);
+    
+    if (emptyLine == undefined || !(emptyLine instanceof Boolean)) {
+            emptyLine = new Boolean(false);
+    }
 }

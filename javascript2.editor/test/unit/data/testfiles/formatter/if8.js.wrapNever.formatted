@@ -20,6 +20,6 @@ if (a) {
 } else "no";
 
 if (a)
-   x;
+    x;
 else if (b)
-   c;
+    c;
