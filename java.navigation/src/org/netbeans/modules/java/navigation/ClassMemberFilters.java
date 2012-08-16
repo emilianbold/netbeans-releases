@@ -15,23 +15,18 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JToggleButton;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
-import org.netbeans.modules.java.navigation.actions.SortActionSupport;
+import org.netbeans.modules.java.navigation.base.Filters;
 import org.netbeans.modules.java.navigation.base.FiltersDescription;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /** Creates filtering for the ClassMemberPanel
  *
  * @author phrebejk
  */
-public final class ClassMemberFilters {
+public final class ClassMemberFilters extends Filters<Description> {
     
     private ClassMemberPanelUI ui;
     
@@ -46,12 +41,10 @@ public final class ClassMemberFilters {
     
     private FiltersManager filters;
     
-    private boolean naturalSort = false;
     
     /** Creates a new instance of ClassMemberFilters */
     ClassMemberFilters( ClassMemberPanelUI ui ) {
-        this.ui = ui;
-        naturalSort = NbPreferences.forModule( ClassMemberFilters.class ).getBoolean( "naturalSort", false ); //NOI18N
+        this.ui = ui;        
     }
     
     public FiltersManager getInstance() {
@@ -61,13 +54,8 @@ public final class ClassMemberFilters {
         return filters;
     }
     
-    public JComponent getComponent() {        
-        FiltersManager f = getInstance();                        
-        return f.getComponent( createSortButtons() );
-        
-    }
-    
-    public Collection<Description> filter( Collection<Description> original ) {
+    @Override
+    public Collection<Description> filter( Collection<? extends Description> original ) {
         
         boolean non_public = filters.isSelected(SHOW_NON_PUBLIC);
         boolean statik = filters.isSelected(SHOW_STATIC);
@@ -103,25 +91,17 @@ public final class ClassMemberFilters {
         
         return result;
     }
-    
-    public boolean isNaturalSort() {
-        return naturalSort;        
-    }
-    
-    public void setNaturalSort( boolean naturalSort ) {
-        this.naturalSort = naturalSort;
-        NbPreferences.forModule( ClassMemberFilters.class ).putBoolean( "naturalSort", naturalSort ); //NOI18N
-        if( null != sortByNameButton )
-            sortByNameButton.setSelected(!naturalSort);
-        if( null != sortByPositionButton )
-            sortByPositionButton.setSelected(naturalSort);
+            
+    @Override
+    public void sortUpdated() {        
         ui.sort();
     }
     
     // Privare methods ---------------------------------------------------------
     
     /** Creates filter descriptions and filters itself */
-    private static FiltersManager createFilters () {
+    @Override
+    protected final FiltersManager createFilters () {
         FiltersDescription desc = new FiltersDescription();
         
         desc.addFilter(SHOW_INHERITED,
@@ -150,32 +130,5 @@ public final class ClassMemberFilters {
         );
         
         return FiltersDescription.createManager(desc);
-    }
-    
-    private JToggleButton sortByNameButton;
-    private JToggleButton sortByPositionButton;
-    
-    private JToggleButton[] createSortButtons() {
-        JToggleButton[] res = new JToggleButton[2];
-        
-        if( null == sortByNameButton ) {
-            sortByNameButton = new JToggleButton( new SortActionSupport.SortByNameAction(this) );
-            sortByNameButton.setToolTipText(sortByNameButton.getText());
-            sortByNameButton.setText(null);
-            sortByNameButton.setSelected( !naturalSort );
-            sortByNameButton.setFocusable( false );
-        }
-        res[0] = sortByNameButton;
-        
-        if( null == sortByPositionButton ) {
-            sortByPositionButton = new JToggleButton( new SortActionSupport.SortBySourceAction(this) );
-            sortByPositionButton.setToolTipText(sortByPositionButton.getText());
-            sortByPositionButton.setText(null);
-            sortByPositionButton.setSelected( naturalSort );
-            sortByPositionButton.setFocusable( false );
-        }
-        res[1] = sortByPositionButton;
-        return res;
-    }
-        
+    }        
 }
