@@ -68,7 +68,6 @@ import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
-import org.openide.util.lookup.Lookups;
 
 /** This is the base for all implementations of file objects on a filesystem.
 * Provides basic information about the object (its name, parent,
@@ -92,6 +91,9 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = 85305031923497718L;
+    
+    /** implementation of lookup associated with this file object */
+    private FileObjectLkp lkp;
 
     /** Get the name without extension of this file or folder.
     * Period at first position is not considered as extension-separator
@@ -174,7 +176,7 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
             // have to do copy
             FileObject dest = copy(target, name, ext);
             delete(lock);
-
+            FileObjectLkp.reassign(this, dest);
             return dest;
         }
     }
@@ -391,7 +393,6 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
         }
     }
 
-    private final Lookup lkp = Lookups.singleton(this);
     /**
     //XXX: implement me
     * 
@@ -399,7 +400,21 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
     */
     @Override
     public Lookup getLookup() {
+        return FileObjectLkp.create(this, true);
+    }
+    
+    final FileObjectLkp lookup() {
+        assert Thread.holdsLock(FileObjectLkp.class);
         return lkp;
+    }
+    
+    final void assignLookup(FileObjectLkp lkp) {
+        assert Thread.holdsLock(FileObjectLkp.class);
+        if (this.lkp == lkp) {
+            return;
+        }
+        assert this.lkp == null : "Should be null, but was " + this.lkp;
+        this.lkp = lkp;
     }
 
     /** Get the file attribute with the specified name.
