@@ -45,7 +45,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.data.cloud.GlassFishAccountEntity;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.keyring.Keyring;
@@ -67,7 +69,7 @@ import static org.openide.util.NbBundle.getMessage;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountInstance extends GlassFishAccountEntity
-    implements GlassFishInstance {
+    implements GlassFishServer, GlassFishInstance {
     
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -183,7 +185,114 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Implemented ServerInstanceImplementation Interface Methods             //
+    // Implemented missing GlassFishServer interface methods                  //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get GlassFish cloud host.
+     * <p/>
+     * @return Cloud host.
+     */
+    @Override
+    public String getHost() {
+        return cloudEntity != null ? cloudEntity.getHost() : null;
+    }
+
+    /**
+     * Get GlassFish cloud port.
+     * <p/>
+     * @return Cloud port.
+     */
+    @Override
+    public int getPort() {
+        return -1;
+    }
+
+   /**
+     * Get GlassFish cloud CPAS port.
+     * <p/>
+     * @return CPAS port.
+     */
+    @Override
+    public int getAdminPort() {
+        return cloudEntity != null ? cloudEntity.getPort() : -1;
+    }
+
+    /**
+     * Get GlassFish cloud account user name.
+     * <p/>
+     * @return Cloud account user name.
+     */
+    @Override
+    public String getAdminUser() {
+        return userName;
+    }
+
+    /**
+     * Get GlassFish cloud account user password.
+     * <p/>
+     * @return Cloud account user password.
+     */
+    @Override
+    public String getAdminPassword() {
+        return userPassword;
+    }
+
+    /**
+     * Get GlassFish cloud domains folder.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getDomainsFolder() {
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud domain name.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getDomainName() {
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud installation root.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getServerHome() {
+        return null;
+    }
+
+   /** Get GlassFish cloud version.
+     * <p/>
+     * Attempts to retrieve cloud version using CPAS interface.
+     * <p/>
+     * @return Cloud version or <code>null</code> if version could not
+     *         be retrieved.
+     */
+    @Override
+    public GlassFishVersion getVersion() {
+        // TODO: implement version check.
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud administration interface type.
+     * <p/>
+     * @return GlassFish cloud administration interface is REST.
+     */
+    @Override
+    public GlassFishAdminInterface getAdminInterface() {
+        return GlassFishAdminInterface.REST;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented ServerInstanceImplementation interface methods             //
     ////////////////////////////////////////////////////////////////////////////
 
     /**

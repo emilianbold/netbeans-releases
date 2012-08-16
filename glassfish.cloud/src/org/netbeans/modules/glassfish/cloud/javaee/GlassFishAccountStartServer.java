@@ -41,32 +41,15 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-
 /**
- * Optional deployment manager for registered GlassFish cloud user account.
+ * GlassFish remote cloud life cycle services from the IDE.
+ * <p/>
+ * JavaEE server will use these services to automatically start or stop
+ * administration server and managed (virtual) target servers (in debug mode)
+ * during deployment or debugging execution.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishAccountOptionalDeploymentManager
-        extends GlassFishOptionalDeploymentManager {
+public class GlassFishAccountStartServer extends GlassFishStartServer {
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Overriden methods                                                      //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Allows a plugin to perform post initialization action.
-     */
-    @Override
-    public void finishServerInitialization()
-            throws ServerInitializationException {
-        // User account instance provider initialization to read all registered
-        // GlassFish cloud user account instances
-        GlassFishAccountInstanceProvider.getInstance();
-    }
-
 }

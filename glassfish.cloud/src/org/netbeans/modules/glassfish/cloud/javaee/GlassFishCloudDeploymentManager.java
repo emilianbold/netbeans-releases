@@ -97,7 +97,8 @@ public class GlassFishCloudDeploymentManager
      */
     GlassFishCloudDeploymentManager(GlassFishUrl url) {
         super(url, GlassFishCloudInstanceProvider
-                .getCloudInstance(url.getName()));
+                .getCloudInstance(url.getName()),
+                new GlassFishCloudStartServer());
         this.instance = (GlassFishCloudInstance)super.instance;
     }
 
@@ -439,7 +440,7 @@ public class GlassFishCloudDeploymentManager
      */
     @Override
     public void release() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Do nothing.
     }
 
     /**
