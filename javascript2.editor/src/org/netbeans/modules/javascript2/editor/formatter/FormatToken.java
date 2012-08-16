@@ -120,19 +120,58 @@ public final class FormatToken {
     }
     
     public static enum Kind {
-        SOURCE_START,
-        TEXT,
-        WHITESPACE,
-        EOL,
+        SOURCE_START {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        TEXT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        WHITESPACE {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        EOL {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
-        LINE_COMMENT,
-        DOC_COMMENT,
-        BLOCK_COMMENT,
+        LINE_COMMENT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        DOC_COMMENT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BLOCK_COMMENT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         INDENTATION_INC {
             @Override
             public boolean isIndentationMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
         ELSE_IF_INDENTATION_INC {
@@ -140,17 +179,29 @@ public final class FormatToken {
             public boolean isIndentationMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         INDENTATION_DEC {
             @Override
             public boolean isIndentationMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         ELSE_IF_INDENTATION_DEC {
             @Override
             public boolean isIndentationMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
 
@@ -159,12 +210,19 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
-        AFTER_PROPERTY,
         AFTER_CASE {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
 
@@ -173,12 +231,20 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
 
         ELSE_IF_AFTER_BLOCK_START {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
 
@@ -188,6 +254,10 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         // for line wrap of parameters
         BEFORE_FUNCTION_DECLARATION_PARAMETER {
@@ -195,12 +265,20 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         // for line wrap of arguments
         BEFORE_FUNCTION_CALL_ARGUMENT {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
 
@@ -210,11 +288,19 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         AFTER_ELSE_START {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
         AFTER_WHILE_START {
@@ -222,11 +308,19 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         AFTER_FOR_START {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
             }
         },
         AFTER_WITH_START {
@@ -234,16 +328,35 @@ public final class FormatToken {
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
         AFTER_DO_START {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
         },
 
-        // a bit special token to detect proper continuation
-        BEFORE_OBJECT,
+        // a bit special tokens to detect proper continuation
+        AFTER_PROPERTY {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_OBJECT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         // around binary operator
         BEFORE_BINARY_OPERATOR,
@@ -338,6 +451,10 @@ public final class FormatToken {
 
         public boolean isIndentationMarker() {
             return false;
+        }
+
+        public boolean isSpaceMarker() {
+            return true;
         }
     }
 
