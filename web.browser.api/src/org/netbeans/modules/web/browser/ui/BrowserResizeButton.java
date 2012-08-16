@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.web.browser.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.web.browser.api.ResizeOption;
@@ -81,40 +78,13 @@ class BrowserResizeButton extends JToggleButton {
 
     static Icon toIcon( ResizeOption.Type type ) {
         switch( type ) {
-            case CUSTOM:
-            case DESKTOP: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"desktop.png", true ); //NOI18N
-            case NETBOOK: return new DummyIcon( Color.green );
+            case NETBOOK: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"netbook.png", true ); //NOI18N
             case SMARTPHONE_LANDSCAPE: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"handheldLandscape.png", true ); //NOI18N
             case SMARTPHONE_PORTRAIT: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"handheldPortrait.png", true ); //NOI18N
             case TABLET_LANDSCAPE: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"tabletLandscape.png", true ); //NOI18N
             case TABLET_PORTRAIT: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"tabletPortrait.png", true ); //NOI18N
             case WIDESCREEN: return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"widescreen.png", true ); //NOI18N
         }
-        return new DummyIcon( Color.black );
-    }
-
-    private static class DummyIcon implements Icon {
-
-        private final Color color;
-
-        private DummyIcon( Color color ) {
-            this.color = color;
-        }
-
-        @Override
-        public void paintIcon( Component c, Graphics g, int x, int y ) {
-            g.setColor( color );
-            g.fillRect( x, y, getIconWidth(), getIconHeight() );
-        }
-
-        @Override
-        public int getIconWidth() {
-            return 16;
-        }
-
-        @Override
-        public int getIconHeight() {
-            return 16;
-        }
+        return ImageUtilities.loadImageIcon( ICON_PATH_PREFIX+"desktop.png", true ); //NOI18N
     }
 }
