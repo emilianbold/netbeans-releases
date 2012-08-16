@@ -131,9 +131,17 @@ public class FindTypeUsages extends AbstractFindUsages {
         @Override
         public void visitImports(ModuleNode node) {
             for (ImportNode importNode : node.getImports()) {
+                final ClassNode importType = importNode.getType();
                 if (!importNode.isStar()) {
-                    // ImportNode itself doesn't contain line/column information, so we need to pass it's type
-                    addIfEquals(importNode.getType());
+                    // ImportNode itself doesn't contain line/column information, so we need set them manually
+                    importNode.setLineNumber(importType.getLineNumber());
+                    importNode.setColumnNumber(importType.getColumnNumber());
+                    importNode.setLastLineNumber(importType.getLastLineNumber());
+                    importNode.setLastColumnNumber(importType.getLastColumnNumber());
+
+                    if (isEquals(importNode)) {
+                        usages.add(new FakeASTNode(importNode, importNode.getClassName()));
+                    }
                 }
             }
             super.visitImports(node);
@@ -179,7 +187,7 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         private void addIfEquals(ASTNode node) {
             final ClassNode type = ElementUtils.getType(node);
-            if (isEquals(node) && node.getColumnNumber() != -1 && node.getLineNumber() != -1) {
+            if (isEquals(node)) {
                 usages.add(new FakeASTNode(type, ElementUtils.getTypeName(node)));
             }
 
