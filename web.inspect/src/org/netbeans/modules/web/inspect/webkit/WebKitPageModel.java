@@ -347,7 +347,13 @@ public class WebKitPageModel extends PageModel {
             nodes.put(nodeId, domNode);
         }
         boolean updateChildren = false;
-        List<Node> subNodes = node.getChildren();
+        List<Node> subNodes = null;
+        synchronized (node) {
+            List<Node> origSubNodes = node.getChildren();
+            if (origSubNodes != null) {
+                subNodes = new ArrayList<Node>(origSubNodes);
+            }
+        }
         if (subNodes == null) {
             int nodeType = node.getNodeType();
             if (nodeType == org.w3c.dom.Node.ELEMENT_NODE || nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
