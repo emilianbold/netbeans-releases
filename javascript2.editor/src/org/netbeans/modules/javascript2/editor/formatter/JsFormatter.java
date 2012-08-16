@@ -164,8 +164,7 @@ public class JsFormatter implements Formatter {
 
                     if (token.getKind().isSpaceMarker()) {
                         handleSpace(tokens, i, formatContext);
-                    } else if (token.getKind().isLineWrapMarker()
-                            && (token.getKind() != FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START || !ELSE_IF_SINGLE_LINE)) {
+                    } else if (token.getKind().isLineWrapMarker()) {
                         i = handleLineWrap(tokens, i, formatContext, initialIndent,
                                 continuationIndent);
                     } else if (token.getKind().isIndentationMarker()) {
