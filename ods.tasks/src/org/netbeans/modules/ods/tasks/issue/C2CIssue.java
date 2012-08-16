@@ -52,6 +52,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -202,8 +203,8 @@ public class C2CIssue {
         return attachments;
     }
 
-    public void setSeen(boolean b) throws IOException {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public void setSeen(boolean seen) throws IOException {
+        repository.getIssueCache().setSeen(getID(), seen);
     }
 
     public void setTaskData(TaskData taskData) {
@@ -291,7 +292,8 @@ public class C2CIssue {
     }
 
     public boolean isFinished() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        String value = getFieldValue(IssueField.STATUS);
+        return Arrays.asList("RESOLVED", "VERIFIED", "CLOSED").contains(value);
     }
 
     public boolean refresh() {

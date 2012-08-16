@@ -49,8 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
@@ -59,11 +57,9 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.mylyn.util.GetMultiTaskDataCommand;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
@@ -85,11 +81,26 @@ public class C2CQuery {
     private String name;
     private long lastRefresh;
     private boolean saved;
-    private boolean firstRun;
+    private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
+    private final IRepositoryQuery serverQuery;
         
     public C2CQuery(C2CRepository repository) {
+        this(null, repository, null, false);
+    }
+    
+    public C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery) {
+        this(name, repository, savedQuery, true);
+    }
+        
+    private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, boolean saved) {
+        this.name = name;
         this.repository = repository;
+        this.serverQuery = savedQuery;
+        this.saved = saved;
+        if (saved) {
+            getController();
+        }
     }
     
     public C2CRepository getRepository() {
@@ -210,9 +221,13 @@ public class C2CQuery {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    public QueryController getController() {
+    public final C2CQueryController getController() {
         if(controller == null) {
-            controller = new C2CQueryController(repository, this);
+            if (serverQuery == null) {
+                controller = new C2CQueryController(repository, this);
+            } else {
+                controller = new C2CQueryController(repository, this, "", false);
+            }
         }
         return controller;
     }
@@ -225,7 +240,7 @@ public class C2CQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    private void fireQuerySaved() {
+    public void fireQuerySaved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
     }
 
@@ -239,7 +254,9 @@ public class C2CQuery {
 
     void refresh(List<QueryParameter> parameters, boolean autoRefresh) {
         assert parameters != null;
-        this.parameters = parameters;
+        if (serverQuery == null) {
+            this.parameters = parameters;
+        }
         refreshIntern(autoRefresh);
     }
     
@@ -252,13 +269,15 @@ public class C2CQuery {
     private List<QueryParameter> parameters = null;
     public void refreshIntern(final boolean autoRefresh) {
         
-        assert parameters != null;
+        assert parameters != null || serverQuery != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
           
         executeQuery(new Runnable() {
             @Override
             public void run() {
-                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, parameters.toString()}); // NOI18N
+                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, serverQuery == null
+                        ? parameters
+                        : serverQuery.getAttributes()}); // NOI18N
                 try {
                     
                     // keeps all issues we will retrieve from the server
@@ -284,12 +303,17 @@ public class C2CQuery {
                     // run query to know what matches the criteria
                     
                     // IssuesIdCollector will populate the issues set
-                    IRepositoryQuery query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
-                    for (QueryParameter p : parameters) {
-                        String values = p.getValues();
-                        if(values != null) {
-                            query.setAttribute(p.getAttribute(), p.getValues());
+                    IRepositoryQuery query;
+                    if (serverQuery == null) {
+                        query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
+                        for (QueryParameter p : parameters) {
+                            String values = p.getValues();
+                            if(values != null) {
+                                query.setAttribute(p.getAttribute(), p.getValues());
+                            }
                         }
+                    } else {
+                        query = serverQuery;
                     }
                     
                     PerformQueryCommand queryCmd = 
@@ -335,7 +359,9 @@ public class C2CQuery {
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
                     if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, parameters.toString()}); // NOI18N
+                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, serverQuery == null
+                        ? parameters
+                        : serverQuery.getAttributes()}); // NOI18N
                     }
                 }
             }

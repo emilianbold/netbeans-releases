@@ -73,6 +73,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=C2CExtender.class, position=1000)
 public final class NbExtender extends C2CExtender<NbExtender.Env> {
+    private static final String ATTR_PREDEFINED_TASK_QUERY = "PredefinedTaskQuery"; //NOI18N
 
     @Override
     protected AbstractRepositoryConnector spiCreate() {
@@ -96,8 +97,10 @@ public final class NbExtender extends C2CExtender<NbExtender.Env> {
     }
 
     @Override
-    protected IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String string, String connectorKind) {
-        return new RepositoryQuery(connectorKind, "*");
+    protected IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String name, String connectorKind) {
+        RepositoryQuery q = new RepositoryQuery(connectorKind, name);
+        q.setAttribute(ATTR_PREDEFINED_TASK_QUERY, predefinedTaskQuery.name());
+        return q;
     }
 
     @Override

@@ -67,6 +67,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -138,6 +139,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     private final Object REFRESH_LOCK = new Object();
     private final IssueTable issueTable;
+    private boolean modifiable;
         
     C2CQueryController(C2CRepository repository, C2CQuery query) {
         this(repository, query, null);
@@ -147,9 +149,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this(repository, query, parametersString, true);
     }
 
-    public C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString, boolean populate) {
+    public C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString, boolean modifiable) {
         this.repository = repository;
         this.query = query;
+        this.modifiable = modifiable;
         
         issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
 //      XXX  setupRenderer(issueTable);
@@ -204,7 +207,11 @@ public class C2CQueryController extends QueryController implements ItemListener,
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate(parametersString, false);
+        if (modifiable) {
+            postPopulate(parametersString, false);
+        } else {
+            hideModificationFields();
+        }
     }
 
     // XXX probably will need a redenderer like in jira to show parent - subtask relation
@@ -395,6 +402,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
     protected void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);
+        if(!modifiable) {
+            hideModificationFields();
+        }
         // set the parameter fields
         for (QueryParameter qp : parameters) {
             qp.setEnabled(bl);
@@ -937,6 +947,15 @@ public class C2CQueryController extends QueryController implements ItemListener,
     @Override
     public IssueTable getIssueTable() {
         return null; // XXX issueTable;
+    }
+
+    private void hideModificationFields () {
+        // can't change the controllers data
+        // so alwasy keep those fields disabled
+        panel.modifyButton.setEnabled(false);
+        panel.removeButton.setEnabled(false);
+        panel.refreshConfigurationButton.setEnabled(false);
+        panel.cloneQueryButton.setEnabled(false);
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

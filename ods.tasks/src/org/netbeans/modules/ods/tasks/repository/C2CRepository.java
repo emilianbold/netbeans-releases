@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ods.tasks.repository;
 
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -83,12 +84,14 @@ import org.openide.util.lookup.Lookups;
 public class C2CRepository {
 
     private final Object INFO_LOCK = new Object();
+    private final Object QUERIES_LOCK = new Object();
     private RepositoryInfo info;
     private C2CRepositoryController controller;
     private TaskRepository taskRepository;
     private Lookup lookup;
     private Cache cache;
     private C2CExecutor executor;
+    private List<C2CQuery> predefinedQueries;
     
     public C2CRepository() {
         
@@ -297,7 +300,39 @@ public class C2CRepository {
     }
 
     public Collection<C2CQuery> getQueries() {
-        return Collections.EMPTY_LIST;
+        List<C2CQuery> ret = new ArrayList<C2CQuery>();
+        synchronized (QUERIES_LOCK) {
+            if(predefinedQueries == null) {
+                C2C.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run () {
+                        getPredefinedQueries();
+                    }
+                });
+            } else {
+                ret.addAll(predefinedQueries);
+            }
+        }
+        return ret;
+    }
+    
+    private void getPredefinedQueries () {
+        List<IRepositoryQuery> queries = new ArrayList<IRepositoryQuery>(PredefinedTaskQuery.values().length);
+        for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+            queries.add(C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
+        }
+        C2CQuery[] toRefresh;
+        synchronized(QUERIES_LOCK) {
+            predefinedQueries = new ArrayList<C2CQuery>(queries.size());
+            for (IRepositoryQuery q : queries) {
+                predefinedQueries.add(new C2CQuery(q.getSummary(), C2CRepository.this, q));
+            }
+            toRefresh = predefinedQueries.toArray(new C2CQuery[predefinedQueries.size()]);
+        }
+        for (C2CQuery q : toRefresh) {
+            q.fireQuerySaved();
+        }
+        
     }
 
     public C2CIssue createIssue() {
@@ -316,7 +351,19 @@ public class C2CRepository {
     }
 
     public C2CIssue[] getIssues(String[] ids) {
-        return new C2CIssue[0];
+        if (ids.length == 0) {
+            return new C2CIssue[0];
+        } else {
+            //TODO is there a bulk command?
+            List<C2CIssue> issues = new ArrayList<C2CIssue>(ids.length);
+            for (String id : ids) {
+                C2CIssue i = getIssue(id);
+                if (i != null) {
+                    issues.add(i);
+                }
+            }
+            return issues.toArray(new C2CIssue[issues.size()]);
+        }
     }
     
     private String getTooltip(String repoName, String user, String url) {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ods.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.runtime.IStatus;
@@ -51,6 +52,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
+import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 
 /**
  *
@@ -84,5 +86,35 @@ public class QueryTck extends C2CTestBase {
         TaskData td = arr.get(0);
         assertAttribute("test feature", td.getRoot(), TaskAttribute.DESCRIPTION);
         assertAttribute("this is a test feature", td.getRoot(), TaskAttribute.SUMMARY);
+    }
+
+    public void testPredefinedQueries() throws Exception {
+        for (PredefinedTaskQuery predefinedId : PredefinedTaskQuery.values()) {
+            String name = "Predefined query - " + predefinedId.getLabel();
+            IRepositoryQuery query = C2CExtender.getQuery(rc, predefinedId, name, rc.getConnectorKind());
+            assertNotNull(query);
+            assertEquals(name, query.getSummary());
+            assertEquals(1, query.getAttributes().size());
+            assertEquals("Attribute PredefinedTaskQuery should have the right value", predefinedId.name(), query.getAttribute("PredefinedTaskQuery"));
+            
+            final List<TaskData> arr = new ArrayList<TaskData>();
+            TaskDataCollector collector = new TaskDataCollector() {
+                @Override
+                public void accept(TaskData td) {
+                    arr.add(td);
+                }
+            };
+            String serverRequest = "{\"predefinedTaskQuery\":\"" + predefinedId.name() + "\"," + "\"querySpec\":" + "{\"region\":{" + "\"offset\":0," + "\"size\":50" + "}," + "\"sortInfo\":null," + "\"thin\":true" + "}" + "}";
+            String serverReply = "{\"queryResult\":{\"offset\":0,\"pageSize\":50,\"totalResultSize\":1," + "\"resultPage\":[{\"priority\":{\"active\":false,\"value\":" + "\"Normal\",\"sortkey\":300,\"id\":3},\"status\":{\"open\":true," + "\"active\":true,\"value\":\"UNCONFIRMED\",\"sortkey\":100,\"id\":1}," + "\"description\":\"test feature\",\"reporter\":{" + "\"loginName\":\"tstupka\",\"realname\":\"Tomas Stupka\",\"gravatarHash\":" + "\"eb3b1d3818c31fd5b61a9e58da70f685\",\"id\":2},\"component\":{\"name\":" + "\"Default\",\"description\":\"default component\",\"initialOwner\":{" + "\"loginName\":\"ovrabec\",\"realname\":\"Ondrej Vrabec\"," + "\"gravatarHash\":\"063a55b94edfbc51aab5d9b8b3316207\",\"id\":1},\"id\":1}," + "\"creationDate\":1339668370000,\"shortDescription\":\"this is a test feature\"," + "\"modificationDate\":1339668370000,\"url\":\"https://q.tasktop.com/alm/#projects/anagramgame/task/15\"," + "\"product\":{\"name\":\"Default\",\"description\":\"default product\",\"isActive\":true,\"id\":1}," + "\"remainingTime\":0.00,\"taskType\":\"Feature\",\"externalTaskRelations\":[]," + "\"commits\":[],\"severity\":{\"value\":\"normal\",\"sortkey\":400,\"id\":4}," + "\"resolution\":{\"value\":\"\",\"sortkey\":100,\"id\":1}," + "\"milestone\":{\"product\":{\"id\":1},\"value\":\"---\",\"sortkey\":0,\"id\":1}," + "\"assignee\":{\"loginName\":\"ovrabec\",\"realname\":\"Ondrej Vrabec\",\"gravatarHash\":" + "\"063a55b94edfbc51aab5d9b8b3316207\",\"id\":1},\"comments\":[],\"customFields\":{" + "\"cf1\":null},\"iteration\":{\"value\":\"---\"},\"keywords\":[],\"watchers\":[],\"workLogs\":[]," + "\"wikiRenderedDescription\":\"<p>test feature</p>\",\"sumOfSubtasksEstimatedTime\":0," + "\"sumOfSubtasksTimeSpent\":0,\"version\":\"1339668370000\",\"id\":15}]}}";
+            StringBuilder sb = new StringBuilder();
+            expectQuery(repositoryURL() + "/findTasksWithQuery", sb, serverReply);
+            IStatus status = rc.performQuery(repository, query, collector, null, new NullProgressMonitor());
+            assertEquals("Status is OK", status.getCode(), IStatus.OK);
+            assertJSON("The server query is as expected", serverRequest, sb.toString());
+            assertEquals("One task data is found", 1, arr.size());
+            TaskData td = arr.get(0);
+            assertAttribute("test feature", td.getRoot(), TaskAttribute.DESCRIPTION);
+            assertAttribute("this is a test feature", td.getRoot(), TaskAttribute.SUMMARY);
+        }
     }
 }

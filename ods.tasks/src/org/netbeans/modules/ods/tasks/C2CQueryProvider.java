@@ -91,7 +91,7 @@ public class C2CQueryProvider extends QueryProvider<C2CQuery, C2CIssue> {
 
     @Override
     public void refresh(C2CQuery q) {
-        q.refresh();
+        q.getController().refresh(true);
     }
 
     @Override
