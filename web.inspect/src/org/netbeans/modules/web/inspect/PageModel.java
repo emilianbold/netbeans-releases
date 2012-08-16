@@ -63,6 +63,9 @@ public abstract class PageModel {
     public static final String PROP_SELECTION_MODE = "selectionMode"; // NOI18N
     /** Name of the property that is fired when the synchronization of the selection is switched on/off. */
     public static final String PROP_SYNCHRONIZE_SELECTION = "synchronizeSelection"; // NOI18N
+    /** Name of the property that is fired when a new document is loaded into the inspected browser pane. */
+    public static final String PROP_NODE = "node"; // NOI18N
+    
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
