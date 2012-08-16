@@ -2125,16 +2125,19 @@ public class AstRenderer {
      * @return true if it's a expression, otherwise false (it's a declaration)
      */
     private boolean isExpressionLikeDeclaration(AST ast, CsmScope scope) {
-        AST type = ast.getFirstChild();
+        AST type = ast.getFirstChild();        
         if (type != null && type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-            AST name = type.getFirstChild();
-            if (name != null) {
-                if (isVariableOrFunctionName(name, false)) {
-                    if (isVariableOrFunctionName(name, true)) {
-                        return true;
-                    }
-                    if (isLocalVariableOrFunction(name.getText(), scope)) {
-                        return true;
+            AST nextToType = type.getNextSibling();
+            if(nextToType != null && nextToType.getType() != CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                AST name = type.getFirstChild();
+                if (name != null) {
+                    if (isVariableOrFunctionName(name, false)) {
+                        if (isVariableOrFunctionName(name, true)) {
+                            return true;
+                        }
+                        if (isLocalVariableOrFunction(name.getText(), scope)) {
+                            return true;
+                        }
                     }
                 }
             }
