@@ -177,6 +177,12 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                 // some virtual variables (like arguments) doesn't have to be declared, but are in the model
                                 highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
                             }
+                        } else if (object.getOccurrences().size() < object.getAssignments().size()) {
+                            // probably is used only on the left site => is unused
+                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                            for(Occurrence occurence: object.getOccurrences()) {
+                                highlights.put(occurence.getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                            }
                         }
                     }
             }

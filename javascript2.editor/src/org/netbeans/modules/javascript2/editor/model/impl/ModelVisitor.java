@@ -222,10 +222,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     final String newVarName = name.getName();
                     boolean hasParent = parent.getProperty(newVarName) != null ;
                     boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
+                    JsObject lhs = null;
                     if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
                         addOccurence(ident);
                     } else {
-                        JsObject lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
+                        lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
                         if (lhs != null) {
                             ((JsObjectImpl)lhs).addOccurrence(name.getOffsetRange());
                             if (binaryNode.rhs() instanceof UnaryNode && Token.descType(binaryNode.rhs().getToken()) == TokenType.NEW) {
@@ -261,7 +262,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         for (TypeUsage type : types) {
                             jsObject.addAssignment(type, binaryNode.lhs().getFinish());
                         }
-                        addOccurence(ident);
+                        if (!(lhs != null && jsObject.getName().equals(lhs.getName()))) {
+                            addOccurence(ident);
+                        }
                     }
                 }
                 if (binaryNode.rhs() instanceof IdentNode) {

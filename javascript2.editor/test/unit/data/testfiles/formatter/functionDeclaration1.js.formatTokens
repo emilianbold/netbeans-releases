@@ -75,6 +75,7 @@ FormattingToken{kind=WHITESPACE, offset=88, text= }
 FormattingToken{kind=TEXT, offset=89, text=(}
 FormattingToken{kind=AFTER_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=90, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=93, text= }
 FormattingToken{kind=TEXT, offset=94, text=a}
 FormattingToken{kind=WHITESPACE, offset=95, text= }

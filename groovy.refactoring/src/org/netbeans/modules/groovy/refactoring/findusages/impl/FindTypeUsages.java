@@ -46,6 +46,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -125,6 +126,25 @@ public class FindTypeUsages extends AbstractFindUsages {
                 addIfEquals(property);
             }
             super.visitProperty(property);
+        }
+
+        @Override
+        public void visitImports(ModuleNode node) {
+            for (ImportNode importNode : node.getImports()) {
+                final ClassNode importType = importNode.getType();
+                if (!importNode.isStar()) {
+                    // ImportNode itself doesn't contain line/column information, so we need set them manually
+                    importNode.setLineNumber(importType.getLineNumber());
+                    importNode.setColumnNumber(importType.getColumnNumber());
+                    importNode.setLastLineNumber(importType.getLastLineNumber());
+                    importNode.setLastColumnNumber(importType.getLastColumnNumber());
+
+                    if (isEquals(importNode)) {
+                        usages.add(new FakeASTNode(importNode, importNode.getClassName()));
+                    }
+                }
+            }
+            super.visitImports(node);
         }
 
         @Override
