@@ -42,6 +42,8 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -51,8 +53,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JButton;
+
 import org.json.simple.JSONObject;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.netbeans.modules.extbrowser.plugins.Utils;
@@ -169,12 +175,34 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             
             try {
+                /*JButton close = new JButton(NbBundle.getMessage(
+                        ChromeExtensionManager.class, "LBL_Close"));                       // NOI18N
+                close.getAccessibleContext().setAccessibleName(NbBundle.
+                        getMessage(ChromeExtensionManager.class, "ACSN_Close"));    // NOI18N
+                close.getAccessibleContext().setAccessibleDescription(NbBundle.
+                        getMessage(ChromeExtensionManager.class, "ACSD_Close"));    // NOI18N*/
+
+                /*DialogDescriptor descriptor = new DialogDescriptor(
+                        new ChromeInfoPanel(extensionFile.getCanonicalPath(), loader), 
+                        NbBundle.getMessage(ChromeExtensionManager.class, 
+                                "TTL_InstallExtension"),                             // NOI18N
+                                true , new Object[]{close, 
+                                DialogDescriptor.CANCEL_OPTION}, close, 
+                                DialogDescriptor.DEFAULT_ALIGN, null, null);
+                descriptor.setClosingOptions(new Object[]{close, 
+                        DialogDescriptor.CANCEL_OPTION});*/
                 DialogDescriptor descriptor = new DialogDescriptor(
                         new ChromeInfoPanel(extensionFile.getCanonicalPath(), loader), 
                         NbBundle.getMessage(ChromeExtensionManager.class, 
-                                "TTL_InstallExtension"));                            // NOI18N
+                                "TTL_InstallExtension"));
                 Object result = DialogDisplayer.getDefault().notify(descriptor);
-                if (result != NotifyDescriptor.OK_OPTION) {
+                if (result == DialogDescriptor.OK_OPTION) {
+                    ExtensitionStatus status = isInstalled();
+                    if ( status!= ExtensitionStatus.INSTALLED){
+                        install(loader, status);
+                    }
+                }
+                else {
                     return false;
                 }
             }
