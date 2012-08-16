@@ -64,6 +64,7 @@ import javax.swing.text.*;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -159,7 +160,12 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                     StyleConstants.setForeground(hlStyle, Color.BLUE);
                     StyleConstants.setUnderline(hlStyle, true);            
 
-                    List<Integer> l = getHighlightOffsets(pane.getText());
+                    List<Integer> l = Collections.emptyList();
+                    try {
+                        l = getHighlightOffsets(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
                     List<Highlight> highlights = new ArrayList<Highlight>(l.size());
                     for (int i = 0; i < l.size(); i++) {
                         highlights.add(new Highlight(l.get(i), l.get(++i)));

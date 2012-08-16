@@ -57,8 +57,10 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.net.URI;
 import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.SearchMachine.State.*;
+import org.openide.util.Exceptions;
 
 /**
  * Finds http(s) addresses in a text pane and makes hyperlinks out of them.
@@ -69,7 +71,12 @@ class WebUrlHyperlinkSupport {
 
     static void register(final JTextPane pane) {
         final StyledDocument doc = pane.getStyledDocument();
-        String text = pane.getText();
+        String text = "";
+        try {
+            text = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
         final int[] boundaries = findBoundaries(text);
         if ((boundaries != null) && (boundaries.length != 0)) {
 
