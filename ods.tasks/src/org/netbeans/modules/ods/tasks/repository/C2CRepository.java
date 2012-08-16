@@ -73,6 +73,7 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -92,12 +93,15 @@ public class C2CRepository {
     private Cache cache;
     private C2CExecutor executor;
     private List<C2CQuery> predefinedQueries;
+    private static final String ICON_PATH = "org/netbeans/modules/ods/tasks/resources/repository.png"; //NOI18N
+    private final Image icon;
     
     public C2CRepository() {
-        
+        this.icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
     
     public C2CRepository(RepositoryInfo info) {
+        this();
         this.info = info;
         
         String name = info.getDisplayName();
@@ -187,7 +191,7 @@ public class C2CRepository {
     }
     
     public Image getIcon() {
-        return null;
+        return icon;
     }
 
     public void remove() {
