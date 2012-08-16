@@ -1,5 +1,6 @@
 FormattingToken{kind=SOURCE_START, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=0, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=3, text= }
 FormattingToken{kind=TEXT, offset=4, text=engine}
 FormattingToken{kind=WHITESPACE, offset=10, text= }
@@ -227,6 +228,7 @@ FormattingToken{kind=WHITESPACE, offset=387, text=   }
 FormattingToken{kind=TEXT, offset=390, text=(}
 FormattingToken{kind=AFTER_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=391, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=394, text= }
 FormattingToken{kind=TEXT, offset=395, text=a}
 FormattingToken{kind=WHITESPACE, offset=396, text= }
@@ -506,6 +508,7 @@ FormattingToken{kind=EOL, offset=718, text=
 FormattingToken{kind=EOL, offset=719, text=
 }
 FormattingToken{kind=TEXT, offset=720, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=723, text= }
 FormattingToken{kind=TEXT, offset=724, text=color}
 FormattingToken{kind=WHITESPACE, offset=729, text= }

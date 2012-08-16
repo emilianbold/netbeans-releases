@@ -1,6 +1,7 @@
 FormattingToken{kind=SOURCE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=0, text=   }
 FormattingToken{kind=TEXT, offset=3, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=6, text= }
 FormattingToken{kind=TEXT, offset=7, text=test}
 FormattingToken{kind=WHITESPACE, offset=11, text= }
