@@ -188,6 +188,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     private VirtualMachine      vm;
 
     public final ReadWriteLock  accessLock = new ThreadReentrantReadWriteLock();
+    private final Object ownedMonitorsAndFramesSingleAccessLock = new Object();
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -1747,13 +1748,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 if (!(isSuspended() || suspendedNoFire) || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
                     return Collections.emptyList();
                 }
-                List<com.sun.jdi.MonitorInfo> monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
-                if (monitorInfos != null && monitorInfos.size() > 0) {
-                    List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                    for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
-                        mis.add(createMonitorInfo(monitorInfo));
+                synchronized (ownedMonitorsAndFramesSingleAccessLock) {
+                    // Prevent from inconsistencies coming from unsynchronized implementation of
+                    // com.sun.tools.jdi.ThreadReferenceImpl.ownedMonitorsAndFrames()
+                    List<com.sun.jdi.MonitorInfo> monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
+                    if (monitorInfos != null && monitorInfos.size() > 0) {
+                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                        for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
+                            mis.add(createMonitorInfo(monitorInfo));
+                        }
+                        return Collections.unmodifiableList(mis);
                     }
-                    return Collections.unmodifiableList(mis);
                 }
             } catch (IncompatibleThreadStateException ex) {
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), ex);
