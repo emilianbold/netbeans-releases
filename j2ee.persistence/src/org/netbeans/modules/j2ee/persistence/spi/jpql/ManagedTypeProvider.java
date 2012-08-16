@@ -149,7 +149,10 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public void invalidate() {
         valid = false;
         //TODO: may have sense to clean stored data
-        ((TypeRepository)typeRepository).invalidate();
+        if(typeRepository != null) {
+            ((TypeRepository)typeRepository).invalidate();
+            typeRepository = null;
+        }
     }
 
     private void initializeManagedTypes() {
