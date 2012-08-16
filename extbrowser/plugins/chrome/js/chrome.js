@@ -88,6 +88,38 @@ NetBeans.showPageIcon = function(tabId) {
 NetBeans.hidePageIcon = function(tabId) {
     chrome.pageAction.hide(tabId);
 }
+
+// Creates the Select Mode context menu
+NetBeans.createContextMenu = function(tabId, url) {
+    // Removing possible orphaned context menus of this extension
+    chrome.contextMenus.removeAll(function() {
+        chrome.contextMenus.create({
+            id: 'selectionMode',
+            title: NetBeans.contextMenuName(),
+            enabled: NetBeans.getSynchronizeSelection(),
+            contexts: ['all'],
+            documentUrlPatterns: [url],
+            onclick: function() {
+                NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
+            }
+        });
+    });
+}
+
+// Updates the Select Mode context menu
+NetBeans.updateContextMenu = function() {
+    chrome.contextMenus.update('selectionMode', {
+        title: NetBeans.contextMenuName(),
+        enabled: NetBeans.getSynchronizeSelection()
+    });
+}
+
+// Returns the name of 'Select Mode' context menu
+NetBeans.contextMenuName = function() {
+    return (NetBeans.getSynchronizeSelection() && NetBeans.getSelectionMode()) ?
+        'Stop Select Mode' : 'Start Select Mode';
+}
+
 // show infobar
 NetBeans.showInfoBar = function(tabId) {
     chrome.experimental.infobars.show({
@@ -161,6 +193,23 @@ NetBeans_Presets.presetsChanged = function() {
     }
 }
 
+// Updates info-bar according to changes of page-inspection properties
+NetBeans.addPageInspectionPropertyListener(function(event) {
+    var name = event.name;
+    var value = event.value;
+    NetBeans.updateContextMenu();
+    var views = chrome.extension.getViews({type: "infobar"});
+    for (var i in views) {
+        var view = views[i];
+        if (view.NetBeans_Infobar) {
+            if (name === 'selectionMode') {
+                view.NetBeans_Infobar.setSelectionMode(value);
+            } else if (name === 'synchronizeSelection') {
+                view.NetBeans_Infobar.setSynchronizeSelection(value);
+            }
+        }
+    }
+});
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
@@ -168,6 +217,7 @@ chrome.debugger.onEvent.addListener(function(source, method, params) {
 
 chrome.debugger.onDetach.addListener(function(source) {
     NetBeans.hidePageIcon(source.tabId);
+    chrome.contextMenus.removeAll();
 });
 
 // Register tab listeners

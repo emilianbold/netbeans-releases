@@ -39,42 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.ui;
-
-import java.awt.*;
-import javax.swing.Icon;
+package org.netbeans.modules.web.browser.spi;
 
 /**
+ * A handle that allows page inspection to notify the inspected browser pane
+ * about changes in page inspection options.
  *
- * @author S. Aubrecht
+ * @author Jan Stola
  */
-class DownArrowIcon implements Icon {
+public interface PageInspectionHandle {
 
-    private static final int SIZE = 16;
-    @Override
-    public void paintIcon( Component c, Graphics g, int x, int y ) {
-        if( g instanceof Graphics2D ) {
-            Graphics2D g2d = ( Graphics2D ) g;
-            g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-        }
-        g.setColor( c.getForeground() );
-        Polygon p = new Polygon();
-        final int arrowSize = 8;
-        p.addPoint( x+(SIZE-arrowSize)/2, y+(SIZE-arrowSize)/2 );
-        p.addPoint( x+SIZE-(SIZE-arrowSize)/2, y+(SIZE-arrowSize)/2 );
-        p.addPoint( x+SIZE/2, y+SIZE - (SIZE-arrowSize)/2 );
-        p.addPoint( x+(SIZE-arrowSize)/2, y+(SIZE-arrowSize)/2 );
-        g.fillPolygon( p );
-    }
+    /**
+     * Set selection mode.
+     *
+     * @param selectionMode new value of selection mode.
+     */
+    void setSelectionMode(boolean selectionMode);
 
-    @Override
-    public int getIconWidth() {
-        return SIZE;
-    }
-
-    @Override
-    public int getIconHeight() {
-        return SIZE;
-    }
+    /**
+     * Set selection synchronization.
+     *
+     * @param synchronizeSelection new value of selection synchronization.
+     */
+    void setSynchronizeSelection(boolean synchronizeSelection);
 
 }

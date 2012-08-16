@@ -278,8 +278,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         try {
             
             URL url = new URL(inspectedURL);
-            final FileObject fo = inspectedFileObject!=null?inspectedFileObject:sourceDescription.getFileObject();
-            Project owner = FileOwnerQuery.getOwner(fo);
+            Project owner = getCurrentProject();
             return ServerURLMapping.fromServer(owner, url);
         } catch (MalformedURLException ex) {
             Logger.getAnonymousLogger().log(
@@ -298,9 +297,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String inspectedURL = page.getDocumentURL();
 
             URL url = new URL(inspectedURL);
-            final FileObject fo = inspectedFileObject != null ? inspectedFileObject : sourceDescription.getFileObject();
-            Project owner = FileOwnerQuery.getOwner(fo);
-            FileObject fromServer = ServerURLMapping.fromServer(owner, url);
+            FileObject fromServer = ServerURLMapping.fromServer(getCurrentProject(), url);
 
 
             if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
@@ -587,6 +584,18 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     public Lookup getLookup() {
         return lookup;
+    }
+
+    private Project getCurrentProject() {
+        Node rootContext = manager.getRootContext();
+        FileObject fo = null;
+        if (rootContext instanceof HtmlElementNode) {
+            fo = ((HtmlElementNode) rootContext).getFileObject();
+        } else {
+            LOGGER.log(Level.WARNING, "Root context is not HtmlElementNode");
+        }
+        Project owner = FileOwnerQuery.getOwner(fo);
+        return owner;
     }
 
     private static class WaitNode extends AbstractNode {

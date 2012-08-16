@@ -52,6 +52,7 @@ import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.netbeans.modules.web.browser.spi.Resizable;
 import org.netbeans.modules.web.browser.spi.Zoomable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -199,7 +200,7 @@ public class DeveloperToolbar {
             button.setEnabled( resizingEnabled );
         }
 
-        final JButton btnDropDown = new JButton( new DownArrowIcon() );
+        final JButton btnDropDown = new JButton( ImageUtilities.loadImageIcon( "org/netbeans/modules/web/browser/ui/resources/menu.png", true ) ); //NOI18N
         resizeBar.add( btnDropDown );
         btnDropDown.setEnabled( resizingEnabled );
         btnDropDown.addActionListener( new ActionListener() {
@@ -243,7 +244,7 @@ public class DeveloperToolbar {
                 }
             });
             menuItem.setSelected( size.equals( currentSize ) );
-            menuItem.setIcon( BrowserResizeButton.toIcon( ro.getType() ) );
+            menuItem.setIcon( BrowserResizeButton.toIcon( ro ) );
         }
         res.addSeparator();
         

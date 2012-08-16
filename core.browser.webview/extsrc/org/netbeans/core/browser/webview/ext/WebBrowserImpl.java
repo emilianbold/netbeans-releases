@@ -78,6 +78,9 @@ import org.netbeans.core.browser.webview.HtmlBrowserImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Exceptions;
@@ -524,6 +527,16 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 });
             }
         });
+        eng.getLoadWorker().exceptionProperty().addListener( new ChangeListener<Throwable> () {
+
+            @Override
+            public void changed( ObservableValue<? extends Throwable> ov, Throwable t, Throwable t1 ) {
+                if( null == t1 )
+                    return;
+                String location = eng.getLocation();
+                reportInvalidUrl( location );
+            }
+        });
         eng.setCreatePopupHandler( new Callback<PopupFeatures, WebEngine>() {
 
             @Override
@@ -551,7 +564,9 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, message);
             }
-        } // else whatever suitable processing of regular alerts
+        } else {
+            DialogDisplayer.getDefault().notifyLater( new NotifyDescriptor.Message( message ) );
+        }
     }
 
     private <T> T runInFXThread(final Callable<T> task) {
@@ -751,5 +766,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
 
     @Override
     public void close(boolean closeTab) {
+    }
+
+    private void reportInvalidUrl( String location ) {
+        NotifyDescriptor nd = new NotifyDescriptor.Message( 
+                NbBundle.getMessage( WebBrowserImpl.class, "Err_InvalidURL", location),
+                NotifyDescriptor.PLAIN_MESSAGE );
+        DialogDisplayer.getDefault().notifyLater( nd );
     }
 }
