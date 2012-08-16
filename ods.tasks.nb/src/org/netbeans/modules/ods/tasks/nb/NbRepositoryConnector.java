@@ -42,6 +42,8 @@
 package org.netbeans.modules.ods.tasks.nb;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -53,9 +55,11 @@ import com.tasktop.c2c.server.common.service.domain.SortInfo;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.NaryCriteria;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.QuerySpec;
 import com.tasktop.c2c.server.tasks.domain.Task;
 import com.tasktop.c2c.server.tasks.service.CriteriaQueryArguments;
+import com.tasktop.c2c.server.tasks.service.PredefinedQueryArguments;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
@@ -137,22 +141,13 @@ final class NbRepositoryConnector extends AbstractRepositoryConnector {
 
     @Override
     public IStatus performQuery(TaskRepository tr, IRepositoryQuery irq, TaskDataCollector tdc, ISynchronizationSession iss, IProgressMonitor ipm) {
-        Region r = new Region(0, 50);
-        SortInfo si = null;
-        QuerySpec qs = new QuerySpec(r, si, true);
-        
-        NaryCriteria c = new NaryCriteria(Criteria.Operator.AND);
-        addColumnCriteria(c, irq.getAttribute(TaskAttribute.DESCRIPTION), "description"); // NOI18N
-        addColumnCriteria(c, irq.getAttribute(TaskAttribute.SUMMARY), "summary"); // NOI18N
-        addColumnCriteria(c, irq.getAttribute(C2CData.ATTR_TASK_TYPE), "tasktype"); // NOI18N
-        
-        CriteriaQueryArguments args = new CriteriaQueryArguments(c, qs);
-
-        WebResource findTasks = createResource(tr, "findTasksWithCriteria"); // NOI18N
-        QueryTaskResultWrapper ret = findTasks.accept(
-            MediaType.APPLICATION_JSON_TYPE
-        ).entity(args, MediaType.APPLICATION_JSON_TYPE).post(QueryTaskResultWrapper.class);
-
+        String predefined = irq.getAttribute(NbExtender.ATTR_PREDEFINED_TASK_QUERY);
+        QueryTaskResultWrapper ret;
+        if (predefined == null) {
+            ret = performCriteriaQuery(irq, tr, tdc);
+        } else {
+            ret = performPredefinedQuery(predefined, irq, tr, tdc);
+        }
         TaskAttributeMapper m = new TaskAttributeMapper(tr);
         for (Task t : ret.queryResult.getResultPage()) {
             TaskData d = new TaskData(m, tr.getConnectorKind(), tr.getRepositoryUrl(), "" + t.getId());
@@ -202,6 +197,39 @@ final class NbRepositoryConnector extends AbstractRepositoryConnector {
         client.addFilter(new LoggingFilter(LOG));
         client.addFilter(new HTTPBasicAuthFilter(tr.getUserName(), tr.getPassword()));
         return client.resource(tr.getUrl()).path(path);
+    }
+
+    protected QueryTaskResultWrapper performCriteriaQuery(IRepositoryQuery irq, TaskRepository tr, TaskDataCollector tdc) throws ClientHandlerException, UniformInterfaceException {
+        Region r = new Region(0, 50);
+        SortInfo si = null;
+        QuerySpec qs = new QuerySpec(r, si, true);
+        
+        NaryCriteria c = new NaryCriteria(Criteria.Operator.AND);
+        addColumnCriteria(c, irq.getAttribute(TaskAttribute.DESCRIPTION), "description"); // NOI18N
+        addColumnCriteria(c, irq.getAttribute(TaskAttribute.SUMMARY), "summary"); // NOI18N
+        addColumnCriteria(c, irq.getAttribute(C2CData.ATTR_TASK_TYPE), "tasktype"); // NOI18N
+        
+        CriteriaQueryArguments args = new CriteriaQueryArguments(c, qs);
+
+        WebResource findTasks = createResource(tr, "findTasksWithCriteria"); // NOI18N
+        return findTasks.accept(
+            MediaType.APPLICATION_JSON_TYPE
+        ).entity(args, MediaType.APPLICATION_JSON_TYPE).post(QueryTaskResultWrapper.class);
+    }
+
+    private QueryTaskResultWrapper performPredefinedQuery(String predefinedName, IRepositoryQuery irq, TaskRepository tr, TaskDataCollector tdc) {
+        Region r = new Region(0, 50);
+        SortInfo si = null;
+        QuerySpec qs = new QuerySpec(r, si, true);
+        
+        PredefinedQueryArguments pqa = new PredefinedQueryArguments();
+        pqa.setPredefinedTaskQuery(PredefinedTaskQuery.valueOf(predefinedName));
+        pqa.setQuerySpec(qs);
+        
+        WebResource findTasks = createResource(tr, "findTasksWithQuery"); // NOI18N
+        return findTasks.accept(
+            MediaType.APPLICATION_JSON_TYPE
+        ).entity(pqa, MediaType.APPLICATION_JSON_TYPE).post(QueryTaskResultWrapper.class);
     }
 
     public static final class QueryTaskResultWrapper {
