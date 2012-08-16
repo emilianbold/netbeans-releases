@@ -64,9 +64,16 @@ public class TasktopTCKTest extends NbTestCase {
     private static String proxyPort = null;
     
     static {
-        BufferedReader br;
+        initProxy();
+    }
+
+    private static void initProxy() {
+        final File file = new File(System.getProperty("user.home"), ".test-team");
+        if (!file.isFile()) {
+            return;
+        }
         try {
-            br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+            BufferedReader br = new BufferedReader(new FileReader(file));
             br.readLine();
             br.readLine();
 
