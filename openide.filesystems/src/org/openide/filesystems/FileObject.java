@@ -68,6 +68,7 @@ import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
+import org.openide.util.lookup.Lookups;
 
 /** This is the base for all implementations of file objects on a filesystem.
 * Provides basic information about the object (its name, parent,
@@ -390,6 +391,7 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
         }
     }
 
+    private final Lookup lkp = Lookups.singleton(this);
     /**
     //XXX: implement me
     * 
@@ -397,7 +399,7 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
     */
     @Override
     public Lookup getLookup() {
-        throw new IllegalStateException("No impl yet");
+        return lkp;
     }
 
     /** Get the file attribute with the specified name.

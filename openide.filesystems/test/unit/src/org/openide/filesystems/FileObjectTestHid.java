@@ -513,6 +513,67 @@ public class FileObjectTestHid extends TestBaseHid {
         fsFail  ("move  should fire exception if file already exists");
     }
     
+    public void  testRenameLookup() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+
+        Lookup first = fo1.getLookup();
+        Collection<? extends FileObject> all = first.lookupAll(FileObject.class);
+        assertTrue("Contains itself before rename: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            fo1.rename(lock, "New" + fo1.getName(), fo1.getExt());
+            ret = fo1;
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        Lookup second = ret.getLookup();
+        assertSame("Lookup's identity is preserved during rename", first, second);
+        all = second.lookupAll(FileObject.class);
+        assertTrue("Contains itself after rename: " + all, all.contains(ret));
+    }
+    public void  testMoveLookup() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        FileObject sub;
+        try {
+            sub = fold.createFolder("sub");
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        }
+
+        Lookup first = fo1.getLookup();
+        Collection<? extends FileObject> all = first.lookupAll(FileObject.class);
+        assertTrue("Contains itself before move: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            ret = fo1.move(lock, sub, fo1.getName(), fo1.getExt());
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        Lookup second = ret.getLookup();
+        assertSame("Lookup's identity is preserved during move", first, second);
+        
+        all = second.lookupAll(FileObject.class);
+        assertTrue("Contains itself after move: " + all, all.contains(ret));
+    }
+    
     /** Test of move method, of class org.openide.filesystems.FileObject. */
     public void  testMove1() throws IOException {
         checkSetUp();
