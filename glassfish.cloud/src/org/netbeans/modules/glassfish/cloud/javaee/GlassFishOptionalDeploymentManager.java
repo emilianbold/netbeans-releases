@@ -57,11 +57,20 @@ public abstract class GlassFishOptionalDeploymentManager
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Create StartServer for given DeploymentManager.
+     * Return StartServer for given DeploymentManager.
+     * <p/>
+     * Does not return new instance every time it's called.
+     * <code>StartServer</code> instance life cycle is bound to deployment
+     * manager.
      */
     @Override
     public StartServer getStartServer(DeploymentManager dm) {
-        return null;
+        if (dm instanceof GlassFishDeploymentManager) {
+            return ((GlassFishDeploymentManager)dm).getStartServer();
+        } else {
+            throw new IllegalArgumentException(
+                    "Not a Glassfish cloud deployment manager");
+        }
     }
 
     /** 
