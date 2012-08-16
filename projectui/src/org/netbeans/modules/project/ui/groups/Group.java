@@ -169,10 +169,10 @@ public abstract class Group {
             NODE.remove(KEY_ACTIVE);
         }
         if (projectsLoaded) {
-        // OK if g == old; still want to fix open projects.
+            // OK if g == old; still want to fix open projects.
             switchingGroup.set(true);
             try {
-        open(nue);
+                open(nue);
             } finally {
                 switchingGroup.set(false);
             }
