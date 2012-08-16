@@ -6,7 +6,7 @@
             <code-name-base>org.eclipse.mylyn.wikitext.core</code-name-base>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.modules.wiki</friend>
+                <friend>org.netbeans.modules.mylyn.util</friend>
                 <package>org.eclipse.mylyn.wikitext.core</package>
                 <package>org.eclipse.mylyn.wikitext.core.parser</package>
             </friend-packages>

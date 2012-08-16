@@ -112,6 +112,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.mylyn.util.WikiPanel;
+import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.DummyUtils;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment;
@@ -156,6 +158,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private List<String> fieldErrors = new LinkedList<String>();
     private List<String> fieldWarnings = new LinkedList<String>();
     private int resolvedIndex;
+    private WikiPanel descriptionPanel;
     
     
     /**
@@ -207,6 +210,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachmentsLabel.setLabelFor(attachmentsPanel);
         initSpellChecker();
         initDefaultButton();
+
+        descriptionPanel = WikiUtils.getWikiPanel(false);
+        layout.replace(dummyDescriptionPanel, descriptionPanel);
 
         UIUtils.issue163946Hack(scrollPane1);
     }
@@ -419,7 +425,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, componentCombo, IssueField.COMPONENT, componentWarning, componentLabel);
             reloadField(force, releaseCombo, IssueField.MILESTONE, releaseWarning, releaseLabel);
             reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
-            reloadField(force, descriptionTextArea, IssueField.DESCRIPTION, descriptionWarning, descriptionLabel); // NOI18N
+            reloadField(force, descriptionPanel, IssueField.DESCRIPTION, descriptionWarning, descriptionLabel); // NOI18N
             String status = reloadField(force, statusCombo, IssueField.STATUS, resolutionWarning, statusLabel);
             initStatusCombo(status);
             String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
@@ -545,6 +551,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     sb.append(value);
                 }
                 currentValue = sb.toString();
+            } else if (component instanceof WikiPanel) {
+                currentValue = ((WikiPanel)component).getWikiFormatText();
             }
         }
         String initialValue = initialValues.get(field.getKey());
@@ -580,6 +588,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         }
                     }
                 }
+            } else if (component instanceof WikiPanel) {
+                ((WikiPanel)component).setWikiFormatText(newValue, "Textile");
             }
             if (force) {
                 if (warningLabel != null) {
@@ -1142,7 +1152,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         summaryLabel = new javax.swing.JLabel();
         summaryWarning = new javax.swing.JLabel();
         descriptionLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
         descriptionWarning = new javax.swing.JLabel();
         addCommentLabel = new javax.swing.JLabel();
         scrollPane1 = new javax.swing.JScrollPane();
@@ -1168,6 +1177,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         jPanel1 = new javax.swing.JPanel();
         separatorLabel = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
+        dummyDescriptionPanel = new javax.swing.JPanel();
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -1375,10 +1385,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.descriptionLabel.text")); // NOI18N
 
-        descriptionTextArea.setColumns(20);
-        descriptionTextArea.setRows(5);
-        jScrollPane1.setViewportView(descriptionTextArea);
-
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text_1")); // NOI18N
 
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -1467,6 +1473,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(separatorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
+        );
+
+        javax.swing.GroupLayout dummyDescriptionPanelLayout = new javax.swing.GroupLayout(dummyDescriptionPanel);
+        dummyDescriptionPanel.setLayout(dummyDescriptionPanelLayout);
+        dummyDescriptionPanelLayout.setHorizontalGroup(
+            dummyDescriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        dummyDescriptionPanelLayout.setVerticalGroup(
+            dummyDescriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1635,17 +1652,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(summaryField))
-                                .addGap(6, 6, 6)
-                                .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(scrollPane1)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jScrollPane1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(descriptionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(scrollPane1))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(dummyDescriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(summaryField, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addGap(6, 6, 6)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(summaryWarning, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(descriptionWarning, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addContainerGap())))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
@@ -1759,9 +1775,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(2, 2, 2)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(ccField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(ccLabel))
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addComponent(parentLabel, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1790,14 +1803,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                         .addComponent(summaryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(summaryLabel))
-                                                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(descriptionLabel)
-                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(descriptionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
+                                                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                .addComponent(ccField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(ccLabel)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(descriptionLabel)
+                                            .addComponent(descriptionWarning, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                                            .addComponent(dummyDescriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                             .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(16, 16, 16)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addCommentLabel)
                     .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -2220,13 +2236,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel componentLabel;
     private javax.swing.JLabel componentWarning;
     private javax.swing.JLabel descriptionLabel;
-    final javax.swing.JTextArea descriptionTextArea = new javax.swing.JTextArea();
     private javax.swing.JLabel descriptionWarning;
     private javax.swing.JTextField dueDateField;
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JLabel dueDateWarning;
     private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyCommentsPanel;
+    private javax.swing.JPanel dummyDescriptionPanel;
     final javax.swing.JButton duplicateButton = new javax.swing.JButton();
     final javax.swing.JTextField duplicateField = new javax.swing.JTextField();
     private javax.swing.JLabel duplicateWarning;
@@ -2248,7 +2264,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel iterationLabel;
     private javax.swing.JLabel iterationWarning;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel messagePanel;
     final javax.swing.JTextField modifiedField = new javax.swing.JTextField();
     final javax.swing.JLabel modifiedLabel = new javax.swing.JLabel();
