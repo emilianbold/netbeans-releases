@@ -92,36 +92,46 @@ class WebUrlHyperlinkSupport {
                     for (int i = 0; i < boundaries.length; i+=2) {
                         doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
                     }
-                    pane.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            try {
-                                if (SwingUtilities.isLeftMouseButton(e)) {
-                                    JTextPane pane = (JTextPane)e.getSource();
-                                    StyledDocument doc = pane.getStyledDocument();
-                                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                                    AttributeSet as = elem.getAttributes();
-
-                                    UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
-                                    if (urlAction != null) {
-                                        int startOffset = elem.getStartOffset();
-                                        int endOffset = elem.getEndOffset();
-                                        int length = endOffset - startOffset;
-                                        String hyperlinkText = doc.getText(startOffset, length);
-                                        urlAction.openUrlHyperlink(hyperlinkText);
-                                        return;
-                                    }
-                                }
-                            } catch(Exception ex) {
-                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    });
+                    pane.removeMouseListener(getUrlMouseListener());
+                    pane.addMouseListener(getUrlMouseListener());
                 }
             });
         }
     }
-    
+
+    private static MouseAdapter urlListener;
+
+    private static MouseAdapter getUrlMouseListener() {
+        if (urlListener == null) {
+            urlListener = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            JTextPane pane = (JTextPane) e.getSource();
+                            StyledDocument doc = pane.getStyledDocument();
+                            Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                            AttributeSet as = elem.getAttributes();
+
+                            UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
+                            if (urlAction != null) {
+                                int startOffset = elem.getStartOffset();
+                                int endOffset = elem.getEndOffset();
+                                int length = endOffset - startOffset;
+                                String hyperlinkText = doc.getText(startOffset, length);
+                                urlAction.openUrlHyperlink(hyperlinkText);
+                                return;
+                            }
+                        }
+                    } catch (Exception ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+        }
+        return urlListener;
+    }
+
     private static class UrlAction {
         void openUrlHyperlink(String hyperlinkText) {
             try {
