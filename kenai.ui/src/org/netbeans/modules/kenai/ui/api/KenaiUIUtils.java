@@ -58,7 +58,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.team.ui.common.UserNode;
+import org.netbeans.modules.kenai.ui.dashboard.MemberNode;
 import org.netbeans.modules.kenai.ui.impl.LoginUtils;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -154,7 +154,7 @@ public final class KenaiUIUtils {
         result.setIcon(u.getIcon());
         String firstName = u.getKenaiUser().getFirstName();
         final String name = (firstName==null)?"":firstName + " " + u.getKenaiUser().getLastName(); // NOI18N
-        result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
+        result.setToolTipText(NbBundle.getMessage(MemberNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
@@ -162,7 +162,7 @@ public final class KenaiUIUtils {
                     result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
                     String firstName = u.getKenaiUser().getFirstName();
                     String name = (firstName==null)?"":firstName + " " + u.getKenaiUser().getLastName(); // NOI18N
-                    result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
+                    result.setToolTipText(NbBundle.getMessage(MemberNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
                     result.repaint();
                 }
             }
