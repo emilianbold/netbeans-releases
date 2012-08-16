@@ -93,6 +93,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -115,6 +116,7 @@ import org.openide.util.lookup.InstanceContent.Convertor;
  */
 class Nodes {
 
+    private static final String INSPECT_HIERARCHY_ACTION = "Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance";    //NOI18N
     @StaticResource
     private static final String ICON = "org/netbeans/modules/java/navigation/resources/wait.gif";   //NOI18N
     private static final WaitNode WAIT_NODE = new WaitNode();
@@ -298,11 +300,12 @@ class Nodes {
             if (context) {
                 return globalActions;
             } else {
-                Action actions[]  = new Action[ 3 + globalActions.length ];
+                Action actions[]  = new Action[ 4 + globalActions.length ];
                 actions[0] = getOpenAction();
-                actions[1] = RefactoringActionsFactory.whereUsedAction();
-                actions[2] = null;
-                System.arraycopy(globalActions, 0, actions, 3, globalActions.length);
+                actions[1] = FileUtil.getConfigObject(INSPECT_HIERARCHY_ACTION, Action.class);
+                actions[2] = RefactoringActionsFactory.whereUsedAction();
+                actions[3] = null;
+                System.arraycopy(globalActions, 0, actions, 4, globalActions.length);
                 return actions;
             }
         }

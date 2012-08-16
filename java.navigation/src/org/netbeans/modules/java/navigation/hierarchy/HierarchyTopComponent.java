@@ -43,6 +43,8 @@ package org.netbeans.modules.java.navigation.hierarchy;
 
 import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -78,15 +80,16 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
@@ -108,7 +111,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -134,7 +136,7 @@ autostore = false)
     preferredID = "HierarchyTopComponent",
 iconBase="org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif", 
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "rightSlidingSide", openAtStartup = false)
+@TopComponent.Registration(mode = "properties", openAtStartup = false)
 @Messages({
     "CTL_HierarchyTopComponent=Hierarchy",
     "HINT_HierarchyTopComponent=This is a Hierarchy window"
@@ -149,6 +151,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final String REFRESH_ICON = "org/netbeans/modules/java/navigation/resources/hierarchy_refresh.png";  //NOI18N
     @StaticResource
     private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
+    private static final String NON_ACTIVE_CONTENT = "non-active-content";  //NOI18N
+    private static final String ACTIVE_CONTENT = "active-content";  //NOI18N
     
     private static HierarchyTopComponent instance;
 
@@ -157,6 +161,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final ExplorerManager explorerManager;
     private final InstanceContent selectedNodes;
     private final Lookup lookup;
+    private final Container contentView;
     private final BeanTreeView btw;
     private final TapPanel lowerToolBar;
     private final JComboBox viewTypeCombo;
@@ -168,7 +173,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
 
     @NbBundle.Messages({
         "TXT_RefreshContent=Refresh",
-        "TXT_OpenJDoc=Open Javadoc Window"
+        "TXT_OpenJDoc=Open Javadoc Window",
+        "TXT_NonActiveContent=<No View Available - Refresh Manually>"
     })
     public HierarchyTopComponent() {
         jdocFinder = new JDocFinder();
@@ -198,8 +204,18 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
         final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, jdocButton);        
         add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
+        contentView = new JPanel();
+        contentView.setLayout(new CardLayout());
+        JPanel nonActiveContent = updateBackground(new JPanel());
+        nonActiveContent.setLayout(new BorderLayout());
+        final JLabel info = new JLabel(Bundle.TXT_NonActiveContent());
+        info.setEnabled(false);
+        info.setHorizontalAlignment(SwingConstants.CENTER);
+        nonActiveContent.add(info, BorderLayout.CENTER);
         btw = createBeanTreeView();
-        add(btw,BorderLayout.CENTER);
+        contentView.add(nonActiveContent, NON_ACTIVE_CONTENT);
+        contentView.add(btw, ACTIVE_CONTENT);
+        add(contentView,BorderLayout.CENTER);
         lowerToolBar = new TapPanel();
         lowerToolBar.setOrientation(TapPanel.DOWN);
         final JComponent lowerButtons = filters.getComponent();
@@ -266,12 +282,15 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            for (Node n: (Node[])evt.getOldValue()) {
-                selectedNodes.remove(n);
-            }
+            final Node[] oldNodes = (Node[])evt.getOldValue();
             final Node[] newNodes = (Node[])evt.getNewValue();
+            for (Node n: oldNodes) {
+                selectedNodes.remove(n);
+                selectedNodes.remove(n, NodeToFileObjectConvertor.INSTANCE);
+            }            
             for (Node n : newNodes) {
                 selectedNodes.add(n);
+                selectedNodes.add(n, NodeToFileObjectConvertor.INSTANCE);
             }
             if (newNodes.length > 0 && JavadocTopComponent.shouldUpdate()) {
                 jdocFinder.cancel();
@@ -332,6 +351,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     private void showBusy() {
+        assert SwingUtilities.isEventDispatchThread();
+        ((CardLayout)contentView.getLayout()).show(contentView, ACTIVE_CONTENT);
         rootChildren.set(Nodes.waitNode());
     }
 
@@ -719,6 +740,35 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             return doc;
         }
     };
+
+    private static final class NodeToFileObjectConvertor implements InstanceContent.Convertor<Node,FileObject> {
+
+        public static final NodeToFileObjectConvertor INSTANCE =
+                new NodeToFileObjectConvertor();
+
+        private NodeToFileObjectConvertor() {}
+
+        @Override
+        public FileObject convert(Node obj) {
+            return obj.getLookup().lookup(FileObject.class);
+        }
+
+        @Override
+        public Class<? extends FileObject> type(Node obj) {
+            return FileObject.class;
+        }
+
+        @Override
+        public String id(Node obj) {
+            return obj.toString();
+        }
+
+        @Override
+        public String displayName(Node obj) {
+            return obj.getDisplayName();
+        }
+
+    }
 
     private static class MainToolBar extends Box {
         MainToolBar(@NonNull final JComponent... components) {

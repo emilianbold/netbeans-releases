@@ -229,6 +229,11 @@ public class ElementJavadoc {
         return resolveElement(linkDoc, link);
     }
 
+    @Override
+    public String toString() {
+        return String.format("ElementJavadoc[url=%s, handle=%s]", docURL, handle);  //NOI18N
+    }
+
     private ElementJavadoc resolveElement(
             final ElementHandle<?> handle,
             final String link) {
