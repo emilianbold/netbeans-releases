@@ -74,7 +74,7 @@ public class WebKitPageModel extends PageModel {
     /** Document node. */
     private DOMNode documentNode;
     /** Nodes of the document (maps ID of the node to the node itself).*/
-    private Map<Integer,DOMNode> nodes = new HashMap<Integer,DOMNode>();
+    private Map<Integer,DOMNode> nodes = Collections.synchronizedMap(new HashMap<Integer,DOMNode>());
     /** Selected nodes. */
     private List<? extends org.openide.nodes.Node> selectedNodes = Collections.EMPTY_LIST;
     /** Highlighted nodes. */
@@ -399,9 +399,7 @@ public class WebKitPageModel extends PageModel {
      * @return {@code DOMNode} with the speicified ID.
      */
     DOMNode getNode(int nodeId) {
-        synchronized(WebKitPageModel.this) {
-            return nodes.get(nodeId);
-        }
+        return nodes.get(nodeId);
     }
 
     @Override
