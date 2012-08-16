@@ -103,23 +103,24 @@ public class JPQLExecutor {
                         }
                     }
                 }
-            } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
-                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
-                if(qClass !=null) {
-                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
-                    if(method != null){
-                        queryStr = (String) method.invoke(query);
-                    }
-                }
-            } else if (provider.getProviderClass().contains("openjpa")){//NOI18N
-                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(OPENJPA_QUERY);
-                if(qClass !=null) {
-                    Method method = qClass.getMethod(OPENJPA_QUERY_SQL);
-                    if(method != null){
-                        queryStr = (String) method.invoke(query);
-                    }
-                }
             } 
+//            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
+//                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
+//                if(qClass !=null) {
+//                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
+//                    if(method != null){
+//                        queryStr = (String) method.invoke(query);
+//                    }
+//                }
+//            } else if (provider.getProviderClass().contains("openjpa")){//NOI18N
+//                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(OPENJPA_QUERY);
+//                if(qClass !=null) {
+//                    Method method = qClass.getMethod(OPENJPA_QUERY_SQL);
+//                    if(method != null){
+//                        queryStr = (String) method.invoke(query);
+//                    }
+//                }
+//            } 
             result.setSqlQuery(queryStr);
             //
             ph.progress(70);
