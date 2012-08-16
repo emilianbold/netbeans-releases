@@ -72,7 +72,14 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
     /** GlassFish instance interface. */
     final GlassFishInstance instance;
     
-
+    /** GlassFish cloud local server and remote cloud life cycle services
+      * manager from the IDE.
+      * Life cycle services manager instance is bound to its deployment manager
+      * instance.
+      */
+    final GlassFishStartServer startServer;
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -83,11 +90,16 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
      * This is non public constructor called only in child classes to initialize
      * common deployment manager attributes.
      * <p/>
-     * @param url GlassFish cloud URL.
+     * @param url             GlassFish cloud URL.
+     * @param instance        GlassFish instance interface implementation.
+     * @param startServer     GlassFish cloud local server and remote cloud life
+     *                        cycle services from the IDE.
      */
-    GlassFishDeploymentManager(GlassFishUrl url, GlassFishInstance instance) {
+    GlassFishDeploymentManager(GlassFishUrl url, GlassFishInstance instance,
+            GlassFishStartServer startServer) {
         this.url = url;
         this.instance = instance;
+        this.startServer = startServer;
         if (instance == null) {
             throw new NullPointerException("There is no account instance named "
                     + url.getName());
@@ -95,7 +107,20 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
+    // getters and setters                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get life cycle services manager instance bound to this manager.
+     * <p/>
+     * @return Life cycle services manager.
+     */
+    public GlassFishStartServer getStartServer() {
+        return startServer;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented interface methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
     /**

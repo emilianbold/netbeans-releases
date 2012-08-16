@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 /**
  * Optional deployment manager for local GlassFish server registered with cloud.
