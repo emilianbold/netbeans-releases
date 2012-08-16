@@ -58,6 +58,7 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -78,6 +79,7 @@ public final class ElementUtils {
 
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
+            (node instanceof CatchStatement) ||
             FindTypeUtils.isCaretOnClassNode(path, doc, caret)) {
             return ElementKind.CLASS;
         } else if ((node instanceof MethodNode)) {
@@ -141,6 +143,8 @@ public final class ElementUtils {
            return ((Parameter) node).getType();
         } else if (node instanceof ForStatement) {
             return ((ForStatement) node).getVariableType();
+        } else if (node instanceof CatchStatement) {
+            return ((CatchStatement) node).getVariable().getOriginType();
         } else if (node instanceof ImportNode) {
             return ((ImportNode) node).getType();
         } else if (node instanceof ClassExpression) {
@@ -179,6 +183,8 @@ public final class ElementUtils {
             name = ((Parameter) node).getName();
         } else if (node instanceof ForStatement) {
             name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
+        } else if (node instanceof CatchStatement) {
+            name = ((CatchStatement) node).getVariable().getName();
         } else if (node instanceof ImportNode) {
             name = ((ImportNode) node).getClassName();
         } else if (node instanceof ClassExpression) {
@@ -220,6 +226,8 @@ public final class ElementUtils {
             return ((Parameter) node).getDeclaringClass();
         } else if (node instanceof ForStatement) {
             return ((ForStatement) node).getVariableType().getDeclaringClass();
+        } else if (node instanceof CatchStatement) {
+            return ((CatchStatement) node).getVariable().getDeclaringClass();
         } else if (node instanceof ImportNode) {
             return ((ImportNode) node).getDeclaringClass();
         } else if (node instanceof ClassExpression) {
