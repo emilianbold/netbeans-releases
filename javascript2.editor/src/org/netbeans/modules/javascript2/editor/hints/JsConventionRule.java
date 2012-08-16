@@ -175,6 +175,12 @@ public class JsConventionRule extends JsAstRule {
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
                     }
                 }
+                if (binaryNode.lhs() instanceof BinaryNode) {
+                    checkCondition(binaryNode.lhs());
+                }
+                if (binaryNode.rhs() instanceof BinaryNode) {
+                    checkCondition(binaryNode.rhs());
+                }
             }
         }
 

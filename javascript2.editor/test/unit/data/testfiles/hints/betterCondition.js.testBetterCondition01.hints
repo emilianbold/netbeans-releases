@@ -10,3 +10,6 @@ HINT:Expected "!==" and instead saw "!=".
     } while (a == 20);
              -------
 HINT:Expected "===" and instead saw "==".
+    if (emptyLine == undefined || !(emptyLine instanceof Boolean)) {
+        ----------------------
+HINT:Expected "===" and instead saw "==".
