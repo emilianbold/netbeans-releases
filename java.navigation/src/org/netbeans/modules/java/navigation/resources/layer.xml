@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                 <folder name="SideBar">
                     <file name="breadcrumbs.instance">
                         <attr name="location" stringvalue="South"/>
-                        <attr name="position" intvalue="4000"/>
+                        <attr name="position" intvalue="5237"/>
                         <attr name="scrollable" boolvalue="false"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory" />
                     </file>
