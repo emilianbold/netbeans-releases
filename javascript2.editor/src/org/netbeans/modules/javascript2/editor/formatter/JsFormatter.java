@@ -217,6 +217,7 @@ public class JsFormatter implements Formatter {
                         case AFTER_CATCH_PARENTHESIS:
                         case AFTER_LEFT_PARENTHESIS:
                         case AFTER_ARRAY_LITERAL_BRACKET:
+                        case AFTER_VAR_KEYWORD:
                             handleSpace(tokens, i, formatContext);
                             break;
                         // line wrap and eol handling
@@ -927,6 +928,9 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
             case BEFORE_ARRAY_LITERAL_BRACKET:
                 return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
+            case AFTER_VAR_KEYWORD:
+                // no option as false (removing space) would brake the code
+                return true;
             default:
                 return false;
         }

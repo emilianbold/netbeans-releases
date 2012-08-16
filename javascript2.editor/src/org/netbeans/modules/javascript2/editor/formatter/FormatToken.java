@@ -212,6 +212,9 @@ public final class FormatToken {
         AFTER_SWITCH_KEYWORD,
         AFTER_CATCH_KEYWORD,
 
+        // no parenthesis but we should handle that
+        AFTER_VAR_KEYWORD,
+
         // keywords with possible space before
         BEFORE_WHILE_KEYWORD,
         BEFORE_ELSE_KEYWORD,

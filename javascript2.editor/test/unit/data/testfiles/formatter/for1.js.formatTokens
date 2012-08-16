@@ -94,6 +94,7 @@ FormattingToken{kind=EOL, offset=129, text=
 }
 FormattingToken{kind=WHITESPACE, offset=130, text=    }
 FormattingToken{kind=TEXT, offset=134, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=137, text= }
 FormattingToken{kind=TEXT, offset=138, text=space}
 FormattingToken{kind=WHITESPACE, offset=143, text= }
