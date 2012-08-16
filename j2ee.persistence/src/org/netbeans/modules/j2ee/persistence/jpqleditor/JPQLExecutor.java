@@ -82,7 +82,7 @@ public class JPQLExecutor {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
             javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
-            p.getClass().getClassLoader().loadClass("org.eclipse.persistence.jpa.PersistenceProvider");
+            //p.getClass().getClassLoader().loadClass("org.eclipse.persistence.jpa.PersistenceProvider");
             EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
 
             EntityManager em = emf.createEntityManager();
@@ -91,7 +91,7 @@ public class JPQLExecutor {
             //
             Provider provider = ProviderUtil.getProvider(pu);
             String queryStr = null;
-            if(provider.getProviderClass().contains("eclipse")){//NOI18N
+            if(provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)){//NOI18N
                 Class qClass = Thread.currentThread().getContextClassLoader().loadClass(ECLIPSELINK_QUERY);
                 if(qClass !=null) {
                     Method method = qClass.getMethod(ECLIPSELINK_QUERY_SQL0);
@@ -103,7 +103,7 @@ public class JPQLExecutor {
                         }
                     }
                 }
-            } else if (provider.getProviderClass().contains("hibernate")){//NOI18N
+            } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
                 Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
                 if(qClass !=null) {
                     Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
