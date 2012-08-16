@@ -465,13 +465,24 @@ public final class UEIEmulatorConfiguratorImpl {
                 }
             }
             
-            final List<J2MEPlatform.J2MEProfile> jars = analyzePath(plDir, jarsString, bootClassPathString);
-            
             final String configuration = properties.getProperty(deviceName + ".version.configuration"); //NOI18N
             //ignore CDC devicess
             if (configuration != null && configuration.startsWith("CDC")){ //NOI18N
                 continue;
             }
+
+            final String profile = properties.getProperty(deviceName + ".version.profile"); //NOI18N
+            final int i = profile.lastIndexOf('-');
+            final String version = profile.substring(i + 1);
+            final String profileName = "NG".equalsIgnoreCase(version) ? profile : profile.substring(0, i);
+            final List<J2MEPlatform.J2MEProfile> jars = analyzePath(plDir, jarsString, bootClassPathString);
+            List<J2MEPlatform.J2MEProfile> official = new ArrayList<J2MEPlatform.J2MEProfile>();
+            for(J2MEPlatform.J2MEProfile p : jars) {
+                if(!p.getType().equalsIgnoreCase("profile") || p.getName().startsWith(profileName)) {
+                    official.add(p);
+                }
+            }
+
             final String screenWidth = properties.getProperty(deviceName + ".screen.width"); //NOI18N
             final String screenHeight = properties.getProperty(deviceName + ".screen.height"); //NOI18N
             final String screenBitDepth = properties.getProperty(deviceName + ".screen.bitDepth"); //NOI18N
@@ -479,7 +490,7 @@ public final class UEIEmulatorConfiguratorImpl {
             final String screenIsTouch = properties.getProperty(deviceName + ".screen.isTouch"); //NOI18N
             final J2MEPlatform.Screen screen = new J2MEPlatform.Screen(screenWidth, screenHeight, screenBitDepth, screenIsColor, screenIsTouch);
             
-            final J2MEPlatform.J2MEProfile[] profilesArray = jars.toArray(new J2MEPlatform.J2MEProfile[jars.size()]);
+            final J2MEPlatform.J2MEProfile[] profilesArray = official.toArray(new J2MEPlatform.J2MEProfile[official.size()]);
             devices.add(new J2MEPlatform.Device(deviceName, deviceDescription, securitydomainsArray, profilesArray, screen));
         }
         
