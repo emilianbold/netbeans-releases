@@ -55,6 +55,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -71,6 +72,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * (that does not also have code on the same line).
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("js.cont.comment"); // NOI18N
+
+    private CommentGenerator commentGenerator = null;
 
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
@@ -281,7 +284,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     TokenSequence<? extends JsDocumentationTokenId> jsDocTS = LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
                     if (jsDocTS != null) {
                         if (!endsCommentProperly(jsDocTS)) {
-                            // Append end of the comment
+                            // setup comment generator
+                            commentGenerator = new CommentGenerator(offset + carretPosition, indent);
+                            // append end of the comment
                             sb.append("\n").append(IndentUtils.createIndentString(doc, indent)).append("*/"); //NOI18N
                         }
                     }
@@ -428,6 +433,13 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     @Override
     public void afterInsert(Context context) throws BadLocationException {
+        if (commentGenerator != null) {
+            JsDocumentationCompleter.generateCompleteComment(
+                    (BaseDocument) context.getDocument(),
+                    commentGenerator.getOffset(),
+                    commentGenerator.getIndent());
+            commentGenerator = null;
+        }
     }
 
     @Override
@@ -525,5 +537,25 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
         return ts.token().id() == JsDocumentationTokenId.COMMENT_END;
+    }
+
+    private static class CommentGenerator {
+
+        private final int offset;
+        private final int indent;
+
+        public CommentGenerator(int offset, int indent) {
+            this.offset = offset;
+            this.indent = indent;
+        }
+
+        public int getIndent() {
+            return indent;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
     }
 }
