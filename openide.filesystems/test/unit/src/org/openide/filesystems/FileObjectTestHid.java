@@ -629,8 +629,31 @@ public class FileObjectTestHid extends TestBaseHid {
             assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
             lock.releaseLock();
             lock = toMove2.lock();
-            assertNotNull (toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
-            
+            FileObject ret = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt());
+            assertNotNull("Moved object returned", ret);
+            assertEquals("Has the right parent", fold1, ret.getParent());
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    public void  testMoveToSameFolderAlaRename() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        FileObject toMove = fold1.createData("something");
+        FileLock lock = toMove.lock();
+        try {
+            FileObject toMove2 = null;
+            assertNotNull (toMove2 = toMove.move(lock, fold1, "New" + toMove.getName(), toMove.getExt()));
+            lock.releaseLock();
+            lock = toMove2.lock();
+            FileObject ret = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt());
+            assertNotNull("Moved object returned", ret);
+            assertEquals("Has the right parent", fold1, ret.getParent());
         } finally {
             lock.releaseLock();
         }
