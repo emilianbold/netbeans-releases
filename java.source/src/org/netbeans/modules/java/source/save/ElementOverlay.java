@@ -229,7 +229,7 @@ public class ElementOverlay {
                                 || (!myself.getKind().isClass() && !myself.getKind().isInterface())
                                 || !((QualifiedNameable) myself).getQualifiedName().contentEquals(clazz);
 
-        if (newOrModified) {
+        if (newOrModified || class2Enclosed.containsKey(parent)) {
             List<String> c = class2Enclosed.get(parent);
 
             if (c == null) {
