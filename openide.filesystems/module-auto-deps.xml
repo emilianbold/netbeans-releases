@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <description>FileObject implements Lookup.Provider</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.openide.filesystems" spec="7.63"/>
+                <module-dependency codenamebase="org.openide.filesystems" spec="8.0"/>
             </trigger-dependency>
             <implies>
                 <result>
