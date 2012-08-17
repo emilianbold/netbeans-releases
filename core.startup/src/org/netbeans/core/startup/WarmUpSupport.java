@@ -66,7 +66,7 @@ final class WarmUpSupport implements Runnable {
     private static final RequestProcessor.Task TASK;
     static {
         RequestProcessor RP = new RequestProcessor("Warm Up");
-        TASK = RP.create(new WarmUpSupport());
+        TASK = RP.create(new WarmUpSupport(), true);
     } // NOI18N
 
     private static final Logger err = Logger.getLogger("org.netbeans.core.WarmUpSupport");
