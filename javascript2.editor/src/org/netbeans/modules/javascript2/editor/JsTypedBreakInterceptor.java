@@ -170,10 +170,11 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 sb.append("\n"); // NOI18N
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" */"); // NOI18N
-                // TODO - possibly populate associated types in JS-doc style!
-                //if (text.startsWith("/**")) {
-                //
-                //}
+
+                if (text.startsWith("/**")) {
+                    // setup comment generator
+                    commentGenerator = new CommentGenerator(offset + carretOffset, indent + 1);
+                }
                 context.setText(sb.toString(), 0, carretOffset);
                 return;
             }
