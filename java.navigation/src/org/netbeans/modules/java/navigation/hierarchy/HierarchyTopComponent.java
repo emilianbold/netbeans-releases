@@ -45,6 +45,7 @@ import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -76,6 +77,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -153,6 +155,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
     private static final String NON_ACTIVE_CONTENT = "non-active-content";  //NOI18N
     private static final String ACTIVE_CONTENT = "active-content";  //NOI18N
+    private static final String PROP_LOWER_TOOLBAR_EXPANDED = "filtersPanelTap.expanded"; //NOI18N
+    private static final int MIN_HISTORY_WIDTH = 50;
     
     private static HierarchyTopComponent instance;
 
@@ -191,7 +195,16 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
         viewTypeCombo.addActionListener(this);
-        historyCombo = new JComboBox(HierarchyHistoryUI.createModel());
+        historyCombo = new JComboBox(HierarchyHistoryUI.createModel()){
+            @Override
+            public Dimension getMinimumSize() {
+                Dimension res = super.getMinimumSize();
+                if (res.width > MIN_HISTORY_WIDTH) {
+                    res = new Dimension(MIN_HISTORY_WIDTH, res.height);
+                }
+                return res;
+            }
+        };
         historyCombo.setRenderer(HierarchyHistoryUI.createRenderer());
         historyCombo.addActionListener(this);
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
@@ -220,7 +233,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         lowerToolBar.setOrientation(TapPanel.DOWN);
         final JComponent lowerButtons = filters.getComponent();
         lowerButtons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
-        lowerToolBar.add(lowerButtons);        
+        lowerToolBar.add(lowerButtons);
+        final boolean expanded = NbPreferences.forModule(HierarchyTopComponent.class).
+                getBoolean(PROP_LOWER_TOOLBAR_EXPANDED, true); //NOI18N
+        lowerToolBar.setExpanded(expanded);
+        lowerToolBar.addPropertyChangeListener(this);
         add(updateBackground(lowerToolBar), BorderLayout.SOUTH);
 
     }
@@ -298,7 +315,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             }
         } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
             NbPreferences.forModule(HierarchyTopComponent.class).putBoolean(
-                    "filtersPanelTap.expanded", //NOI18N
+                    PROP_LOWER_TOOLBAR_EXPANDED,
                     lowerToolBar.isExpanded());
         }
     }
@@ -769,8 +786,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
 
     }
-
-    private static class MainToolBar extends Box {
+    
+    private static final class MainToolBar extends Box {
         MainToolBar(@NonNull final JComponent... components) {
             super(BoxLayout.X_AXIS);
             setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
@@ -788,7 +805,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
-    private static class RootChildren extends Children.Array {
+    private static final class RootChildren extends Children.Array {
         
         void set (Node node) {
             remove(getNodes(true));
