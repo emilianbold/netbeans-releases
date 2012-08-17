@@ -165,6 +165,37 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(forNode.getBody(), FormatToken.Kind.BEFORE_FOR_BRACE);
 
+            if (!forNode.isForEach() && !forNode.isForIn()) {
+                Node init = forNode.getInit();
+                Node test = forNode.getTest();
+
+                FormatToken formatToken = null;
+
+                // unfortunately init and test may be null
+                if (init != null) {
+                    formatToken = getNextToken(getFinish(init), JsTokenId.OPERATOR_SEMICOLON);
+                } else {
+                    formatToken = getNextToken(getStart(forNode), JsTokenId.OPERATOR_SEMICOLON,
+                            getStart(forNode.getBody()));
+                }
+                if (formatToken != null && test != null) {
+                    appendTokenAfterLastVirtual(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_TEST));
+                }
+
+                if (test != null) {
+                    formatToken = getNextToken(getFinish(forNode.getTest()), JsTokenId.OPERATOR_SEMICOLON);
+                } else {
+                    // we use the position of init semicolon
+                    int start = formatToken != null ? formatToken.getOffset() + 1 : getStart(forNode);
+                    formatToken = getNextToken(start, JsTokenId.OPERATOR_SEMICOLON,
+                                                getStart(forNode.getBody()));
+                }
+                if (formatToken != null && forNode.getModify() != null) {
+                    appendTokenAfterLastVirtual(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_MODIFY));
+                }
+            }
             if (handleWhile(forNode, FormatToken.Kind.AFTER_FOR_START)) {
                 return null;
             }
