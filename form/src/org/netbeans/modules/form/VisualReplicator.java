@@ -605,7 +605,11 @@ public class VisualReplicator {
                     if (realValue == FormDesignValue.IGNORED_VALUE) {
                         return; // ignore the value, as it is not a real value
                     }
-                    clonedValue = FormUtils.cloneObject(realValue, property.getPropertyContext().getFormModel());
+                    try {
+                        clonedValue = FormUtils.cloneObject(realValue, property.getPropertyContext().getFormModel());
+                    } catch (CloneNotSupportedException ex) {
+                        clonedValue = realValue; // fallback to using the same value instance (bug #216775)
+                    }
                 }
             }
 
@@ -632,7 +636,6 @@ public class VisualReplicator {
             if (targetComp instanceof Component) {
                 ((Component)targetComp).invalidate();
             }
-        } catch (CloneNotSupportedException ex) { // ignore cloning failure
         } catch (Exception ex) {
             Logger.getLogger(VisualReplicator.class.getName()).log(Level.INFO, null, ex); // NOI18N
         }
