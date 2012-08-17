@@ -108,6 +108,7 @@ made subject to such option by the copyright holder.
         
         
         <!-- CSH topics for Attach Wizard -->
+        <mapID target="AttachDialog.HelpCtx" url="helppages/csh/csh_attachwizard.html"/>
         <mapID target="AttachSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_1.html"/>
         <mapID target="ReviewSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_2.html"/>
         <mapID target="ManualIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_3_manual.html"/>
