@@ -832,6 +832,95 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void testStringQualIdentClashWithRemovedClass1() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "class B {\n" +
+            "}\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import foo.A.B;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    B l;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree B = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "B", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+                ClassTree nueClass = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "A", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Arrays.asList(B));
+                CompilationUnitTree nueCUT = make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "foo/A.java", Collections.<ImportTree>emptyList(), Collections.singletonList(nueClass));
+                workingCopy.rewrite(null, nueCUT);
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt1 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("foo.A.B"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(make.removeClassMember(clazz, 1), vt1));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testStringQualIdentClashWithRemovedClass2() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "class B {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import foo.A.B;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    B l;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree B = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "B", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+                ClassTree nueClass = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "A", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Arrays.asList(B));
+                CompilationUnitTree nueCUT = make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "foo/A.java", Collections.<ImportTree>emptyList(), Collections.singletonList(nueClass));
+                workingCopy.rewrite(null, nueCUT);
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt1 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("foo.A.B"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt1));
+                workingCopy.rewrite(node, make.removeCompUnitTypeDecl(node, 1));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+ 
     String getGoldenPckg() {
         return "";
     }

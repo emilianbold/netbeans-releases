@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011-2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.breadcrumbs;
 
-package org.netbeans.modules.editor.java;
-
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.editor.Acceptor;
-import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenContext;
-import org.netbeans.editor.ext.java.JavaLayerTokenContext;
-import org.netbeans.editor.ext.java.JavaTokenContext;
-import org.openide.text.IndentEngine;
+import javax.swing.text.Document;
+import org.openide.explorer.ExplorerManager;
 
 /**
-* Nb settings for Java.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ *
+ * @author lahvac
+ */
+public class HolderImpl {
 
-public final class NbJavaSettingsInitializer {
+    public static HolderImpl get(Document doc) {
+        HolderImpl instance = (HolderImpl) doc.getProperty(HolderImpl.class);
 
-    public static Acceptor getAbbrevResetAcceptor() {
-        return AcceptorFactory.NON_JAVA_IDENTIFIER;
-    }
-    public static Acceptor getIdentifierAcceptor() {
-        return AcceptorFactory.JAVA_IDENTIFIER;
-    }
-    public static Acceptor getIndentHotCharsAcceptor() {
-        return indentHotCharsAcceptor;
-    }
-    public static List getTokenContextList() {
-        return Arrays.asList(new TokenContext[] {
-            JavaTokenContext.context,
-            JavaLayerTokenContext.context
-        });
-    }
-    
-    private NbJavaSettingsInitializer() {
-    }
-
-    private static final Acceptor indentHotCharsAcceptor = new Acceptor() {
-        public boolean accept(char ch) {
-            switch (ch) {
-                case '{': //NOI18N
-                case '}': //NOI18N
-                    return true;
-            }
-            return false;
+        if (instance == null) {
+            doc.putProperty(HolderImpl.class, instance = new HolderImpl());
         }
-    };
-    
+
+        return instance;
+    }
+
+    private final ExplorerManager manager = new ExplorerManager();
+
+    public ExplorerManager getManager() {
+        return manager;
+    }
 }
