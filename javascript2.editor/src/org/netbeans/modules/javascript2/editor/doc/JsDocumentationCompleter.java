@@ -109,6 +109,10 @@ public class JsDocumentationCompleter {
                         ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
                         if (parserResult != null && parserResult instanceof JsParserResult) {
                             final JsParserResult jsParserResult = (JsParserResult) parserResult;
+                            if (jsParserResult.getRoot() == null) {
+                                // broken source
+                                return;
+                            }
                             Node nearestNode = getNearestNode(jsParserResult, offset);
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
