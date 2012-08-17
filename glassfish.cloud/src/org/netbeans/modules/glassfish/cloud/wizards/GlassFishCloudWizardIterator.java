@@ -103,8 +103,10 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
                 GlassFishCloudInstance.PROPERTY_HOST);
         String portStr = (String)wizard.getProperty(
                 GlassFishCloudInstance.PROPERTY_PORT);
+        String localServerRoot = (String)wizard.getProperty(
+                GlassFishCloudInstance.PROPERTY_LOCAL_SERVER_ROOT);
         String localServerHome = (String)wizard.getProperty(
-                GlassFishCloudInstance.PROPERTY_LOCAL_SERVER);
+                GlassFishCloudInstance.PROPERTY_LOCAL_SERVER_HOME);
         int port;
         try {
             port = Integer.parseInt(portStr);
@@ -113,8 +115,8 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
         }
         GlassFishServerEntity localServer;
         try {
-            localServer = new GlassFishServerEntity(name, localServerHome,
-                    GlassFishUrl.url(GlassFishUrl.Id.LOCAL,
+            localServer = new GlassFishServerEntity(name, localServerRoot,
+                    localServerHome, GlassFishUrl.url(GlassFishUrl.Id.LOCAL,
                     name));
         } catch (DataException de) {
             localServer = null;

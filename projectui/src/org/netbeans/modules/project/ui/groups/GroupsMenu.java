@@ -89,14 +89,17 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         super(GroupsMenu_label());
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert false;
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return new Menu();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return new Menu();
     }
@@ -133,9 +136,11 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                      */
                 }
                 mi.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         // Could be slow (if needs to load projects); don't block EQ.
                         RP.post(new Runnable() {
+                            @Override
                             public void run() {
                                 Group.setActiveGroup(g);
                             }
@@ -155,9 +160,11 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                  */
             }
             mi.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     // Could be slow (if needs to load projects); don't block EQ.
                     RP.post(new Runnable() {
+                        @Override
                         public void run() {
                             Group.setActiveGroup(null);
                         }
@@ -170,6 +177,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             mi = new JMenuItem();
             Mnemonics.setLocalizedText(mi, GroupsMenu_new_group());
             mi.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     newGroup();
                 }
@@ -179,6 +187,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 mi = new JMenuItem();
                 Mnemonics.setLocalizedText(mi, GroupsMenu_properties(active.getName()));
                 mi.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         openProperties(active);
                     }
@@ -187,6 +196,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 mi = new JMenuItem();
                 Mnemonics.setLocalizedText(mi, GroupsMenu_remove(active.getName()));
                 mi.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(Delete_Confirm(active.getName()), NotifyDescriptor.YES_NO_OPTION);
                         if (DialogDisplayer.getDefault().notify(ask) == NotifyDescriptor.YES_OPTION) {
@@ -199,6 +209,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             return new JComponent[] {this};
         }
 
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return getMenuPresenters();
         }
@@ -224,6 +235,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         create.setDefaultCapable(true);
         create.setEnabled(panel.isReady());
         panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NewGroupPanel.PROP_READY.equals(evt.getPropertyName())) {
                     create.setEnabled(panel.isReady());
@@ -236,6 +248,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         if (result.equals(create)) {
             final Group g = panel.create();
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     Group.setActiveGroup(g);
                 }

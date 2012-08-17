@@ -233,6 +233,7 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
             Action i;
             int cnt;
             
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("enabled".equals(evt.getPropertyName())) {
                     cnt++;
@@ -258,6 +259,7 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
         
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("ancestor".equals(evt.getPropertyName())) {
             ancEvent++;

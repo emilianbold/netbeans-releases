@@ -67,18 +67,22 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     public OpenProjectsTrampolineImpl() {
     }
     
+    @Override
     public Project[] getOpenProjectsAPI() {
         return OpenProjectList.getDefault().getOpenProjects();
     }
 
+    @Override
     public void openAPI (Project[] projects, boolean openRequiredProjects, boolean showProgress) {
         OpenProjectList.getDefault().open (projects, openRequiredProjects, showProgress);
     }
 
+    @Override
     public void closeAPI(Project[] projects) {
         OpenProjectList.getDefault().close(projects, false);
     }
 
+    @Override
     public void addPropertyChangeListenerAPI( PropertyChangeListener listener, Object source ) {
         boolean shouldRegisterListener;
         
@@ -99,12 +103,14 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         pchSupport.addPropertyChangeListener( listener );        
     }
     
+    @Override
     public void removePropertyChangeListenerAPI( PropertyChangeListener listener ) {
         if (pchSupport != null) {
             pchSupport.removePropertyChangeListener( listener );        
         }
     }
     
+    @Override
     public void propertyChange( PropertyChangeEvent e ) {
         
         if ( e.getPropertyName().equals( OpenProjectList.PROPERTY_OPEN_PROJECTS ) ) {        
@@ -118,14 +124,17 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         }
     }
         
+    @Override
     public Project getMainProject() {
         return OpenProjectList.getDefault().getMainProject();
     }
     
+    @Override
     public void setMainProject(Project project) {
         OpenProjectList.getDefault().setMainProject(project);
     }
     
+    @Override
     public Future<Project[]> openProjectsAPI() {
         return OpenProjectList.getDefault().openProjectsAPI();
 }

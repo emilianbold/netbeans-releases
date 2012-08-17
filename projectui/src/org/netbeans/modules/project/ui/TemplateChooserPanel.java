@@ -82,6 +82,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
         /* this.recommendedTypes = recommendedTypes; */
     }
 
+    @Override
     public Component getComponent() {
         if (gui == null) {
             gui = new TemplateChooserPanelGUI();
@@ -99,23 +100,28 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
         return gui;
     }
 
+    @Override
     public HelpCtx getHelp() {
         // XXX
         return null;
     }
 
+    @Override
     public boolean isValid() {
         return gui != null && gui.getTemplate() != null;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         this.wizard = settings;
         TemplateChooserPanelGUI panel = (TemplateChooserPanelGUI) this.getComponent();
@@ -142,6 +148,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
         settings.putProperty("NewFileWizard_Title", null); // NOI18N
     }
 
+    @Override
     public void storeSettings(WizardDescriptor wd) {
         Object value = wd.getValue();
         
@@ -169,6 +176,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         /*
         FileObject template = gui.getTemplate();

@@ -56,13 +56,13 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
  */
 public class JPQLExecutor {
 
-    public final String ECLIPSELINK_QUERY = "org.eclipse.persistence.jpa.JpaQuery";
-       public final String ECLIPSELINK_QUERY_SQL0 = "getDatabaseQuery";
-    public final String ECLIPSELINK_QUERY_SQL1 = "getSQLString";
-    public final String HIBERNATE_QUERY = "org.hibernate.Query";
-    public final String HIBERNATE_QUERY_SQL = "getQueryString";
-    public final String OPENJPA_QUERY = "org.apache.openjpa.persistence.QueryImpl";
-    public final String OPENJPA_QUERY_SQL = "getQueryString";
+    static public final String ECLIPSELINK_QUERY = "org.eclipse.persistence.jpa.JpaQuery";//NOI18N
+    static   public final String ECLIPSELINK_QUERY_SQL0 = "getDatabaseQuery";//NOI18N
+    static public final String ECLIPSELINK_QUERY_SQL1 = "getSQLString";//NOI18N
+    static public final String HIBERNATE_QUERY = "org.hibernate.Query";//NOI18N
+    static public final String HIBERNATE_QUERY_SQL = "getQueryString";//NOI18N
+    static public final String OPENJPA_QUERY = "org.apache.openjpa.persistence.QueryImpl";//NOI18N
+    static public final String OPENJPA_QUERY_SQL = "getQueryString";//NOI18N
 
     /**
      * Executes given JPQL query and returns the result.
@@ -82,7 +82,7 @@ public class JPQLExecutor {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
             javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
-            //p.getClass().getClassLoader().loadClass("org.eclipse.persistence.jpa.PersistenceProvider");
+
             EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
 
             EntityManager em = emf.createEntityManager();
