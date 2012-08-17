@@ -377,6 +377,9 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeFinallyLeftBrace, getDefaultAsBoolean(spaceBeforeFinallyLeftBrace));
     }
 
+    public boolean spaceBeforeWithLeftBrace() {
+        return preferences.getBoolean(spaceBeforeWithLeftBrace, getDefaultAsBoolean(spaceBeforeWithLeftBrace));
+    }
 //
 //    public boolean spaceBeforeSynchronizedLeftBrace() {
 //        return preferences.getBoolean(spaceBeforeSynchronizedLeftBrace, getDefaultAsBoolean(spaceBeforeSynchronizedLeftBrace));
@@ -589,6 +592,11 @@ public final class CodeStyle {
 
     public WrapStyle wrapDoWhileStatement() {
         String wrap = preferences.get(wrapDoWhileStatement, getDefaultAsString(wrapDoWhileStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapWithStatement() {
+        String wrap = preferences.get(wrapWithStatement, getDefaultAsString(wrapWithStatement));
         return WrapStyle.valueOf(wrap);
     }
 

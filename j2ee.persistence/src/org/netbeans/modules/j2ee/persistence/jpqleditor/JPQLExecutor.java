@@ -41,24 +41,37 @@
  */
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
+import java.lang.reflect.Method;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 
 /**
  * Executes JPQL query.
  */
 public class JPQLExecutor {
-    
+
+    public final String ECLIPSELINK_QUERY = "org.eclipse.persistence.jpa.JpaQuery";
+       public final String ECLIPSELINK_QUERY_SQL0 = "getDatabaseQuery";
+    public final String ECLIPSELINK_QUERY_SQL1 = "getSQLString";
+    public final String HIBERNATE_QUERY = "org.hibernate.Query";
+    public final String HIBERNATE_QUERY_SQL = "getQueryString";
+    public final String OPENJPA_QUERY = "org.apache.openjpa.persistence.QueryImpl";
+    public final String OPENJPA_QUERY_SQL = "getQueryString";
+
     /**
      * Executes given JPQL query and returns the result.
+     *
      * @param jpql the query
-     * @return JPQLResult containing the execution result (including any errors).
+     * @return JPQLResult containing the execution result (including any
+     * errors).
      */
-    public JPQLResult execute(String jpql, 
+    public JPQLResult execute(String jpql,
             PersistenceUnit pu,
             PersistenceEnvironment pe,
             int maxRowCount,
@@ -66,17 +79,52 @@ public class JPQLExecutor {
         JPQLResult result = new JPQLResult();
         try {
             ph.progress(60);
-            
-                        Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
-                        javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();p.getClass().getClassLoader().loadClass("org.eclipse.persistence.jpa.PersistenceProvider");
-                        EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
-                        
-                        EntityManager em = emf.createEntityManager();
 
-                        Query query = em.createQuery(jpql);
-                        
+            Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
+            javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
+            //p.getClass().getClassLoader().loadClass("org.eclipse.persistence.jpa.PersistenceProvider");
+            EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
+
+            EntityManager em = emf.createEntityManager();
+
+            Query query = em.createQuery(jpql);
+            //
+            Provider provider = ProviderUtil.getProvider(pu);
+            String queryStr = null;
+            if(provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)){//NOI18N
+                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(ECLIPSELINK_QUERY);
+                if(qClass !=null) {
+                    Method method = qClass.getMethod(ECLIPSELINK_QUERY_SQL0);
+                    if(method != null){
+                        Object dqOject = method.invoke(query);
+                        Method method2 = (dqOject!= null ? dqOject.getClass().getMethod(ECLIPSELINK_QUERY_SQL1) : null);
+                        if(method2!=null) {
+                            queryStr = (String) method2.invoke(dqOject);
+                        }
+                    }
+                }
+            } 
+//            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
+//                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
+//                if(qClass !=null) {
+//                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
+//                    if(method != null){
+//                        queryStr = (String) method.invoke(query);
+//                    }
+//                }
+//            } else if (provider.getProviderClass().contains("openjpa")){//NOI18N
+//                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(OPENJPA_QUERY);
+//                if(qClass !=null) {
+//                    Method method = qClass.getMethod(OPENJPA_QUERY_SQL);
+//                    if(method != null){
+//                        queryStr = (String) method.invoke(query);
+//                    }
+//                }
+//            } 
+            result.setSqlQuery(queryStr);
+            //
             ph.progress(70);
-            
+
             query.setMaxResults(maxRowCount);
 
             jpql = jpql.trim();
@@ -92,5 +140,4 @@ public class JPQLExecutor {
         }
         return result;
     }
-
 }

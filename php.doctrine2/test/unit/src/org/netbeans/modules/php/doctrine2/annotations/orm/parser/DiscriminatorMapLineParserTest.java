@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class DiscriminatorMapLineParserTest extends NbTestCase {
-    private DiscriminatorMapLineParser parser;
+    private TypedParametersAnnotationLineParser parser;
 
     public DiscriminatorMapLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new DiscriminatorMapLineParser();
+        this.parser = new TypedParametersAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_01() throws Exception {
-        assertTrue(parser.parse("DiscriminatorMap") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("DiscriminatorMap") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\DiscriminatorMap") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("Annotations\\DiscriminatorMap") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\DiscriminatorMap") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\DiscriminatorMap") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("Annotations\\DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorMap");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -101,7 +102,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorMap   ");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -112,7 +113,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorMap\t\t  ");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -123,7 +124,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("({\"person\" = \"Person\", \"employee\" = \"Employee\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -138,7 +139,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})  \t");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("({\"person\" = \"Person\", \"employee\" = \"Employee\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -153,7 +154,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})  \t");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("({\"person\" = \"Person\", \"employee\" = \"Employee\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -168,7 +169,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("discriminatormap");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -179,7 +180,7 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\discriminatormap({\"person\" = \"Person\", \"employee\" = \"Employee\"})  \t");
-        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorMap", parsedLine.getName());
         assertEquals("({\"person\" = \"Person\", \"employee\" = \"Employee\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

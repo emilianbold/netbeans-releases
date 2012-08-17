@@ -123,8 +123,27 @@ public abstract class FxNodeVisitor {
         }
 
         public void visitNode(FxNode node) {
+            if (node == null) {
+                return;
+            }
             scan(node.i().getChildren());
         }
+
+        public void visitCopy(FxInstanceCopy copy) {
+            // do not call super
+            visitBaseInstance(copy);
+        }
+
+        public void visitInstance(FxNewInstance decl) {
+            // do not call super
+            visitBaseInstance(decl);
+        }
+
+        
+        protected void visitBaseInstance(FxInstance inst) {
+            visitNode(inst);
+        }
+    
     }
     
     public static class ModelTraversal extends FxNodeVisitor {

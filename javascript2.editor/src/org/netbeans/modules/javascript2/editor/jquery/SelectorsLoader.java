@@ -211,7 +211,6 @@ public class SelectorsLoader extends DefaultHandler {
         private String returns;
         private String description;
         private List<String> notes;
-        private String exampleDesc;
         private String longDescription;
         private String argName;
         private String argType;

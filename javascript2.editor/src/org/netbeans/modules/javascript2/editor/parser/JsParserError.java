@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Comparator;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.openide.filesystems.FileObject;
@@ -45,7 +46,21 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class JsParserError implements Error, Comparable<JsParserError> {
+public class JsParserError implements Error {
+
+    public static Comparator<JsParserError> POSITION_COMPARATOR = new Comparator<JsParserError>() {
+
+        @Override
+        public int compare(JsParserError o1, JsParserError o2) {
+            if (o1.startPosition < o2.startPosition) {
+                return -1;
+            }
+            if (o1.startPosition > o2.startPosition) {
+                return 1;
+            }
+            return 0;
+        }
+    };
 
     private final String displayName;
     private final FileObject file;
@@ -108,16 +123,5 @@ public class JsParserError implements Error, Comparable<JsParserError> {
     @Override
     public Object[] getParameters() {
         return parameters;
-    }
-
-    @Override
-    public int compareTo(JsParserError o) {
-        if (startPosition < o.startPosition) {
-            return -1;
-        }
-        if (startPosition > o.startPosition) {
-            return 1;
-        }
-        return 0;
     }
 }

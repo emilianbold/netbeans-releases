@@ -769,7 +769,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             } else {
                 key = macro;
                 value = null;
-                res.put(macro,null);
             }
             if (!res.containsKey(key) || override) {
                 res.put(key, value);
@@ -841,7 +840,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration()) {
             flavor = itemConfiguration.getLanguageFlavor();
-            if (flavor == LanguageFlavor.UNKNOWN) {
+            if (flavor == LanguageFlavor.UNKNOWN || flavor == LanguageFlavor.DEFAULT) {
                 CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
                 if (compilerSet != null) {
                     Tool tool = compilerSet.getTool(itemConfiguration.getTool());
@@ -850,7 +849,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                         if (itemConfiguration.isCompilerToolConfiguration()) {
                             BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                             if (compilerConfiguration != null) {
-                                flavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
+                                LanguageFlavor aFlavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
+                                if (aFlavor != LanguageFlavor.UNKNOWN) {
+                                    flavor = aFlavor;
+                                }
                             }
                         }
                     }

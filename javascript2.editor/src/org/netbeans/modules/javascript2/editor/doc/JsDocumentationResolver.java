@@ -61,13 +61,8 @@ public class JsDocumentationResolver {
     private static final Logger LOG = Logger.getLogger(JsDocumentationResolver.class.getName());
     private static JsDocumentationResolver instance;
 
-    private static List<? extends JsDocumentationProvider> jsDocumentationProviders;
-
-    private JsDocumentationResolver() {
-        jsDocumentationProviders = new ArrayList<JsDocumentationProvider>(Lookups
-                .forPath(JsDocumentationSupport.DOCUMENTATION_PROVIDER_PATH)
-                .lookupResult(JsDocumentationProvider.class).allInstances());
-    }
+    private static final List<? extends JsDocumentationProvider> PROVIDERS = new ArrayList<JsDocumentationProvider>(
+            Lookups.forPath(JsDocumentationSupport.DOCUMENTATION_PROVIDER_PATH).lookupResult(JsDocumentationProvider.class).allInstances());
 
     public static synchronized JsDocumentationResolver getDefault() {
         if (instance == null) {
@@ -89,7 +84,7 @@ public class JsDocumentationResolver {
         Set<String> allTags = JsDocumentationReader.getAllTags(snapshot);
         float max = 0.0f;
         JsDocumentationProvider bestProvider = null;
-        for (JsDocumentationProvider jsDocumentationProvider : jsDocumentationProviders) {
+        for (JsDocumentationProvider jsDocumentationProvider : PROVIDERS) {
             float coverage = countTagsCoverageRation(allTags, jsDocumentationProvider);
             if (coverage == 1.0) {
                 return jsDocumentationProvider;

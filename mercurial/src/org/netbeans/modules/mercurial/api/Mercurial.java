@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.mercurial.api;
 
-import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -59,7 +59,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgFileNode;
-import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -67,7 +66,6 @@ import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
-import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
@@ -414,18 +412,28 @@ public class Mercurial {
     }
 
     /**
-     * Opens standard clone wizard
+     * Opens standard clone wizard. Is not blocking, does not wait for the clone task to finish
      * @param url repository url to checkout
      * @throws java.net.MalformedURLException in case the url is invalid
      */
     public static void openCloneWizard (final String url) throws MalformedURLException {
+        openCloneWizard(url, false);
+    }
+    
+    /**
+     * Opens standard clone wizard
+     * @param url repository url to checkout
+     * @return destination folder
+     * @throws java.net.MalformedURLException in case the url is invalid
+     */
+    public static File openCloneWizard (final String url, boolean waitFinished) throws MalformedURLException {
         if(!isClientAvailable(true)) {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
-            return;
+            return null;
         }
         addRecentUrl(url);
         CloneWizardAction wiz = CloneWizardAction.getInstance();
-        wiz.performAction();
+        return wiz.performClone(waitFinished);
     }
 
     /**

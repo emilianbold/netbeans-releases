@@ -5,7 +5,7 @@ var |>GLOBAL:Address2<| = {
     |>FIELD:city<| : 'Prague',
     |>FIELD:zip<| : '16000',
     |>METHOD:toString<| : function () {
-        var text = this.|>FIELD:street<| + ", " + this.|>FIELD:city<| + " " + this.toString();
+        var |>UNUSED:text<| = this.|>FIELD:street<| + ", " + this.|>FIELD:city<| + " " + this.toString();
     }
 }
 

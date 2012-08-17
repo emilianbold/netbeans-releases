@@ -165,12 +165,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 driverPanel,
                 new ConnectionPanel(),
                 new ChoosingSchemaPanel(),
+                new ChoosingConnectionNamePanel()
             };
             steps = new String[panels.length];
             steps = new String[] {
                 NbBundle.getMessage(AddConnectionWizard.class, "ChoosingDriverUI.Name"), // NOI18N
                 NbBundle.getMessage(AddConnectionWizard.class, "ConnectionPanel.Name"), // NOI18N
                 NbBundle.getMessage(AddConnectionWizard.class, "ChoosingSchemaPanel.Name"), // NOI18N
+                NbBundle.getMessage(AddConnectionWizard.class, "ChooseConnectionNamePanel.Name"), // NOI18N
             };
         }
         return panels;

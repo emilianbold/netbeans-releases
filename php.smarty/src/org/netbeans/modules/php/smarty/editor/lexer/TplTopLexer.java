@@ -383,14 +383,18 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         break;
 
                     case IN_LITERAL:
-                        if (isSmartyOpenDelimiterWithFinalizingChar(text)) {
-                            state = State.OPEN_DELIMITER;
-                            input.backup(openDelimiterLength + 1);
-                            if (input.readLength() > 0) {
-                                return TplTopTokenId.T_HTML;
+                        while (!isSmartyOpenDelimiterWithFinalizingChar(text)) {
+                            c = input.read();
+                            if (c == LexerInput.EOF) {
+                                if (input.readLength() > 0) {
+                                    return TplTopTokenId.T_HTML;
+                                }
                             }
+                            text = input.readText();
                         }
-                        if (LexerUtils.isWS(c)) {
+                        state = State.OPEN_DELIMITER;
+                        input.backup(openDelimiterLength + 1);
+                        if (input.readLength() > 0) {
                             return TplTopTokenId.T_HTML;
                         }
                         break;

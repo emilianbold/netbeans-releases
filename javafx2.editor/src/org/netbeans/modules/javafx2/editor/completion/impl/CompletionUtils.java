@@ -44,9 +44,7 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 
 /**
  *
@@ -84,7 +82,7 @@ public class CompletionUtils {
             do {
                 index = findNextUpper(prefix, lastIndex + 1);
                 String token = prefix.substring(lastIndex, index == -1 ? prefix.length(): index);
-                sb.append(token); 
+                sb.append(Pattern.quote(token)); 
                 sb.append(index != -1 ? "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
                 lastIndex = index;
             } while (index != -1);

@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.lang.model.util.Elements;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
@@ -68,15 +69,18 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     private ITypeRepository typeRepository;
     private final EntityMappings mappings;
     private boolean valid = true;//used to conrol long tasks, if not valid long tasks should be either terminated or goes short way
+    private final Elements elements;
 
-    public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData) {
+    public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData, Elements elements) {
         this.project = project;
         this.mappings = metaData.getRoot();
+        this.elements = elements;
     }
     
-    public ManagedTypeProvider(Project project, EntityMappings mappings) {
+    public ManagedTypeProvider(Project project, EntityMappings mappings, Elements elements) {
         this.project = project;
         this.mappings = mappings;
+        this.elements = elements;
     }
     
     @Override
@@ -95,7 +99,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public IManagedType getManagedType(IType itype) {
         initializeManagedTypes();
         for (IManagedType mt : managedTypes.values()) {
-            if (mt.getType().equals(itype)) {
+            if (isValid() && mt.getType().equals(itype)) {
                 return mt;
             }
         }
@@ -116,7 +120,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public ITypeRepository getTypeRepository() {
         if (typeRepository == null) {
-            typeRepository = new TypeRepository(project, this);
+            typeRepository = new TypeRepository(project, this, elements);
         }
         return typeRepository;
     }
@@ -145,28 +149,15 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public void invalidate() {
         valid = false;
         //TODO: may have sense to clean stored data
+        if(typeRepository != null) {
+            ((TypeRepository)typeRepository).invalidate();
+            typeRepository = null;
+        }
     }
 
     private void initializeManagedTypes() {
         if (managedTypes == null) {
             managedTypes = new HashMap<String, IManagedType>();
-            //TODO fill
-//            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
-//            MetadataModel<EntityMappingsMetadata> model = entityClassScope.getEntityMappingsModel(true);
-//            MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper = MetadataModelReadHelper.create(model, new MetadataModelAction<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>>() {
-//
-//                @Override
-//                public List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> run(EntityMappingsMetadata metadata) {
-//                    return Arrays.asList(metadata.getRoot().getEntity());
-//                }
-//            });
-//            List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> entities = null;
-//            try {
-//                entities = readHelper.getResult();
-//            } catch (ExecutionException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-
             //TODO: not only entities but mapped superclasses and embeddable?
             for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : mappings.getEntity()) {
 

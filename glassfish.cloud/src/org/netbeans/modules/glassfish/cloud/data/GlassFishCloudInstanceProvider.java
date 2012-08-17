@@ -314,7 +314,7 @@ public class GlassFishCloudInstanceProvider
                     i.hasNext(); ) {
                 InstanceProperties props = i.next();
                 if (instance.equalProps(props)) {
-                    props.remove();
+                    instance.remove(props);
                 }
             }
         }

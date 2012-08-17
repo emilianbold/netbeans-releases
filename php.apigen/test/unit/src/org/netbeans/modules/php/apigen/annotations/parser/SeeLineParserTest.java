@@ -47,6 +47,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -71,7 +72,7 @@ public class SeeLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsSeeParsedLine() throws Exception {
-        assertTrue(parser.parse("see") instanceof SeeParsedLine);
+        assertTrue(parser.parse("see") instanceof ParsedLine);
     }
 
     public void testValidUseCase_01() throws Exception {

@@ -50,7 +50,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author sdedic
  */
-public class ResourcePathItem extends AbstractCompletionItem {
+final  class ResourcePathItem extends AbstractCompletionItem {
     private DataObject  target;
     private ImageIcon   icon;
     private String      right;

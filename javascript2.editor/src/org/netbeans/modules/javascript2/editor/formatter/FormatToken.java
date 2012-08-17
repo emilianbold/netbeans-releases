@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 
@@ -52,27 +49,6 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Petr Hejl
  */
 public final class FormatToken {
-
-    private static final Set<Kind> BEFORE_MARKERS = EnumSet.noneOf(Kind.class);
-
-    static {
-        Collections.addAll(BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
-                Kind.BEFORE_ASSIGNMENT_OPERATOR, Kind.BEFORE_COMMA,
-                Kind.BEFORE_WHILE_KEYWORD, Kind.BEFORE_ELSE_KEYWORD,
-                Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD,
-                Kind.BEFORE_SEMICOLON, Kind.BEFORE_UNARY_OPERATOR,
-                Kind.BEFORE_TERNARY_OPERATOR, Kind.BEFORE_FUNCTION_DECLARATION,
-                Kind.BEFORE_FUNCTION_CALL, Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS,
-                Kind.BEFORE_IF_PARENTHESIS, Kind.BEFORE_WHILE_PARENTHESIS,
-                Kind.BEFORE_FOR_PARENTHESIS, Kind.BEFORE_WITH_PARENTHESIS,
-                Kind.BEFORE_SWITCH_PARENTHESIS, Kind.BEFORE_CATCH_PARENTHESIS,
-                Kind.BEFORE_RIGHT_PARENTHESIS, Kind.BEFORE_FUNCTION_DECLARATION_BRACE,
-                Kind.BEFORE_IF_BRACE, Kind.BEFORE_ELSE_BRACE,
-                Kind.BEFORE_WHILE_BRACE, Kind.BEFORE_FOR_BRACE,
-                Kind.BEFORE_DO_BRACE, Kind.BEFORE_SWITCH_BRACE,
-                Kind.BEFORE_TRY_BRACE, Kind.BEFORE_CATCH_BRACE,
-                Kind.BEFORE_FINALLY_BRACE, Kind.BEFORE_ARRAY_LITERAL_BRACKET);
-    }
 
     private final Kind kind;
 
@@ -130,15 +106,6 @@ public final class FormatToken {
         return offset < 0;
     }
 
-    public boolean isBeforeMarker() {
-        return BEFORE_MARKERS.contains(kind);
-    }
-
-    public boolean isIndentationMarker() {
-        return Kind.INDENTATION_INC == kind || Kind.INDENTATION_DEC == kind
-                || Kind.ELSE_IF_INDENTATION_INC == kind || Kind.ELSE_IF_INDENTATION_DEC == kind;
-    }
-
     @Override
     public String toString() {
         return "FormattingToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + '}';
@@ -153,30 +120,243 @@ public final class FormatToken {
     }
     
     public static enum Kind {
-        SOURCE_START,
-        TEXT,
-        WHITESPACE,
-        EOL,
+        SOURCE_START {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        TEXT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        WHITESPACE {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        EOL {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
-        LINE_COMMENT,
-        DOC_COMMENT,
-        BLOCK_COMMENT,
+        LINE_COMMENT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        DOC_COMMENT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BLOCK_COMMENT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
-        INDENTATION_INC,
-        ELSE_IF_INDENTATION_INC,
-        INDENTATION_DEC,
-        ELSE_IF_INDENTATION_DEC,
+        INDENTATION_INC {
+            @Override
+            public boolean isIndentationMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        ELSE_IF_INDENTATION_INC {
+            @Override
+            public boolean isIndentationMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        INDENTATION_DEC {
+            @Override
+            public boolean isIndentationMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        ELSE_IF_INDENTATION_DEC {
+            @Override
+            public boolean isIndentationMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
-        AFTER_STATEMENT,
-        AFTER_PROPERTY,
-        AFTER_CASE,
+        AFTER_STATEMENT {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_CASE {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
-        AFTER_VAR_DECLARATION,
-        
-        AFTER_BLOCK_START,
-        ELSE_IF_AFTER_BLOCK_START,
-        
-        BEFORE_OBJECT,
+        AFTER_BLOCK_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        ELSE_IF_AFTER_BLOCK_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // for line wrap after comma separated var
+        AFTER_VAR_DECLARATION {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        // for line wrap of parameters
+        BEFORE_FUNCTION_DECLARATION_PARAMETER {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        // for line wrap of arguments
+        BEFORE_FUNCTION_CALL_ARGUMENT {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // separate line wrap options
+        AFTER_IF_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ELSE_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_WHILE_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_FOR_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_WITH_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_DO_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // a bit special tokens to detect proper continuation
+        AFTER_PROPERTY {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_OBJECT {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         // around binary operator
         BEFORE_BINARY_OPERATOR,
@@ -197,6 +377,9 @@ public final class FormatToken {
         AFTER_WITH_KEYWORD,
         AFTER_SWITCH_KEYWORD,
         AFTER_CATCH_KEYWORD,
+
+        // no parenthesis but we should handle that
+        AFTER_VAR_KEYWORD,
 
         // keywords with possible space before
         BEFORE_WHILE_KEYWORD,
@@ -256,10 +439,23 @@ public final class FormatToken {
         BEFORE_TRY_BRACE,
         BEFORE_CATCH_BRACE,
         BEFORE_FINALLY_BRACE,
+        BEFORE_WITH_BRACE,
 
         // array literal brackets
         AFTER_ARRAY_LITERAL_BRACKET,
-        BEFORE_ARRAY_LITERAL_BRACKET
+        BEFORE_ARRAY_LITERAL_BRACKET;
+
+        public boolean isLineWrapMarker() {
+            return false;
+        }
+
+        public boolean isIndentationMarker() {
+            return false;
+        }
+
+        public boolean isSpaceMarker() {
+            return true;
+        }
     }
 
 }

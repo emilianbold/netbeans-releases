@@ -621,7 +621,7 @@ public final class MakeActionProvider implements ActionProvider {
                 // Always absolute
                 path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
             }
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false, context);
             actionEvents.add(projectActionEvent);
         } else {
             assert false;
