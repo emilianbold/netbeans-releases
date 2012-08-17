@@ -67,9 +67,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(AccessNode accessNode, boolean onset) {
         if (onset) {
-            treePath.add(accessNode);
+            addToPath(accessNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(accessNode, onset);
     }
@@ -77,9 +77,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(BinaryNode binaryNode, boolean onset) {
         if (onset) {
-            treePath.add(binaryNode);
+            addToPath(binaryNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(binaryNode, onset);
     }
@@ -87,9 +87,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(Block block, boolean onset) {
         if (onset) {
-            treePath.add(block);
+            addToPath(block);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(block, onset);
     }
@@ -97,9 +97,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(BreakNode breakNode, boolean onset) {
         if (onset) {
-            treePath.add(breakNode);
+            addToPath(breakNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(breakNode, onset);
     }
@@ -107,9 +107,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(CallNode callNode, boolean onset) {
         if (onset) {
-            treePath.add(callNode);
+            addToPath(callNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(callNode, onset);
     }
@@ -117,9 +117,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(CaseNode caseNode, boolean onset) {
         if (onset) {
-            treePath.add(caseNode);
+            addToPath(caseNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(caseNode, onset);
     }
@@ -127,9 +127,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(CatchNode catchNode, boolean onset) {
         if (onset) {
-            treePath.add(catchNode);
+            addToPath(catchNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(catchNode, onset);
     }
@@ -137,9 +137,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ContinueNode continueNode, boolean onset) {
         if (onset) {
-            treePath.add(continueNode);
+            addToPath(continueNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(continueNode, onset);
     }
@@ -147,9 +147,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ExecuteNode executeNode, boolean onset) {
         if (onset) {
-            treePath.add(executeNode);
+            addToPath(executeNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(executeNode, onset);
     }
@@ -157,9 +157,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ForNode forNode, boolean onset) {
         if (onset) {
-            treePath.add(forNode);
+            addToPath(forNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(forNode, onset);
     }
@@ -167,9 +167,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
         if (onset) {
-            treePath.add(functionNode);
+            addToPath(functionNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(functionNode, onset);
     }
@@ -177,9 +177,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(IdentNode identNode, boolean onset) {
         if (onset) {
-            treePath.add(identNode);
+            addToPath(identNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(identNode, onset);
     }
@@ -187,9 +187,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(IfNode ifNode, boolean onset) {
         if (onset) {
-            treePath.add(ifNode);
+            addToPath(ifNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(ifNode, onset);
     }
@@ -197,9 +197,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(IndexNode indexNode, boolean onset) {
         if (onset) {
-            treePath.add(indexNode);
+            addToPath(indexNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(indexNode, onset);
     }
@@ -207,9 +207,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(LabelNode labeledNode, boolean onset) {
         if (onset) {
-            treePath.add(labeledNode);
+            addToPath(labeledNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(labeledNode, onset);
     }
@@ -217,9 +217,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(LineNumberNode lineNumberNode, boolean onset) {
         if (onset) {
-            treePath.add(lineNumberNode);
+            addToPath(lineNumberNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(lineNumberNode, onset);
     }
@@ -227,9 +227,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(LiteralNode literalNode, boolean onset) {
         if (onset) {
-            treePath.add(literalNode);
+            addToPath(literalNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(literalNode, onset);
     }
@@ -237,9 +237,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
         if (onset) {
-            treePath.add(objectNode);
+            addToPath(objectNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(objectNode, onset);
     }
@@ -247,9 +247,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(PropertyNode propertyNode, boolean onset) {
         if (onset) {
-            treePath.add(propertyNode);
+            addToPath(propertyNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(propertyNode, onset);
     }
@@ -257,9 +257,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ReferenceNode referenceNode, boolean onset) {
         if (onset) {
-            treePath.add(referenceNode);
+            addToPath(referenceNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(referenceNode, onset);
     }
@@ -267,9 +267,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ReturnNode returnNode, boolean onset) {
         if (onset) {
-            treePath.add(returnNode);
+            addToPath(returnNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(returnNode, onset);
     }
@@ -277,9 +277,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(RuntimeNode runtimeNode, boolean onset) {
         if (onset) {
-            treePath.add(runtimeNode);
+            addToPath(runtimeNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(runtimeNode, onset);
     }
@@ -287,9 +287,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(SwitchNode switchNode, boolean onset) {
         if (onset) {
-            treePath.add(switchNode);
+            addToPath(switchNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(switchNode, onset);
     }
@@ -297,9 +297,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
-            treePath.add(ternaryNode);
+            addToPath(ternaryNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(ternaryNode, onset);
     }
@@ -307,9 +307,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(ThrowNode throwNode, boolean onset) {
         if (onset) {
-            treePath.add(throwNode);
+            addToPath(throwNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(throwNode, onset);
     }
@@ -317,9 +317,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(TryNode tryNode, boolean onset) {
         if (onset) {
-            treePath.add(tryNode);
+            addToPath(tryNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(tryNode, onset);
     }
@@ -327,9 +327,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(UnaryNode unaryNode, boolean onset) {
         if (onset) {
-            treePath.add(unaryNode);
+            addToPath(unaryNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(unaryNode, onset);
     }
@@ -337,9 +337,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(VarNode varNode, boolean onset) {
         if (onset) {
-            treePath.add(varNode);
+            addToPath(varNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(varNode, onset);
     }
@@ -347,9 +347,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(WhileNode whileNode, boolean onset) {
         if (onset) {
-            treePath.add(whileNode);
+            addToPath(whileNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(whileNode, onset);
     }
@@ -357,9 +357,9 @@ public class PathNodeVisitor extends NodeVisitor {
     @Override
     public Node visit(WithNode withNode, boolean onset) {
         if (onset) {
-            treePath.add(withNode);
+            addToPath(withNode);
         } else {
-            treePath.remove(treePath.size() - 1);
+            removeFromPathTheLast();
         }
         return super.visit(withNode, onset);
     }
