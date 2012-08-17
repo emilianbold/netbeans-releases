@@ -74,8 +74,33 @@ public class EditLayoutSpaceOperator extends JDialogOperator {
     public JComboBoxOperator cbDefinedSize(){
         return new JComboBoxOperator(this, 0);
     }
+    public JComboBoxOperator cbLeft(){
+        return new JComboBoxOperator(this, 0);
+    }
+    public JComboBoxOperator cbRight(){
+        return new JComboBoxOperator(this, 1);
+    }
+    public JComboBoxOperator cbTop(){
+        return new JComboBoxOperator(this, 2);
+    }
+    public JComboBoxOperator cbBottom(){
+        return new JComboBoxOperator(this, 3);
+    }
     
     public void setSizeOfGap(String size){
         cbDefinedSize().enterText(size);        
+    }
+    
+    public void setSizeOfGapLeft(String size){
+        cbLeft().enterText(size);        
+    }
+    public void setSizeOfGapRight(String size){
+        cbRight().enterText(size);        
+    }
+    public void setSizeOfGapTop(String size){
+        cbTop().enterText(size);        
+    }
+    public void setSizeOfGapBottom(String size){
+        cbBottom().enterText(size);        
     }
 }

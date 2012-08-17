@@ -193,12 +193,14 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     // Implementation of action listener ---------------------------------------
 
+    @Override
     public void actionPerformed( ActionEvent e ) {
         if ( e.getSource() == jCheckBoxSubprojects ) {
             OpenProjectListSettings.getInstance().setOpenSubprojects( jCheckBoxSubprojects.isSelected() );
         }
     }
 
+    @Override
     public void propertyChange( PropertyChangeEvent e ) {
         if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ||
              JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
@@ -224,6 +226,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
 
             displayNameTask = RP2.post(new Runnable() {
+                @Override
                 public void run() {
 
             final List<Project> projects = new ArrayList<Project>( projectDirs.length );
@@ -245,6 +248,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 return;
             }
             EventQueue.invokeLater(new Runnable() {
+                        @Override
                 public void run() {
 
             if ( !projects.isEmpty() ) {
@@ -511,6 +515,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         private static final FileFilter INSTANCE = new ProjectDirFilter( );
 
+        @Override
         public boolean accept( File f ) {
 
             if ( f.isDirectory() ) {
@@ -524,6 +529,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             return false;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage( ProjectDirFilter.class, "LBL_PrjChooser_ProjectDirectoryFilter_Name" ); // NOI18N
         }
@@ -603,6 +609,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         private DefaultListModel subprojectsToSet;
         private boolean cancel = false;
 
+        @Override
         public void run() {
 
             if ( !SwingUtilities.isEventDispatchThread() ) {
@@ -735,6 +742,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
         
 
+        @Override
         public boolean cancel() {
             cancel = true;
             // we don't really care that much to wait for cancelation here..

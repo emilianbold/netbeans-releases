@@ -890,6 +890,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     wasDot = true;
                     break;
                 case IDENTIFIER:
+                case INCOMPLETE_IDENTIFIER:
                 case KEYWORD:
                     if (wasDot || parts.isEmpty()) {
                         if (parts.isEmpty() && lastPrefixOffset == -1) {
