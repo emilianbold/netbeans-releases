@@ -1094,6 +1094,26 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testTypeParameters1() throws Exception {
+        performVariablesTest("package test; public class Test { private <A extends String> void aa() { } }",
+                             "$mods$ <$tp extends $bound&$obounds$> $ret $name($args$) { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {61, 65}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                                new Pair<String, int[]>("$tp", new int[] {43, 59}),
+                                new Pair<String, int[]>("$bound", new int[] {53, 59}),
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$obounds$", new int[] {}),
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "aa"),
+                                 new Pair<String, String>("$tp", "A")
+                             },
+                             false,
+                             true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
