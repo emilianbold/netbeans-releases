@@ -56,7 +56,7 @@
                   <Component id="filterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="splitPane" pref="293" max="32767" attributes="0"/>
+              <Component id="splitPane" pref="282" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="signatureEditorPane" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -209,7 +209,7 @@
             <Property name="icon" postCode="showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);"/>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="NbBundle.getMessage(JavaHierarchyPanel.class, &quot;TOOLTIP_showFQNToggleButton&quot;, Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q)))" type="code"/>
+              <Connection code="NbBundle.getMessage(JavaMembersPanel.class, &quot;TOOLTIP_showFQNToggleButton&quot;, Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q)))" type="code"/>
             </Property>
           </Properties>
         </Component>
@@ -218,7 +218,7 @@
             <Property name="icon" postCode="showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);"/>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="NbBundle.getMessage(JavaHierarchyPanel.class, &quot;TOOLTIP_showInnerToggleButton&quot;, Utilities.keyToString(getKeyStroke(KeyEvent.VK_I)))" type="code"/>
+              <Connection code="NbBundle.getMessage(JavaMembersPanel.class, &quot;TOOLTIP_showInnerToggleButton&quot;, Utilities.keyToString(getKeyStroke(KeyEvent.VK_I)))" type="code"/>
             </Property>
           </Properties>
         </Component>
