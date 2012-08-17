@@ -232,6 +232,7 @@ public class ProjectsRootNode extends AbstractNode {
             this.viewType = viewType;
         }
         
+        @Override
         public Node getNode() {
             return new ProjectsRootNode( viewType );
         }
@@ -281,6 +282,7 @@ public class ProjectsRootNode extends AbstractNode {
 
 
         
+        @Override
         protected Node[] createNodes(Pair p) {
             Project project = p.project;
             
@@ -350,6 +352,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // PropertyChangeListener impl -----------------------------------------
         
+        @Override
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
                 RP.post(new Runnable() {
@@ -362,6 +365,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // Change listener impl ------------------------------------------------
         
+        @Override
         public void stateChanged( ChangeEvent e ) {
             
             Reference<Project> projectRef = sources2projects.get(e.getSource());
@@ -473,6 +477,7 @@ public class ProjectsRootNode extends AbstractNode {
             fsRefreshTask.schedule(DELAY);
         }
         private final RequestProcessor.Task fsRefreshTask = Hacks.RP.create(new Runnable() {
+            @Override
             public void run() {
                 setProjectFiles();
             }
@@ -599,6 +604,7 @@ public class ProjectsRootNode extends AbstractNode {
                 } else {
                     newDir = null;
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             OpenProjectList.getDefault().close(new Project[] { pair.project }, false);
                         }
@@ -680,6 +686,7 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
 
+        @Override
         public void run() {
             boolean fireIcon;
             boolean fireName;
@@ -698,6 +705,7 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
 
+        @Override
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
                 task = Hacks.RP.create(this);
@@ -807,6 +815,7 @@ public class ProjectsRootNode extends AbstractNode {
             return img;
         }
 
+        @Override
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
                 fireDisplayNameChange( null, null );
@@ -825,6 +834,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
         // sources change
+        @Override
         public void stateChanged(ChangeEvent e) {
             fsRefreshTask.schedule(DELAY);
         }

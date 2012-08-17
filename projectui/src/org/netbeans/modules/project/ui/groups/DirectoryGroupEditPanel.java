@@ -70,6 +70,7 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
         startPerformingNameChecks(nameField, g.getName());
     }
 
+    @Override
     public void applyChanges() {
         g.setName(nameField.getText().trim());
     }

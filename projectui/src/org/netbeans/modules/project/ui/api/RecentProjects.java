@@ -79,6 +79,7 @@ public final class RecentProjects {
     private RecentProjects() {
         pch = new PropertyChangeSupport(this);
         OpenProjectList.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(OpenProjectList.PROPERTY_RECENT_PROJECTS)) {
                     pch.firePropertyChange(new PropertyChangeEvent(RecentProjects.class,
