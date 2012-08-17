@@ -249,11 +249,11 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     }
 
     public void testContComment21() throws Exception {
-        insertBreak("/**^\nvar a = 5;", "/**\n * ^\n */\nvar a = 5;");
+        insertBreak("/*^\nvar a = 5;", "/*\n * ^\n */\nvar a = 5;");
     }
 
     public void testContComment22() throws Exception {
-        insertBreak("/**^\nvar a = 5;/**\n*/", "/**\n * ^\n */\nvar a = 5;/**\n*/");
+        insertBreak("/*^\nvar a = 5;/**\n*/", "/*\n * ^\n */\nvar a = 5;/**\n*/");
     }
 
     public void testNoContComment() throws Exception {
