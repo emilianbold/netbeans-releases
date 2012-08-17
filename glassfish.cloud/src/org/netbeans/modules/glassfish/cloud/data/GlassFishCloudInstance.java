@@ -88,8 +88,12 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /** Port property name. */
     public static final String PROPERTY_PORT = "port";
 
-    /** Local server directory property name. */
-    public static final String PROPERTY_LOCAL_SERVER = "localServer";
+    /** Local server home directory property name (usually glassfish
+     *  subdirectory in server root). */
+    public static final String PROPERTY_LOCAL_SERVER_HOME = "localServerHome";
+
+    /** Local server installation directory property name. */
+    public static final String PROPERTY_LOCAL_SERVER_ROOT = "localServerRoot";
 
     /** GlassFish cloud instance local URL_PREFIXserver URL prefix. */
     public static final String URL_PREFIX = GlassFishUrl.Id.LOCAL.toString();
@@ -343,7 +347,10 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         props.putString(PROPERTY_NAME, name);
         props.putString(PROPERTY_HOST, host);
         props.putInt(PROPERTY_PORT, port);
-        props.putString(PROPERTY_LOCAL_SERVER,
+        props.putString(PROPERTY_LOCAL_SERVER_ROOT,
+                getLocalServer() != null
+                ? getLocalServer().getServerRoot() : null);
+        props.putString(PROPERTY_LOCAL_SERVER_HOME,
                 getLocalServer() != null
                 ? getLocalServer().getServerHome() : null);
         LOG.log(Level.FINER,
@@ -366,14 +373,17 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
             String host = props.getString(PROPERTY_HOST, null);
             int port = props.getInt(PROPERTY_PORT, -1);
             String localServerHome = props.getString(
-                    PROPERTY_LOCAL_SERVER, null);
+                    PROPERTY_LOCAL_SERVER_HOME, null);
+            String localServerRoot = props.getString(
+                    PROPERTY_LOCAL_SERVER_ROOT, null);
 
             LOG.log(Level.FINER,
                     "Loaded GlassFishCloudInstance({0}, {1}, {2})",
                     new Object[]{name, host, port});
             GlassFishServerEntity localServer;
             try {
-                localServer = new GlassFishServerEntity(name, localServerHome,
+                localServer = new GlassFishServerEntity(name, localServerRoot,
+                        localServerHome,
                         GlassFishUrl.url(GlassFishUrl.Id.LOCAL, name));
             } catch (DataException de) {
                 localServer = null;

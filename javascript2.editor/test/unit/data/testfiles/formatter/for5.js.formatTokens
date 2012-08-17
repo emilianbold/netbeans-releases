@@ -46,6 +46,7 @@ FormattingToken{kind=TEXT, offset=34, text=1}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=35, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=36, text= }
 FormattingToken{kind=TEXT, offset=37, text=i}
 FormattingToken{kind=WHITESPACE, offset=38, text= }
@@ -57,6 +58,7 @@ FormattingToken{kind=TEXT, offset=41, text=q}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=42, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_MODIFY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=43, text= }
 FormattingToken{kind=TEXT, offset=44, text=i}
 FormattingToken{kind=TEXT, offset=45, text=++}
@@ -206,6 +208,7 @@ FormattingToken{kind=TEXT, offset=170, text=1}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=171, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=172, text= }
 FormattingToken{kind=TEXT, offset=173, text=i}
 FormattingToken{kind=WHITESPACE, offset=174, text= }
@@ -217,6 +220,7 @@ FormattingToken{kind=TEXT, offset=177, text=q}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=178, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_MODIFY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=179, text= }
 FormattingToken{kind=TEXT, offset=180, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
