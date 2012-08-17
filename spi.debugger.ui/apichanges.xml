@@ -152,6 +152,26 @@ made subject to such option by the copyright holder.
         </description>
         <issue number="171213"/>
     </change>
+    
+    <change id="ViewFactory">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>ViewFactory</code> and <code>ViewLifecycle</code> classes added.</summary>
+        <version major="2" minor="34"/>
+        <date day="17" month="8" year="2012"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>ViewFactory</code> class introduced to provide GUI views
+                created from registered view models.
+                <code>ViewLifecycle</code> class is a support class for a custom view
+                based on registered view models.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="ViewFactory"/>
+        <class package="org.netbeans.spi.debugger.ui" name="ViewLifecycle"/>
+        <issue number="198385"/>
+    </change>
 
 </changes>
 
