@@ -645,13 +645,15 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fold1 = fold.createFolder("A");
 
         FileObject toMove = fold1.createData("something");
+        final String origName = toMove.getName();
         FileLock lock = toMove.lock();
         try {
             FileObject toMove2 = null;
-            assertNotNull (toMove2 = toMove.move(lock, fold1, "New" + toMove.getName(), toMove.getExt()));
+            final String origExt = toMove.getExt();
+            assertNotNull (toMove2 = toMove.move(lock, fold1, "New" + origName, origExt));
             lock.releaseLock();
             lock = toMove2.lock();
-            FileObject ret = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt());
+            FileObject ret = toMove2.move(lock, fold1, origName, origExt);
             assertNotNull("Moved object returned", ret);
             assertEquals("Has the right parent", fold1, ret.getParent());
         } finally {
