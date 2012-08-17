@@ -190,6 +190,7 @@ public final class OpenProjectList {
         openProjects = new ArrayList<Project>();
         openProjectsModuleInfos = new HashMap<ModuleInfo, List<Project>>();
         infoListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evn) {
                 if (ModuleInfo.PROP_ENABLED.equals(evn.getPropertyName())) {
                     checkModuleInfo((ModuleInfo)evn.getSource());
@@ -294,6 +295,7 @@ public final class OpenProjectList {
             log(Level.FINER, "waitFinished, after wait"); // NOI18N
         }
         
+        @Override
         public void run() {
             log(Level.FINE, "LoadOpenProjects.run: {0}", action); // NOI18N
             switch (action) {
@@ -495,18 +497,22 @@ public final class OpenProjectList {
             }
         }
 
+        @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             return false;
         }
 
+        @Override
         public boolean isCancelled() {
             return false;
         }
 
+        @Override
         public boolean isDone() {
             return TASK.isFinished() && entered == 0;
         }
 
+        @Override
         public Project[] get() throws InterruptedException, ExecutionException {
             TASK.waitFinished();
             try {
@@ -520,6 +526,7 @@ public final class OpenProjectList {
             return getDefault().getOpenProjects();
         }
 
+        @Override
         public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             long ms = unit.convert(timeout, TimeUnit.MILLISECONDS);
             if (!TASK.waitFinished(timeout)) {
@@ -746,6 +753,7 @@ public final class OpenProjectList {
         log(addedRec,"org.netbeans.ui.metrics.projects");
         
         Mutex.EVENT.readAccess(new Action<Void>() {
+                @Override
             public Void run() {
                 pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, oldprjs.toArray(new Project[oldprjs.size()]), 
                                                                        newprjs.toArray(new Project[newprjs.size()]) );
@@ -834,6 +842,7 @@ public final class OpenProjectList {
             }
             //#125750 not necessary to call notifyClosed() under synchronized lock.
             OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
+                @Override
                 public void run() {
                     for (Project closed : notifyList) {
                         notifyClosed(closed);
@@ -966,6 +975,7 @@ public final class OpenProjectList {
     
     public List<Project> getRecentProjects() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<List<Project>>() {
+            @Override
             public List<Project> run() {
                 return recentProjects.getProjects();
             }
@@ -974,6 +984,7 @@ public final class OpenProjectList {
     
     public boolean isRecentProjectsEmpty() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 return recentProjects.isEmpty();
             }
@@ -982,6 +993,7 @@ public final class OpenProjectList {
     
     public List<UnloadedProjectInformation> getRecentProjectsInformation() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<List<UnloadedProjectInformation>>() {
+            @Override
             public List<UnloadedProjectInformation> run() {
                 return recentProjects.getRecentProjectsInfo();
             }
@@ -1435,6 +1447,7 @@ public final class OpenProjectList {
 
         public void refresh() {
             ProjectManager.mutex().writeAccess(new Runnable() {
+                @Override
                 public void run () {
                         assert recentProjects.size() == recentProjectsInfos.size();
                         boolean refresh = false;
@@ -1684,6 +1697,7 @@ public final class OpenProjectList {
             return n;
         }
         
+        @Override
         public int compare(Project p1, Project p2) {
 //            Uncoment to make the main project be the first one
 //            but then needs to listen to main project change
@@ -1745,6 +1759,7 @@ public final class OpenProjectList {
                     //#108376 avoid deadlock in org.netbeans.modules.project.ui.ProjectUtilities$1.close(ProjectUtilities.java:106)
                     // alternatively removing the close() metod from synchronized block could help as well..
                     SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                         public void run () {
                             close(new Project[] {fRemove}, false);
                         }

@@ -525,7 +525,7 @@ public class ModelUtils {
         }
     }
     
-    private static JsObject findObjectForOffset(String name, int offset, Model model) {
+    public static JsObject findObjectForOffset(String name, int offset, Model model) {
         for (JsObject object : model.getVariables(offset)) {
             if (object.getName().equals(name)) {
                 return object;

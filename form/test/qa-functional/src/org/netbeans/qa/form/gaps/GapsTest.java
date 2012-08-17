@@ -41,19 +41,21 @@
  */
 package org.netbeans.qa.form.gaps;
 
+import java.awt.Container;
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import org.netbeans.qa.form.gridbagcustomizer.GridBagCustomizerTest;
 
 /**
  *
@@ -73,6 +75,7 @@ public class GapsTest extends ExtJellyTestCase {
     private ProjectsTabOperator pto;
     ProjectRootNode prn;
     FormDesignerOperator opDesigner;
+    ContainerOperator jfo;
 
     public GapsTest(String testName) {
         super(testName);
@@ -82,7 +85,8 @@ public class GapsTest extends ExtJellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(GapsTest.class).addTest(
                 "testOpenCloseGapDialog",
                 "testpopUpDialogInvoke",
-                "testNewSizeOfGap").gui(true).clusters(".*").enableModules(".*"));
+                "testNewSizeOfGap",
+                "testpopUpDialogOnButton").gui(true).clusters(".*").enableModules(".*"));
 
     }
 
@@ -105,7 +109,7 @@ public class GapsTest extends ExtJellyTestCase {
     
      public void testOpenCloseGapDialog() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
-        opDesigner.clickMouse(100, 100, 2);
+        opDesigner.clickMouse(35, 70, 2);
 
         EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
         elso.Cancel();
@@ -113,7 +117,7 @@ public class GapsTest extends ExtJellyTestCase {
      
      public void testpopUpDialogInvoke() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
-        opDesigner.clickForPopup(100, 100);
+        opDesigner.clickForPopup(35, 70);
         JPopupMenuOperator jpmo= new JPopupMenuOperator();
         waitNoEvent(500);
         jpmo.pushMenuNoBlock("Edit Layout Space...");
@@ -122,13 +126,51 @@ public class GapsTest extends ExtJellyTestCase {
         
         elso.Ok();
     }
+     
+     public void testpopUpDialogOnButton() {
+        opDesigner = new FormDesignerOperator(FILE_NAME);
+        
+        ComponentInspectorOperator cio = new ComponentInspectorOperator();
+        Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
+        inspectorRootNode.select();
+        inspectorRootNode.expand();
+        
+        Node buttonNode = new Node(inspectorRootNode, "jButton1 [JButton]");
+        buttonNode.callPopup();
+        
+        JPopupMenuOperator jpmo= new JPopupMenuOperator();
+        waitNoEvent(500);
+        jpmo.pushMenuNoBlock("Edit Layout Space...");
+        waitNoEvent(500);
+        
+        
+        
+        EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
+        assertEquals("default small", (String) elso.cbBottom().getItemAt(0));
+        assertEquals("default medium", (String) elso.cbBottom().getItemAt(1));
+        assertEquals("default large", (String) elso.cbBottom().getItemAt(2));
+        
+        assertEquals("default", (String) elso.cbLeft().getItemAt(0));
+        elso.Cancel();
+    }
 
     public void testNewSizeOfGap() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
-        opDesigner.clickMouse(100, 100, 2);
-
+        ComponentInspectorOperator cio = new ComponentInspectorOperator();
+        Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
+        inspectorRootNode.select();
+        inspectorRootNode.expand();
+        
+        Node buttonNode = new Node(inspectorRootNode, "jButton1 [JButton]");
+        buttonNode.callPopup();
+        
+        JPopupMenuOperator jpmo= new JPopupMenuOperator();
+        waitNoEvent(500);
+        jpmo.pushMenuNoBlock("Edit Layout Space...");
+        waitNoEvent(500);
+        
         EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
-        elso.setSizeOfGap("800");
+        elso.setSizeOfGapTop("800");
         waitNoEvent(500);
 
         findInCode(".addContainerGap(800, Short.MAX_VALUE)", opDesigner);

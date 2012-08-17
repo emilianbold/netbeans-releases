@@ -90,4 +90,10 @@ public interface TopComponentDroppable {
     /** Checks whether this droppable supports kind of winsys transfer.
      * Either <code>Constants.MODE_KIND_EDITOR</code> or <code>Constants.MODE_KIND_VIEW or both. */
     public boolean supportsKind(TopComponentDraggable transfer);
+    
+    /**
+     * @return Mode kind of the originating mode when just a single TopComponent
+     * is being dragged or the kind of the mode that is being dragged.
+     */
+    public int getKind();
 }

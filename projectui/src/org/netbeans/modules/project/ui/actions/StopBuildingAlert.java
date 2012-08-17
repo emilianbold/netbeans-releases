@@ -78,6 +78,7 @@ final class StopBuildingAlert extends JPanel {
         final JList list = alert.buildsList;
         Comparator<BuildExecutionSupport.Item> comp = new Comparator<BuildExecutionSupport.Item>() {
             private final Collator coll = Collator.getInstance();
+            @Override
             public int compare(BuildExecutionSupport.Item t1, BuildExecutionSupport.Item t2) {
                 String n1 = t1.getDisplayName();
                 String n2 = t2.getDisplayName();
@@ -105,6 +106,7 @@ final class StopBuildingAlert extends JPanel {
         dd.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
         final JButton stopButton = new JButton(NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_stop"));
         list.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 stopButton.setEnabled(list.getSelectedValue() != null);
             }

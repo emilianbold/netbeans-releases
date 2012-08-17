@@ -146,8 +146,12 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
                     component.getHost());
             settings.putProperty(GlassFishCloudInstance.PROPERTY_PORT,
                     component.getPortText());
-            settings.putProperty(GlassFishCloudInstance.PROPERTY_LOCAL_SERVER,
-                    component.getLocalServer());
+            settings.putProperty(
+                    GlassFishCloudInstance.PROPERTY_LOCAL_SERVER_ROOT,
+                    component.getLocalServerRoot());
+            settings.putProperty(
+                    GlassFishCloudInstance.PROPERTY_LOCAL_SERVER_HOME,
+                    component.getLocalServerHome());
         }
     }
 

@@ -97,6 +97,8 @@ public class JsFormatter implements Formatter {
 
     @Override
     public void reformat(final Context context, final ParserResult compilationInfo) {
+        processed.clear();
+        lastOffsetDiff = 0;
         final BaseDocument doc = (BaseDocument) context.document();
 
         doc.runAtomic(new Runnable() {
@@ -604,7 +606,7 @@ public class JsFormatter implements Formatter {
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
                 // this is just safeguard literal offsets should be fixed
-                || JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text));
+                /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
 
     }
 
@@ -718,6 +720,9 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapForStatement();
             case AFTER_WITH_START:
                 return CodeStyle.get(context).wrapWithStatement();
+            case BEFORE_FOR_TEST:
+            case BEFORE_FOR_MODIFY:
+                return CodeStyle.get(context).wrapFor();
             default:
                 return null;
         }

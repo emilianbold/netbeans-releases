@@ -165,7 +165,7 @@ public class DragAndDropFeedbackVisualizer {
         dragWindow = null;
     }
 
-    public void setDropFeedback(boolean dropEnabled) {
+    public void setDropFeedback(boolean dropEnabled, boolean mixedTCDragDrop) {
         if( null != dragWindow ) {
             dragWindow.setDropFeedback( dropEnabled );
         }
