@@ -44,21 +44,27 @@ package org.netbeans.modules.javascript2.editor.doc;
 import com.oracle.nashorn.ir.AccessNode;
 import com.oracle.nashorn.ir.BinaryNode;
 import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.NodeVisitor;
 import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -104,8 +110,12 @@ public class JsDocumentationCompleter {
                             final JsParserResult jsParserResult = (JsParserResult) parserResult;
                             // TODO - the nearest node in chains
                             Node nearestNode = getNearestNode(jsParserResult, offset);
-                            JsObject jsObject = ModelUtils.findJsObject(jsParserResult.getModel(), nearestNode.getFinish());
+                            JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), nearestNode.getStart());
                             assert jsObject != null;
+                            if (jsObject.getJSKind() == Kind.FILE) {
+                                String nearestNodeFqn = getNearestNodeFqn(jsParserResult, offset);
+                                jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), nearestNodeFqn);
+                            }
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
                             } else if (isFunction(jsObject)) {
@@ -203,10 +213,40 @@ public class JsDocumentationCompleter {
         return offsetVisitor.getNearestNode();
     }
 
+    private static String getNearestNodeFqn(JsParserResult parserResult, int offset) {
+        FunctionNode root = parserResult.getRoot();
+        NearestNodeVisitor offsetVisitor = new NearestNodeVisitor(offset);
+        root.accept(offsetVisitor);
+        return offsetVisitor.getNearestNodeFqn();
+    }
+
+    private static JsObject findJsObjectFunctionVariable(JsObject object, int offset) {
+        JsObjectImpl jsObject = (JsObjectImpl)object;
+        JsObject result = null;
+        JsObject tmpObject = null;
+        if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
+            result = jsObject;
+            for (JsObject property : jsObject.getProperties().values()) {
+                JsElement.Kind kind = property.getJSKind();
+                if (kind == JsElement.Kind.OBJECT
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
+                        || kind == JsElement.Kind.VARIABLE) {
+                    tmpObject = findJsObjectFunctionVariable(property, offset);
+                }
+                if (tmpObject != null) {
+                    result = tmpObject;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     private static class NearestNodeVisitor extends NodeVisitor {
 
         private final int offset;
         private Node nearestNode = null;
+        
 
         public NearestNodeVisitor(int offset) {
             this.offset = offset;
@@ -220,7 +260,21 @@ public class JsDocumentationCompleter {
             }
         }
 
+        public String getNearestNodeFqn() {
+            if (nearestNode instanceof AccessNode){
+                FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
+                nearestNode.accept(farestNV);
+                return farestNV.getFarestFqn();
+            }
+            return nearestNode.toString();
+        }
+
         public Node getNearestNode() {
+            if (nearestNode instanceof AccessNode){
+                FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
+                nearestNode.accept(farestNV);
+                return farestNV.getFarestNode();
+            }
             return nearestNode;
         }
 
@@ -250,10 +304,29 @@ public class JsDocumentationCompleter {
             return super.visit(varNode, onset);
         }
 
+    }
+
+    private static class FarestIdentNodeVisitor extends PathNodeVisitor {
+
+        private Node farestNode;
+        private final StringBuilder farestPath = new StringBuilder();
+
         @Override
-        public Node visit(BinaryNode binaryNode, boolean onset) {
-            processNode(binaryNode, onset);
-            return super.visit(binaryNode, onset);
+        public Node visit(IdentNode identNode, boolean onset) {
+            farestNode = identNode;
+            if (onset) {
+                farestPath.append(".").append(identNode.getName());
+            }
+            return super.visit(identNode, onset);
         }
+
+        public Node getFarestNode() {
+            return farestNode;
+        }
+
+        public String getFarestFqn() {
+            return farestPath.toString().substring(1);
+        }
+
     }
 }
