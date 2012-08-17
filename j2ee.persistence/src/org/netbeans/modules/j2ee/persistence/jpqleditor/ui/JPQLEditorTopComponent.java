@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +68,9 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -91,7 +95,10 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
+import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 //import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
@@ -109,14 +116,15 @@ import org.openide.windows.TopComponent;
  * JPQL editor top component.
  */
 @MIMEResolver.ExtensionRegistration(
-    displayName="",
-    extension="jpql",
-    mimeType="text/x-jpql",
-    position=1660
-)
+    displayName = "",
+extension = "jpql",
+mimeType = "text/x-jpql",
+position = 1660)
 public final class JPQLEditorTopComponent extends TopComponent {
 
-    /** path to the icon used by the component and its open action */
+    /**
+     * path to the icon used by the component and its open action
+     */
     static final String ICON_PATH = "org/netbeans/modules/j2ee/persistence/jpqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
     private Logger logger = Logger.getLogger(JPQLEditorTopComponent.class.getName());
     private PUDataObject puObject;
@@ -196,9 +204,9 @@ public final class JPQLEditorTopComponent extends TopComponent {
             pasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK, true));
             pasteMenuItem.setMnemonic('P');
             pasteMenuItem.addActionListener(actionListener);
-            
+
             popupMenu.addSeparator();
-            
+
             selectAllMenuItem = popupMenu.add(SELECT_ALL_COMMAND);
             selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK, true));
             selectAllMenuItem.setMnemonic('A');
@@ -239,14 +247,14 @@ public final class JPQLEditorTopComponent extends TopComponent {
             public void actionPerformed(ActionEvent e) {
                 if (e.getActionCommand().equals(RUN_JPQL_COMMAND)) {
                     runJPQLButtonActionPerformed(e);
-                } else if(e.getActionCommand().equals(SELECT_ALL_COMMAND)) {
+                } else if (e.getActionCommand().equals(SELECT_ALL_COMMAND)) {
                     jpqlEditor.selectAll();
                 } else if (e.getActionCommand().equals(CUT_COMMAND)) {
                     StringSelection stringSelection = new StringSelection(jpqlEditor.getSelectedText());
                     systemClipboard.setContents(stringSelection, stringSelection);
                     jpqlEditor.setText(
-                            jpqlEditor.getText().substring(0, jpqlEditor.getSelectionStart()) +
-                            jpqlEditor.getText().substring(jpqlEditor.getSelectionEnd()));
+                            jpqlEditor.getText().substring(0, jpqlEditor.getSelectionStart())
+                            + jpqlEditor.getText().substring(jpqlEditor.getSelectionEnd()));
 
                 } else if (e.getActionCommand().equals(COPY_COMMAND)) {
                     StringSelection stringSelection = new StringSelection(jpqlEditor.getSelectedText());
@@ -266,15 +274,14 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     } catch (IOException ex) {
                         logger.log(Level.INFO, "IOException during paste operation", ex);
                     }
-                    if(!clipboardContents.equals("")) {
-                        if(jpqlEditor.getSelectedText() != null) {
+                    if (!clipboardContents.equals("")) {
+                        if (jpqlEditor.getSelectedText() != null) {
                             jpqlEditor.replaceSelection(clipboardContents);
                         } else {
                             jpqlEditor.setText(
-                                    jpqlEditor.getText().substring(0, jpqlEditor.getCaretPosition()) +
-                                    clipboardContents +
-                                    jpqlEditor.getText().substring(jpqlEditor.getCaretPosition())
-                                    );
+                                    jpqlEditor.getText().substring(0, jpqlEditor.getCaretPosition())
+                                    + clipboardContents
+                                    + jpqlEditor.getText().substring(jpqlEditor.getCaretPosition()));
                         }
                     }
                 }
@@ -291,7 +298,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
         @Override
         public void run() {
             while (!isSqlTranslationProcessDone) {
-                if (jpqlEditor.getText().trim().equals("")) {
+                String jpql = jpqlEditor.getText().trim();
+                if (jpql.equals("")) {
                     return;
                 }
                 if (puComboBox.getSelectedItem() == null) {
@@ -308,55 +316,66 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     if (Thread.interrupted() || isSqlTranslationProcessDone) {
                         return;    // Cancel the task
                     }
+                    FileObject pXml = puObject.getPrimaryFile();
+                    Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+                    PersistenceEnvironment pe = project != null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+                    final List<URL> localResourcesURLList = new ArrayList<URL>();
                     try {
-                        List<URL> localResourcesURLList = new ArrayList<URL>();
-                        //EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(selectedConfigObject.getName());
-                        //EntityManager em = emf.createEntityManager();
-//                        localResourcesURLList.addAll(env.getProjectClassPath(selectedConfigObject));
-//                        for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
-//                            localResourcesURLList.add(mappingFO.getURL());
-//                        }
-//                        ClassLoader ccl = env.getProjectClassLoader(
-//                                localResourcesURLList.toArray(new URL[]{}));
-//
-//                        Thread.currentThread().setContextClassLoader(ccl);
-//                        SessionFactory sessionFactory =
-//                                controller.processAndConstructSessionFactory(
-//                                jpqlEditor.getText(), selectedConfigObject, ccl, enclosingProject);
-//                        if (Thread.interrupted() || isSqlTranslationProcessDone) {
-//                            return;    // Cancel the task
-//                        }
-//                        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
+                        localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
+                        localResourcesURLList.add(pe.getLocation().getParent().toURL());
+                        localResourcesURLList.add(pe.getLocation().toURL());
+                        localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
+
+                        ClassLoader customClassLoader = pe.getProjectClassLoader(
+                                localResourcesURLList.toArray(new URL[]{}));
+                        Thread.currentThread().setContextClassLoader(customClassLoader);
+                        Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
+                        javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
+                        EntityManagerFactory emf = p.createEntityManagerFactory(selectedConfigObject.getName());
+
+                        EntityManager em = emf.createEntityManager();
+
+                        Query query = em.createQuery(jpql);
+                        //
+                        Provider provider = ProviderUtil.getProvider(selectedConfigObject);
+                        String queryStr = null;
+                        if (provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {//NOI18N
+                            Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.ECLIPSELINK_QUERY);
+                            if (qClass != null) {
+                                Method method = qClass.getMethod(JPQLExecutor.ECLIPSELINK_QUERY_SQL0);
+                                if (method != null) {
+                                    Object dqOject = method.invoke(query);
+                                    Method method2 = (dqOject != null ? dqOject.getClass().getMethod(JPQLExecutor.ECLIPSELINK_QUERY_SQL1) : null);
+                                    if (method2 != null) {
+                                        queryStr = (String) method2.invoke(dqOject);
+                                    }
+                                }
+                            }
+                        }
+                        //            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
+                        //                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
+                        //                if(qClass !=null) {
+                        //                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
+                        //                    if(method != null){
+                        //                        queryStr = (String) method.invoke(query);
+                        //                    }
+                        //                }
+                        //            } else if (provider.getProviderClass().contains("openjpa")){//NOI18N
+                        //                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(OPENJPA_QUERY);
+                        //                if(qClass !=null) {
+                        //                    Method method = qClass.getMethod(OPENJPA_QUERY_SQL);
+                        //                    if(method != null){
+                        //                        queryStr = (String) method.invoke(query);
+                        //                    }
+                        //                }
+                        //            } 
 
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task
                         }
-                        StringBuilder stringBuff = new StringBuilder();
+                        showSQL(queryStr);
 
-//                        JPQLQueryPlan queryPlan = sessionFactoryImpl.getQueryPlanCache().getJPQLQueryPlan(jpqlEditor.getText(), true, Collections.EMPTY_MAP);
-//                        QueryTranslator[] queryTranslators = queryPlan.getTranslators();
-//                        for (QueryTranslator t : queryTranslators) {
-//                            logger.info("SQL String = " + t.getSQLString());
-//                            stringBuff.append(t.getSQLString() + "\n");
-//                        }
-                        if (Thread.interrupted() || isSqlTranslationProcessDone) {
-                            return;    // Cancel the task
-                        }
-                        showSQL(stringBuff.toString());
-
-//                    } catch (QuerySyntaxException qe) {
-//                        logger.log(Level.INFO, "", qe);
-//                        showSQLError("MalformedQuery");
-//                    } catch (QueryException qe) {
-//                        logger.log(Level.INFO, "", qe);
-//                        showSQLError("MalformedQuery");
-//                    } catch (IllegalArgumentException ie) {
-//                        logger.log(Level.INFO, "", ie);
-//                        showSQLError("MalformedQuery");
-//                    } catch (HibernateException se) { // Database related exception!
-//                        logger.log(Level.INFO, "", se);
-//                        showSQLError("DbError");
                     } catch (Exception e) {
                         logger.log(Level.INFO, "", e);
                         showSQLError("GeneralError");
@@ -410,8 +429,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
         private void process() {
             if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
                 hqlParserTask.cancel();
-            } else if(!requestProcessor.isShutdown()) {
-                hqlParserTask = requestProcessor.post(new ParseJPQL(), 1000);
+            } else if (!requestProcessor.isShutdown()) {
+                hqlParserTask = requestProcessor.post(new ParseJPQL(), 3000);
                 isSqlTranslationProcessDone = false;
             }
         }
@@ -426,12 +445,12 @@ public final class JPQLEditorTopComponent extends TopComponent {
             dO.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if(DataObject.PROP_VALID.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())){
-                        if(SwingUtilities.isEventDispatchThread()){
+                    if (DataObject.PROP_VALID.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())) {
+                        if (SwingUtilities.isEventDispatchThread()) {
                             close();//need to close if corresponding dataobject was invalidated (deleted)
                         } else {
                             SwingUtilities.invokeLater(new Runnable() {
-                               @Override
+                                @Override
                                 public void run() {
                                     close();//need to close if corresponding dataobject was invalidated (deleted)
                                 }
@@ -440,14 +459,14 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     }
                 }
             });
-            
+
             Persistence persistence = puObject.getPersistence();
             if (persistence == null) {
                 logger.warning("corrupted persistence.xml in enclosing project.");
-            } else if(persistence.getPersistenceUnit().length > 0) {
+            } else if (persistence.getPersistenceUnit().length > 0) {
                 for (PersistenceUnit unit : persistence.getPersistenceUnit()) {
-                        String configName = unit.getName(); //NOI18N
-                        puConfigMap.put(configName, unit);
+                    String configName = unit.getName(); //NOI18N
+                    puConfigMap.put(configName, unit);
                 }
                 puComboBox.setModel(new DefaultComboBoxModel(puConfigMap.keySet().toArray()));
                 puComboBox.setSelectedIndex(0);
@@ -459,14 +478,14 @@ public final class JPQLEditorTopComponent extends TopComponent {
     }
 
     /**
-     * 
+     *
      * @param result
-     * @param ccl 
+     * @param ccl
      */
     public void setResult(JPQLResult result, ClassLoader ccl) {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ccl);
-        if(result.getSqlQuery() != null) {
+        if (result.getSqlQuery() != null) {
             sqlEditorPane.setText(result.getSqlQuery());
         }
         if (result.getExceptions().isEmpty()) {
@@ -503,7 +522,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     }
 
                 } else {
-                        // Construct the table headers
+                    // Construct the table headers
                     createTableHeaders(tableHeaders, firstObject);
                     for (Object oneObject : result.getQueryResults()) {
                         createTableData(tableData, oneObject);
@@ -531,7 +550,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
             }
 
         }
-        
+
         ph.progress(99);
         ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionDone"));
 
@@ -541,9 +560,9 @@ public final class JPQLEditorTopComponent extends TopComponent {
     }
 
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
-        if(oneObject==null || oneObject.getClass().getName().startsWith("java.lang")){//NOI18N
+        if (oneObject == null || oneObject.getClass().getName().startsWith("java.lang")) {//NOI18N
             //case for Long, String etc
-            tableHeaders.add(org.openide.util.NbBundle.getMessage(JPQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " +(tableHeaders.size()+1));//NOI18N
+            tableHeaders.add(org.openide.util.NbBundle.getMessage(JPQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " + (tableHeaders.size() + 1));//NOI18N
         } else {
             for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
                 String methodName = m.getName();
@@ -559,7 +578,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
     private void createTableData(Vector<Vector> tableData, Object... rowObject) {
         Vector<Object> oneRow = new Vector<Object>();
         for (Object oneObject : rowObject) {
-            if(oneObject==null || oneObject.getClass().getName().startsWith("java.lang")){
+            if (oneObject == null || oneObject.getClass().getName().startsWith("java.lang")) {
                 //case for Long, String etc
                 oneRow.add(oneObject.toString());
             } else {
@@ -622,10 +641,10 @@ public final class JPQLEditorTopComponent extends TopComponent {
         return filteredExceptionTrace.toString();
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -914,11 +933,11 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     try {
         ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runJPQLButtonActionPerformed
                 NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));//GEN-LAST:event_runJPQLButtonActionPerformed
-        FileObject pXml = puObject.getPrimaryFile();
-        Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
-        PersistenceEnvironment pe = project!=null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
-       
-        PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
+            FileObject pXml = puObject.getPrimaryFile();
+            Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+            PersistenceEnvironment pe = project != null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
+
+            PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
             ph.start(100);
             controller.executeJPQLQuery(jpqlEditor.getText(),
                     pu,

@@ -264,6 +264,16 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
      * @return Always returns <code>null</code> because cloud server is remote.
      */
     @Override
+    public String getServerRoot() {
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud server home.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
     public String getServerHome() {
         return null;
     }

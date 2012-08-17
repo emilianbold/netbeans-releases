@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -57,10 +58,10 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  */
 public class JsHintsProvider implements HintsProvider {
     
-    private volatile Boolean cancel = false;
+    private volatile boolean cancel = false;
+
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        long startInit = System.currentTimeMillis();
         Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
         List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionRule.JSCONVENTION_HINTS);
         if (conventionHints != null) {
@@ -88,7 +89,11 @@ public class JsHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-
+        ParserResult parserResult = context.parserResult;
+        if (parserResult != null) {
+            List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
+            unhandled.addAll(errors);
+        }
     }
 
     @Override
