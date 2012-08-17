@@ -81,7 +81,7 @@ import org.openide.util.RequestProcessor;
  */
 public class JsDocumentationCompleter {
 
-    private static final RequestProcessor RP = new RequestProcessor("JavaScript Documentation Completer"); //NOI18N
+    protected static final RequestProcessor RP = new RequestProcessor("JavaScript Documentation Completer", 1); //NOI18N
 
     public static void generateCompleteComment(BaseDocument doc, int caretOffset, int indent) {
         Runnable documentationGenerator = new DocumentationGenerator(doc, caretOffset, indent);
@@ -253,7 +253,7 @@ public class JsDocumentationCompleter {
         JsObjectImpl jsObject = (JsObjectImpl) object;
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();

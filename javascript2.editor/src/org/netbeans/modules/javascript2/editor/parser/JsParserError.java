@@ -48,7 +48,7 @@ import org.openide.filesystems.FileObject;
  */
 public class JsParserError implements Error {
 
-    public static Comparator<JsParserError> POSITION_COMPARATOR = new Comparator<JsParserError>() {
+    public static final Comparator<JsParserError> POSITION_COMPARATOR = new Comparator<JsParserError>() {
 
         @Override
         public int compare(JsParserError o1, JsParserError o2) {

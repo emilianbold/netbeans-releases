@@ -58,10 +58,14 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class JsElementImpl implements JsElement {
 
+    private final String name;
+
+    private final OffsetRange offsetRange;
+
+    private final Set<Modifier> modifiers;
+
     private FileObject fileObject;
-    private String name;
-    private OffsetRange offsetRange;
-    private Set<Modifier> modifiers;
+
     private boolean isDeclared;
     
     public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
@@ -147,7 +151,12 @@ public abstract class JsElementImpl implements JsElement {
     }
    
     @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
+    public final OffsetRange getOffsetRange(ParserResult result) {
+        return getOffsetRange();
+    }
+
+    @Override
+    public final OffsetRange getOffsetRange() {
         return offsetRange;
     }
 
