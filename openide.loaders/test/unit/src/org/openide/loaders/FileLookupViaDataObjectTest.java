@@ -39,42 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.openide.filesystems;
+package org.openide.loaders;
 
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.openide.util.lookup.implspi.NamedServicesProvider;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObjectTestHid;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystemTest;
 
-/** A lookup associated with a {@link FileObject}.
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-final class FileObjectLkp extends ProxyLookup {
-    private FileObjectLkp() {
+public class FileLookupViaDataObjectTest extends LocalFileSystemTest {
+    public FileLookupViaDataObjectTest(Test test) {
+        super(test);
     }
     
-    static synchronized FileObjectLkp create(FileObject dest, boolean create) {
-        FileObjectLkp lkp = dest.lookup();
-        if (lkp == null && create) {
-            lkp = new FileObjectLkp();
-            dest.assignLookup(lkp);
-            lkp.assign(dest);
-        }
-        return lkp;
+    public static Test suite() {
+        NbTestSuite s = new NbTestSuite();
+        s.addTestSuite(FileObjectTestHid.class);
+        s.addTestSuite(Hid.class);
+        return new FileLookupViaDataObjectTest(s);
     }
-    static synchronized void reassign(FileObject from, FileObject to) {
-        FileObjectLkp lkp = from.lookup();
-        if (lkp != null) {
-            to.assignLookup(lkp);
-            lkp.assign(to);
+    
+    public static final class Hid extends NbTestCase {
+        public Hid(String name) {
+            super(name);
         }
-    }
-    private void assign(FileObject fo) {
-        Lookup l = NamedServicesProvider.createLookupFor(fo);
-        if (l == null) {
-            l = Lookups.singleton(fo);
+        
+        public void testDataObjectIsPresentInLookup() throws Exception {
+            clearWorkDir();
+            FileObject root = FileUtil.toFileObject(getWorkDir());
+            assertNotNull("masterfs is enabled, so file object can be found", root);
+            FileObject aTxt = root.createData("a.txt");
+            
+            DataObject obj = DataObject.find(aTxt);
+            DataObject lkpObj = aTxt.getLookup().lookup(DataObject.class);
+            assertSame("DataObject is present in file object's lookup", obj, lkpObj);
         }
-        this.setLookups(l);
     }
 }
