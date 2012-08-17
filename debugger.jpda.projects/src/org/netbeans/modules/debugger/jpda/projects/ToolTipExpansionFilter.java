@@ -53,7 +53,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * @author Martin Entlicher
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
-                             types=TreeExpansionModelFilter.class)
+                             types=TreeExpansionModelFilter.class,
+                             position=2000)
 public class ToolTipExpansionFilter implements TreeExpansionModelFilter {
 
     @Override
