@@ -151,7 +151,7 @@ public class OrganizeMembers {
     @EditorActionRegistration(name = EditorActionNames.organizeMembers,
                               mimeType = JavaKit.JAVA_MIME_TYPE,
                               menuPath = "Source",
-                              menuPosition = 2450,
+                              menuPosition = 2430,
                               menuText = "#" + EditorActionNames.organizeMembers + "_menu_text")
     public static class OrganizeMembersAction extends BaseAction {
 
