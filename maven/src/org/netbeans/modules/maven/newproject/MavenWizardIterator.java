@@ -43,10 +43,12 @@
 package org.netbeans.modules.maven.newproject;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -74,6 +76,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
     private final Archetype archetype;
+    private final AtomicBoolean hasNextCalled = new AtomicBoolean(); //#216236    
 
     public MavenWizardIterator() {
         this(null);
@@ -137,6 +140,11 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     
     @Override
     public boolean hasNext() {
+        hasNextCalled.set(true);
+        return hasNextImpl();        
+    }
+    
+    private boolean hasNextImpl() {
         return index < panels.size() - 1;
     }
     
@@ -147,8 +155,14 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     
     @Override
     public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
+        final boolean hnc = hasNextCalled.getAndSet(false);
+        if (!hasNextImpl()) {
+            throw new NoSuchElementException( //#216236
+                    MessageFormat.format(
+                    "index: {0}, panels: {1}, called has next: {2}",
+                    index,
+                    panels.size(),
+                    hnc));
         }
         index++;
     }
