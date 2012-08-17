@@ -201,13 +201,13 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                         sb.append(":"); //NOI18N
                         sb.append("</font>"); //NOI18N
                     }
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case CATCH:
                     sb = new StringBuilder("catch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((CatchTree) leaf).getParameter().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case DO_WHILE_LOOP:
                     sb = new StringBuilder("do ... while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -223,7 +223,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((EnhancedForLoopTree) leaf).getExpression().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -235,34 +235,34 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((ForLoopTree) leaf).getUpdate().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case IF:
                     sb = new StringBuilder("if "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((IfTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case SWITCH:
                     sb = new StringBuilder("switch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SwitchTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case SYNCHRONIZED:
                     sb = new StringBuilder("synchronized "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SynchronizedTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case TRY:
                     sb = new StringBuilder("try"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
                 case WHILE_LOOP:
                     sb = new StringBuilder("while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((WhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
             }
 
             return null;
@@ -278,11 +278,13 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         return null;
     }
     
+    private static final Image DEFAULT_ICON = ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/statement.png");
+    
     private static Image iconFor(CompilationInfo info, TreePath path) {
         Element el = info.getTrees().getElement(path);
-        if (el == null) return null;
+        if (el == null) return DEFAULT_ICON;
         Icon icon = ElementIcons.getElementIcon(el.getKind(), el.getModifiers());
-        if (icon == null) return null;
+        if (icon == null) return DEFAULT_ICON;
         return ImageUtilities.icon2Image(icon);
     }
     
