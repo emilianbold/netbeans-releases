@@ -77,12 +77,12 @@ public abstract class ShelveChangesSupport {
     
     protected abstract boolean isCanceled ();
     
-    public final boolean prepare () {
-        return prepare(null);
+    public final boolean prepare (String helpCtx) {
+        return prepare(null, helpCtx);
     }
 
-    public final boolean prepare (final JPanel additionalOptions) {
-        return openDialog(additionalOptions) && patchName != null;
+    public final boolean prepare (final JPanel additionalOptions, String helpCtx) {
+        return openDialog(additionalOptions, helpCtx) && patchName != null;
     }
     
     public final void shelveChanges (File[] roots) {
@@ -124,14 +124,14 @@ public abstract class ShelveChangesSupport {
         return root;
     }
 
-    private boolean openDialog (JPanel additionalOptions) {
+    private boolean openDialog (JPanel additionalOptions, String helpCtx) {
         ShelveChangesPanel panel = new ShelveChangesPanel(additionalOptions);
         initializePatchName(panel.txtPatchName);
         panel.lblError.setVisible(false);
         JButton okButton = new JButton();
         Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(ShelveChangesSupport.class, "CTL_ShelveChangesPanel.okButton.text")); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ShelveChangesSupport.class, "LBL_ShelveChangesPanel.title"), //NOI18N
-                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(ShelveChangesPanel.class), null);
+                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(helpCtx), null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         panel.txtPatchName.getDocument().addDocumentListener(new PatchNameListener(panel, okButton, dialog));
         dialog.setVisible(true);
