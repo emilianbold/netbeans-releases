@@ -45,12 +45,15 @@ import com.oracle.nashorn.ir.AccessNode;
 import com.oracle.nashorn.ir.BinaryNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
+import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.NodeVisitor;
 import com.oracle.nashorn.ir.PropertyNode;
+import com.oracle.nashorn.ir.ReferenceNode;
 import com.oracle.nashorn.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -106,15 +109,37 @@ public class JsDocumentationCompleter {
                         ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
                         if (parserResult != null && parserResult instanceof JsParserResult) {
                             final JsParserResult jsParserResult = (JsParserResult) parserResult;
-                            // TODO - the nearest node in chains
                             Node nearestNode = getNearestNode(jsParserResult, offset);
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE) {
-                                // not a global object or function
-                                String nearestNodeFqn = getNearestNodeFqn(jsParserResult, offset);
-                                jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), nearestNodeFqn);
+                                // was not a global variable, function, object
+                                if (nearestNode instanceof PropertyNode) {
+                                    // is defined property
+                                    Node value = ((PropertyNode) nearestNode).getValue();
+                                    if (value instanceof ReferenceNode || value instanceof LiteralNode) {
+                                        PathToNodeVisitor ptnv = new PathToNodeVisitor(nearestNode);
+                                        FunctionNode root = jsParserResult.getRoot();
+                                        root.accept(ptnv);
+                                        // TODO - getting fqn has to be rewrite to visitor usage
+                                        String lhs = "";
+                                        for (Node node : ptnv.getFinalPath()) {
+                                            if (node instanceof AccessNode) {
+                                                lhs = ((AccessNode) node).toString();
+                                            } else if (node instanceof BinaryNode) {
+                                                lhs = ((BinaryNode) node).lhs().toString();
+                                            } else if (node instanceof VarNode) {
+                                                lhs = ((VarNode)node).getName().getName();
+                                            }
+                                        }
+                                        jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), lhs + "." + ((PropertyNode) nearestNode).getKeyName());
+                                    }
+                                } else {
+                                    // not a global object or function - it's defined by its fqn
+                                    String nearestNodeFqn = getNearestNodeFqn(jsParserResult, offset);
+                                    jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), nearestNodeFqn);
+                                }
                             }
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
@@ -221,7 +246,7 @@ public class JsDocumentationCompleter {
     }
 
     private static JsObject findJsObjectFunctionVariable(JsObject object, int offset) {
-        JsObjectImpl jsObject = (JsObjectImpl)object;
+        JsObjectImpl jsObject = (JsObjectImpl) object;
         JsObject result = null;
         JsObject tmpObject = null;
         if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
@@ -242,11 +267,10 @@ public class JsDocumentationCompleter {
         return result;
     }
 
-    private static class NearestNodeVisitor extends NodeVisitor {
+    private static class NearestNodeVisitor extends PathNodeVisitor {
 
         private final int offset;
         private Node nearestNode = null;
-        
 
         public NearestNodeVisitor(int offset) {
             this.offset = offset;
@@ -261,7 +285,7 @@ public class JsDocumentationCompleter {
         }
 
         public String getNearestNodeFqn() {
-            if (nearestNode instanceof AccessNode || nearestNode instanceof BinaryNode){
+            if (nearestNode instanceof AccessNode || nearestNode instanceof BinaryNode) {
                 FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
                 nearestNode.accept(farestNV);
                 return farestNV.getFarestFqn();
@@ -270,7 +294,7 @@ public class JsDocumentationCompleter {
         }
 
         public Node getNearestNode() {
-            if (nearestNode instanceof AccessNode){
+            if (nearestNode instanceof AccessNode) {
                 FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
                 nearestNode.accept(farestNV);
                 return farestNV.getFarestNode();
@@ -309,7 +333,6 @@ public class JsDocumentationCompleter {
             processNode(binaryNode, onset);
             return super.visit(binaryNode, onset);
         }
-
     }
 
     private static class FarestIdentNodeVisitor extends PathNodeVisitor {
@@ -333,6 +356,45 @@ public class JsDocumentationCompleter {
         public String getFarestFqn() {
             return farestPath.toString().substring(1);
         }
+    }
+
+    private static class PathToNodeVisitor extends PathNodeVisitor {
+
+        private final Node finalNode;
+        private List<? extends Node> finalPath;
+
+        public PathToNodeVisitor(Node finalNode) {
+            this.finalNode = finalNode;
+        }
+
+        @Override
+        public void addToPath(Node node) {
+            super.addToPath(node);
+            if (node.equals(finalNode)) {
+                finalPath = new LinkedList<Node>(getPath());
+            }
+        }
+
+        public List<? extends Node> getFinalPath() {
+            return finalPath;
+        }
 
     }
+
+//    private static class IdentsToNodeVisitor extends NodeVisitor {
+//
+//        private final StringBuilder finalPathName = new StringBuilder();
+//
+//        public String getFinalPathName() {
+//            return finalPathName.toString().substring(1);
+//        }
+//
+//        @Override
+//        public Node visit(IdentNode identNode, boolean onset) {
+//            if (onset) {
+//                finalPathName.append(".").append(identNode.getName());
+//            }
+//            return super.visit(identNode, onset);
+//        }
+//    }
 }
