@@ -51,8 +51,6 @@ import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -110,9 +108,11 @@ public class JsDocumentationCompleter {
                             final JsParserResult jsParserResult = (JsParserResult) parserResult;
                             // TODO - the nearest node in chains
                             Node nearestNode = getNearestNode(jsParserResult, offset);
-                            JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), nearestNode.getStart());
+                            int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
+                            JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE) {
+                                // not a global object or function
                                 String nearestNodeFqn = getNearestNodeFqn(jsParserResult, offset);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), nearestNodeFqn);
                             }
@@ -261,7 +261,7 @@ public class JsDocumentationCompleter {
         }
 
         public String getNearestNodeFqn() {
-            if (nearestNode instanceof AccessNode){
+            if (nearestNode instanceof AccessNode || nearestNode instanceof BinaryNode){
                 FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
                 nearestNode.accept(farestNV);
                 return farestNV.getFarestFqn();
@@ -302,6 +302,12 @@ public class JsDocumentationCompleter {
         public Node visit(VarNode varNode, boolean onset) {
             processNode(varNode, onset);
             return super.visit(varNode, onset);
+        }
+
+        @Override
+        public Node visit(BinaryNode binaryNode, boolean onset) {
+            processNode(binaryNode, onset);
+            return super.visit(binaryNode, onset);
         }
 
     }
