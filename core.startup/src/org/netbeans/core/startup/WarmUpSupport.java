@@ -75,6 +75,10 @@ final class WarmUpSupport implements Runnable {
         TASK.schedule((int)delay);
         return TASK;
     }
+    
+    static void waitFinished() {
+        TASK.waitFinished();
+    }
 
     // -------
 
