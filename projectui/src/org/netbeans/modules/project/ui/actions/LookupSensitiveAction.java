@@ -138,6 +138,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         return super.isEnabled();
     }
 
+    @Override
     public final void actionPerformed( ActionEvent e ) {
         init ();
 

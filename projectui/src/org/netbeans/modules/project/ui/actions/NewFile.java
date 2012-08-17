@@ -118,6 +118,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     protected void refresh(Lookup context, boolean immediate) {
         // #59615: update synch if possible; only replan if not already in EQ.
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
                 setDisplayName(LBL_NewFileAction_Name());
@@ -125,6 +126,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         });
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenuItem menu = new JMenuItem(this);
         menu.setIcon(null);
@@ -283,6 +285,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         return preselectedFolder;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         refresh(Lookup.EMPTY, false);
     }
@@ -362,6 +365,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     private class PopupListener implements ActionListener {
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             JMenuItem source = (JMenuItem)e.getSource();
 
@@ -405,12 +409,14 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
                 super(a);
             }
 
+            @Override
             public JComponent[] getMenuPresenters() {
                 JComponent jc = getSubmenuPopupPresenter();
                 fillSubMenu();
                 return new JComponent[]{ jc };
             }
 
+            @Override
             public JComponent[] synchMenuPresenters(JComponent[] items) {
                 JComponent jc = getSubmenuPopupPresenter();
                 fillSubMenu();

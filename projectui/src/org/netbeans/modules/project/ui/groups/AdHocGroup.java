@@ -156,6 +156,7 @@ public class AdHocGroup extends Group {
         setMainProject(op.getMainProject());
     }
 
+    @Override
     public GroupEditPanel createPropertiesPanel() {
         return new AdHocGroupEditPanel(this);
     }
