@@ -253,7 +253,7 @@ public class JsDocumentationCompleter {
         JsObjectImpl jsObject = (JsObjectImpl) object;
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();

@@ -61,7 +61,7 @@ public interface JsObject extends JsElement {
      */
     public JsObject getParent();  
     List<Occurrence> getOccurrences();
-   
+
     /**
      * 
      * @param offset

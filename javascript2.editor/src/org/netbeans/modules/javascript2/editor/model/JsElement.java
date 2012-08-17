@@ -45,6 +45,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
@@ -101,6 +102,8 @@ public interface JsElement extends ElementHandle {
     }
 
     int getOffset();
+
+    OffsetRange getOffsetRange();
 
     Kind getJSKind();
     

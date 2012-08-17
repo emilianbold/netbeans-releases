@@ -241,7 +241,7 @@ public class JsStructureScanner implements StructureScanner {
                 JsStructureItem item = (JsStructureItem) obj;
                 if (item.getName() != null && this.getName() != null) {
                     thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange(null) == modelElement.getOffsetRange(null);
+                            && item.modelElement.getOffsetRange() == modelElement.getOffsetRange();
                 }
             }
             return thesame;
@@ -299,7 +299,7 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange(null).getEnd();
+            return modelElement.getOffsetRange().getEnd();
         }
 
         @Override
