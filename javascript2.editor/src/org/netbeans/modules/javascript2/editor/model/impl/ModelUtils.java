@@ -113,7 +113,7 @@ public class ModelUtils {
         JsObjectImpl jsObject = (JsObjectImpl)object;
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
@@ -167,7 +167,7 @@ public class ModelUtils {
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
         DeclarationScope result = null;
         DeclarationScope function = null;
-        if (dScope.getOffsetRange(null).containsInclusive(offset)) {
+        if (dScope.getOffsetRange().containsInclusive(offset)) {
             result = dScope;
             for (DeclarationScope innerScope : dScope.getDeclarationsScope()) {
                 function = getDeclarationScope(innerScope, offset);
@@ -282,7 +282,7 @@ public class ModelUtils {
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
-            if (objectName != null && object.getOffsetRange(null).getEnd() == objectName.getOffsetRange().getEnd()) {
+            if (objectName != null && object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
                 // the assignment is during declaration
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
                 JsObject property = object.getParent().getProperty(pName);
