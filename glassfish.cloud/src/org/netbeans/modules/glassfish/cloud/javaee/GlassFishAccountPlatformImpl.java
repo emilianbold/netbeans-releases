@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 
 /**
@@ -58,10 +59,11 @@ public class GlassFishAccountPlatformImpl extends GlassFishPlatformImpl {
     /**
      * Creates an instance of Java EE platform registered with GlassFish cloud.
      * <p/>
-     * @param url GlassFish cloud URL.
+     * @param url      GlassFish cloud URL.
      */
     GlassFishAccountPlatformImpl(GlassFishUrl url) {
-        super(url);
+        super(url, GlassFishAccountInstanceProvider
+                .getAccountInstance(url.getName()));
     }
 
 }

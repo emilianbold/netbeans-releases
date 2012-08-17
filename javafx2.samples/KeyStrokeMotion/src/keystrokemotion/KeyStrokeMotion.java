@@ -91,13 +91,17 @@ public class KeyStrokeMotion extends Application {
             setPrefSize(480,480);
             setFocusTraversable(true);
             setOnMousePressed(new EventHandler<MouseEvent>() {
-                public void handle(MouseEvent me) {
+                
+                @Override public void handle(MouseEvent me) {
                     requestFocus();
+                    me.consume();
                 }
             });
             setOnKeyPressed(new EventHandler<KeyEvent>() {
-                public void handle(KeyEvent ke) {
+                
+                @Override public void handle(KeyEvent ke) {
                     createLetter(ke.getText());
+                    ke.consume();
                 }
             });
             // create press keys text

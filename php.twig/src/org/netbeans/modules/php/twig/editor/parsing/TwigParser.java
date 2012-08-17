@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.parsing;
 
 import java.util.ArrayList;
@@ -64,66 +63,64 @@ public class TwigParser extends Parser {
 
     Snapshot snapshot;
     TwigParserResult result;
+    final static List<String> PARSE_ELEMENTS = new ArrayList<String>();
 
-    final static List<String> parseElements = new ArrayList<String>();
     static {
-        parseElements.add( "for" );
-        parseElements.add( "endfor" );
+        PARSE_ELEMENTS.add("for"); //NOI18N
+        PARSE_ELEMENTS.add("endfor"); //NOI18N
 
-        parseElements.add( "if" );
+        PARSE_ELEMENTS.add("if"); //NOI18N
         //parseElements.add( "else" ); // TODO: Check for enclosing if block!
         //parseElements.add( "elseif" ); // TODO: Same as above!
-        parseElements.add( "endif" );
+        PARSE_ELEMENTS.add("endif"); //NOI18N
 
-        parseElements.add( "block" );
-        parseElements.add( "endblock" );
+        PARSE_ELEMENTS.add("block"); //NOI18N
+        PARSE_ELEMENTS.add("endblock"); //NOI18N
 
-        parseElements.add( "set" );
-        parseElements.add( "endset" );
+        PARSE_ELEMENTS.add("set"); //NOI18N
+        PARSE_ELEMENTS.add("endset"); //NOI18N
 
-        parseElements.add( "macro" );
-        parseElements.add( "endmacro" );
+        PARSE_ELEMENTS.add("macro"); //NOI18N
+        PARSE_ELEMENTS.add("endmacro"); //NOI18N
 
-        parseElements.add( "filter" );
-        parseElements.add( "endfilter" );
+        PARSE_ELEMENTS.add("filter"); //NOI18N
+        PARSE_ELEMENTS.add("endfilter"); //NOI18N
 
-        parseElements.add( "autoescape" );
-        parseElements.add( "endautoescape" );
+        PARSE_ELEMENTS.add("autoescape"); //NOI18N
+        PARSE_ELEMENTS.add("endautoescape"); //NOI18N
 
-        parseElements.add( "spaceless" );
-        parseElements.add( "endspaceless" );
+        PARSE_ELEMENTS.add("spaceless"); //NOI18N
+        PARSE_ELEMENTS.add("endspaceless"); //NOI18N
 
     }
 
     @Override
-    public void parse( Snapshot snapshot, Task task, SourceModificationEvent sme ) throws ParseException {
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
         this.snapshot = snapshot;
-        result = new TwigParserResult( snapshot );
-
+        result = new TwigParserResult(snapshot);
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
-
         LanguagePath twigPath = null;
-
-        for ( LanguagePath path : tokenHierarchy.languagePaths() ) {
-
-            if ( path.mimePath().endsWith( "twig-markup" ) ) { twigPath = path; break; }
-
+        for (LanguagePath path : tokenHierarchy.languagePaths()) {
+            if (path.mimePath().endsWith("twig-markup")) { //NOI18N
+                twigPath = path;
+                break;
+            }
         }
 
-        if ( twigPath != null ) {
+        if (twigPath != null) {
 
-            List<TokenSequence<?>> tokenSequenceList = tokenHierarchy.tokenSequenceList( twigPath, 0, Integer.MAX_VALUE );
+            List<TokenSequence<?>> tokenSequenceList = tokenHierarchy.tokenSequenceList(twigPath, 0, Integer.MAX_VALUE);
             List<Instruction> instructionList = new ArrayList<Instruction>();
 
-            for ( TokenSequence<?> sequence : tokenSequenceList ) {
+            for (TokenSequence<?> sequence : tokenSequenceList) {
 
-                while ( sequence.moveNext() ) {
+                while (sequence.moveNext()) {
 
                     Token<TwigTokenId> token = (Token<TwigTokenId>) sequence.token();
 
                     /* Parse instruction */
 
-                    if ( token.id() == TwigTokenId.T_TWIG_INSTRUCTION ) {
+                    if (token.id() == TwigTokenId.T_TWIG_INSTRUCTION) {
 
                         Instruction instruction = new Instruction();
                         instruction.function = "";
@@ -131,13 +128,13 @@ public class TwigParser extends Parser {
                         instruction.endTokenIndex = sequence.index();
                         instruction.from = token.offset(tokenHierarchy);
 
-                        while ( sequence.moveNext() ) {
+                        while (sequence.moveNext()) {
 
                             token = (Token<TwigTokenId>) sequence.token();
-                            if ( token.id() == TwigTokenId.T_TWIG_NAME ) {
+                            if (token.id() == TwigTokenId.T_TWIG_NAME) {
                                 instruction.extra = token.text();
                             }
-                            if ( token.id() == TwigTokenId.T_TWIG_INSTRUCTION ) {
+                            if (token.id() == TwigTokenId.T_TWIG_INSTRUCTION) {
                                 instruction.endTokenIndex = sequence.index();
                                 instruction.length = token.offset(tokenHierarchy) - instruction.from + token.length();
                                 break;
@@ -145,14 +142,14 @@ public class TwigParser extends Parser {
 
                         }
 
-                        if ( instruction.startTokenIndex != instruction.endTokenIndex ) { // Closed instruction found
+                        if (instruction.startTokenIndex != instruction.endTokenIndex) { // Closed instruction found
 
-                            sequence.moveIndex( instruction.startTokenIndex );
+                            sequence.moveIndex(instruction.startTokenIndex);
 
-                            while ( sequence.moveNext() ) {
+                            while (sequence.moveNext()) {
 
                                 token = (Token<TwigTokenId>) sequence.token();
-                                if ( token.id() == TwigTokenId.T_TWIG_FUNCTION ) {
+                                if (token.id() == TwigTokenId.T_TWIG_FUNCTION) {
 
                                     instruction.function = token.text();
                                     instruction.functionTokenIndex = sequence.index();
@@ -164,10 +161,9 @@ public class TwigParser extends Parser {
 
                             }
 
-                            if ( parseElements.contains( instruction.function.toString() ) )
-                            {
+                            if (PARSE_ELEMENTS.contains(instruction.function.toString())) {
                                 /* Have we captured a standalone instruction? */
-                                if ( CharSequenceUtilities.equals( instruction.function, "block" ) ) {
+                                if (CharSequenceUtilities.equals(instruction.function, "block")) { //NOI18N
 
                                     boolean standalone = false;
                                     int names = 0;
@@ -175,49 +171,52 @@ public class TwigParser extends Parser {
                                     do {
 
                                         sequence.moveNext();
-                                        token = (Token<TwigTokenId>)sequence.token();
+                                        token = (Token<TwigTokenId>) sequence.token();
 
-                                        if ( token.id() == TwigTokenId.T_TWIG_NAME || token.id() == TwigTokenId.T_TWIG_STRING ) {
+                                        if (token.id() == TwigTokenId.T_TWIG_NAME || token.id() == TwigTokenId.T_TWIG_STRING) {
                                             names++;
                                         }
 
-                                        if ( names > 1 ) {
+                                        if (names > 1) {
                                             standalone = true;
                                             break;
                                         }
 
-                                    } while ( sequence.index() < instruction.endTokenIndex );
+                                    } while (sequence.index() < instruction.endTokenIndex);
 
-                                    if ( !standalone ) instructionList.add( instruction );
-                                    else { // add a inline "block" immediately to the result set
-                                        result.addBlock( "*inline-block", instruction.from, instruction.length, instruction.extra );
+                                    if (!standalone) {
+                                        instructionList.add(instruction);
+                                    } else { // add a inline "block" immediately to the result set
+                                        result.addBlock("*inline-block", instruction.from, instruction.length, instruction.extra); //NOI18N
                                     }
 
-                                } else if ( CharSequenceUtilities.equals( instruction.function, "set" ) ) {
+                                } else if (CharSequenceUtilities.equals(instruction.function, "set")) { //NOI18N
 
                                     boolean standalone = false;
 
                                     do {
 
                                         sequence.moveNext();
-                                        token = (Token<TwigTokenId>)sequence.token();
+                                        token = (Token<TwigTokenId>) sequence.token();
 
-                                        if ( token.id() == TwigTokenId.T_TWIG_OPERATOR ) {
+                                        if (token.id() == TwigTokenId.T_TWIG_OPERATOR) {
                                             standalone = true;
                                             break;
                                         }
 
-                                    } while ( sequence.index() < instruction.endTokenIndex );
+                                    } while (sequence.index() < instruction.endTokenIndex);
 
-                                    if ( !standalone ) instructionList.add( instruction );
+                                    if (!standalone) {
+                                        instructionList.add(instruction);
+                                    }
 
                                 } else {
-                                    instructionList.add( instruction );
+                                    instructionList.add(instruction);
                                 }
 
                             }
 
-                            sequence.moveIndex( instruction.endTokenIndex );
+                            sequence.moveIndex(instruction.endTokenIndex);
 
                         }
 
@@ -231,55 +230,52 @@ public class TwigParser extends Parser {
 
             Stack<Instruction> instructionStack = new Stack<Instruction>();
 
-            for ( Instruction instruction : instructionList ) {
+            for (Instruction instruction : instructionList) {
 
-                if ( CharSequenceUtilities.startsWith( instruction.function, "end" ) ) {
+                if (CharSequenceUtilities.startsWith(instruction.function, "end")) { //NOI18N
 
-                    if ( instructionStack.empty() ) { // End tag, but no more tokens on stack!
+                    if (instructionStack.empty()) { // End tag, but no more tokens on stack!
 
                         result.addError(
-                            "Unopened '" + instruction.function + "' block",
-                            instruction.functionFrom,
-                            instruction.functionLength
-                        );
+                                "Unopened '" + instruction.function + "' block",
+                                instruction.functionFrom,
+                                instruction.functionLength);
 
-                    } else if ( CharSequenceUtilities.endsWith( instruction.function, instructionStack.peek().function ) ) {
+                    } else if (CharSequenceUtilities.endsWith(instruction.function, instructionStack.peek().function)) {
                         // end[sth] found a [sth] on the stack!
 
                         Instruction start = instructionStack.pop();
-                        result.addBlock( start.function, start.from, instruction.from - start.from + instruction.length, start.extra );
+                        result.addBlock(start.function, start.from, instruction.from - start.from + instruction.length, start.extra);
 
                     } else {
                         // something wrong lies on the stack!
                         // assume that current token is invalid and let it stay on the stack
 
                         result.addError(
-                            "Unexpected '" + instruction.function + "', expected 'end" + instructionStack.peek().function + "'",
-                            instruction.functionFrom,
-                            instruction.functionLength
-                        );
+                                "Unexpected '" + instruction.function + "', expected 'end" + instructionStack.peek().function + "'",
+                                instruction.functionFrom,
+                                instruction.functionLength);
 
                     }
 
                 } else {
-                    instructionStack.push( instruction );
+                    instructionStack.push(instruction);
                 }
 
             }
 
             // All instructions were parsed. Are there any left on the stack?
-            if ( !instructionStack.empty() ) {
+            if (!instructionStack.empty()) {
                 // Yep, they were never closed!
 
-                while ( !instructionStack.empty() ) {
+                while (!instructionStack.empty()) {
 
                     Instruction instruction = instructionStack.pop();
 
                     result.addError(
-                        "Unclosed '" + instruction.function + "'",
-                        instruction.functionFrom,
-                        instruction.functionLength
-                    );
+                            "Unclosed '" + instruction.function + "'",
+                            instruction.functionFrom,
+                            instruction.functionLength);
 
                 }
 
@@ -297,18 +293,19 @@ public class TwigParser extends Parser {
     }
 
     @Override
-    public void addChangeListener(ChangeListener cl) {}
+    public void addChangeListener(ChangeListener cl) {
+    }
 
     @Override
-    public void removeChangeListener(ChangeListener cl) {}
+    public void removeChangeListener(ChangeListener cl) {
+    }
 
     static public class Factory extends ParserFactory {
 
         @Override
-        public Parser createParser( Collection<Snapshot> clctn ) {
+        public Parser createParser(Collection<Snapshot> clctn) {
             return new TwigParser();
         }
-
     }
 
     class Instruction {
@@ -318,13 +315,9 @@ public class TwigParser extends Parser {
         int startTokenIndex = 0;
         int endTokenIndex = 0;
         int functionTokenIndex = 0;
-
         int from = 0;
         int length = 0;
-
         int functionFrom = 0;
         int functionLength = 0;
-
     }
-
 }

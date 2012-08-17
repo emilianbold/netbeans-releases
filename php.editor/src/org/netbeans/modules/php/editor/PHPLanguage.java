@@ -118,7 +118,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
         return new MultiViewEditorElement(context);
     }
     public static final String ACTIONS = "Loaders/"+PHP_MIME_TYPE+"/Actions";
-    public static String LINE_COMMENT_PREFIX = "//"; // NOI18N
+    public static final String LINE_COMMENT_PREFIX = "//"; // NOI18N
 
     @Override
     public String getLineCommentPrefix() {

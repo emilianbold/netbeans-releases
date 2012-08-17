@@ -124,7 +124,7 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
 
-            if (handleWhile(whileNode)) {
+            if (handleWhile(whileNode, FormatToken.Kind.AFTER_WHILE_START)) {
                 return null;
             }
         }
@@ -147,7 +147,7 @@ public class FormatVisitor extends NodeVisitor {
             if (beforeWhile != null) {
                 appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
             }
-            if (handleWhile(doWhileNode)) {
+            if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
                 return null;
             }
         }
@@ -165,7 +165,7 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(forNode.getBody(), FormatToken.Kind.BEFORE_FOR_BRACE);
 
-            if (handleWhile(forNode)) {
+            if (handleWhile(forNode, FormatToken.Kind.AFTER_FOR_START)) {
                 return null;
             }
         }
@@ -188,7 +188,7 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
 
             if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
+                handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
             } else {
                 visit(body, onset);
             }
@@ -206,7 +206,7 @@ public class FormatVisitor extends NodeVisitor {
                         handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
                                 FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
                     } else {
-                        handleVirtualBlock(body);
+                        handleVirtualBlock(body, FormatToken.Kind.AFTER_ELSE_START);
                     }
                 } else {
                     visit(body, onset);
@@ -225,8 +225,12 @@ public class FormatVisitor extends NodeVisitor {
                     FormatToken.Kind.AFTER_WITH_PARENTHESIS, FormatToken.Kind.BEFORE_WITH_PARENTHESIS);
 
             Block body = withNode.getBody();
+
+            // mark space before left brace
+            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_WITH_BRACE);
+
             if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
+                handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
                 return null;
             }
         }
@@ -291,6 +295,18 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
+                // place function parameters marks
+                for (IdentNode param : functionNode.getParameters()) {
+                    FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+                    if (ident != null) {
+                        FormatToken beforeIdent = ident.previous();
+                        if (beforeIdent != null) {
+                            appendToken(beforeIdent,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
+                        }
+                    }
+                }
+
                 if (functionNode.isStatement()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
@@ -331,7 +347,8 @@ public class FormatVisitor extends NodeVisitor {
                             && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
                         previous = previous.previous();
                     }
-                    assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
+                    assert previous != null
+                            && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                     tokenStream.removeToken(previous);
                 }
 
@@ -345,6 +362,18 @@ public class FormatVisitor extends NodeVisitor {
                         if (previous != null) {
                             appendToken(previous, FormatToken.forFormat(
                                     FormatToken.Kind.BEFORE_FUNCTION_CALL_PARENTHESIS));
+                        }
+                    }
+                }
+
+                // place function arguments marks
+                for (Node arg : callNode.getArgs()) {
+                    FormatToken argToken = getNextToken(getStart(arg), null);
+                    if (argToken != null) {
+                        FormatToken beforeArg = argToken.previous();
+                        if (beforeArg != null) {
+                            appendToken(beforeArg,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT));
                         }
                     }
                 }
@@ -454,11 +483,21 @@ public class FormatVisitor extends NodeVisitor {
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
                         FormatToken toRemove = formatToken.previous();
-                        assert toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR;
+                        while (toRemove != null && toRemove.isVirtual()
+                                && toRemove.getKind() != FormatToken.Kind.BEFORE_BINARY_OPERATOR) {
+                            toRemove = toRemove.previous();
+                        }
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
 
                         toRemove = formatToken.next();
-                        assert toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR;
+                        while (toRemove != null && toRemove.isVirtual()
+                                && toRemove.getKind() != FormatToken.Kind.AFTER_BINARY_OPERATOR) {
+                            toRemove = toRemove.next();
+                        }
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
                     }
 
@@ -566,10 +605,10 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(varNode, onset);
     }
 
-    private boolean handleWhile(WhileNode whileNode) {
+    private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
-            handleVirtualBlock(body);
+            handleVirtualBlock(body, afterStart);
             return true;
         }
         return false;
@@ -609,9 +648,9 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void handleVirtualBlock(Block block) {
+    private void handleVirtualBlock(Block block, FormatToken.Kind afterBlock) {
         handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
-                FormatToken.Kind.AFTER_BLOCK_START);
+                afterBlock);
     }
 
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
@@ -644,8 +683,12 @@ public class FormatVisitor extends NodeVisitor {
                 if (formatToken == null && ts.offset() <= formatFinish) {
                     formatToken = tokenStream.getTokens().get(0);
                 }
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                if (formatToken != null) {
+                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
+                    if (afterBlock != null) {
+                        appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                    }
+                }
             }
         }
 
@@ -704,7 +747,6 @@ public class FormatVisitor extends NodeVisitor {
                     lastVarNode = next;
                 }
 
-                assert lastVarNode instanceof VarNode;
                 for (int j = index; j < i; j++) {
                     Node skipped = statements.get(j);
                     skipped.accept(this);
@@ -790,7 +832,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void markSpacesBeforeBrace(Block block, FormatToken.Kind mark) {
-        FormatToken brace = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY,
+        FormatToken brace = getPreviousToken(getStart(block), null,
                 getStart(block) - 1);
         if (brace != null) {
             FormatToken previous = brace.previous();
@@ -971,16 +1013,26 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private static int getStart(Node node) {
+        // unfortunately in binary node the token represents operator
+        // so string fix would not work
+        if (node instanceof BinaryNode) {
+            return getStart((BinaryNode) node);
+        }
         // All this magic is because nashorn nodes and tokens don't contain the
         // quotes for string. Due to this we call this method to add 1 to start
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        if (com.oracle.nashorn.parser.Token.descType(firstToken).equals(TokenType.STRING)) {
+        TokenType type = com.oracle.nashorn.parser.Token.descType(firstToken);
+        if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             start--;
         }
 
         return start;
+    }
+
+    private static int getStart(BinaryNode node) {
+        return getStart(node.lhs());
     }
 
     private static int getFunctionStart(FunctionNode node) {

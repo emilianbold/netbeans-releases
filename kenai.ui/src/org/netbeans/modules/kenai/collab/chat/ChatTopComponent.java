@@ -62,8 +62,9 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
@@ -595,7 +596,7 @@ public class ChatTopComponent extends TopComponent {
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
         final Kenai kenai = Utilities.getPreferredKenai();
         if (kenai==null || kenai.getStatus() == Kenai.Status.OFFLINE) {
-            UIUtils.showLogin();
+            KenaiUIUtils.showLogin();
         } else {
             if (!Utilities.isChatSupported(kenai)) {
                 JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", kenai.getName()));
@@ -765,7 +766,7 @@ public class ChatTopComponent extends TopComponent {
     final class KenaiL implements PropertyChangeListener {
 
         public void propertyChange(final PropertyChangeEvent e) {
-            if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+            if (TeamServer.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         Kenai.Status s = ((Kenai) e.getSource()).getStatus();

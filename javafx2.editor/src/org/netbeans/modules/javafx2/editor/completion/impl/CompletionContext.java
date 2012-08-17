@@ -59,8 +59,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
@@ -71,10 +69,7 @@ import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.openide.nodes.ChildFactory;
-import sun.security.krb5.internal.SeqNumber;
 
 /**
  * Provides information about the soruce, caret position etc to the individual
@@ -162,6 +157,12 @@ public final class CompletionContext {
          * instruction target
          */
         INSTRUCTION_DATA,
+        
+        /**
+         * PI end marker
+         */
+        INSTRUCTION_END,
+        
         /**
          * Unspecified child element: can be either a Bean or a property element,
          * depending on further analysis
@@ -218,7 +219,7 @@ public final class CompletionContext {
     
     private FxmlParserResult    fxmlParserResult;
     
-    private TokenHierarchy<XMLTokenId> hierarchy;
+    private TokenHierarchy hierarchy;
     
     private List<? extends FxNode>  parents;
     
@@ -233,7 +234,7 @@ public final class CompletionContext {
     @SuppressWarnings("unchecked")
     /* For testing only */ CompletionContext(FxmlParserResult result, int offset, int completionType) {
         this.fxmlParserResult = result;
-        this.hierarchy = (TokenHierarchy<XMLTokenId>)result.getTokenHierarchy();
+        this.hierarchy = result.getTokenHierarchy();
         this.caretOffset = offset;
         this.completionType = completionType;
         processTokens(hierarchy);
@@ -243,7 +244,7 @@ public final class CompletionContext {
         return completionType;
     }
     
-    public void init(TokenHierarchy<XMLTokenId> h, CompilationInfo info, FxmlParserResult fxmlResult) {
+    public void init(TokenHierarchy h, CompilationInfo info, FxmlParserResult fxmlResult) {
         this.hierarchy = h;
         this.compilationInfo = info;
         this.cpInfo = info.getClasspathInfo();
@@ -285,10 +286,9 @@ public final class CompletionContext {
     public String resolveClassName(String name) {
         if (importProcessor == null) {
             importProcessor = new ImportProcessor(
-                    compilationInfo, 
                     hierarchy, 
                     null, fxmlParserResult.getTreeUtilities());
-            getModel().accept(importProcessor);
+            importProcessor.load(compilationInfo, getModel());
         }
         Collection<String> names = importProcessor.resolveName(name);
         if (names == null || names.size() > 1) {
@@ -298,12 +298,25 @@ public final class CompletionContext {
     }
 
     @SuppressWarnings("unchecked")
-    private void processTokens(TokenHierarchy<XMLTokenId> h) {
+    private void processTokens(TokenHierarchy h) {
         TokenSequence<XMLTokenId> ts = (TokenSequence<XMLTokenId>)h.tokenSequence();
         processType(ts);
         processValueType();
         
         readRootElement(ts);
+        
+        // do not allow real content before root tag
+        if (caretOffset < rootTagStartOffset) {
+            switch (type) {
+                case BEAN:
+                case PROPERTY_ELEMENT:
+                case CHILD_ELEMENT:
+                case ROOT:
+                    type = Type.INSTRUCTION_TARGET;
+                    break;
+            }
+        }
+        
         readCurrentContent(ts);
 
         processNamespaces();
@@ -366,6 +379,12 @@ public final class CompletionContext {
         }
     }
     
+    public FxInstance getInstanceElement() {
+        return instanceElement;
+    }
+    
+    private FxInstance instanceElement;
+    
     private void processPath() {
         parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
                 getCaretOffset(), getType() == CompletionContext.Type.PROPERTY_ELEMENT, true);
@@ -391,6 +410,26 @@ public final class CompletionContext {
             }
         } 
         this.elementParent = parent;
+        
+        FxNode candidate;
+        switch (parent.getKind()) {
+            case Property:
+            case Event:
+            case Attribute:
+            case Element:
+            case Namespace:
+            case Error:
+                candidate = parents.size() > 1 ? parents.get(1) : null;
+                break;
+            case Instance:
+                candidate = parent;
+                break;
+            default:
+                candidate = null;
+        }
+        if (candidate != null && candidate.getKind() == FxNode.Kind.Instance) {
+            this.instanceElement = (FxInstance)candidate;
+        }
     }
  
     /**
@@ -677,12 +716,12 @@ public final class CompletionContext {
         while (seq.moveNext()) {
             Token<XMLTokenId> t = seq.token();
             XMLTokenId id = t.id();
-            if (id == XMLTokenId.TAG) {
+            if (id == XMLTokenId.TAG && t.length() > 1) {
                 int startOffset = seq.offset();
                 readTagContent(seq);
                 // reassign stuff:
-                rootTagStartOffset = startOffset;
                 copyToRoot();
+                rootTagStartOffset = startOffset;
                 rootAttrInsertOffset = startOffset + t.length();
                 if (t.text().charAt(t.length() - 1) == '>') {
                     rootAttrInsertOffset--;
@@ -907,7 +946,11 @@ public final class CompletionContext {
     }
 
     private void processValueType() {
-        attribute = type == Type.PROPERTY_VALUE;
+        switch (type) {
+            case PROPERTY:
+            case PROPERTY_VALUE:
+                attribute = true;
+        }
         if (type != Type.PROPERTY_VALUE && type != Type.PROPERTY_VALUE_CONTENT) {
             return;
         }
@@ -998,7 +1041,7 @@ public final class CompletionContext {
             switch (id) {
                 case PI_END:
                     // was after PI, PI or Bean is allowed; no completion 
-                    type = middle ? Type.UNKNOWN : Type.ROOT;
+                    type = Type.INSTRUCTION_END;
                     break;
 
                 case PI_CONTENT:
@@ -1135,13 +1178,16 @@ public final class CompletionContext {
         if (!dontAdvance && (wsFound || !middle)) {
             // in between tokens, so shift the type
             Type oldType = this.type;
-            switch (type) {
+            switch (oldType) {
                 case INSTRUCTION_TARGET: type = Type.INSTRUCTION_DATA; break;
                     
+                case PROPERTY_VALUE: type = Type.PROPERTY; break;
+
                 case BEAN:
                 case PROPERTY_ELEMENT: type = Type.PROPERTY; break;
+                        
+                case INSTRUCTION_END: type = Type.ROOT; break;
                     
-                case PROPERTY_VALUE: type = Type.PROPERTY; break;
             }
             if (oldType != type) {
                 prefix = "";
@@ -1214,6 +1260,36 @@ public final class CompletionContext {
             tagName != null && !tagName.equals("") && !isClassTagName(tagName)) {
             // assume bean
             type = Type.BEAN;
+        }
+        
+        if (type == Type.ROOT) {
+            // try to traverse forward through all the whitespace, to find whether there's an processing instruction.
+            ts.move(caretOffset);
+            
+            cont = true;
+            while (cont && ts.moveNext()) {
+                t = ts.token();
+                XMLTokenId id = t.id();
+                switch (id) {
+                    case BLOCK_COMMENT:
+                        // this is ok
+                        break;
+                        
+                    case TEXT:
+                    case CDATA_SECTION:
+                        // this is maybe also OK
+                        break;
+                        
+                    case PI_START:
+                        // must not present tag for completion
+                        type = Type.INSTRUCTION_TARGET;
+                        cont = false;
+                        break;
+                    case TAG:
+                        cont = false;
+                        break;
+                }
+            }
         }
     }
     

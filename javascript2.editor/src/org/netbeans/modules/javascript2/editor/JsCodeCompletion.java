@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,10 +56,12 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
@@ -220,6 +223,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 case OBJECT_MEMBERS:
                     completeObjectMember(request, resultList);
+                    break;
+                case DOCUMENTATION:
+                    JsDocumentationCodeCompletion.complete(request, resultList);
+                    break;
                 default:
                     result = CodeCompletionResult.NONE;
             }
@@ -261,12 +268,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                             
                         }
-                        System.out.println(parserResult);
+                        LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                     }
                     
                 });
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
         if (documentation.length() == 0) {
@@ -274,6 +281,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (doc != null && !doc.isEmpty()) {
                 documentation.append(doc);
             }
+        }
+        if (element instanceof JsDocumentationElement) {
+            return ((JsDocumentationElement) element).getDocumentation();
         }
         if (documentation.length() == 0) {
             documentation.append(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
@@ -334,6 +344,30 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
                 }
             }
+            if (id == JsTokenId.DOC_COMMENT) {
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                if (docTokenSeq == null) {
+                    return null;
+                }
+
+                docTokenSeq.move(caretOffset);
+                // initialize moved token
+                if (!docTokenSeq.moveNext() && !docTokenSeq.movePrevious()) {
+                    return null;
+                }
+
+                if (docTokenSeq.token().id() == JsDocumentationTokenId.KEYWORD) {
+                    // inside the keyword tag
+                    prefix = docTokenSeq.token().text().toString();
+                    if (upToOffset) {
+                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                    }
+                } else {
+                    // get the token before
+                    docTokenSeq.movePrevious();
+                    prefix = docTokenSeq.token().text().toString();
+                }
+            }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
         return prefix.length() > 0 ? prefix : null;
@@ -351,7 +385,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override

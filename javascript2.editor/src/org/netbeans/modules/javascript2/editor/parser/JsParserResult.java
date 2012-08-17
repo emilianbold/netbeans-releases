@@ -90,8 +90,8 @@ public class JsParserResult extends ParserResult {
             if (model == null) {
                 model = ModelFactory.getModel(this);
             }
+            return model;
         }
-        return model;
     }
     
     public JsDocumentationHolder getDocumentationHolder() {
@@ -99,8 +99,8 @@ public class JsParserResult extends ParserResult {
             if (docHolder == null) {
                 docHolder = JsDocumentationSupport.getDocumentationHolder(this);
             }
+            return docHolder;
         }
-        return docHolder;
     }
 
 }

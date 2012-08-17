@@ -64,6 +64,8 @@
     <property name="javame_sdk30_bits_update_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac-update.zip"/>
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
+    <!-- Java FX Runtime -->
+    <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.0/promoted/fcs/b21/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
@@ -74,7 +76,7 @@
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_06.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u6/promoted/fcs/b22/bundles/macosx-x64/jdk-7u6-macosx-x64.dmg"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u6/promoted/fcs/b24/bundles/macosx-x64/jdk-7u6-macosx-x64.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 06"/>
 
 </project>

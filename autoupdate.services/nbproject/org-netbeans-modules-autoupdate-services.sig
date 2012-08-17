@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.28
+#Version 1.33.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -73,6 +73,7 @@ meth public boolean isTrusted(org.netbeans.api.autoupdate.InstallSupport$Install
 meth public java.lang.String getCertificate(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
 meth public org.netbeans.api.autoupdate.InstallSupport$Installer doValidate(org.netbeans.api.autoupdate.InstallSupport$Validator,org.netbeans.api.progress.ProgressHandle) throws org.netbeans.api.autoupdate.OperationException
 meth public org.netbeans.api.autoupdate.InstallSupport$Validator doDownload(org.netbeans.api.progress.ProgressHandle,boolean) throws org.netbeans.api.autoupdate.OperationException
+meth public org.netbeans.api.autoupdate.InstallSupport$Validator doDownload(org.netbeans.api.progress.ProgressHandle,java.lang.Boolean,boolean) throws org.netbeans.api.autoupdate.OperationException
 meth public org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> getContainer()
 meth public org.netbeans.api.autoupdate.OperationSupport$Restarter doInstall(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.progress.ProgressHandle) throws org.netbeans.api.autoupdate.OperationException
 meth public void doCancel() throws org.netbeans.api.autoupdate.OperationException
@@ -147,6 +148,7 @@ fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYP
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE INSTALLER
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE PROXY
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE UNINSTALL
+fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE WRITE_PERMISSION
 meth public static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE valueOf(java.lang.String)
 meth public static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE[] values()
 supr java.lang.Enum<org.netbeans.api.autoupdate.OperationException$ERROR_TYPE>
@@ -178,6 +180,7 @@ meth public java.lang.String getDescription()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getHomepage()
 meth public java.lang.String getLicence()
+meth public java.lang.String getLicenseId()
 meth public java.lang.String getNotification()
 meth public java.lang.String getSource()
 meth public java.lang.String getSourceDescription()
@@ -230,6 +233,7 @@ meth public !varargs java.util.List<org.netbeans.api.autoupdate.UpdateUnit> getU
 meth public boolean isEnabled()
 meth public boolean refresh(org.netbeans.api.progress.ProgressHandle,boolean) throws java.io.IOException
 meth public java.awt.Image getSourceIcon()
+meth public java.lang.String getContentDescription()
 meth public java.lang.String getDescription()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
@@ -282,11 +286,12 @@ CLSS public abstract interface org.netbeans.spi.autoupdate.KeyStoreProvider
 meth public abstract java.security.KeyStore getKeyStore()
 
 CLSS public final org.netbeans.spi.autoupdate.UpdateItem
-meth public final static org.netbeans.spi.autoupdate.UpdateItem createFeature(java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.lang.String,java.lang.String,java.lang.String)
-meth public final static org.netbeans.spi.autoupdate.UpdateItem createInstalledNativeComponent(java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.lang.String,java.lang.String,org.netbeans.spi.autoupdate.CustomUninstaller)
-meth public final static org.netbeans.spi.autoupdate.UpdateItem createLocalization(java.lang.String,java.lang.String,java.lang.String,java.util.Locale,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.UpdateLicense)
-meth public final static org.netbeans.spi.autoupdate.UpdateItem createModule(java.lang.String,java.lang.String,java.net.URL,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.jar.Manifest,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.UpdateLicense)
-meth public final static org.netbeans.spi.autoupdate.UpdateItem createNativeComponent(java.lang.String,java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.lang.String,java.lang.String,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.CustomInstaller,org.netbeans.spi.autoupdate.UpdateLicense)
+meth public static org.netbeans.spi.autoupdate.UpdateItem createFeature(java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.lang.String,java.lang.String,java.lang.String)
+meth public static org.netbeans.spi.autoupdate.UpdateItem createInstalledNativeComponent(java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.lang.String,java.lang.String,org.netbeans.spi.autoupdate.CustomUninstaller)
+meth public static org.netbeans.spi.autoupdate.UpdateItem createLocalization(java.lang.String,java.lang.String,java.lang.String,java.util.Locale,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.UpdateLicense)
+meth public static org.netbeans.spi.autoupdate.UpdateItem createModule(java.lang.String,java.lang.String,java.net.URL,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.jar.Manifest,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.UpdateLicense)
+meth public static org.netbeans.spi.autoupdate.UpdateItem createModule(java.lang.String,java.lang.String,java.net.URL,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.jar.Manifest,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.UpdateLicense)
+meth public static org.netbeans.spi.autoupdate.UpdateItem createNativeComponent(java.lang.String,java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.lang.String,java.lang.String,java.lang.Boolean,java.lang.Boolean,java.lang.String,org.netbeans.spi.autoupdate.CustomInstaller,org.netbeans.spi.autoupdate.UpdateLicense)
 supr java.lang.Object
 hfds impl,original
 

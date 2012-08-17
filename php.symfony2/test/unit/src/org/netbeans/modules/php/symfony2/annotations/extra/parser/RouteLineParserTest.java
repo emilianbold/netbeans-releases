@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class RouteLineParserTest extends NbTestCase {
-    private RouteLineParser parser;
+    private AnnotationLineParser parser;
 
     public RouteLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class RouteLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new RouteLineParser();
+        this.parser = Symfony2ExtraAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class RouteLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsRouteParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Route") instanceof RouteParsedLine);
+        assertTrue(parser.parse("Route") instanceof ParsedLine);
     }
 
     public void testReturnValueIsRouteParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Route") instanceof RouteParsedLine);
+        assertTrue(parser.parse("Annotations\\Route") instanceof ParsedLine);
     }
 
     public void testReturnValueIsRouteParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route") instanceof RouteParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route") instanceof ParsedLine);
     }
 
     public void testReturnValueIsRouteParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Route(\"/\", name=\"blog_home\")") instanceof RouteParsedLine);
+        assertTrue(parser.parse("Annotations\\Route(\"/\", name=\"blog_home\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class RouteLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Route");
-        assertEquals(RouteLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Route", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class RouteLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Route   ");
-        assertEquals(RouteLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Route", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class RouteLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Route\t\t  ");
-        assertEquals(RouteLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Route", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class RouteLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Route(\"/\", name=\"blog_home\")");
-        assertEquals(RouteLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Route", parsedLine.getName());
         assertEquals("(\"/\", name=\"blog_home\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class RouteLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\Route(\"/\", name=\"blog_home\")  \t");
-        assertEquals(RouteLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Route", parsedLine.getName());
         assertEquals("(\"/\", name=\"blog_home\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class RouteLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route(\"/\", name=\"blog_home\")  \t");
-        assertEquals(RouteLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Route", parsedLine.getName());
         assertEquals("(\"/\", name=\"blog_home\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

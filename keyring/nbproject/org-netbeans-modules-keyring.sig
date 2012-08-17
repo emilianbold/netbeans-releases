@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.8
+#Version 1.11.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -17,11 +17,17 @@ meth public java.lang.String toString()
 
 CLSS public org.netbeans.api.keyring.Keyring
 meth public static char[] read(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static void delete(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static void save(java.lang.String,char[],java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
-hfds LOG,PROVIDER
-hcls DummyKeyringProvider
+hfds KEYRING_ACCESS,LOG,PROVIDER,SAFE_DELAY
+hcls DummyKeyringProvider,ProgressRunnable
 
 CLSS abstract interface org.netbeans.api.keyring.package-info
 

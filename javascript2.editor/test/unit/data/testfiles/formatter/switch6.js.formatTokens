@@ -106,8 +106,9 @@ FormattingToken{kind=TEXT, offset=144, text=a}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=145, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=146, text= }
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=147, text=neco}
 FormattingToken{kind=WHITESPACE, offset=151, text= }
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}

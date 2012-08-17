@@ -84,7 +84,7 @@ import org.netbeans.spi.editor.hints.Severity;
 public class JPQLValidation extends JPAClassRule implements CancelListener{
     
     private ManagedTypeProvider mtp;//need to store as jpql validation may be too long and need to be cancelled if required
-    
+    private JPQLQueryHelper helper;
     /** Creates a new instance of NonFinalClass */
     public JPQLValidation() {
         setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
@@ -132,10 +132,10 @@ public class JPQLValidation extends JPAClassRule implements CancelListener{
                 }
             }
         }
-        JPQLQueryHelper helper = new JPQLQueryHelper();
+        helper = new JPQLQueryHelper();
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
-        mtp = new ManagedTypeProvider(project, jpaCtx.getMetaData());
+        mtp = new ManagedTypeProvider(project, jpaCtx.getMetaData(), jpaCtx.getCompilationInfo().getElements());
         for(int index=0;index<values.size() && !ctx.isCancelled();index++){
             String value = values.get(index);
             String qName = names.get(index);
@@ -178,6 +178,7 @@ public class JPQLValidation extends JPAClassRule implements CancelListener{
         }
         jpaCtx.removeCancelListener(this);
         mtp = null;
+        helper = null;
         return ret;
     }
     
@@ -190,5 +191,6 @@ public class JPQLValidation extends JPAClassRule implements CancelListener{
     @Override
     public void cancelled() {
         if(mtp != null)mtp.invalidate();
+        if(helper != null)helper.dispose();
     }
 }

@@ -28,7 +28,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.22.0</specification-version>
+                        <specification-version>1.25.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -367,7 +367,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <package>org.netbeans.modules.subversion.hooks.spi</package>
+                <friend>org.netbeans.modules.ods.subversion</friend>
                 <package>org.netbeans.modules.subversion.api</package>
             </friend-packages>
         </data>

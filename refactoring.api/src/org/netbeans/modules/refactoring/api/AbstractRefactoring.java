@@ -61,20 +61,21 @@ import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory;
 import org.netbeans.modules.refactoring.spi.ProgressProvider;
 import org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
 import org.netbeans.modules.refactoring.spi.impl.Util;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription.Provider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
 import org.openide.modules.Modules;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.InstanceContent;
@@ -116,6 +117,7 @@ public abstract class AbstractRefactoring {
     private static final int PLUGIN_STEPS = 30;
     
     private ArrayList plugins;
+    private FiltersDescription filtersDescription;
     
     ArrayList pluginsWithProgress;
     
@@ -136,6 +138,7 @@ public abstract class AbstractRefactoring {
         if (plugins == null) {
             plugins = new ArrayList();
             // get plugins from the lookup
+            filtersDescription = new FiltersDescription();
             Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(RefactoringPluginFactory.class));
             for (Iterator it = result.allInstances().iterator(); it.hasNext();) {
                 RefactoringPluginFactory factory = (RefactoringPluginFactory) it.next();
@@ -155,11 +158,19 @@ public abstract class AbstractRefactoring {
                         //  SafeDeleteRefactoringPlugin.
                         //  #65980
                         plugins.add(plugin);
+                        if(plugin instanceof FiltersDescription.Provider) {
+                            FiltersDescription.Provider prov = (FiltersDescription.Provider) plugin;
+                            prov.addFilters(filtersDescription);
+                        }
                     }
                 }
             }
         }
         return plugins;
+    }
+
+    FiltersDescription getFiltersDescription() {
+        return filtersDescription;
     }
     
     Collection getGBHandlers() {
@@ -427,8 +438,12 @@ public abstract class AbstractRefactoring {
             } catch (Throwable t) {
                 problem =createProblemAndLog(problem, t, plugin.getClass());
             }
-            if (problem!=null && problem.isFatal())
+            if (problem!=null && problem.isFatal()) {
                 return problem;
+            } else if(plugin instanceof FiltersDescription.Provider) {
+                Provider provider = (Provider) plugin;
+                provider.enableFilters(filtersDescription);
+            }
         }
         
         //TODO: 

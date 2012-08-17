@@ -66,7 +66,6 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.core.spi.testvcs.TestVCSInterceptor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileLock;
-import org.openide.util.Exceptions;
 
 /**
  * Versioning SPI unit tests of VCSInterceptor.
@@ -224,6 +223,29 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         );   
     }
 
+    public void testIsLockedDoesntInvokeBeforeEdit() throws IOException {
+        FileObject fo = getVersionedFolder();
+        fo = fo.createData(TestVCS.ALWAYS_WRITABLE_PREFIX);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
+        VCSFilesystemTestFactory.getInstance(this).setReadOnly(getRelativePath(proxy));
+        logHandler.clear();
+        
+        assertFalse(fo.isLocked());
+        List<VCSFileProxy> beforeEditFiles = inteceptor.getBeforeEditFiles();
+        if(!inteceptor.getBeforeEditFiles().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Not expected beforeEdit() intercepted for file(s): ");
+            for (int i = 0; i < beforeEditFiles.size(); i++) {
+                VCSFileProxy file = beforeEditFiles.get(i);
+                sb.append(file.getName());
+                if(i < beforeEditFiles.size() - 1) {
+                    sb.append(",");
+                }
+            }
+            fail(sb.toString());
+        }
+    }
+    
     public void testGetAttribute() throws IOException {
         FileObject folder = getVersionedFolder();
         FileObject fo = folder.createData("gotattr.txt");

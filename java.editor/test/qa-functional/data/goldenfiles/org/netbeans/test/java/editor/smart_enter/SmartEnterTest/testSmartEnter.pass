@@ -2,6 +2,6 @@ package org.netbeans.test.java.editor.smart_enter.SmartEnterTest;
 
 public class testSmartEnter {
 
-   public String str="abcde" +
-           "123456";
+   public String str="abcde"
+           + "123456";
 }

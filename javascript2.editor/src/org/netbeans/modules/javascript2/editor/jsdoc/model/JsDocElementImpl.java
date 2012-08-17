@@ -47,9 +47,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
  */
 public abstract class JsDocElementImpl implements JsDocElement {
 
-    private final Type type;
+    private final JsDocElementType type;
 
-    public JsDocElementImpl(Type type) {
+    public JsDocElementImpl(JsDocElementType type) {
         this.type = type;
     }
 
@@ -58,7 +58,7 @@ public abstract class JsDocElementImpl implements JsDocElement {
      * @return jsDoc element type
      */
     @Override
-    public Type getType() {
+    public JsDocElementType getType() {
         return type;
     }
 

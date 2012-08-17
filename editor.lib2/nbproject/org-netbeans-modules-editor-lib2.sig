@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.53.0
+#Version 1.60.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -65,6 +65,9 @@ hfds LOG
 
 CLSS public final org.netbeans.api.editor.EditorActionNames
 fld public final static java.lang.String gotoDeclaration = "goto-declaration"
+fld public final static java.lang.String moveCodeElementDown = "move-code-element-down"
+fld public final static java.lang.String moveCodeElementUp = "move-code-element-up"
+fld public final static java.lang.String removeSurroundingCode = "remove-surrounding-code"
 fld public final static java.lang.String toggleLineNumbers = "toggle-line-numbers"
 fld public final static java.lang.String toggleNonPrintableCharacters = "toggle-non-printable-characters"
 fld public final static java.lang.String toggleRectangularSelection = "toggle-rectangular-selection"
@@ -117,6 +120,10 @@ CLSS public final org.netbeans.api.editor.EditorUtilities
 meth public static javax.swing.Action getAction(javax.swing.text.EditorKit,java.lang.String)
 supr java.lang.Object
 
+CLSS public final org.netbeans.api.editor.document.EditorDocumentUtils
+meth public static void runExclusive(javax.swing.text.Document,java.lang.Runnable)
+supr java.lang.Object
+
 CLSS public abstract interface org.netbeans.spi.editor.codegen.CodeGenerator
 innr public abstract interface static Factory
 meth public abstract java.lang.String getDisplayName()
@@ -135,6 +142,12 @@ meth public abstract void runTaskWithinContext(org.openide.util.Lookup,org.netbe
 CLSS public abstract interface static org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider$Task
  outer org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider
 meth public abstract void run(org.openide.util.Lookup)
+
+CLSS public abstract interface org.netbeans.spi.editor.document.UndoableEditWrapper
+meth public abstract javax.swing.undo.UndoableEdit wrap(javax.swing.undo.UndoableEdit,javax.swing.text.Document)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.editor.highlighting.HighlightAttributeValue<%0 extends java.lang.Object>
 meth public abstract {org.netbeans.spi.editor.highlighting.HighlightAttributeValue%0} getValue(javax.swing.text.JTextComponent,javax.swing.text.Document,java.lang.Object,int,int)

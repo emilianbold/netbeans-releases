@@ -158,7 +158,7 @@ public class PhpElementVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(Variable node) {
         String extractVariableName = CodeUtils.extractVariableName(node);
-        if (!extractVariableName.startsWith("$")) {//NOI18N
+        if (extractVariableName != null && !extractVariableName.startsWith("$")) {//NOI18N
             super.visit(node);
             return;
         }

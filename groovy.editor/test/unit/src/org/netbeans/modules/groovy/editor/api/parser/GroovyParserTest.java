@@ -49,7 +49,7 @@ import java.util.Scanner;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
@@ -82,7 +82,7 @@ public class GroovyParserTest extends GroovyTestBase {
 
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
                 String text = result.getSnapshot().getText().toString();
 
                 int caretOffset = -1;
@@ -100,7 +100,7 @@ public class GroovyParserTest extends GroovyTestBase {
                     enforceCaretOffset(source, caretOffset);
                 }
 
-                ASTNode root = AstUtilities.getRoot(result);
+                ASTNode root = ASTUtils.getRoot(result);
                 assertNotNull("Parsing broken input failed for " + file, root);
 
                 // Ensure that we find the node we're looking for
@@ -171,8 +171,8 @@ public class GroovyParserTest extends GroovyTestBase {
         Source source = Source.create(testFO);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-                ASTNode root = AstUtilities.getRoot(result);
+                GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
+                ASTNode root = ASTUtils.getRoot(result);
                 AstPath path = new AstPath(root ,1, (BaseDocument) result.getSnapshot().getSource().getDocument(true));
                 assertNotNull("new AstPath() failed", path);
             }
@@ -197,8 +197,8 @@ public class GroovyParserTest extends GroovyTestBase {
         Source source = Source.create(testFO);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-                ASTNode root = AstUtilities.getRoot(result);
+                GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
+                ASTNode root = ASTUtils.getRoot(result);
                 assertNotNull(root);
             }
         });

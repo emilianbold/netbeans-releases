@@ -87,8 +87,8 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private String cygwinPath;
     
     private String sourceName;
-    private ItemProperties.LanguageKind language;
-    private ItemProperties.LanguageStandard standard;
+    private final ItemProperties.LanguageKind language;
+    private final ItemProperties.LanguageStandard standard;
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
     private Map<String, String> userMacros;
@@ -96,9 +96,9 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private Map<String, String> systemMacros;
     private boolean haveSystemMacros;
     private CompilerSettings normilizeProvider;
-    private Map<String,GrepEntry> grepBase;
+    private final Map<String,GrepEntry> grepBase;
     private String compilerName;
-    private CompileLineStorage storage;
+    private final CompileLineStorage storage;
     private int handler = -1;
     private final CompilerSettings compilerSettings;
     

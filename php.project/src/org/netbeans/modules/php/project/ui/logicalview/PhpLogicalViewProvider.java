@@ -81,6 +81,7 @@ import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
@@ -105,6 +106,12 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author ads, Tomas Mysik
  */
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory", category="Project"),
+        position=1950,
+        path="Projects/org-netbeans-modules-php-phpproject/Actions")
+})
 public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     private static final Logger LOGGER = Logger.getLogger(PhpLogicalViewProvider.class.getName());

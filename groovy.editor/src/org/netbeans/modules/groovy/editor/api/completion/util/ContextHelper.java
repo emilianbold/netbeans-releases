@@ -56,7 +56,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
@@ -326,11 +326,11 @@ public final class ContextHelper {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document) request.doc);
         int position = tid.offset(th);
 
-        ModuleNode rootNode = AstUtilities.getRoot(request.info);
+        ModuleNode rootNode = ASTUtils.getRoot(request.info);
         if (rootNode == null) {
             return null;
         }
-        int astOffset = AstUtilities.getAstOffset(request.info, position);
+        int astOffset = ASTUtils.getAstOffset(request.info, position);
         if (astOffset == -1) {
             return null;
         }

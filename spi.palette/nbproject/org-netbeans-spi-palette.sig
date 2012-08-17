@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -7,6 +7,11 @@ meth public abstract void readExternal(java.io.ObjectInput) throws java.io.IOExc
 meth public abstract void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 
 CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
 cons public init()
@@ -21,6 +26,35 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.Runnable
+meth public abstract void run()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract org.netbeans.spi.palette.DragAndDropHandler
 cons protected init(boolean)
@@ -82,8 +116,11 @@ meth public abstract boolean isValidItem(org.openide.util.Lookup)
 supr java.lang.Object
 
 CLSS public org.netbeans.spi.palette.PaletteModule
+ anno 0 java.lang.Deprecated()
 cons public init()
+intf java.lang.Runnable
 meth public void restored()
+meth public void run()
 supr org.openide.modules.ModuleInstall
 
 CLSS public org.openide.modules.ModuleInstall

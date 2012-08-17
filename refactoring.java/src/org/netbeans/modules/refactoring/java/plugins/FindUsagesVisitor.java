@@ -41,61 +41,85 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.WhereUsedElement;
+import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
+import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Becicka
  */
-public class FindUsagesVisitor extends FindVisitor {
+public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
 
-    private boolean findInComments = false;
+    private Collection<TreePath> usages = new ArrayList<TreePath>();
+    private Collection<WhereUsedElement> elements = new ArrayList<WhereUsedElement>();
+    protected CompilationController workingCopy;
     private Collection<UsageInComment> usagesInComments = Collections.<UsageInComment>emptyList();
+    private boolean findInComments = false;
+    private final boolean fromTestRoot;
+    private final AtomicBoolean inImport;
+
     public FindUsagesVisitor(CompilationController workingCopy) {
-        super(workingCopy);
+        this(workingCopy, false);
     }
-
-    public Collection<UsageInComment> getUsagesInComments() {
-        return usagesInComments;
-    }
-
+    
     public FindUsagesVisitor(CompilationController workingCopy, boolean findInComments) {
-        super(workingCopy);
+        this(workingCopy, findInComments, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), new AtomicBoolean());
+    }
+
+    public FindUsagesVisitor(CompilationController workingCopy, boolean findInComments, boolean fromTestRoot, AtomicBoolean inImport) {
+        try {
+            setWorkingCopy(workingCopy);
+        } catch (ToPhaseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         this.findInComments = findInComments;
         if (findInComments) {
             usagesInComments = new ArrayList<UsageInComment>();
         }
+        this.fromTestRoot = fromTestRoot;
+        this.inImport = inImport;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Find in Comments">
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         if (findInComments) {
             String originalName = p.getSimpleName().toString();
             TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            
+
             while (ts.moveNext()) {
                 Token t = ts.token();
-                
+
                 if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
                     Scanner tokenizer = new Scanner(t.text().toString());
                     tokenizer.useDelimiter("[^a-zA-Z0-9_]"); //NOI18N
-                    
+
                     while (tokenizer.hasNext()) {
                         String current = tokenizer.next();
                         if (current.equals(originalName)) {
@@ -107,43 +131,8 @@ public class FindUsagesVisitor extends FindVisitor {
         }
         return super.visitCompilationUnit(node, p);
     }
+    //</editor-fold>
 
-    @Override
-    public Tree visitIdentifier(IdentifierTree node, Element p) {
-        addIfMatch(getCurrentPath(), node, p);
-        return super.visitIdentifier(node, p);
-    }
-
-    @Override
-    public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-        addIfMatch(getCurrentPath(), node,p);
-        return super.visitMemberSelect(node, p);
-    }
-    
-    @Override
-    public Tree visitNewClass(NewClassTree node, Element p) {
-        Trees trees = workingCopy.getTrees();
-        ClassTree classTree = ((NewClassTree) node).getClassBody();
-        if (classTree != null && p.getKind()==ElementKind.CONSTRUCTOR) {
-            Element anonClass = workingCopy.getTrees().getElement(TreePath.getPath(workingCopy.getCompilationUnit(), classTree));
-            if (anonClass==null) {
-                Logger.getLogger("org.netbeans.modules.refactoring.java").severe("FindUsages cannot resolve " + classTree);
-            } else {
-                for (ExecutableElement c : ElementFilter.constructorsIn(anonClass.getEnclosedElements())) {
-                    MethodTree t = workingCopy.getTrees().getTree(c);
-                    TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) t.getBody().getStatements().get(0)).getExpression());
-                    Element superCallElement = trees.getElement(superCall);
-                    if (superCallElement != null && superCallElement.equals(p) && !workingCopy.getTreeUtilities().isSynthetic(superCall)) {
-                        addUsage(superCall);
-                    }
-                }
-            }
-        } else {
-            addIfMatch(getCurrentPath(), node, p);
-        }
-        return super.visitNewClass(node, p);
-    }
-    
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if (workingCopy.getTreeUtilities().isSynthetic(path)) {
             if (ElementKind.CONSTRUCTOR != elementToFind.getKind()
@@ -158,7 +147,7 @@ public class FindUsagesVisitor extends FindVisitor {
         if (el == null) {
             path = path.getParentPath();
             if (path != null && path.getLeaf().getKind() == Kind.IMPORT) {
-                ImportTree impTree = (ImportTree)path.getLeaf();
+                ImportTree impTree = (ImportTree) path.getLeaf();
                 if (!impTree.isStatic()) {
                     return;
                 }
@@ -176,7 +165,7 @@ public class FindUsagesVisitor extends FindVisitor {
                 if (el == null) {
                     return;
                 }
-                Iterator iter = workingCopy.getElementUtilities().getMembers(el.asType(),new ElementUtilities.ElementAcceptor() {
+                Iterator iter = workingCopy.getElementUtilities().getMembers(el.asType(), new ElementUtilities.ElementAcceptor() {
                     @Override
                     public boolean accept(Element e, TypeMirror type) {
                         return id.equals(e.getSimpleName());
@@ -192,22 +181,153 @@ public class FindUsagesVisitor extends FindVisitor {
                 return;
             }
         }
-        if (elementToFind!=null&& elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
+        if (elementToFind != null && elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
             if (el.equals(elementToFind) || workingCopy.getElements().overrides((ExecutableElement) el, (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
-                addUsage(getCurrentPath());
+                addUsage(path);
             }
         } else if (el.equals(elementToFind)) {
-            addUsage(getCurrentPath());
+            final ElementKind kind = elementToFind.getKind();
+            if(kind.isField() || kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.RESOURCE_VARIABLE) {
+                JavaWhereUsedFilters.ReadWrite access = JavaWhereUsedFilters.ReadWrite.READ;
+                TreePath parentPath = path.getParentPath();
+                Tree parentTree = parentPath.getLeaf();
+                Kind parentKind = parentTree.getKind();
+                
+                switch(parentKind) {
+                    case ARRAY_ACCESS:
+                    case MEMBER_SELECT:
+                        // TODO: Check usages of arrays for writing
+                        break;
+
+                    case POSTFIX_INCREMENT:
+                    case POSTFIX_DECREMENT:
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
+                        access = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
+                        break;
+
+                    case ASSIGNMENT: {
+                        AssignmentTree assignmentTree = (AssignmentTree) parentTree;
+                        ExpressionTree left = assignmentTree.getVariable();
+                        if (left.equals(tree)) {
+                            access = JavaWhereUsedFilters.ReadWrite.WRITE;
+                        }
+                        break;
+                    }
+                    case MULTIPLY_ASSIGNMENT:
+                    case DIVIDE_ASSIGNMENT:
+                    case REMAINDER_ASSIGNMENT:
+                    case PLUS_ASSIGNMENT:
+                    case MINUS_ASSIGNMENT:
+                    case LEFT_SHIFT_ASSIGNMENT:
+                    case RIGHT_SHIFT_ASSIGNMENT:
+                    case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    case AND_ASSIGNMENT:
+                    case XOR_ASSIGNMENT:
+                    case OR_ASSIGNMENT: {
+                        CompoundAssignmentTree compoundAssignmentTree = (CompoundAssignmentTree) parentTree;
+                        ExpressionTree left = compoundAssignmentTree.getVariable();
+                        if (left.equals(tree)) {
+                            access = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
+                        }
+                        break;
+                    }
+                }
+                addUsage(path, access);
+            } else {
+                addUsage(path);
+            }
         }
     }
+
+    /**
+     *
+     * @param workingCopy
+     * @throws org.netbeans.modules.refactoring.java.spi.ToPhaseException
+     */
+    public final void setWorkingCopy(CompilationController workingCopy) throws ToPhaseException {
+        this.workingCopy = workingCopy;
+        try {
+            if (this.workingCopy.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
+                throw new ToPhaseException();
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+    }
+
+    public Collection<UsageInComment> getUsagesInComments() {
+        return usagesInComments;
+    }
     
+    protected void addUsage(TreePath tp, JavaWhereUsedFilters.ReadWrite access) {
+        assert tp != null;
+        elements.add(WhereUsedElement.create(workingCopy, tp, access, fromTestRoot, inImport));
+        usages.add(tp);
+    }
+
+    public boolean isInImport() {
+        return inImport.get();
+    }
+
+    protected void addUsage(TreePath tp) {
+        assert tp != null;
+        elements.add(WhereUsedElement.create(workingCopy, tp, fromTestRoot, inImport));
+        usages.add(tp);
+    }
+    
+    public Collection<WhereUsedElement> getElements() {
+        return elements;
+    }
+    
+    public Collection<TreePath> getUsages() {
+        return usages;
+    }
+
+    @Override
+    public Tree visitIdentifier(IdentifierTree node, Element p) {
+        addIfMatch(getCurrentPath(), node, p);
+        return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Tree visitMemberSelect(MemberSelectTree node, Element p) {
+        addIfMatch(getCurrentPath(), node, p);
+        return super.visitMemberSelect(node, p);
+    }
+
+    @Override
+    public Tree visitNewClass(NewClassTree node, Element p) {
+        Trees trees = workingCopy.getTrees();
+        ClassTree classTree = ((NewClassTree) node).getClassBody();
+        if (classTree != null && p.getKind() == ElementKind.CONSTRUCTOR) {
+            Element anonClass = workingCopy.getTrees().getElement(TreePath.getPath(workingCopy.getCompilationUnit(), classTree));
+            if (anonClass == null) {
+                Logger.getLogger("org.netbeans.modules.refactoring.java").log(Level.SEVERE, "FindUsages cannot resolve {0}", classTree); // NOI18N
+            } else {
+                for (ExecutableElement c : ElementFilter.constructorsIn(anonClass.getEnclosedElements())) {
+                    MethodTree t = workingCopy.getTrees().getTree(c);
+                    TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) t.getBody().getStatements().get(0)).getExpression());
+                    Element superCallElement = trees.getElement(superCall);
+                    if (superCallElement != null && superCallElement.equals(p) && !workingCopy.getTreeUtilities().isSynthetic(superCall)) {
+                        addUsage(superCall);
+                    }
+                }
+            }
+        } else {
+            addIfMatch(getCurrentPath(), node, p);
+        }
+        return super.visitNewClass(node, p);
+    }
+
     public static class UsageInComment {
+
         int from;
         int to;
+
         public UsageInComment(int from, int to) {
             this.from = from;
             this.to = to;
         }
     }
 }
-

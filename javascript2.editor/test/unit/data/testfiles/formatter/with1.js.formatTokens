@@ -8,6 +8,7 @@ FormattingToken{kind=TEXT, offset=6, text=a}
 FormattingToken{kind=BEFORE_WITH_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=7, text=)}
 FormattingToken{kind=WHITESPACE, offset=8, text= }
+FormattingToken{kind=BEFORE_WITH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=9, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
@@ -49,7 +50,7 @@ FormattingToken{kind=TEXT, offset=54, text=a}
 FormattingToken{kind=BEFORE_WITH_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=55, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WITH_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=56, text=
 }
 FormattingToken{kind=LINE_COMMENT, offset=57, text=// comment}
@@ -60,6 +61,7 @@ FormattingToken{kind=LINE_COMMENT, offset=69, text=// one statement}
 FormattingToken{kind=EOL, offset=85, text=
 }
 FormattingToken{kind=WHITESPACE, offset=86, text= }
+FormattingToken{kind=BEFORE_WITH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=87, text=doOneThing}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=97, text=(}

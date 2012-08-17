@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
@@ -247,16 +246,20 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public String getPreprocessorOptions(CompilerSet cs) {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
         OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().toString(visitor));
-        options.append(' '); // NOI18N
+        List<CCCCompilerConfiguration> list = new ArrayList<CCCCompilerConfiguration>();
+        list.add(this);
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().toString(visitor));
-            options.append(' '); // NOI18N
+            list.add(master);
             if (master.getInheritPreprocessor().getValue()) {
                 master = (CCCompilerConfiguration) master.getMaster();
             } else {
                 master = null;
             }
+        }
+        StringBuilder options = new StringBuilder();
+        for(int i = list.size() - 1; i >= 0; i--) {
+            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor));
+            options.append(' '); // NOI18N
         }
         return options.toString();
     }

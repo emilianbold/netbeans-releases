@@ -42,9 +42,10 @@
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -56,6 +57,9 @@ public class JsDocDocumentationProvider implements JsDocumentationProvider {
 
     private Set<String> supportedTags;
 
+    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
+            Arrays.<AnnotationCompletionTagProvider>asList(new JsDocAnnotationCompletionTagProvider("JsDoc"));
+
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
         return new JsDocDocumentationHolder(snapshot);
@@ -64,13 +68,18 @@ public class JsDocDocumentationProvider implements JsDocumentationProvider {
     @Override
     public synchronized Set getSupportedTags() {
         if (supportedTags == null) {
-            supportedTags = new HashSet<String>(JsDocElement.Type.values().length);
-            for (JsDocElement.Type type : JsDocElement.Type.values()) {
+            supportedTags = new HashSet<String>(JsDocElementType.values().length);
+            for (JsDocElementType type : JsDocElementType.values()) {
                 supportedTags.add(type.toString());
             }
             supportedTags.remove("unknown");
             supportedTags.remove("contextSensitive");
         }
         return supportedTags;
+    }
+
+    @Override
+    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
+        return ANNOTATION_PROVIDERS;
     }
 }

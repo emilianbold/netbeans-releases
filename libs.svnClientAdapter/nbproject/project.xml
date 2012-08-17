@@ -83,8 +83,8 @@ made subject to such option by the copyright holder.
                 <package>org.tigris.subversion.svnclientadapter.utils</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/svnClientAdapter-main-1.8.5.jar</runtime-relative-path>
-                <binary-origin>external/svnClientAdapter-main-1.8.5.jar</binary-origin>
+                <runtime-relative-path>ext/svnClientAdapter-main-1.8.14.jar</runtime-relative-path>
+                <binary-origin>external/svnClientAdapter-main-1.8.14.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class RunAsLineParserTest extends NbTestCase {
-    private RunAsLineParser parser;
+    private AnnotationLineParser parser;
 
     public RunAsLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class RunAsLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new RunAsLineParser();
+        this.parser = Symfony2SecurityAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class RunAsLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsRunAsParsedLine_01() throws Exception {
-        assertTrue(parser.parse("RunAs") instanceof RunAsParsedLine);
+        assertTrue(parser.parse("RunAs") instanceof ParsedLine);
     }
 
     public void testReturnValueIsRunAsParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\RunAs") instanceof RunAsParsedLine);
+        assertTrue(parser.parse("Annotations\\RunAs") instanceof ParsedLine);
     }
 
     public void testReturnValueIsRunAsParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\RunAs") instanceof RunAsParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\RunAs") instanceof ParsedLine);
     }
 
     public void testReturnValueIsRunAsParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\RunAs(roles=\"ROLE_PRIVATE_SERVICE\")") instanceof RunAsParsedLine);
+        assertTrue(parser.parse("Annotations\\RunAs(roles=\"ROLE_PRIVATE_SERVICE\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class RunAsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("RunAs");
-        assertEquals(RunAsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("RunAs", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class RunAsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("RunAs   ");
-        assertEquals(RunAsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("RunAs", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class RunAsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("RunAs\t\t  ");
-        assertEquals(RunAsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("RunAs", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class RunAsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("RunAs(roles=\"ROLE_PRIVATE_SERVICE\")");
-        assertEquals(RunAsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("RunAs", parsedLine.getName());
         assertEquals("(roles=\"ROLE_PRIVATE_SERVICE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class RunAsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\RunAs(roles=\"ROLE_PRIVATE_SERVICE\")  \t");
-        assertEquals(RunAsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("RunAs", parsedLine.getName());
         assertEquals("(roles=\"ROLE_PRIVATE_SERVICE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class RunAsLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\RunAs(roles=\"ROLE_PRIVATE_SERVICE\")  \t");
-        assertEquals(RunAsLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("RunAs", parsedLine.getName());
         assertEquals("(roles=\"ROLE_PRIVATE_SERVICE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

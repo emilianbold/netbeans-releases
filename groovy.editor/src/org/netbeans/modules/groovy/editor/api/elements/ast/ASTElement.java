@@ -56,7 +56,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
@@ -188,7 +188,7 @@ public abstract class ASTElement extends GroovyElement {
 
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
-        GroovyParserResult parserResult = AstUtilities.getParseResult(result);
+        GroovyParserResult parserResult = ASTUtils.getParseResult(result);
         // FIXME resolve handle
         ElementHandle object = ElementHandleSupport.resolveHandle(parserResult, ElementHandleSupport.createHandle(result, this));
 
@@ -196,7 +196,7 @@ public abstract class ASTElement extends GroovyElement {
             BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
             if (doc != null) {
                 ASTElement astElement = (ASTElement) object;
-                OffsetRange range = AstUtilities.getRange(astElement.getNode(), doc);
+                OffsetRange range = ASTUtils.getRange(astElement.getNode(), doc);
                 return LexUtilities.getLexerOffsets(parserResult, range);
             }
             return OffsetRange.NONE;
@@ -207,7 +207,7 @@ public abstract class ASTElement extends GroovyElement {
             if (getNode() != null) {
                 BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
                 if (doc != null) {
-                    OffsetRange astRange = AstUtilities.getRange(getNode(), doc);
+                    OffsetRange astRange = ASTUtils.getRange(getNode(), doc);
                     if (astRange != OffsetRange.NONE) {
                         GroovyParserResult oldInfo = info;
                         if (oldInfo == null) {

@@ -182,6 +182,7 @@ public final class EventHandler extends FxNode implements HasContent {
     @SuppressWarnings("rawtypes")
     void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
         this.eventInfo = (FxEvent)info;
+        this.setHandler((ElementHandle<ExecutableElement>)nameHandle);
     }
     
     

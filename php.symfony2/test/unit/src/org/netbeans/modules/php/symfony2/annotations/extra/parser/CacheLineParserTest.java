@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 
 /**
@@ -53,7 +54,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class CacheLineParserTest extends NbTestCase {
-    private CacheLineParser parser;
+    private AnnotationLineParser parser;
 
     public CacheLineParserTest(String name) {
         super(name);
@@ -62,7 +63,7 @@ public class CacheLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new CacheLineParser();
+        this.parser = Symfony2ExtraAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -70,19 +71,19 @@ public class CacheLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsCacheParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Cache") instanceof CacheParsedLine);
+        assertTrue(parser.parse("Cache") instanceof ParsedLine);
     }
 
     public void testReturnValueIsCacheParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Cache") instanceof CacheParsedLine);
+        assertTrue(parser.parse("Annotations\\Cache") instanceof ParsedLine);
     }
 
     public void testReturnValueIsCacheParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Cache") instanceof CacheParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Cache") instanceof ParsedLine);
     }
 
     public void testReturnValueIsCacheParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Cache(expires=\"+2 days\")") instanceof CacheParsedLine);
+        assertTrue(parser.parse("Annotations\\Cache(expires=\"+2 days\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -91,7 +92,7 @@ public class CacheLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Cache");
-        assertEquals(CacheLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Cache", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -105,7 +106,7 @@ public class CacheLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Cache   ");
-        assertEquals(CacheLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Cache", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -119,7 +120,7 @@ public class CacheLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Cache\t\t  ");
-        assertEquals(CacheLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Cache", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -133,7 +134,7 @@ public class CacheLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Cache(expires=\"+2 days\")");
-        assertEquals(CacheLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Cache", parsedLine.getName());
         assertEquals("(expires=\"+2 days\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -148,7 +149,7 @@ public class CacheLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\Cache(expires=\"+2 days\")  \t");
-        assertEquals(CacheLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Cache", parsedLine.getName());
         assertEquals("(expires=\"+2 days\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -163,7 +164,7 @@ public class CacheLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Cache(expires=\"+2 days\")  \t");
-        assertEquals(CacheLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Cache", parsedLine.getName());
         assertEquals("(expires=\"+2 days\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

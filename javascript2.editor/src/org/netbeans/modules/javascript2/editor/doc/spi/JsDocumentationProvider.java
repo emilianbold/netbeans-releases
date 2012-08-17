@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -52,15 +53,24 @@ public interface JsDocumentationProvider {
 
     /**
      * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
+     *
      * @param snapshot to be parsed and stored into holder
      * @return JsDocumentationHolder
      */
-    public abstract JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
+    JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
 
     /**
      * Gets all tags supported by the documentation tool (like @author, @link, ...)
+     *
      * @return set of all supported tags
      */
-    public abstract Set<String> getSupportedTags();
+    Set<String> getSupportedTags();
+
+    /**
+     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JS documentation tool.
+     *
+     * @return list of annotations providers, never {@code null}
+     */
+    List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
 
 }

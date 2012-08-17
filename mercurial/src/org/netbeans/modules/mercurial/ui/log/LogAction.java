@@ -141,7 +141,7 @@ public class LogAction extends SearchHistoryAction {
                         tc.open();
                         tc.requestActive();
                         if (startSearch) {
-                            tc.search();
+                            tc.search(false);
                         }
                     }
                 });
@@ -183,5 +183,7 @@ public class LogAction extends SearchHistoryAction {
         tc.setDisplayName(tcTitle);
         tc.open();
         tc.requestActive();
+        tc.search(true);
+        tc.activateDiffView(true);
     }
 }
