@@ -113,9 +113,6 @@ import org.openide.util.RequestProcessor;
  * This delegating CompoundModelImpl loads all models from DebuggerManager.
  * getDefault ().getCurrentEngine ().lookup (viewType, ..) lookup.
  *
- * <p>
- * This class is identical to org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener.
- *
  * @author   Jan Jancura
  */
 public class ViewModelListener extends DebuggerManagerAdapter {
