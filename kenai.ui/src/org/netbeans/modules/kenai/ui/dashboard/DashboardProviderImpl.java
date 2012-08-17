@@ -78,6 +78,7 @@ import org.openide.util.RequestProcessor;
 public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiProject> {
     
     private final KenaiServer server;
+    private static final RequestProcessor RP = new RequestProcessor("Kenai logout", 5); //NOI18N
 
     public DashboardProviderImpl(KenaiServer server) {
         this.server = server;
@@ -88,7 +89,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
         return new AbstractAction() {  
             @Override
             public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         server.logout();
