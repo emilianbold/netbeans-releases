@@ -185,7 +185,8 @@ public class JsConventionRule extends JsAstRule {
         }
 
         private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN, AFTER_BRACKET};
-        @NbBundle.Messages("DuplicateName=Duplicate name of property \"{0}\".")
+        @NbBundle.Messages({"# {0} - name of the duplicated property",
+            "DuplicateName=Duplicate name of property \"{0}\"."})
         private void checkDuplicateLabels(ObjectNode objectNode) {
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
             int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
