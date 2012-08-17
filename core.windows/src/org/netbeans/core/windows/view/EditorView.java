@@ -410,6 +410,11 @@ public class EditorView extends ViewElement {
         public boolean supportsKind(TopComponentDraggable transfer) {
             return true;
         }
+
+        @Override
+        public int getKind() {
+            return Constants.MODE_KIND_EDITOR;
+        }
         
     } // End of EditorAreaComponent class.
     

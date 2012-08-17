@@ -183,7 +183,7 @@ public class ShelveChangesAction extends ContextAction {
         }
 
         private boolean open () {
-            boolean retval = prepare(optionsPanel);
+            boolean retval = prepare(optionsPanel, "org.netbeans.modules.mercurial.ui.shelve.ShelveChangesPanel"); //NOI18N
             if (retval) {
                 doBackup = doBackupChxBox.isSelected();
                 doPurge = doPurgeChxBox.isSelected();

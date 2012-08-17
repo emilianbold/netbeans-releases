@@ -47,10 +47,12 @@ import org.openide.util.actions.CallableSystemAction;
 
 final class LazyProjectInitializing extends CallableSystemAction {
 
+    @Override
     public void performAction() {
         assert false;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(LazyProjectInitializing.class, "CTL_LazyProjectInitializing");
     }
@@ -63,6 +65,7 @@ final class LazyProjectInitializing extends CallableSystemAction {
         setEnabled(false);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

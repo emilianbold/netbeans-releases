@@ -127,7 +127,7 @@ public class ShelveChangesAction extends ContextAction {
             return;
         }
         SvnShelveChangesSupport supp = new SvnShelveChangesSupport(roots);
-        if (supp.prepare()) {
+        if (supp.prepare("org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel")) { //NOI18N
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
             supp.startAsync(rp, repositoryUrl);
         }

@@ -98,6 +98,7 @@ public class SubprojectsGroup extends Group {
         return n;
     }
 
+    @Override
     protected void findProjects(Set<Project> projects, ProgressHandle h, int start, int end) {
         Project p = projectForPath(prefs().get(KEY_PATH, null));
         if (p != null) {
@@ -131,6 +132,7 @@ public class SubprojectsGroup extends Group {
         return null;
     }
 
+    @Override
     public GroupEditPanel createPropertiesPanel() {
         return new SubprojectsGroupEditPanel(this);
     }

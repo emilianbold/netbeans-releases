@@ -87,12 +87,14 @@ public class SyncEditorWithViewsAction extends SystemAction implements DynamicMe
         prefs.putBoolean(SYNC_ENABLED_PROP_NAME, !prefs.getBoolean(SYNC_ENABLED_PROP_NAME, false));
     }
 
+    @Override
     public JComponent[] getMenuPresenters() {
         createItems();
         updateState();
         return menuItems;
     }
 
+    @Override
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         updateState();
         return items;
