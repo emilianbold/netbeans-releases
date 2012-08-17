@@ -65,25 +65,44 @@ import static org.openide.util.NbBundle.getMessage;
 public class GlassFishCloudWizardCpasComponent
         extends GlassFishWizardComponent {
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////   
+
+    /**
+     * Filtering the set of directories shown to the user in file chooser.
+     */
     private static class DirFilter extends javax.swing.filechooser.FileFilter {
-        DirFilter() {
-        }
-        
+
+        ////////////////////////////////////////////////////////////////////////
+        // Implemented abstract methods                                       //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Filter directories with read access.
+         * <p/>
+         * @param path Pathname to be tested.
+         * @return Returns <code>true</code> when given pathname is
+         *         a directory and can be read or <code>false</code> otherwise.
+         */
         @Override
-        public boolean accept(File f) {
-            if(!f.exists() || !f.canRead() || !f.isDirectory()) {
-                return false;
-            } else {
+        public boolean accept(File path) {
+            if(path.isDirectory() && path.canRead()) {
                 return true;
+            } else {
+                return false;
             }
         }
-        
+
+        /**
+         * The description of this filter.
+         */
         @Override
         public String getDescription() {
             return NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class,
                     Bundle.CLOUD_PANEL_BROWSER_FILE_DIR_TYPE);
         }
-        
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -131,6 +150,13 @@ public class GlassFishCloudWizardCpasComponent
      *  something was found or <code>null</code> when no version was recognized.
      */
     private GlassFishVersion localServerVersion;
+
+    /** Subdirectory containing GlassFish home under installation directory.
+     *  Value is updated during field validation. Contains GlassFish home when
+     *  something was found or <code>null</code> when no GlassFish home
+     *  was recognized.
+     */
+    private File localServerHome;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -226,13 +252,22 @@ public class GlassFishCloudWizardCpasComponent
     }
 
     /**
-     * Get local server location (directory).
+     * Get local server installation root directory.
      * <p/>
      * @return Local server location (directory).
      */
-    public String getLocalServer() {
+    public String getLocalServerRoot() {
         String text = localServerTextField.getText();
         return text != null ? text.trim() : null;
+    }
+
+    /**
+     * Get local server installation root directory.
+     * <p/>
+     * @return Local server location (directory).
+     */
+    public String getLocalServerHome() {
+        return localServerHome != null ? localServerHome.getAbsolutePath() : "";
     }
 
     /**
@@ -275,12 +310,32 @@ public class GlassFishCloudWizardCpasComponent
     }
 
     /**
-     * Get local server location (directory) for GUI initialization.
+     * Get server installation root directory for GUI initialization.
+     * <p/>
+     * @return Value of server installation root directory passed from cloud
+     *         entity object or empty <code>String</code> when cloud entity
+     *         object is <code>null</code>.
      */
-    private String initLocalServer() {
+    private String initLocalServerRoot() {
         return instance != null && instance.getLocalServer() != null
+                && instance.getLocalServer().getServerRoot()  != null
+                ? instance.getLocalServer().getServerRoot() : "";
+    }
+
+    /**
+     * Get server home location directory for GUI initialization.
+     * <p/>
+     * @return Value of server home directory passed from cloud entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initLocalServerHome() {
+        File serverHome
+                = instance != null && instance.getLocalServer() != null
                 && instance.getLocalServer().getServerHome()  != null
-                ? instance.getLocalServer().getServerHome() : "";
+                ? new File(instance.getLocalServer().getServerHome())
+                : null;
+        return serverHome != null ? serverHome.getAbsolutePath() : "";
     }
 
     /**
@@ -351,6 +406,9 @@ public class GlassFishCloudWizardCpasComponent
 
     /**
      * Get content of GlassFish version field.
+     * <p/>
+     * @return <code>String</code> representing local server version or empty
+     *         <code>String</code> when no valid version was provided.
      */
     private String getLocalVersion() {
         if (localServerVersion == null) {
@@ -378,6 +436,7 @@ public class GlassFishCloudWizardCpasComponent
         localServerValid = result.isValid();
         update(result);
         localVersionTextField.setText(getLocalVersion());
+        localHomeTextField.setText(getLocalServerHome());
     }
 
     /**
@@ -460,7 +519,8 @@ public class GlassFishCloudWizardCpasComponent
                     GlassFishServerEntity localServer;
                     try {
                         localServer = new GlassFishServerEntity(
-                                getDisplayName(), getLocalServer(),
+                                getDisplayName(), getLocalServerRoot(),
+                                getLocalServerHome(),
                                 GlassFishUrl.url(GlassFishUrl.Id.LOCAL,
                                 getDisplayName()));
                     } catch (DataException de) {
@@ -581,22 +641,30 @@ public class GlassFishCloudWizardCpasComponent
      *         points to valid GlassFish 4.0.0.0 and later installation.
      */
     final ValidationResult localServerValid() {
-        String localServerDirText = getLocalServer();
+        String localServerDirText = getLocalServerRoot();
+        localServerVersion = null;
+        localServerHome = null;
         if (localServerDirText == null) {
-            localServerVersion = null;
             return new ValidationResult(false,
                         getMessage(GlassFishCloudWizardCpasPanel.class,
                         Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_EMPTY));
         }
         File localServerDir = new File(localServerDirText);
         if (!localServerDir.isDirectory()) {
-            localServerVersion = null;
             return new ValidationResult(false,
                         getMessage(GlassFishCloudWizardCpasPanel.class,
                         Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_NOT_EXISTS));            
         }
+        File[] serverHomes
+                = localServerDir.listFiles(ServerUtils.GF_HOME_DIR_FILTER);
+        if (serverHomes.length < 1) {
+            return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_NOT_EXISTS));                        
+        }
+        localServerHome = serverHomes[0];
         localServerVersion = ServerUtils.getServerVersion(
-                localServerDir.getAbsolutePath());
+                localServerHome.getAbsolutePath());
         if (localServerVersion == null) {
             return new ValidationResult(false,
                         getMessage(GlassFishCloudWizardCpasPanel.class,
@@ -661,17 +729,28 @@ public class GlassFishCloudWizardCpasComponent
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTextField1 = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
         hostLabel = new javax.swing.JLabel();
         hostTextField = new javax.swing.JTextField();
         portLabel = new javax.swing.JLabel();
         portTextField = new javax.swing.JTextField();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
-        localServerLabel = new javax.swing.JLabel();
+        localServerRootLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         localServerTextField = new javax.swing.JTextField();
         localVersionTextField = new javax.swing.JTextField();
         localServerBrowseButton = new javax.swing.JButton();
+        localHomeTextField = new javax.swing.JTextField();
+        localServerHomeLabel = new javax.swing.JLabel();
+        localServerVersionLabel = new javax.swing.JLabel();
+        javax.swing.JLabel LocalServerLabel = new javax.swing.JLabel();
+        cloudLabel = new javax.swing.JLabel();
+
+        jTextField1.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.jTextField1.text")); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.jLabel1.text")); // NOI18N
 
         hostLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.hostLabel.text")); // NOI18N
 
@@ -687,9 +766,9 @@ public class GlassFishCloudWizardCpasComponent
         nameTextField.setEditable(false);
         nameTextField.setText(initDisplayName());
 
-        localServerLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerLabel.text")); // NOI18N
+        localServerRootLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerRootLabel.text")); // NOI18N
 
-        localServerTextField.setText(initLocalServer());
+        localServerTextField.setText(initLocalServerRoot());
 
         localVersionTextField.setBackground(new java.awt.Color(238, 238, 238));
         localVersionTextField.setEditable(false);
@@ -702,33 +781,58 @@ public class GlassFishCloudWizardCpasComponent
             }
         });
 
+        localHomeTextField.setBackground(new java.awt.Color(238, 238, 238));
+        localHomeTextField.setEditable(false);
+        localHomeTextField.setText(initLocalServerHome());
+
+        localServerHomeLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerHomeLabel.text")); // NOI18N
+
+        localServerVersionLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerVersionLabel.text")); // NOI18N
+
+        LocalServerLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        LocalServerLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.LocalServerLabel.text")); // NOI18N
+
+        cloudLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        cloudLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.cloudLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(nameLabel)
+                    .addComponent(cloudLabel)
                     .addComponent(hostLabel)
-                    .addComponent(portLabel)
-                    .addComponent(nameLabel))
+                    .addComponent(portLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addComponent(hostTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
+                        .addGap(204, 239, Short.MAX_VALUE))
+                    .addComponent(hostTextField)
                     .addComponent(nameTextField)))
             .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
             .addComponent(localServerTextField)
+            .addComponent(LocalServerLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(localServerLabel)
+                .addComponent(localServerVersionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localVersionTextField))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(localServerRootLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(localServerBrowseButton))
-            .addComponent(localVersionTextField)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(localServerHomeLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(localHomeTextField, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(cloudLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nameLabel)
                     .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -741,15 +845,24 @@ public class GlassFishCloudWizardCpasComponent
                     .addComponent(portLabel)
                     .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(localServerLabel)
+                .addComponent(LocalServerLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(localServerRootLabel)
                     .addComponent(localServerBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(localServerTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(localVersionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(localServerHomeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localHomeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(localServerVersionLabel)
+                    .addComponent(localVersionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         localServerBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -763,12 +876,18 @@ public class GlassFishCloudWizardCpasComponent
     }//GEN-LAST:event_localServerBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel cloudLabel;
     private javax.swing.JLabel hostLabel;
     private javax.swing.JTextField hostTextField;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField localHomeTextField;
     private javax.swing.JButton localServerBrowseButton;
-    private javax.swing.JLabel localServerLabel;
+    private javax.swing.JLabel localServerHomeLabel;
+    private javax.swing.JLabel localServerRootLabel;
     private javax.swing.JTextField localServerTextField;
+    private javax.swing.JLabel localServerVersionLabel;
     private javax.swing.JTextField localVersionTextField;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;

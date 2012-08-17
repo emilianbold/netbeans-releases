@@ -177,11 +177,25 @@ public abstract class GlassFishPlatformImpl
     }
 
     /**
-     * Returns the GlassFish cloud local server installation directory
+     * Returns the GlassFish cloud local server installation root directory
      * or <code>null</code> if not specified or unknown.
      * <p/>
-     * @return The server installation directory or <code>null</code> if not
-     *         specified or unknown
+     * @return The server installation root directory or <code>null</code>
+     *         if not specified or unknown.
+     */
+    @Override
+    public File getMiddlewareHome() {
+        return instance.getLocalServer().getServerRoot() != null
+                ? new File(instance.getLocalServer().getServerRoot())
+                : null;
+    }
+
+    /**
+     * Returns the GlassFish cloud local server home directory
+     * or <code>null</code> if not specified or unknown.
+     * <p/>
+     * @return The server home directory or <code>null</code> if not
+     *         specified or unknown.
      */
     @Override
     public File getServerHome() {        
@@ -205,21 +219,6 @@ public abstract class GlassFishPlatformImpl
         return instance.getLocalServer().getDomainsFolder() != null
                 ? new File(instance.getLocalServer().getDomainsFolder())
                 : null;
-    }
-
-    /**
-     * Returns the middleware directory or <code>null</code> if not specified
-     * or unknown.
-     * <p/>
-     * Middleware directory is not recognized in GlassFish cloud local server
-     * registration. this method always returns <code>null</code>.
-     * <p/>
-     * @return The middleware directory or <code>null</code> if not
-     *         specified or unknown
-     */
-    @Override
-    public File getMiddlewareHome() {
-        return null;
     }
 
     @Override
