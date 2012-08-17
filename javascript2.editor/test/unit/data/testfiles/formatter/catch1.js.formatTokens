@@ -43,6 +43,7 @@ FormattingToken{kind=TEXT, offset=53, text=1}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=54, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=55, text= }
 FormattingToken{kind=TEXT, offset=56, text=a}
 FormattingToken{kind=WHITESPACE, offset=57, text= }
@@ -54,6 +55,7 @@ FormattingToken{kind=TEXT, offset=60, text=3}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=61, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_MODIFY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=62, text= }
 FormattingToken{kind=TEXT, offset=63, text=a}
 FormattingToken{kind=BEFORE_UNARY_OPERATOR, offset=-1, text=null}

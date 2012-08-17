@@ -249,6 +249,7 @@ FormattingToken{kind=TEXT, offset=358, text=0}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=359, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=360, text= }
 FormattingToken{kind=TEXT, offset=361, text=i}
 FormattingToken{kind=WHITESPACE, offset=362, text= }
@@ -260,6 +261,7 @@ FormattingToken{kind=TEXT, offset=365, text=count}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=370, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_MODIFY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=371, text= }
 FormattingToken{kind=TEXT, offset=372, text=i}
 FormattingToken{kind=BEFORE_UNARY_OPERATOR, offset=-1, text=null}
