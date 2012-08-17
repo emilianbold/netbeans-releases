@@ -116,6 +116,12 @@ public abstract class NamedServicesProvider {
         NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
         return prov != null ? prov.lookupObject(filePath, type) : null;
     }
+    
+    // XXX
+    public static Lookup createLookupFor(Object obj) {
+        NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
+        return prov != null ? prov.lookupFor(obj) : null;
+    }
 
     static void clearCache() {
         boolean assertsOn = false;
@@ -165,5 +171,10 @@ public abstract class NamedServicesProvider {
      */
     protected <T> T lookupObject(String path, Class<T> type) {
         return create(path).lookup(type);
+    }
+
+    // XXX
+    protected Lookup lookupFor(Object obj) {
+        return null;
     }
 }
