@@ -37,16 +37,20 @@
  */
 package org.netbeans.modules.java.hints;
 
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 
 import com.sun.source.tree.ClassTree;
@@ -66,6 +70,8 @@ import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Name;
 
+import org.netbeans.api.editor.EditorActionNames;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -74,6 +80,10 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -93,7 +103,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OrganizeImports", description = "#DESC_org.netbeans.modules.java.hints.OrganizeImports", category = "imports")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OrganizeImports", description = "#DESC_org.netbeans.modules.java.hints.OrganizeImports", category = "imports", enabled = false)
 public class OrganizeImports {
     
     private static final String ERROR_CODE = "compiler.err.expected"; // NOI18N
@@ -295,9 +305,45 @@ public class OrganizeImports {
 
         @Override
         protected void performRewrite(TransformationContext ctx) {
-            WorkingCopy wc = ctx.getWorkingCopy();
-            TreePath tp = ctx.getPath();
-            doOrganizeImports(wc, isBulkMode);
+            doOrganizeImports(ctx.getWorkingCopy(), isBulkMode);
+        }
+    }
+
+    @EditorActionRegistration(name = EditorActionNames.organizeImports,
+                              mimeType = JavaKit.JAVA_MIME_TYPE,
+                              menuPath = "Source",
+                              menuPosition = 2430,
+                              menuText = "#" + EditorActionNames.organizeImports + "_menu_text")
+    public static class OrganizeMembersAction extends BaseAction {
+
+        @Override
+        public void actionPerformed(final ActionEvent evt, final JTextComponent component) {
+            if (component == null || !component.isEditable() || !component.isEnabled()) {
+                Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final Source source = Source.create(doc);
+            if (source != null) {
+                final AtomicBoolean cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                                    copy.toPhase(Phase.RESOLVED);
+                                    doOrganizeImports(copy, false);
+                                }
+                            }).commit();
+                        } catch (Exception ex) {
+                            Toolkit.getDefaultToolkit().beep();
+                        }
+                    }
+                }, NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), cancel, false); //NOI18N
+            }
         }
     }
 }

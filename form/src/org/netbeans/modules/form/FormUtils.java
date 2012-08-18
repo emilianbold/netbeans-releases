@@ -903,14 +903,16 @@ public class FormUtils
                 }
                 if (newValue == null) {
                     Object realValue = prop.getRealValue();
-                    if (realValue == FormDesignValue.IGNORED_VALUE)
+                    if (realValue == FormDesignValue.IGNORED_VALUE) {
                         continue; // ignore this value, as it is not a real value
-
-                    newValue = FormUtils.cloneObject(realValue, prop.getPropertyContext().getFormModel());
+                    }
+                    try {
+                        newValue = FormUtils.cloneObject(realValue, prop.getPropertyContext().getFormModel());
+                    } catch (CloneNotSupportedException ex) {
+                        newValue = realValue; // fallback to using the same value instance (bug #216775)
+                    }
                 }
                 writeMethod.invoke(targetBean, new Object[] { newValue });
-            }
-            catch (CloneNotSupportedException ex) { // ignore, don't report
             }
             catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex); // NOI18N

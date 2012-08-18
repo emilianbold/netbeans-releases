@@ -479,6 +479,18 @@ public class UtilitiesTest extends TestBase {
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
     
+    public void testMethodFormalParams() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$mods$ $ret $name($pref$, $type $name, $suff$) throws $throws$ { $body$; }", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.METHOD);
+
+        String golden = " $mods$$ret $name($pref$, $type $name, $suff$) throws $throws$ { $body$; }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
     public void testToHumanReadableTime() {
         long time = 202;
         assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));

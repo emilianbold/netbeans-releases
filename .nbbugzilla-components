@@ -139,6 +139,7 @@ dlight.visualizers = cnd/d-light
 editor.actions = editor/actions\/menu\/toolbar
 editor.bookmarks = editor/navigation
 editor.bracesmatching = editor/navigation
+editor.breadcrumbs = editor/-- other --
 editor.codetemplates = editor/completion & templates
 editor.completion = editor/completion & templates
 editor.deprecated.pre61completion = editor/-- other --

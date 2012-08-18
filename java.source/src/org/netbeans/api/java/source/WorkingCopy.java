@@ -461,6 +461,12 @@ public class WorkingCopy extends CompilationController {
                 private TreePath currentParent;
                 private final Map<Tree, TreePath> tree2Path = new IdentityHashMap<Tree, TreePath>();
                 private final FQNComputer fqn = new FQNComputer();
+                private final Set<Tree> rewriteTarget;
+                
+                {
+                    rewriteTarget = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
+                    rewriteTarget.addAll(changes.values());
+                }
 
                 private TreePath getParentPath(TreePath tp, Tree t) {
                     Tree parent;
@@ -524,7 +530,7 @@ public class WorkingCopy extends CompilationController {
                 public Void visitClass(ClassTree node, Void p) {
                     String parent = fqn.getFQN();
                     fqn.enterClass(node);
-                    overlay.registerClass(parent, fqn.getFQN(), node);
+                    overlay.registerClass(parent, fqn.getFQN(), node, rewriteTarget.contains(node));
                     super.visitClass(node, p);
                     fqn.leaveClass();
                     return null;
@@ -752,7 +758,7 @@ public class WorkingCopy extends CompilationController {
                     public Void visitClass(ClassTree node, Void p) {
                         String parent = fqn.getFQN();
                         fqn.enterClass(node);
-                        overlay.registerClass(parent, fqn.getFQN(), node);
+                        overlay.registerClass(parent, fqn.getFQN(), node, true);
                         super.visitClass(node, p);
                         fqn.leaveClass();
                         return null;
