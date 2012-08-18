@@ -45,6 +45,7 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -76,13 +77,13 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     private transient JComponent contentComponent;
     private transient ViewModelListener viewModelListener;
-    private String name; // Store just the name persistently, we'll create the component from that
-    private transient String helpID;
-    private transient String propertiesHelpID;
+    protected String name; // Store just the name persistently, we'll create the component from that
+    protected transient String helpID;
+    protected transient String propertiesHelpID;
     private transient String displayNameResource;
     private transient String toolTipResource;
     
-    private View (String icon, String name, String helpID, String propertiesHelpID,
+    protected View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
         setIcon (ImageUtilities.loadImage (icon));
         // Remember the location of the component when closed.
@@ -112,7 +113,9 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             contentComponent = new javax.swing.JPanel(new BorderLayout ());
             
             //tree = Models.createView (Models.EMPTY_MODEL);
-            contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
+            if (toolTipResource != null) {
+                contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
+            }
             add (contentComponent, BorderLayout.CENTER);  //NOI18N
             JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
             toolBar.setFloatable(false);

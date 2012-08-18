@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,74 +34,76 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.ui.views;
 
-package org.netbeans.modules.debugger.jpda.visual.views;
+import java.io.Serializable;
+import org.netbeans.spi.debugger.ui.ViewLifecycle.ModelUpdateListener;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import org.netbeans.spi.debugger.ui.ViewFactory;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-
-
-public class View extends TopComponent implements org.openide.util.HelpCtx.Provider {
+/**
+ * Additional view for custom model set.
+ * 
+ * @author Martin Entlicher
+ */
+public class CustomView extends View {
     
-    public static final String EVENTS_VIEW_NAME = "EventsView";
+    private transient String icon;
+    private transient String displayName;
+    private transient String toolTip;
     
+    public CustomView(String icon, String name, String helpID, String propertiesHelpID,
+                      String displayName, String toolTip) {
+        super(icon, name, helpID, propertiesHelpID, null, null);
+        this.icon = icon;
+        this.displayName = displayName;
+        this.toolTip = toolTip;
+    }
+
+    @Override
+    public String getName() {
+        return displayName;
+    }
+
+    @Override
+    public String getToolTipText() {
+        return toolTip;
+    }
+    
+    public static ViewModelListener createViewModelService(String name,
+                                                           String propertiesHelpID,
+                                                           ModelUpdateListener mul) {
+        return new ViewModelListener(name, propertiesHelpID, mul);
+    }
+    
+    @Override
+    public Object writeReplace() {
+        return new ResolvableHelper(icon, name, helpID, propertiesHelpID, displayName, toolTip);
+    }
+     
     /**
      * The serializing class.
-     * For compatibility reasons.
      */
-    private static final class ResolvableHelper implements Externalizable {
+    private static final class ResolvableHelper implements Serializable {
         
-        private String name;
+        private String[] data;
         
         private static final long serialVersionUID = 1L;
         
-        public ResolvableHelper(String name) {
-            this.name = name;
+        ResolvableHelper(String... data) {
+            this.data = data;
         }
         
         public ResolvableHelper() {
             // Just for the purpose of deserialization
         }
         
-        public void writeExternal(ObjectOutput out) throws IOException {
-            out.writeObject(name);
-        }
-        
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            name = (String) in.readObject();
-        }
-        
         public Object readResolve() {
-            return View.getView(name);
+            return new CustomView(data[0], data[1], data[2], data[3], data[4], data[5]);
         }
-    }
-    
-    
-    /** Creates the view. Call from the module layer only!
-     * @deprecated Do not call.
-     */
-    public static synchronized TopComponent getEventsView() {
-        return ViewFactory.getDefault().createViewTC(
-            "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif",
-            EVENTS_VIEW_NAME,
-            "NetbeansDebuggerEventNode",
-            null,
-            NbBundle.getMessage(View.class, "CTL_Events_view"),
-            NbBundle.getMessage(View.class, "CTL_Events_view_tooltip")
-        );
-    }
-    
-    public static TopComponent getView(String viewName) {
-        if (viewName.equals(EVENTS_VIEW_NAME)) {
-            return getEventsView();
-        }
-        throw new IllegalArgumentException(viewName);
     }
     
 }
