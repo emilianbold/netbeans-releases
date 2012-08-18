@@ -49,7 +49,6 @@ import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
@@ -850,6 +849,20 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         Collections.reverse(name);
         return name;
+    }
+
+    public List<Identifier> getFqnName(Model model, Node node) {
+        if (node instanceof AccessNode) {
+            return getName((AccessNode) node);
+        } else if (node instanceof BinaryNode) {
+            return getName((BinaryNode) node);
+        } else if (node instanceof VarNode) {
+            return getName((VarNode) node);
+        } else if (node instanceof PropertyNode) {
+            return getName((PropertyNode) node);
+        } else {
+            return Collections.<Identifier>emptyList();
+        }
     }
 
 //    private Variable findVarWithName(final Scope scope, final String name) {

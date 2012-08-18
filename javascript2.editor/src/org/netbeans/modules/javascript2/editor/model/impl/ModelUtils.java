@@ -98,6 +98,10 @@ public class ModelUtils {
     public static boolean isGlobal(JsObject object) {
         return object.getJSKind() == JsElement.Kind.FILE;
     }
+
+    public static List<Identifier> getFqnName(Model model, Node node) {
+        return model.getFqnName(node);
+    }
     
     public static JsObject findJsObject(Model model, int offset) {
         JsObject result = null;

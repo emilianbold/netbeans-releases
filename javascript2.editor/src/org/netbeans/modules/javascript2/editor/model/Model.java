@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -123,6 +124,10 @@ public final class Model {
         for(JsObject property: object.getProperties().values()) {
             resolveLocalTypes(property);
         }
+    }
+
+    public List<Identifier> getFqnName(Node node) {
+        return getModelVisitor().getFqnName(this, node);
     }
 
 }
