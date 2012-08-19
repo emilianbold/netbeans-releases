@@ -144,7 +144,7 @@ public class SiteZip implements SiteTemplateImplementation {
 
     public static void registerTemplate(String name) {
         String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
-        templates = name + SEPARATOR + templates.replaceAll(name+SEPARATOR, "");
+        templates = name + SEPARATOR + templates.replace(name+SEPARATOR, "");
         NbPreferences.forModule(SiteZip.class).put(USED_TEMPLATES, templates);
     }
 
