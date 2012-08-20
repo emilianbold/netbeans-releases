@@ -192,7 +192,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 descriptor.setClosingOptions(new Object[]{close, 
                         DialogDescriptor.CANCEL_OPTION});*/
                 DialogDescriptor descriptor = new DialogDescriptor(
-                        new ChromeInfoPanel(extensionFile.getCanonicalPath(), loader), 
+                        new ChromeInfoPanel(extensionFile.getCanonicalPath(), 
+                                loader, currentStatus), 
                         NbBundle.getMessage(ChromeExtensionManager.class, 
                                 "TTL_InstallExtension"));
                 Object result = DialogDisplayer.getDefault().notify(descriptor);

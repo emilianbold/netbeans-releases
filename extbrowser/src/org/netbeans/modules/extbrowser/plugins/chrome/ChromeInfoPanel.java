@@ -46,8 +46,10 @@ import java.io.File;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,15 +57,23 @@ import org.openide.awt.HtmlBrowser;
  */
 class ChromeInfoPanel extends javax.swing.JPanel {
 
-    ChromeInfoPanel(String pluginPath, final PluginLoader loader) {
+    ChromeInfoPanel(String pluginPath, final PluginLoader loader, 
+            ExtensitionStatus currentStatus) 
+    {
         initComponents();
         
         File file = new File(pluginPath);
         String name = file.getName();
         String parent = file.getParent();
-        myEditorPane.setText(org.openide.util.NbBundle.getMessage(
-                ChromeInfoPanel.class, "TXT_PluginIstallationIssue" , 
-                "file:///"+parent, name ));             // NOI18N
+        StringBuilder text = new StringBuilder("<html>");                       // NOI18N
+        if ( currentStatus == ExtensitionStatus.NEEDS_UPGRADE ){
+            text.append(NbBundle.getMessage(ChromeInfoPanel.class, "TXT_RequestUpgrade"));// NOI18N
+            text.append(" ");           // NOI18N
+        }
+        text.append(NbBundle.getMessage(ChromeInfoPanel.class, 
+                "TXT_PluginIstallationIssue" , "file:///"+parent, name ));      // NOI18N
+        text.append("</html>");         // NOI18N        
+        myEditorPane.setText(text.toString());             
         
         HyperlinkListener listener = new HyperlinkListener() {
             
