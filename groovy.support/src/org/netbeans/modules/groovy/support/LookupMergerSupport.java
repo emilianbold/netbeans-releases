@@ -64,7 +64,7 @@ public final class LookupMergerSupport {
      * is found.
      * @return
      */
-    @LookupMerger.Registration(projectType="org-netbeans-modules-java-j2seproject")
+    @LookupMerger.Registration(projectType={"org-netbeans-modules-java-j2seproject"/*, "org-netbeans-modules-web-project"*/})
     public static LookupMerger<ActionProvider> createActionProviderLookupMerger() {
         return new ActionProviderMerger();
     }
