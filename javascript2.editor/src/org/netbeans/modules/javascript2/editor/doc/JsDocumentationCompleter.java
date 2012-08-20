@@ -56,6 +56,8 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
@@ -137,7 +139,7 @@ public class JsDocumentationCompleter {
         }
     }
 
-        /**
+    /**
      * Tries to get fully qualified name for given node.
      *
      * @param parserResult JavaScript parser results
@@ -160,67 +162,76 @@ public class JsDocumentationCompleter {
 
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
-        // TODO - rewrite @type according to doc tool
+        SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
+        
         Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
         StringBuilder types = new StringBuilder();
         for (TypeUsage typeUsage : assignments) {
             types.append("|").append(typeUsage.getType());
         }
         String type = types.length() == 0 ? null : types.toString().substring(1);
-        generateDocEntry(doc, toAdd, "@type", indent, null, type); //NOI18N
+        generateDocEntry(doc, toAdd, syntaxProvider.typeTagTemplate(), indent, null, type); //NOI18N
 
         doc.insertString(offset, toAdd.toString(), null);
     }
 
     private static void generateFunctionComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
+        SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
         // TODO - could know constructors
-        // TODO - rewrite @param, @return according to doc tool
         JsFunction function = ((JsFunction) jsObject);
-        addParameters(doc, toAdd, "@param", indent, function.getParameters()); //NOI18N
+        addParameters(doc, toAdd, syntaxProvider.paramTagTemplate(), indent, jsParserResult, function.getParameters()); //NOI18N
         if (!function.getReturnTypes().isEmpty()) {
-            addReturns(doc, toAdd, "@return", indent, function.getReturnTypes()); //NOI18N
+            addReturns(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, jsParserResult, function.getReturnTypes()); //NOI18N
         }
 
         doc.insertString(offset, toAdd.toString(), null);
     }
 
-    private static void addParameters(BaseDocument doc, StringBuilder toAdd, String tag, int indent, Collection<? extends JsObject> params) {
+    private static void addParameters(BaseDocument doc, StringBuilder toAdd, String template, int indent, JsParserResult jsParserResult, Collection<? extends JsObject> params) {
         for (JsObject jsObject : params) {
-            generateDocEntry(doc, toAdd, tag, indent, jsObject.getName(), null);
+            generateDocEntry(doc, toAdd, template, indent, jsObject.getName(), null);
         }
     }
 
-    private static void addReturns(BaseDocument doc, StringBuilder toAdd, String tag, int indent, Collection<? extends TypeUsage> returns) {
+    private static void addReturns(BaseDocument doc, StringBuilder toAdd, String template, int indent, JsParserResult jsParserResult, Collection<? extends TypeUsage> returns) {
         StringBuilder sb = new StringBuilder();
+        SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
+
         for (TypeUsage typeUsage : returns) {
-            // TODO - doc tool related delimiter
-            sb.append("|").append(typeUsage.getType());
+            if (syntaxProvider.typesSeparator() == null) {
+                // any first char which will be removed below
+                sb.append(" ").append(typeUsage.getType()); //NOI18N
+                break;
+            } else {
+                sb.append(syntaxProvider.typesSeparator()).append(typeUsage.getType());
+            }
         }
-        String returnString = returns.isEmpty() ? "" : sb.toString().substring(1);
-        generateDocEntry(doc, toAdd, tag, indent, null, returnString);
+
+        int separatorLength = syntaxProvider.typesSeparator() == null ? 1 : syntaxProvider.typesSeparator().length();
+        String returnString = returns.isEmpty() ? "" : sb.toString().substring(separatorLength);
+        generateDocEntry(doc, toAdd, template, indent, null, returnString);
     }
 
-    private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, String type) {
+    private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String template, int indent, String name, String type) {
         toAdd.append("\n"); //NOI18N
         toAdd.append(IndentUtils.createIndentString(doc, indent));
 
         toAdd.append("* "); //NOI18N
-        toAdd.append(text);
-        if (type != null) {
-            if (type != null) {
-                toAdd.append(" "); //NOI18N
-                toAdd.append(type);
-            }
-        } else {
-            toAdd.append(" "); //NOI18N
-            // TODO - rewrite to doc tool related syntax
-            toAdd.append("{type}"); //NOI18N
-        }
+        toAdd.append(getProcessedTemplate(template, name, type));
+    }
+
+    private static String getProcessedTemplate(String template, String name, String type) {
+        String finalTag = template;
         if (name != null) {
-            toAdd.append(" "); //NOI18N
-            toAdd.append(name);
+            finalTag = finalTag.replace(SyntaxProvider.NAME_PLACEHOLDER, name);
         }
+        if (type != null) {
+            finalTag = finalTag.replace(SyntaxProvider.TYPE_PLACEHOLDER, type);
+        } else {
+            finalTag = finalTag.replace(SyntaxProvider.TYPE_PLACEHOLDER, "type"); //NOI18N
+        }
+        return finalTag;
     }
 
     private static boolean isField(JsObject jsObject) {

@@ -6,7 +6,7 @@ ShapeFactory.prototype = {
     },
     /**
      * 
-     * @type Number^
+     * @type {Number}^
      */
     propert: 5,
 

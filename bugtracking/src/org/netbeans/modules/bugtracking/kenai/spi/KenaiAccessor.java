@@ -187,6 +187,13 @@ public abstract class KenaiAccessor {
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl);
 
+    /**
+     * The accessor instance must return true if it handles the given team url
+     * @param url
+     * @return 
+     */
+    public abstract boolean isOwner (String url);
+
     private class ActivatedTCListener implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {

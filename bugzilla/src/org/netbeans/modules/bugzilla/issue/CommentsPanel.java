@@ -246,8 +246,10 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
-            stateLabel.setText(null);
+            stateLabel = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+            if (stateLabel != null) {
+                stateLabel.setText(null);
+            }
         }
         
         // replay button

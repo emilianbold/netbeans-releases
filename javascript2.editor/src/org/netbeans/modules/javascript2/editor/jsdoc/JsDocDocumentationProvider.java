@@ -45,6 +45,7 @@ import java.util.*;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -59,6 +60,7 @@ public class JsDocDocumentationProvider implements JsDocumentationProvider {
 
     private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
             Arrays.<AnnotationCompletionTagProvider>asList(new JsDocAnnotationCompletionTagProvider("JsDoc"));
+    private static final SyntaxProvider SYNTAX_PROVIDER = new JsDocSyntaxProvider();
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
@@ -81,5 +83,10 @@ public class JsDocDocumentationProvider implements JsDocumentationProvider {
     @Override
     public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
         return ANNOTATION_PROVIDERS;
+    }
+
+    @Override
+    public SyntaxProvider getSyntaxProvider() {
+        return SYNTAX_PROVIDER;
     }
 }

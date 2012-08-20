@@ -60,6 +60,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
 
 /**
  *
@@ -201,29 +202,35 @@ public class UtilsTest extends NbTestCase {
         assertEquals(expResult, result);
     }
 
-    public static void main(String... args) throws InterruptedException, ExecutionException {
+    public static void main(String... args)
+            throws InterruptedException, ExecutionException {
         for (int i = 0 ; i < 2000 ; i++) {
             String hostname =  //"127.0.0.1";
                  "10.229.117.91";
             int port = 4848;
             if (false)
-                System.out.println(Utils.getHttpListenerProtocol(hostname, port));
+                System.out.println(Utils.getHttpListenerProtocol(
+                        hostname, port));
             else {
                 Map<String,String> ip = new HashMap<String,String>();
                 ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
                 ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
-                CommandRunner cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
-                        Collections.unmodifiableMap(ip), null);
-                Future<OperationState> x = null;
+                GlassfishInstance instance = GlassfishInstance.create(ip, null);
+                CommandRunner cr = new CommandRunner(
+                        Utils.isLocalPortOccupied(port), null, instance,
+                        (OperationStateListener)null);
                 Commands.LocationCommand lc = new Commands.LocationCommand();
-                x = cr.execute(lc);
+                Future<OperationState> x = cr.execute(lc);
                 System.out.println(x.get() == OperationState.COMPLETED);
                 System.out.println(lc.getDomainRoot()+":"+lc.getInstallRoot());
                 System.out.println(lc.getServerMessage());
                 System.out.println(lc.getSrc());
 
-                cr = new CommandRunner(Utils.isLocalPortOccupied(port), null, Collections.unmodifiableMap(ip), null);
-                ServerCommand.GetPropertyCommand gpc = new ServerCommand.GetPropertyCommand("*.server-config.*.http-listener-1.port");
+                cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
+                        instance, (OperationStateListener)null);
+                ServerCommand.GetPropertyCommand gpc
+                        = new ServerCommand.GetPropertyCommand(
+                        "*.server-config.*.http-listener-1.port");
                 x = cr.execute(gpc);
                 System.out.println(x.get() == OperationState.COMPLETED);
                 System.out.println(gpc.getData());
