@@ -43,6 +43,8 @@ package org.netbeans.modules.editor.breadcrumbs;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -56,6 +58,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SideBarFactory;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.explorer.ExplorerManager;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -87,7 +90,13 @@ public class SideBarFactoryImpl implements SideBarFactory {
             add(closeButton, BorderLayout.EAST);
             
             prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-            prefs.addPreferenceChangeListener(this);
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
+            
+            closeButton.addActionListener(new ActionListener() {
+                @Override public void actionPerformed(ActionEvent e) {
+                    prefs.putBoolean(KEY_BREADCRUMBS, false);
+                }
+            });
         }
         
         @Override public ExplorerManager getExplorerManager() {
