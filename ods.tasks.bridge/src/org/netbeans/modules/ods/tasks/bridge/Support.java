@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.tasks;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import org.eclipse.core.runtime.CoreException;
-import org.netbeans.modules.mylyn.util.BugtrackingCommand;
-import org.netbeans.modules.ods.tasks.repository.C2CRepository;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.ods.tasks.bridge;
+
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.modules.ods.api.CloudServer;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class C2CExecutor {
-    private final C2CRepository repository;
-    
-    public C2CExecutor (C2CRepository repository) {
-        this.repository = repository;
+class Support {
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.ods.tasks.bridge"); // NOI18N
+
+    private RequestProcessor rp;
+    private static Support instance;
+    private Map<String, ODSHandler> handlers = new HashMap<String, ODSHandler>();
+
+    final HashMap<String, WeakReference<KenaiProjectImpl>> projectsCache = new HashMap<String, WeakReference<KenaiProjectImpl>>();
+
+    private Support() {
     }
-    
-    public void execute(BugtrackingCommand cmd) {
-        execute(cmd, true, true);
-    }
-    
-    public void execute(BugtrackingCommand cmd, boolean ensureCredentials, boolean handleExceptions) {
-        try {
-            if (ensureCredentials) {
-                repository.ensureCredentials();
-            }
-            cmd.execute();
-        } catch (CoreException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+
+    static Support getInstance() {
+        if(instance == null) {
+            instance = new Support();
         }
+        return instance;
     }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("org.netbeans.modules.ods.tasks.bridge", 10); // NOI18N
+        }
+        return rp;
+    }
+
+    void post(Runnable r) {
+        getRequestProcessor().post(r);
+    }
+    ODSHandler getODSHandler (ProjectHandle<ODSProject> ph, QueryAccessorImpl accessor) {
+        return getODSHandler(ph.getTeamProject().getServer(), accessor);
+    }
+    ODSHandler getODSHandler (CloudServer server) {
+        return getODSHandler(server, null);
+    }
+    ODSHandler getODSHandler (CloudServer server, QueryAccessorImpl accessor) {
+        assert server != null;
+        String url = server.getUrl().toString();
+        ODSHandler ret = handlers.get(url);
+        if(ret == null && accessor != null) {
+            ret = new ODSHandler(accessor, server);
+            handlers.put(url, ret);
+        }
+        return ret;
+    }
+
 }

@@ -59,6 +59,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
@@ -68,6 +69,7 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
+import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.openide.util.NbBundle;
 
 /**
@@ -162,7 +164,7 @@ public class C2CUtil {
      */
     public static TaskData getTaskData(final C2CRepository repository, final String id, boolean handleExceptions) {
         GetTaskDataCommand cmd = new GetTaskDataCommand(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository(), id);
-        repository.getExecutor().execute(cmd, handleExceptions);
+        repository.getExecutor().execute(cmd, true, handleExceptions);
         if(cmd.hasFailed() && C2C.LOG.isLoggable(Level.FINE)) {
             C2C.LOG.log(Level.FINE, cmd.getErrorMessage());
         }
@@ -178,6 +180,19 @@ public class C2CUtil {
     }
 
     public static Repository getRepository(C2CRepository c2cRepository) {
+        //TODO review this, team projects were always initialized again and again
+        //this caused problems with listeners
+        Repository repository = null;
+        if (c2cRepository instanceof KenaiRepository) {
+            repository = KenaiUtil.getRepository(((KenaiRepository) c2cRepository).getKenaiProject());
+        }
+        if (repository == null) {
+            repository = createRepository(c2cRepository);
+        }
+        return repository;
+    }
+
+    public static Repository createRepository (C2CRepository c2cRepository) {
         Repository repository = C2C.getInstance().getBugtrackingFactory().getRepository(C2CConnector.ID, c2cRepository.getID());
         if(repository == null) {
             repository = C2C.getInstance().getBugtrackingFactory().createRepository(

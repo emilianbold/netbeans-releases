@@ -356,6 +356,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         if(C2C.LOG.isLoggable(Level.FINE)) {
             C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
+        repository.ensureCredentials();
         final C2CData clientData = C2C.getInstance().getClientData(repository);
         if(clientData == null) {
             // XXX nice errro msg?

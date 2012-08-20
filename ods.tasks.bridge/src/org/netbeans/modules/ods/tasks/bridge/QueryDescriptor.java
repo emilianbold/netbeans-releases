@@ -40,43 +40,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ods.ui.dashboard;
+package org.netbeans.modules.ods.tasks.bridge;
 
-import javax.swing.AbstractAction;
-import org.netbeans.modules.ods.api.ODSProject;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.bugtracking.api.Query;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class WikiAction {
-
-    static RequestProcessor.Task t = null;
-
-    public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> project) {
-        return new NotYetAction();
-        
-        // XXX how to get the wiki web url?
-//        List<ProjectService> services = project.getTeamProject().getProjectServicesOfType(ServiceType.WIKI);
-//        if(services == null) {
-//            return null;
-//        }
-//        for (ProjectService s : services) {
-//            final String url = s.getUrl();
-//            return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ProjectWiki")) { //NOI18N
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    try {
-//                        HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
-//                    } catch (MalformedURLException muex) {
-//                        Logger.getLogger(WikiAction.class.getName()).log(Level.INFO, "Unable to show the wiki page " + url, muex); // NOI18N
-//                    }
-//                }
-//            };
-//        }
-//        return null;
-    }
-
+interface QueryDescriptor {
+    public boolean isPredefined();
+    public Query getQuery();
 }

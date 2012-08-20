@@ -121,6 +121,7 @@
             <friend-packages>
                 <friend>org.netbeans.libs.ods.jersey</friend>
                 <friend>org.netbeans.modules.ods.hudson</friend>
+                <friend>org.netbeans.modules.ods.tasks.bridge</friend>
                 <friend>org.netbeans.modules.ods.ui</friend>
                 <friend>org.netbeans.modules.ods.versioning</friend>
                 <package>org.netbeans.modules.ods.api</package>

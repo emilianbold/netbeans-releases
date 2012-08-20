@@ -41,18 +41,22 @@
  */
 package org.netbeans.modules.ods.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
+import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
+import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class C2CQueryProvider extends QueryProvider<C2CQuery, C2CIssue> {
+public class C2CQueryProvider extends KenaiQueryProvider<C2CQuery, C2CIssue> {
 
     @Override
     public String getDisplayName(C2CQuery q) {
@@ -102,6 +106,22 @@ public class C2CQueryProvider extends QueryProvider<C2CQuery, C2CIssue> {
     @Override
     public void addPropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
         q.addPropertyChangeListener(listener);
+    }
+
+    /************************************************************************************
+     * Team
+     ************************************************************************************/
+    
+    @Override
+    public boolean needsLogin (C2CQuery q) {
+        C2CRepository repository = q.getRepository();
+        return q != ((KenaiRepository) repository).getPredefinedQuery(PredefinedTaskQuery.ALL)
+                && q != ((KenaiRepository) repository).getPredefinedQuery(PredefinedTaskQuery.RECENT);
+    }
+
+    @Override
+    public void setOwnerInfo (C2CQuery q, OwnerInfo info) {
+        q.setOwnerInfo(info);
     }
     
 }

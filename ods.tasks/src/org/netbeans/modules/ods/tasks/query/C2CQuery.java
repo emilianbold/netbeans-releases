@@ -57,6 +57,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LogUtils;
@@ -84,13 +85,14 @@ public class C2CQuery {
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
     private final IRepositoryQuery serverQuery;
+    private OwnerInfo info;
         
     public C2CQuery(C2CRepository repository) {
         this(null, repository, null, false);
     }
     
     public C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery) {
-        this(name, repository, savedQuery, true);
+        this(name, repository, savedQuery, false);
     }
         
     private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, boolean saved) {
@@ -98,7 +100,7 @@ public class C2CQuery {
         this.repository = repository;
         this.serverQuery = savedQuery;
         this.saved = saved;
-        if (saved) {
+        if (saved || savedQuery != null) {
             getController();
         }
     }
@@ -109,6 +111,14 @@ public class C2CQuery {
     
     public boolean isSaved() {
         return saved;
+    }
+    
+    public void setOwnerInfo (OwnerInfo info) {
+        this.info = info;
+    }
+
+    public OwnerInfo getOwnerInfo () {
+        return info;
     }
 
     int getSize() {
@@ -322,7 +332,7 @@ public class C2CQuery {
                             repository.getTaskRepository(), 
                             new IssuesIdCollector(),
                             query);
-                    repository.getExecutor().execute(queryCmd, !autoRefresh);
+                    repository.getExecutor().execute(queryCmd, true, !autoRefresh);
                     if(queryCmd.hasFailed()) {
                         return;
                     }

@@ -46,6 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
@@ -62,6 +65,7 @@ import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.ods.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.ods.ui.Utilities;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -108,6 +112,21 @@ public class CloudUiServer implements TeamServer {
             }
         }
         return serverUi;
+    }
+    
+    public static ProjectHandle<ODSProject>[] getOpenProjects() {
+        ArrayList<CloudUiServer> servers;
+        synchronized (serverMap) {
+            servers = new ArrayList<CloudUiServer>(serverMap.values());
+        }
+        LinkedList<ProjectHandle<ODSProject>> ret = new LinkedList<ProjectHandle<ODSProject>>();
+        for (CloudUiServer s : servers) {
+            ProjectHandle<ODSProject>[] projects = s.getDashboard().getOpenProjects();
+            if(projects != null) {
+                ret.addAll(Arrays.asList(projects));
+            }
+        }
+        return ret.toArray(new ProjectHandle[ret.size()]);
     }
     
     public DefaultDashboard<CloudUiServer, ODSProject> getDashboard() {

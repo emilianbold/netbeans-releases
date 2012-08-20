@@ -49,6 +49,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -56,6 +57,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -64,10 +66,10 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.C2CExecutor;
-import org.netbeans.modules.ods.tasks.DummyUtils;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
@@ -92,7 +94,7 @@ public class C2CRepository {
     private Lookup lookup;
     private Cache cache;
     private C2CExecutor executor;
-    private List<C2CQuery> predefinedQueries;
+    private Map<PredefinedTaskQuery, C2CQuery> predefinedQueries;
     private static final String ICON_PATH = "org/netbeans/modules/ods/tasks/resources/repository.png"; //NOI18N
     private final Image icon;
     
@@ -127,24 +129,27 @@ public class C2CRepository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-//        TaskRepository repository = MylynUtils.createTaskRepository(
-//                C2C.getInstance().getRepositoryConnector().getConnectorKind(),
-//                name,
-//                url,
-//                user, password,
-//                httpUser, httpPassword);
-//        
-//        // XXX dummy setup
-//        DummyUtils.setup(repository);
-//        
-//        return repository;
-        return DummyUtils.getRepository();
+        AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
+        return MylynUtils.createTaskRepository(rc.getConnectorKind(), name, url, user, password, httpUser, httpPassword);
+    }
+    
+    public void ensureCredentials() {
+        setCredentials(info.getUsername(), info.getPassword(), info.getHttpUsername(), info.getHttpPassword(), true);
+    }
+    
+    public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
+        setCredentials(user, password, httpUser, httpPassword, false);
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
         info = new RepositoryInfo(id, C2CConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+    }
+    
+    private void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
+        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
+        resetRepository(keepConfiguration);
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -314,29 +319,39 @@ public class C2CRepository {
                     }
                 });
             } else {
-                ret.addAll(predefinedQueries);
+                ret.addAll(predefinedQueries.values());
             }
         }
         return ret;
     }
     
     private void getPredefinedQueries () {
-        List<IRepositoryQuery> queries = new ArrayList<IRepositoryQuery>(PredefinedTaskQuery.values().length);
+        Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
         for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-            queries.add(C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
+            queries.put(ptq, C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
         }
         C2CQuery[] toRefresh;
         synchronized(QUERIES_LOCK) {
-            predefinedQueries = new ArrayList<C2CQuery>(queries.size());
-            for (IRepositoryQuery q : queries) {
-                predefinedQueries.add(new C2CQuery(q.getSummary(), C2CRepository.this, q));
+            predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
+            for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
+                predefinedQueries.put(e.getKey(), new C2CQuery(e.getValue().getSummary(), C2CRepository.this, e.getValue()));
             }
-            toRefresh = predefinedQueries.toArray(new C2CQuery[predefinedQueries.size()]);
+            toRefresh = predefinedQueries.values().toArray(new C2CQuery[predefinedQueries.values().size()]);
         }
         for (C2CQuery q : toRefresh) {
             q.fireQuerySaved();
         }
         
+    }
+
+    public final C2CQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
+        C2CQuery q = null;
+        synchronized (QUERIES_LOCK) {
+            if (predefinedQueries != null) {
+                q = predefinedQueries.get(ptq);
+            }
+        }
+        return q;
     }
 
     public C2CIssue createIssue() {
@@ -374,7 +389,7 @@ public class C2CRepository {
         return NbBundle.getMessage(C2CRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, user, url}); // NOI18N
     }
 
-    private Object[] getLookupObjects() {
+    protected Object[] getLookupObjects() {
         return new Object[] { getIssueCache() };
     }
 
@@ -399,7 +414,7 @@ public class C2CRepository {
 
     public C2CExecutor getExecutor() {
         if(executor == null) {
-            executor = new C2CExecutor();
+            executor = new C2CExecutor(this);
         }
         return executor;
     }

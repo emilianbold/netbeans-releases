@@ -42,12 +42,7 @@
 package org.netbeans.modules.ods.ui.dashboard;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.ods.api.ODSProject;
@@ -63,9 +58,6 @@ import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
@@ -186,101 +178,4 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
         return ((ProjectHandleImpl) project).getTeamServer();
     }
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
-    public static class ODSQueryAccessor extends QueryAccessor<ODSProject> {
-        private static class ODSQueryHandle extends QueryHandle {
-            private final String display;
-            private final int t;
-            private final int c;
-            private static int seed = 1;
-            public ODSQueryHandle(String display) {
-                this.display = display;
-                Random r = new Random(seed++);
-                t = r.nextInt(100);
-                c = r.nextInt(t);
-            }
-            
-            @Override
-            public String getDisplayName() {
-                return display;
-            }
-            @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
-            @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
-            
-        }
-        private final QueryHandle allIssues;
-        private final QueryHandle myIssues;
-        private final QueryHandle someQuery;
-
-        public ODSQueryAccessor() {
-            allIssues = new ODSQueryHandle("All Issues");
-            myIssues = new ODSQueryHandle("My Issues");
-            someQuery = new ODSQueryHandle("Some another query");
-        }
-        
-        @Override
-        public Class<ODSProject> type() {
-            return ODSProject.class;
-        }
-            
-        @Override
-        public QueryHandle getAllIssuesQuery(ProjectHandle<ODSProject> project) {
-            return allIssues;
-        }
-
-        @Override
-        public List<QueryHandle> getQueries(ProjectHandle<ODSProject> project) {
-            try {
-                // XXX emulate network latency
-                Thread.currentThread().sleep(3000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return Arrays.asList(allIssues, myIssues, someQuery);
-        }
-
-        @Override
-        public List<QueryResultHandle> getQueryResults(QueryHandle query) {
-            final ODSQueryHandle oq = (ODSQueryHandle) query;
-            LinkedList<QueryResultHandle> ret = new LinkedList<QueryResultHandle>();
-            ret.add(new QueryResultHandle() {
-                @Override public String getText() { return oq.t + " total"; }
-                @Override public String getToolTipText() { return oq.t + " total"; }
-                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
-            });
-            ret.add(new QueryResultHandle() {
-                @Override public String getText() { return oq.c + " new or changed"; }
-                @Override public String getToolTipText() { return oq.c + " new or changed tasks"; }
-                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
-            });
-            final int c = ((ODSQueryHandle)allIssues).c + ((ODSQueryHandle)myIssues).c + ((ODSQueryHandle)someQuery).c;
-            ret.add(new QueryResultHandle() {
-                @Override public String getText() { return "" + c; }
-                @Override public String getToolTipText() { return c + " changed tasks"; }
-                @Override public ResultType getResultType() { return ResultType.ALL_CHANGES_RESULT; }
-            });
-            return ret;
-        }
-        
-        @Override
-        public Action getFindIssueAction(ProjectHandle<ODSProject> project) {
-            return NotYetAction.instance;
-        }
-
-        @Override
-        public Action getCreateIssueAction(ProjectHandle<ODSProject> project) {
-            return NotYetAction.instance;
-        }
-
-        @Override
-        public Action getOpenQueryResultAction(QueryResultHandle result) {
-            return NotYetAction.instance;
-        }
-
-        @Override
-        public Action getDefaultAction(QueryHandle query) {
-            return NotYetAction.instance;
-        }
-
-    };
 }

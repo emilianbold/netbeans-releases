@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
-import org.netbeans.modules.ods.ui.dashboard.Bundle;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
@@ -182,7 +181,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                     @Override
                     public void run() {
                         dashboard.myProjectsProgressStarted();
-                        allIssuesQuery = qaccessor.getAllIssuesQuery(project);
+                        allIssuesQuery = qaccessor == null ? null : qaccessor.getAllIssuesQuery(project);
                         if (allIssuesQuery != null) {
                             allIssuesQuery.addPropertyChangeListener(projectListener);
                             List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
@@ -415,12 +414,14 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     }
 
     private void updateDetailsVisible() {
-        boolean bugsVisible = !"0".equals(btnBugs.getText()); //NOI18N
+        boolean bugsVisible = btnBugs != null && !"0".equals(btnBugs.getText()); //NOI18N
         boolean buildsVisible = btnBuilds != null;
         boolean visible = bugsVisible || buildsVisible;
         leftPar.setVisible(visible);
         rightPar.setVisible(visible);
-        btnBugs.setVisible(bugsVisible);
+        if (btnBugs != null) {
+            btnBugs.setVisible(bugsVisible);
+        }
         if (btnBuilds != null) {
             btnBuilds.setVisible(buildsVisible);
         }

@@ -41,12 +41,19 @@
  */
 package org.netbeans.modules.ods.tasks;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
+import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
 
 /**
  *
@@ -58,7 +65,7 @@ import org.netbeans.modules.ods.tasks.repository.C2CRepository;
         tooltip="#LBL_ConnectorTooltip",
         providesRepositoryManagement=false
 )    
-public class C2CConnector extends BugtrackingConnector {
+public class C2CConnector extends KenaiBugtrackingConnector {
     public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
     
     @Override
@@ -86,6 +93,33 @@ public class C2CConnector extends BugtrackingConnector {
     @Override
     public IssueFinder getIssueFinder() {
         return SimpleIssueFinder.getInstance();
+    }
+
+    @Override
+    public Repository createRepository (KenaiProject project) {
+        if (project == null || project.getType() != BugtrackingType.ODS) {
+            return null;
+        }
+        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
+        return C2CUtil.createRepository(repo);
+    }
+
+    @Override
+    public BugtrackingType getType () {
+        return BugtrackingType.ODS;
+    }
+
+    private KenaiRepository createKenaiRepository (KenaiProject project, String displayName, String location) {
+        final URL loc;
+        try {
+            loc = new URL(location);
+        } catch (MalformedURLException ex) {
+            C2C.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
+
+        String host = loc.getHost();
+        return new KenaiRepository(project, displayName, location);
     }
     
     

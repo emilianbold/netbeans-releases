@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.ods.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
+import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.openide.util.Lookup;
@@ -55,7 +57,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public class C2CRepositoryProvider extends RepositoryProvider<C2CRepository, C2CQuery, C2CIssue> {
+public class C2CRepositoryProvider extends KenaiRepositoryProvider<C2CRepository, C2CQuery, C2CIssue> {
 
     @Override
     public RepositoryInfo getInfo(C2CRepository r) {
@@ -105,6 +107,22 @@ public class C2CRepositoryProvider extends RepositoryProvider<C2CRepository, C2C
     @Override
     public Collection<C2CIssue> simpleSearch(C2CRepository r, String criteria) {
         return r.simpleSearch(criteria);
+    }
+
+    /************************************************************************************
+     * Team
+     ************************************************************************************/
+
+    @Override
+    public C2CQuery getAllIssuesQuery (C2CRepository repository) {
+        assert repository instanceof KenaiRepository;
+        return ((KenaiRepository)repository).getPredefinedQuery(PredefinedTaskQuery.ALL);
+    }
+
+    @Override
+    public C2CQuery getMyIssuesQuery (C2CRepository repository) {
+        assert repository instanceof KenaiRepository;
+        return ((KenaiRepository)repository).getPredefinedQuery(PredefinedTaskQuery.MINE);
     }
     
 }

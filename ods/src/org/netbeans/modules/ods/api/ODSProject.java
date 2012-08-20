@@ -221,6 +221,18 @@ public final class ODSProject {
         }
         return null;
     }
+    
+    public synchronized String getTaskUrl () {
+        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.TASKS);
+        if (s != null) {
+            for (ProjectService ps : s) {
+                if (ps.isAvailable()) {
+                    return ps.getUrl();
+                }
+            }
+        }
+        return null;
+    }
 
     public synchronized String getWikiUrl() {
         List<ProjectService> s = project.getProjectServicesOfType(ServiceType.WIKI);
