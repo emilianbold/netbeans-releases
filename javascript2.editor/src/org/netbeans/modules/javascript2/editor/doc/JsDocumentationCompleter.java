@@ -406,20 +406,4 @@ public class JsDocumentationCompleter {
 
     }
 
-//    private static class IdentsToNodeVisitor extends NodeVisitor {
-//
-//        private final StringBuilder finalPathName = new StringBuilder();
-//
-//        public String getFinalPathName() {
-//            return finalPathName.toString().substring(1);
-//        }
-//
-//        @Override
-//        public Node visit(IdentNode identNode, boolean onset) {
-//            if (onset) {
-//                finalPathName.append(".").append(identNode.getName());
-//            }
-//            return super.visit(identNode, onset);
-//        }
-//    }
 }

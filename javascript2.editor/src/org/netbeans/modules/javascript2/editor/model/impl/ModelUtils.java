@@ -100,7 +100,7 @@ public class ModelUtils {
     }
 
     public static List<Identifier> getFqnName(Model model, Node node) {
-        return model.getFqnName(node);
+        return model.getNodeName(node);
     }
     
     public static JsObject findJsObject(Model model, int offset) {

@@ -126,8 +126,14 @@ public final class Model {
         }
     }
 
-    public List<Identifier> getFqnName(Node node) {
-        return getModelVisitor().getFqnName(this, node);
+    /**
+     * Gets the node name if it has any (case of AccessNode, BinaryNode, VarNode, PropertyNode).
+     *
+     * @param node examined node for getting its name
+     * @return name of the node if it supports it
+     */
+    public List<Identifier> getNodeName(Node node) {
+        return getModelVisitor().getNodeName(node);
     }
 
 }

@@ -851,7 +851,13 @@ public class ModelVisitor extends PathNodeVisitor {
         return name;
     }
 
-    public List<Identifier> getFqnName(Model model, Node node) {
+    /**
+     * Gets the node name if it has any (case of AccessNode, BinaryNode, VarNode, PropertyNode).
+     *
+     * @param node examined node for getting its name
+     * @return name of the node if it supports it
+     */
+    public List<Identifier> getNodeName(Node node) {
         if (node instanceof AccessNode) {
             return getName((AccessNode) node);
         } else if (node instanceof BinaryNode) {
