@@ -39,45 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.api;
+package org.netbeans.modules.javascript2.editor.jsdoc;
+
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 
 /**
- * Possible modifiers of the javaScript element declared by documentation tools.
+ * Syntax provider of the JsDoc documentation tool.
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum JsModifier {
+public class JsDocSyntaxProvider implements SyntaxProvider {
 
-    /** Private modifier. */
-    PRIVATE("private"),
-
-    /** Public modifier. */
-    PUBLIC("public"),
-
-    /** Static modifier. */
-    STATIC("static");
-
-    private final String value;
-
-    private JsModifier(String value) {
-        this.value = value;
+    @Override
+    public String typesSeparator() {
+        return "|";
     }
 
     @Override
-    public String toString() {
-        return value;
+    public String paramTagTemplate() {
+        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
     }
 
-    /**
-     * Gets {@code JsModifier} corresponding to given value.
-     * @param value {@code String} value of the {@code JsModifier}
-     * @return {@code JsModifier}
-     */
-    public static JsModifier fromString(String value) {
-        for (JsModifier modifier : JsModifier.values()) {
-            if (value.equalsIgnoreCase(modifier.toString())) {
-                return modifier;
-            }
-        }
-        return null;
+    @Override
+    public String returnTagTemplate() {
+        return "@return {" + TYPE_PLACEHOLDER + "}";
     }
 
+    @Override
+    public String typeTagTemplate() {
+        return "@type " + TYPE_PLACEHOLDER;
+    }
 }

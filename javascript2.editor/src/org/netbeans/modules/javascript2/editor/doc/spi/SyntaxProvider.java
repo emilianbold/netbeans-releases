@@ -39,56 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.extdoc;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
-import org.netbeans.modules.parsing.api.Snapshot;
+package org.netbeans.modules.javascript2.editor.doc.spi;
 
 /**
- * Provider for the ExtDoc documentations.
+ * Provides information about documentation tools syntax.
+ * <p>
+ * Knows i.e. delimiters in more possible typed types, brackets at various tags, etc.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDocumentationProvider implements JsDocumentationProvider {
+public interface SyntaxProvider {
 
-    private static Set<String> supportedTags;
+    static String TYPE_PLACEHOLDER = "[type]";
+    static String NAME_PLACEHOLDER = "[name]";
 
-    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
-            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
+    /**
+     * Gets the types separator.
+     * <p>
+     * I.e.: "|" in JsDoc or "/" in extDoc
+     *
+     * @return separator if any, {@code null) in case that multi-types are not supported by the doc tool
+     */
+    String typesSeparator();
 
-    @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
-    }
+    /**
+     * Returns the param tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     * [name] - parameter name
+     *
+     * <i>The final string could look like this one: "@param {[type]} [name]"</i>
+     * @return template for the parameter tag
+     */
+    String paramTagTemplate();
 
-    @Override
-    public synchronized Set getSupportedTags() {
-        if (supportedTags == null) {
-            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
-            for (ExtDocElementType type : ExtDocElementType.values()) {
-                supportedTags.add(type.toString());
-            }
-            supportedTags.remove("unknown");
-            supportedTags.remove("description");
-        }
-        return supportedTags;
-    }
+    /**
+     * Returns the return tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     *
+     * <i>The final string could look like this one: "@return {[type]}"</i>
+     * @return template for the return tag
+     */
+    String returnTagTemplate();
 
-    @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return ANNOTATION_PROVIDERS;
-    }
+    /**
+     * Returns the type tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     *
+     * <i>The final string could look like this one: "@type {[type]}"</i>
+     * @return template for the type tag
+     */
+    String typeTagTemplate();
 
-    @Override
-    public SyntaxProvider getSyntaxProvider() {
-        return null;
-    }
 }

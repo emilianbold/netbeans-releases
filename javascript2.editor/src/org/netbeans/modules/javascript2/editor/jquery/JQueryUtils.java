@@ -39,56 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.extdoc;
+package org.netbeans.modules.javascript2.editor.jquery;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 
 /**
- * Provider for the ExtDoc documentations.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Petr Pisl
  */
-public class ExtDocDocumentationProvider implements JsDocumentationProvider {
-
-    private static Set<String> supportedTags;
-
-    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
-            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
-
-    @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
-    }
-
-    @Override
-    public synchronized Set getSupportedTags() {
-        if (supportedTags == null) {
-            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
-            for (ExtDocElementType type : ExtDocElementType.values()) {
-                supportedTags.add(type.toString());
-            }
-            supportedTags.remove("unknown");
-            supportedTags.remove("description");
+public class JQueryUtils {
+    
+    public static boolean isJQuery(ParserResult parserResult, int offset) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        if (ts == null) {
+            return false;
         }
-        return supportedTags;
-    }
-
-    @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return ANNOTATION_PROVIDERS;
-    }
-
-    @Override
-    public SyntaxProvider getSyntaxProvider() {
-        return null;
+        ts.move(offset);
+        if (!(ts.moveNext() && ts.movePrevious())) {
+            return false;
+        }
+        Token<? extends JsTokenId> lastToken = ts.token();
+        Token<? extends JsTokenId> token = lastToken;
+        JsTokenId tokenId = token.id();
+        while (tokenId != JsTokenId.EOL
+                && tokenId != JsTokenId.WHITESPACE
+                && ts.movePrevious()) {
+            lastToken = token;
+            token = ts.token();
+            tokenId = token.id();
+        }
+        return (lastToken.id() == JsTokenId.IDENTIFIER 
+                && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
+                || (!ts.movePrevious() 
+                && ("$".equals(token.text().toString()) || "jQuery".equals(token.text().toString()))));
     }
 }

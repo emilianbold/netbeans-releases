@@ -39,56 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.extdoc;
+package org.netbeans.modules.javascript2.editor.doc.spi;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 
 /**
- * Provider for the ExtDoc documentations.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDocumentationProvider implements JsDocumentationProvider {
+public class DocIdentifierImpl implements DocIdentifier {
 
-    private static Set<String> supportedTags;
+    private final String name;
+    private final int offset;
 
-    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
-            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
-
+    public DocIdentifierImpl(String name, int offset) {
+        this.name = name;
+        this.offset = offset;
+    }
+    
     @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
+    public String getName() {
+        return name;
     }
 
     @Override
-    public synchronized Set getSupportedTags() {
-        if (supportedTags == null) {
-            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
-            for (ExtDocElementType type : ExtDocElementType.values()) {
-                supportedTags.add(type.toString());
-            }
-            supportedTags.remove("unknown");
-            supportedTags.remove("description");
+    public int getOffset() {
+        return offset;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return supportedTags;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        return true;
     }
 
     @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return ANNOTATION_PROVIDERS;
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 97 * hash + this.offset;
+        return hash;
     }
 
     @Override
-    public SyntaxProvider getSyntaxProvider() {
-        return null;
+    public String toString() {
+        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
     }
 }
+
