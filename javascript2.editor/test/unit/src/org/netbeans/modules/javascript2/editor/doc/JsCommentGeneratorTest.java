@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -102,6 +101,18 @@ public class JsCommentGeneratorTest extends JsTestBase {
     }
 
     public void testProperty2() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
+    public void testProperty3() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
+    public void testProperty4() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+    
+    public void testObject1() throws Exception {
         insertBreak(getOriginalContent(), getExpectedContent());
     }
 

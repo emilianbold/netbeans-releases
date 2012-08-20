@@ -254,7 +254,7 @@ public class ASTUtils {
             if (end > docLength) {
                 return OffsetRange.NONE;
             }
-            return new OffsetRange(start, end);
+            return getNextIdentifierByName(doc, name, start);
         } else if (node instanceof MethodCallExpression) {
             MethodCallExpression methodCall = (MethodCallExpression) node;
             Expression method = methodCall.getMethod();
