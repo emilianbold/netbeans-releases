@@ -152,7 +152,7 @@ public class JsDocumentationCompleter {
         for (Node currentNode : ptnv.getFinalPath()) {
             List<Identifier> name = parserResult.getModel().getNodeName(currentNode);
             for (Identifier identifier : name) {
-                fqn.append(".").append(identifier.getName());
+                fqn.append(".").append(identifier.getName()); //NOI18N
             }
         }
         return fqn.toString().substring(1);
@@ -160,9 +160,14 @@ public class JsDocumentationCompleter {
 
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
-        // TODO - could know types
         // TODO - rewrite @type according to doc tool
-        generateDocEntry(doc, toAdd, "@type", indent, null, null);
+        Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
+        StringBuilder types = new StringBuilder();
+        for (TypeUsage typeUsage : assignments) {
+            types.append("|").append(typeUsage.getType());
+        }
+        String type = types.length() == 0 ? null : types.toString().substring(1);
+        generateDocEntry(doc, toAdd, "@type", indent, null, type); //NOI18N
 
         doc.insertString(offset, toAdd.toString(), null);
     }
@@ -172,9 +177,9 @@ public class JsDocumentationCompleter {
         // TODO - could know constructors
         // TODO - rewrite @param, @return according to doc tool
         JsFunction function = ((JsFunction) jsObject);
-        addParameters(doc, toAdd, "@param", indent, function.getParameters());
+        addParameters(doc, toAdd, "@param", indent, function.getParameters()); //NOI18N
         if (!function.getReturnTypes().isEmpty()) {
-            addReturns(doc, toAdd, "@return", indent, function.getReturnTypes());
+            addReturns(doc, toAdd, "@return", indent, function.getReturnTypes()); //NOI18N
         }
 
         doc.insertString(offset, toAdd.toString(), null);
@@ -197,23 +202,23 @@ public class JsDocumentationCompleter {
     }
 
     private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, String type) {
-        toAdd.append("\n");
+        toAdd.append("\n"); //NOI18N
         toAdd.append(IndentUtils.createIndentString(doc, indent));
 
-        toAdd.append("* ");
+        toAdd.append("* "); //NOI18N
         toAdd.append(text);
         if (type != null) {
             if (type != null) {
-                toAdd.append(" ");
+                toAdd.append(" "); //NOI18N
                 toAdd.append(type);
             }
         } else {
-            toAdd.append(" ");
+            toAdd.append(" "); //NOI18N
             // TODO - rewrite to doc tool related syntax
-            toAdd.append("{type}");
+            toAdd.append("{type}"); //NOI18N
         }
         if (name != null) {
-            toAdd.append(" ");
+            toAdd.append(" "); //NOI18N
             toAdd.append(name);
         }
     }
@@ -331,7 +336,7 @@ public class JsDocumentationCompleter {
         public Node visit(IdentNode identNode, boolean onset) {
             farestNode = identNode;
             if (onset) {
-                farestPath.append(".").append(identNode.getName());
+                farestPath.append(".").append(identNode.getName()); //NOI18N
             }
             return super.visit(identNode, onset);
         }
