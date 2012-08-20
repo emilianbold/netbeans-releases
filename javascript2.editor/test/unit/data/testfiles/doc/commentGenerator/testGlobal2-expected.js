@@ -3,7 +3,7 @@ Circle.prototype.getRadius = function(mujParam){
 }
 /**
  * 
- * @type Number^
+ * @type {Number}^
  */
 var cokoliv = 10;
 
