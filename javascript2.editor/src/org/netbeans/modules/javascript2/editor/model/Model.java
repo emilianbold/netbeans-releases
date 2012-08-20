@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -123,6 +124,16 @@ public final class Model {
         for(JsObject property: object.getProperties().values()) {
             resolveLocalTypes(property);
         }
+    }
+
+    /**
+     * Gets the node name if it has any (case of AccessNode, BinaryNode, VarNode, PropertyNode).
+     *
+     * @param node examined node for getting its name
+     * @return name of the node if it supports it
+     */
+    public List<Identifier> getNodeName(Node node) {
+        return getModelVisitor().getNodeName(node);
     }
 
 }

@@ -45,10 +45,8 @@ import com.oracle.nashorn.ir.AccessNode;
 import com.oracle.nashorn.ir.BinaryNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.PropertyNode;
-import com.oracle.nashorn.ir.ReferenceNode;
 import com.oracle.nashorn.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,6 +56,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -118,37 +117,16 @@ public class JsDocumentationCompleter {
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE) {
-                                // was not a global variable, function, object
-                                if (nearestNode instanceof PropertyNode) {
-                                    // is defined property
-                                    Node value = ((PropertyNode) nearestNode).getValue();
-                                    if (value instanceof ReferenceNode || value instanceof LiteralNode) {
-                                        PathToNodeVisitor ptnv = new PathToNodeVisitor(nearestNode);
-                                        FunctionNode root = jsParserResult.getRoot();
-                                        root.accept(ptnv);
-                                        // TODO - getting fqn has to be rewrite to visitor usage
-                                        String lhs = "";
-                                        for (Node node : ptnv.getFinalPath()) {
-                                            if (node instanceof AccessNode) {
-                                                lhs = ((AccessNode) node).toString();
-                                            } else if (node instanceof BinaryNode) {
-                                                lhs = ((BinaryNode) node).lhs().toString();
-                                            } else if (node instanceof VarNode) {
-                                                lhs = ((VarNode)node).getName().getName();
-                                            }
-                                        }
-                                        jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), lhs + "." + ((PropertyNode) nearestNode).getKeyName());
-                                    }
-                                } else {
-                                    // not a global object or function - it's defined by its fqn
-                                    String nearestNodeFqn = getNearestNodeFqn(jsParserResult, offset);
-                                    jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), nearestNodeFqn);
-                                }
+                                String fqn = getFqnName(jsParserResult, nearestNode);
+                                jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
                             }
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
                             } else if (isFunction(jsObject)) {
                                 generateFunctionComment(doc, offset, indent, jsParserResult, jsObject);
+                            } else {
+                                // object - generate field for now, could be cleverer
+                                generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
                             }
                         }
                     }
@@ -159,23 +137,49 @@ public class JsDocumentationCompleter {
         }
     }
 
+        /**
+     * Tries to get fully qualified name for given node.
+     *
+     * @param parserResult JavaScript parser results
+     * @param node examined node for its FQN
+     * @return fully qualified name of the node
+     */
+    public static String getFqnName(JsParserResult parserResult, Node node) {
+        PathToNodeVisitor ptnv = new PathToNodeVisitor(node);
+        FunctionNode root = parserResult.getRoot();
+        root.accept(ptnv);
+        StringBuilder fqn = new StringBuilder();
+        for (Node currentNode : ptnv.getFinalPath()) {
+            List<Identifier> name = parserResult.getModel().getNodeName(currentNode);
+            for (Identifier identifier : name) {
+                fqn.append(".").append(identifier.getName()); //NOI18N
+            }
+        }
+        return fqn.toString().substring(1);
+    }
+
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
-
         // TODO - rewrite @type according to doc tool
-        generateDocEntry(doc, toAdd, "@type", indent, null, null);
+        Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
+        StringBuilder types = new StringBuilder();
+        for (TypeUsage typeUsage : assignments) {
+            types.append("|").append(typeUsage.getType());
+        }
+        String type = types.length() == 0 ? null : types.toString().substring(1);
+        generateDocEntry(doc, toAdd, "@type", indent, null, type); //NOI18N
 
         doc.insertString(offset, toAdd.toString(), null);
     }
 
     private static void generateFunctionComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
-
+        // TODO - could know constructors
         // TODO - rewrite @param, @return according to doc tool
         JsFunction function = ((JsFunction) jsObject);
-        addParameters(doc, toAdd, "@param", indent, function.getParameters());
+        addParameters(doc, toAdd, "@param", indent, function.getParameters()); //NOI18N
         if (!function.getReturnTypes().isEmpty()) {
-            addReturns(doc, toAdd, "@return", indent, function.getReturnTypes());
+            addReturns(doc, toAdd, "@return", indent, function.getReturnTypes()); //NOI18N
         }
 
         doc.insertString(offset, toAdd.toString(), null);
@@ -198,23 +202,23 @@ public class JsDocumentationCompleter {
     }
 
     private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, String type) {
-        toAdd.append("\n");
+        toAdd.append("\n"); //NOI18N
         toAdd.append(IndentUtils.createIndentString(doc, indent));
 
-        toAdd.append("* ");
+        toAdd.append("* "); //NOI18N
         toAdd.append(text);
         if (type != null) {
             if (type != null) {
-                toAdd.append(" ");
+                toAdd.append(" "); //NOI18N
                 toAdd.append(type);
             }
         } else {
-            toAdd.append(" ");
+            toAdd.append(" "); //NOI18N
             // TODO - rewrite to doc tool related syntax
-            toAdd.append("{type}");
+            toAdd.append("{type}"); //NOI18N
         }
         if (name != null) {
-            toAdd.append(" ");
+            toAdd.append(" "); //NOI18N
             toAdd.append(name);
         }
     }
@@ -240,13 +244,6 @@ public class JsDocumentationCompleter {
         NearestNodeVisitor offsetVisitor = new NearestNodeVisitor(offset);
         root.accept(offsetVisitor);
         return offsetVisitor.getNearestNode();
-    }
-
-    private static String getNearestNodeFqn(JsParserResult parserResult, int offset) {
-        FunctionNode root = parserResult.getRoot();
-        NearestNodeVisitor offsetVisitor = new NearestNodeVisitor(offset);
-        root.accept(offsetVisitor);
-        return offsetVisitor.getNearestNodeFqn();
     }
 
     private static JsObject findJsObjectFunctionVariable(JsObject object, int offset) {
@@ -286,15 +283,6 @@ public class JsDocumentationCompleter {
                     nearestNode = node;
                 }
             }
-        }
-
-        public String getNearestNodeFqn() {
-            if (nearestNode instanceof AccessNode || nearestNode instanceof BinaryNode) {
-                FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
-                nearestNode.accept(farestNV);
-                return farestNV.getFarestFqn();
-            }
-            return nearestNode.toString();
         }
 
         public Node getNearestNode() {
@@ -348,7 +336,7 @@ public class JsDocumentationCompleter {
         public Node visit(IdentNode identNode, boolean onset) {
             farestNode = identNode;
             if (onset) {
-                farestPath.append(".").append(identNode.getName());
+                farestPath.append(".").append(identNode.getName()); //NOI18N
             }
             return super.visit(identNode, onset);
         }
@@ -385,20 +373,4 @@ public class JsDocumentationCompleter {
 
     }
 
-//    private static class IdentsToNodeVisitor extends NodeVisitor {
-//
-//        private final StringBuilder finalPathName = new StringBuilder();
-//
-//        public String getFinalPathName() {
-//            return finalPathName.toString().substring(1);
-//        }
-//
-//        @Override
-//        public Node visit(IdentNode identNode, boolean onset) {
-//            if (onset) {
-//                finalPathName.append(".").append(identNode.getName());
-//            }
-//            return super.visit(identNode, onset);
-//        }
-//    }
 }
