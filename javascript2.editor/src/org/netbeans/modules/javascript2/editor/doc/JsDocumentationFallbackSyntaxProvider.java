@@ -39,45 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.api;
+package org.netbeans.modules.javascript2.editor.doc;
+
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 
 /**
- * Possible modifiers of the javaScript element declared by documentation tools.
+ * Default implementation of the syntax provider.
+ * <p>
+ * Supported syntax by this provider is JsDoc's (as a one of the most used) one.
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum JsModifier {
+public final class JsDocumentationFallbackSyntaxProvider implements SyntaxProvider {
 
-    /** Private modifier. */
-    PRIVATE("private"),
-
-    /** Public modifier. */
-    PUBLIC("public"),
-
-    /** Static modifier. */
-    STATIC("static");
-
-    private final String value;
-
-    private JsModifier(String value) {
-        this.value = value;
+    public JsDocumentationFallbackSyntaxProvider() {
     }
 
     @Override
-    public String toString() {
-        return value;
-    }
-
-    /**
-     * Gets {@code JsModifier} corresponding to given value.
-     * @param value {@code String} value of the {@code JsModifier}
-     * @return {@code JsModifier}
-     */
-    public static JsModifier fromString(String value) {
-        for (JsModifier modifier : JsModifier.values()) {
-            if (value.equalsIgnoreCase(modifier.toString())) {
-                return modifier;
-            }
-        }
-        return null;
+    public String typesSeparator() {
+        return "|"; //NOI18N
     }
 
 }
