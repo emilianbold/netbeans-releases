@@ -61,6 +61,7 @@ public final class ExtensionManager {
         INSTALLED,
         MISSING,
         NEEDS_UPGRADE,
+        DISABLED,
         UNKNOWN
     }
     

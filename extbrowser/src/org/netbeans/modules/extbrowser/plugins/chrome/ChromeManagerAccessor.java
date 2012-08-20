@@ -105,6 +105,25 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
          */
         @Override
         public ExtensionManager.ExtensitionStatus isInstalled() {
+            while (true) {
+                ExtensionManager.ExtensitionStatus result = isInstalledImpl();
+                if (result == ExtensionManager.ExtensitionStatus.DISABLED) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(ChromeExtensionManager.class, 
+                                    "LBL_ChromePluginIsDisabled"),                   // NOI18N
+                                        NotifyDescriptor.ERROR_MESSAGE);
+                    descriptor.setTitle(NbBundle.getMessage(ChromeExtensionManager.class, 
+                            "TTL_ChromePluginIsDisabled"));                             // NOI18N
+                    if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
+                        return result;
+                    }
+                    continue;
+                }
+                return result;
+            }
+        }
+        
+        private ExtensionManager.ExtensitionStatus isInstalledImpl() {
             File defaultProfile = getDefaultProfile();
             if ( defaultProfile == null ){
                 return ExtensionManager.ExtensitionStatus.MISSING;
@@ -143,13 +162,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         }
                         Number n = (Number)extension.get("state");
                         if (n != null && n.intValue() != 1) {
-                            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(ChromeExtensionManager.class, 
-                                            "LBL_ChromePluginIsDisabled"),                   // NOI18N
-                                                NotifyDescriptor.ERROR_MESSAGE);
-                            descriptor.setTitle(NbBundle.getMessage(ChromeExtensionManager.class, 
-                                    "TTL_ChromePluginIsDisabled"));                             // NOI18N
-                            DialogDisplayer.getDefault().notify(descriptor);
+                            return ExtensionManager.ExtensitionStatus.DISABLED;
                         }
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
@@ -175,35 +188,31 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             
             try {
-                /*JButton close = new JButton(NbBundle.getMessage(
-                        ChromeExtensionManager.class, "LBL_Close"));                       // NOI18N
-                close.getAccessibleContext().setAccessibleName(NbBundle.
-                        getMessage(ChromeExtensionManager.class, "ACSN_Close"));    // NOI18N
-                close.getAccessibleContext().setAccessibleDescription(NbBundle.
-                        getMessage(ChromeExtensionManager.class, "ACSD_Close"));    // NOI18N*/
-
-                /*DialogDescriptor descriptor = new DialogDescriptor(
-                        new ChromeInfoPanel(extensionFile.getCanonicalPath(), loader), 
-                        NbBundle.getMessage(ChromeExtensionManager.class, 
-                                "TTL_InstallExtension"),                             // NOI18N
-                                true , new Object[]{close, 
-                                DialogDescriptor.CANCEL_OPTION}, close, 
-                                DialogDescriptor.DEFAULT_ALIGN, null, null);
-                descriptor.setClosingOptions(new Object[]{close, 
-                        DialogDescriptor.CANCEL_OPTION});*/
+                JButton continueButton = new JButton(NbBundle.getMessage(
+                        ChromeExtensionManager.class, "LBL_Continue"));                       // NOI18N
+                continueButton.getAccessibleContext().setAccessibleName(NbBundle.
+                        getMessage(ChromeExtensionManager.class, "ACSN_Continue"));    // NOI18N
+                continueButton.getAccessibleContext().setAccessibleDescription(NbBundle.
+                        getMessage(ChromeExtensionManager.class, "ACSD_Continue"));    // NOI18N
                 DialogDescriptor descriptor = new DialogDescriptor(
                         new ChromeInfoPanel(extensionFile.getCanonicalPath(), loader), 
                         NbBundle.getMessage(ChromeExtensionManager.class, 
-                                "TTL_InstallExtension"));
-                Object result = DialogDisplayer.getDefault().notify(descriptor);
-                if (result == DialogDescriptor.OK_OPTION) {
-                    ExtensitionStatus status = isInstalled();
-                    if ( status!= ExtensitionStatus.INSTALLED){
-                        install(loader, status);
+                                "TTL_InstallExtension"), true, 
+                        new Object[]{continueButton, 
+                                DialogDescriptor.CANCEL_OPTION}, continueButton, 
+                                DialogDescriptor.DEFAULT_ALIGN, null, null);
+                while (true) {
+                    Object result = DialogDisplayer.getDefault().notify(descriptor);
+                    if (result == continueButton) {
+                        ExtensitionStatus status = isInstalled();
+                        if ( status!= ExtensitionStatus.INSTALLED){
+                            continue;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return false;
                     }
-                }
-                else {
-                    return false;
                 }
             }
             catch( IOException e ){
@@ -211,7 +220,6 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     log(Level.INFO , null ,e );
                 return false;
             }
-            return true;
             
            /* NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(ChromeExtensionManager.class, 
