@@ -358,7 +358,8 @@ public class XmlLexerParser implements ContentLocator {
                 case ERROR:
                 case CHARACTER:
                     // character entity - will be reported as usual characters data
-                case TEXT: {
+                case TEXT: 
+                default: {
                     consume();
                     String s = t.text().toString();
                     if (whitespacePossible && s.trim().isEmpty()) {
@@ -867,13 +868,33 @@ public class XmlLexerParser implements ContentLocator {
             markUnexpectedAttrToken();
             return false;
         }
+        consume();
         
         CharSequence s = t.text();
+        StringBuilder sb = null;
+        
         int valStart = seq.offset();
         int valEnd = seq.offset() + t.length();
         char quote = s.charAt(0);
+        int end;
+        
+        t = nextToken();
+        while (t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER) {
+            valEnd = seq.offset() + t.length();
+            if (sb == null) {
+                sb = new StringBuilder();
+                sb.append(s.toString());
+            }
+            sb.append(t.text());
+            consume();
+            t = nextToken();
+        }
+        end = valEnd;
+        if (sb != null) {
+            s = sb;
+        }
         if (quote == '\'' || quote == '"') { // NOI18N
-            if (s.charAt(t.length() - 1) == quote) {
+            if (s.charAt(s.length() - 1) == quote) {
                 s = s.subSequence(1, s.length() - 1);
                 valStart++;
                 valEnd--;
@@ -882,7 +903,7 @@ public class XmlLexerParser implements ContentLocator {
         if (!ignore) {
             attrs.put(argName, s.toString());
             int[] offsets = attrOffsets.get(argName);
-            offsets[OFFSET_END] = seq.offset() + t.length();
+            offsets[OFFSET_END] = end;
             offsets[OFFSET_VALUE_START] = valStart;
             offsets[OFFSET_VALUE_END] = valEnd;
         }
