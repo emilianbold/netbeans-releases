@@ -773,6 +773,14 @@ is divided into following sections:
                         <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">binaryincludes</xsl:attribute>
+                        <xsl:attribute name="default">&lt;nothing&gt;</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">binarytestincludes</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -797,6 +805,9 @@ is divided into following sections:
                                     <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                     <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
+                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}}" includes="@{{binaryincludes}}">
+                                    <filename name="@{{binarytestincludes}}"/>
+                                </fileset>
                             </batchtest>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
