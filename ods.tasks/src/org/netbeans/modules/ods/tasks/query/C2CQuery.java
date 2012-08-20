@@ -66,7 +66,6 @@ import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
-import org.netbeans.modules.ods.tasks.util.C2CUtil;
 
 /**
  *
@@ -330,7 +329,7 @@ public class C2CQuery {
                         new PerformQueryCommand(
                             C2C.getInstance().getRepositoryConnector(),
                             repository.getTaskRepository(), 
-                            new IssuesIdCollector(),
+                            new IssuesCollector(),
                             query);
                     repository.getExecutor().execute(queryCmd, true, !autoRefresh);
                     if(queryCmd.hasFailed()) {
@@ -349,22 +348,6 @@ public class C2CQuery {
                     // - all issue returned by the query
                     // - and issues which were returned by some previous run and are archived now
                     queryIssues.addAll(issues);
-
-//                  XXX  getController().switchToDeterminateProgress(queryIssues.size());
-
-                    // XXX this is toooooo slow - we should be able to work with partial taskData and get it whole only on issue open !!!!
-                    for (String id : queryIssues) {
-                        C2CIssue issue;
-                        try {
-                            TaskData taskData = C2CUtil.getTaskData(repository, id);
-                            IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
-                            issue = (C2CIssue) cache.setIssueData(id, taskData);
-                        } catch (IOException ex) {
-                            C2C.LOG.log(Level.SEVERE, null, ex);
-                            return;
-                        }
-                        fireNotifyData(issue); // XXX - !!! triggers getIssues()
-                    }
                     
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
@@ -411,7 +394,7 @@ public class C2CQuery {
         @Override
         public void accept(TaskData taskData) {
             String id = C2CIssue.getID(taskData);
-//            XXX getController().addProgressUnit(C2CIssue.getDisplayName(taskData));
+            issues.add(id);
             C2CIssue issue;
             try {
                 IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();

@@ -76,6 +76,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -208,7 +209,7 @@ public class C2CIssue {
     }
 
     public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial();
+//        assert !taskData.isPartial();
         data = taskData;
         
         // XXX
@@ -499,18 +500,18 @@ public class C2CIssue {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         // XXX 
         // XXX gettaskdata the same for bugzilla, jira, c2c, ...
-//        try {
-//            C2C.LOG.log(Level.FINE, "refreshing issue #{0}", id);
-//            TaskData td = C2CUtil.getTaskData(repository, id);
-//            if(td == null) {
-//                return false;
-//            }
-//            getRepository().getIssueCache().setIssueData(this, td); // XXX
+        try {
+            C2C.LOG.log(Level.FINE, "refreshing issue #{0}", id);
+            TaskData td = C2CUtil.getTaskData(repository, id);
+            if (td == null) {
+                return false;
+            }
+            getRepository().getIssueCache().setIssueData(this, td); // XXX
 //            getRepository().ensureConfigurationUptodate(this);
 //            refreshViewData(afterSubmitRefresh);
-//        } catch (IOException ex) {
-//            C2C.LOG.log(Level.SEVERE, null, ex);
-//        }
+        } catch (IOException ex) {
+            C2C.LOG.log(Level.SEVERE, null, ex);
+        }
         return true;
     }
 
