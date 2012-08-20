@@ -63,13 +63,13 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 
-@ActionID(
-    category = "Versioning",
-id = "org.netbeans.modules.c2c.tasks.ListCloudedIssuesAction")
-@ActionRegistration(
-    displayName = "#CTL_ListClouded")
-@ActionReference(path = "Menu/Versioning", position = -10, separatorBefore = -60, separatorAfter = 40)
-@Messages("CTL_ListClouded=List Clouded Issues")
+//@ActionID(
+//    category = "Versioning",
+//id = "org.netbeans.modules.c2c.tasks.ListCloudedIssuesAction")
+//@ActionRegistration(
+//    displayName = "#CTL_ListClouded")
+//@ActionReference(path = "Menu/Versioning", position = -10, separatorBefore = -60, separatorAfter = 40)
+//@Messages("CTL_ListClouded=List Clouded Issues")
 public final class ListCloudedIssuesAction implements ActionListener {
     private static final Logger LOG = Logger.getLogger(ListCloudedIssuesAction.class.getName());
     private NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
