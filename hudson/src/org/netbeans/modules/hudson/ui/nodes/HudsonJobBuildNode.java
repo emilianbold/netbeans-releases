@@ -122,7 +122,9 @@ class HudsonJobBuildNode extends AbstractNode {
                 Collection<? extends HudsonMavenModuleBuild> modules = build.getMavenModules();
                 if (modules.isEmpty()) {
                     // XXX is it possible to cheaply check in advance if the build has any artifacts?
-                    toPopulate.add(ARTIFACTS);
+                    if (build.getArtifacts() != null) {
+                        toPopulate.add(ARTIFACTS);
+                    }
                 } else {
                     toPopulate.addAll(modules);
                 }
