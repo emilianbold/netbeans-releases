@@ -1263,10 +1263,17 @@ public class Utilities {
 
                 if (ident.startsWith("$")) {
                     com.sun.tools.javac.util.Name name = S.name();
+                    int identPos = S.pos();
 
                     S.nextToken();
 
-                    return new VariableWildcard(ctx, name, F.Ident(name));
+                    if (S.token() == Token.COMMA || S.token() == Token.RPAREN) {
+                        return new VariableWildcard(ctx, name, F.Ident(name));
+                    }
+                    
+                    ((PushbackLexer) S).add(Token.IDENTIFIER, identPos, name);
+                    ((PushbackLexer) S).add(null, -1, null);
+                    S.nextToken();
                 }
             }
 

@@ -75,6 +75,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
     
     public static final String REQUIRED_CONFIGURATION = "RequiredConfiguration"; // NOI18N
     public static final String REQUIRED_PROFILE ="RequiredProfile"; // NOI18N
+    public static final String IS_EMBEDDED = "is_embedded";//NOI18N
     
     public static final String IMPNG_PROFILE_NAME = "IMP-NG"; // NOI18N
     public static final String IMPNG_PROFILE_VERSION = "1.0"; // NOI18N
@@ -92,6 +93,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
     }
     
     private PlatformSelectionPanelGUI gui;
+    private boolean embedded;
     private String reqCfg, reqProf;
     private boolean first = true;
         
@@ -173,6 +175,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
             final TemplateWizard wiz = (TemplateWizard)settings;
             reqCfg = (String)wiz.getProperty(REQUIRED_CONFIGURATION);
             reqProf = (String)wiz.getProperty(REQUIRED_PROFILE);
+            embedded = (Boolean)wiz.getProperty(IS_EMBEDDED);
             final ArrayList<Profile> l = new ArrayList<Profile>();
             final Profile cfg = parseProfile(reqCfg);
             if (cfg != null) l.add(cfg);
@@ -180,7 +183,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
             if (prof != null) l.add(prof);
             final J2MEPlatform p = findTheBestPlatform(l.toArray(new Profile[l.size()]));
             assert p != null;
-            gui.setValues(wiz, p, findDevice(p, l),  reqCfg, reqProf);
+            gui.setValues(wiz, p, findDevice(p, l),  reqCfg, reqProf, embedded);
         } else {
             gui.updateErrorMessage();
         }
