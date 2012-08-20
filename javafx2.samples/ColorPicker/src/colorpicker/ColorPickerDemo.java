@@ -32,7 +32,7 @@
 package colorpicker;
 
 import javafx.application.Application;
-import javafx.event.Event;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -67,9 +67,10 @@ public class ColorPickerDemo extends Application {
         coloredText.setFill(c);
         coloredButton.setStyle(createRGBString(c));
 
-        colorPicker.setOnAction(new EventHandler() {
+        colorPicker.setOnAction(new EventHandler<ActionEvent>() {
 
-            public void handle(Event t) {
+            @Override
+            public void handle(ActionEvent t) {
                 Color newColor = colorPicker.getValue();
                 coloredText.setFill(newColor);                          
                 coloredButton.setStyle(createRGBString(newColor));
