@@ -276,13 +276,15 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     private FxNode processEventHandlerAttribute(String event, String content) {
         EventHandler eh;
 
-        if (content.startsWith(EVENT_HANDLER_METHOD_PREFIX)) {
+        if (content != null && content.startsWith(EVENT_HANDLER_METHOD_PREFIX)) {
             eh = accessor.asMethodRef(accessor.createEventHandler(event));
             accessor.addContent(eh, content.substring(1));
             
         } else {
             eh = accessor.createEventHandler(event);
-            accessor.addContent(eh, content);
+            if (content != null) {
+                accessor.addContent(eh, content);
+            }
         }
         return eh;
     }
@@ -1043,7 +1045,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     private void attachChildNode(FxNode node) {
         FxNode top = nodeStack.peek();
         i(top).addChild(node);
-        if (!node.isBroken() && (node.getKind() != FxNode.Kind.Element)) {
+//        if (!node.isBroken() && (node.getKind() != FxNode.Kind.Element)) {
+        accessor.attach(node, fxModel);
+        if (!node.isBroken()) {
             accessor.addChild(top, node);
         }
         if (i(node).isElement()) {

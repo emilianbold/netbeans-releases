@@ -140,4 +140,6 @@ public abstract class ModelAccessor {
     public abstract void setNamedInstances(FxModel model, Map<String, FxInstance> instances);
     
     public abstract void resolveReference(FxObjectBase copyOrReference, FxInstance original);
+    
+    public abstract void attach(FxNode node, FxModel model);
 }

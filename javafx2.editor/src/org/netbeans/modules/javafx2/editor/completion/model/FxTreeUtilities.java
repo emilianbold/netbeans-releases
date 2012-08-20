@@ -212,4 +212,12 @@ public final class FxTreeUtilities {
     public TextPositions positions(FxNode node) {
         return accessor.i(node);
     }
+
+    public boolean isElement(FxNode node) {
+        return accessor.i(node).isElement();
+    }
+    
+    public boolean isAttribute(FxNode node) {
+        return accessor.i(node).isAttribute();
+    }
 }
