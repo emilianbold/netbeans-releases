@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,6 +72,8 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -289,6 +292,20 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // any libraries selected
                 applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
             }
+
+            // index file (#216293)
+            File[] htmlFiles = FileUtil.toFile(siteRootDir).listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    // accept html or xhtml files
+                    return pathname.isFile()
+                            && pathname.getName().toLowerCase().endsWith("html"); // NOI18N
+                }
+            });
+            if (htmlFiles != null && htmlFiles.length == 0) {
+                FileObject indexFile = createIndexFile(siteRootDir);
+                files.add(indexFile);
+            }
         }
 
         @Override
@@ -347,6 +364,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private void errorOccured(String message) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        }
+
+        private FileObject createIndexFile(FileObject siteRoot) throws IOException {
+            FileObject indexTemplate = FileUtil.getConfigFile("Templates/Other/html.html"); // NOI18N
+            DataFolder dataFolder = DataFolder.findFolder(siteRoot);
+            DataObject dataIndex = DataObject.find(indexTemplate);
+            DataObject index = dataIndex.createFromTemplate(dataFolder, "index"); // NOI18N
+            return index.getPrimaryFile();
         }
 
     }
