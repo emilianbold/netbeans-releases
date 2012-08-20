@@ -56,6 +56,8 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
@@ -137,7 +139,7 @@ public class JsDocumentationCompleter {
         }
     }
 
-        /**
+    /**
      * Tries to get fully qualified name for given node.
      *
      * @param parserResult JavaScript parser results
@@ -177,27 +179,36 @@ public class JsDocumentationCompleter {
         // TODO - could know constructors
         // TODO - rewrite @param, @return according to doc tool
         JsFunction function = ((JsFunction) jsObject);
-        addParameters(doc, toAdd, "@param", indent, function.getParameters()); //NOI18N
+        addParameters(doc, toAdd, "@param", indent, jsParserResult, function.getParameters()); //NOI18N
         if (!function.getReturnTypes().isEmpty()) {
-            addReturns(doc, toAdd, "@return", indent, function.getReturnTypes()); //NOI18N
+            addReturns(doc, toAdd, "@return", indent, jsParserResult, function.getReturnTypes()); //NOI18N
         }
 
         doc.insertString(offset, toAdd.toString(), null);
     }
 
-    private static void addParameters(BaseDocument doc, StringBuilder toAdd, String tag, int indent, Collection<? extends JsObject> params) {
+    private static void addParameters(BaseDocument doc, StringBuilder toAdd, String tag, int indent, JsParserResult jsParserResult, Collection<? extends JsObject> params) {
         for (JsObject jsObject : params) {
             generateDocEntry(doc, toAdd, tag, indent, jsObject.getName(), null);
         }
     }
 
-    private static void addReturns(BaseDocument doc, StringBuilder toAdd, String tag, int indent, Collection<? extends TypeUsage> returns) {
+    private static void addReturns(BaseDocument doc, StringBuilder toAdd, String tag, int indent, JsParserResult jsParserResult, Collection<? extends TypeUsage> returns) {
         StringBuilder sb = new StringBuilder();
+        SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
+
         for (TypeUsage typeUsage : returns) {
-            // TODO - doc tool related delimiter
-            sb.append("|").append(typeUsage.getType());
+            if (syntaxProvider.typesSeparator() == null) {
+                // any first char which will be removed below
+                sb.append(" ").append(typeUsage.getType()); //NOI18N
+                break;
+            } else {
+                sb.append(syntaxProvider.typesSeparator()).append(typeUsage.getType());
+            }
         }
-        String returnString = returns.isEmpty() ? "" : sb.toString().substring(1);
+
+        int separatorLength = syntaxProvider.typesSeparator() == null ? 1 : syntaxProvider.typesSeparator().length();
+        String returnString = returns.isEmpty() ? "" : sb.toString().substring(separatorLength);
         generateDocEntry(doc, toAdd, tag, indent, null, returnString);
     }
 

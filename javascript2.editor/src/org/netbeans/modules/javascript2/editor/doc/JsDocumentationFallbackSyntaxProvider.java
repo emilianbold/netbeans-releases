@@ -39,56 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.extdoc;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
-import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Provider for the ExtDoc documentations.
+ * Default implementation of the syntax provider.
+ * <p>
+ * Supported syntax by this provider is JsDoc's (as a one of the most used) one.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDocumentationProvider implements JsDocumentationProvider {
+public final class JsDocumentationFallbackSyntaxProvider implements SyntaxProvider {
 
-    private static Set<String> supportedTags;
-
-    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
-            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
-
-    @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
+    public JsDocumentationFallbackSyntaxProvider() {
     }
 
     @Override
-    public synchronized Set getSupportedTags() {
-        if (supportedTags == null) {
-            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
-            for (ExtDocElementType type : ExtDocElementType.values()) {
-                supportedTags.add(type.toString());
-            }
-            supportedTags.remove("unknown");
-            supportedTags.remove("description");
-        }
-        return supportedTags;
+    public String typesSeparator() {
+        return "|"; //NOI18N
     }
 
-    @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return ANNOTATION_PROVIDERS;
-    }
-
-    @Override
-    public SyntaxProvider getSyntaxProvider() {
-        return null;
-    }
 }
