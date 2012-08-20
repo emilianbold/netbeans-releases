@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.clientproject.browser;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -127,7 +128,11 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public String getDisplayName() {
-        return browser.getName() + (disableIntegration ? " - No NetBeans Integration" : "");
+        String suffix = "";
+        if (browserIntegration == Boolean.TRUE && browser.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
+            suffix = " with NetBeans Integration";
+        }
+        return browser.getName() + suffix;
     }
 
     @Override
