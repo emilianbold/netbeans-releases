@@ -117,51 +117,8 @@ public class JsDocumentationCompleter {
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE) {
-
-                                PathToNodeVisitor ptnv = new PathToNodeVisitor(nearestNode);
-                                FunctionNode root = jsParserResult.getRoot();
-                                root.accept(ptnv);
-                                StringBuilder sb = new StringBuilder();
-                                for (Node node : ptnv.getFinalPath()) {
-                                    List<Identifier> fqnName = ModelUtils.getFqnName(jsParserResult.getModel(), node);
-                                    for (Identifier identifier : fqnName) {
-                                        sb.append(".").append(identifier.getName());
-                                    }
-                                }
-                                jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), sb.toString().substring(1));
-
-                                // was not a global variable, function, object
-//                                if (nearestNode instanceof PropertyNode) {
-//
-//                                    StringBuilder sb = new StringBuilder();
-//                                    for (Identifier identifier : fqnName) {
-//                                        sb.append(".").append(identifier.getName());
-//                                    }
-                                    
-//                                    // is defined property
-//                                    Node value = ((PropertyNode) nearestNode).getValue();
-//                                    if (value instanceof ReferenceNode || value instanceof LiteralNode) {
-//                                        PathToNodeVisitor ptnv = new PathToNodeVisitor(nearestNode);
-//                                        FunctionNode root = jsParserResult.getRoot();
-//                                        root.accept(ptnv);
-//                                        // TODO - getting fqn has to be rewrite to visitor usage
-//                                        String lhs = "";
-//                                        for (Node node : ptnv.getFinalPath()) {
-//                                            if (node instanceof AccessNode) {
-//                                                lhs = ((AccessNode) node).toString();
-//                                            } else if (node instanceof BinaryNode) {
-//                                                lhs = ((BinaryNode) node).lhs().toString();
-//                                            } else if (node instanceof VarNode) {
-//                                                lhs = ((VarNode)node).getName().getName();
-//                                            }
-//                                        }
-//                                        jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), lhs + "." + ((PropertyNode) nearestNode).getKeyName());
-//                                    }
-//                                } else {
-//                                    // not a global object or function - it's defined by its fqn
-//                                    String nearestNodeFqn = getNearestNodeFqn(jsParserResult, offset);
-//                                    jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), nearestNodeFqn);
-//                                }
+                                String fqn = getFqnName(jsParserResult, nearestNode);
+                                jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
                             }
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
@@ -178,6 +135,27 @@ public class JsDocumentationCompleter {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+        /**
+     * Tries to get fully qualified name for given node.
+     *
+     * @param parserResult JavaScript parser results
+     * @param node examined node for its FQN
+     * @return fully qualified name of the node
+     */
+    public static String getFqnName(JsParserResult parserResult, Node node) {
+        PathToNodeVisitor ptnv = new PathToNodeVisitor(node);
+        FunctionNode root = parserResult.getRoot();
+        root.accept(ptnv);
+        StringBuilder fqn = new StringBuilder();
+        for (Node currentNode : ptnv.getFinalPath()) {
+            List<Identifier> name = parserResult.getModel().getNodeName(currentNode);
+            for (Identifier identifier : name) {
+                fqn.append(".").append(identifier.getName());
+            }
+        }
+        return fqn.toString().substring(1);
     }
 
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
@@ -263,13 +241,6 @@ public class JsDocumentationCompleter {
         return offsetVisitor.getNearestNode();
     }
 
-    private static String getNearestNodeFqn(JsParserResult parserResult, int offset) {
-        FunctionNode root = parserResult.getRoot();
-        NearestNodeVisitor offsetVisitor = new NearestNodeVisitor(offset);
-        root.accept(offsetVisitor);
-        return offsetVisitor.getNearestNodeFqn();
-    }
-
     private static JsObject findJsObjectFunctionVariable(JsObject object, int offset) {
         JsObjectImpl jsObject = (JsObjectImpl) object;
         JsObject result = null;
@@ -307,15 +278,6 @@ public class JsDocumentationCompleter {
                     nearestNode = node;
                 }
             }
-        }
-
-        public String getNearestNodeFqn() {
-            if (nearestNode instanceof AccessNode || nearestNode instanceof BinaryNode) {
-                FarestIdentNodeVisitor farestNV = new FarestIdentNodeVisitor();
-                nearestNode.accept(farestNV);
-                return farestNV.getFarestFqn();
-            }
-            return nearestNode.toString();
         }
 
         public Node getNearestNode() {

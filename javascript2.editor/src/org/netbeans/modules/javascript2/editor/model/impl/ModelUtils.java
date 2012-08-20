@@ -99,10 +99,6 @@ public class ModelUtils {
         return object.getJSKind() == JsElement.Kind.FILE;
     }
 
-    public static List<Identifier> getFqnName(Model model, Node node) {
-        return model.getNodeName(node);
-    }
-    
     public static JsObject findJsObject(Model model, int offset) {
         JsObject result = null;
         JsObject global = model.getGlobalObject();
