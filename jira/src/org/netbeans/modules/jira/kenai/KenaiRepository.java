@@ -90,7 +90,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
-        KenaiUtil.getKenaiAccessor().addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+        KenaiUtil.getKenaiAccessor(url).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
 
     @Override
