@@ -49,8 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -102,9 +100,6 @@ public class C2CIssue {
     static final String LABEL_NAME_MILESTONE    = "c2c.issue.milestone";        // NOI18N
     static final String LABEL_NAME_MODIFIED     = "c2c.issue.modified";         // NOI18N 
             
-    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
-    private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
-    private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
     private C2CIssueController controller;
     
     private String initialProduct = null;
@@ -232,15 +227,7 @@ public class C2CIssue {
     public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFIED);
         if(value != null && !value.trim().equals("")) {
-            try {
-                return new Date(Long.parseLong(value));
-            } catch (NumberFormatException nfe) {
-                try {
-                    return MODIFIED_DATE_FORMAT.parse(value);
-                } catch (ParseException ex) {
-                    C2C.LOG.log(Level.WARNING, value, ex);
-                }
-            }
+            return C2CUtil.parseDate(value);
         }
         return null;
     }
@@ -257,16 +244,7 @@ public class C2CIssue {
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATED);
         if(value != null && !value.trim().equals("")) {
-            try {
-                return new Date(Long.parseLong(value));
-            } catch (NumberFormatException nfe) {
-                try {
-                    return CREATED_DATE_FORMAT.parse(value);
-                } catch (ParseException ex) {
-                    C2C.LOG.log(Level.WARNING, value, ex);
-                }
-            }
-            
+            return C2CUtil.parseDate(value);
         }
         return null;
     }
@@ -554,18 +532,9 @@ public class C2CIssue {
 
         public Comment(TaskAttribute a) {
             Date d = null;
-            String s = "";
-            try {
-                s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
-                if(s != null && !s.trim().equals("")) {                         // NOI18N
-                    try {
-                        d = new Date(Long.parseLong(s));
-                    } catch (NumberFormatException nfe) {
-                        d = CC_DATE_FORMAT.parse(s);
-                    }
-                }
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.SEVERE, s, ex);
+            String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
+            if (s != null && !s.trim().equals("")) {                         // NOI18N
+                d = C2CUtil.parseDate(s);
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
@@ -610,20 +579,8 @@ public class C2CIssue {
         private final String text;
 
         public Time(TaskAttribute a) {
-            Date d = null;
-            String s = "";
-            try {
-                s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
-                if(s != null && !s.trim().equals("")) {                         // NOI18N
-                    try {
-                        d = new Date(Long.parseLong(s));
-                    } catch (NumberFormatException nfe) {
-                        d = CC_DATE_FORMAT.parse(s);
-                    }
-                }
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.SEVERE, s, ex);
-            }
+            String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
+            Date d = C2CUtil.parseDate(s);
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
             if (authorAttr != null) {
@@ -675,20 +632,8 @@ public class C2CIssue {
 
         public Attachment(TaskAttribute ta) {
             id = ta.getValue();
-            Date d = null;
-            String s = "";
-            try {
-                s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
-                if(s != null && !s.trim().equals("")) {                         // NOI18N
-                    try {
-                        d = new Date(Long.parseLong(s));
-                    } catch (NumberFormatException nfe) {
-                        d = CC_DATE_FORMAT.parse(s);
-                    }
-                }
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.SEVERE, s, ex);
-            }
+            String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
+            Date d = C2CUtil.parseDate(s);
             date = d;
             filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
             desc = getMappedValue(ta, TaskAttribute.ATTACHMENT_DESCRIPTION);

@@ -53,8 +53,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,7 +62,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -89,7 +86,6 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -100,7 +96,6 @@ import org.openide.util.RequestProcessor;
  */
 public class CommentsPanel extends JPanel {
     static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
-    private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
@@ -155,11 +150,9 @@ public class CommentsPanel extends JPanel {
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATED);
-        try {
-            Date creation = dateTimeFormat.parse(creationTxt);
+        Date creation = C2CUtil.parseDate(creationTxt);
+        if (creation != null) {
             creationTxt = format.format(creation);
-        } catch (ParseException pex) {
-            C2C.LOG.log(Level.INFO, null, pex);
         }
         for (C2CIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());

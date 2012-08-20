@@ -44,8 +44,12 @@ package org.netbeans.modules.ods.tasks.util;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,7 +82,13 @@ import org.openide.util.NbBundle;
  */
 public class C2CUtil {
     
-     public static TaskData createTaskData(TaskRepository taskRepository) {
+    private static final DateFormat[] dateFormats = new DateFormat[] { 
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"), //NOI18N
+        new SimpleDateFormat("yyyy-MM-dd HH:mm"), //NOI18N
+        new SimpleDateFormat("yyyy-MM-dd") //NOI18N
+    };
+    
+    public static TaskData createTaskData(TaskRepository taskRepository) {
         
         // XXX is this all we need and how we need it?
 
@@ -268,5 +278,24 @@ public class C2CUtil {
             C2C.LOG.log(Level.SEVERE, null, ex);
             return usersString;
         }       
+    }
+
+    public static Date parseDate (String text) {
+        Date date = null;
+        try {
+            date = new Date(Long.parseLong(text));
+        } catch (NumberFormatException nfe) {
+            for (DateFormat format : dateFormats) {
+                try {
+                    date = format.parse(text);
+                    break;
+                } catch (ParseException ex) {
+                }
+            }
+        }
+        if (date == null) {
+            C2C.LOG.log(Level.WARNING, "Cannot parse date: {0}", text);
+        }
+        return date;
     }
 }
