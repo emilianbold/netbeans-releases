@@ -528,13 +528,23 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Get GlassFish server home.
+     * <p/>
+     * @return Server home.
+     */
+    @Override
+    public String getServerHome() {
+        return properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+    }
+
+    /**
      * Get GlassFish server installation root.
      * <p/>
      * @return Server installation root.
      */
     @Override
-    public String getServerHome() {
-        return properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+    public String getServerRoot() {
+        return properties.get(GlassfishModule.INSTALL_FOLDER_ATTR);
     }
 
     /**
