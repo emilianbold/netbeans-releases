@@ -101,6 +101,14 @@ public abstract class Filters<T> {
         return fm.getComponent(buttons);
     }
 
+    public final FiltersManager getFiltersManager() {
+        assert SwingUtilities.isEventDispatchThread();
+        if (filtersManager == null) {
+            filtersManager = createFilters();
+        }
+        return filtersManager;
+    }
+
     public abstract Collection<T> filter( Collection<? extends T> original);
     
     protected abstract FiltersManager createFilters ();
@@ -133,13 +141,5 @@ public abstract class Filters<T> {
         }
         res[1] = sortByPositionButton;
         return res;
-    }
-
-    private FiltersManager getFiltersManager() {
-        assert SwingUtilities.isEventDispatchThread();
-        if (filtersManager == null) {
-            filtersManager = createFilters();
-        }
-        return filtersManager;
     }
 }

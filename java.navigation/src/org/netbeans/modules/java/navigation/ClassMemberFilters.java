@@ -39,28 +39,19 @@ public final class ClassMemberFilters extends Filters<Description> {
     private static final String SORT_ALPHA = "sort_alpha";
     private static final String SORT_POSITION = "sort_position";
     
-    private FiltersManager filters;
-    
     
     /** Creates a new instance of ClassMemberFilters */
     ClassMemberFilters( ClassMemberPanelUI ui ) {
         this.ui = ui;        
-    }
-    
-    public FiltersManager getInstance() {
-        if (filters == null) {
-            filters = createFilters();
-        }
-        return filters;
-    }
+    }    
     
     @Override
     public Collection<Description> filter( Collection<? extends Description> original ) {
-        
-        boolean non_public = filters.isSelected(SHOW_NON_PUBLIC);
-        boolean statik = filters.isSelected(SHOW_STATIC);
-        boolean fields = filters.isSelected(SHOW_FIELDS);
-        boolean inherited = filters.isSelected(SHOW_INHERITED);
+        final FiltersManager fm = getFiltersManager();
+        boolean non_public = fm.isSelected(SHOW_NON_PUBLIC);
+        boolean statik = fm.isSelected(SHOW_STATIC);
+        boolean fields = fm.isSelected(SHOW_FIELDS);
+        boolean inherited = fm.isSelected(SHOW_INHERITED);
         
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
