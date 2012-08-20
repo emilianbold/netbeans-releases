@@ -347,7 +347,93 @@ public final class CompletionContext {
                 }
             }
         }
+        findNextCaretPos(ts);
     }
+    
+    private boolean replaceExisting;
+
+    public boolean isReplaceExisting() {
+        return replaceExisting;
+    }
+    
+    private void findNextCaretPos(TokenSequence ts) {
+        int off = ts.move(caretOffset);
+        Token<XMLTokenId>  t;
+        if (off == 0 && caretOffset == startOffset) {
+            return;
+        }
+        
+        switch (type) {
+            case PROPERTY: {
+                // the next position is within the value, if it is present
+                while (ts.moveNext()) {
+                    t = ts.token();
+                    switch (t.id()) {
+                        case ARGUMENT:
+                        case OPERATOR:
+                        case WS:
+                            break;
+
+                        case VALUE:
+                            replaceExisting = true;
+                            nextCaretPos = ts.offset() + 1;
+                            return;
+
+                        default:
+                            return;
+                    }
+                }
+                break;
+            }
+            case ROOT:
+            case BEAN:
+            case CHILD_ELEMENT:
+            case PROPERTY_ELEMENT:
+                // do not search, if the prefix is just "<"
+                if (prefix.length() == 1) {
+                    return;
+                }
+                replaceExisting = true;
+                // after the > sign, or the 1st attribute start
+                while (ts.moveNext()) {
+                    t = ts.token();
+                    switch (t.id()) {
+                        case WS:
+                            break;
+
+                        case TAG:
+                            if (ts.offset() == startOffset) {
+                                break;
+                            }
+                            if (t.text().charAt(0) != '>') {
+                                return;
+                            }
+                            if (type == Type.PROPERTY_ELEMENT) {
+                                // properties do not have attributes, position after
+                                // the closing >
+                                nextCaretPos = ts.offset() + 1;
+                                return;
+                            }
+                        case ARGUMENT:
+                            nextCaretPos = ts.offset();
+                            return;
+
+                        default:
+                            return;
+                    }
+                }
+        }
+    }
+
+    public int getNextCaretPos() {
+        return nextCaretPos;
+    }
+    
+    /**
+     * Caret offset after completion into the original text. -1, 
+     * if the caret should be positioned within the newly inserted text.
+     */
+    private int nextCaretPos = -1;
 
     public List<? extends FxNode> getParents() {
         return Collections.unmodifiableList(parents);
@@ -387,11 +473,18 @@ public final class CompletionContext {
     
     private void processPath() {
         parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
-                getCaretOffset(), getType() == CompletionContext.Type.PROPERTY_ELEMENT, true);
+                getCaretOffset(), isTag(), true);
         if (parents.isEmpty()) {
             return;
         }
+        int index = 1;
+        
         FxNode parent = parents.get(0);
+        if (fxmlParserResult.getTreeUtilities().isAttribute(parent)) {
+            if (parents.size() > index) {
+                parent = parents.get(index++);
+            }
+        }
         
         if (parent instanceof PropertySetter) {
             PropertySetter ps = (PropertySetter)parent;
@@ -400,8 +493,8 @@ public final class CompletionContext {
             if (ps.isImplicit()) {
                 // the caret is inside some char content. It's legal to suggest 
                 // a property element here
-                if (parents.size() > 1) {
-                    FxNode superParent = parents.get(1);
+                if (parents.size() > index) {
+                    FxNode superParent = parents.get(index++);
                     if (superParent.getKind() != FxNode.Kind.Instance) {
                         throw new IllegalStateException();
                     }
@@ -419,7 +512,7 @@ public final class CompletionContext {
             case Element:
             case Namespace:
             case Error:
-                candidate = parents.size() > 1 ? parents.get(1) : null;
+                candidate = parents.size() > index ? parents.get(index) : null;
                 break;
             case Instance:
                 candidate = parent;
