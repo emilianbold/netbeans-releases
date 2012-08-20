@@ -117,7 +117,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+        Set<FileObject> files = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
         if (!dirF.isDirectory() && !dirF.mkdirs()) {
@@ -126,9 +126,15 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         FileObject dir = FileUtil.toFileObject(dirF);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
-        resultSet.add(dir);
+        files.add(dir);
 
-        wizard.instantiate(resultSet, handle, wizardDescriptor, projectHelper);
+        FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, projectHelper);
+
+        // index file
+        FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
+        if (indexFile != null) {
+            files.add(indexFile);
+        }
 
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
@@ -136,7 +142,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         handle.finish();
-        return resultSet;
+        return files;
     }
 
     @Override
@@ -232,7 +238,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
-        void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException;
+        /** @return site root */
+        FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException;
         void uninitialize(WizardDescriptor wizardDescriptor);
     }
 
@@ -269,7 +276,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
-        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
             if (siteTemplate != null) {
@@ -303,9 +310,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 }
             });
             if (htmlFiles != null && htmlFiles.length == 0) {
-                FileObject indexFile = createIndexFile(siteRootDir);
-                files.add(indexFile);
+                createIndexFile(siteRootDir);
             }
+            return siteRootDir;
         }
 
         @Override
@@ -366,12 +373,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
-        private FileObject createIndexFile(FileObject siteRoot) throws IOException {
+        private void createIndexFile(FileObject siteRoot) throws IOException {
             FileObject indexTemplate = FileUtil.getConfigFile("Templates/Other/html.html"); // NOI18N
             DataFolder dataFolder = DataFolder.findFolder(siteRoot);
             DataObject dataIndex = DataObject.find(indexTemplate);
-            DataObject index = dataIndex.createFromTemplate(dataFolder, "index"); // NOI18N
-            return index.getPrimaryFile();
+            dataIndex.createFromTemplate(dataFolder, "index"); // NOI18N
         }
 
     }
@@ -398,10 +404,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
-        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
             File projectDir = (File) wizardDescriptor.getProperty(PROJECT_DIRECTORY);
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
             ClientSideProjectUtilities.initializeProject(projectHelper, ClientSideProjectUtilities.relativizeFile(projectDir, siteRoot));
+            return FileUtil.toFileObject(siteRoot);
         }
 
         @Override
