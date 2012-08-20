@@ -46,15 +46,40 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 
 /**
- *
+ * Empty command execution.
+ * <p/>
+ * Running this task does nothing.
+ * <p/>
  * @author vkraemer
  */
 class NoopTask extends BasicTask<OperationState> {
 
-    public NoopTask(CommonServerSupport aThis, OperationStateListener stopServerListener, OperationStateListener stateListener) {
-        super(aThis.getInstanceProperties(), stopServerListener, stateListener);
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs an instance of empty command execution class.
+     * <p/>
+     * @param serverSupport GlassFish server 
+     * @param stopServerListener
+     * @param stateListener 
+     */
+    public NoopTask(CommonServerSupport serverSupport,
+            OperationStateListener stopServerListener,
+            OperationStateListener stateListener) {
+        super(serverSupport.getInstance(), stopServerListener, stateListener);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Callable call() Method                                                 //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Executes nothing on remote GlassFish instance.
+     * <p/>
+     * @return Always returns <code>OperationState.COMPLETED</code> value.
+     */
     @Override
     public OperationState call() {
         return fireOperationStateChanged(OperationState.COMPLETED, "MSG_NOOP");
