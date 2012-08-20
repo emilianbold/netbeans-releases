@@ -42,12 +42,19 @@
 package org.netbeans.modules.editor.breadcrumbs;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SideBarFactory;
-import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
+import org.openide.awt.CloseButtonFactory;
 import org.openide.explorer.ExplorerManager;
 
 /**
@@ -56,24 +63,55 @@ import org.openide.explorer.ExplorerManager;
  */
 public class SideBarFactoryImpl implements SideBarFactory {
 
+    public static final String KEY_BREADCRUMBS = "enable.breadcrumbs";
+    
     @Override
     public JComponent createSideBar(JTextComponent target) {
         final Document doc = target.getDocument();
         
-        if (!BreadcrumbsController.areBreadCrumsEnabled(doc)) return null;
+        return new SideBar(doc);
+    }
+    
+    private static final class SideBar extends JPanel implements ExplorerManager.Provider, PreferenceChangeListener {
+        private final Document forDocument;
+        private final Preferences prefs;
+        private boolean enabled;
 
-        class P extends JPanel implements ExplorerManager.Provider {
-            @Override public ExplorerManager getExplorerManager() {
-                return HolderImpl.get(doc).getManager();
-            }
+        public SideBar(Document forDocument) {
+            super(new BorderLayout());
+            this.forDocument = forDocument;
+            add(new BreadCrumbComponent(), BorderLayout.CENTER);
+
+            JButton closeButton = CloseButtonFactory.createBigCloseButton();
+
+            add(closeButton, BorderLayout.EAST);
+            
+            prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            prefs.addPreferenceChangeListener(this);
+        }
+        
+        @Override public ExplorerManager getExplorerManager() {
+            return HolderImpl.get(forDocument).getManager();
         }
 
-        P result = new P();
-
-        result.setLayout(new BorderLayout());
-        result.add(new BreadCrumbComponent(), BorderLayout.CENTER);
-
-        return result;
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (evt == null || KEY_BREADCRUMBS.equals(evt.getKey())) {
+                enabled = prefs.getBoolean(KEY_BREADCRUMBS, false);
+                updatePreferredSize();
+            }
+        }
+        
+        private void updatePreferredSize() {
+            if (enabled) {
+                setPreferredSize(new Dimension(Integer.MAX_VALUE, 24));
+                setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+            }else{
+                setPreferredSize(new Dimension(0,0));
+                setMaximumSize(new Dimension(0,0));
+            }
+            revalidate();
+        }
     }
 
 }

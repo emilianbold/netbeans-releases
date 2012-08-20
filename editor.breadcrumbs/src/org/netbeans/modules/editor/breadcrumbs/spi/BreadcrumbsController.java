@@ -41,11 +41,20 @@
  */
 package org.netbeans.modules.editor.breadcrumbs.spi;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.editor.breadcrumbs.HolderImpl;
 import org.netbeans.modules.editor.breadcrumbs.SideBarFactoryImpl;
+import org.netbeans.modules.editor.breadcrumbs.support.BreadCrumbsScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Parameters;
@@ -68,12 +77,24 @@ public class BreadcrumbsController {
     }
     
     public static boolean areBreadCrumsEnabled(@NonNull Document doc) {
-        Parameters.notNull("doc", doc);
+        return MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class).getBoolean(SideBarFactoryImpl.KEY_BREADCRUMBS, false);
+    }
+    
+    public static void addBreadCrumbsEnabledListener(@NonNull final ChangeListener l) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         
-        return Boolean.getBoolean("enableBreadCrumbs");
+        prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override public void preferenceChange(PreferenceChangeEvent evt) {
+                if (evt == null || SideBarFactoryImpl.KEY_BREADCRUMBS.equals(evt.getKey())) {
+                    l.stateChanged(new ChangeEvent(evt));
+                }
+            }
+        });
     }
     
     public static SideBarFactory createSideBarFactory() {
         return new SideBarFactoryImpl();
     }
+    
+    public static final Class<? extends Scheduler> BREADCRUMBS_SCHEDULER = BreadCrumbsScheduler.class;
 }

@@ -150,7 +150,7 @@ public final class BreadCrumbsScanningTask extends JavaParserResultTask {
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+        return BreadcrumbsController.BREADCRUMBS_SCHEDULER;
     }
 
     @Override
