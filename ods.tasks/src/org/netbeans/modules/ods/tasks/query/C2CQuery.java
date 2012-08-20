@@ -92,7 +92,7 @@ public class C2CQuery {
     }
     
     public C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery) {
-        this(name, repository, savedQuery, false);
+        this(name, repository, savedQuery, true);
     }
         
     private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, boolean saved) {
@@ -100,7 +100,7 @@ public class C2CQuery {
         this.repository = repository;
         this.serverQuery = savedQuery;
         this.saved = saved;
-        if (saved || savedQuery != null) {
+        if (saved) {
             getController();
         }
     }

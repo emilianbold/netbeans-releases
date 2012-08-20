@@ -312,15 +312,9 @@ public class C2CRepository {
         List<C2CQuery> ret = new ArrayList<C2CQuery>();
         synchronized (QUERIES_LOCK) {
             if(predefinedQueries == null) {
-                C2C.getInstance().getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run () {
-                        getPredefinedQueries();
-                    }
-                });
-            } else {
-                ret.addAll(predefinedQueries.values());
+                getPredefinedQueries();
             }
+            ret.addAll(predefinedQueries.values());
         }
         return ret;
     }
@@ -330,18 +324,12 @@ public class C2CRepository {
         for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
             queries.put(ptq, C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
         }
-        C2CQuery[] toRefresh;
         synchronized(QUERIES_LOCK) {
             predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
             for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
                 predefinedQueries.put(e.getKey(), new C2CQuery(e.getValue().getSummary(), C2CRepository.this, e.getValue()));
             }
-            toRefresh = predefinedQueries.values().toArray(new C2CQuery[predefinedQueries.values().size()]);
-        }
-        for (C2CQuery q : toRefresh) {
-            q.fireQuerySaved();
-        }
-        
+        }        
     }
 
     public final C2CQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
