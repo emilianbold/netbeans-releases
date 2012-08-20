@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -85,7 +86,8 @@ public class ElementNodeTest extends NbTestCase {
                 counter.incrementAndGet();
                 return info.getFileObject();
             }
-        }, "test", ElementHandle.create(el), el.getKind(), false);
+        }, "test", ElementHandle.create(el), el.getKind(), false,
+            el.getEnclosingElement().getKind() == ElementKind.PACKAGE);
 
         d.cpInfo = info.getClasspathInfo();
         
@@ -114,7 +116,7 @@ public class ElementNodeTest extends NbTestCase {
                 counter.incrementAndGet();
                 return null;
             }
-        }, "test", ElementHandle.create(el), el.getKind(), false);
+        }, "test", ElementHandle.create(el), el.getKind(), false, el.getEnclosingElement().getKind() == ElementKind.PACKAGE);
 
         d.cpInfo = info.getClasspathInfo();
 

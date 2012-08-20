@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.base.Filters;
 import org.netbeans.modules.java.navigation.base.FiltersDescription;
@@ -31,13 +33,11 @@ public final class ClassMemberFilters extends Filters<Description> {
     private ClassMemberPanelUI ui;
     
     /** constants for defined filters */
-    private static final String SHOW_NON_PUBLIC = "show_non_public";
-    private static final String SHOW_STATIC = "show_static";
-    private static final String SHOW_FIELDS = "show_fields";
-    private static final String SHOW_INHERITED = "show_inherited";
-    
-    private static final String SORT_ALPHA = "sort_alpha";
-    private static final String SORT_POSITION = "sort_position";
+    private static final String SHOW_NON_PUBLIC = "show_non_public";    //NOI18N
+    private static final String SHOW_STATIC = "show_static";            //NOI18N
+    private static final String SHOW_FIELDS = "show_fields";            //NOI18N
+    private static final String SHOW_INNER_CLASSES = "show_inner_classes";  //NOI18N
+    private static final String SHOW_INHERITED = "show_inherited";      //NOI18N
     
     
     /** Creates a new instance of ClassMemberFilters */
@@ -48,10 +48,11 @@ public final class ClassMemberFilters extends Filters<Description> {
     @Override
     public Collection<Description> filter( Collection<? extends Description> original ) {
         final FiltersManager fm = getFiltersManager();
-        boolean non_public = fm.isSelected(SHOW_NON_PUBLIC);
-        boolean statik = fm.isSelected(SHOW_STATIC);
-        boolean fields = fm.isSelected(SHOW_FIELDS);
-        boolean inherited = fm.isSelected(SHOW_INHERITED);
+        final boolean non_public = fm.isSelected(SHOW_NON_PUBLIC);
+        final boolean inner = fm.isSelected(SHOW_INNER_CLASSES);
+        final boolean statik = fm.isSelected(SHOW_STATIC);
+        final boolean fields = fm.isSelected(SHOW_FIELDS);
+        final boolean inherited = fm.isSelected(SHOW_INHERITED);
         
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
@@ -70,6 +71,10 @@ public final class ClassMemberFilters extends Filters<Description> {
             }
             
             if ( !fields && description.kind == ElementKind.FIELD ) {
+                continue;
+            }
+
+            if (!inner && isInnerClass(description)) {
                 continue;
             }
             
@@ -107,6 +112,13 @@ public final class ClassMemberFilters extends Filters<Description> {
                 true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
                 null
         );
+        desc.addFilter(SHOW_INNER_CLASSES,
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClasses"),     //NOI18N
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClassesTip"),     //NOI18N
+                true,
+                ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet()),
+                null
+        );
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
@@ -121,5 +133,10 @@ public final class ClassMemberFilters extends Filters<Description> {
         );
         
         return FiltersDescription.createManager(desc);
-    }        
+    }
+
+    private static boolean isInnerClass(@NonNull Description desc) {
+        return (desc.kind.isClass() || desc.kind.isInterface()) &&
+            !desc.isTopLevel;
+    }
 }
