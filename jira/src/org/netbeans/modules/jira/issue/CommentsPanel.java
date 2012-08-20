@@ -74,7 +74,6 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
@@ -82,7 +81,6 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -223,8 +221,10 @@ public class CommentsPanel extends JPanel {
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue.getID()));
-            stateLabel.setText(null);
+            stateLabel = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), author, host, KenaiUtil.getChatLink(issue.getID()));
+            if (stateLabel != null) {
+                stateLabel.setText(null);
+            }
         }
         
         // replay button

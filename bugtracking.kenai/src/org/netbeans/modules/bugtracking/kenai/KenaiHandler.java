@@ -66,7 +66,6 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
@@ -125,7 +124,7 @@ class KenaiHandler {
         KenaiUIUtils.addDashboardListener(kenai, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(DefaultDashboard.PROP_REFRESH_REQUEST) && evt.getSource() instanceof DashboardProvider) {
+                if(evt.getPropertyName().equals(DefaultDashboard.PROP_REFRESH_REQUEST) && evt.getSource() instanceof DefaultDashboard) {
                     if(KenaiHandler.this.kenai.getUrl().equals(((DefaultDashboard)evt.getSource()).getServer().getUrl())) {
                         clear();
                     }
