@@ -208,7 +208,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
 //        } else 
         if(prevHighlight != null && prevAs != null) {
             doc.setCharacterAttributes(prevHighlight.startOffset, prevHighlight.endOffset - prevHighlight.startOffset, prevAs, true);
-            Logger.getLogger("DDD").log(Level.INFO, "{0}-{1} : {2}", new Object[] { prevHighlight.startOffset, prevHighlight.endOffset, prevAs.toString().replace("\n", "").replace("\r", "") });
+//            Logger.getLogger("DDD").log(Level.INFO, "{0}-{1} : {2}", new Object[] { prevHighlight.startOffset, prevHighlight.endOffset, prevAs.toString().replace("\n", "").replace("\r", "") });
             pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, null);
             pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, null);
         }
