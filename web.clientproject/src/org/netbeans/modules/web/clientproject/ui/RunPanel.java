@@ -108,6 +108,8 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         jProjectURLTextField.setText(project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL));
         jProjectURLTextField.getDocument().addDocumentListener(this);
         updateWebRootEnablement();
+        jProjectURLDescriptionLabel.setText("<html>Enter a URL configured to open content of the '"+
+                FileUtil.getFileDisplayName(project.getSiteRootFolder())+"' folder.");
         
         category.setStoreListener(new ActionListener() {
             @Override
@@ -174,6 +176,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         jProjectURLLabel = new javax.swing.JLabel();
         jProjectURLTextField = new javax.swing.JTextField();
         jConfigurationPlaceholder = new javax.swing.JPanel();
+        jProjectURLDescriptionLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jLabel1.text")); // NOI18N
 
@@ -210,6 +213,10 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
 
         jConfigurationPlaceholder.setLayout(new java.awt.BorderLayout());
 
+        jProjectURLDescriptionLabel.setFont(jProjectURLDescriptionLabel.getFont().deriveFont(jProjectURLDescriptionLabel.getFont().getSize()-1f));
+        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLDescriptionLabel, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jProjectURLDescriptionLabel.text")); // NOI18N
+        jProjectURLDescriptionLabel.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -232,7 +239,8 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
                     .addComponent(jServerComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jProjectURLTextField)
                     .addComponent(jWebRootTextField)
-                    .addComponent(jConfigurationPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jConfigurationPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jProjectURLDescriptionLabel)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -256,12 +264,14 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
                     .addComponent(jProjectURLLabel)
                     .addComponent(jProjectURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jProjectURLDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jWebRootLabel)
                     .addComponent(jWebRootTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jWebRootExampleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 13, Short.MAX_VALUE))
+                .addGap(0, 2, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -305,6 +315,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jProjectURLDescriptionLabel;
     private javax.swing.JLabel jProjectURLLabel;
     private javax.swing.JTextField jProjectURLTextField;
     private javax.swing.JComboBox jServerComboBox;
@@ -338,12 +349,14 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
     private boolean isEmbeddedServer() {
         return jServerComboBox.getSelectedIndex() == 0;
     }
+    
     private void updateWebRootEnablement() {
         jWebRootTextField.setVisible(isEmbeddedServer());
         jWebRootLabel.setVisible(isEmbeddedServer());
         jWebRootExampleLabel.setVisible(isEmbeddedServer());
         jProjectURLLabel.setVisible(!isEmbeddedServer());
         jProjectURLTextField.setVisible(!isEmbeddedServer());
+        jProjectURLDescriptionLabel.setVisible(!isEmbeddedServer());
         updateWebRooExample();
         validateProjectURL();
     }

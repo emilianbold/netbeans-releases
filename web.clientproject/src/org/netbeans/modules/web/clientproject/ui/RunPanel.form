@@ -37,6 +37,7 @@
                   <Component id="jProjectURLTextField" alignment="0" max="32767" attributes="0"/>
                   <Component id="jWebRootTextField" max="32767" attributes="0"/>
                   <Component id="jConfigurationPlaceholder" max="32767" attributes="0"/>
+                  <Component id="jProjectURLDescriptionLabel" alignment="0" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -67,13 +68,15 @@
                   <Component id="jProjectURLTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="jProjectURLDescriptionLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jWebRootLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jWebRootTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jWebRootExampleLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="13" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="2" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -169,5 +172,18 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
+    <Component class="javax.swing.JLabel" name="jProjectURLDescriptionLabel">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+          <FontInfo relative="true">
+            <Font component="jProjectURLDescriptionLabel" property="font" relativeSize="true" size="-1"/>
+          </FontInfo>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="RunPanel.jProjectURLDescriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>
