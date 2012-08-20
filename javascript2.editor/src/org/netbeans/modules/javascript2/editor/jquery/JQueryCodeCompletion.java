@@ -86,7 +86,7 @@ public class JQueryCodeCompletion {
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (isJQuery(parserResult, lastTsOffset)) {
+                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
 //                    String functionName = findFunctionName(parserResult, lastTsOffset);
 //                    if (functionName != null) {
 //                        int paramIndex = findParamIndex(parserResult, lastTsOffset);
@@ -100,7 +100,7 @@ public class JQueryCodeCompletion {
                 }
                 break;
             case OBJECT_PROPERTY:
-                if (isJQuery(parserResult, lastTsOffset)) {
+                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
                     
                 }
         }
@@ -162,30 +162,7 @@ public class JQueryCodeCompletion {
         return null;
     }
     
-    private boolean isJQuery(ParserResult parserResult, int offset) {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
-        if (ts == null) {
-            return false;
-        }
-        ts.move(offset);
-        if (!(ts.moveNext() && ts.movePrevious())) {
-            return false;
-        }
-        Token<? extends JsTokenId> lastToken = ts.token();
-        Token<? extends JsTokenId> token = lastToken;
-        JsTokenId tokenId = token.id();
-        while (tokenId != JsTokenId.EOL
-                && tokenId != JsTokenId.WHITESPACE
-                && ts.movePrevious()) {
-            lastToken = token;
-            token = ts.token();
-            tokenId = token.id();
-        }
-        return (lastToken.id() == JsTokenId.IDENTIFIER 
-                && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
-                || (!ts.movePrevious() 
-                && ("$".equals(token.text().toString()) || "jQuery".equals(token.text().toString()))));
-    }
+    
 
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
         if (element.getKind() == ElementKind.CALL) {
@@ -198,7 +175,7 @@ public class JQueryCodeCompletion {
             File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
             return SelectorsLoader.getDocumentation(apiFile, name);
         } else if (element.getKind() == ElementKind.METHOD) {
-            if (isJQuery(info, lastTsOffset)) {
+            if (JQueryUtils.isJQuery(info, lastTsOffset)) {
                 File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
                 return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
             }
