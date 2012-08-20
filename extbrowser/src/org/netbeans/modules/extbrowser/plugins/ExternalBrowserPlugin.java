@@ -141,9 +141,14 @@ public final class ExternalBrowserPlugin {
     /**
      * Show URL in browser in given browser tab.
      */
-    public void showURLInTab(BrowserTabDescriptor tab, URL url) {
-        tab.init();
-        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
+    public void showURLInTab(final BrowserTabDescriptor tab, final URL url) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                tab.init();
+                server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
+            }
+        });
     }
 
     public void close(BrowserTabDescriptor tab, boolean closeTab) {
@@ -294,15 +299,10 @@ public final class ExternalBrowserPlugin {
                 map.put("status","accepted");       // NOI18N
                 Message msg = new Message( Message.MessageType.INIT , map );
                 server.sendMessage(key, msg.toStringValue());
-
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // update temp URL with real one:
-                        assert p.realURL != null;
-                        showURLInTab(tab, p.realURL);
-                    }
-                });
+                
+                // update temp URL with real one:
+                assert p.realURL != null;
+                showURLInTab(tab, p.realURL);
             }
         }
 
