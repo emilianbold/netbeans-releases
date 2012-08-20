@@ -59,7 +59,7 @@ public abstract class Filters<T> {
     private static final String PROP_NATURAL_SORT = "naturalSort";  //NOI18N
 
     private volatile boolean naturalSort;
-    //@NotThreadSafe
+    //@GuardedBy("this")
     private FiltersManager filtersManager;
     //@NotThreadSafe
     private JToggleButton sortByNameButton;
@@ -101,6 +101,13 @@ public abstract class Filters<T> {
         return fm.getComponent(buttons);
     }
 
+    public synchronized final FiltersManager getFiltersManager() {
+        if (filtersManager == null) {
+            filtersManager = createFilters();
+        }
+        return filtersManager;
+    }
+
     public abstract Collection<T> filter( Collection<? extends T> original);
     
     protected abstract FiltersManager createFilters ();
@@ -133,13 +140,5 @@ public abstract class Filters<T> {
         }
         res[1] = sortByPositionButton;
         return res;
-    }
-
-    private FiltersManager getFiltersManager() {
-        assert SwingUtilities.isEventDispatchThread();
-        if (filtersManager == null) {
-            filtersManager = createFilters();
-        }
-        return filtersManager;
     }
 }

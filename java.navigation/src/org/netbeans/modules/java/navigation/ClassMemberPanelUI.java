@@ -71,7 +71,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private TapPanel filtersPanel;
     private InstanceContent selectedNodes = new InstanceContent();
     private Lookup lookup = new AbstractLookup(selectedNodes);
-    private ClassMemberFilters filters;
+    private final ClassMemberFilters filters;
     private final AtomicReference<State> state = new AtomicReference<State>();    
     private Action[] actions; // General actions for the panel
     private RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
@@ -118,7 +118,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText)); //NOI18N
         
         filters = new ClassMemberFilters( this );
-        filters.getInstance().hookChangeListener(this);
+        filters.getFiltersManager().hookChangeListener(this);
         JComponent buttons = filters.getComponent();
         buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         filtersPanel.add(buttons);
@@ -129,7 +129,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             SortActions.createSortByNameAction(filters),
             SortActions.createSortBySourceAction(filters),
             null,
-            new FilterSubmenuAction(filters.getInstance())            
+            new FilterSubmenuAction(filters.getFiltersManager())
         };
         
         add(filtersPanel, BorderLayout.SOUTH);        

@@ -624,7 +624,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
 
         @Override
         @NbBundle.Messages({
-        "ERR_Cannot_Resolve_File=Cannot resolve type: {0}"})
+        "ERR_Cannot_Resolve_File=Cannot resolve type: {0}.",
+        "ERR_Not_Declared_Type=Not a declared type."})
         public void run() {
             try {
                 final Pair<URI,ElementHandle<TypeElement>> pair = toShow.get();
@@ -663,8 +664,12 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                             }
                         }, true);
                     } else {
+                        rootChildren.set(null);
                         StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
                     }
+                } else {
+                    rootChildren.set(null);
+                    StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Not_Declared_Type());
                 }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
@@ -809,7 +814,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         
         void set (Node node) {
             remove(getNodes(true));
-            add(new Node[] {node});
+            if (node != null) {
+                add(new Node[] {node});
+            }
         }
     }
 }
