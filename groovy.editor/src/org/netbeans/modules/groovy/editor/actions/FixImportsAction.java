@@ -166,6 +166,7 @@ public class FixImportsAction extends BaseAction {
         }
 
         private void collectMissingImports(List errors) {
+            missingNames.clear();
             for (Object error : errors) {
                 if (error instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage) error).getCause();
