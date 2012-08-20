@@ -300,15 +300,18 @@ public final class CompletionContext {
     @SuppressWarnings("unchecked")
     private void processTokens(TokenHierarchy h) {
         TokenSequence<XMLTokenId> ts = (TokenSequence<XMLTokenId>)h.tokenSequence();
+        
+        readRootElement(ts);
+
         processType(ts);
         processValueType();
         
-        readRootElement(ts);
         
         // do not allow real content before root tag
-        if (caretOffset < rootTagStartOffset) {
+        if (rootTagStartOffset != -1 && caretOffset < rootTagStartOffset) {
             switch (type) {
                 case BEAN:
+                case PROPERTY_VALUE:
                 case PROPERTY_ELEMENT:
                 case CHILD_ELEMENT:
                 case ROOT:
@@ -322,6 +325,19 @@ public final class CompletionContext {
         processNamespaces();
         
         processPath();
+        
+        // no parents above
+        if (parents.isEmpty()) {
+            switch (type) {
+                case PROPERTY_VALUE:
+                    type = Type.UNKNOWN;
+                    break;
+                    
+                case PROPERTY_ELEMENT:
+                case CHILD_ELEMENT:
+                    type = Type.BEAN;
+            }
+        }
         
         // try to narrow the CHILD_ELEMENT if possible:
         if (getType() == Type.CHILD_ELEMENT && !getParents().isEmpty()) {
@@ -1184,8 +1200,13 @@ public final class CompletionContext {
                             tagStartOffset = ts.offset();
                             break;
                         }
-                        // some content; assume it is a property value
-                        type = Type.PROPERTY_VALUE;
+
+                        if (rootTagStartOffset == -1 || rootTagStartOffset <= startOffset) {
+                            type = Type.ROOT;
+                        } else {
+                            // some content; assume it is a property value
+                            type = Type.PROPERTY_VALUE;
+                        }
                         
                         // traverse back to the 1st nonWhite character, record start position and length of the token
                         setTextContentBoundaries(ts);
