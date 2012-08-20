@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="fileobject-lookup">
+            <api name="filesystems"/>
+            <summary>FileObject has getLookup()</summary>
+            <version major="8" minor="0"/>
+            <date year="2012" month="8" day="22"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    <code>FileObject</code> now implements <code>Lookup.Provider</code>
+                    and thus has new
+                    <a href="@TOP@org/openide/filesystems/FileObject.html#getLookup()">
+                    getLookup</a>() method.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="209231"/>
+        </change>
         <change id="recursive-listener-with-filter">
             <api name="filesystems"/>
             <summary>addRecursiveListener with a filter</summary>

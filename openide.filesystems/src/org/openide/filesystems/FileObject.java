@@ -393,11 +393,27 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
         }
     }
 
-    /**
-    //XXX: implement me
-    * 
-    * @since 8.0
-    */
+    /** A lookup containing various logical views of the underlying represented file.
+     * The lookup is supposed to contain <code>this</code> {@link FileObject}
+     * (however not necessarily only one, possibly more). The identity of the 
+     * lookup should survive 
+     * {@link #move(org.openide.filesystems.FileLock, org.openide.filesystems.FileObject, java.lang.String, java.lang.String) move operation}
+     * - the resulting {@link FileObject} after successful <em>move</em>
+     * will share the same {@link Lookup} as the original {@link FileObject}.
+     * 
+     * <p class="nonnormative">
+     * Inside of NetBeans Platform application the content of this lookup is usually
+     * identical to the one provided by the 
+     * <code><a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>.find(this).getLookup()</code>.
+     * To get this behavior include the <code>org.netbeans.modules.settings</code> 
+     * module in your system.
+     * </p>
+     * 
+     * @return lookup providing logical interfaces additionally describing the 
+     *   content of the underlying file
+     * 
+     * @since 8.0
+     */
     @Override
     public Lookup getLookup() {
         return FileObjectLkp.create(this, true);
