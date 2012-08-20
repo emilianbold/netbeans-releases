@@ -55,6 +55,7 @@ import org.netbeans.modules.project.ui.ProjectInfoAccessor;
  */
 final class ProjectInfoAccessorImpl extends ProjectInfoAccessor {
 
+    @Override
     public UnloadedProjectInformation getProjectInfo(String name, Icon icon, URL url) {
         return new UnloadedProjectInformation(name, icon, url);
     }

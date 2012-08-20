@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.api.annotation.util.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -63,9 +62,14 @@ public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
         tableInlineAnnotations.add("Index"); //NOI18N
         tableInlineAnnotations.add("UniqueConstraint"); //NOI18N
         ANNOTATIONS.put("Table", tableInlineAnnotations); //NOI18N
+
         Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
         joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
         ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
+
+        Set<String> joinTableInlineAnnotations = new HashSet<String>();
+        joinTableInlineAnnotations.add("JoinColumn"); //NOI18N
+        ANNOTATIONS.put("JoinTable", joinTableInlineAnnotations); //NOI18N
     }
 
     @Override

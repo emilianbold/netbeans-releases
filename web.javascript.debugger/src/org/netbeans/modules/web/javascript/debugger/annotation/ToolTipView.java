@@ -105,19 +105,19 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     void setToolTipSupport(ToolTipSupport toolTipSupport) {
         if (viewModelListener != null) {
             viewModelListener.setToolTipSupport(toolTipSupport);
-        }
     }
-
+    }
+    
     private void componentShowing (String icon) {
         if (viewModelListener != null) {
             viewModelListener.setUp();
             return ;
-        }
+    }
         JComponent buttonsPane;
         if (contentComponent == null) {
             setLayout (new BorderLayout ());
             contentComponent = new javax.swing.JPanel(new BorderLayout ());
-            
+
             //tree = Models.createView (Models.EMPTY_MODEL);
             add (contentComponent, BorderLayout.CENTER);  //NOI18N
             JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
@@ -164,7 +164,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         variable = null;
         if (viewModelListener != null) {
             viewModelListener.destroy ();
-        }
+    }
     }
     
     // <RAVE>
@@ -201,7 +201,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
      */
     
-    
+
     /** Creates the view. */
     public static synchronized ToolTipView getToolTipView(String expression, ScopedRemoteObject v) {
         return new ToolTipView(

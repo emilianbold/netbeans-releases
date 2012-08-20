@@ -506,3 +506,9 @@ function Rectangle2(width, height) {
  */
 function Rectangle3(width, height) {
 }
+
+/**
+ * @me
+ */
+function methodCCTest() {
+}

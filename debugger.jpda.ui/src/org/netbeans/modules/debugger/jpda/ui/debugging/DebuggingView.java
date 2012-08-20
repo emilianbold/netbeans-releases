@@ -103,9 +103,11 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
-import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
+import org.netbeans.spi.debugger.ui.ViewFactory;
+import org.netbeans.spi.debugger.ui.ViewLifecycle;
 
 import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.Visualizer;
@@ -125,7 +127,8 @@ import org.openide.windows.WindowManager;
  */
 public class DebuggingView extends TopComponent implements org.openide.util.HelpCtx.Provider,
        ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener,
-       AdjustmentListener, ChangeListener, MouseWheelListener, TreeSelectionListener {
+       AdjustmentListener, ChangeListener, MouseWheelListener, TreeSelectionListener,
+       ViewLifecycle.ModelUpdateListener {
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
@@ -140,7 +143,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
     private transient boolean refreshScheduled = false;
     private transient ExplorerManager manager = new ExplorerManager();
-    private transient ViewModelListener viewModelListener;
+    private transient ViewLifecycle viewLifecycle;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
     private SessionsComboBoxListener sessionsComboListener;
@@ -448,21 +451,17 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @Override
     protected void componentShowing() {
         super.componentShowing ();
-        if (viewModelListener != null) {
-            viewModelListener.setUp();
-            return;
-        }
-        if (viewModelListener != null) {
-            throw new InternalError ();
-        }
-        viewModelListener = new ViewModelListener ("DebuggingView", this); // NOI18N
+        viewLifecycle = ViewFactory.getDefault().createViewLifecycle("DebuggingView", null);
+        viewLifecycle.addModelUpdateListener(this);
     }
     
     @Override
     protected void componentHidden() {
         super.componentHidden ();
-        if (viewModelListener != null) {
-            viewModelListener.destroy ();
+        if (viewLifecycle != null) {
+            viewLifecycle.destroy();
+            viewLifecycle = null;
+            setRootContext(null, null);
         }
     }
 
@@ -747,6 +746,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             JViewport viewport = mainScrollPane.getViewport();
             ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }
+    }
+
+    @Override
+    public void modelUpdated(CompoundModel compoundModel, DebuggerEngine de) {
+        setRootContext(compoundModel, de);
     }
     
     // **************************************************************************

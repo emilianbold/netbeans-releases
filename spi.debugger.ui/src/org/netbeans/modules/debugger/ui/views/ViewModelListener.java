@@ -69,13 +69,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.spi.debugger.ui.ViewLifecycle.ModelUpdateListener;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
@@ -112,9 +112,6 @@ import org.openide.util.RequestProcessor;
 /**
  * This delegating CompoundModelImpl loads all models from DebuggerManager.
  * getDefault ().getCurrentEngine ().lookup (viewType, ..) lookup.
- *
- * <p>
- * This class is identical to org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener.
  *
  * @author   Jan Jancura
  */
@@ -170,6 +167,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private Preferences viewPreferences;
     private MessageFormat viewTreeDisplayFormat;
     private ViewPreferenceChangeListener prefListener = new ViewPreferenceChangeListener();
+    
+    private ModelUpdateListener mul;
 
     private static final RequestProcessor RP = new RequestProcessor(ViewModelListener.class.getName(), 1);
     
@@ -191,20 +190,33 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         buttonsPane.setLayout(new GridBagLayout());
         this.propertiesHelpID = propertiesHelpID;
         this.viewIcon = viewIcon;
-        viewPreferences = NbPreferences.forModule(ContextProvider.class).node(VIEW_PREFERENCES_NAME).node(viewType);
+        initView();
         setUp();
     }
     // </RAVE>
     
+    ViewModelListener(String viewType, String propertiesHelpID, ModelUpdateListener mul) {
+        this.viewType = viewType;
+        this.propertiesHelpID = propertiesHelpID;
+        this.mul = mul;
+        setUp();
+    }
+    
+    private void initView() {
+        // To have reasonable preferred size
+        view.add(Models.createView(Models.EMPTY_MODEL));
+    }
+    
     void setUp() {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     setUp();
                 }
             });
             return ;
         }
+        viewPreferences = NbPreferences.forModule(ContextProvider.class).node(VIEW_PREFERENCES_NAME).node(viewType);
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
@@ -218,10 +230,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         updateModelLazily ();
     }
 
-    void destroy () {
+    public void destroy () {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     destroy();
                 }
             });
@@ -256,7 +268,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 }
             }
             final boolean haveModels = haveTreeModels || haveNodeModels || tableModels != null && tableModels.size() > 0;
-            if (haveModels && view.getComponentCount() > 0) {
+            if (haveModels && view != null && view.getComponentCount() > 0) {
                 JComponent tree = (JComponent) view.getComponent(0);
                 if (!(tree instanceof javax.swing.JTabbedPane)) {
                     Models.setModelsToView(tree, null);
@@ -282,22 +294,25 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 currentSession = null;
                 providerToDisplay = null;
                 buttons = null;
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Have to access UI in AWT
-                        synchronized (destroyLock) {
-                            if (buttons == null) { // Still destroyed. Might be re-created in between.
-                                buttonsPane.removeAll();
-                                view.removeAll();
+                if (view != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Have to access UI in AWT
+                            synchronized (destroyLock) {
+                                if (buttons == null) { // Still destroyed. Might be re-created in between.
+                                    buttonsPane.removeAll();
+                                    view.removeAll();
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
                 sls = new ArrayList<ViewModelListener>(subListeners);
                 subListeners.clear();
                 isUp = false;
             }
+            mul = null;
         }
         for (ViewModelListener l : sls) {
             l.destroy();
@@ -325,14 +340,16 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private synchronized void updateModel() {
         RP.post(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 updateModelLazily();
             }
         });
     }
 
     private synchronized void updateModelLazily() {
-        if (!isUp) return ;    // Destroyed in between
+        if (!isUp) {    // Destroyed in between
+            return ;
+        }
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         if (e == null) {
@@ -401,10 +418,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             hyperModels.add(main);
             hyperModels.add(new TreeModelFilter() {
 
+                @Override
                 public Object getRoot(TreeModel original) {
                     return original.getRoot();
                 }
 
+                @Override
                 public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
                     Object[] ch = original.getChildren(parent, from, to);
                     if (ch != null) {
@@ -426,16 +445,20 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     return ch;
                 }
 
+                @Override
                 public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
                     return original.getChildrenCount(node);
                 }
 
+                @Override
                 public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
                     return false;
                 }
 
+                @Override
                 public void addModelListener(ModelListener l) {}
 
+                @Override
                 public void removeModelListener(ModelListener l) {}
             });
         } else {
@@ -456,7 +479,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         buttons = theButtons;
         tabbedPane = cp.lookupFirst(viewPath, javax.swing.JTabbedPane.class);
 
-        ModelsChangeRefresher mcr = new ModelsChangeRefresher();
+        ModelsChangeRefresher mcr = new ModelsChangeRefresher(e);
         Customizer[] modelListCustomizers = new Customizer[] {
             //(Customizer) treeModels,
             //(Customizer) treeModelFilters,
@@ -489,7 +512,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
         }
 
-        refreshModel();
+        refreshModel(e);
     }
 
     private static void addAsCustomizers(List<Customizer> modelListCustomizerLists, Object[] modelLists) {
@@ -512,7 +535,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         return models;
     }
 
-    private synchronized void refreshModel() {
+    private synchronized void refreshModel(DebuggerEngine e) {
         models.clear();
         if (mm == null) {
             // Destroyed
@@ -607,14 +630,23 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         } else {
             newModel = null;
         }
+        if (mul != null) {
+            mul.modelUpdated(newModel, e);
+        }
+        if (view == null) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 final JComponent buttonsSubPane;
                 synchronized (destroyLock) {
                     List<AbstractButton> theButtons = buttons;
-                    if (theButtons == null) return ; // Destroyed in between
+                    if (theButtons == null) {    // Destroyed in between
+                        return ;
+                    }
                     buttonsPane.removeAll();
-                    if (theButtons.size() == 0 && sessionProviders.size() == 0) {
+                    if (theButtons.isEmpty() && sessionProviders.isEmpty()) {
                         buttonsPane.setVisible(false);
                         buttonsSubPane = null;
                     } else {
@@ -722,6 +754,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 new ImageIcon(viewIcon),
                 NbBundle.getMessage(ViewModelListener.class, "Tooltip_SelectSrc"));
         b.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == b) {
                     javax.swing.JPopupMenu m = new javax.swing.JPopupMenu();
@@ -871,8 +904,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private class ModelsChangeRefresher implements PropertyChangeListener, Runnable {
         
+        private DebuggerEngine e;
         private RequestProcessor.Task task;
+        
+        ModelsChangeRefresher(DebuggerEngine e) {
+            this.e = e;
+        }
 
+        @Override
         public synchronized void propertyChange(PropertyChangeEvent evt) {
             if (task == null) {
                 task = new RequestProcessor(ModelsChangeRefresher.class.getName(), 1).create(this);
@@ -880,8 +919,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             task.schedule(1);
         }
 
+        @Override
         public void run() {
-            refreshModel();
+            refreshModel(e);
         }
         
     }
@@ -907,6 +947,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private class ViewPreferenceChangeListener implements PreferenceChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_WATCHES.equals(key) ||

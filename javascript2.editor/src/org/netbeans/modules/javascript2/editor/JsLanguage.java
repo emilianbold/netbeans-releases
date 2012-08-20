@@ -44,6 +44,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
+import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
@@ -108,6 +109,16 @@ public class JsLanguage extends DefaultLanguageConfig {
     @Override
     public boolean hasStructureScanner() {
         return true;
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return  new JsHintsProvider();
     }
 
     @Override

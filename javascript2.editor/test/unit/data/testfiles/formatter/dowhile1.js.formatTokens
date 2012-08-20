@@ -33,10 +33,11 @@ FormattingToken{kind=EOL, offset=40, text=
 }
 FormattingToken{kind=TEXT, offset=41, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=43, text=
 }
 FormattingToken{kind=WHITESPACE, offset=44, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=a}
 FormattingToken{kind=WHITESPACE, offset=46, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}

@@ -2,7 +2,9 @@ if( a) ;else if (b ) c;
 
 if  (z) "dfdfd"; else "sd";
 
-if(test ) "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
+if(test ) "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"; else x
+
+if(test ) "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"; else x
 
 if(test ) "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "aaaaa";
 

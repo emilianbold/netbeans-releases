@@ -447,6 +447,8 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("com.sun.tools.javac.util.CloseableURLClassLoader");     //NOI18N
         wl.add("java.lang.Thread$1");                                   //NOI18N
         wl.add("org.apache.lucene.store.MMapDirectory$1");              //NOI18N
+        wl.add("org.apache.lucene.util.Constants"); //#217037
+        wl.add("org.apache.lucene.util.RamUsageEstimator");//#217037
         return wl;
     }
     

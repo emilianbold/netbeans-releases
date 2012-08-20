@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.jira.repository;
 
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
@@ -49,13 +50,11 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFi
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
+import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.util.Map;
 import java.awt.Image;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -68,6 +67,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -78,17 +78,16 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.commands.GetMultiTaskDataCommand;
-import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
-import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.netbeans.modules.jira.util.MylynUtils;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.MylynUtils;
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -391,7 +390,17 @@ public class JiraRepository {
         final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
         fd.setContentFilter(cf);
         fd.setProjectFilter(getProjectFilter());
-        PerformQueryCommand queryCmd = new PerformQueryCommand(this, fd, collector);
+        
+        JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
+        RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "jira simple search query"); // NOI18N
+        JiraUtil.setQuery(getTaskRepository(), repositoryQuery, fd);
+        
+        PerformQueryCommand queryCmd = 
+                new PerformQueryCommand(
+                    Jira.getInstance().getRepositoryConnector(), 
+                    getTaskRepository(), 
+                    collector, 
+                    repositoryQuery);
         getExecutor().execute(queryCmd);
         return issues;
     }
@@ -488,10 +497,10 @@ public class JiraRepository {
     private JiraConfiguration getConfigurationIntern(final boolean forceRefresh) {
         // XXX need logging incl. consumed time
 
-        class ConfigurationCommand extends JiraCommand {
+        class ConfigurationCommand extends BugtrackingCommand {
             JiraConfiguration configuration;
             @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+            public void execute() throws CoreException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
 
                 boolean needRefresh = !client.getCache().hasDetails();

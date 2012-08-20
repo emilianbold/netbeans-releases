@@ -1,0 +1,160 @@
+FormattingToken{kind=SOURCE_START, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=0, text=do}
+FormattingToken{kind=WHITESPACE, offset=2, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=3, text={}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=4, text=
+}
+FormattingToken{kind=WHITESPACE, offset=5, text=  }
+FormattingToken{kind=TEXT, offset=7, text="}
+FormattingToken{kind=TEXT, offset=8, text= something strange}
+FormattingToken{kind=TEXT, offset=26, text="}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=27, text=
+}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=28, text=}}
+FormattingToken{kind=WHITESPACE, offset=29, text= }
+FormattingToken{kind=BEFORE_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=30, text=while}
+FormattingToken{kind=AFTER_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=35, text= }
+FormattingToken{kind=TEXT, offset=36, text=(}
+FormattingToken{kind=AFTER_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=37, text=a}
+FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=38, text=)}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=39, text=
+}
+FormattingToken{kind=EOL, offset=40, text=
+}
+FormattingToken{kind=TEXT, offset=41, text=do}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=43, text=  }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=45, text="}
+FormattingToken{kind=TEXT, offset=46, text= something strange}
+FormattingToken{kind=TEXT, offset=64, text="}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=65, text=
+}
+FormattingToken{kind=WHITESPACE, offset=66, text= }
+FormattingToken{kind=BEFORE_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=67, text=while}
+FormattingToken{kind=AFTER_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=72, text= }
+FormattingToken{kind=TEXT, offset=73, text=(}
+FormattingToken{kind=AFTER_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=74, text=a}
+FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=75, text=)}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=76, text=
+}
+FormattingToken{kind=EOL, offset=77, text=
+}
+FormattingToken{kind=TEXT, offset=78, text=do}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=80, text=
+}
+FormattingToken{kind=WHITESPACE, offset=81, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=82, text=a}
+FormattingToken{kind=WHITESPACE, offset=83, text= }
+FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=84, text==}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=85, text= }
+FormattingToken{kind=TEXT, offset=86, text=b}
+FormattingToken{kind=WHITESPACE, offset=87, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=88, text=+}
+FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=89, text= }
+FormattingToken{kind=TEXT, offset=90, text=c}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=91, text=
+}
+FormattingToken{kind=WHITESPACE, offset=92, text= }
+FormattingToken{kind=LINE_COMMENT, offset=93, text=// ee}
+FormattingToken{kind=EOL, offset=98, text=
+}
+FormattingToken{kind=WHITESPACE, offset=99, text=        }
+FormattingToken{kind=BEFORE_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=107, text=while}
+FormattingToken{kind=AFTER_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=112, text=(}
+FormattingToken{kind=AFTER_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=113, text=true}
+FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=117, text=)}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=118, text=
+}
+FormattingToken{kind=EOL, offset=119, text=
+}
+FormattingToken{kind=TEXT, offset=120, text=do}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=122, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=123, text="}
+FormattingToken{kind=TEXT, offset=124, text=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
+FormattingToken{kind=TEXT, offset=194, text="}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=195, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=196, text= }
+FormattingToken{kind=BEFORE_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=197, text=while}
+FormattingToken{kind=AFTER_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=202, text=(}
+FormattingToken{kind=AFTER_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=203, text=x}
+FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=204, text=)}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=205, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=206, text=
+}
+FormattingToken{kind=EOL, offset=207, text=
+}
+FormattingToken{kind=TEXT, offset=208, text=do}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=210, text= }
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=211, text="}
+FormattingToken{kind=TEXT, offset=212, text=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
+FormattingToken{kind=TEXT, offset=290, text="}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=291, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=292, text= }
+FormattingToken{kind=BEFORE_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=293, text=while}
+FormattingToken{kind=AFTER_WHILE_KEYWORD, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=298, text=(}
+FormattingToken{kind=AFTER_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=299, text=x}
+FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=300, text=)}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=301, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=302, text=
+}

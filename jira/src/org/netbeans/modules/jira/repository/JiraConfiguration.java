@@ -54,17 +54,14 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.Exceptions;
 
 /**
@@ -238,9 +235,9 @@ public class JiraConfiguration {
             return;
         }
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        JiraCommand cmd = new JiraCommand() {
+        BugtrackingCommand cmd = new BugtrackingCommand() {
             @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+            public void execute() {
                 try {
                     client.getCache().refreshProjectDetails(project.getId(), new NullProgressMonitor());
                 } catch (JiraException ex) {

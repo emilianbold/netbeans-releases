@@ -81,7 +81,7 @@ public class TestBaseForTestProject extends TestBase {
         Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
         
         //the InstalledFileLocatorImpl needs the netbeans.dirs properly set 
-        //so it can find the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
+        //so it can find the jsf "modules/ext/jsf-2_1/javax.faces.jar"
         assertNotNull("the netbeans.dirs property must be specified!", System.getProperty("netbeans.dirs"));
 
         this.projectFo = getTestFile("testWebProject");

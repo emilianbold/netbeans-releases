@@ -164,6 +164,7 @@ public class FmtOptions {
     public static final String spaceBeforeTryLeftBrace = "spaceBeforeTryLeftBrace"; //NOI18N
     public static final String spaceBeforeCatchLeftBrace = "spaceBeforeCatchLeftBrace"; //NOI18N
     public static final String spaceBeforeFinallyLeftBrace = "spaceBeforeFinallyLeftBrace"; //NOI18N
+    public static final String spaceBeforeWithLeftBrace = "spaceBeforeWithLeftBrace"; //NOI18N
 //    public static final String spaceBeforeSynchronizedLeftBrace = "spaceBeforeSynchronizedLeftBrace"; //NOI18N
 //    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
 //    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
@@ -217,6 +218,7 @@ public class FmtOptions {
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
     public static final String wrapWhileStatement = "wrapWhileStatement"; //NOI18N
     public static final String wrapDoWhileStatement = "wrapDoWhileStatement"; //NOI18N
+    public static final String wrapWithStatement = "wrapWithStatement"; //NOI18N
     public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
@@ -336,6 +338,7 @@ public class FmtOptions {
             { spaceBeforeTryLeftBrace, TRUE},
             { spaceBeforeCatchLeftBrace, TRUE},
             { spaceBeforeFinallyLeftBrace, TRUE},
+            { spaceBeforeWithLeftBrace, TRUE},
 //            { spaceBeforeSynchronizedLeftBrace, TRUE},
 //            { spaceBeforeStaticInitLeftBrace, TRUE},
 //            { spaceBeforeArrayInitLeftBrace, FALSE},
@@ -389,6 +392,7 @@ public class FmtOptions {
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
             { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapWithStatement, WRAP_ALWAYS}, //NOI18N
             { wrapBinaryOps, WRAP_NEVER}, //NOI18N
             { wrapTernaryOps, WRAP_NEVER},
             { wrapAssignOps, WRAP_NEVER},

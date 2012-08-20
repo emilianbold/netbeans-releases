@@ -54,10 +54,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -86,19 +86,19 @@ public class JiraExecutor {
         this.repository = repository;
     }
 
-    public void execute(JiraCommand cmd) {
+    public void execute(BugtrackingCommand cmd) {
         execute(cmd, true);
     }
 
-    public void execute(JiraCommand cmd, boolean handleExceptions) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions) {
         execute(cmd, handleExceptions, true, true);
     }
 
-    public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion) {
         execute(cmd, handleExceptions, ensureConfiguration, checkVersion, true);
     }
     
-    public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion, boolean ensureCredentials) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion, boolean ensureCredentials) {
         try {
             try {
 
@@ -121,10 +121,15 @@ public class JiraExecutor {
                 cmd.setFailed(false);
                 cmd.setErrorMessage(null);
 
-            } catch (JiraException je) {
+            } catch (IOException ioe) {
                 // XXX
-                Jira.LOG.log(Level.FINE, null, je);
-                throw new WrapperException(je.getMessage(), je);
+                Throwable cause = ioe.getCause();
+                if(cause instanceof JiraException) {
+                    JiraException je = (JiraException) cause;
+                    Jira.LOG.log(Level.FINE, null, je);
+                    throw new WrapperException(je.getMessage(), je);
+                }
+                throw ioe;
             } catch (CoreException ce) {
                 Jira.LOG.log(Level.FINE, null, ce);
                 throw new WrapperException(ce.getMessage(), ce);

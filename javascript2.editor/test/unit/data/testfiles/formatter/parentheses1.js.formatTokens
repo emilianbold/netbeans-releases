@@ -1,5 +1,6 @@
 FormattingToken{kind=SOURCE_START, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=0, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=3, text= }
 FormattingToken{kind=TEXT, offset=4, text=engine}
 FormattingToken{kind=WHITESPACE, offset=10, text= }
@@ -62,6 +63,7 @@ FormattingToken{kind=TEXT, offset=99, text=this}
 FormattingToken{kind=BEFORE_WITH_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=103, text=)}
 FormattingToken{kind=WHITESPACE, offset=104, text= }
+FormattingToken{kind=BEFORE_WITH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=105, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
@@ -226,6 +228,7 @@ FormattingToken{kind=WHITESPACE, offset=387, text=   }
 FormattingToken{kind=TEXT, offset=390, text=(}
 FormattingToken{kind=AFTER_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=391, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=394, text= }
 FormattingToken{kind=TEXT, offset=395, text=a}
 FormattingToken{kind=WHITESPACE, offset=396, text= }
@@ -243,6 +246,7 @@ FormattingToken{kind=TEXT, offset=402, text=)}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=403, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=404, text= }
 FormattingToken{kind=TEXT, offset=405, text=a}
 FormattingToken{kind=WHITESPACE, offset=406, text= }
@@ -263,6 +267,7 @@ FormattingToken{kind=TEXT, offset=418, text=5}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=419, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_MODIFY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=420, text= }
 FormattingToken{kind=TEXT, offset=421, text=a}
 FormattingToken{kind=BEFORE_UNARY_OPERATOR, offset=-1, text=null}
@@ -505,6 +510,7 @@ FormattingToken{kind=EOL, offset=718, text=
 FormattingToken{kind=EOL, offset=719, text=
 }
 FormattingToken{kind=TEXT, offset=720, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=723, text= }
 FormattingToken{kind=TEXT, offset=724, text=color}
 FormattingToken{kind=WHITESPACE, offset=729, text= }

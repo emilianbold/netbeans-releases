@@ -54,7 +54,6 @@ public final class PhpModifiers extends Modifier {
     public static final int ALL_FLAGS = 0xFFFFFFFF;
 
     private static final PhpModifiers EMPTY = new PhpModifiers(NO_FLAGS);
-    private static final PhpModifiers ANY = new PhpModifiers(ALL_FLAGS);
 
     public static PhpModifiers noModifiers() {
         return fromBitMask(new int[]{});

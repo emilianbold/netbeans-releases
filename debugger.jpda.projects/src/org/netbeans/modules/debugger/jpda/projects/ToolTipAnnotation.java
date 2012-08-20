@@ -172,7 +172,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return;
-        JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
+        final JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
         if (d == null) return;
         JPDAThread t = d.getCurrentThread();
         if (t == null || !t.isSuspended()) return;
@@ -270,7 +270,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
                             et.removeAll();
                             et.setWidthCheck(false);
-                            final ToolTipView ttView = ToolTipView.getToolTipView(expression, var);
+                            final ToolTipView ttView = ToolTipView.getToolTipView(d, expression, var);
                             et.add(ttView);
                             et.revalidate();
                             et.repaint();

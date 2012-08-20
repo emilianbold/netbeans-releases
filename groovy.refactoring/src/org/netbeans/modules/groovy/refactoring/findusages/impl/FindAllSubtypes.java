@@ -45,6 +45,7 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
@@ -79,13 +80,17 @@ public class FindAllSubtypes extends AbstractFindUsages {
         }
 
         @Override
-        public void visitClass(ClassNode node) {
-            ClassNode superClass = node.getSuperClass();
+        public void visitClass(final ClassNode node) {
+            ClassNode superClass = node.getUnresolvedSuperClass(false);
+
             while (superClass != null) {
                 if (findingFqn.equals(superClass.getName())) {
-                    usages.add(node);
+                    usages.add(new FakeASTNode(superClass, superClass.getNameWithoutPackage()));
                     break;
                 } else {
+                    // FIXME: This doesn't work again ?! .. the weird groovy lazy initiation
+                    // don't want to make this happen and getSuperClass seems to be working
+                    // with respect to the weather
                     superClass = superClass.getSuperClass();
                 }
             }

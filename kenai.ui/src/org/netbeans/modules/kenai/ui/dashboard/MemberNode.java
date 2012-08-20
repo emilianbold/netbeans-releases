@@ -48,15 +48,12 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -94,7 +91,7 @@ public class MemberNode extends LeafNode {
 
                     @Override
                     public String getToolTipText() {
-                        return NbBundle.getMessage(UserNode.class, user.isOnline() ? "LBL_ONLINE_MEMBER_TOOLTIP" : "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
+                        return NbBundle.getMessage(MemberNode.class, user.isOnline() ? "LBL_ONLINE_MEMBER_TOOLTIP" : "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
                     }
                 };
                 lbl.setIcon(new KenaiUserUI(user.getFQN()).getIcon());

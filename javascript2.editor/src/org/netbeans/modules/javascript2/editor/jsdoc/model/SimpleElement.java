@@ -51,7 +51,7 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
  */
 public class SimpleElement extends JsDocElementImpl {
 
-    private SimpleElement(Type type) {
+    private SimpleElement(JsDocElementType type) {
         super(type);
     }
 
@@ -59,7 +59,7 @@ public class SimpleElement extends JsDocElementImpl {
      * Creates new {@code SimpleElement}.
      * @param type simple type (tag), never null
      */
-    public static SimpleElement create(Type type) {
+    public static SimpleElement create(JsDocElementType type) {
         return new SimpleElement(type);
     }
 

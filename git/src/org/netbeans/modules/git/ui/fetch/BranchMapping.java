@@ -42,6 +42,7 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.text.MessageFormat;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
@@ -55,41 +56,49 @@ import org.openide.util.NbBundle;
 public class BranchMapping extends ItemSelector.Item {
     private final String label;
     private final String tooltip;
-    private final String remoteBranch;
+    private final String remoteBranchName;
     private final GitRemoteConfig remote;
     private static final String BRANCH_MAPPING_LABEL = "{0} -> {1}/{0} [{2}]"; //NOI18N
+    private static final String BRANCH_MAPPING_LABEL_UPTODATE = "{0} -> {1}/{0}"; //NOI18N
 
-    public BranchMapping (String remoteBranch, String localBranch, GitRemoteConfig remote, boolean preselected) {
+    public BranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, GitRemoteConfig remote, boolean preselected) {
         super(preselected);
-        this.remoteBranch = remoteBranch;
+        this.remoteBranchName = remoteBranchName;
         this.remote = remote;
         if(localBranch == null) {
             // added
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranch, remote.getRemoteName(), "<font color=\"#00b400\">A</font>");
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"#00b400\">A</font>");
 
             tooltip = NbBundle.getMessage(
-                FetchBranchesStep.class, 
+                BranchMapping.class, 
                 "LBL_FetchBranchesPanel.BranchMapping.description", //NOI18N
                 new Object[] { 
-                    localBranch == null ? remote.getRemoteName() + "/" + remoteBranch : localBranch, //NOI18N
-                    NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.added.description") //NOI18N
+                    remote.getRemoteName() + "/" + remoteBranchName, //NOI18N
+                    NbBundle.getMessage(BranchMapping.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.added.description") //NOI18N
                 }); //NOI18N
+        } else if (localBranch.getId().equals(remoteBranchId)) {
+            // up to date
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL_UPTODATE, remoteBranchName, remote.getRemoteName());
+
+            tooltip = NbBundle.getMessage(
+                BranchMapping.class, 
+                "LBL_FetchBranchesPanel.BranchMapping.Mode.uptodate.description", localBranch.getName()); //NOI18N
         } else {
             // modified
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranch, remote.getRemoteName(), "<font color=\"#0000FF\">U</font>"); //NOI18N                 
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"#0000FF\">U</font>"); //NOI18N                 
 
             tooltip = NbBundle.getMessage(
-                FetchBranchesStep.class, 
+                BranchMapping.class, 
                 "LBL_FetchBranchesPanel.BranchMapping.description", //NOI18N
                 new Object[] { 
-                    localBranch,
-                    NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.updated.description") //NOI18N
+                    localBranch.getName(),
+                    NbBundle.getMessage(BranchMapping.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.updated.description") //NOI18N
                 }); 
         }
     }
 
     public String getRefSpec () {
-        return GitUtils.getRefSpec(remoteBranch, remote.getRemoteName());
+        return GitUtils.getRefSpec(remoteBranchName, remote.getRemoteName());
     }
 
     @Override
@@ -103,7 +112,7 @@ public class BranchMapping extends ItemSelector.Item {
     }
 
     public String getRemoteBranchName () {
-        return remoteBranch;
+        return remoteBranchName;
     }
     
     public String getRemoteName () {
@@ -116,7 +125,7 @@ public class BranchMapping extends ItemSelector.Item {
             return 1;
         }
         if(t instanceof BranchMapping) {
-            return remoteBranch.compareTo(((BranchMapping)t).remoteBranch);
+            return remoteBranchName.compareTo(((BranchMapping)t).remoteBranchName);
         }
         return 0;            
     }

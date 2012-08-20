@@ -96,7 +96,7 @@ public abstract class ProjectOpenedHook {
     protected ProjectOpenedHook() {}
     
     /**
-     * Called when a project is opened in the GUI.
+     * Called when a project is opened in the GUI. If runtime exception is thrown during execution, project will not open as it might not be fully initialized.
      * <div class="nonnormative">
      * <p>Typical things to do here:</p>
      * <ul>
@@ -117,7 +117,7 @@ public abstract class ProjectOpenedHook {
     protected abstract void projectOpened();
     
     /**
-     * Called when a project is closed in the GUI.
+     * Called when a project is closed in the GUI. If runtime exception is thrown during execution, project will still be closed.
      * <div class="nonnormative">
      * <p>Typical things to do here:</p>
      * <ul>

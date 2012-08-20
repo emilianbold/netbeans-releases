@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.enterprise.deploy.spi.Target;
 import org.glassfish.tools.ide.data.DataException;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
 
@@ -357,6 +358,35 @@ public class GlassFishUrl {
      */
     public String getName() {
         return name;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Compares this GlassFish cloud URL to the specified object.
+     * <p/>
+     * The result is <code>true</code> if and only if the argument is not
+     * <code>null</code> and is a <code>GlassFishUrl</code> object that
+     * represents the same type ID and name <code>String</code>.
+     * @param urlObject  The object to compare this <code>GlassFishUrl</code>
+     *                   object against.
+     * @return <code>true</code> if the given object represents
+     *         a <code>GlassFishUrl</code> equivalent to this string,
+     *         <code>false</code> otherwise.
+     */
+    public boolean equals(Object urlObject) {
+        if (this == urlObject) {
+            return true;
+        }
+        if (urlObject instanceof GlassFishUrl) {
+            GlassFishUrl url = (GlassFishUrl) urlObject;
+            return url != null
+                    ? this.type == url.type && this.name.equals(url.name)
+                    : false;
+        }
+        return false;
     }
 
 }

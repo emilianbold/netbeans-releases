@@ -107,7 +107,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        KenaiUtil.openQuery(query, null, true);
+        KenaiUtil.openQuery(query, Query.QueryMode.SHOW_ALL, true);
     }
 
     @Override

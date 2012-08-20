@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -95,12 +95,12 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/svnClientAdapter-javahl-1.8.5.jar</runtime-relative-path>
-                <binary-origin>external/svnClientAdapter-javahl-1.8.5.jar</binary-origin>
+                <runtime-relative-path>ext/svnClientAdapter-javahl-1.8.14.jar</runtime-relative-path>
+                <binary-origin>external/svnClientAdapter-javahl-1.8.14.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/svnjavahl-1.7.2.jar</runtime-relative-path>
-                <binary-origin>external/svnjavahl-1.7.2.jar</binary-origin>
+                <runtime-relative-path>ext/svnjavahl-1.7.5.jar</runtime-relative-path>
+                <binary-origin>external/svnjavahl-1.7.5.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

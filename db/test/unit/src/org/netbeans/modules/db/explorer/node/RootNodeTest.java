@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import junit.framework.TestCase;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -88,6 +91,45 @@ public class RootNodeTest extends TestCase {
 
         checkConnection(rootNode, conn);
         checkNodeChildren(rootNode);
+    }
+
+    /**
+     * Ensure, that the connection list stays sorted, if the displayName
+     * which is the sorting criterium, is changed
+     */
+    public void testSortingAfterDisplayNameChange() throws Exception {
+        // Initialize the tree with a driver and a connection
+        JDBCDriver driver = Util.createDummyDriver();
+        JDBCDriverManager.getDefault().addDriver(driver);
+
+        DatabaseConnection conn2 = DatabaseConnection.create(
+                driver, "jdbc:mark//twain/conn2", "tomsawyer", null, "whitewash", true, "B2");
+        ConnectionManager.getDefault().addConnection(conn2);
+
+        DatabaseConnection conn = DatabaseConnection.create(
+                driver, "jdbc:mark//twain/conn", "tomsawyer", null, "whitewash", true, "A1");
+        ConnectionManager.getDefault().addConnection(conn);
+
+        RootNode rootNode = RootNode.instance();
+
+        List<? extends Node> children = new ArrayList(rootNode.getChildNodesSync());
+
+        assertEquals("A1", children.get(1).getDisplayName());
+        assertEquals("B2",
+                children.get(2).getDisplayName());
+
+        Method m = conn.getClass().getDeclaredMethod("getDelegate", new Class<?>[]{});
+        m.setAccessible(true);
+
+        org.netbeans.modules.db.explorer.DatabaseConnection dc =
+                (org.netbeans.modules.db.explorer.DatabaseConnection) m.invoke(conn, new Object[]{});
+
+        dc.setDisplayName("C3");
+
+        children = new ArrayList(rootNode.getChildNodesSync());
+
+        assertEquals("B2", children.get(1).getDisplayName());
+        assertEquals("C3", children.get(2).getDisplayName());
     }
 
     private void checkNodeChildren(RootNode root) throws Exception {

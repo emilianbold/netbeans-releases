@@ -18,6 +18,7 @@ FormattingToken{kind=EOL, offset=26, text=
 }
 FormattingToken{kind=WHITESPACE, offset=27, text=    }
 FormattingToken{kind=TEXT, offset=31, text=var}
+FormattingToken{kind=AFTER_VAR_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=34, text= }
 FormattingToken{kind=TEXT, offset=35, text=space}
 FormattingToken{kind=WHITESPACE, offset=40, text= }
@@ -48,6 +49,7 @@ FormattingToken{kind=TEXT, offset=59, text=0}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=60, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=61, text= }
 FormattingToken{kind=TEXT, offset=62, text=i}
 FormattingToken{kind=WHITESPACE, offset=63, text= }
@@ -59,6 +61,7 @@ FormattingToken{kind=TEXT, offset=66, text=count}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=71, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FOR_MODIFY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=72, text= }
 FormattingToken{kind=TEXT, offset=73, text=i}
 FormattingToken{kind=BEFORE_UNARY_OPERATOR, offset=-1, text=null}

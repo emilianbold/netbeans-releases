@@ -90,8 +90,7 @@ public class JsDocumentationCodeCompletion {
     public static class JsDocumentationCodeCompletionItem implements CompletionProposal {
 
         private static final String ANNOTATION_ICON = "org/netbeans/modules/csl/source/resources/icons/annotation.png"; //NOI18N
-        
-        private static ImageIcon imageIcon = null;
+        private static final ImageIcon IMAGE_ICON = new ImageIcon(ImageUtilities.loadImage(ANNOTATION_ICON));
         
         private final AnnotationCompletionTag tag;
         private final int anchorOffset;
@@ -158,10 +157,7 @@ public class JsDocumentationCodeCompletion {
 
         @Override
         public ImageIcon getIcon() {
-            if (imageIcon == null) {
-                imageIcon = new ImageIcon(ImageUtilities.loadImage(ANNOTATION_ICON));
-            }
-            return imageIcon;
+            return IMAGE_ICON;
         }
 
         @Override

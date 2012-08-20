@@ -58,8 +58,7 @@ public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
     static {
         PARSERS.add(new SimpleAnnotationLineParser());
         PARSERS.add(new ParameterizedAnnotationLineParser());
-        PARSERS.add(new DiscriminatorMapLineParser());
-        PARSERS.add(new EntityLineParser());
+        PARSERS.add(new TypedParametersAnnotationLineParser());
         PARSERS.add(new EncapsulatingAnnotationLineParser());
     }
 

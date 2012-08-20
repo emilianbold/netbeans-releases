@@ -68,7 +68,7 @@ public class FxIdCompleter implements Completer, Completer.Factory {
     public FxIdCompleter() {
     }
 
-    public FxIdCompleter(CompletionContext ctx, ElementHandle<TypeElement> controllerType) {
+    FxIdCompleter(CompletionContext ctx, ElementHandle<TypeElement> controllerType) {
         this.ctx = ctx;
         this.controllerType = controllerType;
     }

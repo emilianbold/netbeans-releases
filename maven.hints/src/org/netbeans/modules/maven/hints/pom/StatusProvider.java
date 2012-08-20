@@ -160,10 +160,11 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
         static List<ErrorDescription> findHints(final @NonNull POMModel model, final Project project, final int selectionStart, final int selectionEnd) {
             final List<ErrorDescription> err = new ArrayList<ErrorDescription>();
+            //before checkModelValid because of #216093
+            runMavenValidation(model, err);
             if (!checkModelValid(model)) {
                 return err;
             }
-            runMavenValidation(model, err);
 
             return ProjectManager.mutex().readAccess(new Mutex.Action<List<ErrorDescription>>() {
                 public @Override List<ErrorDescription> run() {

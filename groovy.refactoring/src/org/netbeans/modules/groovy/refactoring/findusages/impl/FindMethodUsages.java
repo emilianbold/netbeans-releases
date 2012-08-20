@@ -51,8 +51,8 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
 /**
  *
@@ -89,7 +89,7 @@ public class FindMethodUsages extends AbstractFindUsages {
         protected void visitConstructorOrMethod(MethodNode node, boolean isConstructor) {
             String className = ElementUtils.getDeclaringClassName(node);
             if (declaringClassName.equals(className)) {
-                if (isConstructor) {
+                if (isConstructor && declaringClassName.endsWith(findingMethod)) {
                     usages.add(node);
                 } else if (findingMethod.equals(node.getName())) {
                     usages.add(node);
@@ -167,7 +167,7 @@ public class FindMethodUsages extends AbstractFindUsages {
                 type = type.redirect();
             }
             if (type.hasPossibleMethod(findingMethod, arguments)) {
-                usages.add(methodCall);
+                usages.add(methodCall.getMethod());
             }
         }
     }

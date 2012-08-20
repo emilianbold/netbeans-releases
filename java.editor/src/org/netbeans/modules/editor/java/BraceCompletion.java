@@ -343,6 +343,7 @@ class BraceCompletion {
                     if (parenBalance-- == 0) {
                         return ts.offset();
                     }
+                    break;
                 case LBRACE:
                     braceBalance++;
                     break;
@@ -350,6 +351,7 @@ class BraceCompletion {
                     if (braceBalance-- == 0) {
                         return ts.offset();
                     }
+                    break;
                 case LBRACKET:
                     bracketBalance++;
                     break;
@@ -357,6 +359,7 @@ class BraceCompletion {
                     if (bracketBalance-- == 0) {
                         return ts.offset();
                     }
+                    break;
             }
             if (!ts.moveNext())
                 break;
