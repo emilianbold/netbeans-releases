@@ -60,4 +60,18 @@ public final class JsDocumentationFallbackSyntaxProvider implements SyntaxProvid
         return "|"; //NOI18N
     }
 
+    @Override
+    public String paramTagTemplate() {
+        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
+    }
+
+    @Override
+    public String returnTagTemplate() {
+        return "@return {" + TYPE_PLACEHOLDER + "}";
+    }
+
+    @Override
+    public String typeTagTemplate() {
+        return "@type {" + TYPE_PLACEHOLDER + "}";
+    }
 }

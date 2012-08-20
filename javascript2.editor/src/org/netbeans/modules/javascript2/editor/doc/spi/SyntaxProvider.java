@@ -50,6 +50,9 @@ package org.netbeans.modules.javascript2.editor.doc.spi;
  */
 public interface SyntaxProvider {
 
+    static String TYPE_PLACEHOLDER = "[type]";
+    static String NAME_PLACEHOLDER = "[name]";
+
     /**
      * Gets the types separator.
      * <p>
@@ -59,6 +62,38 @@ public interface SyntaxProvider {
      */
     String typesSeparator();
 
-    
+    /**
+     * Returns the param tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     * [name] - parameter name
+     *
+     * <i>The final string could look like this one: "@param {[type]} [name]"</i>
+     * @return template for the parameter tag
+     */
+    String paramTagTemplate();
+
+    /**
+     * Returns the return tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     *
+     * <i>The final string could look like this one: "@return {[type]}"</i>
+     * @return template for the return tag
+     */
+    String returnTagTemplate();
+
+    /**
+     * Returns the type tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     *
+     * <i>The final string could look like this one: "@type {[type]}"</i>
+     * @return template for the type tag
+     */
+    String typeTagTemplate();
 
 }

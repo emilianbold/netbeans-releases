@@ -55,4 +55,18 @@ public class ExtDocSyntaxProvider implements SyntaxProvider {
         return "/";
     }
 
+    @Override
+    public String paramTagTemplate() {
+        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
+    }
+
+    @Override
+    public String returnTagTemplate() {
+        return "@return {" + TYPE_PLACEHOLDER + "}";
+    }
+
+    @Override
+    public String typeTagTemplate() {
+        return "@type {" + TYPE_PLACEHOLDER + "}";
+    }
 }
