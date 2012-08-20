@@ -10,7 +10,7 @@ Usages of <b>FUClass</b> [7 occurrences]
             <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;26:&nbsp;&nbsp;</font><font color=#0000e6>this</font><font color=#000000>.</font><font color=#000000>&lt;</font><b>FUClass</b><font color=#000000>&gt;</font><font color=#000000>generics</font><font color=#000000>(</font><font color=#0000e6>this</font><font color=#000000>)</font><font color=#000000>;</font>
             <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;29:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>T</font>&nbsp;<font color=#000000>generics</font><font color=#000000>(</font><font color=#000000>T</font>&nbsp;<font color=#000000>in</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
 true
-Usages of <b>FUClass</b> [7 occurrences]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Usages of <b>FUClass</b> [7 occurrences]
     RefactoringTest
         Source Packages
             fu
