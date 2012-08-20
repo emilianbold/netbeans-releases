@@ -51,25 +51,23 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ScopedRemoteObject;
-import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
-
-import org.openide.util.ImageUtilities;
-
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.spi.debugger.ui.ViewFactory;
 
 // <RAVE>
 // Implement HelpCtx.Provider interface to provide help ids for help system
@@ -84,14 +82,25 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     private static volatile ScopedRemoteObject variable;
 
     private transient JComponent contentComponent;
-    private transient ViewModelListener viewModelListener;
+    private Debugger debugger;
+    private Debugger.Listener debuggerStateChangeListener;
+    private ToolTipSupport toolTipSupport;
     private String name; // Store just the name persistently, we'll create the component from that
     
-    private ToolTipView(String expression, ScopedRemoteObject v, String icon) {
+    private ToolTipView(Debugger debugger, String expression, ScopedRemoteObject v, String icon) {
+        this.debugger = debugger;
         ToolTipView.expression = expression;
         variable = v;
         this.name = TOOLTIP_VIEW_NAME;
-        componentShowing(icon);
+        JComponent c = ViewFactory.getDefault().createViewComponent(
+                icon,
+                ToolTipView.TOOLTIP_VIEW_NAME,
+                "NetbeansDebuggerJSToolTipNode",
+                null);
+        setLayout (new BorderLayout ());
+        add (c, BorderLayout.CENTER);  //NOI18N
+        debuggerStateChangeListener = new DebuggerStateChangeListener();
+        debugger.addListener(debuggerStateChangeListener);
     }
 
     static String getExpression() {
@@ -103,58 +112,11 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
 
     void setToolTipSupport(ToolTipSupport toolTipSupport) {
-        if (viewModelListener != null) {
-            viewModelListener.setToolTipSupport(toolTipSupport);
-    }
+        this.toolTipSupport = toolTipSupport;
     }
     
-    private void componentShowing (String icon) {
-        if (viewModelListener != null) {
-            viewModelListener.setUp();
-            return ;
-    }
-        JComponent buttonsPane;
-        if (contentComponent == null) {
-            setLayout (new BorderLayout ());
-            contentComponent = new javax.swing.JPanel(new BorderLayout ());
-
-            //tree = Models.createView (Models.EMPTY_MODEL);
-            add (contentComponent, BorderLayout.CENTER);  //NOI18N
-            JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
-            toolBar.setFloatable(false);
-            toolBar.setRollover(true);
-            toolBar.setBorderPainted(true);
-            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                toolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-            }
-            toolBar.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
-                    javax.swing.UIManager.getDefaults().getColor("Separator.background")),
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
-                    javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
-            toolBar.setPreferredSize(new Dimension(26, 10));
-            add(toolBar, BorderLayout.WEST);
-            buttonsPane = toolBar;
-        } else {
-            buttonsPane = (JComponent) ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.WEST);
-        }
-        // <RAVE> CR 6207738 - fix debugger help IDs
-        // Use the modified constructor that stores the propertiesHelpID
-        // for nodes in this view
-        // viewModelListener = new ViewModelListener (
-        //     "ThreadsView",
-        //     tree
-        // );
-        // ====
-        viewModelListener = new ViewModelListener (
-            name,
-            contentComponent,
-            buttonsPane,
-            null,
-            ImageUtilities.loadImage (icon),
-            variable
-        );
-        // </RAVE>
+    private void closeToolTip() {
+        toolTipSupport.setToolTipVisible(false);
     }
     
     //protected void componentHidden () {
@@ -162,9 +124,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     public void removeNotify() {
         super.removeNotify();//componentHidden ();
         variable = null;
-        if (viewModelListener != null) {
-            viewModelListener.destroy ();
-    }
+        debugger.removeListener(debuggerStateChangeListener);
     }
     
     // <RAVE>
@@ -203,8 +163,9 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     
 
     /** Creates the view. */
-    public static synchronized ToolTipView getToolTipView(String expression, ScopedRemoteObject v) {
+    public static synchronized ToolTipView getToolTipView(Debugger d, String expression, ScopedRemoteObject v) {
         return new ToolTipView(
+                d,
                 expression,
                 v,
                 "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"
@@ -368,6 +329,23 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
                 super.setKeymap(addKeymap(null, map));
             }
         }
+    }
+    
+    private class DebuggerStateChangeListener implements Debugger.Listener {
+
+        @Override
+        public void paused(List<CallFrame> callStack, String reason) {}
+
+        @Override
+        public void resumed() {
+            closeToolTip();
+        }
+
+        @Override
+        public void reset() {
+            closeToolTip();
+        }
+        
     }
 
 }

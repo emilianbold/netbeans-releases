@@ -185,7 +185,7 @@ public class ToolTipAnnotation extends Annotation
         
         ScopedRemoteObject tooltipVariable = null;
         String tooltipText = null;
-        Debugger d = getDebugger();
+        final Debugger d = getDebugger();
         if (d != null && d.isSuspended()) {
             CallFrame frame = d.getCurrentCallFrame();
             if (frame == null) {
@@ -239,7 +239,7 @@ public class ToolTipAnnotation extends Annotation
                             et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
                             et.removeAll();
                             et.setWidthCheck(false);
-                            final ToolTipView ttView = ToolTipView.getToolTipView(expression, var);
+                            final ToolTipView ttView = ToolTipView.getToolTipView(d, expression, var);
                             et.add(ttView);
                             et.revalidate();
                             et.repaint();
