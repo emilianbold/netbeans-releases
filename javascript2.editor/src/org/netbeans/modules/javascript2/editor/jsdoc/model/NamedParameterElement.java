@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.Type;

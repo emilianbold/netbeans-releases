@@ -39,63 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.api;
-
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+package org.netbeans.modules.javascript2.editor.doc.spi;
 
 /**
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Possible modifiers of the javaScript element declared by documentation tools.
  */
-public class DocIdentifierImpl implements DocIdentifier {
+public enum JsModifier {
 
-    private final String name;
-    private final int offset;
+    /** Private modifier. */
+    PRIVATE("private"),
 
-    public DocIdentifierImpl(String name, int offset) {
-        this.name = name;
-        this.offset = offset;
-    }
-    
-    @Override
-    public String getName() {
-        return name;
-    }
+    /** Public modifier. */
+    PUBLIC("public"),
 
-    @Override
-    public int getOffset() {
-        return offset;
-    }
+    /** Static modifier. */
+    STATIC("static");
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        return true;
-    }
+    private final String value;
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + this.offset;
-        return hash;
+    private JsModifier(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
-        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
+        return value;
     }
-}
 
+    /**
+     * Gets {@code JsModifier} corresponding to given value.
+     * @param value {@code String} value of the {@code JsModifier}
+     * @return {@code JsModifier}
+     */
+    public static JsModifier fromString(String value) {
+        for (JsModifier modifier : JsModifier.values()) {
+            if (value.equalsIgnoreCase(modifier.toString())) {
+                return modifier;
+            }
+        }
+        return null;
+    }
+
+}
