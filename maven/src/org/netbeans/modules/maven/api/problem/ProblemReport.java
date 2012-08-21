@@ -47,6 +47,7 @@ import javax.swing.Action;
 /**
  *
  * @author mkleint
+ * @deprecated see <code>ProjectProblemsProvider</code>
  */
 public final class ProblemReport {
     
