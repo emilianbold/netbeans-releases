@@ -280,6 +280,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 ClientSideProjectUtilities.initializeProject(projectHelper);
                 siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
                 assert siteRootDir != null;
+                FileObject fo = ClientSideProjectUtilities.createBlankIndexHtml(siteRootDir);
+                if (fo != null) {
+                    files.add(fo);
+                }
              }
 
             // js libs
