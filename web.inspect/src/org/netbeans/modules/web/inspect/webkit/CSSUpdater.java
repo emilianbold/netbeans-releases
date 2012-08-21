@@ -102,7 +102,7 @@ class CSSUpdater {
                 //need to convert file:///
                 sheetsMap.put(new URL(header.getSourceURL()).toString(), header);
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+                //ignore unknown sheets
             }
         }
     }
