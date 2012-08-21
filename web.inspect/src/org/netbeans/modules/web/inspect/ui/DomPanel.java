@@ -231,10 +231,14 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
      * @return call renderer for the DOM tree.
      */
     private TreeCellRenderer createTreeCellRenderer(final TreeCellRenderer delegate) {
+        Color origColor = UIManager.getColor("Tree.selectionBackground"); // NOI18N
+        Color color = origColor.brighter().brighter();
+        if (color.equals(Color.WHITE)) { // Issue 217127
+            color = origColor.darker();
+        }
+        // Color used for hovering highlight
+        final Color hoverColor = color;
         return new DefaultTreeCellRenderer() {
-            // Color used for hovering highlight
-            private Color hoverColor = UIManager.getColor("Tree.selectionBackground").brighter().brighter(); // NOI18N
-
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                 JLabel component;
