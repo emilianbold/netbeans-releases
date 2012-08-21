@@ -49,21 +49,15 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
@@ -77,7 +71,6 @@ import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -141,7 +134,6 @@ public class RuleEditorPanel extends JPanel {
     
     private boolean addPropertyMode;
     
-    private final Map<Declaration, DeclarationInfo> declarationInfos = new HashMap<Declaration, DeclarationInfo>();
     /**
      * Creates new form RuleEditorPanel
      */
@@ -288,13 +280,6 @@ public class RuleEditorPanel extends JPanel {
         Rule old = this.rule;
         this.rule = rule;
         
-        //re-initialize the DeclarationInfo-s map
-        declarationInfos.clear();
-        List<Declaration> declarations = rule.getDeclarations() == null ? Collections.<Declaration>emptyList() : rule.getDeclarations().getDeclarations();
-        for(Declaration declaration : declarations) {
-            declarationInfos.put(declaration, null);
-        }
-        
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, this.rule);
         
         //check if the rule is valid
@@ -339,22 +324,7 @@ public class RuleEditorPanel extends JPanel {
     
     
     public void setDeclarationInfo(Declaration declaration, DeclarationInfo declarationInfo) {
-        //doesn't need to be run in EDT
-        if(rule == null) {
-            throw new IllegalStateException("You must call setRule(Rule rule) beforehand!"); //NOI18N
-        }
-        
-        if(!declarationInfos.containsKey(declaration)) {
-            throw new IllegalStateException("The given declaration doesn't belong to the current Rule!"); //NOI18N
-            
-        }
-        DeclarationInfo current = declarationInfos.get(declaration);
-        if((current == null && declarationInfo != null ) || (current != null && !current.equals(declarationInfo))) {
-            //change
-            declarationInfos.put(declaration, declarationInfo);
-            node.fireDeclarationInfoChanged(declaration, current, declarationInfo);
-        }
-        
+        node.fireDeclarationInfoChanged(declaration, declarationInfo);
     }
     
     /**

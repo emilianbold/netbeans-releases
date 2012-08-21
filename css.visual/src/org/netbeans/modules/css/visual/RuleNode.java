@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.visual;
 
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -166,11 +165,11 @@ public class RuleNode extends AbstractNode {
         firePropertySetsChange(old, propertySets);
     }
     
-    void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo old, DeclarationInfo neww) {
+    void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo declarationInfo) {
         for(PropertyCategoryPropertySet set : getCachedPropertySets()) {
             DeclarationProperty declarationProperty = set.getDeclarationProperty(declaration);
             if(declarationProperty != null) {
-                declarationProperty.setDeclarationInfo(neww);
+                declarationProperty.setDeclarationInfo(declarationInfo);
                 break;
             }
         }
