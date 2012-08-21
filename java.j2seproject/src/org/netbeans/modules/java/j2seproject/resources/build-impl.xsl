@@ -701,6 +701,21 @@ is divided into following sections:
                     </and>
                 </condition>
             </target>
+
+            <target name="-init-test-properties">
+                <property>
+                    <xsl:attribute name="name">test.binaryincludes</xsl:attribute>
+                    <xsl:attribute name="value">&lt;nothing&gt;</xsl:attribute>
+                </property>
+                <property>
+                    <xsl:attribute name="name">test.binarytestincludes</xsl:attribute>
+                    <xsl:attribute name="value"></xsl:attribute>
+                </property>
+                <property>
+                    <xsl:attribute name="name">test.binaryexcludes</xsl:attribute>
+                    <xsl:attribute name="value"></xsl:attribute>
+                </property>
+            </target>
             
             <target name="-init-macrodef-junit-single" if="${{nb.junit.single}}" unless="${{nb.junit.batch}}">
                 <macrodef>
@@ -753,7 +768,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-batch" if="${{nb.junit.batch}}" unless="${{nb.junit.single}}">
+            <target name="-init-macrodef-junit-batch" if="${{nb.junit.batch}}" unless="${{nb.junit.single}}" depends="-init-test-properties">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -772,15 +787,7 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">binaryincludes</xsl:attribute>
-                        <xsl:attribute name="default">&lt;nothing&gt;</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">binarytestincludes</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
+                    </attribute>                                        
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -805,8 +812,8 @@ is divided into following sections:
                                     <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                     <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
-                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}}" includes="@{{binaryincludes}}">
-                                    <filename name="@{{binarytestincludes}}"/>
+                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
+                                    <filename name="${{test.binarytestincludes}}"/>
                                 </fileset>
                             </batchtest>
                             <syspropertyset>
@@ -1069,7 +1076,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug-batch" if="${{nb.junit.batch}}">
+            <target name="-init-macrodef-junit-debug-batch" if="${{nb.junit.batch}}" depends="-init-test-properties">
                 <macrodef>
                     <xsl:attribute name="name">junit-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1113,6 +1120,9 @@ is divided into following sections:
                                     <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                     <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
+                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
+                                    <filename name="${{test.binarytestincludes}}"/>
+                                </fileset>
                             </batchtest>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
