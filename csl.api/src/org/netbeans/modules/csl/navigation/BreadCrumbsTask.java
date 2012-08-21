@@ -51,6 +51,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
+import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -167,10 +169,14 @@ public class BreadCrumbsTask extends ElementScanningTask {
     }
     
     @MimeRegistration(service=TaskFactory.class, mimeType="")
-    public static final class TaskFactoryImpl extends TaskFactory {
+    public static final class TaskFactoryImpl extends AbstractTaskFactory {
 
+        public TaskFactoryImpl() {
+            super(true);
+        }
+        
         @Override
-        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        protected Collection<? extends SchedulerTask> createTasks(Language language, Snapshot snapshot) {
             return Collections.singletonList(new BreadCrumbsTask());
         }
         
