@@ -62,6 +62,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -119,7 +120,12 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
 
         putClientProperty( "KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE );
 
-        associateLookup( proxyLookup );
+        setActivatedNodes( new Node[0] );
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return proxyLookup;
     }
     
     @Override
