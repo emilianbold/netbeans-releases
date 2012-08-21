@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -67,6 +68,7 @@ import org.netbeans.modules.web.browser.spi.PageInspectionHandle;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -202,12 +204,15 @@ public class PageInspectorImpl extends PageInspector {
      */
     private void initSelectionMode(JToolBar toolBar, final PageModel pageModel) {
         if (toolBar != null) {
-            String selectionModeTxt = NbBundle.getMessage(PageInspectorImpl.class, "PageInspectorImpl.selectionMode"); // NOI18N
-            final JToggleButton selectionModeButton = new JToggleButton(selectionModeTxt);
+            Icon selectionModeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true); // NOI18N
+            final JToggleButton selectionModeButton = new JToggleButton(selectionModeIcon);
             //hardcoded shortcut for Selection Mode
             KeyStroke ks = KeyStroke.getKeyStroke( KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK+KeyEvent.SHIFT_DOWN_MASK );
             selectionModeButton.putClientProperty( Action.ACCELERATOR_KEY, ks );
+            String selectionModeTooltip = NbBundle.getMessage(PageInspectorImpl.class, "PageInspectorImpl.selectionMode"); // NOI18N
+            selectionModeButton.setToolTipText(selectionModeTooltip);
             selectionModeButton.setName(SELECTION_MODE_COMPONENT_NAME);
+            selectionModeButton.setFocusPainted(false);
             selectionModeButton.addItemListener( new ItemListener() {
                 @Override
                 public void itemStateChanged( ItemEvent e ) {
