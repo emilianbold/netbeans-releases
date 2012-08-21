@@ -92,7 +92,7 @@ public class C2CUtil {
         
         // XXX is this all we need and how we need it?
 
-         C2CData clientData = DummyUtils.getClientData(taskRepository);
+        C2CData clientData = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository);
         
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
@@ -231,7 +231,7 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = DummyUtils.getClientData(repository.getTaskRepository());
+            C2CData cd = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
             if(cd == null /* XXX */) {
                 return tagsString;
             }
@@ -259,7 +259,7 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = DummyUtils.getClientData(repository.getTaskRepository());
+            C2CData cd = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
             if(cd == null /* XXX */) {
                 return usersString;
             }

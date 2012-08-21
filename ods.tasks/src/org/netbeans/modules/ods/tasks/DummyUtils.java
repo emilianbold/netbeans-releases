@@ -81,6 +81,10 @@ public class DummyUtils {
     public static synchronized C2CData getClientData(TaskRepository taskRepository) {
         return C2CExtender.getData(rc, repository);
     }
+    
+    public static synchronized C2CData getClientData (AbstractRepositoryConnector rc, TaskRepository taskRepository) {
+        return C2CExtender.getData(rc, taskRepository);
+    }
 
     public static TaskRepository getRepository() {
         return repository;

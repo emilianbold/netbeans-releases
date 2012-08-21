@@ -89,7 +89,7 @@
                                       <Component id="subtaskWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="25" max="32767" attributes="0"/>
+                              <EmptySpace pref="26" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="externalLabel" alignment="1" min="-2" max="-2" attributes="0"/>

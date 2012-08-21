@@ -44,6 +44,7 @@ package org.netbeans.modules.ods.tasks.issue;
 
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.DummyUtils;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
@@ -88,7 +89,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
     }
 
     private Integer getSortKey(String severity, Class clazz) {
-        C2CData cd = DummyUtils.getClientData(getC2CIssue().getRepository().getTaskRepository());
+        C2CData cd = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), getC2CIssue().getRepository().getTaskRepository());
         TaskSeverity ts = cd.getValue(severity, TaskSeverity.class);
         return ts.getSortkey().intValue();
     }
