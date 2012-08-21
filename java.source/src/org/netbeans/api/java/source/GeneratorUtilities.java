@@ -54,11 +54,9 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -82,7 +80,14 @@ import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -115,11 +120,18 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.text.Document;
 import javax.tools.JavaFileObject;
 
+import com.sun.source.tree.ErroneousTree;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
@@ -132,6 +144,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -284,7 +297,7 @@ public final class GeneratorUtilities {
      */
     public MethodTree createAbstractMethodImplementation(TypeElement clazz, ExecutableElement method) {
         assert clazz != null && method != null;
-        return createMethod(method, (DeclaredType)clazz.asType());
+        return createMethod(method, clazz);
     }
 
     /**
@@ -315,7 +328,7 @@ public final class GeneratorUtilities {
      */
     public MethodTree createOverridingMethod(TypeElement clazz, ExecutableElement method) {
         assert clazz != null && method != null;
-        return createMethod(method, (DeclaredType)clazz.asType());
+        return createMethod(method, clazz);
     }
 
     /**Create a new method tree for the given method element. The method will be created as if it were member of {@link asMemberOf} type
@@ -1072,32 +1085,9 @@ public final class GeneratorUtilities {
     
     // private implementation --------------------------------------------------
 
-    private MethodTree createMethod(ExecutableElement element, DeclaredType type) {
-        TreeMaker make = copy.getTreeMaker();
-        boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
-
-        BlockTree body;
-        if (isAbstract) {
-            List<StatementTree> blockStatements = new ArrayList<StatementTree>();
-            TypeElement uoe = copy.getElements().getTypeElement("java.lang.UnsupportedOperationException"); //NOI18N
-            //TODO: if uoe == null: cannot resolve UnsupportedOperationException for some reason, create a different body in such a case
-            if (uoe != null) {
-                NewClassTree nue = make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.QualIdent(uoe), Collections.singletonList(make.Literal("Not supported yet.")), null);
-                blockStatements.add(make.Throw(nue));
-            }
-            body = make.Block(blockStatements, false);
-        } else {
-            List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-            for (VariableElement ve : element.getParameters()) {
-                arguments.add(make.Identifier(ve.getSimpleName()));
-            }
-            MethodInvocationTree inv = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("super"), element.getSimpleName()), arguments); //NOI18N
-            StatementTree statement = copy.getTypes().getNoType(TypeKind.VOID) == element.getReturnType() ?
-                make.ExpressionStatement(inv) : make.Return(inv);
-            body = make.Block(Collections.singletonList(statement), false);
-        }
-
-        MethodTree prototype = createMethod(type, element);
+    private MethodTree createMethod(final ExecutableElement element, final TypeElement clazz) {
+        final TreeMaker make = copy.getTreeMaker();
+        MethodTree prototype = createMethod((DeclaredType)clazz.asType(), element);
         ModifiersTree mt = prototype.getModifiers();
 
         if (supportsOverride(copy)) {
@@ -1114,8 +1104,29 @@ public final class GeneratorUtilities {
                 }
             }
         }
-
-        return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, null);
+        
+        boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
+        String bodyTemplate = null;
+        try {
+            bodyTemplate = "{" + readFromTemplate(isAbstract ? GENERATED_METHOD_BODY : OVERRIDEN_METHOD_BODY, createBindings(clazz, element)) + "\n}"; //NOI18N
+        } catch (Exception e) {
+            bodyTemplate = "{}"; //NOI18N
+        }
+        
+        MethodTree method = make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), bodyTemplate, null);
+        if (containsErrors(method.getBody())) {
+            copy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>emptyList(), false));
+        } else {
+            Trees trees = copy.getTrees();
+            TreePath path = trees.getPath(clazz);
+            Scope s = trees.getScope(path);
+            BlockTree body = method.getBody();
+            copy.getTreeUtilities().attributeTree(body, s);
+            body = importFQNs(body);
+            copy.rewrite(method.getBody(), body);
+        }
+        
+        return method;
     }
 
     private static boolean supportsOverride(CompilationInfo info) {
@@ -1376,5 +1387,116 @@ public final class GeneratorUtilities {
             }           
         }
         return false;
+    }
+    
+    private static final String GENERATED_METHOD_BODY = "Templates/Classes/Code/GeneratedMethodBody"; //NOI18N
+    private static final String OVERRIDEN_METHOD_BODY = "Templates/Classes/Code/OverridenMethodBody"; //NOI18N
+    private static final String METHOD_RETURN_TYPE = "method_return_type"; //NOI18N
+    private static final String DEFAULT_RETURN_TYPE_VALUE = "default_return_type_value"; //NOI18N
+    private static final String SUPER_METHOD_CALL = "super_method_call"; //NOI18N
+    private static final String METHOD_NAME = "method_name"; //NOI18N
+    private static final String CLASS_NAME = "class_name"; //NOI18N
+    private static final String SIMPLE_CLASS_NAME = "simple_class_name"; //NOI18N
+    private static final String SCRIPT_ENGINE_ATTR = "javax.script.ScriptEngine"; //NOI18N    
+    private static final String STRING_OUTPUT_MODE_ATTR = "com.sun.script.freemarker.stringOut"; //NOI18N
+    private static ScriptEngineManager manager;
+
+    private static Map<String, Object> createBindings(TypeElement clazz, ExecutableElement element) {
+        Map<String, Object> bindings = new HashMap<String, Object>();
+        bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
+        bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
+        bindings.put(METHOD_NAME, element.getSimpleName().toString());
+        bindings.put(METHOD_RETURN_TYPE, element.getReturnType().toString()); //NOI18N
+        Object value;
+        switch(element.getReturnType().getKind()) {
+            case BOOLEAN:
+                value = "false"; //NOI18N
+                break;
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                value = 0;
+                break;
+            default:
+                value = "null"; //NOI18N
+        }
+        bindings.put(DEFAULT_RETURN_TYPE_VALUE, value);
+        StringBuilder sb = new StringBuilder();
+        sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
+        for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
+            VariableElement ve = it.next();
+            sb.append(ve.getSimpleName());
+            if (it.hasNext())
+                sb.append(","); //NOI18N
+        }
+        sb.append(')'); //NOI18N
+        bindings.put(SUPER_METHOD_CALL, sb);
+        return bindings;
+    }
+
+    private static String readFromTemplate(String pathToTemplate, Map<String, Object> values) throws IOException, ScriptException {
+        FileObject template = FileUtil.getConfigFile(pathToTemplate);
+        Charset sourceEnc = FileEncodingQuery.getEncoding(template);
+
+        ScriptEngine eng = engine(template);
+        Bindings bind = eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        bind.putAll(values);
+
+        Reader is = null;
+        try {
+            eng.getContext().setAttribute(FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE);
+            eng.getContext().setAttribute(ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE);
+            eng.getContext().setAttribute(STRING_OUTPUT_MODE_ATTR, true, ScriptContext.ENGINE_SCOPE);
+            is = new InputStreamReader(template.getInputStream(), sourceEnc);
+            return (String)eng.eval(is);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+
+    private static ScriptEngine engine(FileObject fo) {
+        Object obj = fo.getAttribute(SCRIPT_ENGINE_ATTR); // NOI18N
+        if (obj instanceof ScriptEngine) {
+            return (ScriptEngine) obj;
+        }
+        if (obj instanceof String) {
+            synchronized (GeneratorUtilities.class) {
+                if (manager == null) {
+                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                    manager = new ScriptEngineManager(loader != null ? loader : Thread.currentThread().getContextClassLoader());
+                }
+            }
+            return manager.getEngineByName((String) obj);
+        }
+        return null;
+    }
+    
+    private static boolean containsErrors(Tree tree) {
+        return new TreeScanner<Boolean, Boolean>() {
+            @Override
+            public Boolean visitErroneous(ErroneousTree node, Boolean p) {
+                return true;
+            }
+
+            @Override
+            public Boolean reduce(Boolean r1, Boolean r2) {
+                if (r1 == null)
+                    r1 = false;
+                if (r2 == null)
+                    r2 = false;
+                return r1 || r2;
+            }
+
+            @Override
+            public Boolean scan(Tree node, Boolean p) {
+                return p ? p : super.scan(node, p);
+            }
+        }.scan(tree, false);
     }
 }
