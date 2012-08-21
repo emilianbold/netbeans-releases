@@ -331,7 +331,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         
         if (p != null && p.getLeaf().getKind() == Kind.IDENTIFIER) {
             treeName = ((IdentifierTree) p.getLeaf()).getName().toString();
-        } else if (p != null && p.getLeaf().getKind() == Kind.TYPE_PARAMETER) {
+        } else if (p != null && p.getLeaf().getKind() == Kind.TYPE_PARAMETER && ((TypeParameterTree) p.getLeaf()).getBounds().isEmpty()) {
             treeName = ((TypeParameterTree) p.getLeaf()).getName().toString();
         }
         
@@ -814,7 +814,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 String currentName = node.getSimpleName().toString();
 
                 if (existingName != null) {
-                    if (!existingName.equals(name)) {
+                    if (!existingName.equals(currentName)) {
                         return false;
                     }
                 } else {
@@ -1048,7 +1048,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             String currentName = node.getName().toString();
 
             if (existingName != null) {
-                if (!existingName.equals(name)) {
+                if (!existingName.equals(currentName)) {
                     return false;
                 }
             } else {
@@ -1303,9 +1303,37 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return node.getPrimitiveTypeKind() == t.getPrimitiveTypeKind();
     }
 
-//    public Boolean visitTypeParameter(TypeParameterTree node, TreePath p) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public Boolean visitTypeParameter(TypeParameterTree node, TreePath p) {
+        if (p == null)
+            return super.visitTypeParameter(node, p);
+
+        TypeParameterTree t = (TypeParameterTree) p.getLeaf();
+
+        String name = t.getName().toString();
+
+        if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+            String existingName = bindState.variables2Names.get(name);
+            String currentName = node.getName().toString();
+
+            if (existingName != null) {
+                if (!existingName.equals(currentName)) {
+                    return false;
+                }
+            } else {
+                //XXX: putting the variable into both variables and variable2Names.
+                //variables is needed by the declarative hints to support conditions like
+                //referencedIn($variable, $statements$):
+                //causes problems in JavaFix, see visitIdentifier there.
+                bindState.variables.put(name, getCurrentPath());
+                bindState.variables2Names.put(name, currentName);
+            }
+        } else {
+            if (!node.getName().contentEquals(name))
+                return false;
+        }
+        
+        return checkLists(node.getBounds(), t.getBounds(), p);
+    }
 
     public Boolean visitInstanceOf(InstanceOfTree node, TreePath p) {
         if (p == null)
@@ -1348,7 +1376,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             String currentName = node.getName().toString();
 
             if (existingName != null) {
-                if (!existingName.equals(name)) {
+                if (!existingName.equals(currentName)) {
                     return false;
                 }
             } else {
@@ -1651,7 +1679,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             }
         }
         
-        if (t.getKind() == Kind.TYPE_PARAMETER) {
+        if (t.getKind() == Kind.TYPE_PARAMETER && ((TypeParameterTree) t).getBounds().isEmpty()) {
             String name = ((TypeParameterTree) t).getName().toString();
 
             if (name.startsWith("$")) {

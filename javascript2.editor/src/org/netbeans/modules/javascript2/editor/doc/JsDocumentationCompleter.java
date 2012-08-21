@@ -118,7 +118,8 @@ public class JsDocumentationCompleter {
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
-                            if (jsObject.getJSKind() == Kind.FILE) {
+                            boolean wrapperObject = isWrapperObject(jsParserResult, jsObject, nearestNode);
+                            if (jsObject.getJSKind() == Kind.FILE || wrapperObject) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
                             }
@@ -137,6 +138,11 @@ public class JsDocumentationCompleter {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+    
+    private static boolean isWrapperObject(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode) {
+        List<Identifier> nodeName = jsParserResult.getModel().getNodeName(nearestNode);
+        return jsObject.getProperties().containsKey(nodeName.get(nodeName.size() - 1).getName());
     }
 
     /**
@@ -163,11 +169,14 @@ public class JsDocumentationCompleter {
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
         SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
-        
+
         Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
         StringBuilder types = new StringBuilder();
         for (TypeUsage typeUsage : assignments) {
-            types.append("|").append(typeUsage.getType());
+            // name and type are equivalent in the case of assigning parrametrs like "this.name = name"
+            if (!typeUsage.getType().equals(jsObject.getName())) {
+                types.append("|").append(typeUsage.getType());
+            }
         }
         String type = types.length() == 0 ? null : types.toString().substring(1);
         generateDocEntry(doc, toAdd, syntaxProvider.typeTagTemplate(), indent, null, type); //NOI18N
@@ -381,7 +390,5 @@ public class JsDocumentationCompleter {
         public List<? extends Node> getFinalPath() {
             return finalPath;
         }
-
     }
-
 }

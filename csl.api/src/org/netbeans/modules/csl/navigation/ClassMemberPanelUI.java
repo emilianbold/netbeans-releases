@@ -70,6 +70,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.csl.navigation.base.TapPanel;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -182,7 +184,24 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     
     public org.netbeans.modules.csl.navigation.ElementScanningTask getTask() {
         
-        return new ElementScanningTask(this);
+        return new ElementScanningTask() {
+            public @Override int getPriority() {
+                return Integer.MAX_VALUE;
+            }
+            public @Override Class<? extends Scheduler> getSchedulerClass() {
+                return CSLNavigatorScheduler.class;
+            }
+            @Override public void run(ParserResult result, SchedulerEvent event) {
+                resume();
+                
+                StructureItem root = computeStructureRoot(result.getSnapshot().getSource());
+                FileObject file = result.getSnapshot().getSource().getFileObject();
+
+                if (root != null && file != null) {
+                    refresh(root, file);
+                }
+            }
+        };
         
     }
     
@@ -197,13 +216,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
 
     public void selectElementNode(final ParserResult info, final int offset) {
+        ElementNode root = getRootNode();
+        if ( root == null ) {
+            return;
+        }
+        final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ElementNode root = getRootNode();
-                if ( root == null ) {
-                    return;
-                }
-                final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
                 Node[] selectedNodes = manager.getSelectedNodes();
                 if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
                     try {

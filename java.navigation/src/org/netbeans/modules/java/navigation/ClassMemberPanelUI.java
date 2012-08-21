@@ -38,8 +38,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
-import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortByNameAction;
-import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortBySourceAction;
+import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -72,7 +71,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private TapPanel filtersPanel;
     private InstanceContent selectedNodes = new InstanceContent();
     private Lookup lookup = new AbstractLookup(selectedNodes);
-    private ClassMemberFilters filters;
+    private final ClassMemberFilters filters;
     private final AtomicReference<State> state = new AtomicReference<State>();    
     private Action[] actions; // General actions for the panel
     private RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
@@ -119,7 +118,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText)); //NOI18N
         
         filters = new ClassMemberFilters( this );
-        filters.getInstance().hookChangeListener(this);
+        filters.getFiltersManager().hookChangeListener(this);
         JComponent buttons = filters.getComponent();
         buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         filtersPanel.add(buttons);
@@ -127,10 +126,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         
         actions = new Action[] {            
-            new SortByNameAction( filters ),
-            new SortBySourceAction( filters ),
+            SortActions.createSortByNameAction(filters),
+            SortActions.createSortBySourceAction(filters),
             null,
-            new FilterSubmenuAction(filters.getInstance())            
+            new FilterSubmenuAction(filters.getFiltersManager())
         };
         
         add(filtersPanel, BorderLayout.SOUTH);        
