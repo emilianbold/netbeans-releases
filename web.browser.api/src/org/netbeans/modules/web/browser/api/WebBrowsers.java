@@ -153,6 +153,20 @@ public final class WebBrowsers {
     }
 
     /**
+     * Get default embedded browser.
+     * @return can be null if none installed
+     */
+    public WebBrowser getEmbedded() {
+        for (WebBrowserFactoryDescriptor desc : getFactories(true)) {
+            if (desc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
+                continue;
+            }
+            return new WebBrowser(desc);
+        }
+        return null;
+    }
+
+    /**
      * Returns all browsers registered in the IDE.
      */
     public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser) {
