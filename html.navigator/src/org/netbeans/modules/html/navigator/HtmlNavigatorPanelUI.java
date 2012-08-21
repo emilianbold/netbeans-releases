@@ -75,6 +75,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -393,6 +394,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return;
         }
         final FileObject fo = allInstances.iterator().next();
+        
+        if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
+            return;
+        }
 
         Source source = Source.create(fo);
         if (source == null) {
