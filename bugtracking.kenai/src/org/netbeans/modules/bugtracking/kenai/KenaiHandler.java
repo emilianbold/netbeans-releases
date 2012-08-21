@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
@@ -71,6 +72,7 @@ import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -255,9 +257,10 @@ class KenaiHandler {
             krl = kenaiRepoListeners.get(repo.getId());
             if (krl == null) {
                 krl = new KenaiRepositoryListener(repo, project);
-                repo.addPropertyChangeListener(krl);
+                repo.addPropertyChangeListener(WeakListeners.propertyChange(krl, repo));
                 kenaiRepoListeners.put(repo.getId(), krl);
             }
+            krl.attachProject(project);
         }
     }
 
@@ -374,10 +377,13 @@ class KenaiHandler {
 
     private class KenaiRepositoryListener implements PropertyChangeListener {
         private final ProjectHandle ph;
+        private final Map<ProjectHandle, ProjectHandle> attachedProjects;
         private Repository repo;
 
         public KenaiRepositoryListener(Repository repo, ProjectHandle ph) {
             this.ph = ph;
+            attachedProjects = new IdentityHashMap<ProjectHandle, ProjectHandle>(5);
+            attachedProjects.put(ph, ph);
             this.repo = repo;
         }
 
@@ -396,7 +402,19 @@ class KenaiHandler {
                         }
                     }
                 }
-                qaImpl.fireQueriesChanged(ph, queryHandles);
+                ProjectHandle[] projectHandles;
+                synchronized (attachedProjects) {
+                    projectHandles = attachedProjects.keySet().toArray(new ProjectHandle[attachedProjects.size()]);
+                }
+                for (ProjectHandle projectHandle : projectHandles) {
+                    qaImpl.fireQueriesChanged(projectHandle, queryHandles);
+                }
+            }
+        }
+
+        private void attachProject (ProjectHandle<KenaiProject> project) {
+            synchronized (attachedProjects) {
+                attachedProjects.put(project, project);
             }
         }
     }
