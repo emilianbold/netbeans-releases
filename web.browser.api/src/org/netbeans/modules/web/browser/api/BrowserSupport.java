@@ -47,6 +47,8 @@ import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -180,7 +182,17 @@ public final class BrowserSupport {
         file = context;
         currentURL = url;
         Project project = FileOwnerQuery.getOwner(context);
-        wbp.setProjectContext(project != null ? Lookups.singleton(project) : Lookup.EMPTY);
+        Lookup lkp = Lookup.EMPTY;
+        if( null != project ) {
+            DataObject dob = null;
+            try {
+                dob = DataObject.find( file );
+            } catch( DataObjectNotFoundException ex ) {
+                //ignore
+            }
+            lkp = null == dob ? Lookups.fixed( project, context ) : Lookups.fixed( project, context, dob );
+        }
+        wbp.setProjectContext(lkp);
         wbp.showURL(url);
     }
     
