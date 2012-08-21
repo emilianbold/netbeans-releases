@@ -58,6 +58,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -85,6 +87,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -138,6 +141,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     };
     
     private HtmlElementDescription sourceDescription;
+    private ChangeListener changeListener;
 
     public HtmlNavigatorPanelUI() {
         manager = new ExplorerManager();
@@ -289,7 +293,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         return null;
     }
     
-    private void refreshDOM() {
+    private RequestProcessor.Task task;
+    void refreshDOM() {
         try {
             final PageModel page = PageInspectorImpl.getDefault().getPage();
             if (page==null)
@@ -303,7 +308,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
                 return;
             }
-            RP.post(new Runnable() {
+            if (task!=null) {
+                task.cancel();
+            }
+        
+            task = RP.post(new Runnable() {
                 @Override
                 public void run() {
                     refreshNodeDOMStatus();
@@ -327,7 +336,15 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             }
             setPageModel(PageInspectorImpl.getDefault().getPage());
             //now apply to dom descriptions
-            WebKitNodeDescription domDescription = new WebKitNodeDescription(null, Utils.getWebKitNode(pageModel.getDocumentNode()));
+            WebKitNodeDescription domDescription = WebKitNodeDescription.forNode(null, pageModel.getDocumentNode());
+            changeListener = new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    refreshDOM();
+                }
+            };
+            domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
             root.setDescription(domDescription);
             
             LOGGER.info("root.refreshDOMStatus() called");
@@ -366,7 +383,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     void activate(Lookup context) {
         Result<FileObject> fileResult = context.lookupResult(FileObject.class);
-        fileResult.addLookupListener(ll);
+        fileResult.addLookupListener(WeakListeners.create(LookupListener.class, ll, fileResult));
         refresh(fileResult);
     }
     
@@ -400,7 +417,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     void deactivate() {
         setPageModel(null);
-        //TODO: remove lookup listener
     }
 
     private void showWaitNode() {
@@ -630,4 +646,5 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return displayName;
         }
     }
+  
 }

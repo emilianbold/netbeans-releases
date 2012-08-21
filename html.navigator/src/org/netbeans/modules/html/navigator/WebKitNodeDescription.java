@@ -41,14 +41,22 @@
  */
 package org.netbeans.modules.html.navigator;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeOp;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
 
 /**
@@ -57,28 +65,85 @@ import org.openide.util.Parameters;
  * @author marekfukala
  */
 public class WebKitNodeDescription extends DOMNodeDescription {
+    private NodeListener nodeListener;
+
+    private void registerListener(final org.openide.nodes.Node nbNode) {
+        
+        nodeListener = new NodeListener() {
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                fireChange();
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                fireChange();
+            }
+
+            @Override
+            public void childrenReordered(NodeReorderEvent ev) {
+                fireChange();
+            }
+
+            @Override
+            public void nodeDestroyed(NodeEvent ev) {
+                fireChange();
+            }
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                fireChange();
+            }
+
+        };
+        
+        nbNode.addNodeListener(NodeOp.weakNodeListener(nodeListener, nbNode));
+    }
 
     private Node webKitNode;
     private final String elementPath;
     private final Map<String, String> attributes;
     private Collection<WebKitNodeDescription> children;
     private Description parent;
+    private org.openide.nodes.Node nbNode;
+    
+    private transient final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public static WebKitNodeDescription forNode(Description parent, org.openide.nodes.Node nbNode) {
+    public void addChangeListener(ChangeListener listener ) {
+        changeSupport.addChangeListener( listener );
+    }
+    
+    public void removePropertyChangeListener(ChangeListener listener ) {
+        changeSupport.removeChangeListener( listener );
+    }
+
+    public static WebKitNodeDescription forNode(Description parent, final org.openide.nodes.Node nbNode) {
         Node webKitNode = Utils.getWebKitNode(nbNode);
         if (webKitNode == null) {
             return null;
         }
-
-        return new WebKitNodeDescription(parent, webKitNode);
+        
+        return new WebKitNodeDescription(parent, webKitNode, nbNode);
     }
 
-    public WebKitNodeDescription(Description parent, Node webKitNode) {
+    /**
+     * fires changes recursively
+     */
+    private void fireChange() {
+        changeSupport.fireChange();
+        if (parent != null && (parent instanceof WebKitNodeDescription) ) {
+            ((WebKitNodeDescription) parent).fireChange();
+        }
+    }
+
+    private WebKitNodeDescription(Description parent, Node webKitNode, org.openide.nodes.Node nbNode) {
         Parameters.notNull("webKitNode", webKitNode);
 
         this.parent = parent;
         this.webKitNode = webKitNode;
         this.elementPath = new WebKitNodeTreePath(webKitNode).getElementPath();
+        this.nbNode = nbNode;
 
         //init attributes map
         Collection<Attribute> attrs = webKitNode.getAttributes();
@@ -92,6 +157,7 @@ public class WebKitNodeDescription extends DOMNodeDescription {
                 attributes.put(key, val);
             }
         }
+        registerListener(nbNode);
 
     }
     
@@ -140,11 +206,20 @@ public class WebKitNodeDescription extends DOMNodeDescription {
                 return Collections.emptyList();
             }
             children = new ArrayList<WebKitNodeDescription>();
+            org.openide.nodes.Node[] nodes = nbNode.getChildren().getNodes();
             for (Node child : wkChildren) {
+                int i=0;
+                while (i<nodes.length && Utils.getWebKitNode(nodes[i])!=child) {
+                    i++;
+                };
+                if (i>=nodes.length) {
+                    //netbeans fake node
+                    continue;
+                }
                 switch (child.getNodeType()) {
                     case org.w3c.dom.Node.ELEMENT_NODE:
                     case org.w3c.dom.Node.DOCUMENT_NODE:
-                        children.add(new WebKitNodeDescription(this, child));
+                        children.add(new WebKitNodeDescription(this, child, nodes[i]));
                         break;
                 }
             }
