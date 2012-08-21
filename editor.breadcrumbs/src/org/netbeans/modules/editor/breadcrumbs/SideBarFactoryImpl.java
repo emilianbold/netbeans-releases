@@ -97,6 +97,8 @@ public class SideBarFactoryImpl implements SideBarFactory {
                     prefs.putBoolean(KEY_BREADCRUMBS, false);
                 }
             });
+            
+            preferenceChange(null);
         }
         
         @Override public ExplorerManager getExplorerManager() {
