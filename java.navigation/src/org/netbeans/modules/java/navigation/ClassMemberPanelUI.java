@@ -40,6 +40,7 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
+import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -64,17 +65,18 @@ import org.openide.util.lookup.InstanceContent;
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
 public class ClassMemberPanelUI extends javax.swing.JPanel
-        implements ExplorerManager.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
+        implements ExplorerManager.Provider, Lookup.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
 
-    private ExplorerManager manager = new ExplorerManager();
-    private MyBeanTreeView elementView;
-    private TapPanel filtersPanel;
-    private InstanceContent selectedNodes = new InstanceContent();
-    private Lookup lookup = new AbstractLookup(selectedNodes);
+    private final ExplorerManager manager = new ExplorerManager();
+    private final MyBeanTreeView elementView;
+    private final TapPanel filtersPanel;
+    private final InstanceContent selectedNodes = new InstanceContent();
+    private final Lookup lookup = new AbstractLookup(selectedNodes);
     private final ClassMemberFilters filters;
     private final AtomicReference<State> state = new AtomicReference<State>();    
-    private Action[] actions; // General actions for the panel
-    private RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
+    private final Action[] actions; // General actions for the panel
+    private final SelectJavadocTask jdocFinder;
+    private final RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
         @Override
         public void run() {
             final State current = state.get();
@@ -89,8 +91,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             }
         }
     });
-
+    private final RequestProcessor.Task jdocTask;
     private long lastShowWaitNodeTime = -1;
+
+    private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(ClassMemberPanelUI.class.getName()); //NOI18N
     private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class.getName(), 1);
@@ -100,7 +104,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
-                      
+        jdocFinder = SelectJavadocTask.create(this);
+        jdocTask = RP.create(jdocFinder);
         initComponents();
         manager.addPropertyChangeListener(this);
         
@@ -152,6 +157,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         elementView.requestFocus();
     }
 
+    @Override
     public org.openide.util.Lookup getLookup() {
         // XXX Check for chenge of FileObject
         return lookup;
@@ -228,6 +234,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
             // update
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
+            jdocTask.cancel();
+            jdocFinder.cancel();
             RP.post(new Runnable() {
                 public void run() {
                     rootNode.updateRecursively( description );
@@ -556,13 +564,20 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            for (Node n:(Node[])evt.getOldValue()) {
+            final Node[] oldNodes = (Node[]) evt.getOldValue();
+            final Node[] newNodes = (Node[]) evt.getNewValue();
+            for (Node n : oldNodes) {
                 selectedNodes.remove(n);
             }
-            for (Node n:(Node[])evt.getNewValue()) {
+            for (Node n : newNodes) {
                 selectedNodes.add(n);
+            }
+            if (newNodes.length > 0 && JavadocTopComponent.shouldUpdate()) {
+                jdocFinder.cancel();
+                jdocTask.schedule(JDOC_TIME);
             }
         } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
             NbPreferences.forModule(ClassMemberPanelUI.class)
