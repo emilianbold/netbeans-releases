@@ -311,35 +311,33 @@ public class C2CRepository {
     public Collection<C2CQuery> getQueries() {
         List<C2CQuery> ret = new ArrayList<C2CQuery>();
         synchronized (QUERIES_LOCK) {
-            if(predefinedQueries == null) {
-                getPredefinedQueries();
-            }
+            initializePredefinedQueries();
             ret.addAll(predefinedQueries.values());
         }
         return ret;
     }
-    
-    private void getPredefinedQueries () {
-        Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
-        for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-            queries.put(ptq, C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
-        }
-        synchronized(QUERIES_LOCK) {
-            predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
-            for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
-                predefinedQueries.put(e.getKey(), new C2CQuery(e.getValue().getSummary(), C2CRepository.this, e.getValue()));
+
+    private void initializePredefinedQueries () {
+        if (predefinedQueries == null) {
+            Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
+            for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+                queries.put(ptq, C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
             }
-        }        
+            synchronized(QUERIES_LOCK) {
+                predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
+                for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
+                    predefinedQueries.put(e.getKey(), new C2CQuery(e.getValue().getSummary(), C2CRepository.this, e.getValue()));
+                }
+            }
+        }
     }
 
     public final C2CQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
-        C2CQuery q = null;
+        getQueries();
         synchronized (QUERIES_LOCK) {
-            if (predefinedQueries != null) {
-                q = predefinedQueries.get(ptq);
-            }
+            initializePredefinedQueries();
+            return predefinedQueries.get(ptq);
         }
-        return q;
     }
 
     public C2CIssue createIssue() {

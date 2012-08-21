@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.ods.api.ODSProject;
@@ -71,8 +72,22 @@ public class QueryAccessorImpl extends QueryAccessor<ODSProject> {
     }
 
     @Override
-    public QueryHandle getAllIssuesQuery (ProjectHandle<ODSProject> project) {
-        return null;//allIssues;
+    public QueryHandle getAllIssuesQuery (ProjectHandle<ODSProject> projectHandle) {
+        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        if (repo == null || !KenaiUtil.isKenai(repo)) {
+            return null;
+        }
+
+        ODSHandler handler = Support.getInstance().getODSHandler(projectHandle, this);
+        handler.registerRepository(repo, projectHandle);
+        Query allIssuesQuery = KenaiUtil.getAllIssuesQuery(repo);
+        if (allIssuesQuery == null) {
+            return null;
+        }
+        List<QueryHandle> queries = handler.getQueryHandles(projectHandle, allIssuesQuery);
+        assert queries.size() == 1;
+        handler.registerProject(projectHandle, queries);
+        return queries.get(0);
     }
 
     @Override
