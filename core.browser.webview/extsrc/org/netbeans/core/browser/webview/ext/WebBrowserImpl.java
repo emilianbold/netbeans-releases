@@ -48,7 +48,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -78,14 +80,17 @@ import org.netbeans.core.browser.webview.HtmlBrowserImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
@@ -109,6 +114,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     private Color defaultPanelColor = Color.LIGHT_GRAY;
     /** Lookup of this web-browser tab. */
     private Lookup lookup;
+    private final InstanceContent lookupContent = new InstanceContent();
+    private final Object LOOKUP_LOCK = new Object();
     private String currentLocation = null;
     private String currentTitle = null;
     private boolean isBackward = false;
@@ -179,6 +186,24 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         return lookup;
     }
 
+    private void refreshActiveNode() {
+        synchronized( LOOKUP_LOCK ) {
+            URL url = null;
+            try {
+                url = new URL( currentLocation );
+            } catch( Exception e ) {
+                //ignore
+            }
+            Lookup lkp = null == url ? Lookup.EMPTY : Lookups.singleton( url );
+            Lookup[] lookups = new Lookup[ null == projectContext ? 1 : 2 ];
+            lookups[0] = lkp;
+            if( null != projectContext )
+                lookups[1] = projectContext;
+            org.openide.nodes.Node node = new AbstractNode( Children.LEAF, new ProxyLookup( lookups ) );
+            lookupContent.set( Collections.singleton( node ), null );
+        }
+    }
+
     private Lookup createLookup() {
         WebKitDebuggingTransport transport = new WebKitDebuggingTransport(this);
         Lookup l = Lookups.fixed(
@@ -189,7 +214,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 new ZoomAndResizeImpl(this),
                 toolbar
         );
-        return l;
+        return new ProxyLookup( l, new AbstractLookup( lookupContent ) );
     }
     
     @Override
@@ -478,6 +503,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
+                        refreshActiveNode();
                         propSupport.firePropertyChange( WebBrowser.PROP_URL, oldValue, newValue );
                     }
                 } );
@@ -743,7 +769,10 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     
     @Override
     public void setProjectContext(Lookup projectContext) {
-        this.projectContext = projectContext;
+        synchronized( LOOKUP_LOCK ) {
+            this.projectContext = projectContext;
+            refreshActiveNode();
+        }
     }
 
     @Override
