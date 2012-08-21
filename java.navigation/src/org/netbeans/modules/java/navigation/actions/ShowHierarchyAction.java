@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,72 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.navigation.actions;
 
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.java.navigation.JavaHierarchy;
-import org.openide.filesystems.FileObject;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.java.navigation.hierarchy.HierarchyTopComponent;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import static javax.lang.model.util.ElementFilter.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
-/**
- * This action shows the hierarchy of the types in the selected file in a pop up window.
- * 
- * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
- */
-public final class InspectHierarchyAction extends AbstractNavigationAction {
-    
-    public InspectHierarchyAction() {
+@ActionID(
+    category = "Edit",
+id = "org.netbeans.modules.java.navigation.actions.ShowHierarchyAction")
+@ActionRegistration(
+    displayName = "#CTL_ShowHierarchyAction", lazy=false)
+@ActionReference(path = "Menu/GoTo/Inspect", position = 2200)
+@Messages("CTL_ShowHierarchyAction=File Hierarchy")
+public final class ShowHierarchyAction extends AbstractAction {
+
+    public ShowHierarchyAction() {
+        putValue(Action.NAME, Bundle.CTL_ShowHierarchyAction());
+        putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
-    
-    protected void performAction(Node[] activatedNodes) {
-        DataObject dataObject = getDataObject(activatedNodes); 
 
-        if (dataObject != null) {
-            final FileObject fileObject = dataObject.getPrimaryFile();
+    @Override
+    public boolean isEnabled() {
+        return getContext() != null;
+    }
 
-            // Is this really a java file
-            if (fileObject != null && 
-                    (("java".equalsIgnoreCase(fileObject.getExt()) && "text/x-java".equals(fileObject.getMIMEType()))  || // NOI18N
-                    "application/x-class-file".equals(fileObject.getMIMEType()))) { 
-                // show the hierarchy in pop up window
-                JavaHierarchy.show(fileObject);
-                return;
+    @Override
+    public void actionPerformed(ActionEvent ev) {
+        final JavaSource context = getContext();
+        assert context != null;
+        HierarchyTopComponent htc = HierarchyTopComponent.findDefault();
+        htc.setContext(context);
+        htc.open();
+        htc.requestActive();
+    }
+
+
+    private JavaSource getContext() {
+        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
+        if (fo == null) {
+            DataObject dobj = Utilities.actionsGlobalContext().lookup(DataObject.class);
+            if (dobj != null) {
+                fo = dobj.getPrimaryFile();
             }
         }
-
-        beep();
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(InspectMembersAction.class,
-            "CTL_InspectHierarchyAction"); // NOI18N
-    }
-
-    protected Class[] cookieClasses() {
-        return new Class[] { DataObject.class };
-    }
-    
-    @Override
-    public boolean enable(Node nodes[]) {
-        if ( OpenProjects.getDefault().getOpenProjects().length == 0) {
-            return false;
-        }
-        return getDataObject(nodes) != null;
-    }
-    
-    private DataObject getDataObject(Node nodes[]) {
-        
-        if ( nodes == null || nodes.length == 0) {
+        if (fo == null) {
             return null;
         }
-        
-        return nodes[0].getLookup().lookup(DataObject.class);
+        return JavaSource.forFileObject(fo);
     }
-    
 }

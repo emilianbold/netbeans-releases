@@ -15,64 +15,44 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JToggleButton;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
-import org.netbeans.modules.java.navigation.actions.SortActionSupport;
+import org.netbeans.modules.java.navigation.base.Filters;
 import org.netbeans.modules.java.navigation.base.FiltersDescription;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /** Creates filtering for the ClassMemberPanel
  *
  * @author phrebejk
  */
-public final class ClassMemberFilters {
+public final class ClassMemberFilters extends Filters<Description> {
     
     private ClassMemberPanelUI ui;
     
     /** constants for defined filters */
-    private static final String SHOW_NON_PUBLIC = "show_non_public";
-    private static final String SHOW_STATIC = "show_static";
-    private static final String SHOW_FIELDS = "show_fields";
-    private static final String SHOW_INHERITED = "show_inherited";
+    private static final String SHOW_NON_PUBLIC = "show_non_public";    //NOI18N
+    private static final String SHOW_STATIC = "show_static";            //NOI18N
+    private static final String SHOW_FIELDS = "show_fields";            //NOI18N
+    private static final String SHOW_INNER_CLASSES = "show_inner_classes";  //NOI18N
+    private static final String SHOW_INHERITED = "show_inherited";      //NOI18N
     
-    private static final String SORT_ALPHA = "sort_alpha";
-    private static final String SORT_POSITION = "sort_position";
-    
-    private FiltersManager filters;
-    
-    private boolean naturalSort = false;
     
     /** Creates a new instance of ClassMemberFilters */
     ClassMemberFilters( ClassMemberPanelUI ui ) {
-        this.ui = ui;
-        naturalSort = NbPreferences.forModule( ClassMemberFilters.class ).getBoolean( "naturalSort", false ); //NOI18N
-    }
+        this.ui = ui;        
+    }    
     
-    public FiltersManager getInstance() {
-        if (filters == null) {
-            filters = createFilters();
-        }
-        return filters;
-    }
-    
-    public JComponent getComponent() {        
-        FiltersManager f = getInstance();                        
-        return f.getComponent( createSortButtons() );
-        
-    }
-    
-    public Collection<Description> filter( Collection<Description> original ) {
-        
-        boolean non_public = filters.isSelected(SHOW_NON_PUBLIC);
-        boolean statik = filters.isSelected(SHOW_STATIC);
-        boolean fields = filters.isSelected(SHOW_FIELDS);
-        boolean inherited = filters.isSelected(SHOW_INHERITED);
+    @Override
+    public Collection<Description> filter( Collection<? extends Description> original ) {
+        final FiltersManager fm = getFiltersManager();
+        final boolean non_public = fm.isSelected(SHOW_NON_PUBLIC);
+        final boolean inner = fm.isSelected(SHOW_INNER_CLASSES);
+        final boolean statik = fm.isSelected(SHOW_STATIC);
+        final boolean fields = fm.isSelected(SHOW_FIELDS);
+        final boolean inherited = fm.isSelected(SHOW_INHERITED);
         
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
@@ -93,6 +73,10 @@ public final class ClassMemberFilters {
             if ( !fields && description.kind == ElementKind.FIELD ) {
                 continue;
             }
+
+            if (!inner && isInnerClass(description)) {
+                continue;
+            }
             
             // XXX Inherited members
             
@@ -103,25 +87,17 @@ public final class ClassMemberFilters {
         
         return result;
     }
-    
-    public boolean isNaturalSort() {
-        return naturalSort;        
-    }
-    
-    public void setNaturalSort( boolean naturalSort ) {
-        this.naturalSort = naturalSort;
-        NbPreferences.forModule( ClassMemberFilters.class ).putBoolean( "naturalSort", naturalSort ); //NOI18N
-        if( null != sortByNameButton )
-            sortByNameButton.setSelected(!naturalSort);
-        if( null != sortByPositionButton )
-            sortByPositionButton.setSelected(naturalSort);
+            
+    @Override
+    public void sortUpdated() {        
         ui.sort();
     }
     
     // Privare methods ---------------------------------------------------------
     
     /** Creates filter descriptions and filters itself */
-    private static FiltersManager createFilters () {
+    @Override
+    protected final FiltersManager createFilters () {
         FiltersDescription desc = new FiltersDescription();
         
         desc.addFilter(SHOW_INHERITED,
@@ -134,6 +110,13 @@ public final class ClassMemberFilters {
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
                 true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
+                null
+        );
+        desc.addFilter(SHOW_INNER_CLASSES,
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClasses"),     //NOI18N
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClassesTip"),     //NOI18N
+                true,
+                ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet()),
                 null
         );
         desc.addFilter(SHOW_STATIC,
@@ -151,31 +134,9 @@ public final class ClassMemberFilters {
         
         return FiltersDescription.createManager(desc);
     }
-    
-    private JToggleButton sortByNameButton;
-    private JToggleButton sortByPositionButton;
-    
-    private JToggleButton[] createSortButtons() {
-        JToggleButton[] res = new JToggleButton[2];
-        
-        if( null == sortByNameButton ) {
-            sortByNameButton = new JToggleButton( new SortActionSupport.SortByNameAction(this) );
-            sortByNameButton.setToolTipText(sortByNameButton.getText());
-            sortByNameButton.setText(null);
-            sortByNameButton.setSelected( !naturalSort );
-            sortByNameButton.setFocusable( false );
-        }
-        res[0] = sortByNameButton;
-        
-        if( null == sortByPositionButton ) {
-            sortByPositionButton = new JToggleButton( new SortActionSupport.SortBySourceAction(this) );
-            sortByPositionButton.setToolTipText(sortByPositionButton.getText());
-            sortByPositionButton.setText(null);
-            sortByPositionButton.setSelected( naturalSort );
-            sortByPositionButton.setFocusable( false );
-        }
-        res[1] = sortByPositionButton;
-        return res;
+
+    private static boolean isInnerClass(@NonNull Description desc) {
+        return (desc.kind.isClass() || desc.kind.isInterface()) &&
+            !desc.isTopLevel;
     }
-        
 }

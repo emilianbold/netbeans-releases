@@ -92,5 +92,5 @@ final class JavaMembersAndHierarchyIcons {
     public static final Icon PRIVATE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/private.gif", false); // NOI18N
     public static final Icon PROTECTED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/protected.gif", false); // NOI18N
     public static final Icon PUBLIC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/public.gif", false); // NOI18N
-    public static final Icon STATIC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/static.gif", false); // NOI18N
+    public static final Icon STATIC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/static.png", false); // NOI18N
 }
