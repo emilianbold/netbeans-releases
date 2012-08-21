@@ -96,7 +96,7 @@ public class SourcesPanel extends javax.swing.JPanel {
                 if (enc != null && enc.name() != null) {
                     ep.setProperty(ClientSideProjectConstants.PROJECT_ENCODING, enc.name());
                 }
-                project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
         });
     }
