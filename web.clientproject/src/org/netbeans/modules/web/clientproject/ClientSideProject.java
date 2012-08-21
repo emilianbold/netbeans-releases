@@ -43,8 +43,6 @@ package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -83,7 +81,7 @@ public class ClientSideProject implements Project {
     public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
 
     final AntProjectHelper helper;
-    private final ReferenceHelper refHelper;
+    private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
     private RefreshOnSaveListener refreshOnSaveListener;
@@ -96,7 +94,7 @@ public class ClientSideProject implements Project {
         this.helper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
-        refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
+        referenceHelper = new ReferenceHelper(helper, configuration, eval);
         configurationProvider = new ClientSideConfigurationProvider(this);
         lookup = createLookup(configuration);
         remoteFiles = new RemoteFiles(this);
@@ -119,7 +117,7 @@ public class ClientSideProject implements Project {
     }
 
     public EditableProperties getProjectProperties() {
-        return getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        return getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
     }
 
     private RefreshOnSaveListener getRefreshOnSaveListener() {
@@ -185,13 +183,13 @@ public class ClientSideProject implements Project {
         return remoteFiles;
     }
 
-    public AntProjectHelper getHelper() {
+    public AntProjectHelper getProjectHelper() {
         return helper;
     }
 
     @Override
     public FileObject getProjectDirectory() {
-        return getHelper().getProjectDirectory();
+        return getProjectHelper().getProjectDirectory();
     }
 
     @Override
@@ -201,6 +199,10 @@ public class ClientSideProject implements Project {
 
     public PropertyEvaluator getEvaluator() {
         return eval;
+    }
+
+    public ReferenceHelper getReferenceHelper() {
+        return referenceHelper;
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -374,15 +376,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            try {
-                FileObject siteRoot = ClientSideProjectUtilities.getSiteRootFolder(helper);
-                if (siteRoot != null && FileUtil.isParentOf(siteRoot, file)) {
-                    return siteRoot;
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-            return helper.getProjectDirectory();
+            return getSiteRootFolder();
         }
     }
 

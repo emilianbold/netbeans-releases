@@ -89,10 +89,10 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     @Override
     public void save() {
         if (cust != null && getBrowserIntegration() == Boolean.TRUE) {
-            EditableProperties p = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties p = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId(), Boolean.toString(cust.panel.isAutoRefresh()));
             p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId(), Boolean.toString(cust.panel.isHighlightSelection()));
-            project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+            project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         }
     }
 

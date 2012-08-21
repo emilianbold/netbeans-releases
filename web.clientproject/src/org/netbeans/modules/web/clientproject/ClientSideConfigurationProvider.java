@@ -152,7 +152,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
     @Override
     public void setActiveConfiguration(ClientProjectConfigurationImplementation c) throws IllegalArgumentException, IOException {
         final String n = c.getId();
-        EditableProperties ep = p.getHelper().getProperties(CONFIG_PROPS_PATH);
+        EditableProperties ep = p.getProjectHelper().getProperties(CONFIG_PROPS_PATH);
         if (Utilities.compareObjects(n, ep.getProperty(PROP_CONFIG))) {
             return;
         }
@@ -161,7 +161,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         } else {
             ep.remove(PROP_CONFIG);
         }
-        p.getHelper().putProperties(CONFIG_PROPS_PATH, ep);
+        p.getProjectHelper().putProperties(CONFIG_PROPS_PATH, ep);
         pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
         ProjectManager.getDefault().saveProject(p);
         assert p.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;

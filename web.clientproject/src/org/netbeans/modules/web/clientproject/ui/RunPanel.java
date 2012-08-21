@@ -122,7 +122,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
                     ep.setProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL, jProjectURLTextField.getText());
                 }
                 ep.setProperty(ClientSideProjectConstants.PROJECT_SERVER, isEmbeddedServer() ? "internal" : "external");
-                project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 try {
                     configProvider.setActiveConfiguration(
                             (ClientProjectConfigurationImplementation)jConfigurationComboBox.getSelectedItem());

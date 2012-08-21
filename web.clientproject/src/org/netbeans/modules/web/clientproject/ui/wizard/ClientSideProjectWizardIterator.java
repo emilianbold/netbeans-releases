@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -128,7 +129,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         // Always open top dir as a project:
         files.add(dir);
 
-        FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, projectHelper);
+        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+        FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, project);
 
         // index file
         FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
@@ -239,7 +241,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
         /** @return site root */
-        FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException;
+        FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException;
         void uninitialize(WizardDescriptor wizardDescriptor);
     }
 
@@ -276,7 +278,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
-        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
+            AntProjectHelper projectHelper = project.getProjectHelper();
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
             if (siteTemplate != null) {
@@ -404,10 +407,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
-        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
-            File projectDir = (File) wizardDescriptor.getProperty(PROJECT_DIRECTORY);
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
-            ClientSideProjectUtilities.initializeProject(projectHelper, ClientSideProjectUtilities.relativizeFile(projectDir, siteRoot));
+            ClientSideProjectUtilities.initializeProject(project.getProjectHelper(), project.getReferenceHelper().createForeignFileReference(siteRoot, PROJECT_DIRECTORY));
             return FileUtil.toFileObject(siteRoot);
         }
 
