@@ -53,6 +53,7 @@ import org.glassfish.tools.ide.data.GlassFishLibrary;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.LibraryBuilder;
+import org.glassfish.tools.ide.server.config.LibraryConfig;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
@@ -81,8 +82,8 @@ public abstract class GlassFishPlatformImpl
             = GlassFishPlatformImpl.class.getResource("gfLibsDefault.xml");
 
     /** Library builder configuration since GlassFish 4. */
-    private static final LibraryBuilder.Config LIBRARY_BUILDER_CONFIG_4
-            = new LibraryBuilder.Config(GlassFishVersion.GF_4,
+    private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_4
+            = new LibraryConfig.Next(GlassFishVersion.GF_4,
             GlassFishPlatformImpl.class.getResource("gfLibs4.xml"));
 
     // Now there is only GlassFish 4 so we have single option to return.
@@ -102,21 +103,16 @@ public abstract class GlassFishPlatformImpl
         supportedModuleTypes.add(J2eeModule.Type.EAR);
     }
 
-    /** Supported profiles (terminology of Java EE 6) */
+    /** Supported profiles (terminology of Java EE 6). */
     private static final Set<Profile> supportedProfiles = new HashSet<Profile>();
     static {
         supportedProfiles.add(Profile.JAVA_EE_6_WEB);
         supportedProfiles.add(Profile.JAVA_EE_6_FULL);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Library builder initialization.                                        //
-    ////////////////////////////////////////////////////////////////////////////
-
-    static {
-        LibraryBuilder.init(LIBRARY_BUILDER_CONFIG_DEFAULT,
-                LIBRARY_BUILDER_CONFIG_4);
-    }
+    /** Library builder configuration for GlassFish cloud. */
+    private static final LibraryConfig libraryConfig = new LibraryConfig(
+            LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_4);
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -397,7 +393,7 @@ public abstract class GlassFishPlatformImpl
         }
         synchronized(this) {
             if (builder == null) {
-                builder = new LibraryBuilder(
+                builder = new LibraryBuilder(libraryConfig,
                         instance.getLocalServer().getServerHome(), "B", "C");
             }
         }
