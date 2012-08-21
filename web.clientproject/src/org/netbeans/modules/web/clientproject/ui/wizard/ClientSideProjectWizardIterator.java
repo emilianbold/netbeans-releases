@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,6 +72,8 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -114,7 +117,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+        Set<FileObject> files = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
         if (!dirF.isDirectory() && !dirF.mkdirs()) {
@@ -123,9 +126,15 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         FileObject dir = FileUtil.toFileObject(dirF);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
-        resultSet.add(dir);
+        files.add(dir);
 
-        wizard.instantiate(resultSet, handle, wizardDescriptor, projectHelper);
+        FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, projectHelper);
+
+        // index file
+        FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
+        if (indexFile != null) {
+            files.add(indexFile);
+        }
 
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
@@ -133,7 +142,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         handle.finish();
-        return resultSet;
+        return files;
     }
 
     @Override
@@ -229,7 +238,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
-        void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException;
+        /** @return site root */
+        FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException;
         void uninitialize(WizardDescriptor wizardDescriptor);
     }
 
@@ -266,7 +276,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
-        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
             if (siteTemplate != null) {
@@ -293,6 +303,20 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // any libraries selected
                 applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
             }
+
+            // index file (#216293)
+            File[] htmlFiles = FileUtil.toFile(siteRootDir).listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    // accept html or xhtml files
+                    return pathname.isFile()
+                            && pathname.getName().toLowerCase().endsWith("html"); // NOI18N
+                }
+            });
+            if (htmlFiles != null && htmlFiles.length == 0) {
+                createIndexFile(siteRootDir);
+            }
+            return siteRootDir;
         }
 
         @Override
@@ -353,6 +377,13 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
+        private void createIndexFile(FileObject siteRoot) throws IOException {
+            FileObject indexTemplate = FileUtil.getConfigFile("Templates/Other/html.html"); // NOI18N
+            DataFolder dataFolder = DataFolder.findFolder(siteRoot);
+            DataObject dataIndex = DataObject.find(indexTemplate);
+            dataIndex.createFromTemplate(dataFolder, "index"); // NOI18N
+        }
+
     }
 
     public static final class ExistingProjectWizard implements Wizard {
@@ -377,10 +408,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
-        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, AntProjectHelper projectHelper) throws IOException {
             File projectDir = (File) wizardDescriptor.getProperty(PROJECT_DIRECTORY);
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
             ClientSideProjectUtilities.initializeProject(projectHelper, ClientSideProjectUtilities.relativizeFile(projectDir, siteRoot));
+            return FileUtil.toFileObject(siteRoot);
         }
 
         @Override
