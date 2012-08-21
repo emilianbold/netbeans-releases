@@ -127,9 +127,21 @@ public class RemoteFS extends AbstractFileSystem {
             return null;
         }
     }
+    
+    private String getNameFrom(URL url) {
+        String surl = url.toExternalForm();
+        if (surl.substring(0, 7).equalsIgnoreCase("http://")) {
+            surl = surl.substring(7);
+        } else if (surl.substring(0, 8).equalsIgnoreCase("https://")) {
+            surl = surl.substring(8);
+        }
+        surl = surl.replace('/', '_');
+        surl = surl.replace('\\', '_');
+        return surl;
+    }
 
     public FileObject getFileForURL(URL url) {
-        String surl = url.toExternalForm();
+        String surl = getNameFrom(url);
         FileObject fo = getRoot().getFileObject(surl, "");
         if (fo != null) {
             return fo;
@@ -175,7 +187,7 @@ public class RemoteFS extends AbstractFileSystem {
                         //urlCache.clear();
                         for (int i = 0; i < childrenNames.length; i++) {
                             URL url = remoteFiles.get(i);
-                            String name = url.toExternalForm();
+                            String name = getNameFrom(url);
                             childrenNames[i] = name;
                             urlCache.put(name, url);
                         }
@@ -332,7 +344,7 @@ public class RemoteFS extends AbstractFileSystem {
     }
 
     @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
-    private static class RemoteStatus implements Status {
+    private class RemoteStatus implements Status {
 
         RemoteStatus() {}
 
@@ -344,14 +356,31 @@ public class RemoteFS extends AbstractFileSystem {
                 if (fo.isRoot()) {
                     return Bundle.LBL_RemoteFiles();
                 }
-                String urlAsString = fo.getNameExt();
-                int index = urlAsString.lastIndexOf('/');
+                URL url = getURLforName(fo.getNameExt());
+                String path = url.getPath();
+                int index = path.lastIndexOf('/');
+                int index2 = path.lastIndexOf('\\');
+                if (index2 >= 0) {
+                    if (index < 0) {
+                        index = index2;
+                    } else {
+                        index = Math.max(index, index2);
+                    }
+                }
                 if (index != -1) {
-                    name = urlAsString.substring(index+1);
+                    name = path.substring(index+1);
                 }
                 return name;
             } else {
                 int index = name.lastIndexOf('/');
+                int index2 = name.lastIndexOf('\\');
+                if (index2 >= 0) {
+                    if (index < 0) {
+                        index = index2;
+                    } else {
+                        index = Math.max(index, index2);
+                    }
+                }
                 if (index != -1) {
                     name = name.substring(index+1);
                 }
