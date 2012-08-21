@@ -123,4 +123,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testUnusedVariables03() throws Exception {
         checkSemantic("testfiles/coloring/unusedVariable02.js"); 
     }
+    
+    public void testUnusedVariables04() throws Exception {
+        checkSemantic("testfiles/coloring/unusedVariable03.js"); 
+    }
 }
