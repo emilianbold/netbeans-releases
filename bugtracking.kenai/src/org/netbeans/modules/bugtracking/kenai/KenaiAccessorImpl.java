@@ -66,8 +66,8 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport;
+import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
@@ -134,7 +134,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
             }
             return members;
         }
-        return Collections.EMPTY_LIST;
+        return null;
     }
 
 
@@ -238,6 +238,11 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         }
     }
 
+    @Override
+    public boolean isOwner (String url) {
+        return getKenai(url) != null;
+    }
+    
     /**
      * Returns true if logged into kenai, otherwise false.
      *

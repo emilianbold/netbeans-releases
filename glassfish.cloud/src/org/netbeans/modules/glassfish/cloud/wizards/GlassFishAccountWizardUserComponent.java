@@ -749,7 +749,7 @@ public class GlassFishAccountWizardUserComponent
      */
     final ValidationResult accountValid() {
         String account = getAccount();
-        if (account != null && account.length() > 0) {
+        if (account != null && account.length() >= 0) {
             return new ValidationResult(true, null);
         } else {
             return new ValidationResult(false,
@@ -771,7 +771,7 @@ public class GlassFishAccountWizardUserComponent
      */
     final ValidationResult userNameValid() {
         String userName = getUserName();
-        if (userName != null && userName.length() > 0) {
+        if (userName != null && userName.length() >= 0) {
             return new ValidationResult(true, null);
         } else {
             return new ValidationResult(false,
@@ -793,7 +793,7 @@ public class GlassFishAccountWizardUserComponent
      */
     final ValidationResult userPasswordValid() {
         String userPassword = getUserPassword();
-        if (userPassword != null && userPassword.length() > 0) {
+        if (userPassword != null && userPassword.length() >= 0) {
             return new ValidationResult(true, null);
         } else {
             return new ValidationResult(false,

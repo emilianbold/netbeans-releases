@@ -451,7 +451,7 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
                             continue;
                         }
                         add(issueName, issueUrl, issueKey, projectName);
-                        KenaiAccessor ka = KenaiUtil.getKenaiAccessor();
+                        KenaiAccessor ka = KenaiUtil.getKenaiAccessor(url);
                         if(ka != null) {
                             String host = issueUrl.getHost();
                             Map<String, PropertyChangeListener> kl = getKenaiListeners();

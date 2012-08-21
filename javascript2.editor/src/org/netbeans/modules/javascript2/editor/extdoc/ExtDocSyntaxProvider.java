@@ -39,63 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.api;
+package org.netbeans.modules.javascript2.editor.extdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 
 /**
+ * Syntax provider of the ExtDoc documentation tool.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class DocIdentifierImpl implements DocIdentifier {
+public class ExtDocSyntaxProvider implements SyntaxProvider {
 
-    private final String name;
-    private final int offset;
-
-    public DocIdentifierImpl(String name, int offset) {
-        this.name = name;
-        this.offset = offset;
-    }
-    
     @Override
-    public String getName() {
-        return name;
+    public String typesSeparator() {
+        return "/";
     }
 
     @Override
-    public int getOffset() {
-        return offset;
+    public String paramTagTemplate() {
+        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        return true;
+    public String returnTagTemplate() {
+        return "@return {" + TYPE_PLACEHOLDER + "}";
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + this.offset;
-        return hash;
-    }
-
-    @Override
-    public String toString() {
-        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
+    public String typeTagTemplate() {
+        return "@type {" + TYPE_PLACEHOLDER + "}";
     }
 }
-

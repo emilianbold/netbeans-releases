@@ -79,13 +79,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-//import org.hibernate.HibernateException;
-//import org.hibernate.QueryException;
-//import org.hibernate.SessionFactory;
-//import org.hibernate.engine.query.JPQLQueryPlan;
-//import org.hibernate.hql.QueryTranslator;
-//import org.hibernate.hql.ast.QuerySyntaxException;
-//import org.hibernate.impl.SessionFactoryImpl;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -93,13 +86,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-//import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-//import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
@@ -352,24 +343,23 @@ public final class JPQLEditorTopComponent extends TopComponent {
                                     }
                                 }
                             }
+                        } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0) || provider.equals(ProviderUtil.HIBERNATE_PROVIDER)) {//NOI18N
+                            Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.HIBERNATE_QUERY);
+                            if (qClass != null) {
+                                Method method = qClass.getMethod(JPQLExecutor.HIBERNATE_QUERY_SQL);
+                                if (method != null) {
+                                    queryStr = (String) method.invoke(query);
+                                }
+                            }
+                        } else if (provider.getProviderClass().contains("openjpa")) {//NOI18N
+                            Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.OPENJPA_QUERY);
+                            if (qClass != null) {
+                                Method method = qClass.getMethod(JPQLExecutor.OPENJPA_QUERY_SQL);
+                                if (method != null) {
+                                    queryStr = (String) method.invoke(query);
+                                }
+                            }
                         }
-                        //            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
-                        //                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
-                        //                if(qClass !=null) {
-                        //                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
-                        //                    if(method != null){
-                        //                        queryStr = (String) method.invoke(query);
-                        //                    }
-                        //                }
-                        //            } else if (provider.getProviderClass().contains("openjpa")){//NOI18N
-                        //                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(OPENJPA_QUERY);
-                        //                if(qClass !=null) {
-                        //                    Method method = qClass.getMethod(OPENJPA_QUERY_SQL);
-                        //                    if(method != null){
-                        //                        queryStr = (String) method.invoke(query);
-                        //                    }
-                        //                }
-                        //            } 
 
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task

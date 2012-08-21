@@ -45,61 +45,28 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Action;
+import org.glassfish.tools.ide.server.FetchLog;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.glassfish.common.actions.DebugAction;
-import org.netbeans.modules.glassfish.common.actions.RefreshAction;
-import org.netbeans.modules.glassfish.common.actions.RestartAction;
-import org.netbeans.modules.glassfish.common.actions.StartServerAction;
-import org.netbeans.modules.glassfish.common.actions.StopServerAction;
+import org.netbeans.modules.glassfish.common.actions.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.IOColorLines;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import org.openide.windows.*;
 
 
 /**
@@ -186,7 +153,7 @@ public class LogViewMgr {
      * @return uri specific instamce of LogViewMgr
      */
     public static LogViewMgr getInstance(String uri) {
-        LogViewMgr logViewMgr = null;
+        LogViewMgr logViewMgr;
         synchronized (instances) {
             WeakReference<LogViewMgr> viewRef = instances.get(uri);
             logViewMgr = viewRef != null ? viewRef.get() : null;
@@ -198,7 +165,8 @@ public class LogViewMgr {
         return logViewMgr;
     }
     
-    public void ensureActiveReader(List<Recognizer> recognizers, InputStream serverLog, Map<String,String> properties) {
+    public void ensureActiveReader(List<Recognizer> recognizers,
+            FetchLog serverLog, GlassfishInstance instance) {
         synchronized (readers) {
             boolean activeReader = false;
             for(WeakReference<LoggerRunnable> ref: readers) {
@@ -210,7 +178,9 @@ public class LogViewMgr {
             }
 
             if(!activeReader && serverLog != null) {
-                readInputStreams(recognizers, serverLog instanceof FileInputStream, properties, serverLog);
+                readInputStreams(recognizers,
+                        serverLog.getInputStream() instanceof FileInputStream,
+                        instance, serverLog);
             }
         }
     }
@@ -218,18 +188,19 @@ public class LogViewMgr {
     //private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
 
     /**
-     * Reads a newly included InputSreams
+     * Reads a newly included InputSreams.
      *
      * @param inputStreams InputStreams to read
      */
     public void readInputStreams(List<Recognizer> recognizers, boolean fromFile,
-            Map<String,String> properties, InputStream... inputStreams) {
+            GlassfishInstance instance, FetchLog... serverLogs) {
         synchronized (readers) {
             stopReaders();
 
-            for(InputStream inputStream : inputStreams){
+            for(FetchLog serverLog : serverLogs){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile, properties);
+                LoggerRunnable logger = new LoggerRunnable(recognizers,
+                        serverLog, fromFile, instance);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 Thread t = new Thread(logger);
                 t.start();
@@ -452,18 +423,19 @@ public class LogViewMgr {
     private class LoggerRunnable implements Runnable {
 
         private final List<Recognizer> recognizers;
-        private InputStream inputStream;
+        private FetchLog serverLog;
         private final boolean ignoreEof;
         private volatile boolean shutdown;
-        private final Map<String, String> properties;
+        private GlassfishInstance instance;
+        //private final Map<String, String> properties;
         
-        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, 
-                boolean ignoreEof, Map<String,String> properties) {
+        public LoggerRunnable(List<Recognizer> recognizers, FetchLog serverLog, 
+                boolean ignoreEof, GlassfishInstance instance) {
             this.recognizers = recognizers;
-            this.inputStream = inputStream;
+            this.serverLog = serverLog;
             this.ignoreEof = ignoreEof;
             this.shutdown = false;
-            this.properties = properties;
+            this.instance = instance;
         }
 
         public void stop() {
@@ -474,15 +446,18 @@ public class LogViewMgr {
          * Implementation of the Runnable interface. Here all tailing is
          * performed
          */
+        @SuppressWarnings("SleepWhileInLoop")
         @Override
         public void run() {
             final String originalName = Thread.currentThread().getName();
             BufferedReader reader = null;
             
             try {
-                Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream); // NOI18N
+                Thread.currentThread().setName(this.getClass().getName()
+                        + " - " + serverLog.getInputStream()); // NOI18N
 
-                reader = new BufferedReader(new InputStreamReader(inputStream));
+                reader = new BufferedReader(new InputStreamReader(
+                        serverLog.getInputStream()));
 
                 // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
@@ -535,12 +510,7 @@ public class LogViewMgr {
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "I/O exception reading server log", ex); // NOI18N
             } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "I/O exception closing server log", ex); // NOI18N
-                }
-                
+                serverLog.close();
                 if(reader != null) {
                     try {
                         reader.close();
@@ -579,36 +549,39 @@ public class LogViewMgr {
             }
         }
 
-        private synchronized BufferedReader followLogRotation(BufferedReader reader) {
+        private synchronized BufferedReader followLogRotation(
+                BufferedReader reader) {
             BufferedReader retVal = reader;
-            if (null != properties) {
-                InputStream is = null;
-                String dir = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+            if (instance != null && instance.getProperties() != null) {
+                FetchLog newServerLog = null;
+                String dir = instance.getProperty(
+                        GlassfishModule.DOMAINS_FOLDER_ATTR);
                 if (null == dir) {
                     // this log cannot rotate... it isn't based on a file
                     return retVal;
                 }
                 try {
-                  is  = getServerLogStream(properties);
-                  if (inputStream instanceof FileInputStream && is instanceof FileInputStream) {
-                      FileInputStream fis = (FileInputStream) is;
+                  newServerLog  = getServerLogStream(instance);
+                  if (serverLog.getInputStream() instanceof FileInputStream
+                          && newServerLog.getInputStream()
+                          instanceof FileInputStream) {
+                      FileInputStream fis = (FileInputStream)newServerLog
+                              .getInputStream();
                       long newSize = fis.getChannel().size();
-                      long oldSize = ((FileInputStream) inputStream).getChannel().size();
+                      long oldSize = ((FileInputStream)serverLog
+                              .getInputStream()).getChannel().size();
                       if (oldSize != newSize) {
-                          retVal = new BufferedReader(new InputStreamReader(is));
-                          try {inputStream.close();} catch (IOException ioe) {
-                            Logger.getLogger("glassfish").log(Level.INFO, "closing the old inputstream", ioe); // NOI18N
-                          }
-                          inputStream = is;
+                          retVal = new BufferedReader(new InputStreamReader(
+                                  newServerLog.getInputStream()));
+                          serverLog.close();
+                          serverLog = newServerLog;
                       }
                   }
                 } catch (IOException ioe) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, null, ioe); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.WARNING, null, ioe);
                 } finally {
-                    if (null != is && !(is == inputStream)) {
-                        try {is.close();} catch (IOException ioe) {
-                            Logger.getLogger("glassfish").log(Level.INFO, "closing the duplicate inputstream", ioe); // NOI18N
-                        }
+                    if (null != newServerLog && !(newServerLog == serverLog)) {
+                        newServerLog.close();
                     }
                 }
             }
@@ -1096,7 +1069,7 @@ public class LogViewMgr {
             new RefreshAction.OutputAction(commonSupport)
         };
 
-        InputOutput newIO = null;
+        InputOutput newIO;
         synchronized (ioWeakMap) {
             newIO = ioWeakMap.get(si);
             if(newIO == null) {
@@ -1107,17 +1080,17 @@ public class LogViewMgr {
         return newIO;
     }
 
-    static public void displayOutput(Map<String,String> properties, Lookup lookup) {
-        String uri = properties.get(GlassfishModule.URL_ATTR);
+    static public void displayOutput(/*Map<String,String> properties*/GlassfishInstance instance, Lookup lookup) {
+        String uri = instance.getProperty(GlassfishModule.URL_ATTR);
         if (null != uri && (uri.contains("gfv3ee6wc") || uri.contains("localhost"))) {
             try {
-                InputStream is = getServerLogStream(properties);
+                FetchLog log = getServerLogStream(instance);
                 LogViewMgr mgr = LogViewMgr.getInstance(uri);
                 List<Recognizer> recognizers = new ArrayList<Recognizer>();
                 if (null != lookup) {
                     recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
                 }
-                mgr.ensureActiveReader(recognizers, is,properties);
+                mgr.ensureActiveReader(recognizers, log, instance);
                 mgr.selectIO(true);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,
@@ -1142,100 +1115,8 @@ public class LogViewMgr {
 
     private static final Map<String,PipedInputStream> remoteInputStreams = new HashMap<String,PipedInputStream>();
 
-    static private InputStream getServerLogStream(Map<String, String> ip) throws IOException {
-        InputStream result = null;
-        String domainsFolder = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-        String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
-        if (null != domainsFolder && null != domainName) {
-            File domainFolder = new File(domainsFolder, domainName);
-
-            // domain folder must exist.
-            if(domainFolder.exists()) {
-                    try {
-                        // however, logs folder or server.log does not have to exist yet.
-                        result = new FileInputStream(new File(domainFolder, "logs" + File.separatorChar + "server.log"));
-                    } catch (FileNotFoundException ex) {
-                    }
-            } else {
-                Logger.getLogger("glassfish").log(Level.WARNING, NbBundle.getMessage(
-                        LogViewMgr.class, "MSG_DomainFolderNotFound", domainFolder.getAbsolutePath()));
-            }
-            return result;
-        } else {
-            PipedInputStream pis = null;
-            synchronized (remoteInputStreams) {
-                String key = ip.get(GlassfishModule.HOSTNAME_ATTR)+":"+ip.get(GlassfishModule.ADMINPORT_ATTR);
-                pis = remoteInputStreams.get(key);
-                if (null == pis) {
-                    final PipedOutputStream pos = new PipedOutputStream();
-                    try {
-                        pis = new PipedInputStream(pos);
-                        remoteInputStreams.put(key, pis);
-                        RequestProcessor RLRRP = new RequestProcessor("Remote log reader for "+ key);
-                        RLRRP.post(new FetchLogEntries(pos,ip));
-                    } catch (IOException ioe) {
-                        // close the output stream, since the is did not create
-                        try { pos.close(); } catch (IOException ex) {}
-                        throw ioe;
-                    }
-                }
-            }
-            return pis;
-        }
+    static private FetchLog getServerLogStream(GlassfishInstance instance) throws IOException {
+        return FetchLog.create(instance);
     }
 
-    static private class FetchLogEntries implements Runnable {
-
-        final OutputStream os;
-        final Map<String, String> ip;
-
-        FetchLogEntries(OutputStream os, Map<String, String> ip) {
-            this.os = os;
-            this.ip = ip;
-        }
-
-        @Override
-        public void run() {
-            CommandRunner cmd = new CommandRunner(true, null, ip, new OperationStateListener() {
-
-                @Override
-                public void operationStateChanged(OperationState newState, String message) {
-                }
-            });
-
-            Commands.FetchLogData fld = new Commands.FetchLogData(null);
-            Future<OperationState> result = cmd.execute(fld);
-            OperationState state = null;
-            try {
-                state = result.get();
-
-                if (state == OperationState.COMPLETED) {
-                    // now we start to actually put data into the pipe
-                    while (true) {
-                        String newQuery = fld.getNextQuery();
-                        fld = new Commands.FetchLogData(newQuery);
-                        result = cmd.execute(fld);
-                        state = result.get();
-                        if (state == OperationState.COMPLETED) {
-                            String s = fld.getLines();
-                            if (null != s && !"null\n".equals(s)) {
-                                os.write(s.getBytes());
-                                os.flush();
-                            }
-                        } else {
-                            break;
-                        }
-                        Thread.sleep(1000);
-                    }
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "possible problem", ex);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, "possible problem", ex);
-            } catch (ExecutionException ex) {
-                LOGGER.log(Level.INFO, "possible problem", ex);
-            } finally {
-            }
-        }
-    }
 }
