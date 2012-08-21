@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -95,7 +96,7 @@ public final class FiltersManager {
     }
 
     /** @return component instance visually representing filters */ 
-    public JComponent getComponent ( JToggleButton[] sortButtons ) {
+    public JComponent getComponent ( AbstractButton[] sortButtons ) {
         comp.addSortButtons( sortButtons );
         return comp;
     }
@@ -254,9 +255,9 @@ public final class FiltersManager {
             }
         }
         
-        private void addSortButtons( JToggleButton[] sortButtons ) {
+        private void addSortButtons( AbstractButton[] sortButtons ) {
             Dimension space = new Dimension(3, 0);
-            for( JToggleButton button : sortButtons ) {
+            for( AbstractButton button : sortButtons ) {
                 Icon icon = button.getIcon();
                 Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
                 button.setPreferredSize(size);

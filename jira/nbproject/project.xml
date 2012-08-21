@@ -6,14 +6,6 @@
             <code-name-base>org.netbeans.modules.jira</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.mylyn.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>com.atlassian.connector.eclipse.jira.core</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -98,7 +90,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.26</specification-version>
+                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -112,6 +104,14 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.mylyn.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

@@ -44,6 +44,7 @@ package org.netbeans.modules.java.editor.codegen;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
     @Override
     public void actionPerformed(final ActionEvent evt, final JTextComponent component) {
         if (component == null || !component.isEditable() || !component.isEnabled()) {
-            component.getToolkit().beep();
+            Toolkit.getDefaultToolkit().beep();
             return;
         }
         final BaseDocument doc = (BaseDocument) component.getDocument();

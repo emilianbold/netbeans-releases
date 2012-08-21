@@ -59,12 +59,12 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.Utilities;
 
 /**
@@ -80,6 +80,7 @@ public class ProjectPanel extends javax.swing.JPanel {
     public static final String PROJECT_LOCATION = "ProjectLocation"; // NOI18N
     public static final String PROJECT_CREATE_MIDLET = "CreateMidlet"; // NOI18N
     public static final String PROJECT_COPY_SOURCES = "CopySources"; //NOI18N
+    public static final String IS_EMBEDDED = "is_embedded";//NOI18N
 
     /** path length limitation for Windows OS */
     private static final int WINDOWS_MAX_PATH_LENGTH = 255;
@@ -160,6 +161,11 @@ public class ProjectPanel extends javax.swing.JPanel {
             tName.selectAll();
         }
 
+        b = (Boolean) object.getProperty(IS_EMBEDDED);
+        boolean embedded = b == null ? false : b.booleanValue();
+        if(embedded) {
+            org.openide.awt.Mnemonics.setLocalizedText(cCreateMIDlet, org.openide.util.NbBundle.getMessage(ProjectPanel.class, "LBL_Project_CreateIMlet")); // NOI18N
+        }
         b = (Boolean) object.getProperty(PROJECT_CREATE_MIDLET);
         cCreateMIDlet.setSelected(b == null ? true : b.booleanValue());
         

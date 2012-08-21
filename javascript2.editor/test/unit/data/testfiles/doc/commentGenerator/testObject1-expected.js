@@ -1,6 +1,6 @@
 /**
  * 
- * @type {type}^
+ * @type type^
  */
 ShapeFactory.prototype = {
 

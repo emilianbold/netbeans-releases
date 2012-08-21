@@ -103,6 +103,9 @@ public class TypeRepository implements ITypeRepository {
                                 break;
                             }
                         }
+                    } else if(mainFirstPoint == -1) {
+                        mainType = new Type[]{null};
+                        types.put(mainPart, mainType);
                     }
                     //
                     if(mainType == null){

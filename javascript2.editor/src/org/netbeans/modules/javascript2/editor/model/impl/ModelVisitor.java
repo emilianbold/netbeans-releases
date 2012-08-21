@@ -493,16 +493,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 
                 List<DocParameter> docParams = parserResult.getDocumentationHolder().getParameters(functionNode);
                 for (DocParameter docParameter : docParams) {
-                    JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
-                    if(param != null) {
-                        for(Type type : docParameter.getParamTypes()) {
-                            param.addAssignment(new TypeUsageImpl(type.getType(), param.getOffset(), true), param.getOffset());
+                        JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
+                        if(param != null) {
+                            for(Type type : docParameter.getParamTypes()) {
+                                param.addAssignment(new TypeUsageImpl(type.getType(), param.getOffset(), true), param.getOffset());
+                            }
+                            // param occurence in the doc
+                            addDocNameOccurence(param);
                         }
-                        // param occurence in the doc
-                        addDocNameOccurence(param);
                     }
                 }
-            }
                 
             for (FunctionNode fn : functions) {
                 // go through all functions defined as function fn () {...}
@@ -866,6 +866,14 @@ public class ModelVisitor extends PathNodeVisitor {
             return getName((VarNode) node);
         } else if (node instanceof PropertyNode) {
             return getName((PropertyNode) node);
+        } else if (node instanceof FunctionNode) {
+            if (((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT) {
+                return Collections.<Identifier>emptyList();
+            }
+            IdentNode ident = ((FunctionNode) node).getIdent();
+            return Arrays.<Identifier>asList(new IdentifierImpl(
+                    ident.getName(),
+                    ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
         } else {
             return Collections.<Identifier>emptyList();
         }
