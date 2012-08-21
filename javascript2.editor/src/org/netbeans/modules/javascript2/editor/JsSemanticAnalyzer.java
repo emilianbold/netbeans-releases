@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -177,11 +178,13 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                 // some virtual variables (like arguments) doesn't have to be declared, but are in the model
                                 highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
                             }
-                        } else if (object.getOccurrences().size() < object.getAssignments().size()) {
-                            // probably is used only on the left site => is unused
-                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
-                            for(Occurrence occurence: object.getOccurrences()) {
-                                highlights.put(occurence.getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                        } else if (object instanceof JsObjectImpl) {
+                            if (object.getOccurrences().size() < ((JsObjectImpl)object).getCountOfAssignments()) {
+                                // probably is used only on the left site => is unused
+                                highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                for(Occurrence occurence: object.getOccurrences()) {
+                                    highlights.put(occurence.getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                }
                             }
                         }
                     }

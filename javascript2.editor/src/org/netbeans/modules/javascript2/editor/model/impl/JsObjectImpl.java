@@ -244,6 +244,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return result;
     }
 
+    public int getCountOfAssignments() {
+        return assignments.size();
+    }
+    
     @Override
     public Collection<? extends TypeUsage> getAssignments() {
         List<TypeUsage> values;
