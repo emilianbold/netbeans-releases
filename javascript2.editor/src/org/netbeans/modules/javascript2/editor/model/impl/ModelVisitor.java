@@ -866,6 +866,14 @@ public class ModelVisitor extends PathNodeVisitor {
             return getName((VarNode) node);
         } else if (node instanceof PropertyNode) {
             return getName((PropertyNode) node);
+        } else if (node instanceof FunctionNode) {
+            if (((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT) {
+                return Collections.<Identifier>emptyList();
+            }
+            IdentNode ident = ((FunctionNode) node).getIdent();
+            return Arrays.<Identifier>asList(new IdentifierImpl(
+                    ident.getName(),
+                    ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
         } else {
             return Collections.<Identifier>emptyList();
         }
