@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FilenameFilter;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -195,7 +196,8 @@ public class ExistingClientSideProject extends JPanel {
 
     @NbBundle.Messages({
         "ExistingClientSideProject.error.projectDirectory.empty=Project directory must be selected.",
-        "ExistingClientSideProject.error.projectDirectory.children=Project directory must be empty.",
+        "ExistingClientSideProject.error.projectDirectory.nbproject=Project directory is already NetBeans project.",
+        "ExistingClientSideProject.error.projectDirectory.noSiteRoot=Project directory is not parent of site root (and is not empty).",
         "ExistingClientSideProject.error.projectDirectory.notWritable=Project directory cannot be created."
     })
     private String validateProjectDirectory() {
@@ -204,14 +206,29 @@ public class ExistingClientSideProject extends JPanel {
             return Bundle.ExistingClientSideProject_error_projectDirectory_empty();
         }
         File projDir = FileUtil.normalizeFile(new File(projectDirectory).getAbsoluteFile());
+        File siteRoot = FileUtil.normalizeFile(new File(getSiteRoot()).getAbsoluteFile());
         if (projDir.isDirectory()) {
-            if (!projectDirectory.equals(getSiteRoot())) {
-                // not in site root
-                File[] children = projDir.listFiles();
-                if (children != null && children.length > 0) {
-                    return Bundle.ExistingClientSideProject_error_projectDirectory_children();
-                }
+            if (projDir.equals(siteRoot)) {
+                // same as site root, do nothing
+                return null;
             }
+            // 1. already has nbproject?
+            File[] nbprojects = projDir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return "nbproject".equals(name); // NOI18N
+                }
+            });
+            if (nbprojects != null && nbprojects.length > 0) {
+                return Bundle.ExistingClientSideProject_error_projectDirectory_nbproject();
+            }
+            // 2. site root underneath project dir?
+            String siteRootPath = siteRoot.getAbsolutePath() + File.separator;
+            String projDirPath = projDir.getAbsolutePath() + File.separator;
+            if (!siteRootPath.startsWith(projDirPath)) {
+                return Bundle.ExistingClientSideProject_error_projectDirectory_noSiteRoot();
+            }
+            // XXX ideally warn about non-empty directory
         } else {
             File existingParent = projDir;
             while (existingParent != null && !existingParent.exists()) {
