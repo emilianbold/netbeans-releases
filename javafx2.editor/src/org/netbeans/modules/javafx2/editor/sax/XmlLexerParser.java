@@ -907,7 +907,6 @@ public class XmlLexerParser implements ContentLocator {
             offsets[OFFSET_VALUE_START] = valStart;
             offsets[OFFSET_VALUE_END] = valEnd;
         }
-        consume();
         return true;
     }
     

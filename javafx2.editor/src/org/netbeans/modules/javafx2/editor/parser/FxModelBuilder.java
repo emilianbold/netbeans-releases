@@ -554,6 +554,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         
         addElementErrors();
         
+        
         if (uri == null && !qName.equals(localName)) {
             // undeclared prefix
             int prefColon = qName.indexOf(':');
