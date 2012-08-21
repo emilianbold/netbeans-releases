@@ -499,6 +499,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/if8.js");
     }
 
+    public void testIf9() throws Exception {
+        reformatFileContents("testfiles/formatter/if9.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIf9Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/if9.js");
+    }
+
     public void testDoWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/dowhile1.js",new IndentPrefs(4, 4));
     }

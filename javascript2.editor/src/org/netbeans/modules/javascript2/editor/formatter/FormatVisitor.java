@@ -687,7 +687,23 @@ public class FormatVisitor extends NodeVisitor {
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
             FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
 
-        assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
+        assert block.getStart() == block.getFinish();
+
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            if (block.getStatements().size() > 1) {
+                int count = 0;
+                // there may be multiple var statements due to the comma
+                // separated vars translated to multiple statements in ast
+                for (Node node : block.getStatements()) {
+                    if (!(node instanceof VarNode)) {
+                        count++;
+                    }
+                }
+                assert count <= 1;
+            }
+        }
 
         if (block.getStatements().isEmpty()) {
             return;
