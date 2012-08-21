@@ -202,14 +202,14 @@ class RouterGenerator {
             myRouters.append("this.view.close();\n}\n");                  // NOI18N
             myRouters.append("var self = this;\n");                       // NOI18N
             
-            myRouters.append("var model = new models.");
+            myRouters.append("var dataModel = new models.");
             myRouters.append( modelGenerator.getModelName());
             myRouters.append("();\n");                                    // NOI18N
             myRouters.append(" // see isNew() method implementation in the model\n");// NOI18N
-            myRouters.append("model.notSynced = true;\n");                // NOI18N
+            myRouters.append("dataModel.notSynced = true;\n");            // NOI18N
             
             myRouters.append("this.view = new views.ModelView({\n");      // NOI18N
-            myRouters.append("model: model,\n");
+            myRouters.append("model: dataModel,\n");
             if ( hasCollection ){
                 myRouters.append("collection: this.collection,\n");       // NOI18N
             }

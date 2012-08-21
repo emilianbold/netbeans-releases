@@ -55,7 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsDocumentationFallbackHolder extends JsDocumentationHolder {
+public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
 
     public JsDocumentationFallbackHolder(Snapshot snapshot) {
         super(snapshot);

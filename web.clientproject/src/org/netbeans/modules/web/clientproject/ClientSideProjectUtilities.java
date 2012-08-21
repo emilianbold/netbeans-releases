@@ -53,6 +53,11 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
@@ -140,4 +145,21 @@ public final class ClientSideProjectUtilities {
         }
     }
 
+    public static FileObject createBlankIndexHtml(FileObject folder) {
+        try {
+            FileObject template = FileUtil.getConfigFile( "Templates/ClientSide/html.html" ); // NOI18N
+            
+            if (template == null)
+                return null; // Don't know the template
+            
+            DataObject mt = DataObject.find(template);
+            DataFolder webDf = DataFolder.findFolder(folder);
+            return mt.createFromTemplate(webDf, "index").getPrimaryFile(); // NOI18N
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 }

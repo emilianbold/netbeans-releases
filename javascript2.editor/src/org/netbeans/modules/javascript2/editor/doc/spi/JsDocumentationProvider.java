@@ -67,10 +67,17 @@ public interface JsDocumentationProvider {
     Set<String> getSupportedTags();
 
     /**
-     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JS documentation tool.
+     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JavaScript documentation tool.
      *
      * @return list of annotations providers, never {@code null}
      */
     List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
+
+    /**
+     * Get {@link SyntaxProvider syntax provider} for this JavaScript documentation tool.
+     *
+     * @return syntax provider of this documentation tool, can return {@code null) - then is used default SyntaxProvider
+     */
+    SyntaxProvider getSyntaxProvider();
 
 }

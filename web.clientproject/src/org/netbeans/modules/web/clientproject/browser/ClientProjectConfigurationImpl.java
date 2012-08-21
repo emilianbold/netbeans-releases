@@ -155,7 +155,11 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     
     public BrowserSupport getBrowserSupport() {
         if (browserSupport == null) {
-            browserSupport = BrowserSupport.create(browser, disableIntegration);
+            if (browser.isEmbedded()) {
+                browserSupport = BrowserSupport.getDefaultEmbedded();
+            } else {
+                browserSupport = BrowserSupport.create(browser, disableIntegration);
+            }
         }
         return browserSupport;
     }

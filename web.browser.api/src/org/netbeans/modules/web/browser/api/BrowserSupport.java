@@ -72,6 +72,8 @@ public final class BrowserSupport {
 
     private static BrowserSupport INSTANCE = create();
     
+    private static BrowserSupport INSTANCE_EMBEDDED;
+    
     /**
      * Returns instance of BrowserSupport which shares WebBrowserPane
      * with HtmlSupport.URLDisplayer. That means that opening a URL via
@@ -111,6 +113,16 @@ public final class BrowserSupport {
     
     public static BrowserSupport create(WebBrowser browser, boolean disableNetBeansIntegration) {
         return new BrowserSupport(browser, disableNetBeansIntegration);
+    }
+    
+    public static BrowserSupport getDefaultEmbedded() {
+        if (INSTANCE_EMBEDDED == null) {
+            WebBrowser browser = WebBrowsers.getInstance().getEmbedded();
+            if (browser != null) {
+                INSTANCE_EMBEDDED = create(browser, false);
+            }
+        }
+        return INSTANCE_EMBEDDED;
     }
     
     /**

@@ -70,7 +70,7 @@ public class RestartTask extends BasicTask<OperationState> {
      * @param stateListener state monitor to track start progress
      */
     public RestartTask(CommonServerSupport support, OperationStateListener... stateListener) {
-        super(support.getInstanceProperties(), stateListener);
+        super(support.getInstance(), stateListener);
         this.support = support;
     }
     
@@ -90,6 +90,7 @@ public class RestartTask extends BasicTask<OperationState> {
      * For all of the above, command succeeds if state == RUNNING at the end.
      * 
      */
+    @SuppressWarnings("SleepWhileInLoop")
     @Override
     public OperationState call() {
         Logger.getLogger("glassfish").log(Level.FINEST, "RestartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N

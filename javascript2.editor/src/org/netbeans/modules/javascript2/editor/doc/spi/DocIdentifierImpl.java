@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor.doc.spi;
 
-package org.netbeans.modules.kenai.ui.api;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 
 /**
  *
- * @author Jan Becicka
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class UIUtilsTest {
+public class DocIdentifierImpl implements DocIdentifier {
 
-    public UIUtilsTest() {
+    private final String name;
+    private final int offset;
+
+    public DocIdentifierImpl(String name, int offset) {
+        this.name = name;
+        this.offset = offset;
+    }
+    
+    @Override
+    public String getName() {
+        return name;
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    @Override
+    public int getOffset() {
+        return offset;
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        return true;
     }
 
-    /**
-     * Test of createHTMLPane method, of class UIUtils.
-     */
-    @Test
-    public void testCreateHTMLPane() {
-//        System.out.println("createHTMLPane");
-//        JTextPane expResult = null;
-//        JTextPane result = UIUtils.createHTMLPane();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 97 * hash + this.offset;
+        return hash;
     }
 
+    @Override
+    public String toString() {
+        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
+    }
 }
+

@@ -48,6 +48,7 @@ import java.util.Set;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -84,5 +85,10 @@ public class ExtDocDocumentationProvider implements JsDocumentationProvider {
     @Override
     public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
         return ANNOTATION_PROVIDERS;
+    }
+
+    @Override
+    public SyntaxProvider getSyntaxProvider() {
+        return null;
     }
 }

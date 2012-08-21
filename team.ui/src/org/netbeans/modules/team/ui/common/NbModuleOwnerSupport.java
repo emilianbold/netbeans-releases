@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.api;
+package org.netbeans.modules.team.ui.common;
 
 import java.io.BufferedReader;
 import java.io.File;

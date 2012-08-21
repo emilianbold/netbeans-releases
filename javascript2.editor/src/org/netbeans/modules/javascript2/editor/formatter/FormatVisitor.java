@@ -288,7 +288,7 @@ public class FormatVisitor extends NodeVisitor {
 
                 // remove original paren marks
                 FormatToken mark = leftParen.next();
-                assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
+                assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
                 tokenStream.removeToken(mark);
 
                 // this works if the offset starts with block as it is now
@@ -296,7 +296,7 @@ public class FormatVisitor extends NodeVisitor {
                         JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
                 if (rightParen != null) {
                     previous = rightParen.previous();
-                    assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
+                    assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                     tokenStream.removeToken(previous);
                 }
 
@@ -359,13 +359,15 @@ public class FormatVisitor extends NodeVisitor {
                     JsTokenId.BRACKET_LEFT_PAREN, getFinish(callNode));
             if (leftBrace != null) {
                 FormatToken previous = leftBrace.previous();
-                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
+                }
 
                 // mark the within parenthesis places
 
                 // remove original paren marks
                 FormatToken mark = leftBrace.next();
-                assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
+                assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
                 tokenStream.removeToken(mark);
 
                 // there is -1 as on the finish position may be some outer paren
@@ -510,7 +512,7 @@ public class FormatVisitor extends NodeVisitor {
                     // remove around binary operator tokens added during token
                     // stream creation
                     if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                        assert formatToken.getText() != null
+                        assert formatToken != null && formatToken.getText() != null
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
                         FormatToken toRemove = formatToken.previous();
@@ -628,7 +630,7 @@ public class FormatVisitor extends NodeVisitor {
                 FormatToken formatToken = tokenStream.getToken(ts.offset());
                 if (formatToken != null) {
                     FormatToken next = formatToken.next();
-                    assert next.getKind() == FormatToken.Kind.AFTER_COMMA : next.getKind();
+                    assert next != null && next.getKind() == FormatToken.Kind.AFTER_COMMA : next;
                     appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_DECLARATION));
                 }
             }
@@ -687,7 +689,23 @@ public class FormatVisitor extends NodeVisitor {
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
             FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
 
-        assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
+        assert block.getStart() == block.getFinish();
+
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            if (block.getStatements().size() > 1) {
+                int count = 0;
+                // there may be multiple var statements due to the comma
+                // separated vars translated to multiple statements in ast
+                for (Node node : block.getStatements()) {
+                    if (!(node instanceof VarNode)) {
+                        count++;
+                    }
+                }
+                assert count <= 1;
+            }
+        }
 
         if (block.getStatements().isEmpty()) {
             return;
@@ -843,7 +861,7 @@ public class FormatVisitor extends NodeVisitor {
                 JsTokenId.BRACKET_LEFT_PAREN, getFinish(outerNode));
         if (leftParen != null) {
             FormatToken mark = leftParen.next();
-            assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS;
+            assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
             tokenStream.removeToken(mark);
 
             appendToken(leftParen, FormatToken.forFormat(leftMark));
@@ -851,7 +869,7 @@ public class FormatVisitor extends NodeVisitor {
                     JsTokenId.BRACKET_RIGHT_PAREN, getStart(outerNode));
             if (rightParen != null) {
                 FormatToken previous = rightParen.previous();
-                assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS;
+                assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                 tokenStream.removeToken(previous);
 
                 previous = rightParen.previous();

@@ -46,8 +46,10 @@ import java.io.File;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,15 +57,23 @@ import org.openide.awt.HtmlBrowser;
  */
 class ChromeInfoPanel extends javax.swing.JPanel {
 
-    ChromeInfoPanel(String pluginPath, final PluginLoader loader) {
+    ChromeInfoPanel(String pluginPath, final PluginLoader loader, 
+            ExtensitionStatus currentStatus) 
+    {
         initComponents();
         
         File file = new File(pluginPath);
         String name = file.getName();
         String parent = file.getParent();
-        myEditorPane.setText(org.openide.util.NbBundle.getMessage(
-                ChromeInfoPanel.class, "TXT_PluginIstallationIssue" , 
-                "file:///"+parent, name ));             // NOI18N
+        StringBuilder text = new StringBuilder("<html>");                       // NOI18N
+        if ( currentStatus == ExtensitionStatus.NEEDS_UPGRADE ){
+            text.append(NbBundle.getMessage(ChromeInfoPanel.class, "TXT_RequestUpgrade"));// NOI18N
+            text.append(" ");           // NOI18N
+        }
+        text.append(NbBundle.getMessage(ChromeInfoPanel.class, 
+                "TXT_PluginIstallationIssue" , "file:///"+parent, name ));      // NOI18N
+        text.append("</html>");         // NOI18N        
+        myEditorPane.setText(text.toString());             
         
         HyperlinkListener listener = new HyperlinkListener() {
             
@@ -100,7 +110,7 @@ class ChromeInfoPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(myScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                .addComponent(myScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -108,7 +118,7 @@ class ChromeInfoPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(myScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

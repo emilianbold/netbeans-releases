@@ -94,7 +94,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             description="../resources/NewClientSideProjectDescription.html",
             iconBase=ClientSideProject.PROJECT_ICON,
             position=100)
-    @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML Application")
+    @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML5 Application")
     public static ClientSideProjectWizardIterator newProject() {
         return new ClientSideProjectWizardIterator(new NewProjectWizard());
     }
@@ -104,7 +104,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             description="../resources/ExistingClientSideProjectDescription.html",
             iconBase=ClientSideProject.PROJECT_ICON,
             position=200)
-    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML Application with Existing Sources")
+    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingProject() {
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
@@ -280,6 +280,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 ClientSideProjectUtilities.initializeProject(projectHelper);
                 siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
                 assert siteRootDir != null;
+                FileObject fo = ClientSideProjectUtilities.createBlankIndexHtml(siteRootDir);
+                if (fo != null) {
+                    files.add(fo);
+                }
              }
 
             // js libs
