@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,7 @@ import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.nodes.AbstractNode;
@@ -123,7 +126,7 @@ public class RuleNode extends AbstractNode {
         }
     };
     
-    private PropertySet[] propertySets;
+    private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
     
     public RuleNode(RuleEditorPanel panel) {
@@ -163,24 +166,38 @@ public class RuleNode extends AbstractNode {
         firePropertySetsChange(old, propertySets);
     }
     
+    void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo old, DeclarationInfo neww) {
+        for(PropertyCategoryPropertySet set : getCachedPropertySets()) {
+            DeclarationProperty declarationProperty = set.getDeclarationProperty(declaration);
+            if(declarationProperty != null) {
+                declarationProperty.setDeclarationInfo(neww);
+                break;
+            }
+        }
+    }
+    
     @Override
     public synchronized PropertySet[] getPropertySets() {
+        return getCachedPropertySets();
+    }
+    
+    private synchronized PropertyCategoryPropertySet[] getCachedPropertySets() {
         if (propertySets == null) {
             propertySets = createPropertySets();
         }
         return propertySets;
     }
-
+    
     /**
      * Creates property sets of the node.
      *
      * @return property sets of the node.
      */
-    private PropertySet[] createPropertySets() {
+    private PropertyCategoryPropertySet[] createPropertySets() {
         if(getModel() == null || getRule() == null) {
-            return new PropertySet[]{};
+            return new PropertyCategoryPropertySet[]{};
         }
-        Collection<PropertySet> sets = new ArrayList<PropertySet>();
+        Collection<PropertyCategoryPropertySet> sets = new ArrayList<PropertyCategoryPropertySet>();
         List<Declaration> declarations = getRule().getDeclarations() == null 
                 ? Collections.<Declaration>emptyList()
                 : getRule().getDeclarations().getDeclarations();
@@ -217,7 +234,9 @@ public class RuleNode extends AbstractNode {
                     Collections.sort(categoryDeclarations, DECLARATIONS_COMPARATOR);
                 }
                 
-                PropertyCategoryPropertySet propertyCategoryPropertySet = new PropertyCategoryPropertySet(entry.getKey(), categoryDeclarations);
+                PropertyCategoryPropertySet propertyCategoryPropertySet = new PropertyCategoryPropertySet(entry.getKey());
+                propertyCategoryPropertySet.addAll(categoryDeclarations);
+                
                 propertySetsMap.put(entry.getKey(), propertyCategoryPropertySet);
                 sets.add(propertyCategoryPropertySet);
             }
@@ -227,7 +246,7 @@ public class RuleNode extends AbstractNode {
                 for (PropertyCategory cat : PropertyCategory.values()) {
                     PropertyCategoryPropertySet propertySet = propertySetsMap.get(cat);
                     if (propertySet == null) {
-                        propertySet = new PropertyCategoryPropertySet(cat, Collections.<Declaration>emptyList());
+                        propertySet = new PropertyCategoryPropertySet(cat);
                         sets.add(propertySet);
                     } 
                     //now add all the remaining properties
@@ -237,14 +256,14 @@ public class RuleNode extends AbstractNode {
                     Collections.sort(allInCat, PROPERTY_DEFINITIONS_COMPARATOR);
 
                     //remove already used
-                    for (Declaration d : propertySet.declarations) {
+                    for (Declaration d : propertySet.getDeclarations()) {
                         PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
                         allInCat.remove(def);
                     }
 
                     //add the rest of unused properties to the property set
                     for (PropertyDefinition pd : allInCat) {
-                        propertySet.properties.add(new PropertyDefinitionProperty(pd));
+                        propertySet.add(pd);
                     }
 
                 }
@@ -276,7 +295,9 @@ public class RuleNode extends AbstractNode {
             }
 
             //just create one top level property set for virtual category (the items actually doesn't belong to the category)
-            PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT, filtered);
+            PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT);
+            set.addAll(filtered);
+            
             //overrride the default descriptions
             set.setDisplayName(Bundle.rule_global_set_displayname());
             set.setShortDescription(Bundle.rule_global_set_tooltip());
@@ -289,14 +310,14 @@ public class RuleNode extends AbstractNode {
                 Collections.sort(all, PROPERTY_DEFINITIONS_COMPARATOR);
 
                 //remove already used
-                for (Declaration d : set.declarations) {
+                for (Declaration d : set.getDeclarations()) {
                     PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
                     all.remove(def);
                 }
 
                 //add the rest of unused properties to the property set
                 for (PropertyDefinition pd : all) {
-                    set.properties.add(new PropertyDefinitionProperty(pd));
+                    set.add(pd);
                 }
 
             }
@@ -304,7 +325,7 @@ public class RuleNode extends AbstractNode {
         
         
 
-        return sets.toArray(new PropertySet[0]);
+        return sets.toArray(new PropertyCategoryPropertySet[0]);
     }
 
     public void applyModelChanges() {
@@ -335,19 +356,38 @@ public class RuleNode extends AbstractNode {
     
     private class PropertyCategoryPropertySet extends PropertySet {
 
-        private List<Property> properties;
-        private Collection<Declaration> declarations;
+        private List<Property> properties = new ArrayList<Property>();
+        
+        private Map<Declaration, DeclarationProperty> declaration2PropertyMap = new HashMap<Declaration, DeclarationProperty>();
 
-        public PropertyCategoryPropertySet(PropertyCategory propertyCategory, Collection<Declaration> declarations) {
+        public PropertyCategoryPropertySet(PropertyCategory propertyCategory) {
             super(propertyCategory.name(), //NOI18N
                     propertyCategory.getDisplayName(),
                     propertyCategory.getShortDescription());
-            this.declarations = declarations;
-
-            properties = new ArrayList<Property>(declarations.size());
-            for (Declaration d : declarations) {
-                properties.add(new DeclarationProperty(d));
+        }
+        
+        public void add(Declaration declaration) {
+            DeclarationProperty property = new DeclarationProperty(declaration);
+            declaration2PropertyMap.put(declaration, property);
+            properties.add(property);
+        }
+        
+        public void addAll(Collection<Declaration> declarations) {
+            for(Declaration d : declarations) {
+                add(d);
             }
+        }
+        
+        public Collection<Declaration> getDeclarations() {
+            return declaration2PropertyMap.keySet();
+        }
+        
+        public DeclarationProperty getDeclarationProperty(Declaration declaration) {
+            return declaration2PropertyMap.get(declaration);
+        }
+        
+        public void add(PropertyDefinition propertyDefinition) {
+            properties.add(new PropertyDefinitionProperty(propertyDefinition));
         }
 
         @Override
@@ -408,6 +448,7 @@ public class RuleNode extends AbstractNode {
     private class DeclarationProperty extends PropertySupport<String> {
 
         private Declaration declaration;
+        private DeclarationInfo info;
 
         public DeclarationProperty(Declaration declaration) {
             super(declaration.getProperty().getContent().toString(),
@@ -416,26 +457,40 @@ public class RuleNode extends AbstractNode {
                     null, true, getRule().isValid() && !isAddPropertyMode());
             this.declaration = declaration;
         }
+        
+        public void setDeclarationInfo(DeclarationInfo info) {
+            String old = getHtmlDisplayName();
+            this.info = info;
+            fireDisplayNameChange(old, getHtmlDisplayName());
+        }
+        
+        private boolean isOverridden() {
+            return info != null && info == DeclarationInfo.OVERRIDDEN;
+        }
 
         @Override
         public String getHtmlDisplayName() {
-            return isShowAllProperties() 
-                    ? new StringBuilder()
-                    .append(getHtmlPrefix())
-                    .append(declaration.getProperty().getContent())
-                    .append(getHtmlPostfix())
-                    .toString()
-                    : super.getHtmlDisplayName();
+            StringBuilder b = new StringBuilder();
+            
+            if(isShowAllProperties()) {
+                b.append(isAddPropertyMode() ? "<font color=777777>" : "<b>"); //NOI18N
+            }
+            if(isOverridden()) {
+                b.append("<s>"); //use <del>?
+            }
+            
+            b.append(declaration.getProperty().getContent());
+            
+            if(isOverridden()) {
+                b.append("</s>"); //use <del>?
+            }
+            if(isShowAllProperties()) {
+                b.append(isAddPropertyMode() ? "</font>" : "</b>"); //NOI18N
+            }
+            
+            return b.toString();
         }
-        
-        private String getHtmlPrefix() {
-            return isAddPropertyMode() ? "<font color=777777>" : "<b>"; //NOI18N
-        }
-        
-        private String getHtmlPostfix() {
-            return isAddPropertyMode() ? "</font>" : "</b>"; //NOI18N
-        }
-
+            
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return declaration.getPropertyValue().getExpression().getContent().toString();

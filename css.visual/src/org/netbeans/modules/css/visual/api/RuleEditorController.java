@@ -44,9 +44,11 @@ package org.netbeans.modules.css.visual.api;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 
 /**
@@ -150,19 +152,12 @@ public final class RuleEditorController {
      */
     public void setRule(final Rule rule) {
         Parameters.notNull("rule", rule);
-        
-        if(SwingUtilities.isEventDispatchThread()) {
-            peer.setRule(rule);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    peer.setRule(rule);
-                }
-                
-            });
-        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                peer.setRule(rule);
+            }
+        });
     }
     
     /**
@@ -170,18 +165,31 @@ public final class RuleEditorController {
      * The panel will show some informational message instead of the css rule properties.
      */
     public void setNoRuleState() {
-        if(SwingUtilities.isEventDispatchThread()) {
-            peer.setNoRuleState();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    peer.setNoRuleState();
-                }
-                
-            });
-        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                peer.setNoRuleState();
+            }
+        });
+    }
+    
+    /**
+     * Associates an instance of {@link DeclarationInfo} to a {@link Declaration}.
+     * 
+     * The instance of {@link Declaration} must be a member of {@link Rule} set 
+     * previously by {@link #setRule(org.netbeans.modules.css.model.api.Rule).
+     * 
+     * @param declaration An instance of {@link Declaration}
+     * @param declarationInfo  An instance of {@link DeclarationInfo}. May be null 
+     * to clear the Declaration-DeclarationInfo association.
+     */
+    public void setDeclarationInfo(final Declaration declaration, final DeclarationInfo declarationInfo) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                peer.setDeclarationInfo(declaration, declarationInfo);
+            }
+        });
     }
     
     /**
