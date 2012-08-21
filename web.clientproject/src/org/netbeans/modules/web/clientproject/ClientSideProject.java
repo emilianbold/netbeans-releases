@@ -43,6 +43,9 @@ package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -54,15 +57,13 @@ import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
-import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -76,6 +77,8 @@ import org.openide.util.lookup.Lookups;
 )
 public class ClientSideProject implements Project {
 
+    static final Logger LOGGER = Logger.getLogger(ClientSideProject.class.getName());
+
     @StaticResource
     public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
 
@@ -88,7 +91,7 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientSideConfigurationProvider configurationProvider;
     private ClientProjectConfigurationImplementation lastActiveConfiguration;
-    
+
     public ClientSideProject(AntProjectHelper helper) {
         this.helper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
@@ -114,11 +117,11 @@ public class ClientSideProject implements Project {
     public ClientSideConfigurationProvider getProjectConfigurations() {
         return configurationProvider;
     }
-    
+
     public EditableProperties getProjectProperties() {
         return getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
     }
-            
+
     private RefreshOnSaveListener getRefreshOnSaveListener() {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
@@ -131,7 +134,7 @@ public class ClientSideProject implements Project {
     public boolean isUsingEmbeddedServer() {
         return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
-    
+
     public FileObject getSiteRootFolder() {
         String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
         if (s == null) {
@@ -142,7 +145,7 @@ public class ClientSideProject implements Project {
         }
         return helper.resolveFileObject(s);
     }
-    
+
     public FileObject getTestsFolder() {
         String tests = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (tests == null || tests.trim().length() == 0) {
@@ -166,7 +169,7 @@ public class ClientSideProject implements Project {
         }
         return s;
     }
-    
+
     public String getWebContextRoot() {
         String ctx = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT);
         if (ctx == null) {
@@ -177,15 +180,15 @@ public class ClientSideProject implements Project {
         }
         return ctx;
     }
-    
+
     public RemoteFiles getRemoteFiles() {
         return remoteFiles;
     }
-    
+
     public AntProjectHelper getHelper() {
         return helper;
     }
-    
+
     @Override
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
@@ -199,7 +202,7 @@ public class ClientSideProject implements Project {
     public PropertyEvaluator getEvaluator() {
         return eval;
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
                 helper.getStockPropertyPreprovider(),
@@ -211,7 +214,7 @@ public class ClientSideProject implements Project {
                     "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
                 helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
-    
+
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
        return Lookups.fixed(new Object[] {
                this,
@@ -225,12 +228,13 @@ public class ClientSideProject implements Project {
                new RecommendedAndPrivilegedTemplatesImpl(),
                new ClientSideProjectActionProvider(this),
                new OpenHookImpl(this),
-               new CustomizerProviderImpl(this),        
+               new CustomizerProviderImpl(this),
                new ClientSideConfigurationProvider(this),
                //getBrowserSupport(),
                new ClassPathProviderImpl(this),
                configurationProvider,
                new PageInspectorCustomizerImpl(this),
+               new ProjectWebRootProviderImpl(),
                new ClientSideProjectSources(this, helper, eval)
        });
     }
@@ -241,7 +245,7 @@ public class ClientSideProject implements Project {
         }
         return sourcePath;
     }
-    
+
     private final class Info implements ProjectInformation {
 
         @Override
@@ -272,14 +276,14 @@ public class ClientSideProject implements Project {
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
-    
+
     }
-    
+
     private final class RecommendedAndPrivilegedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         @Override
         public String[] getRecommendedTypes() {
-            return new String[] { 
+            return new String[] {
                 "clientside-types",     // NOI18N
                 "XML",                  // NOI18N
                 "simple-files"          // NOI18N
@@ -296,9 +300,9 @@ public class ClientSideProject implements Project {
                 "Templates/Other/Folder"                   // NOI18N
             };
         }
-    
+
     }
-    
+
     private static class OpenHookImpl extends ProjectOpenedHook {
 
         private final ClientSideProject p;
@@ -307,7 +311,7 @@ public class ClientSideProject implements Project {
         public OpenHookImpl(ClientSideProject p) {
             this.p = p;
         }
-        
+
         @Override
         protected void projectOpened() {
             projectFileChangesListener = new ProjectFilesListener(p);
@@ -320,17 +324,17 @@ public class ClientSideProject implements Project {
             FileUtil.removeRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
         }
-        
+
     }
-    
+
     private static class ProjectFilesListener implements FileChangeListener {
 
         private final ClientSideProject p;
-        
+
         ProjectFilesListener(ClientSideProject p) {
             this.p = p;
         }
-        
+
         @Override
         public void fileFolderCreated(FileEvent fe) {
         }
@@ -363,6 +367,23 @@ public class ClientSideProject implements Project {
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
-        
+
     }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            try {
+                FileObject siteRoot = ClientSideProjectUtilities.getSiteRootFolder(helper);
+                if (siteRoot != null && FileUtil.isParentOf(siteRoot, file)) {
+                    return siteRoot;
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+            return helper.getProjectDirectory();
+        }
+    }
+
 }

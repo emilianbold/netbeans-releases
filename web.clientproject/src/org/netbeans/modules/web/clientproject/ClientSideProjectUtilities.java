@@ -95,6 +95,7 @@ public final class ClientSideProjectUtilities {
         saveProjectProperties(projectHelper, properties);
     }
 
+    // XXX performance (also perhaps incorrect place, should be directly on ClientSideProject (and cached))
     public static FileObject getSiteRootFolder(AntProjectHelper projectHelper) throws IOException {
         EditableProperties properties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String siteRoot = properties.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
