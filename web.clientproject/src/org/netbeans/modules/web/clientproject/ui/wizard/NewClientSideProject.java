@@ -56,7 +56,7 @@ public class NewClientSideProject extends JPanel {
 
     private static final long serialVersionUID = 6783546871135477L;
 
-    private static final String PROJECT_NAME = "ClientSideProject"; // NOI18N
+    private static final String PROJECT_NAME = "HTML5Application"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
