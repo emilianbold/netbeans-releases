@@ -43,8 +43,6 @@ package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -378,15 +376,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            try {
-                FileObject siteRoot = ClientSideProjectUtilities.getSiteRootFolder(helper);
-                if (siteRoot != null && FileUtil.isParentOf(siteRoot, file)) {
-                    return siteRoot;
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-            return helper.getProjectDirectory();
+            return getSiteRootFolder();
         }
     }
 
