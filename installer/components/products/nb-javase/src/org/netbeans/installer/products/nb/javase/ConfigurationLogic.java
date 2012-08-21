@@ -41,15 +41,11 @@ package org.netbeans.installer.products.nb.javase;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaFXUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
@@ -57,6 +53,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
 /**
  *
@@ -114,51 +111,33 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         }
         
         // register JavaFX if installed
-        final Product product = getProduct();
-        File location = getProduct().getInstallationLocation();        
-        File sdkLocation = getInstalledFXSDKLocation(product);
-        File runtimeLocation = getInstalledFXRuntimeLocation(product);
+        final Product product = getProduct();        
+        File installationlocation = getProduct().getInstallationLocation();
+        File sdkLocation;
+        File runtimeLocation;
+        
+        boolean javaFXBundled = false;
+        File jdkHome = getJdkLocation(product);
+        if (jdkHome != null) {
+            javaFXBundled = JavaFXUtils.jdkContainsJavaFX(jdkHome);
+        }            
+        
+        if (javaFXBundled) {
+            sdkLocation = jdkHome;
+            runtimeLocation = new File(jdkHome.getAbsoluteFile(), "jre");
+        } else {                    
+            sdkLocation = getInstalledFXSDKLocation(product);
+            runtimeLocation = getInstalledFXRuntimeLocation(product);
+        }                               
         
         try {
-            if (location != null && sdkLocation != null && runtimeLocation != null) {
-                registerJavaFX(location, sdkLocation, runtimeLocation);
+            if (installationlocation != null && sdkLocation != null && runtimeLocation != null) {
+                JavaFXUtils.registerJavaFX(installationlocation, sdkLocation, runtimeLocation);
             }
         } catch (IOException ex) {
             LogManager.log("... cannot execute commad to register JavaFX", ex);
         }
-    }
-    
-    private boolean registerJavaFX(File nbLocation, File sdkLocation, File reLocation) throws IOException {
-        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
-        String [] cp = {
-            "platform/core/core.jar",
-            "platform/lib/boot.jar",
-            "platform/lib/org-openide-modules.jar",
-            "platform/core/org-openide-filesystems.jar",
-            "platform/lib/org-openide-util.jar",
-            "platform/lib/org-openide-util-lookup.jar",
-            "javafx/modules/org-netbeans-modules-javafx2-platform.jar"
-        };
-        for(String c : cp) {
-            File f = new File(nbLocation, c);
-            if(!FileUtils.exists(f)) {
-                LogManager.log("... cannot find jar required for JavaFX integration: " + f);
-                return false;
-            }
-        }
-        String mainClass = "org.netbeans.modules.javafx2.platform.registration.AutomaticRegistration";
-        List <String> commands = new ArrayList <String> ();
-        File nbCluster = new File(nbLocation, "nb");
-        commands.add(javaExe.getAbsolutePath());
-        commands.add("-cp");
-        commands.add(StringUtils.asString(cp, File.pathSeparator));
-        commands.add(mainClass);        
-        commands.add(nbCluster.getAbsolutePath());     
-        commands.add(sdkLocation.getAbsolutePath());
-        commands.add(reLocation.getAbsolutePath());
-        
-        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
-    }
+    }    
     
     private File getInstalledFXSDKLocation (Product product) {
         String sdkPath = JavaFXUtils.getJavaFXSDKInstallationPath(product.getPlatforms().get(0));
@@ -176,5 +155,22 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             runtimeLocation = new File(runtimePath);
         }
         return runtimeLocation;
+    }
+    
+    private File getJdkLocation (Product product) {          
+        List <Product> products = Registry.getInstance().getProducts("nb-base"); // NOI18N
+        String jdkHomePath = null;
+        
+        File installLocation = product.getInstallationLocation();
+        for (Product p : products) {
+            if(installLocation.equals(p.getInstallationLocation())) {
+                jdkHomePath = p.getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
+                if (jdkHomePath != null) {
+                    break;
+                }
+            }
+        }
+        
+        return jdkHomePath != null ? new File(jdkHomePath) : null;        
     }
 }

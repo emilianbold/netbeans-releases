@@ -38,3 +38,22 @@ HINT:Variable $param1 seems to be unused in its scope
 function($param11) use ($field11) {return $param11;};
                          -------
 HINT:Variable $field11 seems to be unused in its scope
+    $index = 1;
+     -----
+HINT:Variable $index seems to be unused in its scope
+    function ($index) use ($used) {};
+                            ----
+HINT:Variable $index seems to be unused in its scope
+HINT:Variable $used seems to be unused in its scope
+    function ($index) { };
+               -----
+HINT:Variable $index seems to be unused in its scope
+    function ($index) { };
+               -----
+HINT:Variable $index seems to be unused in its scope
+    function ($index) { };
+               -----
+HINT:Variable $index seems to be unused in its scope
+    function () { $index = 5; };
+                   -----
+HINT:Variable $index seems to be unused in its scope

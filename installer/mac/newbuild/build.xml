@@ -355,7 +355,7 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
-                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx${ml.suffix}"/>
+                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx-x64${ml.suffix}"/>
                  <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="background.name" value="background-jdk.tif"/>
             </ant>     
