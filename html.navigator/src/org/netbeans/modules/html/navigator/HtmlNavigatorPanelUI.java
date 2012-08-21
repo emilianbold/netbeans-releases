@@ -286,12 +286,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             Project owner = getCurrentProject();
             return ServerURLMapping.fromServer(owner, url);
         } catch (MalformedURLException ex) {
-            Logger.getAnonymousLogger().log(
-                    Level.WARNING, 
-                    String.format("Cannot resolve URL '%s' obtained from web.inspect's PageModel.", inspectedURL), 
-                    ex);
+            //unknown url -> unknown fileObject
+            return null;
         }
-        return null;
     }
     
     private RequestProcessor.Task task;
@@ -320,7 +317,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             });
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            //ignore unknown urls
         }
     }
     
