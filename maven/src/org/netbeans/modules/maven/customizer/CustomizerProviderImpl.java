@@ -53,8 +53,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -66,7 +64,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.ActionProviderImpl;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -91,17 +89,13 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -145,7 +139,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(TXT_Unloadable(), TIT_Unloadable());
             nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
             if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-                ActionProviderImpl.showProblemsAction().createContextAwareInstance(Lookups.singleton(project)).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+                ProjectProblems.showCustomizer(project);
             }
             return;
         }
@@ -432,7 +426,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                         ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                                 TXT_Problem_Broken_Actions(),
                                 DESC_Problem_Broken_Actions(exc.getMessage()),
-                                new OpenActions(pomDir.getFileObject(path)));
+                                ProblemReporterImpl.createOpenFileAction(pomDir.getFileObject(path)));
                         rep.setId(BROKEN_NBACTIONS);
                         impl.addReport(rep);
                     }
@@ -447,30 +441,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 }
             }
         });
-    }
-
-    private static class OpenActions extends AbstractAction {
-
-        private FileObject fo;
-
-        OpenActions(FileObject file) {
-            putValue(Action.NAME, NbBundle.getMessage(CustomizerProviderImpl.class, "TXT_OPEN_FILE"));
-            fo = file;
-        }
-
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                    edit.edit();
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
     }
     
 }
