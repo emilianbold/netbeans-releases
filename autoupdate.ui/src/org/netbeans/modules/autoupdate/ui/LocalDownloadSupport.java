@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -67,9 +67,9 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -86,7 +86,7 @@ public class LocalDownloadSupport {
     private static String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
     private static String LOCAL_DOWNLOAD_CHECKED_FILES = "local-download-checked-files"; // NOI18N    
     private FileList fileList = new FileList ();
-    private Logger err = Logger.getLogger (LocalDownloadSupport.class.getName ());
+    private static final Logger err = Logger.getLogger (LocalDownloadSupport.class.getName ());
     private Map<File, String> nbm2unitCodeName = null;
     private Map<String, UpdateUnit> codeName2unit = null;
 
@@ -120,7 +120,7 @@ public class LocalDownloadSupport {
     }
 
     public Collection<UpdateUnit> getUpdateUnits () {
-        Collection<UpdateUnit> res = null;
+        Collection<UpdateUnit> res;
         synchronized (LocalDownloadSupport.class) {
             res = new LinkedList<UpdateUnit> (getCodeName2Unit ().values ());
         }
@@ -157,10 +157,10 @@ public class LocalDownloadSupport {
                 } else if (getCodeName2Unit ().containsKey (u.getCodeName ())) {
                     UpdateElement uE1 = u.getAvailableUpdates ().get (0);
                     UpdateElement uE2 = getCodeName2Unit ().get (u.getCodeName ()).getAvailableUpdates ().get (0);
-                    UpdateUnit winnerUnit = null;
-                    File winnerFile = null;
-                    UpdateUnit looserUnit = null;
-                    File looserFile = null;
+                    UpdateUnit winnerUnit;
+                    File winnerFile;
+                    UpdateUnit looserUnit;
+                    File looserFile;
                     // both are valid, an user have to choose
                     String name1 = getBundle ("NotificationPlugin", uE1.getDisplayName (), uE1.getSpecificationVersion ()); // NOI18N
                     String name2 = getBundle ("NotificationPlugin", uE2.getDisplayName (), uE2.getSpecificationVersion ()); // NOI18N
@@ -198,7 +198,7 @@ public class LocalDownloadSupport {
             }
         }
             if (!alreadyInstalled.isEmpty ()) {
-                String msg = null;
+                String msg;
                 if (alreadyInstalled.size () == 1) {
                     msg = getBundle ("NotificationOneAlreadyInstalled", getDisplayNames (alreadyInstalled)); //NOI18N
                 } else {
@@ -281,7 +281,7 @@ public class LocalDownloadSupport {
                 fileList.removeFile (nbm);
             }
         }
-        if (units == null || units.size () == 0) {
+        if (units == null || units.isEmpty()) {
             // skip to another one
             return null;
         }
@@ -317,10 +317,12 @@ public class LocalDownloadSupport {
 
     private static class NbmFileFilter extends FileFilter {
 
+        @Override
         public boolean accept (File f) {
             return f.isDirectory () || f.getName ().toLowerCase ().endsWith (".nbm"); // NOI18N
         }
 
+        @Override
         public String getDescription () {
             return getBundle ("CTL_FileFilterDescription"); // NOI18N
         }
