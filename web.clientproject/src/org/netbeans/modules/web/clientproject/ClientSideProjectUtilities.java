@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,7 +50,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -90,7 +88,6 @@ public final class ClientSideProjectUtilities {
 
     // XXX "merge" with the method above
     public static void initializeProject(AntProjectHelper projectHelper, String siteRoot) throws IOException {
-        assert projectHelper.getProjectDirectory().getFileObject(siteRoot) != null : "Site root must exist: " + siteRoot;
         Map<String, String> properties = Collections.singletonMap(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
         saveProjectProperties(projectHelper, properties);
     }
@@ -103,22 +100,6 @@ public final class ClientSideProjectUtilities {
             return null;
         }
         return projectHelper.getProjectDirectory().getFileObject(siteRoot);
-    }
-
-    /**
-     * Relativize the given {@code file} to the given {@code baseDir}.
-     * If the path cannot be relativized, the full absolute path of the {@code file} is returned.
-     * @param baseDir base directory
-     * @param file file to be relativized
-     * @return relative path or absolute path if relative path does not exist
-     * @see PropertyUtils#relativizeFile(File, File)
-     */
-    public static String relativizeFile(File baseDir, File file) {
-        String relPath = PropertyUtils.relativizeFile(baseDir, file);
-        if (relPath != null) {
-            return relPath;
-        }
-        return file.getAbsolutePath();
     }
 
     private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
