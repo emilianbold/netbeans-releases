@@ -177,7 +177,7 @@ public final class WebServer {
                 // process this one as last one:
                 continue;
             }
-            if (serverURL.startsWith(entry.getValue().webContextRoot)) {
+            if (serverURL.startsWith(entry.getValue().webContextRoot+"/")) {
                 return findFile(entry, serverURL);
             }
         }
