@@ -124,6 +124,10 @@ public class XMLLexerParserTest extends GoldenFileTestBase {
     public void testBrokenHierarchy() throws Exception {
         defaultTestContents();
     }
+    
+    public void testXmlEntities() throws Exception {
+        defaultTestContents();
+    }
 
     private void assertContents(StringBuilder sb) throws IOException {
         File out = new File(getWorkDir(), fname + ".parsed");
@@ -196,7 +200,7 @@ public class XMLLexerParserTest extends GoldenFileTestBase {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            indent(out).append("[chars] ").append(ch);
+            indent(out).append("[chars] ").append(ch).append("\n");
         }
 
         @Override

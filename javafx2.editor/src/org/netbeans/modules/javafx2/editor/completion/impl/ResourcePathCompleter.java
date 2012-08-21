@@ -229,8 +229,11 @@ public class ResourcePathCompleter implements Completer, Completer.Factory {
         for (ClassPath.Entry en : cp.entries()) {
             FileObject root = en.getRoot();
             FileObject dir = root.getFileObject(parentDir);
+            if (dir == null) {
+                continue;
+            }
             for (FileObject f : dir.getChildren()) {
-                if (filesMatch != null && 
+                if (filesMatch != null && !filesMatch.isEmpty() && 
                     !f.getNameExt().toLowerCase().startsWith(filesMatch)) {
                     continue;
                 }

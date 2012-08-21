@@ -50,6 +50,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
@@ -92,7 +93,7 @@ final class ValueClassItem extends SimpleClassItem {
     }
     
     @Override
-    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+    protected void doSubstituteText(JTextComponent c, BaseDocument d, String text) throws BadLocationException {
         // substitute the class element
         super.doSubstituteText(c, d, text);
         if (!isValueAttributePresent()) {
