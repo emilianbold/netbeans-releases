@@ -45,6 +45,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                                 "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
 <codetemplates>
+
+    <!-- base JavaScript structures -->
     <codetemplate abbreviation="br">
         <code><![CDATA[${no-indent}break;]]>
         </code>
@@ -57,7 +59,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="cn">
+    <codetemplate abbreviation="co">
         <code><![CDATA[${no-indent}continue]]>
         </code>
     </codetemplate>
@@ -190,7 +192,7 @@ function ${name}(${parameters}) {
         <code>
 <![CDATA[try {
     ${selection}${cursor}
-} catch (${exception}) {
+} catch (${e}) {
     ${catchcode default=""}
 }
 ]]>
@@ -213,4 +215,50 @@ function ${name}(${parameters}) {
 }]]>
         </code>
     </codetemplate>
+
+    <!-- additional JavaScript code templates -->
+    <codetemplate abbreviation="json">
+        <code><![CDATA[{"${field}": "${value}"}]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="prf">
+        <code>
+<![CDATA[${propertyName}: function(${parameters}) {
+    ${cursor}
+},]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="pro">
+        <code>
+<![CDATA[${propertyName}: {
+    ${cursor}
+},]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="prt">
+        <code><![CDATA[${propertyName}: ${value},]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="to">
+        <code><![CDATA[typeof(${object})]]></code>
+    </codetemplate>
+
+    <!-- Client-Side and W3C DOM JavaScript code templates -->
+    <codetemplate abbreviation="al">
+        <code><![CDATA[window.alert(${message});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="cond">
+        <code><![CDATA[window.console.debug(${debug});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="coni">
+        <code><![CDATA[window.console.info(${info});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="conl">
+        <code><![CDATA[window.console.log(${log});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="conw">
+        <code><![CDATA[window.console.warn(${warn});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="dw">
+        <code><![CDATA[document.write(${message});]]></code>
+    </codetemplate>
+    
 </codetemplates>
