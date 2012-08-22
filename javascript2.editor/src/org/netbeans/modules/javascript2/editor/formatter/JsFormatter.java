@@ -456,8 +456,16 @@ public class JsFormatter implements Formatter {
                     }
                 } else if (endToken.getKind() != FormatToken.Kind.EOL) {
                     // no eol
-                    // XXX do it only when it is really needed
-                    formatContext.replace(start, endToken.getOffset() - start, " "); // NOI18N
+                    FormatToken spaceStartToken = tokenBeforeEol;
+                    if (spaceStartToken.next() != null) {
+                        spaceStartToken = spaceStartToken.next();
+                    }
+
+                    if (isSpace(spaceStartToken, formatContext, true, true)) {
+                        formatContext.replace(start, endToken.getOffset() - start, " "); // NOI18N
+                    } else {
+                        formatContext.remove(start, endToken.getOffset() - start);
+                    }
                 } else if (tokenAfterEol != endToken) {
                     // multiple eols
                     formatContext.remove(start, endToken.getOffset() - start);
@@ -519,7 +527,7 @@ public class JsFormatter implements Formatter {
 
         // FIXME if end is null we might be at EOF
         if (start != null && end != null) {
-            boolean remove = !isSpace(token, formatContext, true);
+            boolean remove = !isSpace(token, formatContext, true, false);
 
             // we fetch the space or next token to start
             start = getNextNonVirtual(start);
@@ -723,18 +731,29 @@ public class JsFormatter implements Formatter {
             case BEFORE_FOR_TEST:
             case BEFORE_FOR_MODIFY:
                 return CodeStyle.get(context).wrapFor();
+            case AFTER_CHAIN_CALL_DOT:
+                return CodeStyle.get(context).wrapChainedMethodCalls();
             default:
                 return null;
         }
     }
 
-    private static Boolean isSpace(FormatToken token, FormatContext context,
-            boolean skipWitespace) {
-        assert token.isVirtual() || skipWitespace && token.getKind() == FormatToken.Kind.WHITESPACE: token;
+    private static boolean isSpace(FormatToken token, FormatContext context,
+            boolean skipWitespace, boolean skipEol) {
+
+        if (!(token.isVirtual()
+                || skipWitespace && token.getKind() == FormatToken.Kind.WHITESPACE
+                || skipEol && token.getKind() == FormatToken.Kind.EOL)) {
+            return false;
+        }
 
         FormatToken next = token;
-        while (next != null && (next.isVirtual() || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE)) {
-            if (next.getKind() != FormatToken.Kind.WHITESPACE && isSpace(next, context)) {
+        while (next != null && (next.isVirtual()
+                || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE
+                || skipWitespace && next.getKind() == FormatToken.Kind.EOL)) {
+            if (next.getKind() != FormatToken.Kind.WHITESPACE
+                    && next.getKind() != FormatToken.Kind.EOL
+                    && isSpace(next, context)) {
                 return true;
             }
             next = next.next();
@@ -857,6 +876,9 @@ public class JsFormatter implements Formatter {
             case AFTER_VAR_KEYWORD:
                 // no option as false (removing space) would brake the code
                 return true;
+            case BEFORE_DOT:
+            case AFTER_DOT:
+                return false;
             default:
                 return false;
         }
