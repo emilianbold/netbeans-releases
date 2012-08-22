@@ -44,6 +44,7 @@ import org.netbeans.jellytools.modules.db.nodes.DatabasesNodeTest;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperatorTest;
 import org.netbeans.jellytools.modules.debugger.actions.BreakpointsWindowActionTest;
 import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsActionTest;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperatorTest;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -54,9 +55,14 @@ import org.netbeans.junit.NbModuleSuite;
 public class JellytoolsIDESuite {
 
     public static Test suite() {
-        return NbModuleSuite.emptyConfiguration().
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+                addTest(DocumentsDialogOperatorTest.class, DocumentsDialogOperatorTest.tests).
+                addTest(EditorOperatorTest.class, EditorOperatorTest.tests).
+                addTest(EditorWindowOperatorTest.class, EditorWindowOperatorTest.tests).
                 addTest(FilesTabOperatorTest.class, FilesTabOperatorTest.tests).
                 addTest(FindInFilesOperatorTest.class).
+                addTest(NavigatorOperatorTest.class).
+                addTest(ProjectsTabOperatorTest.class, ProjectsTabOperatorTest.tests).
                 addTest(RuntimeTabOperatorTest.class, RuntimeTabOperatorTest.tests).
                 addTest(SearchResultsOperatorTest.class, SearchResultsOperatorTest.tests).
                 addTest(FindInFilesActionTest.class, FindInFilesActionTest.tests).
@@ -65,6 +71,7 @@ public class JellytoolsIDESuite {
                 addTest(BreakpointsWindowOperatorTest.class).
                 addTest(BreakpointsWindowActionTest.class).
                 addTest(DeleteAllBreakpointsActionTest.class).
-                suite();
+                addTest(CompletionJListOperatorTest.class, CompletionJListOperatorTest.tests);
+        return conf.clusters(".*").enableModules(".*").suite();
     }
 }
