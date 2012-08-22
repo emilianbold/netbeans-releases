@@ -38,10 +38,6 @@
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.form.FormEditorOperatorTest;
-import org.netbeans.jellytools.modules.form.properties.editors.MethodPickerOperatorTest;
-import org.netbeans.jellytools.modules.form.properties.editors.ParametersPickerOperatorTest;
-import org.netbeans.jellytools.modules.form.properties.editors.PropertyPickerOperatorTest;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -49,20 +45,20 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author Jiri Skrivanek
  */
-public class JellytoolsJavaSuite {
+public class JellytoolsPlatformSuite {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
-                addTest(NewFileWizardOperatorTest.class, NewFileWizardOperatorTest.tests).
-                addTest(NewJavaFileNameLocationStepOperatorTest.class, NewJavaFileNameLocationStepOperatorTest.tests).
-                addTest(NewJavaProjectNameLocationStepOperatorTest.class, NewJavaProjectNameLocationStepOperatorTest.tests).
-                addTest(NewProjectWizardOperatorTest.class, NewProjectWizardOperatorTest.tests).
-                addTest(OutlineOperatorTest.class, OutlineOperatorTest.tests).
-                addTest(TopComponentOperatorTest.class, TopComponentOperatorTest.tests).
-                addTest(FormEditorOperatorTest.class, FormEditorOperatorTest.tests).
-                addTest(MethodPickerOperatorTest.class, MethodPickerOperatorTest.tests).
-                addTest(ParametersPickerOperatorTest.class, ParametersPickerOperatorTest.tests).
-                addTest(PropertyPickerOperatorTest.class, PropertyPickerOperatorTest.tests);
+                addTest(FavoritesOperatorTest.class, FavoritesOperatorTest.tests).
+                addTest(HelpOperatorTest.class, HelpOperatorTest.tests).
+                addTest(MainWindowOperatorTest.class, MainWindowOperatorTest.tests).
+                addTest(NbDialogOperatorTest.class, NbDialogOperatorTest.tests).
+                addTest(OptionsOperatorTest.class, OptionsOperatorTest.tests).
+                addTest(OutputOperatorTest.class, OutputOperatorTest.tests).
+                addTest(OutputTabOperatorTest.class, OutputTabOperatorTest.tests).
+                addTest(PluginsOperatorTest.class, PluginsOperatorTest.tests).
+                addTest(QuestionDialogOperatorTest.class, QuestionDialogOperatorTest.tests).
+                addTest(SaveAsTemplateOperatorTest.class, SaveAsTemplateOperatorTest.tests);
         return conf.clusters(".*").enableModules(".*").suite();
     }
 }
