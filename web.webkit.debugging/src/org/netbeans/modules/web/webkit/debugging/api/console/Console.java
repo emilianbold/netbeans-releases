@@ -44,6 +44,7 @@ package org.netbeans.modules.web.webkit.debugging.api.console;
 import java.util.EventListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -52,13 +53,16 @@ import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 
 /**
- *
+ * JavaScript Console.
+ * See Console section of WebKit Remote Debugging Protocol for more details.
  */
-public class Console {
+public final class Console {
+    
+    private static final Logger LOGGER = Logger.getLogger(Console.class.getName());
+    
     private TransportHelper transport;
     private boolean enabled;
     private Callback callback;
-    private WebKitDebugging webKit;
     private int numberOfClients = 0;
     private List<Console.Listener> listeners = new CopyOnWriteArrayList<Console.Listener>();
     
@@ -66,7 +70,6 @@ public class Console {
         this.transport = transport;
         this.callback = new Callback();
         this.transport.addListener(callback);
-        this.webKit = webKit;
     }
 
     public void enable() {
@@ -90,6 +93,24 @@ public class Console {
         return enabled;
     }
     
+    public void clearMessages() {
+        transport.sendCommand(new Command("Console.clearMessages"));
+    }
+    
+    /* hidden command
+    public void setMonitoringXHREnabled(boolean monitoringXHREnabled) {
+        JSONObject params = new JSONObject();
+        params.put("enabled", Boolean.valueOf(monitoringXHREnabled));
+        transport.sendBlockingCommand(new Command("Console.setMonitoringXHREnabled", params));
+    }
+    */
+    
+    public void addInspectedHeapObject(int heapObjectId) {
+        JSONObject params = new JSONObject();
+        params.put("heapObjectId", Integer.valueOf(heapObjectId));
+        transport.sendBlockingCommand(new Command("Console.addInspectedHeapObject", params));
+    }
+    
     /**
      * Add a listener for console messages.
      * @param l a state change listener
@@ -110,7 +131,11 @@ public class Console {
 
         @Override
         public void handleResponse(final Response response) {
-            if ("Console.messageAdded".equals(response.getMethod())) {
+            String method = response.getMethod();
+            if (!method.startsWith("Console")) {
+                return;
+            }
+            if ("Console.messageAdded".equals(method)) {
                 JSONObject msg = ((JSONObject)response.getParams().get("message"));
                 final ConsoleMessage cm = new ConsoleMessage(msg);
                 transport.getRequestProcessor().post(new Runnable() {
@@ -119,8 +144,23 @@ public class Console {
                         notifyConsoleMessage(cm);
                     }
                 });
-            } else if ("Console.messageRepeatCountUpdated".equals(response.getMethod())) {
-            } else if ("Console.messagesCleared".equals(response.getMethod())) {
+            } else if ("Console.messageRepeatCountUpdated".equals(method)) {
+                final int count = (Integer) response.getParams().get("count");
+                transport.getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyConsoleMessageRepeatCountUpdated(count);
+                    }
+                });
+            } else if ("Console.messagesCleared".equals(method)) {
+                transport.getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyConsoleMessagesCleared();
+                    }
+                });
+            } else {
+                LOGGER.warning("Unknown console event: method = "+method);
             }
         }
         
@@ -132,15 +172,40 @@ public class Console {
         }
     }
     
+    private void notifyConsoleMessagesCleared() {
+        for (Console.Listener l : listeners ) {
+            l.messagesCleared();
+        }
+    }
+    
+    private void notifyConsoleMessageRepeatCountUpdated(int count) {
+        for (Console.Listener l : listeners ) {
+            l.messageRepeatCountUpdated(count);
+        }
+    }
+    
     /**
-     * Debugger state listener.
+     * Console listener.
      */
     public interface Listener extends EventListener {
         
         /**
-         * Object state was reset due to page reload.
+         * A new console message was added.
          */
         void messageAdded(ConsoleMessage message);
+        
+        /**
+         * Console messages are cleared.
+         * This happens either upon <code>clearMessages</code> command or after page navigation.
+         */
+        void messagesCleared();
+        
+        /**
+         * Called when subsequent message(s) are equal to the previous one(s).
+         * @param count new repeat count value.
+         */
+        void messageRepeatCountUpdated(int count);
+        
     }
     
 }

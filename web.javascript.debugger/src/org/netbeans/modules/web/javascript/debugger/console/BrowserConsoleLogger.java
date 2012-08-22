@@ -82,6 +82,18 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
     }
 
+    @Override
+    public void messagesCleared() {
+        try {
+            getOutputLogger().getOut().reset();
+        } catch (IOException ex) {}
+    }
+
+    @Override
+    public void messageRepeatCountUpdated(int count) {
+        // TODO
+    }
+    
     private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
     public static String getCurrentTime() {
         return formatter.format(new Date(System.currentTimeMillis()));
@@ -93,7 +105,13 @@ public class BrowserConsoleLogger implements Console.Listener {
         sb.append(" ");
         sb.append(msg.getText());
         sb.append(" ("+msg.getLevel()+","+msg.getSource()+","+msg.getType()+")");
-        getOutputLogger().getOut().println(sb.toString());
+        String level = msg.getLevel();
+        boolean isErr = "error".equals(level);
+        if (isErr) {
+            getOutputLogger().getErr().println(sb.toString());
+        } else {
+            getOutputLogger().getOut().println(sb.toString());
+        }
         
         boolean first = true;
         if (msg.getStackTrace() != null) {
@@ -126,7 +144,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             getOutputLogger().getOut().println(sb.toString(), new MyListener(msg.getURLString(), msg.getLine(), -1));
         }
     }
-    
+
     private class MyListener implements OutputListener {
 
         private String url;
