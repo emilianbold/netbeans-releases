@@ -50,4 +50,5 @@ import java.io.IOException;
  */
 public interface RepositoryDataInput extends DataInput {
     CharSequence readCharSequenceUTF() throws IOException;
+    int readUnitId() throws IOException;
 }

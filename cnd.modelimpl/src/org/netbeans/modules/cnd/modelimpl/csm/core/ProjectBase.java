@@ -3402,7 +3402,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
-        aStream.writeInt(unitId);
+        aStream.writeUnitId(unitId);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;

@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /*package*/ abstract class ProjectNameBasedKey extends AbstractKey {
 
-    private final short unitIndex;
+    private final int unitIndex;
 
     protected ProjectNameBasedKey(CharSequence project) {
         assert project != null;
@@ -92,11 +92,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
-        aStream.writeShort(this.unitIndex);
+        aStream.writeUnitId(this.unitIndex);
     }
 
     protected ProjectNameBasedKey(RepositoryDataInput aStream) throws IOException {
-        this.unitIndex = aStream.readShort();
+        this.unitIndex = aStream.readUnitId();
     }
 
     @Override
@@ -120,7 +120,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
     }
 
     @Override
-    public final short getUnitPresentation() {
+    public final int getUnitPresentation() {
         return unitIndex;
     }
 }
