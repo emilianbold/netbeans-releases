@@ -43,12 +43,17 @@
 package org.netbeans.modules.web.javascript.debugger.console;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -116,22 +121,31 @@ public class BrowserConsoleLogger implements Console.Listener {
         boolean first = true;
         if (msg.getStackTrace() != null) {
             for (ConsoleMessage.StackFrame sf : msg.getStackTrace()) {
-                sb = new StringBuilder();
+                String indent;
                 if (first) {
-                    sb.append("  caused by ");
+                    indent = "  caused by ";
                     first = false;
                 } else {
-                    sb.append("  ");
+                    indent = "  ";
                 }
-                getOutputLogger().getOut().print(sb);
+                getOutputLogger().getOut().print(indent);
                 sb = new StringBuilder();
                 
-                // TODO: could we convert for example
-                // "http://localhost:89/SimpleLiveHTMLTest/js/app.js:8:9" into 
-                // a more readable: "js/app.js:8:9"? We could do this for all project
-                // files.
-                
-                sb.append(sf.getURLString()+":"+sf.getLine()+":"+sf.getColumn()+" ("+sf.getFunctionName()+")");
+                String urlStr = sf.getURLString();
+                // Try to find a more readable project-relative path:
+                // E.g.: "http://localhost:89/SimpleLiveHTMLTest/js/app.js:8:9"
+                // is turned into: "js/app.js:8:9"
+                try {
+                    URL url = new URL(urlStr);
+                    FileObject fo = ServerURLMapping.fromServer(project, url);
+                    if (fo != null) {
+                        String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                        if (relPath != null) {
+                            urlStr = relPath;
+                        }
+                    }
+                } catch (MalformedURLException murl) {}
+                sb.append(urlStr+":"+sf.getLine()+":"+sf.getColumn()+" ("+sf.getFunctionName()+")");
                 getOutputLogger().getOut().println(sb.toString(), new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn()));
             }
         }
