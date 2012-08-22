@@ -146,7 +146,12 @@ public class BrowserConsoleLogger implements Console.Listener {
                     }
                 } catch (MalformedURLException murl) {}
                 sb.append(urlStr+":"+sf.getLine()+":"+sf.getColumn()+" ("+sf.getFunctionName()+")");
-                getOutputLogger().getOut().println(sb.toString(), new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn()));
+                MyListener l = new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn());
+                if (l.isValidHyperlink()) {
+                    getOutputLogger().getOut().println(sb.toString(), l);
+                } else {
+                    getOutputLogger().getOut().println(sb.toString());
+                }
             }
         }
         sb = new StringBuilder();
@@ -155,7 +160,12 @@ public class BrowserConsoleLogger implements Console.Listener {
             if (msg.getLine() != -1) {
                 sb.append(":"+msg.getLine());
             }        
-            getOutputLogger().getOut().println(sb.toString(), new MyListener(msg.getURLString(), msg.getLine(), -1));
+            MyListener l = new MyListener(msg.getURLString(), msg.getLine(), -1);
+            if (l.isValidHyperlink()) {
+                getOutputLogger().getOut().println(sb.toString(), l);
+            } else {
+                getOutputLogger().getOut().println(sb.toString());
+            }
         }
     }
 
@@ -177,12 +187,22 @@ public class BrowserConsoleLogger implements Console.Listener {
 
         @Override
         public void outputLineAction(OutputEvent ev) {
-            MiscEditorUtil.getLine(project, url, line-1).show(Line.ShowOpenType.OPEN, 
+            Line l = getLine();
+            if (l != null) {
+                l.show(Line.ShowOpenType.OPEN, 
                     Line.ShowVisibilityType.FOCUS, column != -1 ? column -1 : -1);
+            }
+        }
+        private Line getLine() {
+            return MiscEditorUtil.getLine(project, url, line-1);
         }
 
         @Override
         public void outputLineCleared(OutputEvent ev) {
+        }
+        
+        public boolean isValidHyperlink() {
+            return getLine() != null;
         }
     
     }
