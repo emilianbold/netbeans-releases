@@ -285,9 +285,14 @@ public final class WebServer {
                         if ("content/unknown".equals(mime)) {
                             mime = "text/plain";
                         }
-                        out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"
-                                + "Content-Type: "+mime+"\n\n");
-                        FileUtil.copy(fis, out);
+                        try {
+                            out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"
+                                    + "Content-Type: "+mime+"\n\n");
+                            FileUtil.copy(fis, out);
+                        } catch (SocketException se) {
+                            // browser refused to accept data or closed the connection;
+                            // not much we can do about this
+                        }
                     }
                 }
             } finally {
