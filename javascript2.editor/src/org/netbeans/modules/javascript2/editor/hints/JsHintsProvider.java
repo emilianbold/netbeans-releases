@@ -78,6 +78,16 @@ public class JsHintsProvider implements HintsProvider {
             JsConventionRule rule = new JsConventionRule();
             rule.computeHints((JsRuleContext)context, hints, manager);
         }
+        
+        List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
+        if (otherHints != null) {
+            for (Rule.AstRule astRule : otherHints) {
+                if (manager.isEnabled(astRule)) {
+                    JsAstRule rule = (JsAstRule)astRule;
+                    rule.computeHints((JsRuleContext)context, hints, manager);
+                }
+            }
+        }
     }
 
     @Override
