@@ -49,6 +49,9 @@ import org.openide.filesystems.FileObject;
 /**
  * Defines a handler for file opening. May be used by default
  * {@link LineConvertor}s provided by {@link LineConvertors}.
+ * <p>
+ * Module implementing this interface should be marked as providing
+ * <code>org.netbeans.spi.extexecution.open.FileOpenHandler</code> token.
  *
  * @author Petr Hejl
  * @since 1.33

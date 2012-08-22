@@ -49,6 +49,9 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 /**
  * Defines a handler for HTTP URL opening. May be used by default
  * {@link LineConvertor}s provided by {@link LineConvertors}.
+ * <p>
+ * Module implementing this interface should be marked as providing
+ * <code>org.netbeans.spi.extexecution.open.HttpOpenHandler</code> token.
  *
  * @author Petr Hejl
  * @since 1.33

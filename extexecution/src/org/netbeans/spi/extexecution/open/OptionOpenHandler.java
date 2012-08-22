@@ -48,6 +48,9 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
  * Defines a handler for options dialog opening. There has to be a handler
  * in the system for {@link ExecutionDescriptor#optionsPath(String)} in order
  * to work properly.
+ * <p>
+ * Module implementing this interface should be marked as providing
+ * <code>org.netbeans.spi.extexecution.open.OptionOpenHandler</code> token.
  *
  * @author Petr Hejl
  * @since 1.33
