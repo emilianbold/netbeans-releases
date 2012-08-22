@@ -67,11 +67,11 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private Object oldValue;
     private static JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
     private static final Logger LOG = Logger.getLogger(SearchComboBoxEditor.class.getName());
-    
+
     public SearchComboBoxEditor() {
         editorPane = new JEditorPane();
         changeToOneLineEditorPane(editorPane);
-        
+
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
@@ -81,7 +81,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
         final Insets margin = referenceTextField.getMargin();
         final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
-        
+
         scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
 
@@ -111,12 +111,12 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         int preferredHeight = referenceTextField.getPreferredSize().height;
         Dimension spDim = scrollPane.getPreferredSize();
         spDim.height = preferredHeight;
-        spDim.height += margin.bottom + margin.top;//borderInsets.top + borderInsets.bottom;
+        spDim.height += margin.bottom + margin.top; //borderInsets.top + borderInsets.bottom;
         scrollPane.setPreferredSize(spDim);
         scrollPane.setMinimumSize(spDim);
         scrollPane.setMaximumSize(spDim);
         scrollPane.setViewportView(editorPane);
-        
+
         final DocumentListener manageViewListener = new ManageViewPositionListener(editorPane, scrollPane);
         DocumentUtilities.addDocumentListener(editorPane.getDocument(), manageViewListener, DocumentListenerPriority.AFTER_CARET_UPDATE);
         editorPane.addPropertyChangeListener(new PropertyChangeListener() {
@@ -135,9 +135,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             }
         });
     }
-    
+
     public static void changeToOneLineEditorPane(JEditorPane editorPane) {
-        editorPane.putClientProperty("AsTextField", Boolean.TRUE);
+        editorPane.putClientProperty("AsTextField", Boolean.TRUE); //NOI18N
         editorPane.putClientProperty(
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N
@@ -147,20 +147,20 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         if (kit == null) {
             throw new IllegalArgumentException("No EditorKit for '" + SearchNbEditorKit.SEARCHBAR_MIMETYPE + "' mimetype."); //NOI18N
         }
-        
+
         editorPane.setEditorKit(kit);
 
-        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);        
+        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
-        
+
         InputMap im = editorPane.getInputMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), NO_ACTION);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), NO_ACTION);
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NO_ACTION); 
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), NO_ACTION); 
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), NO_ACTION); 
- 
-        
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NO_ACTION);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), NO_ACTION);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), NO_ACTION);
+
+
         ((AbstractDocument) editorPane.getDocument()).setDocumentFilter(new DocumentFilter() {
 
                     @Override
@@ -176,10 +176,8 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                             fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
                         }
                     }
-                }); 
-        editorPane.setBorder (
-            new EmptyBorder (0, 0, 0, 0)
-        );     
+                });
+        editorPane.setBorder(new EmptyBorder (0, 0, 0, 0));
         editorPane.setBackground(referenceTextField.getBackground());
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
         editorPane.setFont(referenceTextField.getFont());
@@ -189,13 +187,13 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
         int height;
         Dimension prefSize = sp.getPreferredSize();
-        Insets borderInsets = sp.getBorder().getBorderInsets(sp);//sp.getInsets();
+        Insets borderInsets = sp.getBorder().getBorderInsets(sp); //sp.getInsets();
         int vBorder = borderInsets.bottom + borderInsets.top;
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
         if (eui != null) {
             height = eui.getLineHeight();
             if (height < eui.getLineAscent()) {
-                height = (eui.getLineAscent()*4)/3; // Hack for the case when line height = 1
+                height = (eui.getLineAscent() * 4) / 3; // Hack for the case when line height = 1
             }
         } else {
             java.awt.Font font = editorPane.getFont();
@@ -349,10 +347,10 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     public JEditorPane getEditorPane() {
         return editorPane;
     }
-    
-    
-    
-    
+
+
+
+
     private static final class ActionInvoker extends AbstractAction {
         private static final String PREFIX = "search-invoke-";
         private final String originalActionName;
@@ -362,8 +360,8 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             originalActionName = name;
             delegateAction = component.getActionMap().get(originalActionName);
         }
-        
-     
+
+
         @Override
         public void actionPerformed(ActionEvent e) {
             if (SearchBar.getInstance().getActualTextComponent() != null) {
@@ -389,6 +387,6 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
         public String getOriginalActionName() {
             return originalActionName;
-        }  
+        }
     };
 }

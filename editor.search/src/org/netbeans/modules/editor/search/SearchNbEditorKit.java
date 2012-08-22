@@ -136,8 +136,8 @@ public class SearchNbEditorKit extends NbEditorKit {
                                     if (!target.isEditable())
                                         replaceBarInstance.looseFocus();
                                 }
-                                
-                                
+
+
                                 jp.revalidate();
 
                                 if (searchBarInstance.hadFocusOnTextField()) {

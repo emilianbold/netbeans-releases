@@ -87,7 +87,7 @@ public final class ReplaceBar extends JPanel {
     private ReplaceBar(SearchBar searchBar) {
         setSearchBar(searchBar);
         addEscapeKeystrokeFocusBackTo(this);
-        
+
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
         Color bgColor = getBackground();
@@ -116,7 +116,7 @@ public final class ReplaceBar extends JPanel {
         });
         addEnterKeystrokeReplaceTo(replaceTextField);
         addShiftEnterReplaceAllTo(replaceTextField);
-        
+
         replaceLabel = new JLabel();
         Mnemonics.setLocalizedText(replaceLabel, NbBundle.getMessage(ReplaceBar.class, "CTL_Replace")); // NOI18N
         replaceLabel.setLabelFor(replaceTextField);
@@ -262,17 +262,17 @@ public final class ReplaceBar extends JPanel {
     private void addEscapeKeystrokeFocusBackTo(JPanel jpanel) {
         jpanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 "loose-focus"); // NOI18N
-        jpanel.getActionMap().put("loose-focus", new AbstractAction() {// NOI18N
+        jpanel.getActionMap().put("loose-focus", new AbstractAction() { // NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!popupMenuWasCanceled && !searchBar.isPopupMenuWasCanceled())
+                if (!popupMenuWasCanceled && !searchBar.isPopupMenuWasCanceled()) {
                     looseFocus();
-                else {
+                } else {
                     popupMenuWasCanceled = false;
                     searchBar.setPopupMenuWasCanceled(false);
                 }
-                    
+
             }
         });
     }
