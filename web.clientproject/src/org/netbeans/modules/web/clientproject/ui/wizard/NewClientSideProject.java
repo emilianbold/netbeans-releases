@@ -114,17 +114,33 @@ public class NewClientSideProject extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
-    @NbBundle.Messages({
-        "ClientSideProject.error.name.missing=Project name must be provided.",
-        "ClientSideProject.error.location.invalid=Project location is not a valid path.",
-        "ClientSideProject.error.location.notWritable=Project folder cannot be created.",
-        "ClientSideProject.error.location.notEmpty=Project folder already exists and is not empty."
-    })
     public String getErrorMessage() {
+        String error = validateProjectName();
+        if (error != null) {
+            return error;
+        }
+        error = validateProjectLocation();
+        if (error != null) {
+            return error;
+        }
+        return null;
+    }
+
+    @NbBundle.Messages("ClientSideProject.error.name.missing=Project name must be provided.")
+    private String validateProjectName() {
         String projectName = getProjectName();
         if (projectName.isEmpty()) {
             return Bundle.ClientSideProject_error_name_missing();
         }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "ClientSideProject.error.location.invalid=Project location is not a valid path.",
+        "ClientSideProject.error.location.notWritable=Project folder cannot be created.",
+        "ClientSideProject.error.location.notEmpty=Project folder already exists and is not empty."
+    })
+    private String validateProjectLocation() {
         File f = FileUtil.normalizeFile(new File(getProjectLocation()).getAbsoluteFile());
         if (!f.isDirectory()) {
             return Bundle.ClientSideProject_error_location_invalid();
