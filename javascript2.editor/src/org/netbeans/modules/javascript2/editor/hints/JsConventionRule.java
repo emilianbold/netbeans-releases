@@ -75,24 +75,25 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JsConventionRule extends JsAstRule {
-//    private boolean checkBetterCodition = true;
-    private Rule betterConditionRule = null;
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
         Map<?, List<? extends AstRule>> allHints = manager.getHints();
         List<? extends AstRule> conventionHints = allHints.get(BetterConditionHint.JSCONVENTION_OPTION_HINTS);
-        betterConditionRule = null;
+        Rule betterConditionRule = null;
+        Rule missingSemicolon = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
                 if(manager.isEnabled(astRule)) {
                     if(astRule instanceof BetterConditionHint) {
                         betterConditionRule = astRule;
+                    } else if(astRule instanceof MissingSemicolonHint) {
+                        missingSemicolon = astRule;
                     }
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule);
+        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon);
         conventionVisitor.process(context, hints);
     }
             
@@ -124,10 +125,12 @@ public class JsConventionRule extends JsAstRule {
         private JsRuleContext context;
         private final Rule rule;
         private final Rule betterConditionRule;
+        private final Rule missingSemicolon;
         
-        public ConventionVisitor(Rule rule, Rule betterCondition) {
+        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon) {
             this.rule = rule;
             this.betterConditionRule = betterCondition;
+            this.missingSemicolon = missingSemicolon;
         }
         
         @NbBundle.Messages("ExpectedInstead=Expected \"{0}\" and instead saw \"{1}\".")
@@ -142,6 +145,9 @@ public class JsConventionRule extends JsAstRule {
         
         @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
         private void checkSemicolon(int offset) {
+            if(missingSemicolon == null) {
+                return;
+            }
             int fileOffset = context.parserResult.getSnapshot().getOriginalOffset(offset);
             if (fileOffset == -1) {
                 return;
@@ -160,7 +166,7 @@ public class JsConventionRule extends JsAstRule {
                     id = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE)).id();
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                         // check again whether there is not semicolon
-                        hints.add(new Hint(rule, Bundle.MissingSemicolon(ts.token().text().toString()), 
+                        hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()), 
                                 context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
                                 new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
                     }
