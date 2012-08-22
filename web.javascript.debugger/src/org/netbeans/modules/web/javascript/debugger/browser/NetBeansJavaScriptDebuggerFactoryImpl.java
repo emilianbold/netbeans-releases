@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
 import org.netbeans.modules.web.javascript.debugger.DebuggerEngineProviderImpl;
 import org.netbeans.modules.web.javascript.debugger.EngineDestructorProvider;
+import org.netbeans.modules.web.javascript.debugger.console.BrowserConsoleLogger;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
@@ -64,8 +65,13 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
         Debugger debugger = webkit.getDebugger();
         Project project = projectContext.lookup(Project.class);
         EngineDestructorProvider edp = new EngineDestructorProvider();
+        
+        // show browser console log in the IDE:
+        BrowserConsoleLogger logger = new BrowserConsoleLogger(project);
+        webkit.getConsole().addListener(logger);
+        
         DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO,
-                new Object[]{webkit, debugger, project, edp});
+                new Object[]{webkit, debugger, project, edp, logger});
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
         Session session = engine.lookupFirst(null, Session.class);
         return session;

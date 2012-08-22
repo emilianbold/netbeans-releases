@@ -100,6 +100,7 @@ public final class Debugger {
         // but I expect that soon it will be used somewhere else as well
         webkit.getPage().enable();
         webkit.getNetwork().enable();
+        webkit.getConsole().enable();
         
         enabled = true;
         
@@ -131,6 +132,7 @@ public final class Debugger {
         assert enabled;
         webkit.getPage().disable();
         webkit.getNetwork().disable();
+        webkit.getConsole().disable();
         transport.sendCommand(new Command("Debugger.disable"));
         enabled = false;
         initDOMLister = true;

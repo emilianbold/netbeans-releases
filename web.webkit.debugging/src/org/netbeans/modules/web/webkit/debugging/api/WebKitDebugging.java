@@ -43,6 +43,7 @@ package org.netbeans.modules.web.webkit.debugging.api;
 
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
+import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
@@ -72,6 +73,7 @@ public class WebKitDebugging {
     private CSS css;
     private Page page;
     private Network network;
+    private Console console;
 
     private WebKitDebugging(TransportHelper transport) {
         this.transport = transport;
@@ -145,6 +147,13 @@ public class WebKitDebugging {
         return network;
     }
 
+    public synchronized Console getConsole() {
+        if (console == null) {
+            console = new Console(transport, this);
+        }
+        return console;
+    }
+    
     /**
      * Resets cached data.
      */

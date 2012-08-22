@@ -129,6 +129,10 @@ public final class MiscEditorUtil {
         return getLineImpl(project, script.getURL(), lineNumber);
     }
     
+    public static Line getLine(final Project project, final String stringURL, final int lineNumber) {
+        return getLineImpl(project, stringURL, lineNumber);
+    }
+    
     private static Line getLineImpl(Project project, final String filePath, final int lineNumber) {
         if (filePath == null || lineNumber < 0) {
             return null;
