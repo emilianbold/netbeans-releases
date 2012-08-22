@@ -45,11 +45,145 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                                 "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
 <codetemplates>
-    <codetemplate uuid="org.netbeans.modules.javascript2.editor.codetemplate.fcom" abbreviation="fcom" contexts="js-code">
+    <codetemplate abbreviation="br">
+        <code><![CDATA[${no-indent}break;]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="cn">
+        <code><![CDATA[${no-indent}continue]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="do">
         <code>
-<![CDATA[// <editor-fold defaultstate="collapsed" desc="${comment}">
-${selection}${cursor}// </editor-fold>
+<![CDATA[do {
+    ${cursor}
+} while (${expr default="true"});]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="fcom">
+        <code>
+<![CDATA[${no-format}//<editor-fold defaultstate="collapsed" desc="${comment}">
+${selection}${cursor}
+//</editor-fold>
 ]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="for">
+        <code>
+<![CDATA[for (${var default="i"} = 0; ${var} < ${max default="10"}; ${var}++) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="forin">
+        <code>
+<![CDATA[for (var ${item} in ${object}) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="func" descriptionId="ct_function" xml:space="preserve">
+        <code>
+<![CDATA[/**
+ * ${1 default="Comment"}
+ */
+function ${name}(${parameters}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="funcp" descriptionId="ct_function" xml:space="preserve">
+        <code>
+<![CDATA[/**
+ * ${1 default="Comment"}
+ * @param {${type}} ${parameter}
+ */
+function ${name}(${parameter}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="function" descriptionId="ct_function" xml:space="preserve">
+        <code>
+<![CDATA[/**
+ * ${1 default="Comment"}
+ */
+function ${name}(${parameters}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="if" descriptionId="ct_if">
+        <code>
+<![CDATA[if (${expr}) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="ife" descriptionId="CT_ife">
+        <code>
+<![CDATA[if (${expr}) {
+   ${selection}${cursor}
+} else {
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="lb">
+        <code>
+<![CDATA[${label}:
+    ${cursor}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="re">
+        <code><![CDATA[${no-indent}return ]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="sw">
+        <code>
+<![CDATA[switch (${object}) {
+    case ${case1}:
+        ${caseCode default=""}
+        break;
+    default:
+        ${defaultCode default=""}
+        break;
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="th">
+        <code><![CDATA[${no-indent}throw ]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="the">
+        <code><![CDATA[${no-indent}throw new Error("${errorMessage}");]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="try" descriptionId="ct_try" xml:space="preserve">
+        <code>
+<![CDATA[try {
+    ${selection}${cursor}
+} catch (${exception}) {
+    ${catchcode default=""}
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="var">
+        <code><![CDATA[${no-indent}var ${name} = ${value};]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="wh">
+        <code>
+<![CDATA[while (${expr default="true"}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="wi">
+        <code>
+<![CDATA[with (${object}) {
+    ${code default=""}
+}]]>
         </code>
     </codetemplate>
 </codetemplates>
