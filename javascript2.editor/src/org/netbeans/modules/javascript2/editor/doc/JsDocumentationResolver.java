@@ -82,7 +82,7 @@ public class JsDocumentationResolver {
 
     private JsDocumentationProvider findBestMatchingProvider(Snapshot snapshot) {
         Set<String> allTags = JsDocumentationReader.getAllTags(snapshot);
-        float max = 0.0f;
+        float max = -1.0f;
         JsDocumentationProvider bestProvider = null;
         for (JsDocumentationProvider jsDocumentationProvider : PROVIDERS) {
             float coverage = countTagsCoverageRation(allTags, jsDocumentationProvider);
@@ -101,7 +101,11 @@ public class JsDocumentationResolver {
     private float countTagsCoverageRation(Set<String> tags, JsDocumentationProvider provider) {
         Set<String> unsupportedTags = new HashSet<String>(tags);
         unsupportedTags.removeAll(provider.getSupportedTags());
-        float coverage = 1.0f - (1.0f / tags.size() * unsupportedTags.size());
-        return coverage;
+        if (unsupportedTags.isEmpty()) {
+            return 1.0f;
+        } else {
+            float coverage = 1.0f - (1.0f / tags.size() * unsupportedTags.size());
+            return coverage;
+        }
     }
 }

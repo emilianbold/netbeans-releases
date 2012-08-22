@@ -2,7 +2,7 @@ ShapeFactory.prototype = {
 
     /**
      * 
-     * @type {type}^
+     * @type type^
      */
     cokoliv: {
         ahoj: function(asf) {

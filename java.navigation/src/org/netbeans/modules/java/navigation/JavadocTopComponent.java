@@ -82,7 +82,8 @@ public final class JavadocTopComponent extends TopComponent {
         add( documentationPane, BorderLayout.CENTER );
     }
     
-    void setJavadoc( ElementJavadoc doc ){    
+    public void setJavadoc(ElementJavadoc doc){
+        LOGGER.log(Level.FINE, "Setting javadoc: {0}", doc);   //NOI18N
         documentationPane.setData( doc );
     }
     
