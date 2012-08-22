@@ -342,7 +342,7 @@ public class CompletionLayoutPopup {
         // so force a heavyweight parent by passing in owner==null. (#96717)
 
         JTextComponent owner = getEditorComponent();
-        if(owner != null && owner.getClientProperty("ForceHeavyweightCompletionPopup") != null) {
+        if(owner != null && owner.getClientProperty("ForceHeavyweightCompletionPopup") != null) { //NOI18N
             owner = null;
         }
 

@@ -76,9 +76,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
-        LOG.log(Level.FINE, "Constructor - Reference Font: Name: {0}, Size: {1}\n", new Object[]{referenceTextField.getFont().getFontName(), referenceTextField.getFont().getSize()});
+        LOG.log(Level.FINE, "Constructor - Reference Font: Name: {0}, Size: {1}\n", new Object[]{referenceTextField.getFont().getFontName(), referenceTextField.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
-        LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         final Insets margin = referenceTextField.getMargin();
         final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
 
@@ -166,22 +166,22 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                     @Override
                     public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
                         if (string != null) {
-                            fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                            fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr); //NOI18N
                         }
                     }
 
                     @Override
                     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String string, AttributeSet attr) throws BadLocationException {
                         if (string != null) {
-                            fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                            fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr); //NOI18N
                         }
                     }
                 });
         editorPane.setBorder(new EmptyBorder (0, 0, 0, 0));
         editorPane.setBackground(referenceTextField.getBackground());
-        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
-        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
     }
 
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
@@ -217,19 +217,19 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private static int getLFHeightAdjustment() {
         LookAndFeel lf = UIManager.getLookAndFeel();
         String lfID = lf.getID();
-        if ("Metal".equals(lfID)) {
+        if ("Metal".equals(lfID)) { //NOI18N
             return 0;
         }
-        if ("GTK".equals(lfID)) {
+        if ("GTK".equals(lfID)) { //NOI18N
             return 2;
         }
-        if ("Motif".equals(lfID)) {
+        if ("Motif".equals(lfID)) { //NOI18N
             return 3;
         }
-        if ("Nimbus".equals(lfID)) {
+        if ("Nimbus".equals(lfID)) { //NOI18N
             return 0;
         }
-        if ("Aqua".equals(lfID)) {
+        if ("Aqua".equals(lfID)) { //NOI18N
             return -2;
         }
         return 0;
@@ -316,7 +316,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                 // Must take the value from the editor and get the value and cast it to the new type.
                 Class cls = oldValue.getClass();
                 try {
-                    Method method = cls.getMethod("valueOf", new Class[]{String.class});
+                    Method method = cls.getMethod("valueOf", new Class[]{String.class}); //NOI18N
                     newValue = method.invoke(oldValue, new Object[]{editorPane.getText()});
                 } catch (Exception ex) {
                     // Fail silently and return the newValue (a String object)
@@ -352,7 +352,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
 
     private static final class ActionInvoker extends AbstractAction {
-        private static final String PREFIX = "search-invoke-";
+        private static final String PREFIX = "search-invoke-";  //NOI18N
         private final String originalActionName;
         private final Action delegateAction;
         public ActionInvoker(String name, JTextComponent component) {

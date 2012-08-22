@@ -52,15 +52,14 @@ public final class SearchPropertiesSupport {
 
     private static final String PREFS_NODE = "SearchProperties";  //NOI18N
     private static SearchPropertiesSupport instance = null;
-    private static Preferences prefs;
-    private static final String SEARCH_ID = "searchprops";
+    private static final Preferences prefs = NbPreferences.forModule(SearchPropertiesSupport.class).node(PREFS_NODE);
+    private static final String SEARCH_ID = "searchprops";  //NOI18N
     private static SearchProperties searchProps;
-    private static final String REPLACE_ID = "replaceprops";
+    private static final String REPLACE_ID = "replaceprops";  //NOI18N
     private static SearchProperties replaceProps;
     private static final List<String> EDITOR_FIND_SUPPORT_CONSTANTS = Arrays.asList(EditorFindSupport.FIND_MATCH_CASE, EditorFindSupport.FIND_WHOLE_WORDS, EditorFindSupport.FIND_REG_EXP, EditorFindSupport.FIND_WRAP_SEARCH, EditorFindSupport.FIND_PRESERVE_CASE);
 
     private SearchPropertiesSupport() {
-        prefs = NbPreferences.forModule(SearchPropertiesSupport.class).node(PREFS_NODE);
     }
 
     private static SearchPropertiesSupport getInstance() {
@@ -118,7 +117,11 @@ public final class SearchPropertiesSupport {
                  EditorFindSupport.getInstance().putFindProperty(editorFindSupportProperty, value);
             }
             props.put(editorFindSupportProperty, value);
-            getInstance().getPrefs().put(id + editorFindSupportProperty, value.toString());
+            if (value != null) {
+                getInstance().getPrefs().put(id + editorFindSupportProperty, value.toString());
+            } else {
+                getInstance().getPrefs().remove(id + editorFindSupportProperty);
+            }
         }
 
         public Object getProperty(String editorFindSupportProperty) {

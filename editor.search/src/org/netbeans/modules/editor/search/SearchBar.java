@@ -92,7 +92,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     // Delay times for incremental search [ms]
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
-    private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText");
+    private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText"); //NOI18N
     private WeakReference<JTextComponent> actualTextComponent;
     private List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
     private FocusAdapter focusAdapterForComponent;
@@ -156,7 +156,8 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchComboBox.setFocusable(false);
         incSearchComboBox.addPopupMenuListener(new SearchPopupMenuListener());
         incSearchTextField = scb.getEditorPane();
-        incSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //todo fix no effect
+        //todo fix no effect
+        incSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
         incSearchTextFieldListener = createIncSearchTextFieldListener(incSearchTextField);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         addEnterKeystrokeFindNextTo(incSearchTextField);
@@ -344,7 +345,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                     for (Action action : actions) { // Discover the keyStrokes for incremental-search-forward
                         String actionName = (String) action.getValue(Action.NAME);
                         if (actionName == null) {
-                            LOG.log(Level.WARNING, "SearchBar: Null Action.NAME property of action: {0}\n", action);
+                            LOG.log(Level.WARNING, "SearchBar: Null Action.NAME property of action: {0}\n", action); //NOI18N
                         } else if (actionName.equals(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
                             keystrokeForSearchAction(multiKeymap, action,
                                     new AbstractAction() {
@@ -380,7 +381,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 }
             }
         };
-        pcl.propertyChange(new PropertyChangeEvent(this, "keymap", null, null));
+        pcl.propertyChange(new PropertyChangeEvent(this, "keymap", null, null)); //NOI18N
         return pcl;
     }
 
@@ -518,7 +519,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         wrapAroundCheckBox.setSelected(getFindSupportValue(EditorFindSupport.FIND_WRAP_SEARCH));
     }
 
-    private JButton createFindButton(String imageIcon, String resName) {
+    private JButton createFindButton(final String imageIcon,final String resName) {
         JButton button = new JButton(
                 ImageUtilities.loadImageIcon(imageIcon, false));
         Mnemonics.setLocalizedText(button, NbBundle.getMessage(SearchBar.class, resName));
@@ -890,7 +891,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         component.addPropertyChangeListener(propertyChangeListenerForComponent);
         component.addKeyListener(keyListenerForComponent);
         for (PropertyChangeListener pcl : actualComponentListeners) {
-            pcl.propertyChange(new PropertyChangeEvent(this, "actualTextComponent", getActualTextComponent(), component));
+            pcl.propertyChange(new PropertyChangeEvent(this, "actualTextComponent", getActualTextComponent(), component)); //NOI18N
         }
         actualTextComponent = new WeakReference<JTextComponent>(component);
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());

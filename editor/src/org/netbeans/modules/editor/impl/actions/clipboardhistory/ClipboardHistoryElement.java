@@ -44,8 +44,8 @@ package org.netbeans.modules.editor.impl.actions.clipboardhistory;
 public class ClipboardHistoryElement {
 
     private final String content;
-    private static int MAXSIZE = 30;
-    private static final String ENDING = "...";
+    private static final int MAXSIZE = 30;
+    private static final String ENDING = "..."; // NOI18N
 
     ClipboardHistoryElement(String text) {
         this.content = text;
@@ -54,10 +54,11 @@ public class ClipboardHistoryElement {
     public String getShortenText() {
         String output = content.trim();
         if (isShorten()) {
-            if (output.length() < MAXSIZE)
+            if (output.length() < MAXSIZE) {
                 return output + ENDING;
-            else
+            } else {
                 return output.substring(0, MAXSIZE) + ENDING;
+            }
         }
         return output;
         
@@ -78,7 +79,7 @@ public class ClipboardHistoryElement {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ClipboardHistoryElement) {
-            return content.equals(((ClipboardHistoryElement)obj).content);
+            return content.equals(((ClipboardHistoryElement) obj).content);
         }
         return false;
     }

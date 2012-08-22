@@ -324,7 +324,7 @@ public final class ReplaceBar extends JPanel {
 
     private void unchangeSearchBarToBeOnlySearchBar() {
         searchBar.getCloseButton().removeActionListener(getCloseButtonListener());
-        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
+        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(ReplaceBar.class, "CTL_Find")); // NOI18N
         Dimension oldDimensionForFindLabel = searchBar.getFindLabel().getUI().getMinimumSize(searchBar.getFindLabel());
         searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(oldDimensionForFindLabel);
@@ -338,7 +338,7 @@ public final class ReplaceBar extends JPanel {
 
     private void changeSearchBarToBePartOfReplaceBar() {
         searchBar.getCloseButton().addActionListener(getCloseButtonListener());
-        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Replace_Find")); // NOI18N
+        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(ReplaceBar.class, "CTL_Replace_Find")); // NOI18N
         Dimension newDimensionForFindLabel = new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height);
         searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(newDimensionForFindLabel);

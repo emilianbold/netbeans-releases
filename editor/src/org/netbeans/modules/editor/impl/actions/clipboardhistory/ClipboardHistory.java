@@ -53,36 +53,37 @@ import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
 
-    
-public class ClipboardHistory implements ClipboardListener{
+
+public final class ClipboardHistory implements ClipboardListener {
     private final LinkedList<ClipboardHistoryElement> data;
     private static ClipboardHistory instance;
-    private static int MAXSIZE = 9;
-    
+    private static final int MAXSIZE = 9;
+
     public static ClipboardHistory getInstance() {
         if (instance == null) {
             instance = new ClipboardHistory();
         }
         return instance;
     }
-    
+
     private ClipboardHistory() {
         data = new LinkedList<ClipboardHistoryElement>();
     }
 
-    
+
     private synchronized void addHistory(String text) {
         ClipboardHistoryElement newHistory = new ClipboardHistoryElement(text);
-        if (!data.isEmpty() && newHistory.equals(data.getFirst()))
+        if (!data.isEmpty() && newHistory.equals(data.getFirst())) {
             return;
+        }
         data.remove(newHistory);
         data.addFirst(newHistory);
         if (data.size() > 2 * MAXSIZE) {
             data.removeLast();
         }
     }
-    
-    
+
+
     public synchronized List<ClipboardHistoryElement> getData() {
         if (data.size() > MAXSIZE) {
             return Collections.unmodifiableList(data.subList(0, MAXSIZE));
@@ -91,7 +92,7 @@ public class ClipboardHistory implements ClipboardListener{
         }
     }
 
-   
+
     @Override
     public void clipboardChanged(ClipboardEvent ev) {
         ExClipboard clipboard = ev.getClipboard();
