@@ -132,7 +132,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
         final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-        if (webkitDebugger == null || debuggerFactory == null) {
+        if (webkitDebugger == null || debuggerFactory == null || projectContext == null) {
             return;
         }
         RP.post(new Runnable() {
