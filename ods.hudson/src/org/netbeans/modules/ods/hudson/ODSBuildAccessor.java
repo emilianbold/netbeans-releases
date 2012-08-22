@@ -137,6 +137,18 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         return new LinkedList<BuildHandle>(buildHandles);
     }
 
+    @Override
+    public BuildHandle getBuildHandle (ProjectHandle<ODSProject> project, String jobName) {
+        BuildHandle buildHandle = null;
+        for (BuildHandle bh : getBuilds(project)) {
+            if (bh instanceof HudsonBuildHandle && jobName.equals(((HudsonBuildHandle) bh).getJob().getName())) {
+                buildHandle = bh;
+                break;
+            }
+        }
+        return buildHandle;
+    }
+
     /**
      * Check cache of listeners at first. Listeners already contain all required
      * information.
