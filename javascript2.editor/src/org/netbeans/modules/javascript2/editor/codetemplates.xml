@@ -47,20 +47,12 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 <codetemplates>
 
     <!-- base JavaScript structures -->
-    <codetemplate abbreviation="br">
-        <code><![CDATA[${no-indent}break;]]>
-        </code>
-    </codetemplate>
     <codetemplate abbreviation="catch">
         <code>
 <![CDATA[catch (${exception}) {
     ${cursor}
 }
 ]]>
-        </code>
-    </codetemplate>
-    <codetemplate abbreviation="co">
-        <code><![CDATA[${no-indent}continue]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="do">
@@ -163,10 +155,6 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="new">
         <code><![CDATA[${no-indent}var ${name} = new ${type}(${arguments});]]></code>
     </codetemplate>
-    <codetemplate abbreviation="re">
-        <code><![CDATA[${no-indent}return ]]>
-        </code>
-    </codetemplate>
     <codetemplate abbreviation="sw">
         <code>
 <![CDATA[switch (${key}) {
@@ -216,6 +204,20 @@ function ${name}(${parameters}) {
         </code>
     </codetemplate>
 
+    <!-- JavaScript keyword, most used words shortcuts -->
+    <codetemplate abbreviation="br"><code><![CDATA[${no-indent}break;]]></code></codetemplate>
+    <codetemplate abbreviation="ca"><code><![CDATA[${no-indent}case ]]></code></codetemplate>
+    <codetemplate abbreviation="ct"><code><![CDATA[${no-indent}catch]]></code></codetemplate>
+    <codetemplate abbreviation="co"><code><![CDATA[${no-indent}continue]]></code></codetemplate>
+    <codetemplate abbreviation="df"><code><![CDATA[${no-indent}default:]]></code></codetemplate>
+    <codetemplate abbreviation="fa"><code><![CDATA[${no-indent}false]]></code></codetemplate>
+    <codetemplate abbreviation="fi"><code><![CDATA[${no-indent}finally]]></code></codetemplate>
+    <codetemplate abbreviation="le"><code><![CDATA[${no-indent}length]]></code></codetemplate>
+    <codetemplate abbreviation="iof"><code><![CDATA[${no-indent}instanceof ]]></code></codetemplate>
+    <codetemplate abbreviation="re"><code><![CDATA[${no-indent}return ]]></code></codetemplate>
+    <codetemplate abbreviation="tr"><code><![CDATA[${no-indent}true]]></code></codetemplate>
+    <codetemplate abbreviation="ty"><code><![CDATA[${no-indent}typeof]]></code></codetemplate>
+
     <!-- additional JavaScript code templates -->
     <codetemplate abbreviation="json">
         <code><![CDATA[{"${field}": "${value}"}]]></code>
@@ -260,5 +262,5 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="dw">
         <code><![CDATA[document.write(${message});]]></code>
     </codetemplate>
-    
+
 </codetemplates>
