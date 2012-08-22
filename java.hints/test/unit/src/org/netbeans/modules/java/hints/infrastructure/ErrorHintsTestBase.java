@@ -100,9 +100,9 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         String[] additionalLayers = getAdditionalLayers();
         String[] layers = new String[additionalLayers.length + 2];
         
-        System.arraycopy(additionalLayers, 0, layers, 2, additionalLayers.length);
-        layers[0] = "META-INF/generated-layer.xml";
-        layers[1] = "org/netbeans/modules/java/editor/resources/layer.xml";
+        System.arraycopy(additionalLayers, 0, layers, 1, additionalLayers.length);
+        layers[0] = "org/netbeans/modules/java/editor/resources/layer.xml";
+        layers[additionalLayers.length + 1] = "META-INF/generated-layer.xml";
         
         SourceUtilsTestUtil.prepareTest(layers, new Object[]{
                     JavaDataLoader.class,
