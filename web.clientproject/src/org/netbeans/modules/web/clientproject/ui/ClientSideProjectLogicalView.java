@@ -242,6 +242,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return project.getName();
         }
 
+        @NbBundle.Messages({
+            "# {0} - project directory",
+            "ClientSideProjectNode.description=HTML5 application in {0}"
+        })
+        @Override
+        public String getShortDescription() {
+            return Bundle.ClientSideProjectNode_description(FileUtil.getFileDisplayName(project.getProjectDirectory()));
+        }
+
     }
 
     private static enum BasicNodes {
