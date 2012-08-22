@@ -163,7 +163,9 @@ public final class ExternalBrowserPlugin {
     }
 
     public void detachWebKitDebugger(BrowserTabDescriptor tab) {
-        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
+        if (tab != null) {
+            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
+        }
     }
 
     public void sendWebKitDebuggerCommand(BrowserTabDescriptor tab, JSONObject command) {
