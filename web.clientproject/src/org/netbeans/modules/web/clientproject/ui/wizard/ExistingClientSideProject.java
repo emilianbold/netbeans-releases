@@ -58,6 +58,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
@@ -184,6 +185,7 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     @NbBundle.Messages({
+        "ExistingClientSideProject.error.projectDirectory.invalid=Project directory is not a valid path.",
         "ExistingClientSideProject.error.projectDirectory.empty=Project directory must be selected.",
         "ExistingClientSideProject.error.projectDirectory.nbproject=Project directory is already NetBeans project.",
         "ExistingClientSideProject.error.projectDirectory.noSiteRoot=Project directory is not parent of site root (and is not empty).",
@@ -219,6 +221,10 @@ public class ExistingClientSideProject extends JPanel {
             }
             // XXX ideally warn about non-empty directory
         } else {
+            // not existing directory
+            if (!ValidationUtilities.isValidFilename(projDir)) {
+                return Bundle.ExistingClientSideProject_error_projectDirectory_invalid();
+            }
             File existingParent = projDir;
             while (existingParent != null && !existingParent.exists()) {
                 existingParent = existingParent.getParentFile();

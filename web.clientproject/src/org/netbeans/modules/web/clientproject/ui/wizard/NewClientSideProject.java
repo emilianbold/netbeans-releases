@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
@@ -141,11 +142,14 @@ public class NewClientSideProject extends JPanel {
         "ClientSideProject.error.location.notEmpty=Project folder already exists and is not empty."
     })
     private String validateProjectLocation() {
-        File f = FileUtil.normalizeFile(new File(getProjectLocation()).getAbsoluteFile());
-        if (!f.isDirectory()) {
+        File projectLocation = FileUtil.normalizeFile(new File(getProjectLocation()).getAbsoluteFile());
+        if (!projectLocation.isDirectory()) {
             return Bundle.ClientSideProject_error_location_invalid();
         }
         final File destFolder = getProjectDirectory();
+        if (!ValidationUtilities.isValidFilename(destFolder)) {
+            return Bundle.ClientSideProject_error_location_invalid();
+        }
 
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {
