@@ -45,6 +45,7 @@
 package org.openide.nodes;
 
 import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Node.Property;
 
 
 
@@ -155,6 +156,16 @@ public class PropertiesTest extends NbTestCase {
         public void setIsSetBoolean( boolean value ) {
         }
     }
-    
+
+    public void testHashCodeDoesNotThrowNPE() {
+        Node.PropertySet ps = new Node.PropertySet() {
+            @Override
+            public Property<?>[] getProperties() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        assertEquals("Zero", 0, ps.hashCode());
+            
+    }
 
 }
