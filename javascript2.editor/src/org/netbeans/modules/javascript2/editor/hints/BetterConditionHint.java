@@ -41,48 +41,29 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
-public abstract class JsAstRule implements Rule.AstRule {
-    public static final String JS_OTHER_HINTS = "js.other.hints"; //NOI18N
-
-    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager);
+public class BetterConditionHint extends JsConventionHint {
     
     @Override
-    public boolean getDefaultEnabled() {
-        return true;
+    @NbBundle.Messages("BetterConditionDisplayName=Assignment in a codintion")
+    public String getDisplayName() {
+        return Bundle.BetterConditionDisplayName();
     }
 
     @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
+    public String getId() {
+        return "jsbettercondition.hint"; //NOI18N
     }
 
     @Override
-    public boolean appliesTo(RuleContext context) {
-        return true;
+    @NbBundle.Messages("BetterConditionDescription=Reports cases where in condition is used == or != instead === or !==.")
+    public String getDescription() {
+        return Bundle.BetterConditionDescription();
     }
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-    
     
 }

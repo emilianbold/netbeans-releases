@@ -56,9 +56,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
@@ -73,17 +75,30 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JsConventionRule extends JsAstRule {
-    
+//    private boolean checkBetterCodition = true;
+    private Rule betterConditionRule = null;
     
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints) {
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this);
+    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
+        Map<?, List<? extends AstRule>> allHints = manager.getHints();
+        List<? extends AstRule> conventionHints = allHints.get(BetterConditionHint.JSCONVENTION_OPTION_HINTS);
+        betterConditionRule = null;
+        if (conventionHints != null) {
+            for (AstRule astRule : conventionHints) {
+                if(manager.isEnabled(astRule)) {
+                    if(astRule instanceof BetterConditionHint) {
+                        betterConditionRule = astRule;
+                    }
+                }
+            }
+        }
+        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule);
         conventionVisitor.process(context, hints);
     }
             
     @Override
     public Set<?> getKinds() {
-        return Collections.singleton(JsAstRule.JSCONVENTION_HINTS);
+        return Collections.singleton(JsAstRule.JS_OTHER_HINTS);
     }
 
     @Override
@@ -108,9 +123,11 @@ public class JsConventionRule extends JsAstRule {
         private List<Hint> hints;
         private JsRuleContext context;
         private final Rule rule;
+        private final Rule betterConditionRule;
         
-        public ConventionVisitor(Rule rule) {
+        public ConventionVisitor(Rule rule, Rule betterCondition) {
             this.rule = rule;
+            this.betterConditionRule = betterCondition;
         }
         
         @NbBundle.Messages("ExpectedInstead=Expected \"{0}\" and instead saw \"{1}\".")
@@ -153,10 +170,13 @@ public class JsConventionRule extends JsAstRule {
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
         private void checkCondition(Node condition) {
+            if (betterConditionRule == null) {
+                return;
+            }
             if(condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
                 if (binaryNode.isAssignment()) {
-                    hints.add(new Hint(rule, Bundle.AssignmentCondition(), 
+                    hints.add(new Hint(betterConditionRule, Bundle.AssignmentCondition(), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
                 } else {

@@ -42,87 +42,52 @@
 package org.netbeans.modules.javascript2.editor.hints;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsHintsProvider implements HintsProvider {
+public abstract class JsConventionHint implements Rule.AstRule {
+    public static final String JSCONVENTION_OPTION_HINTS = "jsconvention.option.hints"; //NOI18N
     
-    private volatile boolean cancel = false;
-
-    @Override
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
-        
-        // find out whether there is a convention hint enabled
-        List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionHint.JSCONVENTION_OPTION_HINTS);
-        boolean countConventionHints = false;
-        if (conventionHints != null) {
-            for (Rule.AstRule astRule : conventionHints) {
-                if (manager.isEnabled(astRule)) {
-                    countConventionHints = true;
-                }
-            }
+     @Override
+    public boolean appliesTo(RuleContext context) {
+        if(context instanceof JsHintsProvider.JsRuleContext) {
+            return true;
         }
-        if (countConventionHints && !cancel) {
-            JsConventionRule rule = new JsConventionRule();
-            rule.computeHints((JsRuleContext)context, hints, manager);
-        }
+        return false;
     }
 
     @Override
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-
+    public boolean showInTasklist() {
+        return true;
     }
 
     @Override
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
 
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
     @Override
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        ParserResult parserResult = context.parserResult;
-        if (parserResult != null) {
-            List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
-            unhandled.addAll(errors);
-        }
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
     @Override
-    public void cancel() {
-        cancel = true;
-    }
-
-    @Override
-    public List<Rule> getBuiltinRules() {
-        return Collections.<Rule>emptyList();
-    }
-
-    @Override
-    public RuleContext createRuleContext() {
-        return new JsRuleContext();
+    public Set<?> getKinds() {
+        return Collections.singleton(JSCONVENTION_OPTION_HINTS);
     }
     
-    public static class JsRuleContext extends RuleContext {
-        private JsParserResult jsParserResult = null;
-
-        public JsParserResult getJsParserResult() {
-            if (jsParserResult == null) {
-                jsParserResult = (JsParserResult)parserResult;
-            }
-            return jsParserResult;
-        }
-        
-    }
 }
