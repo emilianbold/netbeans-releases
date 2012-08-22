@@ -43,6 +43,8 @@ package org.netbeans.modules.web.webkit.debugging;
 
 import java.awt.EventQueue;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +111,7 @@ public class TransportHelper {
         if (res) {
             return handle.getResponse();
         } else {
-            log("no response for "+command.toString()); // NOI18N
+            logError("no response for "+command.toString()); // NOI18N
             return null;
         }
     }
@@ -198,12 +200,17 @@ public class TransportHelper {
        return IOProvider.getDefault().getIO(Bundle.WebKitDebuggingProtocolPane(), false); 
     }
     
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
+    public static String getCurrentTime() {
+        return formatter.format(new Date(System.currentTimeMillis()));
+    }
+    
     private void log(String s) {
-       getOutputLogger().getOut().println(s); 
+       getOutputLogger().getOut().println(getCurrentTime()+" "+s); 
     }
     
     private void logError(String s) {
-       getOutputLogger().getErr().println(s); 
+       getOutputLogger().getErr().println(getCurrentTime()+" "+s); 
     }
     
     
