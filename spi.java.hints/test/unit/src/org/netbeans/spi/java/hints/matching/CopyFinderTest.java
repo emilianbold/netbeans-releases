@@ -1114,6 +1114,32 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testPartialModifiers1() throws Exception {
+        performVariablesTest("package test; public class Test { @Deprecated @Override private void aa() { } }",
+                             "$mods$ @Deprecated private $ret $name() { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {64, 68}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 63}),
+                             },
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "aa"),
+                             },
+                             false,
+                             true);
+    }
+    
+    public void testPartialModifiers2() throws Exception {
+        performVariablesTest("package test; public class Test { @Override private void aa() { } }",
+                             "$mods$ @Deprecated private $ret $name() { $body$; }",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

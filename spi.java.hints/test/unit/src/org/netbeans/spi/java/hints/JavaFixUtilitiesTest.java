@@ -673,6 +673,71 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testAdd2Modifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ $ret $name() { $body$; } => $mods$ @java.lang.Deprecated private $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    @Deprecated\n" +
+                           "    private void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testReplaceInModifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public @Override void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ public @Override $ret $name() { $body$; } => $mods$ private @Deprecated $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private @Deprecated void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testKeepInModifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public @Override void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ public @Override $ret $name() { $body$; } => $mods$ public @Override $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public @Override void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testRemoveInModifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public static @Deprecated @Override void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ public @Override $ret $name() { $body$; } => $mods$ $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    static @Deprecated void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
