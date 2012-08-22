@@ -180,6 +180,11 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
             public Class type() {
                 return Object.class;
             }
+
+            @Override
+            public BuildHandle getBuildHandle(ProjectHandle project, String jobName) {
+                return null;
+            }
         };
     }
 
