@@ -58,6 +58,7 @@ import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -273,6 +274,7 @@ public class ClientSideProject implements Project {
                this,
                new Info(),
                new ClientSideProjectXmlSavedHook(),
+               new ProjectOperations(this),
                new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
                new ServerURLMappingImpl(this),
                configuration,
