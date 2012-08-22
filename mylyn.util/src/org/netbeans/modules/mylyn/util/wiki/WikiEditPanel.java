@@ -77,14 +77,15 @@ public class WikiEditPanel extends WikiPanel {
     private boolean editing;
     private static final ImageIcon ICON_EDIT = ImageUtilities.loadImageIcon("org/netbeans/modules/mylyn/util/resources/edit.png", true); //NOI18N
     private static final ImageIcon ICON_PREVIEW = ImageUtilities.loadImageIcon("org/netbeans/modules/mylyn/util/resources/preview.png", true); //NOI18N
-    private static final Logger LOG = Logger.getLogger("Wiki edit panel");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.mylyn.utils.WikiEditPanel"); //NOI18N
+    private static final String CONTENT_HTML = "text/html"; //NOI18N
+    private static final String CONTENT_PLAIN = "text/plain"; //NOI18N
 
     /**
      * Creates new form WikiEditPanel
      */
     public WikiEditPanel(String wikiLanguage, boolean editing, boolean switchable) {
         this.wikiLanguage = wikiLanguage;
-
         this.switchable = switchable;
         this.wikiFormatText = "";
         this.htmlFormatText = "";
@@ -98,6 +99,7 @@ public class WikiEditPanel extends WikiPanel {
                 makeCaretVisible(textCode);
             }
         });
+        textCode.getDocument().addDocumentListener(new EnablingListener());
         // A11Y - Issues 163597 and 163598
         UIUtils.fixFocusTraversalKeys(textCode);
         UIUtils.issue163946Hack(scrollCode);
@@ -115,7 +117,14 @@ public class WikiEditPanel extends WikiPanel {
     @Override
     public void setWikiFormatText(String wikiFormatText) {
         this.wikiFormatText = wikiFormatText;
-        this.htmlFormatText = WikiUtils.getHtmlFormatText(wikiFormatText, wikiLanguage);
+        String htmlText = WikiUtils.getHtmlFormatText(wikiFormatText, wikiLanguage);
+        if (htmlText != null) {
+            this.htmlFormatText = htmlText;
+            textPreview.setContentType(CONTENT_HTML);
+        } else {
+            this.htmlFormatText = wikiFormatText;
+            textPreview.setContentType(CONTENT_PLAIN);
+        }
         textCode.setText(wikiFormatText);
         textPreview.setText(htmlFormatText);
         registerHighlights(textPreview);
@@ -225,7 +234,7 @@ public class WikiEditPanel extends WikiPanel {
         );
         textPreview.setContentType("text/html"); // NOI18N
         textPreview.setText(htmlFormatText);
-        textPreview.setMargin(new java.awt.Insets(3, 4, 3, 3));
+        textPreview.setMargin(new java.awt.Insets(0, 3, 3, 3));
         scrollPreview.setViewportView(textPreview);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -242,7 +251,13 @@ public class WikiEditPanel extends WikiPanel {
         textCode.setText(wikiFormatText);
         scrollCode.setViewportView(textCode);
 
-        jPanel1.add(scrollCode, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        jPanel1.add(scrollCode, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -270,6 +285,7 @@ public class WikiEditPanel extends WikiPanel {
     private void setEditing(boolean editing) {
 
         if (editing) {
+            btnEditPreview.setEnabled(textCode.getDocument().getLength() != 0);
             btnEditPreview.setIcon(ICON_PREVIEW);
             btnEditPreview.setToolTipText(NbBundle.getMessage(WikiEditPanel.class, "TOOL_Preview"));
             textCode.setVisible(true);
@@ -280,6 +296,7 @@ public class WikiEditPanel extends WikiPanel {
 
             textCode.requestFocus();
         } else {
+            btnEditPreview.setEnabled(true);
             btnEditPreview.setIcon(ICON_EDIT);
             btnEditPreview.setToolTipText(NbBundle.getMessage(WikiEditPanel.class, "TOOL_Edit"));
             textPreview.setVisible(true);
@@ -306,6 +323,31 @@ public class WikiEditPanel extends WikiPanel {
             }
         } catch (BadLocationException blex) {
             LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
+    }
+
+    private class EnablingListener implements DocumentListener {
+
+        public EnablingListener() {
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            checkButtonEnabled(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            checkButtonEnabled(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            checkButtonEnabled(e);
+        }
+
+        private void checkButtonEnabled(DocumentEvent e) {
+            btnEditPreview.setEnabled(e.getDocument().getLength() != 0);
         }
     }
 

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.mylyn.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.mylyn.wikitext.core.WikiText;
 import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
@@ -52,6 +54,8 @@ import org.netbeans.modules.mylyn.util.wiki.WikiEditPanel;
  */
 public class WikiUtils {
 
+    private final static Logger LOG = Logger.getLogger("org.netbeans.mylym.utils.WikiUtils"); //NOI18N
+
     private WikiUtils () {
     }
 
@@ -60,22 +64,30 @@ public class WikiUtils {
     }
 
     public static String getHtmlFormatText(String wikiFormatText, String language) {
+        if (language == null || language.isEmpty()) {
+            LOG.log(Level.FINE, "Wiki language name is empty"); //NOI18N
+            return null;
+        }
         MarkupLanguage markupLanguage = WikiText.getMarkupLanguage(language);
+        if (markupLanguage == null) {
+            LOG.log(Level.FINE, "Markup language for name {0} not found",language); //NOI18N
+            return null;
+        }
         MarkupParser parser = new MarkupParser(markupLanguage);
         String dirtyHtml = parser.parseToHtml(wikiFormatText);
         return cleanHtmlTags(dirtyHtml);
     }
 
     private static String cleanHtmlTags(String html) {
-        html = html.replaceFirst("<\\?xml.*?>", "");
-        html = html.replaceAll("<html.*?>", "<html>");
-        html = html.replaceAll("<head>.*</head>", "");
+        html = html.replaceFirst("<\\?xml.*?>", ""); //NOI18N
+        html = html.replaceAll("<html.*?>", "<html>"); //NOI18N
+        html = html.replaceAll("<head>.*</head>", ""); //NOI18N
 
-        boolean remove = html.contains("<body><p>");
+        boolean remove = html.contains("<body><p>"); //NOI18N
         if (remove) {
             // remove first <p> gap, looks ugly in the UI...
-            html = html.replaceFirst("<body><p>", "<body>");
-            html = html.replaceFirst("</p>", "");
+            html = html.replaceFirst("<body><p>", "<body>"); //NOI18N
+            html = html.replaceFirst("</p>", ""); //NOI18N
         }
         return html;
     }
