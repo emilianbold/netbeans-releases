@@ -47,7 +47,6 @@ import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,22 +57,17 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -83,9 +77,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -331,7 +322,8 @@ public class LocalDownloadSupport {
 
         @Override
         public boolean accept (File f) {
-            return true || f.isDirectory () || f.getName ().toLowerCase ().endsWith (".nbm"); // NOI18N
+            return f.isDirectory () || f.getName ().toLowerCase ().endsWith (".nbm") // NOI18N
+                    || (f.getName().toLowerCase().endsWith(".jar") && isOSGiBundle(f)); // NOI18N
         }
 
         @Override
@@ -518,166 +510,15 @@ public class LocalDownloadSupport {
         }
         return res;
     }
-
-    /**
-     * Create the equivalent of {@code Info/info.xml} for an OSGi bundle.
-     *
-     * @param jar a bundle
-     * @return a {@code <module ...><manifest .../></module>} valid according to
-     * <a href="http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd">DTD</a>
-     */
-    private Element fakeOSGiInfoXml(JarFile jar, File whereFrom) throws IOException {
-        Attributes attr = jar.getManifest().getMainAttributes();
-        Properties localized = new Properties();
-        String bundleLocalization = attr.getValue("Bundle-Localization");
-        if (bundleLocalization != null) {
-            InputStream is = jar.getInputStream(jar.getEntry(bundleLocalization + ".properties"));
-            try {
-                localized.load(is);
-            } finally {
-                is.close();
-            }
-        }
-        return fakeOSGiInfoXml(attr, localized, whereFrom);
-    }
-
-    static Element fakeOSGiInfoXml(Attributes attr, Properties localized, File whereFrom) {
-        Document doc = createDocument("module");
-        Element module = doc.getDocumentElement();
-        String cnb = extractCodeName(attr, null);
-        module.setAttribute("codenamebase", cnb);
-        module.setAttribute("distribution", ""); // seems to be ignored anyway
-        module.setAttribute("downloadsize", "0"); // recalculated anyway
-        module.setAttribute("targetcluster", whereFrom.getParentFile().getName()); // #207075 comment #3
-        Element manifest = doc.createElement("manifest");
-        module.appendChild(manifest);
-        manifest.setAttribute("AutoUpdate-Show-In-Client", "false");
-        manifest.setAttribute("OpenIDE-Module", cnb);
-        String bundleName = loc(localized, attr, "Bundle-Name");
-        manifest.setAttribute("OpenIDE-Module-Name", bundleName != null ? bundleName : cnb);
-        String bundleVersion = attr.getValue("Bundle-Version");
-        manifest.setAttribute("OpenIDE-Module-Specification-Version",
-                bundleVersion != null ? bundleVersion.replaceFirst("^(\\d+([.]\\d+([.]\\d+)?)?)([.].+)?$", "$1") : "0");
-        String requireBundle = attr.getValue("Require-Bundle");
-        if (requireBundle != null) {
-            StringBuilder b = new StringBuilder();
-            boolean needsNetbinox = false;
-            // http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
-            for (String dep : requireBundle.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
-                Matcher m = Pattern.compile("([^;]+)(.*)").matcher(dep);
-                if (!m.matches()) {
-                    throw new RuntimeException("Could not parse dependency: " + dep + " in " + whereFrom);
-                }
-                String requiredBundleName = m.group(1); // dep CNB
-                if (requiredBundleName.trim().equals("org.eclipse.osgi")) {
-                    needsNetbinox = true;
-                    continue;
-                }
-                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
-                boolean isOptional = false;
-                while (m2.find()) {
-                    if (m2.group(1).equals("resolution") && m2.group(2).equals("optional")) {
-                        isOptional = true;
-                        break;
-                    }
-                }
-                if (isOptional) {
-                    continue;
-                }
-                m2.reset();
-                if (b.length() > 0) {
-                    b.append(", ");
-                }
-                b.append(requiredBundleName); // dep CNB
-                while (m2.find()) {
-                    if (!m2.group(1).equals("bundle-version")) {
-                        continue;
-                    }
-                    String val = m2.group(2);
-                    if (val.matches("[0-9]+([.][0-9]+)*")) {
-                        // non-range dep occasionally used in OSGi; no exact equivalent in NB
-                        b.append(" > ").append(val);
-                        continue;
-                    }
-                    Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
-                    if (!m3.matches()) {
-                        throw new RuntimeException("Could not parse version range: " + val + " in " + whereFrom);
-                    }
-                    int major = Integer.parseInt(m3.group(1));
-                    String rest = m3.group(2);
-                    try {
-                        int max = Integer.parseInt(m3.group(3));
-                        if (major > 99) {
-                            b.append('/').append(major / 100);
-                            if (max > major + 100) {
-                                b.append('-').append(max / 100 - 1);
-                            }
-                        } else if (max > 100) {
-                            b.append("/0-").append(max / 100 - 1);
-                        }
-                    } catch (NumberFormatException x) {
-                        // never mind end boundary, does not match NB conventions
-                    }
-                    b.append(" > ").append(major % 100).append(rest);
-                }
-            }
-            if (b.length() > 0) {
-                manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
-            }
-            if (needsNetbinox) {
-                manifest.setAttribute("OpenIDE-Module-Needs", "org.netbeans.Netbinox");
-            }
-        }
-        String bundleCategory = loc(localized, attr, "Bundle-Category");
-        if (bundleCategory != null) {
-            manifest.setAttribute("OpenIDE-Module-Display-Category", bundleCategory);
-        }
-        String bundleDescription = loc(localized, attr, "Bundle-Description");
-        if (bundleDescription != null) {
-            manifest.setAttribute("OpenIDE-Module-Short-Description", bundleDescription);
-        }
-        // XXX anything else need to be set?
-        return module;
-    }
-
-    private static String loc(Properties localized, Attributes attr, String key) {
-        String val = attr.getValue(key);
-        if (val == null) {
-            return null;
-        } else if (val.startsWith("%")) {
-            return localized.getProperty(val.substring(1));
-        } else {
-            return val;
-        }
-    }
     
-    private static String extractCodeName(Attributes attr, boolean[] osgi) {
-        String codename = attr.getValue("OpenIDE-Module");
-        if (codename != null) {
-            return codename;
-        }
-        codename = attr.getValue("Bundle-SymbolicName");
-        if (codename == null) {
-            return null;
-        }
-        codename = codename.replace('-', '_');
-        if (osgi != null) {
-            osgi[0] = true;
-        }
-        int params = codename.indexOf(';');
-        if (params >= 0) {
-            return codename.substring(0, params);
-        } else {
-            return codename;
-        }
-    }
-
-    private static Document createDocument(String rootQName) throws DOMException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    private static boolean isOSGiBundle(File jarFile) {
         try {
-            return factory.newDocumentBuilder ().getDOMImplementation ().createDocument (null, rootQName, null);
-        } catch (ParserConfigurationException ex) {
-            throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
+            JarFile jar = new JarFile(jarFile);
+            Manifest mf = jar.getManifest();
+            return mf != null && mf.getMainAttributes().getValue("Bundle-SymbolicName") != null; // NOI18N
+        } catch (IOException ioe) {
+            err.log(Level.INFO, ioe.getLocalizedMessage(), ioe);
         }
+        return false;
     }
 }
