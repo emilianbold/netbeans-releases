@@ -218,6 +218,7 @@ chrome.debugger.onEvent.addListener(function(source, method, params) {
 chrome.debugger.onDetach.addListener(function(source) {
     NetBeans.hidePageIcon(source.tabId);
     chrome.contextMenus.removeAll();
+    NetBeans.sendDebuggerDetached(source.tabId);
 });
 
 // Register tab listeners
