@@ -683,7 +683,7 @@ public final class ExternalBrowserPlugin {
             WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
             WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
             NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-            if (webkitDebugger == null || factory == null) {
+            if (webkitDebugger == null || factory == null || projectContext == null) {
                 return;
             }
             transport.attach();
