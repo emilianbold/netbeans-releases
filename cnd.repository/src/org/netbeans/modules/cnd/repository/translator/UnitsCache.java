@@ -710,12 +710,12 @@ final class UnitsCache {
         }
 
         public RequiredUnit(DataInput stream) throws IOException {
-            unitId = stream.readInt();
+            UnitsUtil.readUnitId(stream);
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeInt(unitId);
+            UnitsUtil.writeUnitId(unitId, stream);
             stream.writeLong(timestamp);
         }
 

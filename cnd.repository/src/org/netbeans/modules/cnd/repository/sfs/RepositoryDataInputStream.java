@@ -45,6 +45,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
 
 /**
  *
@@ -59,6 +60,11 @@ public class RepositoryDataInputStream extends DataInputStream implements Reposi
     @Override
     public CharSequence readCharSequenceUTF() throws IOException {
         return UTF.readCharSequenceUTF(this);
+    }
+
+    @Override
+    public int readUnitId() throws IOException {        
+        return UnitsUtil.readUnitId(this);
     }
 
     private static final int sharedArrySize = 1024;
