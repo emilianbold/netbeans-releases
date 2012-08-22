@@ -239,7 +239,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public String getDisplayName() {
-            return project.getProjectDirectory().getName();
+            return project.getName();
         }
 
     }

@@ -53,6 +53,9 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -63,9 +66,11 @@ public final class ClientSideProjectUtilities {
     private ClientSideProjectUtilities() {
     }
 
-    // XXX save project name
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
-        return ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
+        AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
+        setProjectName(projectHelper, name);
+        saveProjectProperties(projectHelper, Collections.<String, String>emptyMap());
+        return projectHelper;
     }
 
     public static void initializeProject(AntProjectHelper projectHelper) throws IOException {
@@ -102,16 +107,43 @@ public final class ClientSideProjectUtilities {
         return projectHelper.getProjectDirectory().getFileObject(siteRoot);
     }
 
+    public static void setProjectName(final AntProjectHelper projectHelper, final String name) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                Element data = projectHelper.getPrimaryConfigurationData(true);
+                Document document = data.getOwnerDocument();
+                NodeList nameList = data.getElementsByTagNameNS(ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                Element nameElement;
+                if (nameList.getLength() == 1) {
+                    nameElement = (Element) nameList.item(0);
+                    NodeList deadKids = nameElement.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameElement.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameElement = document.createElementNS(
+                            ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    data.insertBefore(nameElement, data.getChildNodes().item(0));
+                }
+                nameElement.appendChild(document.createTextNode(name));
+                projectHelper.putPrimaryConfigurationData(data, true);
+            }
+        });
+    }
+
     private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws IOException {
-                    EditableProperties projectProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    for (Map.Entry<String, String> entry : properties.entrySet()) {
-                        projectProperties.setProperty(entry.getKey(), entry.getValue());
+                    if (!properties.isEmpty()) {
+                        EditableProperties projectProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        for (Map.Entry<String, String> entry : properties.entrySet()) {
+                            projectProperties.setProperty(entry.getKey(), entry.getValue());
+                        }
+                        projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                     }
-                    projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                     Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
                     ProjectManager.getDefault().saveProject(project);
                     return null;
