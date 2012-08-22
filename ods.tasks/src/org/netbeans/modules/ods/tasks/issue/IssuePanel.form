@@ -23,24 +23,27 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="descriptionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="subtaskLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="parentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="ownerLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="foundInLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="productLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="tagsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="priorityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="descriptionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="subtaskLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="parentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="ownerLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="foundInLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="productLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="tagsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="priorityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -160,7 +163,6 @@
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
@@ -229,21 +231,22 @@
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="scrollPane1" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="messagePanel" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="dummyDescriptionPanel" max="32767" attributes="0"/>
+                                  <Component id="dummyAddCommentPanel" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="dummyDescriptionPanel" alignment="0" max="32767" attributes="0"/>
                                   <Component id="dummyAttachmentsPanel" alignment="0" max="32767" attributes="0"/>
                                   <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="summaryWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="descriptionWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -377,11 +380,6 @@
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="ccWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="externalWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -428,13 +426,17 @@
                                               <Component id="ccLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
-                                          <Component id="descriptionWarning" alignment="0" pref="16" max="32767" attributes="0"/>
-                                          <Component id="dummyDescriptionPanel" alignment="0" max="32767" attributes="0"/>
-                                      </Group>
                                   </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="ccWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="externalWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="dummyDescriptionPanel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="tagsWarning" min="-2" pref="16" max="-2" attributes="0"/>
@@ -444,7 +446,7 @@
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
+                  <Component id="dummyAddCommentPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -456,7 +458,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="dummyCommentsPanel" max="32767" attributes="0"/>
+              <Component id="dummyCommentsPanel" pref="11" max="32767" attributes="0"/>
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -985,8 +987,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="descriptionWarning">
-    </Component>
     <Component class="javax.swing.JLabel" name="addCommentLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -994,27 +994,6 @@
         </Property>
       </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="scrollPane1">
-      <Properties>
-        <Property name="verticalScrollBarPolicy" type="int" value="21"/>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JTextArea" name="addCommentArea">
-          <Properties>
-            <Property name="lineWrap" type="boolean" value="true"/>
-            <Property name="wrapStyleWord" type="boolean" value="true"/>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextArea() {&#xa;    @Override&#xa;    public Dimension getPreferredScrollableViewportSize() {&#xa;        Dimension dim = super.getPreferredScrollableViewportSize();&#xa;        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);&#xa;        int delta = 0;&#xa;        if (scrollPane != null) {&#xa;            Component comp = scrollPane.getHorizontalScrollBar();&#xa;            delta = comp.isVisible() ? comp.getHeight() : 0;&#xa;        }&#xa;        Insets insets = getInsets();&#xa;        int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;&#xa;        dim = new Dimension(dim.width, delta + ((dim.height &lt; prefHeight) ? prefHeight : dim.height));&#xa;        return dim;&#xa;    }&#xa;}"/>
-          </AuxValues>
-        </Component>
-      </SubComponents>
-    </Container>
     <Component class="javax.swing.JButton" name="submitButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -1189,7 +1168,22 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="15" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+    </Container>
+    <Container class="javax.swing.JPanel" name="dummyAddCommentPanel">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="28" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>

@@ -42,14 +42,25 @@
 package org.netbeans.modules.mylyn.util.wiki;
 
 import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Style;
-import javax.swing.text.StyleContext;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -62,19 +73,37 @@ public class WikiEditPanel extends WikiPanel {
     private String wikiFormatText;
     private String wikiLanguage;
     private String htmlFormatText;
+    private final boolean switchable;
     private boolean editing;
     private static final ImageIcon ICON_EDIT = ImageUtilities.loadImageIcon("org/netbeans/modules/mylyn/util/resources/edit.png", true); //NOI18N
     private static final ImageIcon ICON_PREVIEW = ImageUtilities.loadImageIcon("org/netbeans/modules/mylyn/util/resources/preview.png", true); //NOI18N
+    private static final Logger LOG = Logger.getLogger("Wiki edit panel");
 
     /**
      * Creates new form WikiEditPanel
      */
-    public WikiEditPanel(boolean editing) {
+    public WikiEditPanel(String wikiLanguage, boolean editing, boolean switchable) {
+        this.wikiLanguage = wikiLanguage;
+
+        this.switchable = switchable;
         this.wikiFormatText = "";
         this.htmlFormatText = "";
         initComponents();
+        pnlButtons.setVisible(switchable);
         textCode.getDocument().addDocumentListener(new RevalidatingListener());
         textPreview.getDocument().addDocumentListener(new RevalidatingListener());
+        textCode.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                makeCaretVisible(textCode);
+            }
+        });
+        // A11Y - Issues 163597 and 163598
+        UIUtils.fixFocusTraversalKeys(textCode);
+        UIUtils.issue163946Hack(scrollCode);
+
+        Spellchecker.register(textCode);
+
         setEditing(editing);
     }
 
@@ -84,14 +113,45 @@ public class WikiEditPanel extends WikiPanel {
     }
 
     @Override
-    public void setWikiFormatText(String wikiFormatText, String wikiLanguage) {
+    public void setWikiFormatText(String wikiFormatText) {
         this.wikiFormatText = wikiFormatText;
-        this.wikiLanguage = wikiLanguage;
         this.htmlFormatText = WikiUtils.getHtmlFormatText(wikiFormatText, wikiLanguage);
         textCode.setText(wikiFormatText);
         textPreview.setText(htmlFormatText);
-        registerHighlights();
+        registerHighlights(textPreview);
         this.repaint();
+    }
+
+    @Override
+    public JLabel getWarningLabel() {
+        return lblWarning;
+    }
+
+    @Override
+    public void appendCodeText(String codeToAppend) {
+        setWikiFormatText(getWikiFormatText() + codeToAppend);
+        setEditing(true);
+    }
+
+    @Override
+    public void clear() {
+        this.wikiFormatText = "";
+        this.htmlFormatText = "";
+        textCode.setText(wikiFormatText);
+        textPreview.setText(htmlFormatText);
+        this.repaint();
+    }
+
+    @Override
+    public void registerHighlights(JTextPane wikiPreviewPane) {
+        HyperlinkSupport.getInstance().registerForTypes(wikiPreviewPane);
+        HyperlinkSupport.getInstance().registerForStacktraces(wikiPreviewPane);
+        HyperlinkSupport.getInstance().registerForURLs(wikiPreviewPane);
+    }
+
+    @Override
+    public JTextPane getPreviewPane() {
+        return textPreview;
     }
 
     /**
@@ -106,6 +166,7 @@ public class WikiEditPanel extends WikiPanel {
 
         pnlButtons = new javax.swing.JPanel();
         btnEditPreview = new javax.swing.JButton();
+        lblWarning = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         scrollPreview = new javax.swing.JScrollPane();
         textPreview = new javax.swing.JTextPane();
@@ -115,26 +176,34 @@ public class WikiEditPanel extends WikiPanel {
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
+        pnlButtons.setOpaque(false);
+
         btnEditPreview.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mylyn/util/resources/edit.png"))); // NOI18N
+        btnEditPreview.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         btnEditPreview.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnEditPreviewActionPerformed(evt);
             }
         });
 
+        lblWarning.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(lblWarning, NbBundle.getMessage(WikiEditPanel.class, "WikiEditPanel.lblWarning.text")); // NOI18N
+
         javax.swing.GroupLayout pnlButtonsLayout = new javax.swing.GroupLayout(pnlButtons);
         pnlButtons.setLayout(pnlButtonsLayout);
         pnlButtonsLayout.setHorizontalGroup(
             pnlButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-            .addGroup(pnlButtonsLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(btnEditPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnlButtonsLayout.createSequentialGroup()
+                .addComponent(btnEditPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(lblWarning, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         pnlButtonsLayout.setVerticalGroup(
             pnlButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlButtonsLayout.createSequentialGroup()
                 .addComponent(btnEditPreview)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblWarning))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -173,14 +242,7 @@ public class WikiEditPanel extends WikiPanel {
         textCode.setText(wikiFormatText);
         scrollCode.setViewportView(textCode);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        jPanel1.add(scrollCode, gridBagConstraints);
+        jPanel1.add(scrollCode, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -197,6 +259,7 @@ public class WikiEditPanel extends WikiPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditPreview;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblWarning;
     private javax.swing.JPanel pnlButtons;
     private javax.swing.JScrollPane scrollCode;
     private javax.swing.JScrollPane scrollPreview;
@@ -225,7 +288,7 @@ public class WikiEditPanel extends WikiPanel {
             textCode.setVisible(false);
             scrollCode.setVisible(false);
             if (this.editing != editing) {
-                setWikiFormatText(textCode.getText(), wikiLanguage);
+                setWikiFormatText(textCode.getText());
             }
         }
         this.editing = editing;
@@ -233,10 +296,17 @@ public class WikiEditPanel extends WikiPanel {
         this.repaint();
     }
 
-    private void registerHighlights() {
-        HyperlinkSupport.getInstance().registerForTypes(textPreview);
-        HyperlinkSupport.getInstance().registerForStacktraces(textPreview);
-        HyperlinkSupport.getInstance().registerForURLs(textPreview);
+    private void makeCaretVisible(JTextComponent textComponent) {
+        int pos = textComponent.getCaretPosition();
+        try {
+            Rectangle rec = textComponent.getUI().modelToView(textComponent, pos);
+            if (rec != null) {
+                Point p = SwingUtilities.convertPoint(textComponent, rec.x, rec.y, this);
+                scrollRectToVisible(new Rectangle(p.x, p.y, rec.width, rec.height));
+            }
+        } catch (BadLocationException blex) {
+            LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
     }
 
     private class RevalidatingListener implements DocumentListener, Runnable {

@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.mylyn.util;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 
 /**
  *
@@ -51,5 +53,15 @@ public abstract class WikiPanel extends JPanel {
 
     public abstract String getWikiFormatText();
 
-    public abstract void setWikiFormatText(String wikiFormatText, String wikiLanguage);
+    public abstract void setWikiFormatText(String wikiFormatText);
+
+    public abstract void appendCodeText(String codeToAppend);
+
+    public abstract void clear();
+
+    public abstract JLabel getWarningLabel();
+
+    public abstract void registerHighlights(JTextPane wikiPreviewPane);
+
+    public abstract JTextPane getPreviewPane();
 }
