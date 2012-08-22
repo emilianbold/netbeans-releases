@@ -719,7 +719,7 @@ public class JavaFixUtilities {
             
             rewrite(node, nue);
             
-            return super.visitMethod(node, p);
+            return super.visitMethod(nue, p);
         }
 
         @Override

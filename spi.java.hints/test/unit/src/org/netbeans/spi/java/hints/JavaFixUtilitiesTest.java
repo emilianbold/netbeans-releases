@@ -738,6 +738,22 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testRewriteMethodParametersWildcard() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public static void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ void $name($args$) { $body$; } => $mods$ int $name($args$) { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public static int t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
