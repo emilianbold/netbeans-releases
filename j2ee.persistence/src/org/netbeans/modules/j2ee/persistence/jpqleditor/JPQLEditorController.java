@@ -56,6 +56,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 //import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -91,7 +92,7 @@ public class JPQLEditorController {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         //connection open
-        final DatabaseConnection dbconn = findDatabaseConnection(pu, pe.getProject());
+        final DatabaseConnection dbconn = JPAEditorUtil.findDatabaseConnection(pu, pe.getProject());
         if (dbconn != null) {
             if (dbconn.getJDBCConnection() == null) {
                 Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
@@ -168,68 +169,6 @@ public class JPQLEditorController {
         editorTopComponent.setFocusToEditor();
 
         editorTopComponent.fillPersistenceConfigurations(activatedNodes);
-    }
-
-    private DatabaseConnection findDatabaseConnection(PersistenceUnit pu, Project project) {
-
-        // try to find a connection specified using the PU properties
-        DatabaseConnection dbcon = ProviderUtil.getConnection(pu);
-        if (dbcon != null) {
-            return dbcon;
-        }
-
-        // try to find a datasource-based connection, but only for a FileObject-based context,
-        // otherwise we don't have a J2eeModuleProvider to retrieve the DS's from
-        String datasourceName = ProviderUtil.getDatasourceName(pu);
-        if (datasourceName == null) {
-            return null;
-        }
-
-        if (project == null) {
-            return null;
-        }
-        JPADataSource datasource = null;
-        JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
-        if (dsProvider == null) {
-            return null;
-        }
-        for (JPADataSource each : dsProvider.getDataSources()) {
-            if (datasourceName.equals(each.getJndiName())) {
-                datasource = each;
-            }
-        }
-        if (datasource == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The " + datasourceName + " was not found."); // NOI18N
-            return null;
-        }
-        List<DatabaseConnection> dbconns = findDatabaseConnections(datasource);
-        if (dbconns.size() > 0) {
-            return dbconns.get(0);
-        }
-        return null;
-    }
-
-    private static List<DatabaseConnection> findDatabaseConnections(JPADataSource datasource) {
-        // copied from j2ee.common.DatasourceHelper (can't depend on that)
-        if (datasource == null) {
-            throw new NullPointerException("The datasource parameter cannot be null."); // NOI18N
-        }
-        String databaseUrl = datasource.getUrl();
-        String user = datasource.getUsername();
-        if (databaseUrl == null || user == null) {
-            return Collections.emptyList();
-        }
-        List<DatabaseConnection> result = new ArrayList<DatabaseConnection>();
-        for (DatabaseConnection dbconn : ConnectionManager.getDefault().getConnections()) {
-            if (databaseUrl.equals(dbconn.getDatabaseURL()) && user.equals(dbconn.getUser())) {
-                result.add(dbconn);
-            }
-        }
-        if (result.size() > 0) {
-            return Collections.unmodifiableList(result);
-        } else {
-            return Collections.emptyList();
-        }
     }
 //    public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
 //            Set<FileObject> mappingFOList,
