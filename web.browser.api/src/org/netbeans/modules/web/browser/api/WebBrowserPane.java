@@ -158,10 +158,11 @@ public final class WebBrowserPane {
             // below constructor sets some TopComponent properties and needs
             // to be therefore called in AWT thread:
             topComponent = new DeveloperHtmlBrowserComponent(descriptor.getFactory());
+            topComponent.putClientProperty( "web.browser.pane", this ); //NOI18N
         }
         return topComponent;
     }
-    
+
     /**
      * Is this embedded or external browser.
      */

@@ -51,11 +51,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -63,7 +61,6 @@ import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -83,7 +80,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     private HtmlBrowser browserComponent;
     private HtmlBrowser.Factory browserFactory;
 
-    private final ProxyLookup proxyLookup = new ProxyLookup( Lookup.EMPTY );
+    private final MyLookup proxyLookup = new MyLookup();
     
 
     // initialization ....................................................................................
@@ -281,23 +278,13 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     private void initBrowser() {
         add( browserComponent, BorderLayout.CENTER );
         // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
-        associateBrowserLookup(getBrowserLookup());
+        proxyLookup.setLookup(getBrowserLookup());
 
         browserComponent.getBrowserImpl().addPropertyChangeListener (this);
 
         // Ensure closed browsers are not stored:
         if (browserComponent.getBrowserComponent() != null) {
             putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-        }
-    }
-
-    private void associateBrowserLookup( Lookup lkp ) {
-        try {
-            Method m = proxyLookup.getClass().getDeclaredMethod( "setLookups", Executor.class, Lookup[].class );
-            m.setAccessible( true );
-            m.invoke( proxyLookup, (Executor)null, new Lookup[] { lkp } );
-        } catch( Exception e ) {
-            Exceptions.printStackTrace( e );
         }
     }
 
@@ -504,4 +491,13 @@ public static final class BrowserReplacer implements java.io.Externalizable {
 
 } // end of BrowserReplacer inner class
 
+    private static class MyLookup extends ProxyLookup {
+        public MyLookup() {
+            super( Lookup.EMPTY );
+        }
+
+        public void setLookup( Lookup lkp ) {
+            setLookups( new Lookup[] { lkp } );
+        }
+    }
 }
