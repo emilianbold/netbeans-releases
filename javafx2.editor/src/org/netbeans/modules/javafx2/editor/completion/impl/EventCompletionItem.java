@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -90,15 +91,24 @@ final class EventCompletionItem extends AbstractCompletionItem {
 
     @Override
     protected String getSubstituteText() {
+        boolean replace = ctx.isReplaceExisting();
         if (attribute) {
-            return super.getSubstituteText() + "=\"\" ";
+            if (replace) {
+                return super.getSubstituteText();
+            } else {
+                return super.getSubstituteText() + "=\"\" ";
+            }
         } else {
-            return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+            if (replace) {
+                return "<" + super.getSubstituteText();
+            } else {
+                return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+            }
         }
     }
     
     @Override
-    protected int getCaretShift() {
+    protected int getCaretShift(Document d) {
         // incidentally, for all 3 cases:
         return 2 + super.getSubstituteText().length();
     }

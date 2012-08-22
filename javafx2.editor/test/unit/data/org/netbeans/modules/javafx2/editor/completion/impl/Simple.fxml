@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import|INSTRUCTION_TARGET,targetSuffix| java|INSTRUCTION_DATA,dataInTheMiddle|.lang.*|INSTRUCTION_DATA,dataSuffix|?>
-<?import javafx.scene.control.*?|UNKNOWN,instructionEnd|>|ROOT,afterInstruction|
+<?import javafx.scene.control.*?|INSTRUCTION_END,instructionEnd|>|INSTRUCTION_TARGET,afterInstruction|
 <?|INSTRUCTION_TARGET,beginOfTargetName|import javafx.scene.effect.*?>
 <?import javafx.scene.layout.*?>
 
-|ROOT,whitespaceAfterInstruction|
+|INSTRUCTION_TARGET,whitespaceAfterInstruction|
 
 <?|INSTRUCTION_TARGET,startOfInstruction|
+?>
+|INSTRUCTION_TARGET,whitespaceAfterInstructionB|
 
 <|BEAN,existingClassNameStart|AnchorPane |PROPERTY,existingPropertyStart|id="|PROPERTY_VALUE,propertyValueStart|SimpleForm" minHeight="90.0" minWidth="220.0" prefHeight="300.0" prefWidth="400.0" xmlns:fx="http://javafx.com/fxml">
   <children>
@@ -24,6 +26,12 @@
         <TextField id="@EmailTextField|RESOURCE_REF,resourceReference|" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="33.0" />
       </children>
     </AnchorPane>
+    
+    <CheckBox id|PROPERTY,afterPropertyNameBeforeSign|="OptOutCheckBox" 
+        te|PROPERTY,middlePropertyName|xt="Keep Me Informed" 
+        An|PROPERTY,middleStaticPropertyName|chorPane.bottomAnchor="8.0" 
+        AnchorPane.leftAnchor="5.0" />
+    
     <Label id="Label" |PROPERTY,whitespaceAfterAttribute|
     
     <Label |PROPERTY,whitespaceAfterTag|

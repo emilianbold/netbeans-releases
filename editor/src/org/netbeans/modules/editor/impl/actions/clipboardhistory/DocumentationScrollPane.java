@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,61 +40,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.beans.BeanInfo;
-import javax.swing.ImageIcon;
-import javax.swing.text.Document;
-import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
+
+package org.netbeans.modules.editor.impl.actions.clipboardhistory;
+
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
 
 /**
  *
- * @author sdedic
+ *  @author  Martin Roskanin, Dusan Balek
  */
-final  class ResourcePathItem extends AbstractCompletionItem {
-    private DataObject  target;
-    private ImageIcon   icon;
-    private String      right;
-    
-    public ResourcePathItem(DataObject target, CompletionContext ctx, String text, String right) {
-        super(ctx, text);
-        this.target = target;
-        this.right = right;
-    }
+public final class DocumentationScrollPane extends JScrollPane {
 
-    @Override
-    protected String getLeftHtmlText() {
-        String tn = target.getName();
-        if (target.getPrimaryFile().isFolder()) {
-            return "<i>" + tn + "/</i>";
-        } else {
-            return tn;
-        }
-    }
+    private JEditorPane view;
+    private Dimension documentationPreferredSize;
 
-    @Override
-    protected int getCaretShift(Document d) {
-        int pos = super.getCaretShift(d);
-        if (!target.getPrimaryFile().isData()) {
-            // skip the closing " in the value.
-            pos -= 1;
-        }
-        return pos;
+    /** Creates a new instance of ScrollJavaDocPane */
+    public DocumentationScrollPane(JTextComponent editorComponent) {
+        super();
+ 
+        // Determine and use fixed preferred size
+        documentationPreferredSize = new Dimension(500, 300);
+        setPreferredSize(null); // Use the documentationPopupPreferredSize
+        
+        Color bgColor = new JEditorPane().getBackground();
+        bgColor = new Color(
+                Math.max(bgColor.getRed() - 8, 0 ), 
+                Math.max(bgColor.getGreen() - 8, 0 ), 
+                bgColor.getBlue());
+        
+        // Add the completion doc view
+        view = new JEditorPane();
+        view.setEditable(false);
+        view.setFocusable(true);
+        view.setBackground(bgColor);
+        view.setMargin(new Insets(0, 3, 3, 3));
+        setViewportView(view);
+        setFocusable(true);
     }
     
-    @Override
-    protected ImageIcon getIcon() {
-        if (icon == null) {
-            icon = new ImageIcon(target.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+    public @Override void setPreferredSize(Dimension preferredSize) {
+        if (preferredSize == null) {
+            preferredSize = documentationPreferredSize;
         }
-        return icon;
+        super.setPreferredSize(preferredSize);
     }
-
     
+    
+    public void setData(String doc) {
+        view.setText(doc);
+        view.setCaretPosition(0);
+    }
 }

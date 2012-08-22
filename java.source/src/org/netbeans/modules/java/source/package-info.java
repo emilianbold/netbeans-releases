@@ -39,56 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.beans.BeanInfo;
-import javax.swing.ImageIcon;
-import javax.swing.text.Document;
-import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
+@TemplateRegistrations({
+    @TemplateRegistration(folder = "Classes/Code", position = 100, content = "resources/GeneratedMethodBody.template", scriptEngine = "freemarker", displayName = "#GeneratedMethodBody", category = "java-code-snippet"),
+    @TemplateRegistration(folder = "Classes/Code", position = 200, content = "resources/OverridenMethodBody.template", scriptEngine = "freemarker", displayName = "#OverridenMethodBody", category = "java-code-snippet")
+})
+@NbBundle.Messages({
+    "GeneratedMethodBody=Generated Method Body", "OverridenMethodBody=Overriden Method Body" //NOI18N
+})
+package org.netbeans.modules.java.source;
 
-/**
- *
- * @author sdedic
- */
-final  class ResourcePathItem extends AbstractCompletionItem {
-    private DataObject  target;
-    private ImageIcon   icon;
-    private String      right;
-    
-    public ResourcePathItem(DataObject target, CompletionContext ctx, String text, String right) {
-        super(ctx, text);
-        this.target = target;
-        this.right = right;
-    }
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
+import org.openide.util.NbBundle;
 
-    @Override
-    protected String getLeftHtmlText() {
-        String tn = target.getName();
-        if (target.getPrimaryFile().isFolder()) {
-            return "<i>" + tn + "/</i>";
-        } else {
-            return tn;
-        }
-    }
-
-    @Override
-    protected int getCaretShift(Document d) {
-        int pos = super.getCaretShift(d);
-        if (!target.getPrimaryFile().isData()) {
-            // skip the closing " in the value.
-            pos -= 1;
-        }
-        return pos;
-    }
-    
-    @Override
-    protected ImageIcon getIcon() {
-        if (icon == null) {
-            icon = new ImageIcon(target.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
-        return icon;
-    }
-
-    
-}

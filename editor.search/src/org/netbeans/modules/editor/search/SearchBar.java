@@ -96,6 +96,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
     private WeakReference<JTextComponent> actualTextComponent;
     private List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
     private FocusAdapter focusAdapterForComponent;
+    private KeyListener keyListenerForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
     private final JLabel findLabel;
     private final JComboBox incSearchComboBox;
@@ -279,6 +280,29 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         ((MutableComboBoxModel) incSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
         incSearchComboBox.setSelectedIndex(0);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
+    }
+    
+    private KeyListener createKeyListenerForComponent() {
+        return new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    looseFocus();
+                    ReplaceBar replaceBarInstance = ReplaceBar.getInstance(SearchBar.this);
+                    if (replaceBarInstance.isVisible()) {
+                        replaceBarInstance.looseFocus();
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+        };
     }
     
     private FocusAdapter createFocusAdapterForComponent() {
@@ -671,7 +695,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         if (!isClosingSearchType() && getFindSupportValue(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
             highlightCanceled = true;
-        }            
+        }
     }
 
     private void incrementalSearch() {
@@ -851,6 +875,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         if (getActualTextComponent() != null) {
             getActualTextComponent().removeFocusListener(focusAdapterForComponent);
             getActualTextComponent().removePropertyChangeListener(propertyChangeListenerForComponent);
+            getActualTextComponent().removeKeyListener(keyListenerForComponent);
         }
         if (focusAdapterForComponent == null) {
             focusAdapterForComponent = createFocusAdapterForComponent();
@@ -858,8 +883,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         if (propertyChangeListenerForComponent == null) {
             propertyChangeListenerForComponent = createPropertyChangeListenerForComponent();
         }
+        if (keyListenerForComponent == null) {
+            keyListenerForComponent = createKeyListenerForComponent();
+        }
         component.addFocusListener(focusAdapterForComponent);
         component.addPropertyChangeListener(propertyChangeListenerForComponent);
+        component.addKeyListener(keyListenerForComponent);
         for (PropertyChangeListener pcl : actualComponentListeners) {
             pcl.propertyChange(new PropertyChangeEvent(this, "actualTextComponent", getActualTextComponent(), component));
         }

@@ -246,8 +246,9 @@ final public class ClassCompleter implements Completer, Completer.Factory {
                 e.getModifiers().contains(Modifier.ABSTRACT) ||
                 !FxClassUtils.isFxmlAccessible(e) ||
                 !ctx.getCompilationInfo().getTypes().isAssignable(e.asType(), nodeType)) {
-                    it.remove();
+                    continue;
             }
+            handles.add(h);
         }
         return handles;
     }
@@ -319,8 +320,11 @@ final public class ClassCompleter implements Completer, Completer.Factory {
     
     private Set<ElementHandle<TypeElement>> loadFromAllTypes() {
         ClasspathInfo info = ctx.getClasspathInfo();
-        Set<ElementHandle<TypeElement>> els = info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
-                EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE));
+        Set<ElementHandle<TypeElement>> els = 
+                new HashSet<ElementHandle<TypeElement>>(
+                    info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
+                    EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE)
+                ));
 
         TypeMirror pt = getPropertyType();
         if (pt == null) {

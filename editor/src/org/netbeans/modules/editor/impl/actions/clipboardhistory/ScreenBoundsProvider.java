@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,61 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.beans.BeanInfo;
-import javax.swing.ImageIcon;
-import javax.swing.text.Document;
-import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
+package org.netbeans.modules.editor.impl.actions.clipboardhistory;
+
+import java.awt.GraphicsConfiguration;
+import java.awt.Rectangle;
+import javax.swing.text.JTextComponent;
 
 /**
- *
- * @author sdedic
+ * borrowed org.netbeans.modules.editor.completion.ScreenBoundsProvider
  */
-final  class ResourcePathItem extends AbstractCompletionItem {
-    private DataObject  target;
-    private ImageIcon   icon;
-    private String      right;
+public class ScreenBoundsProvider {
     
-    public ResourcePathItem(DataObject target, CompletionContext ctx, String text, String right) {
-        super(ctx, text);
-        this.target = target;
-        this.right = right;
-    }
-
-    @Override
-    protected String getLeftHtmlText() {
-        String tn = target.getName();
-        if (target.getPrimaryFile().isFolder()) {
-            return "<i>" + tn + "/</i>";
-        } else {
-            return tn;
+    /** Relative width of screen covered by CC */
+    static final double COMPL_COVERAGE = 0.4;
+    
+    /** Relative maximum width of screen covered by CC */
+    static final double MAX_COMPL_COVERAGE = 0.9;
+    
+    private static Rectangle screenBounds;
+    
+    static Rectangle getScreenBounds(JTextComponent editorComponent) {
+        if (screenBounds == null) {
+            GraphicsConfiguration configuration = editorComponent != null
+                    ? editorComponent.getGraphicsConfiguration() : null;
+            screenBounds = configuration != null
+                    ? configuration.getBounds() : new Rectangle();
         }
-    }
-
-    @Override
-    protected int getCaretShift(Document d) {
-        int pos = super.getCaretShift(d);
-        if (!target.getPrimaryFile().isData()) {
-            // skip the closing " in the value.
-            pos -= 1;
-        }
-        return pos;
+        return screenBounds;
     }
     
-    @Override
-    protected ImageIcon getIcon() {
-        if (icon == null) {
-            icon = new ImageIcon(target.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
-        return icon;
+    static void clear() {
+        screenBounds = null;
     }
-
-    
 }

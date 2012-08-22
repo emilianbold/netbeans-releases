@@ -46,6 +46,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
 import org.openide.util.ImageUtilities;
@@ -77,17 +78,17 @@ final class FxInstructionItem extends AbstractCompletionItem {
     }
 
     @Override
-    protected int getCaretShift() {
+    protected int getCaretShift(Document d) {
         int index = getSubstituteText().indexOf('"');
         if (index == -1) {
-            return super.getCaretShift();
+            return super.getCaretShift(d);
         } else {
             return index + 1;
         }
     }
 
     @Override
-    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+    protected void doSubstituteText(JTextComponent c, BaseDocument d, String text) throws BadLocationException {
         String prefix = "fx";
         if (fxNamespaceDecl != null) {
             try {

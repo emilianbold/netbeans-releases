@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
+package org.netbeans.modules.editor.impl.actions;
 
-import java.beans.BeanInfo;
-import javax.swing.ImageIcon;
-import javax.swing.text.Document;
-import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
+import org.netbeans.spi.editor.AbstractEditorAction;
+import java.awt.event.ActionEvent;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.modules.editor.impl.actions.clipboardhistory.CompletionLayoutPopup;
 
-/**
- *
- * @author sdedic
- */
-final  class ResourcePathItem extends AbstractCompletionItem {
-    private DataObject  target;
-    private ImageIcon   icon;
-    private String      right;
-    
-    public ResourcePathItem(DataObject target, CompletionContext ctx, String text, String right) {
-        super(ctx, text);
-        this.target = target;
-        this.right = right;
-    }
+@EditorActionRegistration(
+        name = "clipboard-history")
+public final class ClipboardHistoryAction extends AbstractEditorAction {
+
+    private static final long serialVersionUID = 1L;
 
     @Override
-    protected String getLeftHtmlText() {
-        String tn = target.getName();
-        if (target.getPrimaryFile().isFolder()) {
-            return "<i>" + tn + "/</i>";
-        } else {
-            return tn;
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        if (target.isEditable()) {
+            CompletionLayoutPopup.CompletionPopup completionPopup = CompletionLayoutPopup.CompletionPopup.getInstance();
+            completionPopup.show(target, -1);
         }
     }
-
-    @Override
-    protected int getCaretShift(Document d) {
-        int pos = super.getCaretShift(d);
-        if (!target.getPrimaryFile().isData()) {
-            // skip the closing " in the value.
-            pos -= 1;
-        }
-        return pos;
-    }
-    
-    @Override
-    protected ImageIcon getIcon() {
-        if (icon == null) {
-            icon = new ImageIcon(target.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
-        return icon;
-    }
-
-    
 }

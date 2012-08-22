@@ -39,56 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
+package org.netbeans.modules.editor.impl.actions.clipboardhistory;
 
-import java.beans.BeanInfo;
-import javax.swing.ImageIcon;
-import javax.swing.text.Document;
-import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
+public class ClipboardHistoryElement {
 
-/**
- *
- * @author sdedic
- */
-final  class ResourcePathItem extends AbstractCompletionItem {
-    private DataObject  target;
-    private ImageIcon   icon;
-    private String      right;
-    
-    public ResourcePathItem(DataObject target, CompletionContext ctx, String text, String right) {
-        super(ctx, text);
-        this.target = target;
-        this.right = right;
+    private final String content;
+    private static int MAXSIZE = 30;
+    private static final String ENDING = "...";
+
+    ClipboardHistoryElement(String text) {
+        this.content = text;
     }
 
-    @Override
-    protected String getLeftHtmlText() {
-        String tn = target.getName();
-        if (target.getPrimaryFile().isFolder()) {
-            return "<i>" + tn + "/</i>";
-        } else {
-            return tn;
+    public String getShortenText() {
+        String output = content.trim();
+        if (isShorten()) {
+            if (output.length() < MAXSIZE)
+                return output + ENDING;
+            else
+                return output.substring(0, MAXSIZE) + ENDING;
         }
+        return output;
+        
     }
 
-    @Override
-    protected int getCaretShift(Document d) {
-        int pos = super.getCaretShift(d);
-        if (!target.getPrimaryFile().isData()) {
-            // skip the closing " in the value.
-            pos -= 1;
-        }
-        return pos;
+    public String getFullText() {
+        return content;
     }
     
-    @Override
-    protected ImageIcon getIcon() {
-        if (icon == null) {
-            icon = new ImageIcon(target.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
-        return icon;
+    public boolean isShorten() {
+        return content.length() > MAXSIZE || content.trim().isEmpty();
     }
 
+    public String getNumber() {
+        return "" + (ClipboardHistory.getInstance().getPosition(this) + 1);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ClipboardHistoryElement) {
+            return content.equals(((ClipboardHistoryElement)obj).content);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 23 * hash + (this.content != null ? this.content.hashCode() : 0);
+        return hash;
+    }
+    
     
 }
