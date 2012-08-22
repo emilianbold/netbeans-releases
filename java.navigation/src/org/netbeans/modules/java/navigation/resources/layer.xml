@@ -133,15 +133,11 @@ made subject to such option by the copyright holder.
     
     <folder name="Windows2">
         <folder name="Components">
-            <file name="DeclarationTopComponent.settings" url="DeclarationTopComponentSettings.xml"/>
             <file name="JavadocTopComponent.settings" url="JavadocTopComponentSettings.xml"/>
             <file name="AnalyzeStackTopComponent.settings" url="AnalyzeStackTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="output">
-                <file name="DeclarationTopComponent.wstcref" url="DeclarationTopComponentWstcref.xml">
-                    <attr name="position" intvalue="2400"/>
-                </file>
+            <folder name="output">                
                 <file name="JavadocTopComponent.wstcref" url="JavadocTopComponentWstcref.xml">
                     <attr name="position" intvalue="2500"/>
                 </file>

@@ -238,7 +238,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     private void setDeclaration(final String declaration) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                DeclarationTopComponent declarationTopComponent = DeclarationTopComponent.findInstance();
+                DeclarationTopComponent declarationTopComponent = DeclarationTopComponent.findDefault();
                 if (declarationTopComponent != null && declarationTopComponent.isOpened()) {
                     declarationTopComponent.setDeclaration(declaration);
                 }

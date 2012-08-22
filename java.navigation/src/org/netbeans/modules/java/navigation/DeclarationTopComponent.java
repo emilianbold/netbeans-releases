@@ -48,33 +48,37 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
  * 
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
+@TopComponent.Description(
+    preferredID = "DeclarationTopComponent",
+iconBase=DeclarationTopComponent.ICON_PATH,
+persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+@TopComponent.Registration(mode = "output", openAtStartup = false)
+@Messages({
+    "CTL_DeclarationTopComponent=Declaration",
+    "HINT_DeclarationTopComponent=The Declaration window shows the Java code of the element under the caret."
+})
 public final class DeclarationTopComponent extends TopComponent {
     
     private static final Logger LOGGER = Logger.getLogger(DeclarationTopComponent.class.getName());
-    
+
+    //@GuardedBy("DeclarationTopComponent.class")
     private static DeclarationTopComponent instance;
-    /** path to the icon used by the component and its open action */
     public static final String ICON_PATH = "org/netbeans/modules/java/navigation/resources/declaration_action.png";
-    
-    private static final String PREFERRED_ID = "DeclarationTopComponent";
-    
     private static boolean shouldUpdate;
     
     private DeclarationTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(DeclarationTopComponent.class, "CTL_DeclarationTopComponent"));
-        setToolTipText(NbBundle.getMessage(DeclarationTopComponent.class, "HINT_DeclarationTopComponent"));
-        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        
+        setName(Bundle.CTL_DeclarationTopComponent());
+        setToolTipText(Bundle.HINT_DeclarationTopComponent());
         // Don't highlight caret row 
         declarationEditorPane.putClientProperty(
             "HighlightsLayerExcludes", // NOI18N
@@ -130,52 +134,30 @@ public final class DeclarationTopComponent extends TopComponent {
     private javax.swing.JEditorPane declarationEditorPane;
     private javax.swing.JScrollPane declarationScrollPane;
     // End of variables declaration//GEN-END:variables
-    
-    /**
-     * Gets default instance. Do not use directly: reserved for *.settings files only,
-     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link findInstance}.
-     */
-    public static synchronized DeclarationTopComponent getDefault() {
-        if (instance == null) {
-            instance = new DeclarationTopComponent();
-        }
-        return instance;
-    }
-    
+            
     /**
      * Obtain the DeclarationTopComponent instance. Never call {@link #getDefault} directly!
      */
-    public static synchronized DeclarationTopComponent findInstance() {
-//        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-//        if (win == null) {
-//            LOGGER.log(Level.WARNING,
-//                    "Cannot find MyWindow component. It will not be located properly in the window system.");
-//            return getDefault();
-//        }
-//        if (win instanceof DeclarationTopComponent) {
-//            return (DeclarationTopComponent)win;
-//        }
-//        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
-//                "There seem to be multiple components with the '" + PREFERRED_ID +
-//                "' ID. That is a potential source of errors and unexpected behavior.");
-//        return getDefault();
-        return instance;
+    public static synchronized DeclarationTopComponent findDefault() {
+        DeclarationTopComponent component = instance;
+        if (component == null) {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("DeclarationTopComponent"); //NOI18N
+            if (tc instanceof DeclarationTopComponent) {
+                component = instance = (DeclarationTopComponent) tc;
+            } else {
+                component = instance = new DeclarationTopComponent();
+            }
+        }
+        return component;
     }
     
     public static boolean shouldUpdate() {
-        if ( instance == null ) {
-            return false;
+        final DeclarationTopComponent inst;
+        synchronized (DeclarationTopComponent.class) {
+            inst = instance;
         }
-        else  {
-            return instance.isShowing();
-        }
-    }
-
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
-    }
+        return inst == null ? false : inst.isShowing();
+    }    
     
     @Override
     public void componentOpened() {
@@ -190,23 +172,22 @@ public final class DeclarationTopComponent extends TopComponent {
         super.componentShowing();
         CaretListeningFactory.runAgain();
     }
-    
-         
+             
     /** replaces this in object stream */
     @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
     
-    @Override
-    protected String preferredID() {
-        return PREFERRED_ID;
-    }
-    
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
-            return DeclarationTopComponent.getDefault();
+            synchronized (DeclarationTopComponent.class) {
+                if (instance == null) {
+                    instance = new DeclarationTopComponent();
+                }
+                return instance;
+            }
         }
     }
     
