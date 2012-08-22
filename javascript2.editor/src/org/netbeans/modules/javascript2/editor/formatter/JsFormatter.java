@@ -484,7 +484,7 @@ public class JsFormatter implements Formatter {
             return;
         }
 
-        boolean containsEol = false;
+        FormatToken lastEol = null;
 
         FormatToken start = null;
         for (FormatToken current = token.previous(); current != null;
@@ -495,8 +495,8 @@ public class JsFormatter implements Formatter {
                         && current.getKind() != FormatToken.Kind.EOL) {
                     start = current;
                     break;
-                } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    containsEol = true;
+                } else if (lastEol == null && current.getKind() == FormatToken.Kind.EOL) {
+                    lastEol = current;
                 }
             }
         }
@@ -511,7 +511,7 @@ public class JsFormatter implements Formatter {
                     end = current;
                     break;
                 } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    containsEol = true;
+                    lastEol = current;
                 }
             }
         }
@@ -538,8 +538,13 @@ public class JsFormatter implements Formatter {
                 if (!remove) {
                     formatContext.insert(start.getOffset(), " "); // NOI18N
                 }
-            } else if (!containsEol) {
-                if (remove) {
+            } else {
+                if (lastEol != null) {
+                    end = lastEol;
+                }
+                // if it should be removed or there is eol (in fact space)
+                // which will stay there
+                if (remove || end.getKind() == FormatToken.Kind.EOL) {
                     formatContext.remove(start.getOffset(),
                             end.getOffset() - start.getOffset());
                 } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
