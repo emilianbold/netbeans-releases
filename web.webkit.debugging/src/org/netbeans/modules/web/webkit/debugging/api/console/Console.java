@@ -145,7 +145,7 @@ public final class Console {
                     }
                 });
             } else if ("Console.messageRepeatCountUpdated".equals(method)) {
-                final int count = (Integer) response.getParams().get("count");
+                final int count = ((Number) response.getParams().get("count")).intValue();
                 transport.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
