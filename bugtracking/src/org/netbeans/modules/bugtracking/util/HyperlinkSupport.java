@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -57,6 +58,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -133,7 +135,13 @@ public final class HyperlinkSupport {
         rp.post(new Runnable() {
             @Override
             public void run() {
-                registerLinkIntern(pane, issueFinder.getIssueSpans(pane.getText()), issueLink);
+                String text = "";
+                try {
+                    text = pane.getStyledDocument().getText(0, pane.getStyledDocument().getLength());
+                } catch (BadLocationException ex) {
+                    BugtrackingManager.LOG.log(Level.INFO, null, ex);
+                }
+                registerLinkIntern(pane, issueFinder.getIssueSpans(text), issueLink);
                 pane.addMouseMotionListener(motionListener);
             }
         });    
