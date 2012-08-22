@@ -44,9 +44,7 @@
 
 package org.openide.nodes;
 
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 
 
@@ -57,10 +55,6 @@ public class PropertiesTest extends NbTestCase {
 
     public PropertiesTest(String name) {
         super(name);
-    }
-
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(PropertiesTest.class));
     }
 
     public void testReflection() throws Exception {
