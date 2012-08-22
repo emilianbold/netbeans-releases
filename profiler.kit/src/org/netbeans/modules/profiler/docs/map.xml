@@ -109,14 +109,6 @@ made subject to such option by the copyright holder.
         
         <!-- CSH topics for Attach Wizard -->
         <mapID target="AttachDialog.HelpCtx" url="helppages/csh/csh_attachwizard.html"/>
-        <mapID target="AttachSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_1.html"/>
-        <mapID target="ReviewSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_2.html"/>
-        <mapID target="ManualIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_3_manual.html"/>
-        <mapID target="SelectIntegrationTypePanel.HelpCtx" url="helppages/csh/csh_attachwiz_3_integration.html"/>
-        <mapID target="SunASIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_4_location.html"/>
-        <mapID target="PerformIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_5_performint.html"/>
-        <mapID target="ReviewAdditionalStepsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_6_reviewadd.html"/>
-        <mapID target="RemoteAttachSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_2_remote.html"/>
         <mapID target="PIDSelectPanel.HelpCtx" url="helppages/csh/csh_attachwiz_selectprocess.html"/>
 
         <!-- CSH topics for Live Results windows -->
@@ -167,10 +159,10 @@ made subject to such option by the copyright holder.
         <mapID target="MemorySnapshot.HelpCtx" url="helppages/csh/view_snap_memory.html"/>
         <!--CSH ID for Compare Memory Snapshot window -->
         <mapID target="MemoryDiff.HelpCtx" url="helppages/csh/view_snap_memorycompare.html"/>
-        <!--CSH ID for Select Memory Snapshot to Compare window -->
+        <!--CSH ID for Select Snapshot to Compare dialog - invoked from main menu -->
         <mapID target="SelectExternalSnapshotsPanel.HelpCtx" url="helppages/csh/csh_select_memorycompare.html"/>
-        <!--CSH ID for Find Results dialog invoked from Combined tab in CPU Snapshot window -->
-        <mapID target="ProfilerUiFindDialog.HelpCtx" url="helppages/csh/csh_snap_cpu_find.html"/>
+        <!--CSH ID for Select Snapshot to Compare dialog - invoked from snapshot toolbar -->
+        <mapID target="SelectSecondSnapshotPanel.HelpCtx" url="helppages/csh/csh_select_memorycompare.html"/>
         <!--CSH ID for Find Results dialog invoked from Combined tab in CPU Snapshot window -->
         <mapID target="ProfilerUiFindDialog.HelpCtx" url="helppages/csh/csh_snap_cpu_find.html"/>
         <!--CSH ID for Select Configuration dialog for adding roots methods, invoked from CPU snapshot -->
