@@ -83,7 +83,7 @@ public final class ExternalBrowserPlugin {
     public static final String UTF_8 = "UTF-8";                    // NOI18N
 
     private static final int PORT = 8008;
-
+    
     private static final Logger LOG = Logger.getLogger(
             ExternalBrowserPlugin.class.getCanonicalName());
 
@@ -260,6 +260,9 @@ public final class ExternalBrowserPlugin {
                     break;
                 case DETACH_DEBUGGER:
                     break;
+                case DEBUGGER_DETACHED:
+                    handleDebuggerDetached(msg);
+                    break;
                 case DEBUGGER_COMMAND_RESPONSE:
                     handleDebuggerResponse( msg , key );
                     break;
@@ -306,6 +309,14 @@ public final class ExternalBrowserPlugin {
             }
         }
 
+        private void handleDebuggerDetached(Message message) {
+            int tabId = message.getTabId();
+            if ( tabId == -1 ){
+                return;
+            }
+            closeTab(tabId);
+        }
+        
         private Pair getAwaitingPair(String url) {
             URL u = null;
             try {
@@ -353,15 +364,20 @@ public final class ExternalBrowserPlugin {
             if ( tabId == -1 ){
                 return;
             }
+            closeTab(tabId);
+        }
+        
+        private boolean closeTab(int tabId) {
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
                     iterator.remove();
                     browserTab.deinitialize();
                     browserTab.browserImpl.wasClosed();
-                    return;
+                    return true;
                 }
             }
+            return false;
         }
 
         private void handleDebuggerResponse( Message message, SelectionKey key  ){

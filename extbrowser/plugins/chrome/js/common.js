@@ -356,6 +356,13 @@ NetBeans.sendDebuggingResponse = function(tabId, response) {
     });
 }
 
+NetBeans.sendDebuggerDetached = function(tabId) {
+    this.sendMessage({
+        message: 'debugger_detached',
+        tabId: tabId
+    });
+}
+
 
 NetBeans.tabCreated = function(tabId) {
     this.managedTabs[tabId] = {status: this.STATUS_NEW};

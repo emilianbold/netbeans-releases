@@ -68,6 +68,7 @@ class Message {
         DETACH_DEBUGGER,
         DEBUGGER_COMMAND,
         DEBUGGER_COMMAND_RESPONSE,
+        DEBUGGER_DETACHED,
         LOAD_RESIZE_OPTIONS,
         SAVE_RESIZE_OPTIONS,
         ;
