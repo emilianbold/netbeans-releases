@@ -39,27 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.hint;
+package org.netbeans.modules.javascript2.editor.hints;
 
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.javascript2.editor.hints.WeirdAssignment;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsWeirdAssignmentTest extends HintTestBase {
+public class MissingSemicolonHint extends JsConventionHint {
 
-    public JsWeirdAssignmentTest(String testName) {
-        super(testName);
+    @Override
+    public String getId() {
+        return "jsmissingsemicolon.hint";
+    }
+
+    @Override
+    @NbBundle.Messages("MissingSemicolonDescription=Suggests semicolon to add after an statement.")
+    public String getDescription() {
+        return Bundle.MissingSemicolonDisplayName();
+    }
+
+    @Override
+    @NbBundle.Messages("MissingSemicolonDisplayName=Missing semicolon")
+    public String getDisplayName() {
+        return Bundle.MissingSemicolonDisplayName();
     }
     
-    
-    private Rule createRule() {
-        return new WeirdAssignment();
-    }
-    
-    public void testSimple01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/weirdAssignment.js", null);
-    }
 }

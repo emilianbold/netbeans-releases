@@ -39,27 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.hint;
+package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.javascript2.editor.hints.WeirdAssignment;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
 
 /**
+ * Code templates proccesor used for improved behavior of templates processing later.
  *
- * @author Petr Pisl
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsWeirdAssignmentTest extends HintTestBase {
+public class JsCodeTemplateProccesor implements CodeTemplateProcessor {
 
-    public JsWeirdAssignmentTest(String testName) {
-        super(testName);
+    private final CodeTemplateInsertRequest request;
+
+    private JsCodeTemplateProccesor(CodeTemplateInsertRequest request) {
+        this.request = request;
     }
-    
-    
-    private Rule createRule() {
-        return new WeirdAssignment();
+
+    @Override
+    public void updateDefaultValues() {
+        // NOOP
     }
-    
-    public void testSimple01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/weirdAssignment.js", null);
+
+    @Override
+    public void parameterValueChanged(CodeTemplateParameter masterParameter, boolean typingChange) {
+        // NOOP
     }
+
+    @Override
+    public void release() {
+        // NOOP
+    }
+
+    public static final class Factory implements CodeTemplateProcessorFactory {
+
+        @Override
+        public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {
+            return new JsCodeTemplateProccesor(request);
+        }
+    }
+
 }

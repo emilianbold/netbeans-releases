@@ -39,27 +39,55 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.hint;
+package org.netbeans.modules.javascript2.editor.hints;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.javascript2.editor.hints.WeirdAssignment;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsWeirdAssignmentTest extends HintTestBase {
+public abstract class JsConventionHint implements Rule.AstRule {
+    public static final String JSCONVENTION_OPTION_HINTS = "jsconvention.option.hints"; //NOI18N
+    
+     @Override
+    public boolean appliesTo(RuleContext context) {
+        if(context instanceof JsHintsProvider.JsRuleContext) {
+            return true;
+        }
+        return false;
+    }
 
-    public JsWeirdAssignmentTest(String testName) {
-        super(testName);
+    @Override
+    public boolean showInTasklist() {
+        return true;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    @Override
+    public Set<?> getKinds() {
+        return Collections.singleton(JSCONVENTION_OPTION_HINTS);
     }
     
-    
-    private Rule createRule() {
-        return new WeirdAssignment();
-    }
-    
-    public void testSimple01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/weirdAssignment.js", null);
-    }
 }

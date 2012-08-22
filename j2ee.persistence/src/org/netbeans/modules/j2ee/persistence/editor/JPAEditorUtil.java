@@ -56,6 +56,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.text.Document;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -68,6 +70,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -268,5 +275,66 @@ public class JPAEditorUtil {
             return false;
         }
     }
+    public static DatabaseConnection findDatabaseConnection(PersistenceUnit pu, Project project) {
+
+        // try to find a connection specified using the PU properties
+        DatabaseConnection dbcon = ProviderUtil.getConnection(pu);
+        if (dbcon != null) {
+            return dbcon;
+        }
+
+        // try to find a datasource-based connection, but only for a FileObject-based context,
+        // otherwise we don't have a J2eeModuleProvider to retrieve the DS's from
+        String datasourceName = ProviderUtil.getDatasourceName(pu);
+        if (datasourceName == null) {
+            return null;
+        }
+
+        if (project == null) {
+            return null;
+        }
+        JPADataSource datasource = null;
+        JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+        if (dsProvider == null) {
+            return null;
+        }
+        for (JPADataSource each : dsProvider.getDataSources()) {
+            if (datasourceName.equals(each.getJndiName())) {
+                datasource = each;
+            }
+        }
+        if (datasource == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The " + datasourceName + " was not found."); // NOI18N
+            return null;
+        }
+        List<DatabaseConnection> dbconns = findDatabaseConnections(datasource);
+        if (dbconns.size() > 0) {
+            return dbconns.get(0);
+        }
+        return null;
+    }
+    private static List<DatabaseConnection> findDatabaseConnections(JPADataSource datasource) {
+        // copied from j2ee.common.DatasourceHelper (can't depend on that)
+        if (datasource == null) {
+            throw new NullPointerException("The datasource parameter cannot be null."); // NOI18N
+        }
+        String databaseUrl = datasource.getUrl();
+        String user = datasource.getUsername();
+        if (databaseUrl == null || user == null) {
+            return Collections.emptyList();
+        }
+        List<DatabaseConnection> result = new ArrayList<DatabaseConnection>();
+        for (DatabaseConnection dbconn : ConnectionManager.getDefault().getConnections()) {
+            if (databaseUrl.equals(dbconn.getDatabaseURL()) && user.equals(dbconn.getUser())) {
+                result.add(dbconn);
+            }
+        }
+        if (result.size() > 0) {
+            return Collections.unmodifiableList(result);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
 }
 
