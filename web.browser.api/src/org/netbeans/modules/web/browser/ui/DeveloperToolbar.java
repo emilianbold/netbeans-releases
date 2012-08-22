@@ -131,6 +131,8 @@ public class DeveloperToolbar {
         }
         bar.setFloatable( false );
         bar.setFocusable( false );
+        if( null != customToolbar )
+            panel.remove( customToolbar );
         panel.add( bar );
 
         fillResizeBar();
