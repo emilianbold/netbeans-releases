@@ -151,7 +151,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private int resolvedIndex;
     private WikiPanel descriptionPanel;
     private WikiPanel addCommentPanel;
-    private static String wikiLanguage = "Confluence";
+    private static String wikiLanguage = "";
     
     
     /**
@@ -178,14 +178,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachDocumentListeners();
 
         GroupLayout layout = (GroupLayout) getLayout();
-        C2CData clientData = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
-        wikiLanguage = clientData.getRepositoryConfiguration().getMarkupLanguage();
-        addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
-        layout.replace(dummyAddCommentPanel, addCommentPanel);
 
         // Comments panel
         commentsPanel = new CommentsPanel();
-        commentsPanel.setWikiLanguage(wikiLanguage);
         commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
             @Override
             public void append(String text) {
@@ -199,9 +194,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachmentsLabel.setLabelFor(attachmentsPanel);
         initSpellChecker();
         initDefaultButton();
-
-        descriptionPanel = WikiUtils.getWikiPanel(wikiLanguage, false, true);
-        layout.replace(dummyDescriptionPanel, descriptionPanel);
     }
 
     private void initSpellChecker () {
@@ -221,6 +213,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         };
         actionMap.put("submit", submitAction); // NOI18N
+    }
+
+    private void initWikiPanels(){
+        GroupLayout layout = (GroupLayout) getLayout();
+        C2CData clientData = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
+        wikiLanguage = clientData.getRepositoryConfiguration().getMarkupLanguage();
+        addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
+        layout.replace(dummyAddCommentPanel, addCommentPanel);
+
+        commentsPanel.setWikiLanguage(wikiLanguage);
+
+        descriptionPanel = WikiUtils.getWikiPanel(wikiLanguage, false, true);
+        layout.replace(dummyDescriptionPanel, descriptionPanel);
     }
 
     C2CIssue getIssue() {
@@ -267,6 +272,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         this.issue = issue;
         initCombos();
+        initWikiPanels();
 //        initCustomFields(); XXX
         
         Collection<Keyword> kws = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository()).getKeywords();
@@ -1452,11 +1458,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         dummyAddCommentPanel.setLayout(dummyAddCommentPanelLayout);
         dummyAddCommentPanelLayout.setHorizontalGroup(
             dummyAddCommentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 634, Short.MAX_VALUE)
         );
         dummyAddCommentPanelLayout.setVerticalGroup(
             dummyAddCommentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 28, Short.MAX_VALUE)
+            .addGap(0, 26, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1520,7 +1526,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                         .addComponent(subtaskButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(ccLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(externalLabel, javax.swing.GroupLayout.Alignment.TRAILING))))
@@ -1800,7 +1806,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 11, Short.MAX_VALUE)
+                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(12, 12, 12))
         );
     }// </editor-fold>//GEN-END:initComponents
