@@ -89,9 +89,12 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     @Override
     public void messagesCleared() {
-        try {
-            getOutputLogger().getOut().reset();
-        } catch (IOException ex) {}
+// each new page loaded in the browser send this message;
+// it is little bit too agressive - I would prefere user to decide
+// when they want to clear the log
+//        try {
+//            getOutputLogger().getOut().reset();
+//        } catch (IOException ex) {}
     }
 
     @Override
