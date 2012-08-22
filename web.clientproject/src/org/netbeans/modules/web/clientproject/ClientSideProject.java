@@ -43,6 +43,8 @@ package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -51,6 +53,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -65,7 +68,12 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
@@ -80,10 +88,11 @@ public class ClientSideProject implements Project {
     @StaticResource
     public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
 
-    final AntProjectHelper helper;
+    final AntProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
+    volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
     private RemoteFiles remoteFiles;
@@ -91,7 +100,7 @@ public class ClientSideProject implements Project {
     private ClientProjectConfigurationImplementation lastActiveConfiguration;
 
     public ClientSideProject(AntProjectHelper helper) {
-        this.helper = helper;
+        this.projectHelper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
@@ -141,7 +150,7 @@ public class ClientSideProject implements Project {
         if (s.length() == 0) {
             return getProjectDirectory();
         }
-        return helper.resolveFileObject(s);
+        return projectHelper.resolveFileObject(s);
     }
 
     public FileObject getTestsFolder() {
@@ -184,7 +193,7 @@ public class ClientSideProject implements Project {
     }
 
     public AntProjectHelper getProjectHelper() {
-        return helper;
+        return projectHelper;
     }
 
     @Override
@@ -205,26 +214,58 @@ public class ClientSideProject implements Project {
         return referenceHelper;
     }
 
+    public String getName() {
+        if (name == null) {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
+                public Void run() {
+                    Element data = projectHelper.getPrimaryConfigurationData(true);
+                    NodeList nameList = data.getElementsByTagNameNS(ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    if (nameList.getLength() == 1) {
+                        nameList = nameList.item(0).getChildNodes();
+                        if (nameList.getLength() == 1
+                                && nameList.item(0).getNodeType() == Node.TEXT_NODE) {
+                            name = ((Text) nameList.item(0)).getNodeValue();
+                        }
+                    }
+                    if (name == null) {
+                        name = getProjectDirectory().getNameExt();
+                    }
+                    return null;
+                }
+            });
+        }
+        assert name != null;
+        return name;
+    }
+
+    public void setName(String name) {
+        ClientSideProjectUtilities.setProjectName(projectHelper, name);
+    }
+
+
     private PropertyEvaluator createEvaluator() {
         PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+                projectHelper.getStockPropertyPreprovider(),
+                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         return PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                projectHelper.getStockPropertyPreprovider(),
+                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
                 PropertyUtils.userPropertiesProvider(baseEval2,
                     "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+                projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
        return Lookups.fixed(new Object[] {
                this,
+               new Info(),
+               new ClientSideProjectXmlSavedHook(),
                new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
                new ServerURLMappingImpl(this),
                configuration,
-               helper.createCacheDirectoryProvider(),
-               helper.createAuxiliaryProperties(),
+               projectHelper.createCacheDirectoryProvider(),
+               projectHelper.createAuxiliaryProperties(),
                getEvaluator(),
                new ClientSideProjectLogicalView(this),
                new RecommendedAndPrivilegedTemplatesImpl(),
@@ -237,7 +278,7 @@ public class ClientSideProject implements Project {
                configurationProvider,
                new PageInspectorCustomizerImpl(this),
                new ProjectWebRootProviderImpl(),
-               new ClientSideProjectSources(this, helper, eval)
+               new ClientSideProjectSources(this, projectHelper, eval)
        });
     }
 
@@ -250,20 +291,22 @@ public class ClientSideProject implements Project {
 
     private final class Info implements ProjectInformation {
 
+        private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+
         @Override
         public String getName() {
-            return getProjectDirectory().getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
 
         @Override
         public String getDisplayName() {
-            return getName();
+            return ClientSideProject.this.getName();
         }
 
         @Override
         public Icon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(
-                    "org/netbeans/modules/clientside/project/ui/resources/projecticon.png"));
+            return new ImageIcon(ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON));
         }
 
         @Override
@@ -273,12 +316,29 @@ public class ClientSideProject implements Project {
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
         }
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+            propertyChangeSupport.removePropertyChangeListener(listener);
         }
 
+        void firePropertyChange(String prop) {
+            propertyChangeSupport.firePropertyChange(prop , null, null);
+        }
+
+    }
+
+    private final class ClientSideProjectXmlSavedHook extends ProjectXmlSavedHook {
+
+        @Override
+        protected void projectXmlSaved() throws IOException {
+            Info info = getLookup().lookup(Info.class);
+            assert info != null;
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
+        }
     }
 
     private final class RecommendedAndPrivilegedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
