@@ -300,6 +300,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             urlToLoad = str;
             return;
         }
+        urlToLoad = null;
         browserComponent.setURL (str);
     }
 
@@ -315,6 +316,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             urlToLoad = null == url ? null : url.toExternalForm();
             return;
         }
+        urlToLoad = null;
         browserComponent.setURL (url);
     }
 
@@ -410,6 +412,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     public void setURLAndOpen( URL url ) {
         createBrowser();
         browserComponent.setURL(url);
+        urlToLoad = null;
         if( null != browserComponent.getBrowserComponent() ) {
             open();
             requestActive();
