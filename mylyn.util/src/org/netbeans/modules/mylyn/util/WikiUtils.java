@@ -52,8 +52,11 @@ import org.netbeans.modules.mylyn.util.wiki.WikiEditPanel;
  */
 public class WikiUtils {
 
-    public static WikiPanel getWikiPanel(boolean editing) {
-        return new WikiEditPanel(editing);
+    private WikiUtils () {
+    }
+
+    public static WikiPanel getWikiPanel(String wikiLanguage, boolean editing, boolean switchable) {
+        return new WikiEditPanel(wikiLanguage, editing, switchable);
     }
 
     public static String getHtmlFormatText(String wikiFormatText, String language) {
@@ -70,6 +73,7 @@ public class WikiUtils {
 
         boolean remove = html.contains("<body><p>");
         if (remove) {
+            // remove first <p> gap, looks ugly in the UI...
             html = html.replaceFirst("<body><p>", "<body>");
             html = html.replaceFirst("</p>", "");
         }
