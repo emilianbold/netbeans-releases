@@ -44,14 +44,19 @@ package org.netbeans.modules.web.inspect.webkit;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Listens on parsing of CSS documents and propagates updates to associated
@@ -59,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Becicka
  */
-class CSSUpdater {
+public class CSSUpdater {
 
     /**
      * Singleton instance.
@@ -126,9 +131,8 @@ class CSSUpdater {
      * Updates css in browser using webKit.
      * @param snapshot 
      */
-    synchronized void update(Snapshot snapshot) {
+    synchronized void update(FileObject fileObject, String content) {
         assert webKit != null: "webKit not initialized";
-        FileObject fileObject = snapshot.getSource().getFileObject();
         Project owner = FileOwnerQuery.getOwner(fileObject);
         if (owner == null) {
             return;
@@ -139,7 +143,41 @@ class CSSUpdater {
         }
         StyleSheetHeader header = sheetsMap.get(serverUrl.toString());
         if (header != null) {
-            webKit.getCSS().setStyleSheetText(header.getStyleSheetId(), snapshot.getText().toString());
+            webKit.getCSS().setStyleSheetText(header.getStyleSheetId(), content);
         }
+    }
+
+    @ServiceProvider(service = LiveUpdater.class)
+    public static class LiveUpdaterImpl implements LiveUpdater {
+
+        private RequestProcessor RP = new RequestProcessor(LiveUpdaterImpl.class);
+
+        @Override
+        public boolean update(final Document doc) {
+            if (!CSSUpdater.getDefault().isStarted()) {
+                return false;
+            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String text = doc.getText(0, doc.getLength());
+                        CSSUpdater.getDefault().update(getDataObject(doc).getPrimaryFile(), text);
+                    } catch (BadLocationException badLocationException) {
+                        Exceptions.printStackTrace(badLocationException);
+                    }
+                }
+            });
+            return false;
+        }
+        
+        private static DataObject getDataObject(Document doc) {
+            Object sdp = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
+            if (sdp instanceof DataObject) {
+                return (DataObject) sdp;
+            }
+            return null;
+        }
+        
     }
 }

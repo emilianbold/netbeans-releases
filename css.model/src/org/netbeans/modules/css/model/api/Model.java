@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.api;
 
+import org.netbeans.modules.css.live.LiveUpdater;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -56,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.diff.Difference;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -65,6 +67,9 @@ import org.netbeans.modules.css.model.impl.ElementFactoryImpl;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.diff.DiffProvider;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -392,7 +397,37 @@ public final class Model {
             }
 
         }
+        saveIfNotOpenInEditor(document);
+    }
 
+    private static void saveIfNotOpenInEditor(Document document) throws IOException {
+        DataObject dataObject = getDataObject(document);
+        if (dataObject == null) {
+            LOGGER.log(Level.FINE, "Cannot find DataObject for document " + document );
+            return;
+        }
+        final LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+        if (ec!=null && ec.getOpenedPanes() == null) {
+            //file not open in any editor
+            SaveCookie save = dataObject.getLookup().lookup(SaveCookie.class);
+            if (save!=null) {
+                save.save();
+            }
+            liveUpdater.update(document);
+        } else {
+            if (!ec.getOpenedPanes()[0].equals(EditorRegistry.lastFocusedComponent())) {
+                liveUpdater.update(document);
+            }
+        }
+    }
+    
+    private static DataObject getDataObject(Document doc) {
+        Object sdp = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof DataObject) {
+            return (DataObject)sdp;
+        }
+        return null;
     }
     
     private static ElementFactoryImpl getElementFactoryImpl(Model model) {

@@ -39,67 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.sites;
+package org.netbeans.modules.web.clientproject.util;
 
-import java.awt.EventQueue;
 import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * Miscellaneous utility methods for validation.
  */
-@ServiceProvider(service=SiteTemplateImplementation.class, position=400)
-public class SiteMobileBoilerplate implements SiteTemplateImplementation {
+public final class ValidationUtilities {
 
-    private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "mobile-boilerplate-30.zip"); // NOI18N
+    private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
 
-    @NbBundle.Messages("SiteMobileBoilerplate.name=Mobile Boilerplate")
-    @Override
-    public String getName() {
-        return Bundle.SiteMobileBoilerplate_name();
+    private ValidationUtilities() {
     }
 
-    @NbBundle.Messages("SiteMobileBoilerplate.description=Site template from html5boilerplate.com/mobile. Version: 3.0")
-    @Override
-    public String getDescription() {
-        return Bundle.SiteMobileBoilerplate_description();
-    }
-
-    @Override
-    public boolean isPrepared() {
-        return LIB_FILE.isFile();
-    }
-
-    @Override
-    public void prepare() throws IOException {
-        assert !EventQueue.isDispatchThread();
-        assert !isPrepared();
-        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", LIB_FILE, null); // NOI18N
-    }
-
-    @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
-        if (!isPrepared()) {
-            // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
-            return;
+    /**
+     * Check whether the provided filename is valid. An empty string is considered to be invalid.
+     * @param filename file name to be validated
+     * @return {@code true} if the provided filename is valid
+     */
+    public static boolean isValidFilename(String filename) {
+        assert filename != null;
+        if (filename.trim().length() == 0) {
+            return false;
         }
-        SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);
+        for (char ch : INVALID_FILENAME_CHARS) {
+            if (filename.indexOf(ch) != -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    @Override
-    public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(LIB_FILE);
+    /**
+     * Check whether the provided file has a valid filename. Only the non-existing filenames in the file path are checked.
+     * It means that if you pass existing directory, no check is done.
+     * <p>
+     * For example for <em>C:\Documents And Settings\ExistingDir\NonExistingDir\NonExistingDir2\Newdir</em> the last free filenames
+     * are checked.
+     * @param file file to be checked
+     * @return {@code true} if the provided file has valid filename
+     * @see #isValidFilename(String)
+     */
+    public static boolean isValidFilename(File file) {
+        assert file != null;
+        File tmp = file;
+        while (tmp != null && !tmp.exists()) {
+            if (tmp.isAbsolute() && tmp.getParentFile() == null) {
+                return true;
+            } else if (!isValidFilename(tmp.getName())) {
+                return false;
+            }
+            tmp = tmp.getParentFile();
+        }
+        return true;
     }
 
 }

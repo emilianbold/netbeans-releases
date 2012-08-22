@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
@@ -114,22 +115,41 @@ public class NewClientSideProject extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
-    @NbBundle.Messages({
-        "ClientSideProject.error.name.missing=Project name must be provided.",
-        "ClientSideProject.error.location.invalid=Project location is not a valid path.",
-        "ClientSideProject.error.location.notWritable=Project folder cannot be created.",
-        "ClientSideProject.error.location.notEmpty=Project folder already exists and is not empty."
-    })
     public String getErrorMessage() {
+        String error = validateProjectName();
+        if (error != null) {
+            return error;
+        }
+        error = validateProjectLocation();
+        if (error != null) {
+            return error;
+        }
+        return null;
+    }
+
+    @NbBundle.Messages("ClientSideProject.error.name.missing=Project name must be provided.")
+    private String validateProjectName() {
         String projectName = getProjectName();
         if (projectName.isEmpty()) {
             return Bundle.ClientSideProject_error_name_missing();
         }
-        File f = FileUtil.normalizeFile(new File(getProjectLocation()).getAbsoluteFile());
-        if (!f.isDirectory()) {
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "ClientSideProject.error.location.invalid=Project location is not a valid path.",
+        "ClientSideProject.error.location.notWritable=Project folder cannot be created.",
+        "ClientSideProject.error.location.notEmpty=Project folder already exists and is not empty."
+    })
+    private String validateProjectLocation() {
+        File projectLocation = FileUtil.normalizeFile(new File(getProjectLocation()).getAbsoluteFile());
+        if (!projectLocation.isDirectory()) {
             return Bundle.ClientSideProject_error_location_invalid();
         }
         final File destFolder = getProjectDirectory();
+        if (!ValidationUtilities.isValidFilename(destFolder)) {
+            return Bundle.ClientSideProject_error_location_invalid();
+        }
 
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {

@@ -72,8 +72,8 @@ import org.openide.util.NbBundle.Messages;
         category = "Window", // NOI18N
         id = "org.netbeans.modules.web.inspect.ui.MatchedRulesTC") // NOI18N
 @ActionReference(
-        path = "Menu/Window/Navigator", // NOI18N
-        position = 800)
+        path = "Menu/Window/Web", // NOI18N
+        position = 200)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_MatchedRulesAction", // NOI18N
         preferredID = MatchedRulesTC.ID)

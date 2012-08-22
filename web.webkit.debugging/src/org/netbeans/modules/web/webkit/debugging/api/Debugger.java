@@ -101,7 +101,8 @@ public final class Debugger {
         webkit.getPage().enable();
         webkit.getNetwork().enable();
         webkit.getConsole().enable();
-        
+        webkit.getCSS().enable();
+
         enabled = true;
         
         return true;
@@ -133,6 +134,7 @@ public final class Debugger {
         webkit.getPage().disable();
         webkit.getNetwork().disable();
         webkit.getConsole().disable();
+        webkit.getCSS().disable();
         transport.sendCommand(new Command("Debugger.disable"));
         enabled = false;
         initDOMLister = true;

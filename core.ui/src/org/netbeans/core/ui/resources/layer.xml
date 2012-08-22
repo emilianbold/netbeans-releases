@@ -305,10 +305,6 @@ made subject to such option by the copyright holder.
 
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            <file name="org-netbeans-core-actions-HTMLViewAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-HTMLViewAction.instance"/>
-                <attr name="position" intvalue="400"/>
-            </file>
         </folder>
 
         <folder name="GoTo">
@@ -347,6 +343,15 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-GlobalPropertiesAction.instance"/>
                 <attr name="position" intvalue="800"/>
             </file>
+
+            <folder name="Web">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
+                <attr name="position" intvalue="1750"/>
+                <file name="org-netbeans-core-actions-HTMLViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-HTMLViewAction.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
         </folder>
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>

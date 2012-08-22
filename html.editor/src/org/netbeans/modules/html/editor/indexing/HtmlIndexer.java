@@ -86,15 +86,14 @@ public class HtmlIndexer extends EmbeddingIndexer {
             }
 
             HtmlFileModel model = new HtmlFileModel((HtmlParserResult)parserResult);
-            if (!model.isEmpty()) {
-                IndexingSupport support = IndexingSupport.getInstance(context);
-                IndexDocument document = support.createDocument(indexable);
-                
-                storeEntries(model.getReferences(), document, REFERS_KEY);
 
-                support.addDocument(document);
-                fireChange(model.getFileObject());
-            }
+            IndexingSupport support = IndexingSupport.getInstance(context);
+            IndexDocument document = support.createDocument(indexable);
+
+            storeEntries(model.getReferences(), document, REFERS_KEY);
+
+            support.addDocument(document);
+            fireChange(model.getFileObject());
 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

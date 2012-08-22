@@ -67,7 +67,7 @@ class CSSUpdaterTask extends ParserResultTask<ParserResult> {
             return;
         }
         if (!hasFatalErrors(result)) {
-            updater.update(result.getSnapshot());
+            updater.update(result.getSnapshot().getSource().getFileObject(), result.getSnapshot().getText().toString());
         }
     }
 

@@ -58,6 +58,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
@@ -76,11 +77,9 @@ public class ExistingClientSideProject extends JPanel {
     // @GuardedBy("EDT")
     boolean fireChanges = true;
     // @GuardedBy("EDT")
-    String lastSiteRoot = null;
+    String lastSiteRoot = ""; // NOI18N
     // @GuardedBy("EDT")
-    String lastProjectName = null;
-    // @GuardedBy("EDT")
-    String lastProjectDirectory = null;
+    String lastProjectName = ""; // NOI18N
 
 
     public ExistingClientSideProject() {
@@ -118,16 +117,7 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     private void initProjectDirectory() {
-        projectDirectoryTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
-            @Override
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                if (fireChanges) {
-                    // remember it only if user changes it directly
-                    lastProjectDirectory = getProjectDirectory();
-                }
-            }
-        }));
+        projectDirectoryTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
     }
 
     public String getSiteRoot() {
@@ -195,6 +185,7 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     @NbBundle.Messages({
+        "ExistingClientSideProject.error.projectDirectory.invalid=Project directory is not a valid path.",
         "ExistingClientSideProject.error.projectDirectory.empty=Project directory must be selected.",
         "ExistingClientSideProject.error.projectDirectory.nbproject=Project directory is already NetBeans project.",
         "ExistingClientSideProject.error.projectDirectory.noSiteRoot=Project directory is not parent of site root (and is not empty).",
@@ -230,6 +221,10 @@ public class ExistingClientSideProject extends JPanel {
             }
             // XXX ideally warn about non-empty directory
         } else {
+            // not existing directory
+            if (!ValidationUtilities.isValidFilename(projDir)) {
+                return Bundle.ExistingClientSideProject_error_projectDirectory_invalid();
+            }
             File existingParent = projDir;
             while (existingParent != null && !existingParent.exists()) {
                 existingParent = existingParent.getParentFile();
@@ -252,7 +247,7 @@ public class ExistingClientSideProject extends JPanel {
     void updateProjectDirectory() {
         assert EventQueue.isDispatchThread();
         String projectDirectory = getProjectDirectory();
-        if (projectDirectory.equals(lastSiteRoot)) {
+        if (!lastSiteRoot.isEmpty() && projectDirectory.equals(lastSiteRoot)) {
             // project directory in site root => do nothing
             return;
         }
@@ -265,9 +260,12 @@ public class ExistingClientSideProject extends JPanel {
             // project directory in site root => do nothing
             return;
         }
-        if (lastProjectName != null && projectDirectory.endsWith(lastProjectName)) {
+        if (!lastProjectName.isEmpty()
+                && !projectDirectory.equals(lastProjectName)
+                && projectDirectory.endsWith(lastProjectName)) {
             // yes, project directory follows project name
-            projectDirectoryTextField.setText(new File(lastProjectDirectory, getProjectName()).getAbsolutePath());
+            String newProjDir = projectDirectory.substring(0, projectDirectory.length() - lastProjectName.length()) + getProjectName();
+            projectDirectoryTextField.setText(newProjDir);
         }
     }
 
@@ -373,8 +371,6 @@ public class ExistingClientSideProject extends JPanel {
                 result = new File(result, getProjectName());
             }
             projectDirectoryTextField.setText(result.getAbsolutePath());
-            // remember the real selected project directory as the last one (so it can be "paired" with project name)
-            lastProjectDirectory = result.getParentFile().getAbsolutePath();
         }
     }//GEN-LAST:event_projectDirectoryBrowseButtonActionPerformed
 

@@ -39,67 +39,85 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.sites;
+package org.netbeans.modules.web.clientproject.ui.action;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.spi.project.CopyOperationImplementation;
+import org.netbeans.spi.project.DeleteOperationImplementation;
+import org.netbeans.spi.project.MoveOperationImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Default project operations.
  */
-@ServiceProvider(service=SiteTemplateImplementation.class, position=400)
-public class SiteMobileBoilerplate implements SiteTemplateImplementation {
+public class ProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
 
-    private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "mobile-boilerplate-30.zip"); // NOI18N
+    private final ClientSideProject project;
 
 
-    @NbBundle.Messages("SiteMobileBoilerplate.name=Mobile Boilerplate")
-    @Override
-    public String getName() {
-        return Bundle.SiteMobileBoilerplate_name();
-    }
-
-    @NbBundle.Messages("SiteMobileBoilerplate.description=Site template from html5boilerplate.com/mobile. Version: 3.0")
-    @Override
-    public String getDescription() {
-        return Bundle.SiteMobileBoilerplate_description();
+    public ProjectOperations(ClientSideProject project) {
+        this.project = project;
     }
 
     @Override
-    public boolean isPrepared() {
-        return LIB_FILE.isFile();
+    public void notifyDeleting() throws IOException {
+        // noop
     }
 
     @Override
-    public void prepare() throws IOException {
-        assert !EventQueue.isDispatchThread();
-        assert !isPrepared();
-        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", LIB_FILE, null); // NOI18N
+    public void notifyDeleted() throws IOException {
+        project.getProjectHelper().notifyDeleted();
     }
 
     @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
-        if (!isPrepared()) {
-            // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
+    public void notifyCopying() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void notifyCopied(Project original, File originalPath, String nueName) throws IOException {
+        if (original == null) {
+            // do nothing for the original project.
             return;
         }
-        SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);
+        project.setName(nueName);
     }
 
     @Override
-    public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(LIB_FILE);
+    public void notifyMoving() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void notifyMoved(Project original, File originalPath, String nueName) throws IOException {
+        if (original == null) {
+            project.getProjectHelper().notifyDeleted();
+            return;
+        }
+        // XXX fix references to site root etc.
+        project.setName(nueName);
+    }
+
+    @Override
+    public List<FileObject> getMetadataFiles() {
+        FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        if (nbproject != null) {
+            return Collections.singletonList(nbproject);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<FileObject> getDataFiles() {
+        // all the sources
+        return Arrays.asList(ClientSideProjectUtilities.getSourceObjects(project));
     }
 
 }

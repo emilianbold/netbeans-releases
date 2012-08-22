@@ -42,10 +42,12 @@
 package org.netbeans.core.browser.webview;
 
 import java.io.File;
+import java.net.URL;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserPane;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -166,24 +168,27 @@ class RuntimePathPanel extends javax.swing.JPanel {
     }
 
     private static void reopenBrowser( final HtmlBrowserComponent browser ) {
-//        browser
         HtmlBrowser.Impl impl = browser.getBrowserImpl();
-        final String url = impl.getLocation();
-//        final boolean showToolbar = browser.isToolbarVisible();
-//        final boolean showStatus = browser.isStatusLineVisible();
-//        browser.close();
-        SwingUtilities.invokeLater( new Runnable() {
-
-            @Override
-            public void run() {
-//                HtmlBrowserComponent newBrowser = new HtmlBrowserComponent( new BrowserFactory(), showToolbar, showStatus );
-//                newBrowser.setURL( url );
-//                newBrowser.open();
-//                newBrowser.requestActive();
-                browser.recreateBrowser();
-                browser.setURL( url );
-                browser.requestActive();
-            }
-        } );
+        final WebBrowserPane browserPane = ( WebBrowserPane ) browser.getClientProperty( "web.browser.pane" ); //NOI18N
+        final URL url = impl.getURL();
+        browser.setURL( (URL)null );
+        if( null != browserPane ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    browser.close();
+                    browserPane.showURL( url );
+                }
+            } );
+        } else {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    browser.recreateBrowser();
+                    browser.getBrowserImpl().setURL( url );
+                    browser.requestActive();
+                }
+            } );
+        }
     }
 }
