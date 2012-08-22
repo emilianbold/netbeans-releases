@@ -49,6 +49,14 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <code><![CDATA[${no-indent}break;]]>
         </code>
     </codetemplate>
+    <codetemplate abbreviation="catch">
+        <code>
+<![CDATA[catch (${exception}) {
+    ${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
     <codetemplate abbreviation="cn">
         <code><![CDATA[${no-indent}continue]]>
         </code>
@@ -58,6 +66,22 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 <![CDATA[do {
     ${cursor}
 } while (${expr default="true"});]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="else">
+        <code>
+<![CDATA[else {
+	${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="elseif">
+        <code>
+<![CDATA[else if (${condition}) {
+	${cursor}
+}
+]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="fcom">
@@ -82,7 +106,7 @@ ${selection}${cursor}
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="func" descriptionId="ct_function" xml:space="preserve">
+    <codetemplate abbreviation="func">
         <code>
 <![CDATA[/**
  * ${1 default="Comment"}
@@ -92,7 +116,7 @@ function ${name}(${parameters}) {
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="funcp" descriptionId="ct_function" xml:space="preserve">
+    <codetemplate abbreviation="funcp">
         <code>
 <![CDATA[/**
  * ${1 default="Comment"}
@@ -103,7 +127,7 @@ function ${name}(${parameter}) {
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="function" descriptionId="ct_function" xml:space="preserve">
+    <codetemplate abbreviation="function">
         <code>
 <![CDATA[/**
  * ${1 default="Comment"}
@@ -113,14 +137,14 @@ function ${name}(${parameters}) {
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="if" descriptionId="ct_if">
+    <codetemplate abbreviation="if">
         <code>
 <![CDATA[if (${expr}) {
     ${selection}${cursor}
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ife" descriptionId="CT_ife">
+    <codetemplate abbreviation="ife">
         <code>
 <![CDATA[if (${expr}) {
    ${selection}${cursor}
@@ -134,16 +158,20 @@ function ${name}(${parameters}) {
     ${cursor}]]>
         </code>
     </codetemplate>
+    <codetemplate abbreviation="new">
+        <code><![CDATA[${no-indent}var ${name} = new ${type}(${arguments});]]></code>
+    </codetemplate>
     <codetemplate abbreviation="re">
         <code><![CDATA[${no-indent}return ]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="sw">
         <code>
-<![CDATA[switch (${object}) {
-    case ${case1}:
-        ${caseCode default=""}
+<![CDATA[switch (${key}) {
+    case ${value}:
+        ${cursor}
         break;
+
     default:
         ${defaultCode default=""}
         break;
@@ -169,8 +197,7 @@ function ${name}(${parameters}) {
         </code>
     </codetemplate>
     <codetemplate abbreviation="var">
-        <code><![CDATA[${no-indent}var ${name} = ${value};]]>
-        </code>
+        <code><![CDATA[${no-indent}var ${name} = ${value};]]></code>
     </codetemplate>
     <codetemplate abbreviation="wh">
         <code>
