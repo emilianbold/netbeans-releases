@@ -47,7 +47,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -132,6 +136,21 @@ public final class ClientSideProjectUtilities {
                 projectHelper.putPrimaryConfigurationData(data, true);
             }
         });
+    }
+
+    public static SourceGroup[] getSourceGroups(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        return sources.getSourceGroups(ClientSideProjectSources.SOURCES_TYPE_HTML5);
+    }
+
+    public static FileObject[] getSourceObjects(Project project) {
+        SourceGroup[] groups = getSourceGroups(project);
+
+        FileObject[] fileObjects = new FileObject[groups.length];
+        for (int i = 0; i < groups.length; i++) {
+            fileObjects[i] = groups[i].getRootFolder();
+        }
+        return fileObjects;
     }
 
     private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {

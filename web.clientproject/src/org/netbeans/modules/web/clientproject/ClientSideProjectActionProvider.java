@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject;
 
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -53,24 +54,28 @@ import org.openide.util.Lookup;
  */
 public class ClientSideProjectActionProvider implements ActionProvider {
 
-    private ClientSideProject p;
+    private final ClientSideProject project;
 
-    public ClientSideProjectActionProvider(ClientSideProject p) {
-        this.p = p;
+    public ClientSideProjectActionProvider(ClientSideProject project) {
+        this.project = project;
     }
-    
+
     @Override
     public String[] getSupportedActions() {
         return new String[]{
                     COMMAND_RUN_SINGLE,
                     COMMAND_BUILD,
                     COMMAND_CLEAN,
-                    COMMAND_RUN
+                    COMMAND_RUN,
+                    COMMAND_RENAME,
+                    COMMAND_MOVE,
+                    COMMAND_COPY,
+                    COMMAND_DELETE,
                 };
     }
 
     private ActionProvider getActionProvider() {
-        ClientProjectConfigurationImplementation cfg = p.getProjectConfigurations().getActiveConfiguration();
+        ClientProjectConfigurationImplementation cfg = project.getProjectConfigurations().getActiveConfiguration();
         if (cfg != null) {
             return cfg.getActionProvider();
         } else {
@@ -80,6 +85,26 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        // XXX sorry no idea how to do this correctly
+        if (COMMAND_RENAME.equals(command)) {
+            renameProject();
+            return;
+        }
+        // XXX sorry no idea how to do this correctly
+        if (COMMAND_MOVE.equals(command)) {
+            moveProject();
+            return;
+        }
+        // XXX sorry no idea how to do this correctly
+        if (COMMAND_COPY.equals(command)) {
+            copyProject();
+            return;
+        }
+        // XXX sorry no idea how to do this correctly
+        if (COMMAND_DELETE.equals(command)) {
+            deleteProject();
+            return;
+        }
         ActionProvider ap = getActionProvider();
         if (ap != null) {
             ap.invokeAction(command, context);
@@ -98,4 +123,21 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         return true;
     }
+
+    private void renameProject() {
+        DefaultProjectOperations.performDefaultRenameOperation(project, null);
+    }
+
+    private void moveProject() {
+        DefaultProjectOperations.performDefaultMoveOperation(project);
+    }
+
+    private void copyProject() {
+        DefaultProjectOperations.performDefaultCopyOperation(project);
+    }
+
+    private void deleteProject() {
+        DefaultProjectOperations.performDefaultDeleteOperation(project);
+    }
+
 }

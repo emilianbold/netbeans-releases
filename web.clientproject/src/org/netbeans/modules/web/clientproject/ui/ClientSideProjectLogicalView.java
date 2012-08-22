@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -62,27 +61,19 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -251,6 +242,26 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return Bundle.ClientSideProjectNode_description(FileUtil.getFileDisplayName(project.getProjectDirectory()));
         }
 
+        @Override
+        public boolean canCopy() {
+            return false;
+        }
+
+        @Override
+        public boolean canCut() {
+            return false;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public boolean canRename() {
+            return false;
+        }
+
     }
 
     private static enum BasicNodes {
@@ -298,7 +309,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     }
                 }
             });
-            
+
             // XXX: refactor listening; it is ugly!!
             project.getProjectDirectory().addRecursiveListener(new FileChangeAdapter() {
                 @Override
@@ -360,7 +371,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     }
                 }
 
-                
+
                 @Override
                 public void fileDeleted(FileEvent fe) {
                     if (siteRootFolder != null) {
@@ -408,7 +419,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 }
             });
         }
-        
+
         private void refreshKeyInAWT(final BasicNodes type) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -417,7 +428,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 }
             });
         }
-        
+
         @Override
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
@@ -449,7 +460,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             return new Node[0];
         }
-        
+
         private void updateKeys() {
             ArrayList<BasicNodes> keys = new ArrayList<BasicNodes>();
             keys.add(BasicNodes.Sources);
@@ -488,7 +499,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public boolean canRename() {
             return false;
         }
-        
+
         @Override
         public Image getIcon(int type) {
             return computeIcon(nodeType, false, type);
@@ -513,13 +524,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     badge = CONFIGS_FILES_BADGE;
                     break;
             }
-            
+
             image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
             if (badge != null) {
                 image = ImageUtilities.mergeImages(image, badge, 7, 7);
             }
 
-            return image;        
+            return image;
         }
 
         @Override
@@ -537,11 +548,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
     }
-    
+
     private static class FolderFilterChildren extends FilterNode.Children {
 
         private String[] ignoreList;
-       
+
         public FolderFilterChildren(Node n, String[] ignoreList) {
             super(n);
             this.ignoreList = ignoreList;
@@ -556,9 +567,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             return super.createNodes(key);
         }
-        
+
     }
-    
+
     @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
     private static final class RemoteFilesNode extends AbstractNode {
 
