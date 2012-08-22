@@ -173,7 +173,7 @@ public class UtilTest {
         KeyDataPresentation presentation = new KeyDataPresentation() {
 
             @Override
-            public short getUnitPresentation() {
+            public int getUnitPresentation() {
                 return 0;
             }
 

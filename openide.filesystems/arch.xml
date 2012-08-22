@@ -379,8 +379,10 @@ No.
         </question>
 -->
 <answer id="exec-privateaccess">
-Yes, AutomountSupport stores content of Repository as settings files. Then setting infrastructure registers its 
-own PropertyChangeListener. So method addPropertyChangeListener is invoked by reflection.
+    <api category="friend" group="java" name="FileObjectMoveLookup" type="export">
+    <code>masterfs</code> module is using
+    a reflection to re-associate the lookup after a move operation.
+    </api>
 </answer>
 
 

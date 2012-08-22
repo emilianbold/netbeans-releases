@@ -512,7 +512,36 @@ tokens {
             tokenSet.orInPlace(stopSet);
             consumeUntil(tokenSet);
 	}
+
+        public boolean isTemplateTooDeep(int currentLevel, int maxLevel) {
+            return isTemplateTooDeep(currentLevel, maxLevel, 0);
+        }
 	
+        public boolean isTemplateTooDeep(int currentLevel, int maxLevel, int startPos) {
+            int level = currentLevel;
+            int pos = startPos;            
+            while(true) {
+                int token = LA(pos);
+                pos++;
+                if(token == EOF || token == 0) {
+                    break;
+                }
+                if(token == LESSTHAN) {
+                    level++;
+                } else if(token == GREATERTHAN) {
+                    level--;
+                }
+                if(level == 0) {
+                    return false;
+                }
+                if(level >= maxLevel) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
 	//protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected boolean isValidIdentifier(String id) { /*TODO: implement*/ throw new NotImplementedException(); }
 
@@ -2238,7 +2267,7 @@ initializer
     |   
         array_initializer
     | 
-        lazy_expression[false, false]
+        lazy_expression[false, false, 0]
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL
@@ -3168,12 +3197,24 @@ template_argument_list
 // It's used in predicates only.
 lazy_template_argument_list
 	:	
-        template_param_expression
+        lazy_template_argument
         (   
             COMMA 
-            template_param_expression
+            lazy_template_argument
         )*
 	;
+
+lazy_template_argument
+    :
+        {(isTemplateTooDeep(1, 20))}? 
+        (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
+        (
+            lazy_template 
+            (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY | COMMA | ELLIPSIS))*
+        )+
+    |
+        template_param_expression
+    ;
 
 /* Here assignment_expression was changed to shift_expression to rule out
  *  x< 1<2 > which causes ambiguities. As a result, these can be used only
@@ -3182,6 +3223,13 @@ lazy_template_argument_list
  */
 template_argument
     :
+        {(isTemplateTooDeep(1, 20))}? 
+        (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
+        (
+            lazy_template 
+            (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY | COMMA | ELLIPSIS))*
+        )+
+    |
         // IZ 167547 : 100% CPU core usage with C++ project.
         // This is check for too complicated tecmplates.
         // If template depth is more then 20 we just skip it.
@@ -3195,6 +3243,17 @@ template_argument
     |
         template_param_expression
 ;
+
+lazy_template
+    :
+        LESSTHAN
+        (
+            (   ~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY)
+            |   lazy_template
+            )*
+        )
+        GREATERTHAN
+    ;
 
 templateDepthChecker[int i]
     :
@@ -3702,7 +3761,7 @@ assignment_expression
             // #191198 -  Parser error in buf.c
             (cast_array_initializer_head)=>cast_array_initializer
             |
-            lazy_expression[false, false]
+            lazy_expression[false, false, 0]
         )
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL              
@@ -3724,7 +3783,7 @@ assignment_expression
 
 constant_expression
 	:	
-		lazy_expression[false, false]
+		lazy_expression[false, false, 0]
 		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
 	;
 
@@ -3736,13 +3795,13 @@ case_expression
 
 template_param_expression
     :
-        lazy_expression[true, false]
+        lazy_expression[true, false, 1]
         {#template_param_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #template_param_expression);}
     ;
 
 cast_expression
     :
-        lazy_expression[false, false]
+        lazy_expression[false, false, 0]
     ;
 
 // Rule for fast skiping expressions
@@ -3753,7 +3812,7 @@ cast_expression
 // searchingGreaterthen - indicates that we are searching '>'
 // and have no need to recognize some constructions.
 // (IZ 142022 : IDE hangs while parsing Boost)
-lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
+lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int templateLevel]
 {/*TypeSpecifier*/int ts=0;}
     :
         (options {warnWhenFollowAmbig = false;}:
@@ -3853,27 +3912,27 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
                     |   
                         (literal_volatile|literal_const|LITERAL__TYPE_QUALIFIER__)*
                         (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum)
-                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | IDENT | balanceLessthanGreaterthanInExpression | SCOPE)+
+                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | IDENT | balanceLessthanGreaterthanInExpression[templateLevel] | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
                     |
                         // empty
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
-                balanceLessthanGreaterthanInExpression
-            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression) => IDENT balanceLessthanGreaterthanInExpression (balanceCurlies)?
-            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => IDENT balanceLessthanGreaterthanInExpression (balanceCurlies)?
+                balanceLessthanGreaterthanInExpression[templateLevel]
+            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression[templateLevel]) => IDENT balanceLessthanGreaterthanInExpression[templateLevel] (balanceCurlies)?
+            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression[templateLevel] isGreaterthanInTheRestOfExpression[templateLevel]) => IDENT balanceLessthanGreaterthanInExpression[templateLevel] (balanceCurlies)?
             |   SCOPE
             |   id:IDENT {action.id(id);} (balanceCurlies)?
             )
         )+
 
-        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false])?)?
+        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false, templateLevel])?)?
     ;
 
 protected
-isGreaterthanInTheRestOfExpression
+isGreaterthanInTheRestOfExpression[int templateLevel]
     :
-        (lazy_expression[true, true])?
+        (lazy_expression[true, true, templateLevel])?
         (options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
@@ -3887,11 +3946,11 @@ isGreaterthanInTheRestOfExpression
             | BITWISEXOREQUAL
             | BITWISEOREQUAL
             )
-            (lazy_expression[true, true]
+            (lazy_expression[true, true, templateLevel]
             | array_initializer)
         )*
         (   COMMA 
-            lazy_expression[true, true]
+            lazy_expression[true, true, templateLevel]
             (options {greedy=true;}:	
                 ( ASSIGNEQUAL              
                 | TIMESEQUAL
@@ -3905,7 +3964,7 @@ isGreaterthanInTheRestOfExpression
                 | BITWISEXOREQUAL
                 | BITWISEOREQUAL
                 )
-                (lazy_expression[true, true]
+                (lazy_expression[true, true, templateLevel]
                 | array_initializer)
             )*
         )*
@@ -3977,8 +4036,10 @@ balanceSquaresInExpression
     ;
 
 protected    
-balanceLessthanGreaterthanInExpression
+balanceLessthanGreaterthanInExpression[int templateLevel]
     :
+        {(isTemplateTooDeep(templateLevel, 20))}? lazy_template
+    |
         // IZ 167547 : 100% CPU core usage with C++ project.
         // This is check for too complicated tecmplates.
         // If template depth is more then 20 we just skip it.
@@ -3989,9 +4050,9 @@ balanceLessthanGreaterthanInExpression
         (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
     |
         LESSTHAN
-        (lazy_expression[true, false])?
+        (lazy_expression[true, false, templateLevel + 1])?
         (   COMMA
-            lazy_expression[true, false]
+            lazy_expression[true, false, templateLevel + 1]
         )*
         GREATERTHAN
     ;

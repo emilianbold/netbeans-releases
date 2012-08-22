@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -61,14 +62,14 @@ import org.openide.util.NbBundle;
 public class WeirdAssignment extends JsAstRule {
 
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints) {
+    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
         WeirdVisitor conventionVisitor = new WeirdVisitor(this);
         conventionVisitor.process(context, hints);
     }
 
     @Override
     public Set<?> getKinds() {
-        return Collections.singleton(JsAstRule.JSCONVENTION_HINTS);
+        return Collections.singleton(JsAstRule.JS_OTHER_HINTS);
     }
 
     @Override
