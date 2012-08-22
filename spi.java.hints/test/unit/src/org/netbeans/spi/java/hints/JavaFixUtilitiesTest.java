@@ -754,6 +754,17 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testRewriteClass() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "}\n",
+                           "$mods$ class $name<$tp$> extends $e$ implements $i$ { $members$; } => $mods$ @java.lang.Deprecated class $name<$tp$> extends $e$ implements $i$ { $members$; }",
+                           "package test;\n" +
+                           "@Deprecated\n" +
+                           "public class Test {\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);

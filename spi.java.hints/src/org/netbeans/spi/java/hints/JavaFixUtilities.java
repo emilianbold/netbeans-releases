@@ -723,6 +723,35 @@ public class JavaFixUtilities {
         }
 
         @Override
+        public Number visitClass(ClassTree node, Void p) {
+            String name = node.getSimpleName().toString();
+            String newName = name;
+
+            if (name.startsWith("$")) {
+                if (parameterNames.containsKey(name)) {
+                    newName = parameterNames.get(name);
+                }
+            }
+
+            List<? extends TypeParameterTree> typeParams = resolveMultiParameters(node.getTypeParameters());
+            List<? extends Tree> implementsClauses = resolveMultiParameters(node.getImplementsClause());
+            List<? extends Tree> members = resolveMultiParameters(Utilities.filterHidden(getCurrentPath(), node.getMembers()));
+            Tree extend = node.getExtendsClause();
+            
+            if (extend != null && Utilities.isMultistatementWildcardTree(extend)) {
+                TreePath nueExtend = parameters.get(Utilities.getWildcardTreeName(extend).toString());
+                if (nueExtend != null) extend = nueExtend.getLeaf();
+                else extend = null;
+            }
+            
+            ClassTree nue = make.Class(node.getModifiers(), newName, typeParams, extend, implementsClauses, members);
+            
+            rewrite(node, nue);
+            
+            return super.visitClass(nue, p);
+        }
+
+        @Override
         public Number visitExpressionStatement(ExpressionStatementTree node, Void p) {
             CharSequence name = Utilities.getWildcardTreeName(node);
 
