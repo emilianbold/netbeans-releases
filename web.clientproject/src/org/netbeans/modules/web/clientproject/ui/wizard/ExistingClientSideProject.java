@@ -76,11 +76,9 @@ public class ExistingClientSideProject extends JPanel {
     // @GuardedBy("EDT")
     boolean fireChanges = true;
     // @GuardedBy("EDT")
-    String lastSiteRoot = null;
+    String lastSiteRoot = ""; // NOI18N
     // @GuardedBy("EDT")
-    String lastProjectName = null;
-    // @GuardedBy("EDT")
-    String lastProjectDirectory = null;
+    String lastProjectName = ""; // NOI18N
 
 
     public ExistingClientSideProject() {
@@ -118,16 +116,7 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     private void initProjectDirectory() {
-        projectDirectoryTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
-            @Override
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                if (fireChanges) {
-                    // remember it only if user changes it directly
-                    lastProjectDirectory = getProjectDirectory();
-                }
-            }
-        }));
+        projectDirectoryTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
     }
 
     public String getSiteRoot() {
@@ -252,7 +241,7 @@ public class ExistingClientSideProject extends JPanel {
     void updateProjectDirectory() {
         assert EventQueue.isDispatchThread();
         String projectDirectory = getProjectDirectory();
-        if (projectDirectory.equals(lastSiteRoot)) {
+        if (!lastSiteRoot.isEmpty() && projectDirectory.equals(lastSiteRoot)) {
             // project directory in site root => do nothing
             return;
         }
@@ -265,9 +254,12 @@ public class ExistingClientSideProject extends JPanel {
             // project directory in site root => do nothing
             return;
         }
-        if (lastProjectName != null && projectDirectory.endsWith(lastProjectName)) {
+        if (!lastProjectName.isEmpty()
+                && !projectDirectory.equals(lastProjectName)
+                && projectDirectory.endsWith(lastProjectName)) {
             // yes, project directory follows project name
-            projectDirectoryTextField.setText(new File(lastProjectDirectory, getProjectName()).getAbsolutePath());
+            String newProjDir = projectDirectory.substring(0, projectDirectory.length() - lastProjectName.length()) + getProjectName();
+            projectDirectoryTextField.setText(newProjDir);
         }
     }
 
@@ -373,8 +365,6 @@ public class ExistingClientSideProject extends JPanel {
                 result = new File(result, getProjectName());
             }
             projectDirectoryTextField.setText(result.getAbsolutePath());
-            // remember the real selected project directory as the last one (so it can be "paired" with project name)
-            lastProjectDirectory = result.getParentFile().getAbsolutePath();
         }
     }//GEN-LAST:event_projectDirectoryBrowseButtonActionPerformed
 
