@@ -56,6 +56,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,6 +75,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
@@ -151,10 +154,9 @@ public class CompletionTestBase extends NbTestCase {
 // this call did not do anything
 //        GlobalSourcePathTestUtil.setUseLibraries (false);
         XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(new URL[] {
-            JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml"),
-            JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml")
-        });
+        system.setXmlUrls(prepareLayers("META-INF/generated-layer.xml",
+                                        "org/netbeans/modules/java/editor/resources/layer.xml",
+                                        "org/netbeans/modules/defaults/mf-layer.xml"));
         Repository repository = new Repository(new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), system}));
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         ClassPathProvider cpp = new ClassPathProvider() {
@@ -215,6 +217,24 @@ public class CompletionTestBase extends NbTestCase {
             }
         }, true);
         Utilities.setCaseSensitive(true);
+        Main.initializeURLFactory();
+    }
+    
+    private URL[] prepareLayers(String... paths) throws IOException {
+        List<URL> layers = new LinkedList<URL>();
+        
+        for (int cntr = 0; cntr < paths.length; cntr++) {
+            boolean found = false;
+
+            for (Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(paths[cntr]); en.hasMoreElements(); ) {
+                found = true;
+                layers.add(en.nextElement());
+            }
+
+            Assert.assertTrue(paths[cntr], found);
+        }
+        
+        return layers.toArray(new URL[0]);
     }
     
     protected void tearDown() throws Exception {

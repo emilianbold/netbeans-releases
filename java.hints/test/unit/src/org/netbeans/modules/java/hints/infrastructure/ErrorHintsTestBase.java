@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -97,10 +98,11 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         String[] additionalLayers = getAdditionalLayers();
-        String[] layers = new String[additionalLayers.length + 1];
+        String[] layers = new String[additionalLayers.length + 2];
         
-        System.arraycopy(additionalLayers, 0, layers, 1, additionalLayers.length);
-        layers[0] = "org/netbeans/modules/java/editor/resources/layer.xml";
+        System.arraycopy(additionalLayers, 0, layers, 2, additionalLayers.length);
+        layers[0] = "META-INF/generated-layer.xml";
+        layers[1] = "org/netbeans/modules/java/editor/resources/layer.xml";
         
         SourceUtilsTestUtil.prepareTest(layers, new Object[]{
                     JavaDataLoader.class,
@@ -134,6 +136,8 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
 
             TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
         }
+        
+        Main.initializeURLFactory();
     }
 
     protected final void prepareTest(String fileName, String code) throws Exception {
