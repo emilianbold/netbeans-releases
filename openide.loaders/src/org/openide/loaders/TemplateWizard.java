@@ -62,6 +62,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.*;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.*;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
@@ -484,7 +485,13 @@ public class TemplateWizard extends WizardDescriptor {
             iterator.first();
         }
 
-        updateState();
+        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+            @Override
+            public Void run() {
+                updateState();
+                return null;
+            }
+        });
         // bugfix #40876, set null as initial value before show wizard
         setValue (null);
 
@@ -729,6 +736,7 @@ public class TemplateWizard extends WizardDescriptor {
      */
     @Override
     protected void updateState() {
+        assert EventQueue.isDispatchThread();
         super.updateState();
         
         if (lastComp != null) {
