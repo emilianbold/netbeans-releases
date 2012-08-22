@@ -105,9 +105,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -214,26 +211,12 @@ public class OptionsPanel extends JPanel {
         }
     }
     
-    private boolean isErgonomicsPresent() {
-        List<UpdateUnit> unit = UpdateManager.getDefault().getUpdateUnits();
-        for (Iterator<UpdateUnit> it = unit.iterator(); it.hasNext();) {
-            UpdateUnit updateUnit = it.next();
-            UpdateElement element = updateUnit.getInstalled();
-            
-            if(element != null && element.getDisplayName().equalsIgnoreCase("Ergonomic IDE") && element.isEnabled()) {//NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private void setCurrentCategory (final CategoryModel.Category category, String subpath) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             if(category == null) {
                 JComponent component = new JPanel(new BorderLayout());
-                JLabel label = isErgonomicsPresent() ? new JLabel(loc("CTL_Options_Search_Nothing_Found_Ergonomics")) //NOI18N
-                        : new JLabel(loc("CTL_Options_Search_Nothing_Found"));//NOI18N
+                JLabel label = new JLabel(loc("CTL_Options_Search_Nothing_Found"));//NOI18N
                 label.setHorizontalAlignment(JLabel.CENTER);
                 label.setHorizontalTextPosition(JLabel.CENTER);
                 component.add(label, BorderLayout.CENTER);
