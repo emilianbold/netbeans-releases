@@ -113,11 +113,15 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser")); //NOI18N
         //don't use page title for display name as it can be VERY long
         setName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
-        setDisplayName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
+        setDisplayName(getDefaultDisplayName());
 
         putClientProperty( "KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE );
 
         setActivatedNodes( new Node[0] );
+    }
+
+    private String getDefaultDisplayName() {
+        return NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser"); //NOI18N
     }
 
     @Override
@@ -140,11 +144,22 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             if ((title == null) || (title.length () < 1))
                 return;
             setToolTipText(title);
+            setDisplayName( makeShort(title) );
         } else if( HtmlBrowser.Impl.PROP_LOADING.equals (e.getPropertyName ()) ) {
             boolean loading = ((Boolean)e.getNewValue()).booleanValue();
             makeBusy( loading );
         }
-    }    
+    }
+
+    private static final int MAX_TITLE_LENGTH = 25;
+
+    private static String makeShort( String title ) {
+        if( title.length() > MAX_TITLE_LENGTH ) {
+            title = title.substring( 0, MAX_TITLE_LENGTH);
+            title += "…"; //NOI18N
+        }
+        return title;
+    }
     
     /** always open this top component in our special mode, if
     * no mode for this component is specified yet */
@@ -155,6 +170,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             return;
         }
 
+        setDisplayName( getDefaultDisplayName() );
         // behave like superclass
         super.open();
     }
@@ -300,6 +316,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             urlToLoad = str;
             return;
         }
+        urlToLoad = null;
         browserComponent.setURL (str);
     }
 
@@ -315,6 +332,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             urlToLoad = null == url ? null : url.toExternalForm();
             return;
         }
+        urlToLoad = null;
         browserComponent.setURL (url);
     }
 
@@ -410,6 +428,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     public void setURLAndOpen( URL url ) {
         createBrowser();
         browserComponent.setURL(url);
+        urlToLoad = null;
         if( null != browserComponent.getBrowserComponent() ) {
             open();
             requestActive();
