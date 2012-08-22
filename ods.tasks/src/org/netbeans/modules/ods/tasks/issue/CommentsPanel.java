@@ -81,6 +81,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTreeUI;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
@@ -89,8 +90,11 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.mylyn.util.WikiPanel;
+import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -189,8 +193,10 @@ public class CommentsPanel extends JPanel {
     private void addSection(GroupLayout layout, final Long number, String text, final String author, String authorName, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         
-        JTextPane textPane = new JTextPane();
-        setupTextPane(textPane, text);
+        WikiPanel wikiPanel = WikiUtils.getWikiPanel("Confluence", false, false);
+        wikiPanel.setWikiFormatText(text);
+        JTextPane textPane = wikiPanel.getPreviewPane();
+        setupTextPane(textPane);
         
         JPanel headerPanel = new JPanel();
         JPanel placeholder = createTextPanelPlaceholder();      
@@ -282,11 +288,7 @@ public class CommentsPanel extends JPanel {
                 .addComponent(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         }
 
-    private void setupTextPane(final JTextPane textPane, String comment) {
-        textPane.setText(comment);
-        HyperlinkSupport.getInstance().registerForTypes(textPane);
-        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
-        HyperlinkSupport.getInstance().registerForURLs(textPane);
+    private void setupTextPane(final JTextPane textPane) {
         HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, SimpleIssueFinder.getInstance());
         
         Caret caret = textPane.getCaret();
@@ -547,7 +549,12 @@ public class CommentsPanel extends JPanel {
             if(collapsed) {
                 textPane.setVisible(false);
                 placeholderPanel.setVisible(false);
-                commentLabel.setText(textPane.getText().replace("\n", " ").replace("\t", " ")); // NOI18N
+                String shortText = "";
+                try {
+                    shortText = textPane.getStyledDocument().getText(0, textPane.getStyledDocument().getLength()).replace("\n", " ").replace("\t", " ");
+                } catch (BadLocationException ex) {
+                }
+                commentLabel.setText(shortText); // NOI18N
                 setIcon(ci);
                 headerPanel.setBackground(BLUE_BACKGROUND);
                 commentCollapsed(number);
