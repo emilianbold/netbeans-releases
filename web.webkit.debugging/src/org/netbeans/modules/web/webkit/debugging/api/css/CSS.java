@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -167,7 +168,16 @@ public class CSS {
         params.put("styleSheetId", styleSheetId); // NOI18N
         params.put("text", styleSheetText); // NOI18N
         transport.sendBlockingCommand(new Command("CSS.setStyleSheetText", params)); // NOI18N
+        if (!styleSheetChanged.getAndSet(false)) {
+            // Workaround for a bug - if a styleSheetChanged event is not fired
+            // as a result of invocation of CSS.setStyleSheetText then we fire
+            // this event manually.
+            notifyStyleSheetChanged(styleSheetId);
+        }
     }
+
+    /** Determines whether styleSheetChanged event was fired. */
+    private AtomicBoolean styleSheetChanged = new AtomicBoolean();
 
     /**
      * Returns names of supported CSS properties.
@@ -387,6 +397,7 @@ public class CSS {
     }
 
     void handleStyleSheetChanged(JSONObject params) {
+        styleSheetChanged.set(true);
         String styleSheetId = (String)params.get("styleSheetId"); // NOI18N
         notifyStyleSheetChanged(styleSheetId);
     }
