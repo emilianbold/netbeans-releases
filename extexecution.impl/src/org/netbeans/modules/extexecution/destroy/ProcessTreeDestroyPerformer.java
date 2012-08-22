@@ -40,54 +40,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.extexecution;
+package org.netbeans.modules.extexecution.destroy;
 
 import java.util.Map;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.extexecution.WrapperProcess;
+import org.netbeans.processtreekiller.ProcessTreeKiller;
 import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
-import org.openide.util.Lookup;
-import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Utility class capable of properly terminating external process along with any
- * child processes created during execution.
  *
  * @author mkleint
- * @since 1.16
  */
-public final class ExternalProcessSupport {
+@ServiceProvider(service=ProcessDestroyPerformer.class)
+public class ProcessTreeDestroyPerformer implements ProcessDestroyPerformer {
 
-    private ExternalProcessSupport() {
-        super();
+    @Override
+    public void destroy(Process process, Map<String, String> env) {
+        ProcessTreeKiller.get().kill(process, env);
     }
 
-    /**
-     * Destroys the process passed as parameter and attempts to terminate all child
-     * processes created during the process' execution.
-     * <p>
-     * Any process running in environment containing the same variables
-     * with the same values as those passed in <code>env</code> (all of them)
-     * is supposed to be part of the process tree and may be terminated.
-     *
-     * @param process process to kill
-     * @param env map containing the variables and their values which the
-     *             process must have to be considered being part of
-     *             the tree to kill
-     */
-    public static void destroy(@NonNull Process process, @NonNull Map<String, String> env) {
-        Parameters.notNull("process", process);
-        Parameters.notNull("env", env);
-
-        if (process instanceof WrapperProcess) {
-            process.destroy();
-            return;
-        }
-        ProcessDestroyPerformer pdp = Lookup.getDefault().lookup(ProcessDestroyPerformer.class);
-        if (pdp != null) {
-            pdp.destroy(process, env);
-        } else {
-            process.destroy();
-        }
-    }
 }

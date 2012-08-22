@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.extexecution.open;
 
-package org.netbeans.modules.extexecution.destroy;
-
-import java.util.Map;
-import org.netbeans.processtreekiller.ProcessTreeKiller;
-import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.extexecution.open.OptionOpenHandler;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mkleint
+ * @author Petr Hejl
  */
-@ServiceProvider(service=ProcessDestroyPerformer.class)
-public class ProcessDestroyPerformerImpl implements ProcessDestroyPerformer {
+@ServiceProvider(service=OptionOpenHandler.class)
+public class NbOptionOpenHandler implements OptionOpenHandler {
 
-    public void destroy(Process process, Map<String, String> env) {
-        ProcessTreeKiller.get().kill(process, env);
+    @Override
+    public void open(String optionsPath) {
+        OptionsDisplayer.getDefault().open(optionsPath);
     }
-
 }
