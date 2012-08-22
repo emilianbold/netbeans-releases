@@ -423,4 +423,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 209947 - parser fails if namespace and class has the same name
         performTest("bug209947.cpp");
     }
+
+    public void testBug215605() throws Exception {
+        // Bug 215605 - Parsing project never finishes
+        performTest("bug215605.cpp");
+    }
 }
