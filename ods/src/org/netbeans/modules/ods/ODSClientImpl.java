@@ -271,6 +271,11 @@ public final class ODSClientImpl implements ODSClient {
                 client.setBaseUrl(location.getUrl());
                 SecurityContextHolder.getContext().setAuthentication(null);
             }
+        } catch (RuntimeException ex) {
+            if (ex.getCause() instanceof InterruptedException) {
+                throw new ODSException.ODSCanceledException(ex);
+            }
+            throw ex;
         } catch (Exception ex) {
             throw new ODSException(ex);
         }

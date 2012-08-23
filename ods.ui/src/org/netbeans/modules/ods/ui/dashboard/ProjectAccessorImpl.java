@@ -44,7 +44,6 @@ package org.netbeans.modules.ods.ui.dashboard;
 
 import org.netbeans.modules.ods.ui.project.DetailsAction;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +78,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
         try {
              return Utilities.getMyProjects(uiServer, force);
         } catch (ODSException ex) {
-            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.WARNING, uiServer.getUrl().toString(), ex);
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(
+                    ex instanceof ODSException.ODSCanceledException ? Level.FINE : Level.WARNING,
+                    uiServer.getUrl().toString(), ex);
             return null;
         }
     }
@@ -95,8 +96,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
                 }
             }
         } catch (ODSException ex) {
-            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, null, ex);
-            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getting a project {0} from {1}", //NOI18N
+            Level lvl = ex instanceof ODSException.ODSCanceledException ? Level.FINE : Level.INFO;
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(lvl, null, ex);
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(lvl, "getting a project {0} from {1}", //NOI18N
                     new Object[] { projectId, uiServer.getUrl().toString() } );
         }
         return null;
@@ -248,7 +250,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
                     try {
                         uiServer.getServer().refresh(projectHandle.getTeamProject());
                     } catch (ODSException ex) {
-                        Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.WARNING, projectHandle.getId(), ex);
+                        Logger.getLogger(ProjectAccessorImpl.class.getName()).log(
+                                ex instanceof ODSException.ODSCanceledException ? Level.FINE : Level.WARNING,
+                                projectHandle.getId(), ex);
                     }
                 }
             });

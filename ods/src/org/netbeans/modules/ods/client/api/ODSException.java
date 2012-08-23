@@ -54,5 +54,12 @@ public class ODSException extends Exception {
     public ODSException (Throwable cause) {
         super(cause);
     }
+
+    public static class ODSCanceledException extends ODSException {
+
+        public ODSCanceledException (Throwable cause) {
+            super(cause);
+        }
+    }
     
 }
