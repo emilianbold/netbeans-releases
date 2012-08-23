@@ -51,8 +51,28 @@ public abstract class ValueGrammarElement extends GrammarElement {
         super(parent, elementName);
     }
  
+    /**
+     * Check if the given text is matched by this {@link GrammarElement}
+     * 
+     * @since 1.10
+     * @param text code to be matched
+     * @return true if matches, false otherwise
+     */
+    public final boolean accepts(CharSequence text) {
+        return accepts(new Tokenizer(text).token());
+    }
+    
+     /**
+     * Check if the given {@link Token} is matched by this {@link GrammarElement}
+     * 
+     * @param token an instance of {@link Token} to be matched
+     * @return true if matches, false otherwise
+     */
     public abstract boolean accepts(Token token);
     
+    /**
+     * Returns the value of the element.
+     */
     public abstract String getValue();
     
 }
