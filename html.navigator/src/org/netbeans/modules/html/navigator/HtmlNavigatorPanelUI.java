@@ -133,7 +133,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
-                setPageModel(PageInspectorImpl.getDefault().getPage());
+                final PageModel page = PageInspectorImpl.getDefault().getPage();
+                setPageModel(page);
+                if (page!=null)
+                    refreshDOM();
             }
         }
     };
@@ -237,7 +240,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (root != null) {
             root.setDescription(Description.empty(Description.DOM));
         }
-        inspectedFileObject = null;
+        //inspectedFileObject = null;
     }
 
     private void pageModelDocumentChanged() {
