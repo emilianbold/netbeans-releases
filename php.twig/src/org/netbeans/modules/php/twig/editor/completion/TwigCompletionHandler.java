@@ -187,7 +187,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         return TwigTokenId.T_TWIG_VARIABLE.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId);
     }
 
-    private boolean startsWith(String theString, String prefix) {
+    private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
