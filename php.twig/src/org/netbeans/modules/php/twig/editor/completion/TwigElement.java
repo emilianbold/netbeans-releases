@@ -62,27 +62,31 @@ public interface TwigElement extends ElementHandle {
 
     public void formatParameters(HtmlFormatter formatter);
 
+    public String getDocumentation();
+
     public static class Factory {
 
-        public static TwigElement create(final String name) {
-            return new TwigElementWithoutParams(name);
+        public static TwigElement create(final String name, final TwigDocumentationFactory documentationFactory) {
+            return new TwigElementWithoutParams(name, documentationFactory);
         }
 
-        public static TwigElement create(final String name, final List<Parameter> parameters) {
-            return new TwigElementWithParams(name, parameters);
+        public static TwigElement create(final String name, final TwigDocumentationFactory documentationFactory, final List<Parameter> parameters) {
+            return new TwigElementWithParams(name, documentationFactory, parameters);
         }
 
-        public static TwigElement create(final String name, final String customTemplate) {
-            return new TwigElementWithCustomTemplate(name, customTemplate);
+        public static TwigElement create(final String name, final TwigDocumentationFactory documentationFactory, final String customTemplate) {
+            return new TwigElementWithCustomTemplate(name, documentationFactory, customTemplate);
         }
     }
 
     abstract static class BaseTwigElementItem implements TwigElement {
 
         private final String name;
+        private final TwigDocumentationFactory documentationFactory;
 
-        public BaseTwigElementItem(final String name) {
+        public BaseTwigElementItem(final String name, final TwigDocumentationFactory documentationFactory) {
             this.name = name;
+            this.documentationFactory = documentationFactory;
         }
 
         @Override
@@ -124,12 +128,17 @@ public interface TwigElement extends ElementHandle {
         public OffsetRange getOffsetRange(ParserResult result) {
             return OffsetRange.NONE;
         }
+
+        @Override
+        public String getDocumentation() {
+            return documentationFactory.createDocumentation(getName());
+        }
     }
 
     static class TwigElementWithoutParams extends BaseTwigElementItem {
 
-        public TwigElementWithoutParams(final String name) {
-            super(name);
+        public TwigElementWithoutParams(final String name, final TwigDocumentationFactory documentationFactory) {
+            super(name, documentationFactory);
         }
 
         @Override
@@ -146,8 +155,8 @@ public interface TwigElement extends ElementHandle {
 
         private final String customTemplate;
 
-        public TwigElementWithCustomTemplate(final String name, final String customTemplate) {
-            super(name);
+        public TwigElementWithCustomTemplate(final String name, final TwigDocumentationFactory documentationFactory, final String customTemplate) {
+            super(name, documentationFactory);
             this.customTemplate = customTemplate;
         }
 
@@ -165,8 +174,8 @@ public interface TwigElement extends ElementHandle {
 
         private final List<Parameter> parameters;
 
-        public TwigElementWithParams(final String name, final List<Parameter> parameters) {
-            super(name);
+        public TwigElementWithParams(final String name, final TwigDocumentationFactory documentationFactory, final List<Parameter> parameters) {
+            super(name, documentationFactory);
             this.parameters = parameters;
         }
 
