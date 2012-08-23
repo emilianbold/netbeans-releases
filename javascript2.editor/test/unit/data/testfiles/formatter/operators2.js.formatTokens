@@ -277,3 +277,86 @@ FormattingToken{kind=TEXT, offset=295, text=}}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=296, text=
 }
+FormattingToken{kind=EOL, offset=297, text=
+}
+FormattingToken{kind=TEXT, offset=298, text=testx}
+FormattingToken{kind=WHITESPACE, offset=303, text= }
+FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=304, text==}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=305, text= }
+FormattingToken{kind=TEXT, offset=306, text="}
+FormattingToken{kind=TEXT, offset=307, text=ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
+FormattingToken{kind=TEXT, offset=380, text="}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=381, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=382, text=
+}
+FormattingToken{kind=EOL, offset=383, text=
+}
+FormattingToken{kind=TEXT, offset=384, text=testy}
+FormattingToken{kind=WHITESPACE, offset=389, text= }
+FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=390, text==}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=391, text= }
+FormattingToken{kind=TEXT, offset=392, text="}
+FormattingToken{kind=TEXT, offset=393, text=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+FormattingToken{kind=TEXT, offset=428, text="}
+FormattingToken{kind=WHITESPACE, offset=429, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
+FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=430, text=+}
+FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=431, text= }
+FormattingToken{kind=TEXT, offset=432, text="}
+FormattingToken{kind=TEXT, offset=433, text=ssssssssssssssssssssssssssssssssss}
+FormattingToken{kind=TEXT, offset=467, text="}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=468, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=469, text=
+}
+FormattingToken{kind=EOL, offset=470, text=
+}
+FormattingToken{kind=TEXT, offset=471, text=ternaryLong}
+FormattingToken{kind=WHITESPACE, offset=482, text= }
+FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=483, text==}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=484, text= }
+FormattingToken{kind=TEXT, offset=485, text="}
+FormattingToken{kind=TEXT, offset=486, text=ddddddddddddddddddddddddddddd}
+FormattingToken{kind=TEXT, offset=515, text="}
+FormattingToken{kind=WHITESPACE, offset=516, text= }
+FormattingToken{kind=BEFORE_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
+FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=517, text=?}
+FormattingToken{kind=AFTER_TERNARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=518, text= }
+FormattingToken{kind=TEXT, offset=519, text="}
+FormattingToken{kind=TEXT, offset=520, text=aaaaaaaaaaaaaaaaaaaaa}
+FormattingToken{kind=TEXT, offset=541, text="}
+FormattingToken{kind=WHITESPACE, offset=542, text= }
+FormattingToken{kind=BEFORE_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
+FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=543, text=:}
+FormattingToken{kind=AFTER_TERNARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=WHITESPACE, offset=544, text= }
+FormattingToken{kind=TEXT, offset=545, text="}
+FormattingToken{kind=TEXT, offset=546, text=sssssssssssss}
+FormattingToken{kind=TEXT, offset=559, text="}
+FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=TEXT, offset=560, text=;}
+FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=EOL, offset=561, text=
+}
+FormattingToken{kind=EOL, offset=562, text=
+}
