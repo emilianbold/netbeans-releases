@@ -184,9 +184,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             super.getLhsHtml(formatter);
-            formatter.appendText("("); //NOI18N
             function.formatParameters(formatter);
-            formatter.appendText(")"); //NOI18N
             return formatter.getText();
         }
 

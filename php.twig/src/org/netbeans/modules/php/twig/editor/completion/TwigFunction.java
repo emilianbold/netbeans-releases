@@ -68,6 +68,7 @@ public class TwigFunction {
     }
 
     public void formatParameters(final HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
         for (int i = 0; i < parameters.size(); i++) {
             Parameter parameter = parameters.get(i);
             if (i != 0) {
@@ -75,6 +76,7 @@ public class TwigFunction {
             }
             parameter.format(formatter);
         }
+        formatter.appendText(")"); //NOI18N
     }
 
     public void prepareTemplate(StringBuilder template) {
