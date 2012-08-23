@@ -116,7 +116,9 @@ import org.openide.util.NbBundle;
 })
 public class RuleEditorPanel extends JPanel {
     
-    private static final Logger LOG = Logger.getLogger(RuleEditorPanel.class.getSimpleName());
+    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
 
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
