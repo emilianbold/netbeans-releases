@@ -163,9 +163,17 @@ import org.openide.util.Parameters;
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable, 
         CndFileSystemProvider.CndFileSystemProblemListener {
-    
+
+    protected ProjectBase(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
+        this(model, fs, (Object) platformProject, name);
+    }
+
+    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name) {
+        this(model, fs, (Object) platformProject, name);
+    }
+
     /** Creates a new instance of CsmProjectImpl */
-    protected ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         this.uniqueName = getUniqueName(fs, platformProject);
         Key key = createProjectKey(fs, platformProject);
@@ -211,6 +219,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         this.platformProject = platformProject;
         // remember in repository
         RepositoryUtils.hang(this);
@@ -439,7 +448,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Gets an object, which represents correspondent IDE project */
-    protected final void setPlatformProject(Object platformProject) {
+    protected final void setPlatformProject(CharSequence platformProject) {
+        setPlatformProjectImpl(platformProject);
+    }
+
+    protected final void setPlatformProject(NativeProject platformProject) {
+        setPlatformProjectImpl(platformProject);
+    }
+
+    private void setPlatformProjectImpl(Object platformProject) {
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         CndUtils.assertTrue(this.platformProject == null);
         CndUtils.assertNotNull(platformProject, "Passing null project for ", this);
         this.platformProject = platformProject;
@@ -3329,6 +3347,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CharSequence name;
     private CsmUID<CsmNamespace> globalNamespaceUID;
     private NamespaceImpl FAKE_GLOBAL_NAMESPACE;
+    /** Either NativeProject or CharSequence */
     private volatile Object platformProject;
     private final FileSystem fileSystem;
 
