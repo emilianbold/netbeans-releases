@@ -80,7 +80,8 @@ public class C2CClientTest extends NbTestCase  {
     private static boolean firstRun = true;
     private static String uname;
     private static String passw;
-    private static String proxy;
+    private static String proxy_host;
+    private static String proxy_port;
     
     public C2CClientTest(String arg0) {
         super(arg0);
@@ -100,15 +101,16 @@ public class C2CClientTest extends NbTestCase  {
                 BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
                 uname = br.readLine();
                 passw = br.readLine();
-                proxy = br.readLine();
+                proxy_host = br.readLine();
+                proxy_port = br.readLine();
                 br.close();
             }
             if (firstRun) {
                 firstRun = false;
             }
         }
-        if (!proxy.isEmpty()) {
-            System.setProperty("netbeans.system_http_proxy", proxy);
+        if (!proxy_host.isEmpty()) {
+            System.setProperty("netbeans.system_http_proxy", proxy_host + ":" + (proxy_port == null ? "80" : proxy_port));
         }
     }
     
@@ -245,8 +247,7 @@ public class C2CClientTest extends NbTestCase  {
         ODSClient client = getClient();
         List<ScmRepository> repositories = client.getScmRepositories("anagramgame");
         assertNotNull(repositories);
-        assertEquals(1, repositories.size());
-        assertEquals("anagramgame.git", repositories.iterator().next().getName());
+        assertFalse(repositories.isEmpty());
     }
     
     private ODSClient getClient () {
