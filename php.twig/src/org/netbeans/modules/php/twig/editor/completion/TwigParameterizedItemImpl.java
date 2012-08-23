@@ -50,23 +50,25 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigFunction {
+public class TwigParameterizedItemImpl implements TwigParameterizedItem {
     private final String name;
     private final List<Parameter> parameters;
 
-    public TwigFunction(final String name) {
+    public TwigParameterizedItemImpl(final String name) {
         this(name, Collections.EMPTY_LIST);
     }
 
-    public TwigFunction(final String name, final List<Parameter> parameters) {
+    public TwigParameterizedItemImpl(final String name, final List<Parameter> parameters) {
         this.name = name;
         this.parameters = new ArrayList<Parameter>(parameters);
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void formatParameters(final HtmlFormatter formatter) {
         formatter.appendText("("); //NOI18N
         for (int i = 0; i < parameters.size(); i++) {
@@ -79,6 +81,7 @@ public class TwigFunction {
         formatter.appendText(")"); //NOI18N
     }
 
+    @Override
     public void prepareTemplate(StringBuilder template) {
         template.append(getName());
         template.append("("); //NOI18N

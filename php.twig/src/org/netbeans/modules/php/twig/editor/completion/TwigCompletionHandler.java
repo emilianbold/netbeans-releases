@@ -63,7 +63,7 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.twig.editor.completion.TwigCompletionItem.CompletionRequest;
-import org.netbeans.modules.php.twig.editor.completion.TwigFunction.Parameter;
+import org.netbeans.modules.php.twig.editor.completion.TwigParameterizedItemImpl.Parameter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 
@@ -121,17 +121,17 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         FILTERS.add("url_encode"); //NOI18N
     }
 
-    private static final Set<TwigFunction> FUNCTIONS = new HashSet<TwigFunction>();
+    private static final Set<TwigParameterizedItem> FUNCTIONS = new HashSet<TwigParameterizedItem>();
     static {
-        FUNCTIONS.add(new TwigFunction("attribute", Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("block", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("constant", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("cycle", Arrays.asList(new Parameter[] {new Parameter("array"), new Parameter("i")}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("date", Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("dump", Arrays.asList(new Parameter[] {new Parameter("variable", Parameter.Need.OPTIONAL)}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("parent")); //NOI18N
-        FUNCTIONS.add(new TwigFunction("random", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
-        FUNCTIONS.add(new TwigFunction("range", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("attribute", Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("block", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("constant", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("cycle", Arrays.asList(new Parameter[] {new Parameter("array"), new Parameter("i")}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("date", Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("dump", Arrays.asList(new Parameter[] {new Parameter("variable", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("parent")); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("random", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
+        FUNCTIONS.add(new TwigParameterizedItemImpl("range", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
     private static final Set<String> TESTS = new HashSet<String>();
@@ -216,9 +216,9 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeFunctions(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (TwigFunction function : FUNCTIONS) {
-            if (startsWith(function.getName(), request.prefix)) {
-                completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(function, request));
+        for (TwigParameterizedItem parameterizedItem : FUNCTIONS) {
+            if (startsWith(parameterizedItem.getName(), request.prefix)) {
+                completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(parameterizedItem, request));
             }
         }
     }

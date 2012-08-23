@@ -174,17 +174,17 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     }
 
     static class FunctionCompletionItem extends TwigCompletionItem {
-        private final TwigFunction function;
+        private final TwigParameterizedItem parameterizedItem;
 
-        public FunctionCompletionItem(TwigFunction function, CompletionRequest request) {
-            super(function.getName(), request);
-            this.function = function;
+        public FunctionCompletionItem(TwigParameterizedItem parameterizedItem, CompletionRequest request) {
+            super(parameterizedItem.getName(), request);
+            this.parameterizedItem = parameterizedItem;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             super.getLhsHtml(formatter);
-            function.formatParameters(formatter);
+            parameterizedItem.formatParameters(formatter);
             return formatter.getText();
         }
 
@@ -202,7 +202,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            function.prepareTemplate(template);
+            parameterizedItem.prepareTemplate(template);
             return template.toString();
         }
 
