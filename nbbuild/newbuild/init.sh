@@ -48,7 +48,7 @@ fi
 
 #ML_BUILD yes/no 1/0
 if [ -z ${ML_BUILD} ]; then
-    export ML_BUILD=1
+    export ML_BUILD=0
 fi
 #EN_BUILD yes/no 1/0
 if [ -z ${EN_BUILD} ]; then
@@ -60,6 +60,18 @@ fi
 
 if [ -z ${UPLOAD_ML} ]; then
     export UPLOAD_ML=0
+fi
+
+#GLASSFISH_BUILDS_HOST=http://jre.us.oracle.com
+if [ -z ${GLASSFISH_BUILDS_HOST} ]; then
+    GLASSFISH_BUILDS_HOST=http://jre.us.oracle.com
+    export GLASSFISH_BUILDS_HOST
+fi
+
+#JDK_BUILDS_HOST=http://jre.us.oracle.com
+if [ -z ${JDK_BUILDS_HOST} ]; then
+    JDK_BUILDS_HOST=http://jre.us.oracle.com
+    export JDK_BUILDS_HOST
 fi
 
 export ANT_OPTS="-Xmx2G -XX:MaxPermSize=500m"
@@ -88,15 +100,6 @@ if [ -z $BASE_DIR ]; then
     echo to define a BASE_DIR variable in your environment
     
     export BASE_DIR=/space/NB-IDE
-fi
-
-if [ -z $DIST_SERVER ]; then
-    echo DIST_SERVER not defined: Upload will no work
-fi
-
-if [ -z $DIST_SERVER_PATH ]; then
-    echo DIST_SERVER_PATH not defined using default
-    DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
 fi
 
 if [ -z $NB_ALL ]; then
