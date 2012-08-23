@@ -46,8 +46,10 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -55,7 +57,9 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -122,10 +126,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
     }
     
-    private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager {
+    private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager implements Debugger.Listener {
         
         private final LineBreakpoint lb;
         private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        private final AtomicBoolean lineChanged = new AtomicBoolean(false);
         
         public WebKitLineBreakpointManager(Debugger d, LineBreakpoint lb) {
             super(d, lb);
@@ -140,6 +145,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             String url = lb.getURLString();
             url = reformatFileURL(url);
             b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+            d.addListener(this);
         }
 
         @Override
@@ -147,8 +153,18 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (b == null) {
                 return ;
             }
+            d.removeListener(this);
             d.removeLineBreakpoint(b);
             b = null;
+        }
+        
+        private void resubmit() {
+            if (b != null) {
+                d.removeLineBreakpoint(b);
+                String url = lb.getURLString();
+                url = reformatFileURL(url);
+                b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+            }
         }
         
         // changes "file:/some" to "file:///some"
@@ -162,7 +178,32 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             }
             return "file:///"+tabToDebug;
         }
-    
+
+        @Override
+        public void paused(List<CallFrame> callStack, String reason) {}
+
+        @Override
+        public void resumed() {}
+
+        @Override
+        public void reset() {
+            if (lineChanged.getAndSet(false)) {
+                resubmit();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            String propertyName = event.getPropertyName();
+            if (LineBreakpoint.PROP_LINE.equals(propertyName)) {
+                resubmit();
+            } else if (LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) {
+                lineChanged.set(true);
+            } else {
+                super.propertyChange(event);
+            }
+        }
+        
     }
 
     private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager {

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -60,15 +62,26 @@ import org.openide.util.WeakListeners;
 
 public class LineBreakpoint extends AbstractBreakpoint {
     
+    /**
+     * This property is fired when a new Line object is set to this breakpoint.
+     */
     public static final String PROP_LINE = "line";      // NOI18N
+    /**
+     * This property is fired when a line number if the breakpoint's Line object changes.
+     * It's the same as listening on the current Line object's {@link Line#PROP_LINE_NUMBER} events.
+     */
+    public static final String PROP_LINE_NUMBER = "lineNumber";      // NOI18N
 
     private Line myLine;
-    private FileRemoveListener myListener;
+    private final FileRemoveListener myListener = new FileRemoveListener();
     private FileChangeListener myWeakListener;
+    private final LineChangesListener lineChangeslistener = new LineChangesListener();
+    private PropertyChangeListener lineChangesWeak;
 
     public LineBreakpoint(Line line) {
         myLine = line;
-        myListener = new FileRemoveListener();
+        lineChangesWeak = WeakListeners.propertyChange(lineChangeslistener, line);
+        line.addPropertyChangeListener(lineChangesWeak);
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
         if( fileObject != null ){
             myWeakListener = WeakListeners.create( 
@@ -94,6 +107,8 @@ public class LineBreakpoint extends AbstractBreakpoint {
         removed();
         Line oldLine = myLine;
         myLine = line;
+        lineChangesWeak = WeakListeners.propertyChange(lineChangeslistener, line);
+        line.addPropertyChangeListener(lineChangesWeak);
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
         if (fileObject != null) {
             myWeakListener = WeakListeners.create(
@@ -122,10 +137,14 @@ public class LineBreakpoint extends AbstractBreakpoint {
 //    }
     
     @Override
-    public void removed(){
-        FileObject fileObject = getLine().getLookup().lookup(FileObject.class);
+    public void removed() {
+        Line line = getLine();
+        line.removePropertyChangeListener(lineChangesWeak);
+        lineChangesWeak = null;
+        FileObject fileObject = line.getLookup().lookup(FileObject.class);
         if( fileObject != null ){
             fileObject.removeFileChangeListener( myWeakListener );
+            myWeakListener = null;
         }
     }
     
@@ -189,5 +208,16 @@ public class LineBreakpoint extends AbstractBreakpoint {
                     LineBreakpoint.this);
         }
 
+    }
+    
+    private class LineChangesListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
+                firePropertyChange(PROP_LINE_NUMBER, evt.getOldValue(), evt.getNewValue());
+            }
+        }
+        
     }
 }
