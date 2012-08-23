@@ -265,7 +265,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     public String document(ParserResult pr, ElementHandle eh) {
         String result = "";
         if (eh instanceof TwigElement) {
-            result = ((TwigElement) eh).getDocumentation();
+            result = ((TwigElement) eh).getDocumentation().asText();
         }
         return result;
     }
