@@ -135,8 +135,6 @@ public class DeveloperToolbar {
             panel.remove( customToolbar );
         panel.add( bar );
 
-        fillResizeBar();
-
         //ZOOM combo box
         DefaultComboBoxModel zoomModel = new DefaultComboBoxModel();
         zoomModel.addElement( "200%" ); //NOI18N
@@ -150,7 +148,8 @@ public class DeveloperToolbar {
             ((JTextField)comboZoom.getEditor().getEditorComponent()).setColumns( 4 );
         comboZoom.setSelectedItem( "100%" ); //NOI18N
         comboZoom.setEnabled( null != getLookup().lookup( Zoomable.class ) );
-        bar.add( comboZoom );
+
+        fillResizeBar();
 
         initActions(bar);
 
@@ -206,6 +205,7 @@ public class DeveloperToolbar {
 
         final JButton btnDropDown = new JButton( ImageUtilities.loadImageIcon( "org/netbeans/modules/web/browser/ui/resources/menu.png", true ) ); //NOI18N
         resizeBar.add( btnDropDown );
+        btnDropDown.setToolTipText( NbBundle.getMessage( DeveloperToolbar.class, "Tip_ResizeOptions") ); //NOI18N
         btnDropDown.setEnabled( resizingEnabled );
         btnDropDown.addActionListener( new ActionListener() {
 
@@ -216,7 +216,7 @@ public class DeveloperToolbar {
             }
         });
 
-        resizeBar.addSeparator();
+        resizeBar.add( comboZoom );
     }
 
     private void setBrowserSize( ResizeOption resizeOption ) {
