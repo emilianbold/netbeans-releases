@@ -41,41 +41,47 @@
  */
 package org.netbeans.modules.php.twig.editor.completion;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface TwigCompletionItem {
+public interface TwigElement extends ElementHandle {
 
-     public String getName();
+    public void prepareTemplate(StringBuilder template);
 
-     public void prepareTemplate(StringBuilder template);
+    public void formatParameters(HtmlFormatter formatter);
 
-     public void formatParameters(HtmlFormatter formatter);
+    public static class Factory {
 
-     public static class Factory {
-
-         public static TwigCompletionItem create(final String name) {
-             return new TwigItemWithoutParams(name);
+         public static TwigElement create(final String name) {
+             return new TwigElementWithoutParams(name);
          }
 
-         public static TwigCompletionItem create(final String name, final List<Parameter> parameters) {
-             return new TwigItemWithParams(name, parameters);
+         public static TwigElement create(final String name, final List<Parameter> parameters) {
+             return new TwigElementWithParams(name, parameters);
          }
 
-         public static TwigCompletionItem create(final String name, final String customTemplate) {
-             return new TwigItemWithCustomTemplate(name, customTemplate);
+         public static TwigElement create(final String name, final String customTemplate) {
+             return new TwigElementWithCustomTemplate(name, customTemplate);
          }
 
      }
 
-     abstract static class BaseTwigCompletionItem implements TwigCompletionItem {
+     abstract static class BaseTwigElementItem implements TwigElement {
          private final String name;
 
-         public BaseTwigCompletionItem(final String name) {
+         public BaseTwigElementItem(final String name) {
              this.name = name;
          }
 
@@ -84,11 +90,46 @@ public interface TwigCompletionItem {
              return name;
          }
 
+         @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public String getMimeType() {
+            return "";
+        }
+
+        @Override
+        public String getIn() {
+            return "";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.EMPTY_SET;
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+
      }
 
-     static class TwigItemWithoutParams extends BaseTwigCompletionItem {
+     static class TwigElementWithoutParams extends BaseTwigElementItem {
 
-        public TwigItemWithoutParams(final String name) {
+        public TwigElementWithoutParams(final String name) {
             super(name);
         }
 
@@ -103,10 +144,10 @@ public interface TwigCompletionItem {
 
      }
 
-     static class TwigItemWithCustomTemplate extends BaseTwigCompletionItem {
+     static class TwigElementWithCustomTemplate extends BaseTwigElementItem {
         private final String customTemplate;
 
-        public TwigItemWithCustomTemplate(final String name, final String customTemplate) {
+        public TwigElementWithCustomTemplate(final String name, final String customTemplate) {
             super(name);
             this.customTemplate = customTemplate;
         }
@@ -122,10 +163,10 @@ public interface TwigCompletionItem {
 
      }
 
-     static class TwigItemWithParams extends BaseTwigCompletionItem {
+     static class TwigElementWithParams extends BaseTwigElementItem {
         private final List<Parameter> parameters;
 
-        public TwigItemWithParams(final String name, final List<Parameter> parameters) {
+        public TwigElementWithParams(final String name, final List<Parameter> parameters) {
             super(name);
             this.parameters = parameters;
         }

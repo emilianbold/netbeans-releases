@@ -62,115 +62,115 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.twig.editor.completion.TwigCompletionItem.Parameter;
 import org.netbeans.modules.php.twig.editor.completion.TwigCompletionProposal.CompletionRequest;
+import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
 
-    private static final Set<TwigCompletionItem> TAGS = new HashSet<TwigCompletionItem>();
+    private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
     static {
-        TAGS.add(TwigCompletionItem.Factory.create("autoescape")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endautoescape")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("block", "block ${name}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endblock")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("do")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("embed", "embed \"${template.twig}\"")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endembed")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("extends", "extends \"${template.twig}\"")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("filter", "filter ${name}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endfilter")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("flush")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("for", "for ${item} in ${array}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endfor")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("from")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("if", "if ${true}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("else")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("elseif", "elseif ${true}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endif")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("import", "import '${page.html}' as ${alias}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("include", "include '${page.html}'")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("macro", "macro ${name}()")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endmacro")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("raw")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endraw")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("sandbox")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endsandbox")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("set", "set ${variable}")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endset")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("spaceless")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("endspaceless")); //NOI18N
-        TAGS.add(TwigCompletionItem.Factory.create("use", "use \"${page.html}\"")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("autoescape")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endautoescape")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("block", "block ${name}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endblock")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("do")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("embed", "embed \"${template.twig}\"")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endembed")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("extends", "extends \"${template.twig}\"")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("filter", "filter ${name}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endfilter")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("flush")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("for", "for ${item} in ${array}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endfor")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("from")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("if", "if ${true}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("else")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("elseif", "elseif ${true}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endif")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("import", "import '${page.html}' as ${alias}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("include", "include '${page.html}'")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("macro", "macro ${name}()")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endmacro")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("raw")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endraw")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("sandbox")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endsandbox")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("set", "set ${variable}")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endset")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("spaceless")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endspaceless")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("use", "use \"${page.html}\"")); //NOI18N
     }
 
-    private static final Set<TwigCompletionItem> FILTERS = new HashSet<TwigCompletionItem>();
+    private static final Set<TwigElement> FILTERS = new HashSet<TwigElement>();
     static {
-        FILTERS.add(TwigCompletionItem.Factory.create("abs")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("capitalize")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("convert_encoding", Arrays.asList(new Parameter[] {new Parameter("'to'"), new Parameter("'from'")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("date", Arrays.asList(new Parameter[] {new Parameter("'format'")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("date_modify", Arrays.asList(new Parameter[] {new Parameter("'modifier'")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("default", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("escape", Arrays.asList(new Parameter[] {new Parameter("'html'")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("format", Arrays.asList(new Parameter[] {new Parameter("var")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("join", Arrays.asList(new Parameter[] {new Parameter("'separator'")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("json_encode", Collections.EMPTY_LIST)); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("keys")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("length")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("lower")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("merge", Arrays.asList(new Parameter[] {new Parameter("array")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("nl2br")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("number_format")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("raw")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("replace", Collections.EMPTY_LIST)); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("reverse")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("slice", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("length")}))); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("sort")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("striptags")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("title")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("trim")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("upper")); //NOI18N
-        FILTERS.add(TwigCompletionItem.Factory.create("url_encode", Collections.EMPTY_LIST)); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("abs")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("capitalize")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("convert_encoding", Arrays.asList(new Parameter[] {new Parameter("'to'"), new Parameter("'from'")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("date", Arrays.asList(new Parameter[] {new Parameter("'format'")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("date_modify", Arrays.asList(new Parameter[] {new Parameter("'modifier'")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("default", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("escape", Arrays.asList(new Parameter[] {new Parameter("'html'")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("format", Arrays.asList(new Parameter[] {new Parameter("var")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("join", Arrays.asList(new Parameter[] {new Parameter("'separator'")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("json_encode", Collections.EMPTY_LIST)); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("keys")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("length")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("lower")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("merge", Arrays.asList(new Parameter[] {new Parameter("array")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("nl2br")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("number_format")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("raw")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("replace", Collections.EMPTY_LIST)); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("reverse")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("slice", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("length")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("sort")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("striptags")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("title")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("trim")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("upper")); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("url_encode", Collections.EMPTY_LIST)); //NOI18N
     }
 
-    private static final Set<TwigCompletionItem> FUNCTIONS = new HashSet<TwigCompletionItem>();
+    private static final Set<TwigElement> FUNCTIONS = new HashSet<TwigElement>();
     static {
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("attribute", Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("block", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("constant", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("cycle", Arrays.asList(new Parameter[] {new Parameter("array"), new Parameter("i")}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("date", Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("dump", Arrays.asList(new Parameter[] {new Parameter("variable", Parameter.Need.OPTIONAL)}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("parent", Collections.EMPTY_LIST)); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("random", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
-        FUNCTIONS.add(TwigCompletionItem.Factory.create("range", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("attribute", Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("block", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("constant", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("cycle", Arrays.asList(new Parameter[] {new Parameter("array"), new Parameter("i")}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("date", Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("dump", Arrays.asList(new Parameter[] {new Parameter("variable", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("parent", Collections.EMPTY_LIST)); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("random", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create("range", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
-    private static final Set<TwigCompletionItem> TESTS = new HashSet<TwigCompletionItem>();
+    private static final Set<TwigElement> TESTS = new HashSet<TwigElement>();
     static {
-        TESTS.add(TwigCompletionItem.Factory.create("constant", Arrays.asList(new Parameter[] {new Parameter("'const'")}))); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("defined")); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("divisibleby", Arrays.asList(new Parameter[] {new Parameter("number")}))); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("empty")); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("even")); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("iterable")); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("null")); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("odd")); //NOI18N
-        TESTS.add(TwigCompletionItem.Factory.create("sameas", Arrays.asList(new Parameter[] {new Parameter("variable")}))); //NOI18N
+        TESTS.add(TwigElement.Factory.create("constant", Arrays.asList(new Parameter[] {new Parameter("'const'")}))); //NOI18N
+        TESTS.add(TwigElement.Factory.create("defined")); //NOI18N
+        TESTS.add(TwigElement.Factory.create("divisibleby", Arrays.asList(new Parameter[] {new Parameter("number")}))); //NOI18N
+        TESTS.add(TwigElement.Factory.create("empty")); //NOI18N
+        TESTS.add(TwigElement.Factory.create("even")); //NOI18N
+        TESTS.add(TwigElement.Factory.create("iterable")); //NOI18N
+        TESTS.add(TwigElement.Factory.create("null")); //NOI18N
+        TESTS.add(TwigElement.Factory.create("odd")); //NOI18N
+        TESTS.add(TwigElement.Factory.create("sameas", Arrays.asList(new Parameter[] {new Parameter("variable")}))); //NOI18N
     }
 
-    private static final Set<TwigCompletionItem> OPERATORS = new HashSet<TwigCompletionItem>();
+    private static final Set<TwigElement> OPERATORS = new HashSet<TwigElement>();
     static {
-        OPERATORS.add(TwigCompletionItem.Factory.create("in")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("as")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("is")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("and")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("or")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("not")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("b-and")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("b-or")); //NOI18N
-        OPERATORS.add(TwigCompletionItem.Factory.create("b-xor")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("in")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("as")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("is")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("and")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("or")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("not")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("b-and")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("b-or")); //NOI18N
+        OPERATORS.add(TwigElement.Factory.create("b-xor")); //NOI18N
     }
 
     @Override
@@ -214,7 +214,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeTags(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (TwigCompletionItem tag : TAGS) {
+        for (TwigElement tag : TAGS) {
             if (startsWith(tag.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionProposal.TagCompletionProposal(tag, request));
             }
@@ -222,7 +222,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeFilters(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (TwigCompletionItem parameterizedItem : FILTERS) {
+        for (TwigElement parameterizedItem : FILTERS) {
             if (startsWith(parameterizedItem.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionProposal.FilterCompletionProposal(parameterizedItem, request));
             }
@@ -230,7 +230,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeFunctions(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (TwigCompletionItem parameterizedItem : FUNCTIONS) {
+        for (TwigElement parameterizedItem : FUNCTIONS) {
             if (startsWith(parameterizedItem.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionProposal.FunctionCompletionProposal(parameterizedItem, request));
             }
@@ -238,7 +238,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeTests(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (TwigCompletionItem test : TESTS) {
+        for (TwigElement test : TESTS) {
             if (startsWith(test.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionProposal.TestCompletionProposal(test, request));
             }
@@ -246,7 +246,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeOperators(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (TwigCompletionItem operator : OPERATORS) {
+        for (TwigElement operator : OPERATORS) {
             if (startsWith(operator.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionProposal.OperatorCompletionProposal(operator, request));
             }

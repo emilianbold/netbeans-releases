@@ -57,11 +57,11 @@ import org.openide.util.NbBundle;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public abstract class TwigCompletionProposal implements CompletionProposal {
-    private final TwigCompletionItem twigCompletionItem;
+    private final TwigElement element;
     private final CompletionRequest request;
 
-    public TwigCompletionProposal(final TwigCompletionItem twigCompletionItem, final CompletionRequest request) {
-        this.twigCompletionItem = twigCompletionItem;
+    public TwigCompletionProposal(final TwigElement element, final CompletionRequest request) {
+        this.element = element;
         this.request = request;
     }
 
@@ -72,22 +72,22 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
     @Override
     public ElementHandle getElement() {
-        return null;
+        return element;
     }
 
     @Override
     public String getName() {
-        return twigCompletionItem.getName();
+        return element.getName();
     }
 
     @Override
     public String getInsertPrefix() {
-        return getName();
+        return element.getName();
     }
 
     @Override
     public String getSortText() {
-        return getName();
+        return element.getName();
     }
 
     @Override
@@ -97,7 +97,7 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
     @Override
     public Set<Modifier> getModifiers() {
-        return Collections.EMPTY_SET;
+        return element.getModifiers();
     }
 
     @Override
@@ -115,21 +115,21 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
         formatter.name(getKind(), true);
         formatter.appendText(getName());
         formatter.name(getKind(), false);
-        twigCompletionItem.formatParameters(formatter);
+        element.formatParameters(formatter);
         return formatter.getText();
     }
 
     @Override
     public String getCustomInsertTemplate() {
         StringBuilder template = new StringBuilder();
-        twigCompletionItem.prepareTemplate(template);
+        element.prepareTemplate(template);
         return template.toString();
     }
 
     static class TagCompletionProposal extends TwigCompletionProposal {
 
-        public TagCompletionProposal(TwigCompletionItem twigCompletionItem, CompletionRequest request) {
-            super(twigCompletionItem, request);
+        public TagCompletionProposal(TwigElement element, CompletionRequest request) {
+            super(element, request);
         }
 
         @Override
@@ -149,8 +149,8 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
         private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/filter.png")); //NOI18N
 
-        public FilterCompletionProposal(TwigCompletionItem twigCompletionItem, CompletionRequest request) {
-            super(twigCompletionItem, request);
+        public FilterCompletionProposal(TwigElement element, CompletionRequest request) {
+            super(element, request);
         }
 
         @Override
@@ -173,8 +173,8 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
     static class FunctionCompletionProposal extends TwigCompletionProposal {
 
-        public FunctionCompletionProposal(TwigCompletionItem twigCompletionItem, CompletionRequest request) {
-            super(twigCompletionItem, request);
+        public FunctionCompletionProposal(TwigElement element, CompletionRequest request) {
+            super(element, request);
         }
 
         @Override
@@ -197,8 +197,8 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
     static class TestCompletionProposal extends TwigCompletionProposal {
 
-        public TestCompletionProposal(TwigCompletionItem twigCompletionItem, CompletionRequest request) {
-            super(twigCompletionItem, request);
+        public TestCompletionProposal(TwigElement element, CompletionRequest request) {
+            super(element, request);
         }
 
         @Override
@@ -223,8 +223,8 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
         private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/twig-logo.png")); //NOI18N
 
-        public OperatorCompletionProposal(TwigCompletionItem twigCompletionItem, CompletionRequest request) {
-            super(twigCompletionItem, request);
+        public OperatorCompletionProposal(TwigElement element, CompletionRequest request) {
+            super(element, request);
         }
 
         @Override
@@ -237,7 +237,7 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
-        
+
         @Override
         public ImageIcon getIcon() {
             return ICON;
