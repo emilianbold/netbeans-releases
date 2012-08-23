@@ -146,13 +146,6 @@ public class RemoteFS extends AbstractFileSystem {
         if (fo != null) {
             return fo;
         }
-        try {
-            URLConnection conn = url.openConnection();
-            conn.connect();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
         synchronized (urlCache) {
             urlCache.put(surl, url);
         }
