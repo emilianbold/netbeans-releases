@@ -97,6 +97,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             d.removeListener(this);
             d.removePropertyChangeListener(this);
             project = null;
+            updateAnnotations(Collections.EMPTY_LIST);
         }
     }
 
