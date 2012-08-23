@@ -282,7 +282,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document dcmnt, int i, int i1) {
-        return Collections.emptySet();
+        return null;
     }
 
     @Override
