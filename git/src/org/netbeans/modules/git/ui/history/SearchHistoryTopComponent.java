@@ -70,9 +70,16 @@ public class SearchHistoryTopComponent extends TopComponent {
         initComponents();
     }
 
-    public void search() {        
+    public void search (boolean showCriteria) {
         shp.executeSearch();
-        shp.setSearchCriteria(false);
+        shp.setSearchCriteria(showCriteria);
+    }
+
+    void setSearchCommitId (String commitId) {
+        if (commitId != null) {
+            scp.tfFrom.setText(commitId);
+            scp.tfTo.setText(commitId);
+        }
     }
 
     private void initComponents () {
