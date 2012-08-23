@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="NavigatorPanelWithToolbar">
+        <api name="navigator_api"/>
+        <summary>Added SPI interface <code>NavigatorPanelWithToolbar</code></summary>
+        <version major="1" minor="25"/>
+        <date year="2012" month="8" day="20"/>
+        <author login="jpeska"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            <p>
+                Added SPI interface <code>NavigatorPanelWithToolbar</code>. Clients will implement this interface when they need a toolbar for their Navigator view/panel.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.navigator" name="NavigatorPanelWithToolbar"/>
+        <issue number="217091"/>
+    </change>
     <change id="NavigatorPanel.Registration">
         <api name="navigator_api"/>
         <summary>Added <code>@NavigatorPanel.Registration</code></summary>
