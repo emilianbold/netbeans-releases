@@ -132,7 +132,7 @@ public final class ExternalBrowserPlugin {
     private String urlToString(URL url) {
         try {
             // try to 'normalize' the URL
-            return url.toURI().toASCIIString();
+            return url.toURI().toASCIIString().toLowerCase();
         } catch (URISyntaxException ex) {
             return url.toExternalForm();
         }

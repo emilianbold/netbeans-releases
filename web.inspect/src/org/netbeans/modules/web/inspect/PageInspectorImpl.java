@@ -53,10 +53,13 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -254,6 +257,11 @@ public class PageInspectorImpl extends PageInspector {
             if (toolBar.getComponentCount() == 0) {
                 toolBar.addSeparator();
             }
+            int gapSize = LayoutStyle.getInstance().getPreferredGap(
+                    selectionModeButton, selectionModeButton,
+                    LayoutStyle.ComponentPlacement.RELATED,
+                    SwingConstants.WEST, toolBar);
+            toolBar.add(Box.createHorizontalStrut(gapSize));
             toolBar.add(selectionModeButton);
             selectionModeButton.setSelected(pageModel.isSelectionMode());
             selectionModeButton.setVisible(pageModel.isSynchronizeSelection());

@@ -161,6 +161,10 @@ public class WebKitNodeDescription extends DOMNodeDescription {
 
     }
     
+    public org.openide.nodes.Node getOONNode() {
+        return nbNode;
+    }
+    
     public Node getWebKitNode() {
         return webKitNode;
     }

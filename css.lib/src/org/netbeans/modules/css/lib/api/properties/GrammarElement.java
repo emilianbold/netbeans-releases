@@ -72,6 +72,9 @@ public abstract class GrammarElement {
         this.name = elementName;
     }
     
+    /**
+     * Return name of the element if it is named, null otherwise.
+     */
     public String getName() {
         return name;
     }

@@ -143,9 +143,11 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
 
             FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
-            FormatToken beforeWhile = whileToken.previous();
-            if (beforeWhile != null) {
-                appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+            if (whileToken != null) {
+                FormatToken beforeWhile = whileToken.previous();
+                if (beforeWhile != null) {
+                    appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+                }
             }
             if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
                 return null;
@@ -411,10 +413,10 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
             }
+            handleFunctionCallChain(callNode);
         }
         return super.visit(callNode, onset);
     }
-
 
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
@@ -638,6 +640,22 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(varNode, onset);
     }
 
+    private void handleFunctionCallChain(CallNode callNode) {
+        Node function = callNode.getFunction();
+        if (function instanceof AccessNode) {
+            Node base = ((AccessNode) function).getBase();
+            if (base instanceof CallNode) {
+                CallNode chained = (CallNode) base;
+                int finish = getFinish(chained);
+                FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_DOT);
+                if (formatToken != null) {
+                    appendTokenAfterLastVirtual(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.AFTER_CHAIN_CALL_DOT));
+                }
+            }
+        }
+    }
+
     private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
@@ -714,10 +732,10 @@ public class FormatVisitor extends NodeVisitor {
         handleBlockContent(block);
 
         Node statement = block.getStatements().get(0);
-        
+
         // indentation mark & block start
         Token token = getPreviousNonEmptyToken(getStart(statement));
-        
+
         /*
          * If its VarNode it does not contain var keyword so we have to search
          * for it.
@@ -725,7 +743,7 @@ public class FormatVisitor extends NodeVisitor {
         if (statement instanceof VarNode && token.id() == JsTokenId.KEYWORD_VAR) {
             token = getPreviousNonEmptyToken(ts.offset());
         }
-        
+
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
             if (!isScript(block)) {
@@ -1112,7 +1130,7 @@ public class FormatVisitor extends NodeVisitor {
         // in case it is string literal.
         int finish = node.getFinish();
         ts.move(finish);
-        if(!ts.moveNext()) {
+        if (!ts.moveNext()) {
             return finish;
         }
         Token<? extends JsTokenId> token = ts.token();

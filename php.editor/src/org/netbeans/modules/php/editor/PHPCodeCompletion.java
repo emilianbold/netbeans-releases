@@ -1280,7 +1280,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
-        return Collections.EMPTY_SET;
+        return null;
     }
 
     @Override

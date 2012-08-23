@@ -51,8 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
 import org.apache.tools.ant.Project;
@@ -211,7 +209,7 @@ public class FixDependencies extends Task {
         String old = stream;
         data = null;
 
-        for (Replace r : replaces) {
+        DEPS: for (Replace r : replaces) {
             int md = stream.indexOf("<module-dependencies");
             if (md == -1) {
                 throw new BuildException("No module dependencies in " + file);
@@ -247,7 +245,7 @@ public class FixDependencies extends Task {
             for (Module m : r.modules) {
                 if (m.codeNameBase.equals(r.codeNameBase)) {
                     if (remove.contains("<implementation-version/>")) {
-                        return false;
+                        continue DEPS;
                     }
 
                     String b = "<specification-version>";
@@ -256,7 +254,7 @@ public class FixDependencies extends Task {
                     if (specBeg != -1 && specEnd != -1) {
                         String v = remove.substring(specBeg + b.length(), specEnd);
                         if (olderThanOrEqual(m.specVersion, v)) {
-                            return false;
+                            continue DEPS;
                         }
                     }
                 } else {

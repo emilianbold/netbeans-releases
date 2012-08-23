@@ -111,12 +111,14 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
         "titleLabel.text={0} properties",
-        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only",
+        "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only",
         "label.add.property=Add Property"
 })
 public class RuleEditorPanel extends JPanel {
     
-    private static final Logger LOG = Logger.getLogger(RuleEditorPanel.class.getSimpleName());
+    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
 
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
