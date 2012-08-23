@@ -59,16 +59,16 @@ import org.openide.util.NbBundle;
  */
 public abstract class TwigCompletionItem implements CompletionProposal {
     private final String name;
-    private final CodeCompletionContext codeCompletionContext;
+    private final CompletionRequest request;
 
-    public TwigCompletionItem(final String name, final CodeCompletionContext codeCompletionContext) {
+    public TwigCompletionItem(final String name, final CompletionRequest request) {
         this.name = name;
-        this.codeCompletionContext = codeCompletionContext;
+        this.request = request;
     }
 
     @Override
     public int getAnchorOffset() {
-        return codeCompletionContext.getCaretOffset();
+        return request.anchorOffset;
     }
 
     @Override
@@ -103,7 +103,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
     @Override
     public boolean isSmart() {
-        return getName().startsWith(codeCompletionContext.getPrefix());
+        return getName().startsWith(request.prefix);
     }
 
     @Override
@@ -121,8 +121,8 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
     static class TagCompletionItem extends TwigCompletionItem {
 
-        public TagCompletionItem(String name, CodeCompletionContext context) {
-            super(name, context);
+        public TagCompletionItem(String name, CompletionRequest request) {
+            super(name, request);
         }
 
         @Override
@@ -147,8 +147,8 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
         private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/filter.png")); //NOI18N
 
-        public FilterCompletionItem(String name, CodeCompletionContext codeCompletionContext) {
-            super(name, codeCompletionContext);
+        public FilterCompletionItem(String name, CompletionRequest request) {
+            super(name, request);
         }
 
         @Override
@@ -177,8 +177,8 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     static class FunctionCompletionItem extends TwigCompletionItem {
         private final TwigFunction function;
 
-        public FunctionCompletionItem(TwigFunction function, CodeCompletionContext codeCompletionContext) {
-            super(function.getName(), codeCompletionContext);
+        public FunctionCompletionItem(TwigFunction function, CompletionRequest request) {
+            super(function.getName(), request);
             this.function = function;
         }
 
@@ -211,8 +211,8 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
     static class TestCompletionItem extends TwigCompletionItem {
 
-        public TestCompletionItem(String name, CodeCompletionContext codeCompletionContext) {
-            super(name, codeCompletionContext);
+        public TestCompletionItem(String name, CompletionRequest request) {
+            super(name, request);
         }
 
         @Override
@@ -235,8 +235,8 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
     static class OperatorCompletionItem extends TwigCompletionItem {
 
-        public OperatorCompletionItem(String name, CodeCompletionContext codeCompletionContext) {
-            super(name, codeCompletionContext);
+        public OperatorCompletionItem(String name, CompletionRequest request) {
+            super(name, request);
         }
 
         @Override
@@ -255,6 +255,11 @@ public abstract class TwigCompletionItem implements CompletionProposal {
             return getName();
         }
 
+    }
+
+    public static class CompletionRequest {
+        public int anchorOffset;
+        public String prefix;
     }
 
 }

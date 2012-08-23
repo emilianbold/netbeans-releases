@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.twig.editor.completion.TwigCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.twig.editor.completion.TwigFunction.Parameter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
@@ -170,7 +171,11 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                     tokenSequence.move(codeCompletionContext.getCaretOffset());
                     tokenSequence.moveNext();
                     if (tokenSequence.token() != null && !isDelimiter(tokenSequence.token().id())) {
-                        completeAll(completionProposals, codeCompletionContext);
+                        CompletionRequest request = new CompletionRequest();
+                        request.prefix = codeCompletionContext.getPrefix();
+                        int caretOffset = codeCompletionContext.getCaretOffset();
+                        request.anchorOffset = caretOffset - getPrefix(codeCompletionContext.getParserResult(), caretOffset, true).length();
+                        completeAll(completionProposals, request);
                     }
                 }
             }
@@ -182,41 +187,41 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         return TwigTokenId.T_TWIG_VARIABLE.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId);
     }
 
-    private void completeAll(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
-        completeTags(completionProposals, codeCompletionContext);
-        completeFilters(completionProposals, codeCompletionContext);
-        completeFunctions(completionProposals, codeCompletionContext);
-        completeTests(completionProposals, codeCompletionContext);
-        completeOperators(completionProposals, codeCompletionContext);
+    private void completeAll(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
+        completeTags(completionProposals, request);
+        completeFilters(completionProposals, request);
+        completeFunctions(completionProposals, request);
+        completeTests(completionProposals, request);
+        completeOperators(completionProposals, request);
     }
 
-    private void completeTags(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
+    private void completeTags(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String tag : TAGS) {
-            completionProposals.add(new TwigCompletionItem.TagCompletionItem(tag, codeCompletionContext));
+            completionProposals.add(new TwigCompletionItem.TagCompletionItem(tag, request));
         }
     }
 
-    private void completeFilters(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
+    private void completeFilters(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String filter : FILTERS) {
-            completionProposals.add(new TwigCompletionItem.FilterCompletionItem(filter, codeCompletionContext));
+            completionProposals.add(new TwigCompletionItem.FilterCompletionItem(filter, request));
         }
     }
 
-    private void completeFunctions(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
+    private void completeFunctions(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (TwigFunction function : FUNCTIONS) {
-            completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(function, codeCompletionContext));
+            completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(function, request));
         }
     }
 
-    private void completeTests(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
+    private void completeTests(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String test : TESTS) {
-            completionProposals.add(new TwigCompletionItem.TestCompletionItem(test, codeCompletionContext));
+            completionProposals.add(new TwigCompletionItem.TestCompletionItem(test, request));
         }
     }
 
-    private void completeOperators(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
+    private void completeOperators(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String operator : OPERATORS) {
-            completionProposals.add(new TwigCompletionItem.OperatorCompletionItem(operator, codeCompletionContext));
+            completionProposals.add(new TwigCompletionItem.OperatorCompletionItem(operator, request));
         }
     }
 
