@@ -42,6 +42,8 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -92,6 +94,8 @@ import org.openide.util.Parameters;
  */
 public final class RuleEditorController {
     
+    private static final Logger LOG = Logger.getLogger(RuleEditorController.class.getSimpleName());
+    
     /**
      * Property change support event keys.
      */
@@ -138,11 +142,21 @@ public final class RuleEditorController {
      * 
      * All subsequent actions refers to this model.
      * 
+     * Note: The implementation tries to find a rule corresponding to the previously
+     * active rule and set it as active.
+     * 
      * @param cssSourceModel an instance of {@link Model}
      */
-    public void setModel(Model cssSourceModel) {
+    public void setModel(final Model cssSourceModel) {
+        LOG.log(Level.INFO, "setModel({0})", cssSourceModel);
+        
         Parameters.notNull("cssSourceModel", cssSourceModel);
-        peer.setModel(cssSourceModel);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                peer.setModel(cssSourceModel);
+            }
+        });
     }
     
     /**
@@ -151,6 +165,8 @@ public final class RuleEditorController {
      * @param rule a non null instance of {@link Rule). <b>MUST belong to the selected css model instance!</b>
      */
     public void setRule(final Rule rule) {
+        LOG.log(Level.INFO, "setRule({0})", rule);
+        
         Parameters.notNull("rule", rule);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -165,6 +181,8 @@ public final class RuleEditorController {
      * The panel will show some informational message instead of the css rule properties.
      */
     public void setNoRuleState() {
+        LOG.log(Level.INFO, "setNoRuleState()");
+        
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {

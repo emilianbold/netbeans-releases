@@ -44,9 +44,12 @@ package org.netbeans.modules.css.live;
 import javax.swing.text.Document;
 
 /**
+ * HACK! TO BE REMOVED!!!
+ * 
  * Updates given css Document in live webkit browser.
  * Instance to be registered in Lookup.
  * 
+ * @deprecated 
  * @author Jan Becicka
  */
 public interface LiveUpdater {

@@ -69,9 +69,9 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
-    
     //holds a reference to the RuleEditorTC top component
     private RuleEditorTC RULE_EDITOR_TC;
+    private CssCslParserResult lastResult;
 
     public CssCaretAwareSourceTask() {
         RuleEditorTCController.init();
@@ -106,9 +106,26 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
         final int caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
 
+        final boolean newModel = lastResult == null || result.getSnapshot() != lastResult.getSnapshot();
+        lastResult = result;
+
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if (cancelled) {
+            return;
+        }
+                if(newModel) {
+                    updateModel(RULE_EDITOR_TC, result);
+                } else {
+                    updateCaret(RULE_EDITOR_TC, result, caretOffset);
+                }
+            }
+        };
+
         //no need for synchronization since the reference is set from different thread if null,
         //possible multiple sets will not harm
-        if(RULE_EDITOR_TC == null) {
+        if (RULE_EDITOR_TC == null) {
             //the RuleEditorTC TopComponent reference must be grabbed from EDT, 
             //then since it is a singleton we may use it via a held reference,
             //mainly to avoid the threads switching (PARSING->EDT->RP)
@@ -117,27 +134,24 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                 public void run() {
                     RULE_EDITOR_TC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
                     if (RULE_EDITOR_TC != null) {
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateCssPropertiesWindow(RULE_EDITOR_TC, result, caretOffset);
-                            }
-                        });
+                        RequestProcessor.getDefault().post(task);
                     }
                 }
             });
         } else {
             //call directly from the parsing thread
-            updateCssPropertiesWindow(RULE_EDITOR_TC, result, caretOffset);
+            task.run();
         }
+    }
+
+    //need not to be called from EDT
+    private void updateModel(final RuleEditorTC ruleEditorTC, final CssCslParserResult result) {
+        RuleEditorController controller = ruleEditorTC.getRuleEditorController();
+        controller.setModel(result.getModel());
     }
     
     //need not to be called from EDT
-    private void updateCssPropertiesWindow(final RuleEditorTC ruleEditorTC, final CssCslParserResult result, int documentOffset) {
-        if (cancelled) {
-            return;
-        }
-        
+    private void updateCaret(final RuleEditorTC ruleEditorTC, final CssCslParserResult result, int documentOffset) {
         final RuleEditorController controller = ruleEditorTC.getRuleEditorController();
 
         final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
@@ -169,14 +183,12 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                 if (cancelled) {
                     return;
                 }
-                
+
                 Rule match = ruleRef.get();
                 if (match == null) {
                     controller.setNoRuleState();
                 } else {
-                    controller.setModel(result.getModel());
                     controller.setRule(match);
-
                 }
 
             }

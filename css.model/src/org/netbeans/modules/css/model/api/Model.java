@@ -69,6 +69,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -400,6 +401,7 @@ public final class Model {
         saveIfNotOpenInEditor(document);
     }
 
+    //>>> TEMPORARY HACK - TO BE REMOVED FROM THE MODULE !!! 
     private static void saveIfNotOpenInEditor(Document document) throws IOException {
         DataObject dataObject = getDataObject(document);
         if (dataObject == null) {
@@ -428,6 +430,15 @@ public final class Model {
             return (DataObject)sdp;
         }
         return null;
+    }
+    //<<<
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append(super.toString())
+                .append("file=")
+                .append(getLookup().lookup(FileObject.class))
+                .toString();
     }
     
     private static ElementFactoryImpl getElementFactoryImpl(Model model) {
