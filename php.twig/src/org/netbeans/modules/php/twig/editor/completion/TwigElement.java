@@ -210,15 +210,15 @@ public interface TwigElement extends ElementHandle {
         }
 
         private final String name;
-        private final Need cardinality;
+        private final Need need;
 
         public Parameter(final String name) {
             this(name, Need.MANDATORY);
         }
 
-        public Parameter(final String name, final Need cardinality) {
+        public Parameter(final String name, final Need need) {
             this.name = name;
-            this.cardinality = cardinality;
+            this.need = need;
         }
 
         public void format(final HtmlFormatter formatter) {
@@ -236,7 +236,7 @@ public interface TwigElement extends ElementHandle {
         }
 
         private boolean isMandatory() {
-            return Need.MANDATORY.equals(cardinality);
+            return Need.MANDATORY.equals(need);
         }
 
     }
