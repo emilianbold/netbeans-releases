@@ -100,6 +100,14 @@ ${selection}${cursor}
 }]]>
         </code>
     </codetemplate>
+    <codetemplate abbreviation="fun" descriptionId="CT_fun">
+        <code>
+<![CDATA[
+function(${parameters}) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
     <codetemplate abbreviation="func">
         <code>
 <![CDATA[/**
@@ -131,14 +139,14 @@ function ${name}(${parameters}) {
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="if">
+    <codetemplate abbreviation="if" descriptionId="CT_if">
         <code>
 <![CDATA[if (${expr}) {
     ${selection}${cursor}
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ife">
+    <codetemplate abbreviation="ife" descriptionId="CT_ife">
         <code>
 <![CDATA[if (${expr}) {
    ${selection}${cursor}
@@ -149,7 +157,7 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="lb">
         <code>
 <![CDATA[${label}:
-    ${cursor}]]>
+    ${selection}${cursor}]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="new">
@@ -172,7 +180,7 @@ function ${name}(${parameters}) {
         <code><![CDATA[${no-indent}throw new Error("${errorMessage}");]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="try" descriptionId="ct_try" xml:space="preserve">
+    <codetemplate abbreviation="try" xml:space="preserve">
         <code>
 <![CDATA[try {
     ${selection}${cursor}
@@ -188,14 +196,14 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="wh">
         <code>
 <![CDATA[while (${expr default="true"}) {
-    ${cursor}
+    ${selection}${cursor}
 }]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="wi">
         <code>
 <![CDATA[with (${object}) {
-    ${code default=""}
+    ${selection}${code default=""}
 }]]>
         </code>
     </codetemplate>
