@@ -241,9 +241,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.web.clientproject.spi</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

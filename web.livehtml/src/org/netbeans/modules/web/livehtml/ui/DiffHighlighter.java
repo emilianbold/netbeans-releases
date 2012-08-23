@@ -49,6 +49,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -60,7 +61,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.modules.web.domdiff.Change;
-import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.RequestProcessor;
 
@@ -169,28 +169,37 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
 //            return;
 //        }
         selectedOffset = comp.getCaretPosition();
-        lastRefreshTask.schedule(100);
+        lastRefreshTask.schedule(300);
     }
     
     private void updateHover() {
         bag2.clear();
+        if (!(comp instanceof AnalysisPanel.MyEditorPane)) {
+            return;
+        }
         int offset = selectedOffset;//comp.getCaretPosition();
         if (changes == null) {
-//            ((RealContent.MyEditorPane)comp).showToolTip(-1);
+            ((AnalysisPanel.MyEditorPane)comp).showToolTip(-1);
             return;
         }
         for (Change o : changes) {
-            if (offset >= o.getOffset() && offset <= o.getOffset()+o.getLength() && o.getRevisionIndex() != -1) {
-                for (Change oo : changes) {
-                    if (oo.getRevisionIndex() == o.getRevisionIndex()) {
-                        bag2.addHighlight(oo.getOffset(), oo.getOffset()+oo.getLength(), hoverColor);
+            if (offset >= o.getOffset() && offset <= o.getOffset()+o.getLength()) {
+                if (o.getRevisionIndex() != -1) {
+                    for (Change oo : changes) {
+                        if (oo.getRevisionIndex() == o.getRevisionIndex()) {
+                            bag2.addHighlight(oo.getOffset(), oo.getOffset()+oo.getLength(), hoverColor);
+                        }
                     }
                 }
-//                ((RealContent.MyEditorPane)comp).showToolTip(o.getRevisionIndex());
+                int x = o.getRevisionIndex();
+                if (x == -1) {
+                    x = -2; // XXX refactor this
+                }
+                ((AnalysisPanel.MyEditorPane)comp).showToolTip(x);
                 return;
             }
         }
-//        ((RealContent.MyEditorPane)comp).showToolTip(-1);
+        ((AnalysisPanel.MyEditorPane)comp).showToolTip(-1);
     }
     
     @Override
@@ -231,7 +240,7 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
             return;
         }
         selectedOffset = offset;
-        lastRefreshTask.schedule(100);
+        lastRefreshTask.schedule(300);
    }
 
 }
