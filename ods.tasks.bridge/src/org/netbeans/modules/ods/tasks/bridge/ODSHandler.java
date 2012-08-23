@@ -293,6 +293,26 @@ public class ODSHandler {
         };
     }
 
+    Action getOpenTaskAction (final Repository repo, final String taskId) {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                if (KenaiAccessorImpl.getPasswordAuthentication(server, true) == null) {
+                    return;
+                }
+                Support.getInstance().post(new Runnable() { // XXX add post method to BM
+                    @Override
+                    public void run () {
+                        Issue[] tasks = repo.getIssues(taskId);
+                        if (tasks.length > 0) {
+                            tasks[0].open();
+                        }
+                    }
+                });
+            }
+        };
+    }
+
     void clear () {
         synchronized (projectListeners) {
             projectListeners.clear();

@@ -129,6 +129,12 @@ public class QueryAccessorImpl extends QueryAccessor<ODSProject> {
     }
 
     @Override
+    public Action getOpenTaskAction (ProjectHandle<ODSProject> projectHandle, String taskId) {
+        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        return Support.getInstance().getODSHandler(projectHandle, this).getOpenTaskAction(repo, taskId);
+    }
+
+    @Override
     public Action getOpenQueryResultAction (QueryResultHandle result) {
         if (result instanceof ActionListener) {
             return new ActionWrapper((ActionListener) result);

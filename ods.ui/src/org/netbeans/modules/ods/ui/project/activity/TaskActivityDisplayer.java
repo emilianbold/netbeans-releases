@@ -49,25 +49,33 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
 import org.netbeans.modules.ods.ui.utils.Utils;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class TaskActivityDisplayer extends ActivityDisplayer {
 
     private TaskActivity activity;
+    private final ProjectHandle<ODSProject> projectHandle;
 
-    public TaskActivityDisplayer(TaskActivity activity, int maxWidth) {
+    public TaskActivityDisplayer(TaskActivity activity, ProjectHandle<ODSProject> projectHandle, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
         this.activity = activity;
+        this.projectHandle = projectHandle;
     }
 
     @Override
@@ -83,7 +91,13 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkDisplayName = new LinkLabel() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(activity.getActivity().getTask().getUrl());
+                QueryAccessor<ODSProject> queryAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODSProject.class);
+                Action openAction = queryAccessor == null ? null : queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
+                if (openAction == null) {
+                    Utils.openBrowser(activity.getActivity().getTask().getUrl());
+                } else {
+                    openAction.actionPerformed(new ActionEvent(TaskActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                }
             }
         };
         String taskName = Utils.computeFitText(linkDisplayName, maxWidth, getTaskDisplayName(), false);

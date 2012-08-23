@@ -550,7 +550,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     private void loadRecentActivities() {
-        RecentActivitiesPanel activityPanel = new RecentActivitiesPanel(client, project.getId());
+        RecentActivitiesPanel activityPanel = new RecentActivitiesPanel(client, projectHandle);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 0, 3);
         gbc.anchor = GridBagConstraints.NORTHWEST;

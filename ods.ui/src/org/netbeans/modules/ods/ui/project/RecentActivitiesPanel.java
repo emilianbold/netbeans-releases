@@ -57,9 +57,11 @@ import java.util.logging.Level;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.ods.ui.utils.Utils;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -69,7 +71,7 @@ import org.openide.util.RequestProcessor;
 public class RecentActivitiesPanel extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(RecentActivitiesPanel.class);
-    private final String projectId;
+    private final ProjectHandle<ODSProject> projectHandle;
     private final ODSClient client;
     private JCheckBox chbTask;
     private JCheckBox chbWiki;
@@ -81,9 +83,9 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     /**
      * Creates new form RecentActivitiesPanel
      */
-    public RecentActivitiesPanel(ODSClient client, String projectId) {
+    public RecentActivitiesPanel(ODSClient client, ProjectHandle<ODSProject> projectHandle) {
         this.client = client;
-        this.projectId = projectId;
+        this.projectHandle = projectHandle;
         initComponents();
         loadRecentActivities();
     }
@@ -198,7 +200,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 try {
-                    final List<ProjectActivity> recentActivities = client.getRecentActivities(projectId);
+                    final List<ProjectActivity> recentActivities = client.getRecentActivities(projectHandle.getTeamProject().getId());
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -285,7 +287,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                 maxWidth = this.getVisibleRect().width - 150;
             }
 
-            final ActivityPanel activityPanel = new ActivityPanel(activity, maxWidth);
+            final ActivityPanel activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
             if (activityPanel.hasDetails()) {
                 activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
             }

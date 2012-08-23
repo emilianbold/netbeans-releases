@@ -51,11 +51,13 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.project.activity.ActivityDisplayer;
 import org.netbeans.modules.ods.ui.project.activity.BuildActivityDisplayer;
 import org.netbeans.modules.ods.ui.project.activity.ScmActivityDisplayer;
 import org.netbeans.modules.ods.ui.project.activity.TaskActivityDisplayer;
 import org.netbeans.modules.ods.ui.project.activity.WikiActivityDisplayer;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
  *
@@ -71,9 +73,9 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable {
     /**
      * Creates new form ActivityPanel
      */
-    public ActivityPanel(ProjectActivity activity, int maxWidth) {
+    public ActivityPanel(ProjectActivity activity, ProjectHandle<ODSProject> projectHandle, int maxWidth) {
         if (activity instanceof TaskActivity) {
-            activityAccessor = new TaskActivityDisplayer((TaskActivity) activity, maxWidth);
+            activityAccessor = new TaskActivityDisplayer((TaskActivity) activity, projectHandle, maxWidth);
         } else if (activity instanceof BuildActivity) {
             activityAccessor = new BuildActivityDisplayer((BuildActivity) activity, maxWidth);
         } else if (activity instanceof ScmActivity) {
