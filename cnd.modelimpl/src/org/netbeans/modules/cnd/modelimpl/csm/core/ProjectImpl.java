@@ -80,7 +80,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public final class ProjectImpl extends ProjectBase {
 
-    private ProjectImpl(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private ProjectImpl(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
         super(model, fs, platformProject, name);
     // RepositoryUtils.put(this);
     }
@@ -89,7 +89,7 @@ public final class ProjectImpl extends ProjectBase {
         return createInstance(model, platformProject.getFileSystem(), platformProject, name);
     }
 
-    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
         ProjectBase instance = null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {

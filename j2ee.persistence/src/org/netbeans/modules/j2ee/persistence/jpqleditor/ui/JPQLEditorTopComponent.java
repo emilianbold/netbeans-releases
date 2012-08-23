@@ -62,6 +62,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -79,6 +80,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -86,12 +89,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -99,6 +106,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -144,6 +152,15 @@ public final class JPQLEditorTopComponent extends TopComponent {
     public JPQLEditorTopComponent(JPQLEditorController controller) {
         this.controller = controller;
         initComponents();
+        puComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                puComboboxActionPerformed();
+            }
+
+
+        });
+        
         this.thisWindowCount = getNextWindowCount();
         setName(NbBundle.getMessage(JPQLEditorTopComponent.class, "CTL_JPQLEditorTopComponent") + thisWindowCount);
         setToolTipText(NbBundle.getMessage(JPQLEditorTopComponent.class, "HINT_JPQLEditorTopComponent"));
@@ -993,4 +1010,26 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         resultToggleButton.setSelected(true);
         ((CardLayout) resultsOrErrorPanel.getLayout()).first(resultsOrErrorPanel);
     }
+    
+    private void puComboboxActionPerformed() {
+        if(puComboBox.getSelectedItem() != null) {
+            FileObject pXml = puObject.getPrimaryFile();
+            Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+            PersistenceEnvironment pe = project != null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
+
+            PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
+            final DatabaseConnection dbconn = JPAEditorUtil.findDatabaseConnection(pu, pe.getProject());
+            if (dbconn != null) {
+                if (dbconn.getJDBCConnection() == null) {
+                    Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
+                        @Override
+                        public DatabaseConnection run() {
+                            ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                            return dbconn;
+                        }
+                    });
+                }
+            }
+        }
+    }    
 }

@@ -54,8 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
@@ -64,6 +62,7 @@ import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.model.api.*;
@@ -391,7 +390,7 @@ public class RuleNode extends AbstractNode {
         }
 
         public void add(PropertyDefinition propertyDefinition) {
-            properties.add(new PropertyDefinitionProperty(propertyDefinition));
+            properties.add(createPropertyDefinitionProperty(propertyDefinition));
         }
 
         @Override
@@ -400,14 +399,53 @@ public class RuleNode extends AbstractNode {
         }
     }
 
+     private PropertyDefinitionProperty createPropertyDefinitionProperty(PropertyDefinition definition) {
+        PropertyModel pmodel = Properties.getPropertyModel(definition.getName());
+        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(pmodel));
+    }
+    
+     private PropertyValuesEditor createPropertyValueEditor(PropertyModel pmodel) {
+        GroupGrammarElement rootElement = pmodel.getGrammarElement();
+        final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
+        final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
+
+        rootElement.accept(new GrammarElementVisitor() {
+
+            @Override
+            public void visit(UnitGrammarElement element) {
+                unitElements.add(element);
+            }
+
+            @Override
+            public void visit(FixedTextGrammarElement element) {
+                fixedElements.add(element);
+            }
+            
+        });
+        
+        if(!fixedElements.isEmpty()) {
+            return  new PropertyValuesEditor(fixedElements, unitElements);
+        }
+        
+        return null;
+     }
+     
     private class PropertyDefinitionProperty extends PropertySupport<String> {
 
         private PropertyDefinition def;
         private static final String EMPTY = "";
+        
+        private PropertyEditor editor;
 
-        public PropertyDefinitionProperty(PropertyDefinition def) {
+        public PropertyDefinitionProperty(PropertyDefinition def, PropertyEditor editor) {
             super(def.getName(), String.class, def.getName(), Bundle.rule_properties_add_declaration_tooltip(), true, getRule().isValid());
             this.def = def;
+            this.editor = editor;
+        }
+        
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return editor;
         }
 
         @Override
@@ -451,30 +489,7 @@ public class RuleNode extends AbstractNode {
 
     private DeclarationProperty createDeclarationProperty(Declaration declaration) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
-        GroupGrammarElement rootElement = resolvedProperty.getPropertyModel().getGrammarElement();
-
-        final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
-        final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
-
-        rootElement.accept(new GrammarElementVisitor() {
-
-            @Override
-            public void visit(UnitGrammarElement element) {
-                unitElements.add(element);
-            }
-
-            @Override
-            public void visit(FixedTextGrammarElement element) {
-                fixedElements.add(element);
-            }
-            
-        });
-        
-        PropertyEditor customPropertyEditor = null;
-        if(!fixedElements.isEmpty()) {
-            customPropertyEditor = new PropertyValuesEditor(fixedElements, unitElements);
-        }
-        return new DeclarationProperty(declaration, customPropertyEditor);
+        return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel()));
     }
 
     private class DeclarationProperty extends PropertySupport {

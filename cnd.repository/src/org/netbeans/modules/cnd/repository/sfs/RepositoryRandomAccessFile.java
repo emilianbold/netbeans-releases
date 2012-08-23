@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
 
 /**
  *
@@ -63,10 +64,20 @@ public class RepositoryRandomAccessFile extends RandomAccessFile implements Repo
     }
 
     @Override
+    public void writeUnitId(int unitId) throws IOException {
+        UnitsUtil.writeUnitId(unitId, this);
+    }
+
+    @Override
     public CharSequence readCharSequenceUTF() throws IOException {
         return UTF.readCharSequenceUTF(this);
     }
-    
+
+    @Override
+    public int readUnitId() throws IOException {
+        return UnitsUtil.readUnitId(this);
+    }
+
     private static final int sharedArrySize = 1024;
     private final byte[] sharedByteArray = new byte[sharedArrySize];
     private final char[] sharedCharArray = new char[sharedArrySize];

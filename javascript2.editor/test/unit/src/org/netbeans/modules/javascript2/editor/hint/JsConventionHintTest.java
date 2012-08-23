@@ -42,7 +42,10 @@
 package org.netbeans.modules.javascript2.editor.hint;
 
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.css.editor.properties.Semitones;
+import org.netbeans.modules.javascript2.editor.hints.BetterConditionHint;
 import org.netbeans.modules.javascript2.editor.hints.JsConventionRule;
+import org.netbeans.modules.javascript2.editor.hints.MissingSemicolonHint;
 
 /**
  *
@@ -59,43 +62,51 @@ public class JsConventionHintTest extends HintTestBase {
         return new JsConventionRule();
     }
     
+    private Rule createSemicolonHint() {
+        return new MissingSemicolonHint();
+    }
+    
+    private Rule createBetterConditionHint() {
+        return new BetterConditionHint();
+    }
+    
     public void testSemicolon1() throws Exception {
-        checkHints(this, createRule(), "testfiles/coloring/assignments01.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/coloring/assignments01.js", null);
     }
     
     public void testSemicolon01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/variableDeclaration.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/variableDeclaration.js", null);
     }
     
     public void testSemicolon02() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/missingSemicolon01.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/missingSemicolon01.js", null);
     }
     
     public void testSemicolon03() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/varInForNode.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/varInForNode.js", null);
     }
     
     public void testUnexpectedComma01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/unexpectedComma.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/unexpectedComma.js", null);
     }
     
     public void testAccidentalAssignment01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/accidentalAssignment.js", null);
+        checkHints(this, createBetterConditionHint(), "testfiles/hints/accidentalAssignment.js", null);
     }
     
     public void testBetterCondition01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/betterCondition.js", null);
+        checkHints(this, createBetterConditionHint(), "testfiles/hints/betterCondition.js", null);
     }
     
     public void testDuplicateName01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/duplicateName.js", null);
+        checkHints(this, createBetterConditionHint(), "testfiles/hints/duplicateName.js", null);
     }
     
     public void testDuplicateName02() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/duplicateName02.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/duplicateName02.js", null);
     }
     
     public void testDuplicateName03() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/duplicateName03.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/duplicateName03.js", null);
     }
 }

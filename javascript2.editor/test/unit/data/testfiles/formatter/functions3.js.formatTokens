@@ -42,7 +42,9 @@ FormattingToken{kind=EOL, offset=46, text=
 }
 FormattingToken{kind=WHITESPACE, offset=47, text=    }
 FormattingToken{kind=TEXT, offset=51, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=55, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=56, text=color}
 FormattingToken{kind=WHITESPACE, offset=61, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -58,7 +60,9 @@ FormattingToken{kind=EOL, offset=70, text=
 }
 FormattingToken{kind=WHITESPACE, offset=71, text=      }
 FormattingToken{kind=TEXT, offset=77, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=81, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=82, text=maker}
 FormattingToken{kind=WHITESPACE, offset=87, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -76,7 +80,9 @@ FormattingToken{kind=EOL, offset=97, text=
 }
 FormattingToken{kind=WHITESPACE, offset=98, text=  }
 FormattingToken{kind=TEXT, offset=100, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=104, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=105, text=getColor}
 FormattingToken{kind=WHITESPACE, offset=113, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -99,7 +105,9 @@ FormattingToken{kind=WHITESPACE, offset=130, text=        }
 FormattingToken{kind=TEXT, offset=138, text=return}
 FormattingToken{kind=WHITESPACE, offset=144, text= }
 FormattingToken{kind=TEXT, offset=145, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=149, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=150, text=color}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=155, text=;}
@@ -114,7 +122,9 @@ FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=162, text=
 }
 FormattingToken{kind=TEXT, offset=163, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=167, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=168, text=getMaker}
 FormattingToken{kind=WHITESPACE, offset=176, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -201,7 +211,9 @@ FormattingToken{kind=EOL, offset=297, text=
 }
 FormattingToken{kind=WHITESPACE, offset=298, text=       }
 FormattingToken{kind=TEXT, offset=305, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=309, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=310, text=street}
 FormattingToken{kind=WHITESPACE, offset=316, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -217,7 +229,9 @@ FormattingToken{kind=EOL, offset=326, text=
 }
 FormattingToken{kind=WHITESPACE, offset=327, text=    }
 FormattingToken{kind=TEXT, offset=331, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=335, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=336, text=town}
 FormattingToken{kind=WHITESPACE, offset=340, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
@@ -233,7 +247,9 @@ FormattingToken{kind=EOL, offset=348, text=
 }
 FormattingToken{kind=WHITESPACE, offset=349, text=    }
 FormattingToken{kind=TEXT, offset=353, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=357, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=358, text=country}
 FormattingToken{kind=WHITESPACE, offset=365, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}

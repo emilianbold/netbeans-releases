@@ -1400,7 +1400,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
          */
         @Override
         public int hashCode() {
-            return getName().hashCode();
+            final String n = getName();
+            return n == null ? 0 : n.hashCode();
         }
 
         /** Return a variant of the display name containing HTML markup
