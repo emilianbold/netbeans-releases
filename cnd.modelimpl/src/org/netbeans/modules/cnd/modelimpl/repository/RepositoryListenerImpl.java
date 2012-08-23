@@ -131,7 +131,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** RepositoryListener implementation */
     @Override
-    public boolean unitOpened(final CharSequence unitName) {
+    public boolean unitOpened(final int unitId, final CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: unitOpened %s\n", unitName); // NOI18N
         }
@@ -151,7 +151,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** RepositoryListener implementation */
     @Override
-    public void unitClosed(final CharSequence unitName) {
+    public void unitClosed(final int unitId, final CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: unitClosed %s\n", unitName); // NOI18N
         }
@@ -166,7 +166,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** RepositoryListener implementation */
     @Override
-    public void anExceptionHappened(final CharSequence unitName, RepositoryException exc) {
+    public void anExceptionHappened(final int unitId, final CharSequence unitName, RepositoryException exc) {
         assert exc != null;
         if (TraceFlags.DEBUG_BROKEN_REPOSITORY && exc.getMessage() != null && exc.getMessage().contains("INTENTIONAL")) { // NOI18N
             return;

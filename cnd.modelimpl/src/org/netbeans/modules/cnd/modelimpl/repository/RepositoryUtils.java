@@ -329,7 +329,7 @@ public final class RepositoryUtils {
         CsmUID<?> uid = project.getUID();
         assert uid != null;
         Key key = UIDtoKey(uid);        
-        getRepositoryListenerProxy().anExceptionHappened(key.getUnit(), new RepositoryException(e));
+        getRepositoryListenerProxy().anExceptionHappened(key.getUnitId(), key.getUnit(), new RepositoryException(e));
     }
     
     public static void onProjectDeleted(NativeProject nativeProject) {
@@ -390,17 +390,17 @@ public final class RepositoryUtils {
             fatalError = false;
         }
         @Override
-        public boolean unitOpened(CharSequence unitName) {
-            return parent.unitOpened(unitName);
+        public boolean unitOpened(int unitId, CharSequence unitName) {
+            return parent.unitOpened(unitId, unitName);
         }
         @Override
-        public void unitClosed(CharSequence unitName) {
-            parent.unitClosed(unitName);
+        public void unitClosed(int unitId, CharSequence unitName) {
+            parent.unitClosed(unitId, unitName);
         }
         @Override
-        public void anExceptionHappened(CharSequence unitName, RepositoryException exc) {
+        public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitName, exc);
-            parent.anExceptionHappened(unitName, exc);
+            parent.anExceptionHappened(unitId, unitName, exc);
         }
 
         /**
