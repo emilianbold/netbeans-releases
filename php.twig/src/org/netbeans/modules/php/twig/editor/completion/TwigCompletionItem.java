@@ -145,17 +145,17 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     static class FilterCompletionItem extends TwigCompletionItem {
 
         private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/filter.png")); //NOI18N
-        private final TwigItem parameterizedItem;
+        private final TwigItem twigItem;
 
-        public FilterCompletionItem(TwigItem parameterizedItem, CompletionRequest request) {
-            super(parameterizedItem.getName(), request);
-            this.parameterizedItem = parameterizedItem;
+        public FilterCompletionItem(TwigItem twigItem, CompletionRequest request) {
+            super(twigItem.getName(), request);
+            this.twigItem = twigItem;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             super.getLhsHtml(formatter);
-            parameterizedItem.formatParameters(formatter);
+            twigItem.formatParameters(formatter);
             return formatter.getText();
         }
 
@@ -173,7 +173,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            parameterizedItem.prepareTemplate(template);
+            twigItem.prepareTemplate(template);
             return template.toString();
         }
 
@@ -185,17 +185,17 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     }
 
     static class FunctionCompletionItem extends TwigCompletionItem {
-        private final TwigItem parameterizedItem;
+        private final TwigItem twigItem;
 
-        public FunctionCompletionItem(TwigItem parameterizedItem, CompletionRequest request) {
-            super(parameterizedItem.getName(), request);
-            this.parameterizedItem = parameterizedItem;
+        public FunctionCompletionItem(TwigItem twigItem, CompletionRequest request) {
+            super(twigItem.getName(), request);
+            this.twigItem = twigItem;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             super.getLhsHtml(formatter);
-            parameterizedItem.formatParameters(formatter);
+            twigItem.formatParameters(formatter);
             return formatter.getText();
         }
 
@@ -213,7 +213,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            parameterizedItem.prepareTemplate(template);
+            twigItem.prepareTemplate(template);
             return template.toString();
         }
 
