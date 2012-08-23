@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
+import org.netbeans.modules.css.visual.RuleNode;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -58,11 +59,14 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private Collection<UnitGrammarElement> unitElements;
     private Collection<FixedTextGrammarElement> fixedElements;
     
+    private boolean addNoneProperty;
+    
     private String[] tags;
 
-    public PropertyValuesEditor(Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements) {
+    public PropertyValuesEditor(Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
         this.fixedElements = fixedElements;
         this.unitElements = unitElements;
+        this.addNoneProperty = addNoneProperty;
     }
 
     @Override
@@ -75,6 +79,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                     fixedElementNames.add(value);
                 }
             }
+            if(addNoneProperty) {
+                fixedElementNames.add(RuleNode.NONE_PROPERTY_NAME);
+            }
             
             tags = fixedElementNames.toArray(new String[0]);
         }
@@ -85,6 +92,11 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     @Override
     public void setAsText(String str) {
         if(str == null) {
+            return ;
+        }
+        
+        if(str.isEmpty() || RuleNode.NONE_PROPERTY_NAME.equals(str)) {
+            setValue(str); //pass the empty value to the Property
             return ;
         }
         

@@ -59,7 +59,8 @@ public abstract class ValueGrammarElement extends GrammarElement {
      * @return true if matches, false otherwise
      */
     public final boolean accepts(CharSequence text) {
-        return accepts(new Tokenizer(text).token());
+        Tokenizer tokenizer = new Tokenizer(text);
+        return tokenizer.moveNext() ? accepts(tokenizer.token()) : false;
     }
     
      /**

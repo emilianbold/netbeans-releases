@@ -92,6 +92,8 @@ import org.openide.util.NbBundle;
 })
 public class RuleNode extends AbstractNode {
 
+    public static String NONE_PROPERTY_NAME = "<none>";
+    
     private static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
         @Override
         public int compare(PropertyDefinition pd1, PropertyDefinition pd2) {
@@ -401,10 +403,10 @@ public class RuleNode extends AbstractNode {
 
      private PropertyDefinitionProperty createPropertyDefinitionProperty(PropertyDefinition definition) {
         PropertyModel pmodel = Properties.getPropertyModel(definition.getName());
-        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(pmodel));
+        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(pmodel, false));
     }
     
-     private PropertyValuesEditor createPropertyValueEditor(PropertyModel pmodel) {
+     private PropertyValuesEditor createPropertyValueEditor(PropertyModel pmodel, boolean addNoneProperty) {
         GroupGrammarElement rootElement = pmodel.getGrammarElement();
         final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
         final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
@@ -424,7 +426,7 @@ public class RuleNode extends AbstractNode {
         });
         
         if(!fixedElements.isEmpty()) {
-            return  new PropertyValuesEditor(fixedElements, unitElements);
+            return  new PropertyValuesEditor(fixedElements, unitElements, addNoneProperty);
         }
         
         return null;
@@ -489,7 +491,7 @@ public class RuleNode extends AbstractNode {
 
     private DeclarationProperty createDeclarationProperty(Declaration declaration) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
-        return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel()));
+        return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
     }
 
     private class DeclarationProperty extends PropertySupport {
@@ -553,7 +555,7 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(Object o) {
             String val = (String)o;
-            if (val.isEmpty()) {
+            if (val.isEmpty() || NONE_PROPERTY_NAME.equals(val)) {
                 //remove the whole declaration
                 Declarations declarations = (Declarations) declaration.getParent();
                 declarations.removeDeclaration(declaration);
