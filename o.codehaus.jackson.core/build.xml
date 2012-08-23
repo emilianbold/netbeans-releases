@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="o.codehaus.jackson.core" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/jackson-core-asl-1.9.2.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.codehaus.jackson.core"/>
+                <attribute name="Bundle-Version" value="1.9.2"/>
+                <attribute name="Implementation-Title" value="Jackson JSON processor"/>
+                <attribute name="Implementation-Version" value="1.9.2"/>
+                <attribute name="Export-Package" value="org.codehaus.jackson.format;uses:=&quot;org.codehaus.jackson.io,org.codehaus.jackson&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.io;uses:=&quot;org.codehaus.jackson.util,org.codehaus.jackson&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.sym;uses:=&quot;org.codehaus.jackson.util&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.util;uses:=&quot;org.codehaus.jackson.io,org.codehaus.jackson.impl,org.codehaus.jackson&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.annotate;version=&quot;1.9.2&quot;,org.codehaus.jackson.impl;uses:=&quot;org.codehaus.jackson.format,org.codehaus.jackson.io,org.codehaus.jackson.sym,org.codehaus.jackson.util,org.codehaus.jackson&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson;uses:=&quot;org.codehaus.jackson.format,org.codehaus.jackson.sym,org.codehaus.jackson.annotate,org.codehaus.jackson.impl,org.codehaus.jackson.type,org.codehaus.jackson.io,org.codehaus.jackson.util&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.type;version=&quot;1.9.2&quot;"/>
+                <attribute name="Import-Package" value="org.codehaus.jackson;version=&quot;1.9.2&quot;,org.codehaus.jackson.annotate;version=&quot;1.9.2&quot;,org.codehaus.jackson.format;version=&quot;1.9.2&quot;,org.codehaus.jackson.impl;version=&quot;1.9.2&quot;,org.codehaus.jackson.io;version=&quot;1.9.2&quot;,org.codehaus.jackson.sym;version=&quot;1.9.2&quot;,org.codehaus.jackson.type;version=&quot;1.9.2&quot;,org.codehaus.jackson.util;version=&quot;1.9.2&quot;"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

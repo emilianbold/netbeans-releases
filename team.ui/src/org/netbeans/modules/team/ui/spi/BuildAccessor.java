@@ -33,6 +33,12 @@ public abstract class BuildAccessor<P> {
      * @return a list of builds (never null)
      */
     public abstract List<BuildHandle> getBuilds( ProjectHandle<P> project );
+    
+    /**
+     * Retrieve the handle to a job identified by its name
+     * @return a job handle or <code>null</code> if no such job found
+     */
+    public abstract BuildHandle getBuildHandle ( ProjectHandle<P> project, String jobName );
 
     /**
      * @return Action to invoke when user clicks 'New Build...' button, or null to disable

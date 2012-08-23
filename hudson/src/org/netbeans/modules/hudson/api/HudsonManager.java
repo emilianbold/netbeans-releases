@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.hudson.api;
 
+import org.netbeans.modules.hudson.api.HudsonInstance.Persistence;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonInstanceProperties;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
 
 /**
  * Manages the list of Hudson instances.
@@ -61,7 +63,23 @@ public class HudsonManager {
      * @param persistent if true, persist this configuration; if false, will be transient
      * @return a new or existing instance
      */
-    public static HudsonInstance addInstance(String name, String url, int sync, final boolean persistent) {
+    public static HudsonInstance addInstance(String name, String url, int sync,
+            boolean persistent) {
+        return addInstance(name, url, sync, Persistence.instance(persistent));
+    }
+
+    /**
+     * Adds a Hudson instance to the system (if not already registered).
+     *
+     * @param name a name by which the instance will be identified (e.g.
+     * {@code Deadlock})
+     * @param url the master URL (e.g.
+     * {@code http://deadlock.netbeans.org/hudson/})
+     * @param sync interval (in minutes) between refreshes, or 0 to disable
+     * @param persistence persistence settings for the new instance
+     */
+    public static HudsonInstance addInstance(String name, String url, int sync,
+            final Persistence persistence) {
         for (HudsonInstance existing : HudsonManagerImpl.getDefault().getInstances()) {
             if (existing.getUrl().equals(url)) {
                 return existing;
@@ -69,11 +87,50 @@ public class HudsonManager {
         }
         HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(name, url, Integer.toString(sync)) {
             public @Override boolean isPersisted() {
-                return persistent;
+                return persistence.isPersistent();
             }
-        }, true);
+        }, true, persistence.getInfo(null));
         HudsonManagerImpl.getDefault().addInstance(nue);
         return nue;
     }
 
+    /**
+     * Add a temporary instance with a custom {@link BuilderConnector}. If an
+     * instance with the same url is already registered, its connector will be
+     * replaced.
+     *
+     * @param name a name by which the instance will be identified (e.g.
+     * {@code Deadlock})
+     * @param url the master URL (e.g.
+     * {@code http://deadlock.netbeans.org/hudson/})
+     * @param sync interval (in minutes) between refreshes, or 0 to disable
+     * @param builderConnector Connector for retrieving builder data.
+     *
+     * @since 1.22
+     *
+     * @return A new or existing connector.
+     */
+    public static HudsonInstance addInstance(String name, String url, int sync,
+            BuilderConnector builderConnector) {
+        HudsonInstanceImpl hi = HudsonManagerImpl.getDefault().getInstance(url);
+        if (hi != null) {
+            hi.changeBuilderConnector(builderConnector);
+            return hi;
+        } else {
+            HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(
+                    name, url, builderConnector, sync);
+            HudsonManagerImpl.getDefault().addInstance(nue);
+            return nue;
+        }
+    }
+
+    /**
+     * Remove a Hudson instance from Hudson Builders node.
+     */
+    public static void removeInstance(HudsonInstance instance) {
+        if (instance instanceof HudsonInstanceImpl) {
+            HudsonManagerImpl.getDefault().removeInstance(
+                    (HudsonInstanceImpl) instance);
+        }
+    }
 }
