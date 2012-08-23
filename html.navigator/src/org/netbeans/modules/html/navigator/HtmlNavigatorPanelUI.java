@@ -919,18 +919,18 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void updateSelection() {
         if (EventQueue.isDispatchThread()) {
             List<? extends Node> nodes = pageModel.getSelectedNodes();
-            Node[] selection = new Node[nodes.size()];
+            ArrayList<Node> selection = new ArrayList<Node>();
             
             int i = 0;
             for (Node n:nodes) {
                 Node htmlNode = getHtmlNode(n);
                 if (htmlNode!=null) {
-                    selection[i++] = htmlNode;
+                    selection.add(htmlNode);
                 }
             }
             updatingView = true;
             try {
-                manager.setSelectedNodes(selection);
+                manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
             } catch (PropertyVetoException pvex) {
                 Logger.getLogger(HtmlNavigatorPanelUI.class.getName()).log(Level.INFO, null, pvex);
             } finally {
