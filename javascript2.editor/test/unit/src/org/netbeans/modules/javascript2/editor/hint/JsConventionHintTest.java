@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.hint;
 
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.css.editor.properties.Semitones;
+import org.netbeans.modules.javascript2.editor.hints.AssignmentInCondition;
 import org.netbeans.modules.javascript2.editor.hints.BetterConditionHint;
 import org.netbeans.modules.javascript2.editor.hints.DuplicatePropertyName;
 import org.netbeans.modules.javascript2.editor.hints.JsConventionRule;
@@ -96,7 +97,7 @@ public class JsConventionHintTest extends HintTestBase {
     }
     
     public void testAccidentalAssignment01() throws Exception {
-        checkHints(this, createBetterConditionHint(), "testfiles/hints/accidentalAssignment.js", null);
+        checkHints(this, new AssignmentInCondition(), "testfiles/hints/accidentalAssignment.js", null);
     }
     
     public void testBetterCondition01() throws Exception {
