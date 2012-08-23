@@ -77,6 +77,18 @@ public class TwigFunction {
         }
     }
 
+    public void prepareTemplate(StringBuilder template) {
+        template.append(getName());
+        template.append("("); //NOI18N
+        for (int i = 0; i < parameters.size(); i++) {
+            Parameter parameter = parameters.get(i);
+            if (i != 0) {
+                template.append(", "); //NOI18N
+            }
+            parameter.prepareTemplate(template);
+        }
+        template.append(")"); //NOI18N
+    }
 
     public static class Parameter {
 
@@ -105,6 +117,10 @@ public class TwigFunction {
                 formatter.appendText(name);
                 formatter.emphasis(false);
             }
+        }
+
+        public void prepareTemplate(StringBuilder template) {
+            template.append("${").append(name).append("}"); //NOI18N
         }
 
         private boolean isMandatory() {
