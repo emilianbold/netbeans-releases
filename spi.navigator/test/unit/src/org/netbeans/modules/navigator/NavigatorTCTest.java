@@ -600,8 +600,6 @@ public class NavigatorTCTest extends NbTestCase {
     }
 
     public void testFeature217091_Toolbar () throws Exception {
-        System.out.println("Testing feature #217091, providing Toolbar...");
-
         InstanceContent ic = getInstanceContent();
 
         TestLookupHint toolbarHint = new TestLookupHint("toolbar/tester");

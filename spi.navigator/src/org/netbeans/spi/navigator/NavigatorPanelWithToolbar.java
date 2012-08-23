@@ -44,7 +44,7 @@ package org.netbeans.spi.navigator;
 import javax.swing.JComponent;
 
 /** Description of navigation view with a toolbar component on top of basic
- * NavigatorPanel and NavigatorPanelWithUndo features.
+ * {@link NavigatorPanel} features.
  *
  * Clients will implement this interface when they need a toolbar for their Navigator view/panel.
  *
