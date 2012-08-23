@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  */
 public interface TwigElement extends ElementHandle {
 
-    public void prepareTemplate(StringBuilder template);
+    public String getTemplate();
 
     public void formatParameters(HtmlFormatter formatter);
 
@@ -134,8 +134,8 @@ public interface TwigElement extends ElementHandle {
         }
 
         @Override
-        public void prepareTemplate(final StringBuilder template) {
-            template.append(getName());
+        public String getTemplate() {
+            return getName();
         }
 
         @Override
@@ -153,8 +153,8 @@ public interface TwigElement extends ElementHandle {
         }
 
         @Override
-        public void prepareTemplate(StringBuilder template) {
-            template.append(customTemplate);
+        public String getTemplate() {
+            return customTemplate;
         }
 
         @Override
@@ -185,7 +185,8 @@ public interface TwigElement extends ElementHandle {
         }
 
         @Override
-        public void prepareTemplate(final StringBuilder template) {
+        public String getTemplate() {
+            StringBuilder template = new StringBuilder();
             template.append(getName());
             template.append("("); //NOI18N
             for (int i = 0; i < parameters.size(); i++) {
@@ -196,6 +197,7 @@ public interface TwigElement extends ElementHandle {
                 parameter.prepareTemplate(template);
             }
             template.append(")"); //NOI18N
+            return template.toString();
         }
 
      }

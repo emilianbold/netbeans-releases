@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.twig.editor.completion;
 
-import java.util.Collections;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -121,9 +120,7 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
     @Override
     public String getCustomInsertTemplate() {
-        StringBuilder template = new StringBuilder();
-        element.prepareTemplate(template);
-        return template.toString();
+        return element.getTemplate();
     }
 
     static class TagCompletionProposal extends TwigCompletionProposal {
