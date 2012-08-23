@@ -66,6 +66,10 @@ public interface TwigItem {
              return new TwigItemWithParams(name, parameters);
          }
 
+         public static TwigItem create(final String name, final String customTemplate) {
+             return new TwigItemWithCustomTemplate(name, customTemplate);
+         }
+
      }
 
      abstract static class BaseTwigItem implements TwigItem {
@@ -95,6 +99,25 @@ public interface TwigItem {
 
         @Override
         public void formatParameters(final HtmlFormatter formatter) {
+        }
+
+     }
+
+     static class TwigItemWithCustomTemplate extends BaseTwigItem {
+        private final String customTemplate;
+
+        public TwigItemWithCustomTemplate(final String name, final String customTemplate) {
+            super(name);
+            this.customTemplate = customTemplate;
+        }
+
+        @Override
+        public void prepareTemplate(StringBuilder template) {
+            template.append(customTemplate);
+        }
+
+        @Override
+        public void formatParameters(HtmlFormatter formatter) {
         }
 
      }

@@ -73,35 +73,35 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     static {
         TAGS.add(TwigItem.Factory.create("autoescape")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endautoescape")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("block")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("block", "block ${name}")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endblock")); //NOI18N
         TAGS.add(TwigItem.Factory.create("do")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("embed")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("embed", "embed \"${template.twig}\"")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endembed")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("extends")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("filter")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("extends", "extends \"${template.twig}\"")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("filter", "filter ${name}")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endfilter")); //NOI18N
         TAGS.add(TwigItem.Factory.create("flush")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("for")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("for", "for ${item} in ${array}")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endfor")); //NOI18N
         TAGS.add(TwigItem.Factory.create("from")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("if")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("if", "if ${true}")); //NOI18N
         TAGS.add(TwigItem.Factory.create("else")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("elseif")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("elseif", "elseif ${true}")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endif")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("import")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("include")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("macro")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("import", "import '${page.html}' as ${alias}")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("include", "include '${page.html}'")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("macro", "macro ${name}()")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endmacro")); //NOI18N
         TAGS.add(TwigItem.Factory.create("raw")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endraw")); //NOI18N
         TAGS.add(TwigItem.Factory.create("sandbox")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endsandbox")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("set")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("set", "set ${variable}")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endset")); //NOI18N
         TAGS.add(TwigItem.Factory.create("spaceless")); //NOI18N
         TAGS.add(TwigItem.Factory.create("endspaceless")); //NOI18N
-        TAGS.add(TwigItem.Factory.create("use")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("use", "use \"${page.html}\"")); //NOI18N
     }
 
     private static final Set<TwigItem> FILTERS = new HashSet<TwigItem>();
