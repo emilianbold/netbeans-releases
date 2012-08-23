@@ -67,7 +67,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
      */
     public static final String PROP_LINE = "line";      // NOI18N
     /**
-     * This property is fired when a line number if the breakpoint's Line object changes.
+     * This property is fired when a line number of the breakpoint's Line object changes.
      * It's the same as listening on the current Line object's {@link Line#PROP_LINE_NUMBER} events.
      */
     public static final String PROP_LINE_NUMBER = "lineNumber";      // NOI18N
