@@ -444,6 +444,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** Gets an object, which represents correspondent IDE project */
     @Override
     public final Object getPlatformProject() {
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         return platformProject;
     }
 
