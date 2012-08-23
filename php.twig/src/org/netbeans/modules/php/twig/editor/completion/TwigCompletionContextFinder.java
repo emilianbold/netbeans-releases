@@ -59,7 +59,7 @@ public class TwigCompletionContextFinder {
         NONE;
     }
 
-    static CompletionContext find(final TwigParserResult parserResult, final int offset) {
+    public static CompletionContext find(final TwigParserResult parserResult, final int offset) {
         assert parserResult != null;
         CompletionContext result = CompletionContext.NONE;
         TokenSequence<? extends TwigTokenId> tokenSequence = TwigLexerUtils.getTwigMarkupTokenSequence(parserResult.getSnapshot(), offset);

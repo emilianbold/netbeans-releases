@@ -41,26 +41,89 @@
  */
 package org.netbeans.modules.php.twig.editor.codetemplate;
 
+import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.twig.editor.completion.TwigCompletionContextFinder;
+import org.netbeans.modules.php.twig.editor.completion.TwigCompletionContextFinder.CompletionContext;
+import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigCodeTemplateFilter implements CodeTemplateFilter {
+public class TwigCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
+    private static final RequestProcessor RP = new RequestProcessor(TwigCodeTemplateFilter.class);
+    private volatile boolean accept = true;
+    private final Future<Future<Void>> future;
+    private final int offset;
+
+    public TwigCodeTemplateFilter(final JTextComponent component, int offset) {
+        this.offset = offset;
+        future = RP.submit(new Callable<Future<Void>>() {
+
+            @Override
+            public Future<Void> call() throws Exception {
+                try {
+                    return parseDocument(component.getDocument());
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return null;
+            }
+        });
+    }
+
+    private Future<Void> parseDocument(final Document document) throws ParseException {
+        return ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(document)), this);
+    }
 
     @Override
     public boolean accept(CodeTemplate template) {
-        return true; // probably differentiate context in the future
+        try {
+            future.get(500, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
+        return accept;
+    }
+
+    @Override
+    public void run(ResultIterator resultIterator) throws Exception {
+        assert resultIterator != null;
+        Result parserResult = resultIterator.getParserResult();
+        if (parserResult instanceof TwigParserResult) {
+            CompletionContext completionContext = TwigCompletionContextFinder.find((TwigParserResult) parserResult, offset);
+            if (CompletionContext.INSTRUCTION.equals(completionContext)) {
+                // current code templates are just for Twig Tags (which are used in instructions)
+                accept = true;
+            } else {
+                accept = false;
+            }
+        }
     }
 
     public static final class Factory implements CodeTemplateFilter.Factory {
 
         @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
-            return new TwigCodeTemplateFilter();
+            return new TwigCodeTemplateFilter(component, offset);
         }
 
     }
