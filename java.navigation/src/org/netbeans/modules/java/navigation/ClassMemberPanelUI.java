@@ -19,27 +19,36 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
+import org.netbeans.modules.java.navigation.base.Pair;
+import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -49,6 +58,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
@@ -64,7 +74,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author  phrebejk
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-public class ClassMemberPanelUI extends javax.swing.JPanel
+public final class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, Lookup.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
 
     private final ExplorerManager manager = new ExplorerManager();
@@ -226,6 +236,20 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             Exceptions.printStackTrace(propertyVetoException);
         }
     }
+    
+    public void setContext(
+            @NonNull final JavaSource js,
+            @NullAllowed JTextComponent target) {
+        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver =
+                target == null ?
+                Resolvers.createFileResolver(js) :
+                Resolvers.createEditorResolver(
+                    js,
+                    target.getCaret().getDot());
+        final Future<Pair<URI, ElementHandle<TypeElement>>> becomesHandle = RP.submit(resolver);
+        final RefreshTask refresh = new RefreshTask(becomesHandle);
+        RP.execute(refresh);
+    }
 
     void refresh( final Description description ) {
         
@@ -335,7 +359,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     // End of variables declaration//GEN-END:variables
     
     // Private methods ---------------------------------------------------------
-    
+   
     private ElementNode getRootNode() {
         
         Node n = manager.getRootContext();
@@ -589,5 +613,48 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         SCHEDULED,
         INVOKED,
         DONE
+    }
+
+    private class RefreshTask implements Runnable, Task<CompilationController> {
+
+        private final Future<Pair<URI,ElementHandle<TypeElement>>> becomesHandle;
+
+        RefreshTask(@NonNull final Future<Pair<URI,ElementHandle<TypeElement>>> becomesHandle) {
+            assert becomesHandle != null;
+            this.becomesHandle = becomesHandle;
+        }
+
+        @Override
+        public void run() {
+            try {
+                final Pair<URI,ElementHandle<TypeElement>> handlePair = becomesHandle.get();
+                if (handlePair != null) {
+                    final FileObject fo = URLMapper.findFileObject(handlePair.first.toURL());
+                    if (fo != null) {
+                        final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
+                        final FileObject target = SourceUtils.getFile(handlePair.second, cpInfo);
+                        if (target != null) {
+                            final JavaSource targetJs = JavaSource.forFileObject(target);
+                            if (targetJs != null) {
+                                targetJs.runUserActionTask(this, true);
+                            }
+                        }
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public void run(@NonNull final CompilationController cc) throws Exception {
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            getTask().run(cc);
+        }
+
     }
 }
