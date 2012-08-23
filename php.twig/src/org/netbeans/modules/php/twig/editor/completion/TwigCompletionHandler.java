@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
@@ -231,22 +232,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, int offset, boolean upToOffset) {
-        String result = "";
-        final TokenSequence<TwigTopTokenId> topTokenSequence = info.getSnapshot().getTokenHierarchy().tokenSequence(TwigTopTokenId.language());
-        if (topTokenSequence != null) {
-            topTokenSequence.move(offset);
-            if (topTokenSequence.moveNext()) {
-                TokenSequence<TwigTokenId> tokenSequence = topTokenSequence.embedded(TwigTokenId.language());
-                if (tokenSequence != null) {
-                    tokenSequence.move(offset);
-                    if (tokenSequence.moveNext()) {
-                        Token<TwigTokenId> token = tokenSequence.token();
-                        result = token.text().toString();
-                    }
-                }
-            }
-        }
-        return result;
+        return PrefixResolver.create(info, offset, upToOffset).resolve();
     }
 
     @Override
@@ -273,6 +259,87 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
         public TwigCompletionResult(List<CompletionProposal> list, boolean truncated) {
             super(list, truncated);
+        }
+
+    }
+
+    private static class PrefixResolver {
+        private final ParserResult info;
+        private final int offset;
+        private final boolean upToOffset;
+        private String result = "";
+
+        static PrefixResolver create(ParserResult info, int offset, boolean upToOffset) {
+            return new PrefixResolver(info, offset, upToOffset);
+        }
+
+        private PrefixResolver(ParserResult info, int offset, boolean upToOffset) {
+            this.info = info;
+            this.offset = offset;
+            this.upToOffset = upToOffset;
+        }
+
+        String resolve() {
+            TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+            if (th != null) {
+                processHierarchy(th);
+            }
+            return result;
+        }
+
+        private void processHierarchy(TokenHierarchy<?> th) {
+            TokenSequence<TwigTopTokenId> tts = th.tokenSequence(TwigTopTokenId.language());
+            if (tts != null) {
+                processTopSequence(tts);
+            }
+        }
+
+        private void processTopSequence(TokenSequence<TwigTopTokenId> tts) {
+            tts.move(offset);
+            if (tts.moveNext() || tts.movePrevious() ) {
+                processSequence(tts.embedded(TwigTokenId.language()));
+            }
+        }
+
+        private void processSequence(TokenSequence<TwigTokenId> ts) {
+            if (ts != null) {
+                processValidSequence(ts);
+            }
+        }
+
+        private void processValidSequence(TokenSequence<TwigTokenId> ts) {
+            ts.move(offset);
+            if (ts.moveNext() || ts.movePrevious()) {
+                processToken(ts);
+            }
+        }
+
+        private void processToken(TokenSequence<TwigTokenId> ts) {
+            if (ts.offset() == offset) {
+                ts.movePrevious();
+            }
+            Token<TwigTokenId> token = ts.token();
+            if (token != null) {
+                processSelectedToken(ts);
+            }
+        }
+
+        private void processSelectedToken(TokenSequence<TwigTokenId> ts) {
+            TwigTokenId id = ts.token().id();
+            if (isValidTokenId(id)) {
+                createResult(ts);
+            }
+        }
+
+        private void createResult(TokenSequence<TwigTokenId> ts) {
+            if (upToOffset) {
+                String text = ts.token().text().toString();
+                result = text.substring(0, offset - ts.offset());
+            }
+        }
+
+        private static boolean isValidTokenId(TwigTokenId id) {
+            return TwigTokenId.T_TWIG_FUNCTION.equals(id) || TwigTokenId.T_TWIG_NAME.equals(id);
         }
 
     }
