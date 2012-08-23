@@ -50,7 +50,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.php.twig.editor.completion.TwigCompletionHandler.Function;
+import org.netbeans.modules.php.twig.editor.completion.TwigFunction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -176,9 +176,9 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     }
 
     static class FunctionCompletionItem extends TwigCompletionItem {
-        private final Function function;
+        private final TwigFunction function;
 
-        public FunctionCompletionItem(Function function, CodeCompletionContext codeCompletionContext) {
+        public FunctionCompletionItem(TwigFunction function, CodeCompletionContext codeCompletionContext) {
             super(function.getName(), codeCompletionContext);
             this.function = function;
         }
