@@ -57,8 +57,8 @@ public class IncludedFileStorageKey  extends ProjectNameBasedKey {
     private final int includedUnitIndex;
 
     public IncludedFileStorageKey(ProjectBase startProject, ProjectBase includedProject) {
-	super(startProject.getUniqueName());
-        includedUnitIndex = KeyUtilities.getUnitId(includedProject.getUniqueName());
+	super(startProject.getUnitId());
+        includedUnitIndex = includedProject.getUnitId();
     }
 
     /*package*/ IncludedFileStorageKey(RepositoryDataInput aStream) throws IOException {
