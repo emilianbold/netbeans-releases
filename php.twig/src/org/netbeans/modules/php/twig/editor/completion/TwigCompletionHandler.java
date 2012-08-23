@@ -180,18 +180,12 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
         int caretOffset = codeCompletionContext.getCaretOffset();
         TwigParserResult parserResult = (TwigParserResult) codeCompletionContext.getParserResult();
-        TokenSequence<? extends TwigTokenId> tokenSequence = TwigLexerUtils.getTwigMarkupTokenSequence(parserResult.getSnapshot(), caretOffset);
-        if (tokenSequence != null) {
-            tokenSequence.move(caretOffset);
-            if (canComplete(tokenSequence)) {
-                CompletionRequest request = new CompletionRequest();
-                request.prefix = codeCompletionContext.getPrefix();
-                request.anchorOffset = caretOffset - getPrefix(parserResult, caretOffset, true).length();
-                request.parserResult = parserResult;
-                request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
-                doCompletion(completionProposals, request);
-            }
-        }
+        CompletionRequest request = new CompletionRequest();
+        request.prefix = codeCompletionContext.getPrefix();
+        request.anchorOffset = caretOffset - getPrefix(parserResult, caretOffset, true).length();
+        request.parserResult = parserResult;
+        request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
+        doCompletion(completionProposals, request);
         return new TwigCompletionResult(completionProposals, false);
     }
 
@@ -293,10 +287,6 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     @Override
     public ParameterInfo parameters(ParserResult pr, int i, CompletionProposal cp) {
         return new ParameterInfo(new ArrayList<String>(), 0, 0);
-    }
-
-    private static boolean canComplete(final TokenSequence<? extends TwigTokenId> tokenSequence) {
-        return tokenSequence.moveNext() && tokenSequence.token() != null && !TwigLexerUtils.isDelimiter(tokenSequence.token().id());
     }
 
     private static boolean startsWith(String theString, String prefix) {

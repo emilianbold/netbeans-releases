@@ -61,7 +61,18 @@ public class TwigCompletionContextFinder {
 
     static CompletionContext find(final TwigParserResult parserResult, final int offset) {
         assert parserResult != null;
+        CompletionContext result = CompletionContext.NONE;
         TokenSequence<? extends TwigTokenId> tokenSequence = TwigLexerUtils.getTwigMarkupTokenSequence(parserResult.getSnapshot(), offset);
+        if (tokenSequence != null) {
+            tokenSequence.move(offset);
+            if (canComplete(tokenSequence, offset)) {
+                result = findContext(tokenSequence);
+            }
+        }
+        return result;
+    }
+
+    private static CompletionContext findContext(TokenSequence<? extends TwigTokenId> tokenSequence) {
         CompletionContext result = CompletionContext.NONE;
         do {
             Token<? extends TwigTokenId> token = tokenSequence.token();
@@ -78,6 +89,11 @@ public class TwigCompletionContextFinder {
             }
         } while (tokenSequence.movePrevious());
         return result;
+    }
+
+    private static boolean canComplete(final TokenSequence<? extends TwigTokenId> tokenSequence, final int caretOffset) {
+        return tokenSequence.moveNext() && tokenSequence.token() != null
+                && (!TwigLexerUtils.isDelimiter(tokenSequence.token().id()) || tokenSequence.offset() == caretOffset);
     }
 
 }
