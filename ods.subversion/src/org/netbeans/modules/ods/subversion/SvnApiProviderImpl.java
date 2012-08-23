@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import javax.swing.Action;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.util.Exceptions;
@@ -79,6 +80,11 @@ public class SvnApiProviderImpl implements ApiProvider {
     @Override
     public String getName () {
         return "Subversion"; //NOI18N
+    }
+
+    @Override
+    public Action createOpenHistoryAction (File workdir, String commitId) {
+        return null;
     }
     
 }

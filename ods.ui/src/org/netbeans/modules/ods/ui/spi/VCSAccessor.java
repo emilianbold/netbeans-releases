@@ -39,64 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.git;
+package org.netbeans.modules.ods.ui.spi;
 
-import com.tasktop.c2c.server.scm.domain.ScmType;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.net.PasswordAuthentication;
-import java.net.URISyntaxException;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.git.api.Git;
-import org.netbeans.modules.ods.versioning.spi.ApiProvider;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-@ServiceProvider(service=ApiProvider.class)
-public class GitApiProviderImpl implements ApiProvider {
-
-    @Override
-    public boolean accepts (String type) {
-        return ScmType.GIT.name().equals(type);
+public abstract class VCSAccessor extends SourceAccessor<ODSProject> {
+    
+    public static VCSAccessor getDefault () {
+        return Lookup.getDefault().lookup(VCSAccessor.class);
     }
     
-    @Override
-    public File getSources (String repositoryUrl, PasswordAuthentication passwdAuth) {
-        File cloneDest = null;
-        try {
-            if (passwdAuth != null) {
-                cloneDest = Git.cloneRepository(repositoryUrl, passwdAuth.getUserName(), passwdAuth.getPassword()); 
-            } else {
-                cloneDest = Git.cloneRepository(repositoryUrl, null, null);
-            }
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return cloneDest;
-    }
-
-    @Override
-    public String getName () {
-        return "Git"; //NOI18N
-    }
-
-    @Override
-    public Action createOpenHistoryAction (final File workdir, final String commitId) {
-        Action action = null;
-        if (Git.isOwner(workdir)) {
-            action = new AbstractAction () {
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Git.openSearchHistory(workdir, commitId);
-                }
-            };
-        }
-        return action;
-    }
+    /**
+     * Returns an action opening the search history for local sources associated 
+     * with a given project and its repository.
+     */
+    public abstract Action getOpenHistoryAction (ProjectHandle<ODSProject> projectHandle, 
+            String repositoryName,
+            String commitId);
     
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.ods.versioning.spi;
 
 import java.io.File;
 import java.net.PasswordAuthentication;
+import javax.swing.Action;
 
 /**
  *
@@ -55,5 +56,7 @@ public interface ApiProvider {
     public File getSources (String repositoryUrl, PasswordAuthentication passwdAuth);
 
     public String getName ();
+
+    public Action createOpenHistoryAction (File workdir, String commitId);
     
 }

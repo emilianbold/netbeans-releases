@@ -142,6 +142,7 @@
                 <friend>org.netbeans.modules.ods.tasks.bridge</friend>
                 <friend>org.netbeans.modules.ods.versioning</friend>
                 <package>org.netbeans.modules.ods.ui.api</package>
+                <package>org.netbeans.modules.ods.ui.spi</package>
             </friend-packages>
         </data>
     </configuration>

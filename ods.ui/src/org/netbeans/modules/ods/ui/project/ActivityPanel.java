@@ -80,7 +80,7 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable {
             activityAccessor = new BuildActivityDisplayer((BuildActivity) activity, maxWidth);
         } else if (activity instanceof ScmActivity) {
             ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.findInstance(activity.getProjectIdentifier());
-            activityAccessor = new ScmActivityDisplayer((ScmActivity) activity, tc.getProject().getScmUrl(), maxWidth);
+            activityAccessor = new ScmActivityDisplayer((ScmActivity) activity, projectHandle, tc.getProject().getScmUrl(), maxWidth);
         } else if (activity instanceof WikiActivity) {
             activityAccessor = new WikiActivityDisplayer((WikiActivity) activity, maxWidth);
         }

@@ -45,6 +45,7 @@ package org.netbeans.modules.ods.versioning;
 import com.tasktop.c2c.server.scm.domain.ScmLocation;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +65,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.ui.spi.VCSAccessor;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
@@ -78,14 +80,18 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
-@ServiceProvider(service=SourceAccessor.class)
-public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
+
+@ServiceProviders( { @ServiceProvider(service=SourceAccessor.class),
+    @ServiceProvider(service=VCSAccessor.class),
+})
+public class SourceAccessorImpl extends VCSAccessor {
 
     public SourceAccessorImpl() { }
     
@@ -96,31 +102,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     
     @Override
     public List<SourceHandle> getSources(ProjectHandle<ODSProject> prjHandle) {
-        
-        ODSProject project = prjHandle.getTeamProject();
-        List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
-        
-        try {
-            if (project != null) {
-                // XXX add support for external - see repository.getScmLocation()
-                Collection<ScmRepository> repositories = project.getRepositories();
-                for (ScmRepository repository : repositories) {
-                    boolean supported;
-                    if (repository.getScmLocation() == ScmLocation.CODE2CLOUD) {
-                        supported = isSupported(repository.getType());
-                    } else {
-                        supported = isSupported(null);
-                    }
-                    SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandle<ODSProject>)prjHandle, repository, supported);
-                    handlesList.add(srcHandle);
-                }
-            }
-        } catch (ODSException ex) {
-            Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.WARNING, prjHandle.getId(), ex);
-        }
-        
-        return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
-
+        return getSources(prjHandle, null, false);
     }
 
     @Override
@@ -248,9 +230,61 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
              }
         };
     }
+    
+    @Override
+    public Action getOpenHistoryAction (ProjectHandle<ODSProject> prjHandle, String repositoryName, String commitId) {
+        assert !EventQueue.isDispatchThread();
+        List<SourceHandle> sources = getSources(prjHandle, repositoryName, true);
+        Action action = null;
+        if (!sources.isEmpty()) {
+            SourceHandleImpl sourceHandle = (SourceHandleImpl) sources.get(0);
+            final File workdir = sourceHandle.getWorkingDirectory();
+            if (workdir != null) {
+                ApiProvider[] providers = getProvidersFor(ScmType.GIT); // support only git for now
+                for (ApiProvider p : providers) {
+                    action = p.createOpenHistoryAction(workdir, commitId);
+                    if (action != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return action;
+    }
 
     private static void printStackTrace(Throwable t) {
         Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
+    }
+
+    private List<SourceHandle> getSources (ProjectHandle<ODSProject> prjHandle, String repositoryName, boolean onlySupported) {
+        ODSProject project = prjHandle.getTeamProject();
+        List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
+        
+        try {
+            if (project != null) {
+                Collection<ScmRepository> repositories = project.getRepositories();
+                for (ScmRepository repository : repositories) {
+                    if (repositoryName != null && !repositoryName.equals(repository.getName())) {
+                        continue;
+                    }
+                    boolean supported;
+                    if (repository.getScmLocation() == ScmLocation.CODE2CLOUD) {
+                        supported = isSupported(repository.getType());
+                    } else {
+                        supported = isSupported(null);
+                    }
+                    if (onlySupported && !supported) {
+                        continue;
+                    }
+                    SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandle<ODSProject>)prjHandle, repository, supported);
+                    handlesList.add(srcHandle);
+                }
+            }
+        } catch (ODSException ex) {
+            Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.WARNING, prjHandle.getId(), ex);
+        }
+        
+        return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
     }
 
     public static class ProjectAndRepository {

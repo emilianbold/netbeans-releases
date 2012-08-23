@@ -42,25 +42,34 @@
 package org.netbeans.modules.ods.ui.project.activity;
 
 import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
+import org.netbeans.modules.ods.ui.spi.VCSAccessor;
 import org.netbeans.modules.ods.ui.utils.Utils;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class ScmActivityDisplayer extends ActivityDisplayer {
 
     private ScmActivity activity;
     private final String scmUrl;
+    private final ProjectHandle<ODSProject> projectHandle;
 
-    public ScmActivityDisplayer(ScmActivity activity, String scmUrl, int maxWidth) {
+    public ScmActivityDisplayer(ScmActivity activity, ProjectHandle<ODSProject> projectHandle, String scmUrl, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
         this.activity = activity;
+        this.projectHandle = projectHandle;
         this.scmUrl = scmUrl;
     }
 
@@ -75,7 +84,33 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkCommit = new LinkLabel(activity.getCommit().getMinimizedCommitId()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(getCommitUrl());
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run () {
+                        VCSAccessor accessor = VCSAccessor.getDefault();
+                        ActionListener action = null;
+                        if (accessor != null) {
+                            action = accessor.getOpenHistoryAction(projectHandle,
+                                    activity.getCommit().getRepository(),
+                                    activity.getCommit().getCommitId());
+                        }
+                        if (action == null) {
+                            action = new ActionListener() {
+                                @Override
+                                public void actionPerformed (ActionEvent e) {
+                                    Utils.openBrowser(getCommitUrl());
+                                }
+                            };
+                        }
+                        final ActionListener fAction = action;
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                fAction.actionPerformed(new ActionEvent(ScmActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                            }
+                        });
+                    }
+                });
             }
         };
         titlePanel.add(linkCommit, gbc);
