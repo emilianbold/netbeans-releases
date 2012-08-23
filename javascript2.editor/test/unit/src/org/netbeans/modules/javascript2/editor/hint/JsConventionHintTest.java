@@ -48,6 +48,7 @@ import org.netbeans.modules.javascript2.editor.hints.BetterConditionHint;
 import org.netbeans.modules.javascript2.editor.hints.DuplicatePropertyName;
 import org.netbeans.modules.javascript2.editor.hints.JsConventionRule;
 import org.netbeans.modules.javascript2.editor.hints.MissingSemicolonHint;
+import org.netbeans.modules.javascript2.editor.hints.UnexpectedCommaInObjectLiteral;
 
 /**
  *
@@ -93,7 +94,7 @@ public class JsConventionHintTest extends HintTestBase {
     }
     
     public void testUnexpectedComma01() throws Exception {
-        checkHints(this, createSemicolonHint(), "testfiles/hints/unexpectedComma.js", null);
+        checkHints(this, new UnexpectedCommaInObjectLiteral(), "testfiles/hints/unexpectedComma.js", null);
     }
     
     public void testAccidentalAssignment01() throws Exception {
