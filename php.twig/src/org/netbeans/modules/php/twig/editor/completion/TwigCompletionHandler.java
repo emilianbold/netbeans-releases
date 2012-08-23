@@ -147,17 +147,17 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         FUNCTIONS.add(TwigItem.Factory.create("range", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
-    private static final Set<String> TESTS = new HashSet<String>();
+    private static final Set<TwigItem> TESTS = new HashSet<TwigItem>();
     static {
-        TESTS.add("constant"); //NOI18N
-        TESTS.add("defined"); //NOI18N
-        TESTS.add("divisibleby"); //NOI18N
-        TESTS.add("empty"); //NOI18N
-        TESTS.add("even"); //NOI18N
-        TESTS.add("iterable"); //NOI18N
-        TESTS.add("null"); //NOI18N
-        TESTS.add("odd"); //NOI18N
-        TESTS.add("sameas"); //NOI18N
+        TESTS.add(TwigItem.Factory.create("constant")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("defined")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("divisibleby")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("empty")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("even")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("iterable")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("null")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("odd")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("sameas")); //NOI18N
     }
 
     private static final Set<String> OPERATORS = new HashSet<String>();
@@ -238,8 +238,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeTests(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (String test : TESTS) {
-            if (startsWith(test, request.prefix)) {
+        for (TwigItem test : TESTS) {
+            if (startsWith(test.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionItem.TestCompletionItem(test, request));
             }
         }
