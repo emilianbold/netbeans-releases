@@ -423,7 +423,10 @@ public class ClientSideProject implements Project {
         public void fileChanged(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                r.fileChanged(fe.getFile());
+                // #217284 - ignore changes in CSS
+                if (!fe.getFile().hasExt("css")) {
+                    r.fileChanged(fe.getFile());
+                }
             }
         }
 
@@ -431,7 +434,10 @@ public class ClientSideProject implements Project {
         public void fileDeleted(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                r.fileDeleted(fe.getFile());
+                // #217284 - ignore changes in CSS
+                if (!fe.getFile().hasExt("css")) {
+                    r.fileDeleted(fe.getFile());
+                }
             }
         }
 
