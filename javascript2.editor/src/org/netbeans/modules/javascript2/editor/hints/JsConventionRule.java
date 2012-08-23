@@ -133,7 +133,9 @@ public class JsConventionRule extends JsAstRule {
             this.missingSemicolon = missingSemicolon;
         }
         
-        @NbBundle.Messages("ExpectedInstead=Expected \"{0}\" and instead saw \"{1}\".")
+        @NbBundle.Messages({"# {0} - expected char or string",
+            "# {1} - usually text, where is expected the first parameter",
+            "ExpectedInstead=Expected \"{0}\" and instead saw \"{1}\"."})
         public void process(JsRuleContext context, List<Hint> hints) {
             this.hints = hints;
             this.context = context;
@@ -143,7 +145,8 @@ public class JsConventionRule extends JsAstRule {
             }
         }
         
-        @NbBundle.Messages("MissingSemicolon=Expected semicolon ; after \"{0}\".")
+        @NbBundle.Messages({"# {0} - char where is expected the semicolon",
+            "MissingSemicolon=Expected semicolon ; after \"{0}\"."})
         private void checkSemicolon(int offset) {
             if(missingSemicolon == null) {
                 return;
@@ -326,7 +329,8 @@ public class JsConventionRule extends JsAstRule {
         
 
         @Override
-        @NbBundle.Messages("Unexpected=Unexpected \"{0}\".")
+        @NbBundle.Messages({"# {0} - the eunexpected token",
+            "Unexpected=Unexpected \"{0}\"."})
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
                 checkDuplicateLabels(objectNode);

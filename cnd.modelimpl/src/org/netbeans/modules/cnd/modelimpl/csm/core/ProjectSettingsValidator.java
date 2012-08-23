@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +131,7 @@ public class ProjectSettingsValidator {
         }
 	updateMap(headers);
 	updateMap(sources);
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUnitId());
 	RepositoryUtils.put(key, data);
 	if( TraceFlags.TIMING ) {
 	    time = System.currentTimeMillis() - time;
@@ -158,7 +157,7 @@ public class ProjectSettingsValidator {
 	if( nativeProject == null ) {
 	    return;
 	}
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUnitId());
 	data = (Data) RepositoryUtils.get(key);
         if( data == null ) {
             data = new Data();

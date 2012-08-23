@@ -137,7 +137,7 @@ public class RepositoryWritingThread implements Runnable {
                     break;
                 }
             } catch( Throwable e ) {
-                RepositoryListenersManager.getInstance().fireAnException(null, 
+                RepositoryListenersManager.getInstance().fireAnException(-1, null, 
                         new RepositoryException(e));
             }
         }

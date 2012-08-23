@@ -33,6 +33,7 @@ FormattingToken{kind=WHITESPACE, offset=93, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=94, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=95, text= }
 FormattingToken{kind=TEXT, offset=96, text="}
 FormattingToken{kind=TEXT, offset=97, text=test}

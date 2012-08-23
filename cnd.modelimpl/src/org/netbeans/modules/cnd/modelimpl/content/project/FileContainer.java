@@ -120,7 +120,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName()));
+	super(new FileContainerKey(project.getUnitId()));
         fileSystem = project.getFileSystem();
 	put();
     }

@@ -123,6 +123,11 @@ public final class DelegateRepository implements Repository {
     }
 
     @Override
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+        delegate.closeUnit(unitId, cleanRepository, requiredUnits);
+    }
+
+    @Override
     public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
         Repository aDelegate = delegate;
         if (aDelegate != null) {
@@ -133,6 +138,11 @@ public final class DelegateRepository implements Repository {
     @Override
     public void removeUnit(CharSequence unitName) {
         delegate.removeUnit(unitName);
+    }
+
+    @Override
+    public void removeUnit(int unitId) {
+        delegate.removeUnit(unitId);
     }
 
     @Override

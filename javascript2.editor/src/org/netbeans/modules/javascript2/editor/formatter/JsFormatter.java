@@ -68,7 +68,7 @@ public class JsFormatter implements Formatter {
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
-    private static boolean ELSE_IF_SINGLE_LINE = true;
+    private static final boolean ELSE_IF_SINGLE_LINE = true;
 
     private final Language<JsTokenId> language;
 
@@ -108,10 +108,10 @@ public class JsFormatter implements Formatter {
                 long startTime = System.nanoTime();
 
                 FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
-                
+
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
-                
+
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, context.startOffset(), context.endOffset());
                 LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
@@ -129,7 +129,7 @@ public class JsFormatter implements Formatter {
                 LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
-                
+
                 int initialIndent = CodeStyle.get(formatContext).getInitialIndent();
                 int continuationIndent = CodeStyle.get(formatContext).getContinuationIndentSize();
 
@@ -311,7 +311,7 @@ public class JsFormatter implements Formatter {
                 break;
             }
         }
-        
+
         // assert we can use the lastOffsetDiff and lastIndentationLevel
         assert tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE
                 && tokenBeforeEol.getKind() != FormatToken.Kind.EOL;
@@ -443,7 +443,7 @@ public class JsFormatter implements Formatter {
                 }
             } else {
                 int start = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length();
-                
+
                 FormatToken endToken = extendedTokenAfterEol;
                 if (endToken == null) {
                     // end of file
@@ -636,7 +636,7 @@ public class JsFormatter implements Formatter {
         if (formatContext.isEmbedded()) {
             return Indentation.FORBIDDEN;
         }
-        
+
         try {
             // when we are formatting only selection we
             // have to handle the source start indentation properly
@@ -685,7 +685,7 @@ public class JsFormatter implements Formatter {
     private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index,
             FormatContext context, boolean skipWitespace) {
         FormatToken token = tokens.get(index);
-        
+
         assert token.isVirtual();
 
         FormatToken next = token;
@@ -738,6 +738,12 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapFor();
             case AFTER_CHAIN_CALL_DOT:
                 return CodeStyle.get(context).wrapChainedMethodCalls();
+            case BEFORE_BINARY_OPERATOR_WRAP:
+                return CodeStyle.get(context).wrapBinaryOps();
+            case AFTER_ASSIGNMENT_OPERATOR_WRAP:
+                return CodeStyle.get(context).wrapAssignOps();
+            case BEFORE_TERNARY_OPERATOR_WRAP:
+                return CodeStyle.get(context).wrapTernaryOps();
             default:
                 return null;
         }
@@ -892,7 +898,7 @@ public class JsFormatter implements Formatter {
     /**
      * Iterates tokens from token to limit while properly updating indentation
      * level. Returns the new index in token sequence.
-     * 
+     *
      * @param token start token
      * @param index start index
      * @param limit end token
@@ -937,20 +943,20 @@ public class JsFormatter implements Formatter {
         }
         return true;
     }
-    
+
     @Override
     public void reindent(Context context) {
         // TODO
     }
 
     static class Indentation {
-        
+
         static final Indentation ALLOWED = new Indentation(true, false);
-        
+
         static final Indentation FORBIDDEN = new Indentation(false, false);
-        
+
         private final boolean allowed;
-        
+
         private final boolean exceedLimits;
 
         public Indentation(boolean allowed, boolean exceedLimits) {
