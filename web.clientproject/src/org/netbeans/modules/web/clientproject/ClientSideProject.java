@@ -120,6 +120,7 @@ public class ClientSideProject implements Project {
         configurationProvider = new ClientSideConfigurationProvider(this);
         lookup = createLookup(configuration);
         remoteFiles = new RemoteFiles(this);
+        lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
         configurationProvider.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -127,8 +128,8 @@ public class ClientSideProject implements Project {
                     refreshOnSaveListener = null;
                     if (lastActiveConfiguration != null) {
                         lastActiveConfiguration.deactivate();
-                        lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
                     }
+                    lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
                 }
             }
         });
