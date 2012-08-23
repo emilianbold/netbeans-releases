@@ -94,7 +94,6 @@ public class HtmlGSFParser extends Parser {
 
     public @Override
     Result getResult(Task task) throws ParseException {
-        assert lastResult != null : "getResult() called prior parse()"; //NOI18N
         return lastResult;
     }
 
@@ -118,6 +117,11 @@ public class HtmlGSFParser extends Parser {
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
+        if(snapshot == null) {
+            //#215101: calling "ParserManager.parseWhenScanFinished("text/html",someTask)" results into null snapshot passed here
+            return null; 
+        }
+        
         HtmlSource source = new HtmlSource(snapshot);
 
         Source snapshotSource = snapshot.getSource();
