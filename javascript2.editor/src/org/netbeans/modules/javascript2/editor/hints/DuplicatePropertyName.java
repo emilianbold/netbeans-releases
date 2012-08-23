@@ -47,23 +47,23 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class BetterConditionHint extends JsConventionHint {
-    
-    @Override
-    @NbBundle.Messages("BetterConditionDisplayName=Using === or !== instead == or !=")
-    public String getDisplayName() {
-        return Bundle.BetterConditionDisplayName();
-    }
+public class DuplicatePropertyName extends JsConventionHint { 
 
     @Override
     public String getId() {
-        return "jsbettercondition.hint"; //NOI18N
+        return "jsduplicatepropertyname.hint"; // NOI18N
     }
 
     @Override
-    @NbBundle.Messages("BetterConditionDescription=Reports cases where in condition is used == or != instead === or !==.")
+    @NbBundle.Messages("DuplicatePropertyNameDescription=Warns if there are defined more properties with the same name in a object literal.")
     public String getDescription() {
-        return Bundle.BetterConditionDescription();
+        return Bundle.DuplicatePropertyNameDescription();
+    }
+
+    @Override
+    @NbBundle.Messages("DuplicatePropertyNameDisplayName=Duplicate Property Name")
+    public String getDisplayName() {
+        return Bundle.DuplicatePropertyNameDisplayName();
     }
     
 }

@@ -82,6 +82,9 @@ public class JsConventionRule extends JsAstRule {
         List<? extends AstRule> conventionHints = allHints.get(BetterConditionHint.JSCONVENTION_OPTION_HINTS);
         Rule betterConditionRule = null;
         Rule missingSemicolon = null;
+        Rule duplicatePropertyName = null;
+        Rule assignmentInCondition = null;
+        Rule unexpectedCommaInOL = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
                 if(manager.isEnabled(astRule)) {
@@ -89,11 +92,18 @@ public class JsConventionRule extends JsAstRule {
                         betterConditionRule = astRule;
                     } else if(astRule instanceof MissingSemicolonHint) {
                         missingSemicolon = astRule;
+                    } else if (astRule instanceof DuplicatePropertyName) {
+                        duplicatePropertyName = astRule;
+                    } else if (astRule instanceof AssignmentInCondition) {
+                        assignmentInCondition = astRule;
+                    } else if (astRule instanceof UnexpectedCommaInObjectLiteral) {
+                        unexpectedCommaInOL = astRule;
                     }
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon);
+        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName,
+                assignmentInCondition, unexpectedCommaInOL);
         conventionVisitor.process(context, hints);
     }
             
@@ -126,11 +136,18 @@ public class JsConventionRule extends JsAstRule {
         private final Rule rule;
         private final Rule betterConditionRule;
         private final Rule missingSemicolon;
+        private final Rule duplicatePropertyName;
+        private final Rule assignmentInCondition;
+        private final Rule unexpectedCommaInOL;
         
-        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon) {
+        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, 
+                Rule duplicatePropertyName, Rule assignmentInCondition, Rule unexpectedCommaInOL) {
             this.rule = rule;
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
+            this.duplicatePropertyName = duplicatePropertyName;
+            this.assignmentInCondition = assignmentInCondition;
+            this.unexpectedCommaInOL = unexpectedCommaInOL;
         }
         
         @NbBundle.Messages({"# {0} - expected char or string",
@@ -179,16 +196,20 @@ public class JsConventionRule extends JsAstRule {
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
         private void checkCondition(Node condition) {
-            if (betterConditionRule == null) {
+            if (betterConditionRule == null && assignmentInCondition == null) {
                 return;
             }
             if(condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
-                if (binaryNode.isAssignment()) {
-                    hints.add(new Hint(betterConditionRule, Bundle.AssignmentCondition(), 
+                if (assignmentInCondition != null && binaryNode.isAssignment()) {
+                    
+                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
                 } else {
+                    if (betterConditionRule == null) {
+                        return;
+                    }
                     String message = null;
                     switch(binaryNode.tokenType()) {
                         case EQ:
@@ -199,7 +220,7 @@ public class JsConventionRule extends JsAstRule {
                             break;
                     }
                     if (message != null) {
-                        hints.add(new Hint(rule, message, 
+                        hints.add(new Hint(betterConditionRule, message, 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
                     }
@@ -217,6 +238,9 @@ public class JsConventionRule extends JsAstRule {
         @NbBundle.Messages({"# {0} - name of the duplicated property",
             "DuplicateName=Duplicate name of property \"{0}\"."})
         private void checkDuplicateLabels(ObjectNode objectNode) {
+            if (duplicatePropertyName == null) {
+                return;
+            }
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
             int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
             if (startOffset == -1 || endOffset == -1) {
@@ -236,7 +260,7 @@ public class JsConventionRule extends JsAstRule {
                         case BEFORE_COLON:
                             if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
                                 if (!names.add(ts.token().text().toString())) {
-                                    hints.add(new Hint(rule, Bundle.DuplicateName(ts.token().text().toString()),
+                                    hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(ts.token().text().toString()),
                                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                                             new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
                                 }
@@ -334,19 +358,21 @@ public class JsConventionRule extends JsAstRule {
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
                 checkDuplicateLabels(objectNode);
-                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                if (offset > -1) {
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                    ts.move(offset);
-                    if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
-                        LexUtilities.findPrevious(ts, Arrays.asList(
-                                JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                                JsTokenId.BLOCK_COMMENT));
-                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                            hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
-                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                if (unexpectedCommaInOL != null) {
+                    int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+                    if (offset > -1) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
+                        ts.move(offset);
+                        if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                            LexUtilities.findPrevious(ts, Arrays.asList(
+                                    JsTokenId.EOL, JsTokenId.WHITESPACE, 
+                                    JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                    JsTokenId.BLOCK_COMMENT));
+                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()), 
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+                                    new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                            }
                         }
                     }
                 }
