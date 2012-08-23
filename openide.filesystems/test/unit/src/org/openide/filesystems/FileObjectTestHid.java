@@ -55,6 +55,7 @@ import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -572,6 +573,62 @@ public class FileObjectTestHid extends TestBaseHid {
         
         all = second.lookupAll(FileObject.class);
         assertTrue("Contains itself after move: " + all, all.contains(ret));
+    }
+    
+    public void  testMoveAndChanges() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        FileObject sub;
+        try {
+            sub = fold.createFolder("sub");
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        }
+        
+        class L implements LookupListener {
+            int cnt;
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                cnt++;
+            }
+            
+            public void assertChange(String msg) {
+                assertTrue(msg, cnt > 0);
+                cnt = 0;
+            }
+        }
+        L listener = new L();
+
+        Lookup first = fo1.getLookup();
+        Result<FileObject> result = first.lookupResult(FileObject.class);
+        result.addLookupListener(listener);
+        
+        Collection<? extends FileObject> all = result.allInstances();
+        assertTrue("Contains itself before move: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            ret = fo1.move(lock, sub, fo1.getName(), fo1.getExt());
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        
+        listener.assertChange("File object has changed");
+        all = result.allInstances();
+        assertTrue("Contains itself after move: " + all, all.contains(ret));
+        
+        FileObject ret2 = FileUtil.moveFile(ret, fold, "strange.name");
+
+        listener.assertChange("Another change in the lookup");
+        all = result.allInstances();
+        assertTrue("Contains itself after move: " + all, all.contains(ret2));
     }
     
     /** Test of move method, of class org.openide.filesystems.FileObject. */
