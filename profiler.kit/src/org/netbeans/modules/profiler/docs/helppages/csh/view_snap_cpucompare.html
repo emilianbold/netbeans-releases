@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>CPU Snapshot Comparison</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>CPU Snapshot Comparison</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The CPU Snapshot Comparison window displays a comparison of two CPU snapshots.
+        This window opens in the main editor window after you choose the Compare
+        Snapshots command from the main menu and select two CPU snapshots.
+        Alternatively, you can click the <strong>compute the difference</strong> button
+        (&nbsp;<img src="../img/compareSnapshots.png" alt="compute the differences button">&nbsp;)
+        in the toolbar of a CPU snapshot.</p>
+        
+        <p>The window displays a table showing the method call chain and the 
+        time spent and the number of invocations for executing threads and methods in each context.
+        The IDE compares the two CPU snapshot and 
+        displays the differences between the two snapshot in the number of invocations and
+        the amount of time spent in invocations. </p>
+        
+        <p>The comparison that is displayed depends upon the data that is contained in the snapshots. 
+        The data that is captured in the snapshot depends upon the options that were selected 
+        for the profiling session.</p>
+        
+        <p>The CPU snapshot comparison window contains the following tabs:</p>
+        <ul>
+            <li><b>Call Tree.</b> This tab displays a call tree showing the method call chain and the time/number
+            of invocations for executing threads and methods in each context. </li>
+            <li><b>Hot Spots.</b> This tab shows the total execution time and number of
+            invocations for each method, irrespective of the context.</li>
+        </ul>
+        
+        <p>You can perform the following actions in the CPU snapshot comparison window.</p>
+        <ul>
+            <li>You can click the Show or Hide Result Columns button to modify
+            the columns that are displayed in the table.</li>
+            <li>You can click a column header to sort the order that the results are displayed. </li>
+            <li>You can load the source <tt>.java</tt> file of a class by right-clicking in 
+            the row for the class and choosing Go To Source.</li>
+            <li>You can add a method as a profiling root method by right-clicking in 
+            the row for the method and choosing Add to Instrumentation Roots.</li>
+            <li>You can filter the list by the name of the method, class or package by typing the filter criteria in the 
+            Filter field at the bottom of the window and clicking the filter icon
+            (&nbsp;<img src="../img/filter.png" alt="Filter icon">&nbsp;) to selecting a filter option.</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../snap_taking.html">Taking a Snapshot</a></dd>
+            <dd><a href="../snapshots.html">Exploring Snapshots</a></dd>
+            <dd><a href="../profile_analyze_short.html">Analyzing CPU Performance</a></dd>
+            <dd><a href="../profile_results.html">About Profiling Results</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal
+Notices</a></small>
+        <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table>
+    </body>
+</html>
