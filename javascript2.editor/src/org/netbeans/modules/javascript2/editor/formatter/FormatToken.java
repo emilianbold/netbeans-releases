@@ -373,6 +373,36 @@ public final class FormatToken {
                 return false;
             }
         },
+        BEFORE_BINARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ASSIGNMENT_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_TERNARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {

@@ -4,6 +4,7 @@ FormattingToken{kind=WHITESPACE, offset=1, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=2, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=3, text= }
 FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=4, text={}

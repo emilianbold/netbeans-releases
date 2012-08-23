@@ -109,6 +109,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_RIGHT_SHIFT:
                 case OPERATOR_PLUS:
                 case OPERATOR_MINUS:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_BINARY_OPERATOR));
@@ -128,6 +129,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ASSIGNMENT_OPERATOR));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR_WRAP));
                     break;
                 case OPERATOR_COMMA:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_COMMA));
