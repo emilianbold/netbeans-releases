@@ -43,23 +43,37 @@ package org.netbeans.modules.html.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.dnd.DnDConstants;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -74,6 +88,7 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -128,8 +143,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
+            } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
+                updateSelection();
+            } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
+                    updateHighlight();
             }
-
         }
     };
 
@@ -146,7 +164,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     public HtmlNavigatorPanelUI() {
         manager = new ExplorerManager();
-        view = new BeanTreeView();
+        initTreeView();
 
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
@@ -170,6 +188,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
         //listen on the page inspector
         PageInspectorImpl.getDefault().addPropertyChangeListener(pageInspectorListener);
+        manager.addPropertyChangeListener(createSelectedNodesListener());
     }
 
     //Set a new PageModel. It will install a new PropertyChangeListener for the PageModel changes
@@ -677,5 +696,288 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return displayName;
         }
     }
-  
+    
+    //Things copyied from Web Page Inspection module mostly DomPanel, which should be later removed
+
+    /** Determines whether we are just updating view from the model. */
+    private boolean updatingView = false;
+    
+    
+    /**
+     * Initializes the tree view.
+     */
+    private void initTreeView() {
+        view = new BeanTreeView() {
+            {
+                MouseAdapter listener = createTreeMouseListener();
+                tree.addMouseListener(listener);
+                tree.addMouseMotionListener(listener);
+                tree.setCellRenderer(createTreeCellRenderer(tree.getCellRenderer()));
+            }
+        };
+        view.setAllowedDragActions(DnDConstants.ACTION_NONE);
+        view.setAllowedDropActions(DnDConstants.ACTION_NONE);
+        view.setRootVisible(false);
+    }
+    
+/**
+     * Creates a mouse listener for the DOM tree.
+     * 
+     * @return mouse listener for the DOM tree.
+     */
+    private MouseAdapter createTreeMouseListener() {
+        return new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                processEvent(e);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                processEvent(e);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                processEvent(null);
+                // Make sure that lastHover != <any potential value>
+                // i.e., make sure that change in hover is triggered when
+                // mouse returns into this component
+                lastHover = new Object();
+            }
+
+            // The last node we were hovering over.
+            private Object lastHover = null;
+            
+            /**
+             * Processes the specified mouse event.
+             * 
+             * @param e mouse event to process.
+             */
+            private void processEvent(MouseEvent e) {
+                Object hover = null;
+                if (e != null) {
+                    JTree tree = (JTree)e.getSource();
+                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                    if  (path != null) {
+                        hover = path.getLastPathComponent();
+                    }
+                }
+                if (hover != lastHover) {
+                    lastHover = hover;
+                    final List<? extends Node> highlight;
+                    if (hover != null) {
+                        Node node = Visualizer.findNode(hover);
+                        if (node instanceof HtmlElementNode) {
+                            final Node domNode = ((HtmlElementNode) node).getDOMNode();
+                            if (domNode!=null) {
+                                node = domNode;
+                            }
+                        }
+                        highlight = Arrays.asList(node);
+                    } else {
+                        highlight = Collections.EMPTY_LIST;
+                    }
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (pageModel!=null)
+                                pageModel.setHighlightedNodes(highlight);
+                        }
+                    });
+                }
+            }
+            
+        };
+    }    
+    
+    /**
+     * Highlighted (visualizer) nodes.
+     * This collection is for rendering purposes only.
+     */
+    private final List highlightedTreeNodes = new ArrayList();
+
+    /**
+     * Updates the set of highlighted nodes.
+     */
+    final void updateHighlight() {
+        synchronized (highlightedTreeNodes) {
+            highlightedTreeNodes.clear();
+            System.out.println("highlighted treenodes cleared");
+            for (Node node : pageModel.getHighlightedNodes()) {
+                Node n = getHtmlNode(manager.getRootContext(), node);
+                if (n!=null) {
+                    TreeNode visualizer = Visualizer.findVisualizer(n);
+                    highlightedTreeNodes.add(visualizer);
+                    System.out.println("added " + highlightedTreeNodes);
+                }
+            }
+        }
+        view.repaint();
+    }
+    
+    /**
+     * TODO: 
+     * Unefficient, stupid, demoware. Needs to be improved.
+     */
+    private Node getHtmlNode(Node root, Node node) {
+        if (root instanceof HtmlElementNode) {
+            Node res = ((HtmlElementNode) root).getDOMNode();
+            if (res!=null && res.equals(node)) {
+                return root;
+            }
+        }
+        for (Node n:root.getChildren().getNodes()) {
+            Node res = getHtmlNode(n, node);
+            if (res!=null) {
+                return res;
+            }
+        }
+        return null;
+    }
+    
+
+    /**
+     * Determines whether the given (visualizer) node is highlighted.
+     * 
+     * @param treeNode (visualizer) node to check.
+     * @return {@code true} when the specified node should be highlighted,
+     * returns {@code false} otherwise.
+     */
+    boolean isHighlighted(Object treeNode) {
+        synchronized (highlightedTreeNodes) {
+            System.out.println("isHighlighted " + highlightedTreeNodes );
+            System.out.println("treeNode " + treeNode );
+            return highlightedTreeNodes.contains(treeNode);
+        }
+    } 
+    
+    /**
+     * Creates a cell renderer for the DOM tree.
+     * 
+     * @param delegate delegating/original tree renderer.
+     * @return call renderer for the DOM tree.
+     */
+    private TreeCellRenderer createTreeCellRenderer(final TreeCellRenderer delegate) {
+        Color origColor = UIManager.getColor("Tree.selectionBackground"); // NOI18N
+        Color color = origColor.brighter().brighter();
+        if (color.equals(Color.WHITE)) { // Issue 217127
+            color = origColor.darker();
+        }
+        // Color used for hovering highlight
+        final Color hoverColor = color;
+        return new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                JLabel component;
+                if (!selected && isHighlighted(value)) {
+                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
+                    component.setBackground(hoverColor);
+                    component.setOpaque(true);
+                } else {
+                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                }
+                return component;
+            }
+        };
+    }
+    
+    /**
+     * Updates the content of the panel. It fetches the current data
+     * from the model and updates the view accordingly.
+     */
+    private void update() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                final Node node = pageModel.getDocumentNode();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        //update(node);
+                        updateSelection();
+                        updateHighlight();
+                    }
+                });
+            }
+        });
+    }
+    
+    /**
+     * Updates the set of selected nodes.
+     */
+    private void updateSelection() {
+        if (EventQueue.isDispatchThread()) {
+            List<? extends Node> nodes = pageModel.getSelectedNodes();
+            Node[] selection = new Node[nodes.size()];
+            
+            int i = 0;
+            for (Node n:nodes) {
+                Node htmlNode = getHtmlNode(manager.getRootContext(), n);
+                if (htmlNode!=null) {
+                    selection[i++] = htmlNode;
+                }
+            }
+            updatingView = true;
+            try {
+                manager.setSelectedNodes(selection);
+            } catch (PropertyVetoException pvex) {
+                Logger.getLogger(HtmlNavigatorPanelUI.class.getName()).log(Level.INFO, null, pvex);
+            } finally {
+                updatingView = false;
+            }
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateSelection();
+                }
+            });
+        }
+    }
+    
+    /**
+     * Creates a listener for selected nodes.
+     * 
+     * @return listener for selected nodes.
+     */
+    private PropertyChangeListener createSelectedNodesListener() {
+        return new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(propName)) {
+                    if (updatingView) {
+                        // This change was triggered by update from the model
+                        // => no need to synchronize back into the model.
+                        return;
+                    }
+                    final List nodes = translate(manager.getSelectedNodes());
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (pageModel !=null)
+                                pageModel.setSelectedNodes(nodes);
+                        }
+                    });
+                }
+            }
+
+            private List translate(Node[] selectedNodes) {
+                List result = new ArrayList();
+                for (Node n:selectedNodes) {
+                    if (n instanceof HtmlElementNode) {
+                        Node domNode = ((HtmlElementNode) n).getDOMNode();
+                        if (domNode!=null) {
+                            result.add(domNode);
+                        }
+                    }
+                }
+                return result;
+            }
+        };
+    }    
+    
+    
 }
