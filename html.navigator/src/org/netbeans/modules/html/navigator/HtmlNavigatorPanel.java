@@ -41,20 +41,8 @@
  */
 package org.netbeans.modules.html.navigator;
 
-import java.util.Collections;
 import javax.swing.JComponent;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /**
