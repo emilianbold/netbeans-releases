@@ -202,5 +202,8 @@ final class PropertyElementItem extends AbstractCompletionItem {
             return ICON;
         }
     }
-    
+
+    public String toString() {
+        return "property[" + super.getSubstituteText() + "]";
+    }
 }

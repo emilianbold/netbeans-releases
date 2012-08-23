@@ -92,5 +92,8 @@ final class ValueItem extends AbstractCompletionItem {
         }
         return icon;
     }
-    
+
+    public String toString() {
+        return "value[" + getSubstituteText() + "]";
+    }
 }

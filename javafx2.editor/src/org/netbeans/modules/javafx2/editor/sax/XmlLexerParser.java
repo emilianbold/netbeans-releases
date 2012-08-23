@@ -303,6 +303,8 @@ public class XmlLexerParser implements ContentLocator {
         }
     }
     
+    private int endDocOffset = -1;
+    
     void parse2() throws SAXException {
         boolean whitespacePossible = true;
         
@@ -372,7 +374,7 @@ public class XmlLexerParser implements ContentLocator {
                 }
             }
         }
-        int saveEndOffset = endOffset;
+        endDocOffset = endOffset;
         
         while (!levelStack.isEmpty() && currentLevel != null) {
             markUnclosedElement(currentLevel.tagQName);
@@ -381,7 +383,7 @@ public class XmlLexerParser implements ContentLocator {
             contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
             terminateLevel();
         }
-        elementOffset = saveEndOffset;
+        elementOffset = endDocOffset;
         contentHandler.endDocument();
         
         // report leftover errors
@@ -581,8 +583,17 @@ public class XmlLexerParser implements ContentLocator {
     }
     
     private void resetAndSetErrorOffsets() {
+        resetAndSetErrorOffsets(-1);
+    }
+    
+    private void resetAndSetErrorOffsets(int startError) {
         resetOffsets();
-        elementOffset = (- seq.offset()) - 1;
+        if (endDocOffset != -1) {
+            elementOffset = ( -endDocOffset ) - 1;
+        } else {
+            int o = startError > -1 ? startError : seq.offset();
+            elementOffset = (- o) - 1;
+        }
         endOffset = elementOffset;
     }
     
@@ -615,7 +626,7 @@ public class XmlLexerParser implements ContentLocator {
             // mark error, close this level etc
             markUnclosedElement(currentLevel.tagQName);
             String[] nsName = parseQName(currentLevel.tagQName);
-            resetAndSetErrorOffsets();
+            resetAndSetErrorOffsets(elementOffset);
             contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
             terminateLevel();
             return true;

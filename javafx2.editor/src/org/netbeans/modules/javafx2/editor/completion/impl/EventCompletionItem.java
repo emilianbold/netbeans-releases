@@ -133,4 +133,7 @@ final class EventCompletionItem extends AbstractCompletionItem {
         return ICON;
     }
     
+    public String toString() {
+        return "event[" + getSubstituteText() + "]";
+    }
 }

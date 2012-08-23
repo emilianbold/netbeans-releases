@@ -137,7 +137,7 @@ public final class FxTreeUtilities {
         } catch (Error e) {
             // expected
         }
-        if (!visitor.nodeStack.isEmpty() && ignoreTag) {
+        if (visitor.nodeStack.size() > 1 && ignoreTag) {
             FxNode n = visitor.nodeStack.peekFirst();
             if (!accessor.i(n).contentContains(position, caret)) {
                 visitor.nodeStack.removeFirst();

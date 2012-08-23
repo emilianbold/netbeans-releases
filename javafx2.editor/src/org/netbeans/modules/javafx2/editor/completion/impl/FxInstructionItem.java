@@ -113,4 +113,7 @@ final class FxInstructionItem extends AbstractCompletionItem {
         return ICON;
     }
     
+    public String toString() {
+        return "instruction[" + instruction + "]";
+    }
 }

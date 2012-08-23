@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import junit.framework.Assert;
+import org.netbeans.ModuleManager;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -63,6 +64,8 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.core.ModuleActions;
+import org.netbeans.core.startup.ModuleLifecycleManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.modules.editor.java.Utilities;
@@ -88,6 +91,8 @@ import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
@@ -152,7 +157,8 @@ public class FXMLCompletionTestBase extends NbTestCase {
             "/org/netbeans/modules/javafx2/editor/resources/layer.xml",
             "/org/netbeans/modules/javafx2/editor/test/layer.xml",
             "/META-INF/generated-layer.xml",
-            "/org/netbeans/modules/defaults/mf-layer.xml"
+            "/org/netbeans/modules/defaults/mf-layer.xml",
+            "/org/netbeans/modules/xml/text/resources/mf-layer.xml",
         };
         Collection<URL> allUrls = new ArrayList<URL>();
         for (String u : initUrls) {
@@ -206,7 +212,8 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 }
             }
         };
-        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
+        Lkp.initLookups(new Object[] {repository, loader, cpp /*, mdp */});
+        //Collection<? extends ModuleInfo> mods = Lookup.getDefault().lookupAll(ModuleInfo.class);
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
@@ -270,7 +277,20 @@ public class FXMLCompletionTestBase extends NbTestCase {
         performTest(source, caretPos, textToInsert, goldenFileName, null, null);
     }
     
+    private String getClassDir() {
+        String clName = getClass().getName();
+        return clName.replaceAll("\\.", "/");
+    }
+    
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        performTest(source, caretPos, textToInsert, CompletionProvider.COMPLETION_QUERY_TYPE, goldenFileName, toPerformItemRE, goldenFileName2);
+    }
+    
+    protected void performTest(String source, int caretPos, String textToInsert, int queryType, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        performTest(source, caretPos, 0, -1, textToInsert, queryType, goldenFileName, toPerformItemRE, goldenFileName2);
+    }
+    
+    protected void performTest(String source, int caretPos, int charsDelete, int caret2Pos, String textToInsert, int queryType, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
         File testSource = new File(getWorkDir(), "test/test.fxml");
         testSource.getParentFile().mkdirs();
         copyToWorkDir(new File(getDataDir(), "org/netbeans/modules/javafx2/editor/completion/data/" + source + ".fxml"), testSource);
@@ -283,29 +303,40 @@ public class FXMLCompletionTestBase extends NbTestCase {
         final Document doc = ec.openDocument();
         assertNotNull(doc);
         doc.putProperty(Language.class, XMLTokenId.language());
-        doc.putProperty("mimeType", "text/xml");
+        doc.putProperty("mimeType", "text/x-fxml+xml");
         int textToInsertLength = textToInsert != null ? textToInsert.length() : 0;
+        if (charsDelete > 0) {
+            doc.remove(caretPos, charsDelete);
+        }
+        if (caret2Pos != -1) {
+            caretPos = caret2Pos;
+        }
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
         Source s = Source.create(doc);
-        List<? extends CompletionItem> items = query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength, doc);
+        List<? extends CompletionItem> items = performQuery(s, queryType, caretPos + textToInsertLength, caretPos + textToInsertLength, doc);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
         
         File output = new File(getWorkDir(), getName() + ".out");
         Writer out = new FileWriter(output);
+        List<String> sorted = new ArrayList<String>(items.size());
         for (CompletionItem item : items) {
             String itemString = item.toString();
             if (!(org.openide.util.Utilities.isMac() && itemString.equals("apple"))) { //ignoring 'apple' package
-                out.write(itemString);
-                out.write("\n");
+                sorted.add(itemString);
             }
+        }
+        Collections.sort(sorted);
+        for (String itemString : sorted) {
+            out.write(itemString);
+            out.write("\n");
         }
         out.close();
         
         String version = System.getProperty("java.specification.version");
         version = "1.5".equals(version) ? "" : version + "/";
         
-        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/javafx2/editor/completion/FXMLCompletionProviderTest/" + version + goldenFileName);
+        File goldenFile = new File(getDataDir(), "/goldenfiles/" + getClassDir() + "/" + version + goldenFileName);
         File diffFile = new File(getWorkDir(), getName() + ".diff");        
         assertFile(output, goldenFile, diffFile);
         
@@ -332,7 +363,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
             out2.write(doc.getText(0, doc.getLength()));
             out2.close();
             
-            File goldenFile2 = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/javafx2/editor/completion/FXMLCompletionProviderTest/" + goldenFileName2);
+            File goldenFile2 = new File(getDataDir(), "/goldenfiles/" + getClassDir() + "/" + goldenFileName2);
             File diffFile2 = new File(getWorkDir(), getName() + ".diff2");
             
             assertFile(output2, goldenFile2, diffFile2, new WhitespaceIgnoringDiff());
@@ -400,6 +431,10 @@ public class FXMLCompletionTestBase extends NbTestCase {
         // the f might not exist and so you cannot use e.g. f.isFile() here
         String fileName = f.getName().toLowerCase();
         return fileName.endsWith(".jar") || fileName.endsWith(".zip");    //NOI18N
+    }
+    
+    protected List<? extends CompletionItem> performQuery(Source source, int queryType, int offset, int substitutionOffset, Document doc) throws Exception {
+        return query(source, queryType, offset, substitutionOffset, doc);
     }
     
     // ONLY FOR TESTS!

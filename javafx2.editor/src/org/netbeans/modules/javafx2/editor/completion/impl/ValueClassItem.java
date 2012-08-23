@@ -196,4 +196,8 @@ final class ValueClassItem extends SimpleClassItem {
         return FxClassUtils.findValueOf(elem, ci) != null;
     }
     
+    public String toString() {
+        return "value-class["  + getFullClassName() + "]";
+    }
+    
 }

@@ -90,5 +90,8 @@ final  class ResourcePathItem extends AbstractCompletionItem {
         return icon;
     }
 
-    
+
+    public String toString() {
+        return "resource[" + super.getSubstituteText() + "]";
+    }
 }

@@ -174,5 +174,7 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
         return ICON;
     }
     
-    
+    public String toString() {
+        return "staticProperty[" + propertyName + "]";
+    }
 }
