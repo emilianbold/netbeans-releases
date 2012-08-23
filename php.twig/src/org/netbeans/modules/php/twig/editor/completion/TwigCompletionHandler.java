@@ -72,22 +72,35 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     private static final Set<String> TAGS = new HashSet<String>();
     static {
         TAGS.add("autoescape"); //NOI18N
+        TAGS.add("endautoescape"); //NOI18N
         TAGS.add("block"); //NOI18N
+        TAGS.add("endblock"); //NOI18N
         TAGS.add("do"); //NOI18N
         TAGS.add("embed"); //NOI18N
+        TAGS.add("endembed"); //NOI18N
         TAGS.add("extends"); //NOI18N
         TAGS.add("filter"); //NOI18N
+        TAGS.add("endfilter"); //NOI18N
         TAGS.add("flush"); //NOI18N
         TAGS.add("for"); //NOI18N
+        TAGS.add("endfor"); //NOI18N
         TAGS.add("from"); //NOI18N
         TAGS.add("if"); //NOI18N
+        TAGS.add("else"); //NOI18N
+        TAGS.add("elseif"); //NOI18N
+        TAGS.add("endif"); //NOI18N
         TAGS.add("import"); //NOI18N
         TAGS.add("include"); //NOI18N
         TAGS.add("macro"); //NOI18N
+        TAGS.add("endmacro"); //NOI18N
         TAGS.add("raw"); //NOI18N
+        TAGS.add("endraw"); //NOI18N
         TAGS.add("sandbox"); //NOI18N
+        TAGS.add("endsandbox"); //NOI18N
         TAGS.add("set"); //NOI18N
+        TAGS.add("endset"); //NOI18N
         TAGS.add("spaceless"); //NOI18N
+        TAGS.add("endspaceless"); //NOI18N
         TAGS.add("use"); //NOI18N
     }
 
@@ -150,6 +163,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     private static final Set<String> OPERATORS = new HashSet<String>();
     static {
         OPERATORS.add("in"); //NOI18N
+        OPERATORS.add("as"); //NOI18N
         OPERATORS.add("is"); //NOI18N
         OPERATORS.add("and"); //NOI18N
         OPERATORS.add("or"); //NOI18N
