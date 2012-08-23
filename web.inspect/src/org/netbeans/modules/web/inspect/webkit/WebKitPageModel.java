@@ -537,11 +537,11 @@ public class WebKitPageModel extends PageModel {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                if (shouldSynchronize()) {
+                if (shouldSynchronizeHighlight()) {
                     updateHighlight();
                 }
             } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                if (shouldSynchronize()) {
+                if (shouldSynchronizeSelection()) {
                     updateSelection();
                 }
             } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
@@ -556,16 +556,23 @@ public class WebKitPageModel extends PageModel {
             }
         }
 
-        private boolean shouldSynchronize() {
+        private boolean shouldSynchronizeSelection() {
             return isSynchronizeSelection() && isSelectionMode();
         }
 
+        private boolean shouldSynchronizeHighlight() {
+            return isSynchronizeSelection();
+        }
+
         private void updateSynchronization() {
-            if (shouldSynchronize()) {
+            if (shouldSynchronizeSelection()) {
                 updateSelection();
-                updateHighlight();
             } else {
                 updateSelection(Collections.EMPTY_LIST);
+            }
+            if (shouldSynchronizeHighlight()) {
+                updateHighlight();
+            } else {
                 updateHighlight(Collections.EMPTY_LIST);
             }
         }
