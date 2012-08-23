@@ -32,6 +32,7 @@ FormattingToken{kind=WHITESPACE, offset=44, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=46, text= }
 FormattingToken{kind=TEXT, offset=47, text=this}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}

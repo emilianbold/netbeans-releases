@@ -46,7 +46,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
 

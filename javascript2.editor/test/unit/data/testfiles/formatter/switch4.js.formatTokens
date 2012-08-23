@@ -50,6 +50,7 @@ FormattingToken{kind=WHITESPACE, offset=87, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=88, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=89, text= }
 FormattingToken{kind=TEXT, offset=90, text=undefined}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -110,6 +111,7 @@ FormattingToken{kind=WHITESPACE, offset=178, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=179, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=180, text= }
 FormattingToken{kind=TEXT, offset=181, text=undefined}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

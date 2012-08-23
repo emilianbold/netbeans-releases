@@ -70,8 +70,10 @@ public final class UnitImpl implements Unit {
     private final Collection<DatabaseStorage> dbStorages = new ArrayList<DatabaseStorage>();
     private final CharSequence unitName;
     private final MemoryCache cache;
+    private final int id;
     
-    public UnitImpl(int unitId, final CharSequence unitName) throws IOException {
+    public UnitImpl(int id, final CharSequence unitName) throws IOException {
+        this.id = id;
         assert unitName != null;
         this.unitName = unitName;
         File homeDir = new File(StorageAllocator.getInstance().getUnitStorageName(unitName));
@@ -80,14 +82,19 @@ public final class UnitImpl implements Unit {
         Collection<? extends Provider> providers = Lookup.getDefault().lookupAll(DatabaseStorage.Provider.class);
         
         for (Provider provider : providers) {
-            DatabaseStorage storage = provider.create(unitId, homeDir);
+            DatabaseStorage storage = provider.create(id, homeDir);
             if (storage != null) {
                 dbStorages.add(storage);
             }
         }
         cache = new MemoryCache();
     }
-    
+
+    @Override
+    public int getId() {
+        return id;
+    }
+
     private Storage getDiskStorage(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit());

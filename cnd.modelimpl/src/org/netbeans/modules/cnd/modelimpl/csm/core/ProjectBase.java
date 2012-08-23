@@ -444,6 +444,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** Gets an object, which represents correspondent IDE project */
     @Override
     public final Object getPlatformProject() {
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         return platformProject;
     }
 
@@ -1024,7 +1025,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void reopenUnit() {
         setStatus(Status.Initial);
         ParserQueue.instance().clean(this);
-        RepositoryUtils.closeUnit(this.getUniqueName(), null, true);
+        RepositoryUtils.closeUnit(this.getUnitId(), null, true);
         RepositoryUtils.openUnit(this);
         RepositoryUtils.hang(this);
         initFields();
@@ -2763,13 +2764,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected final Set<CharSequence> getRequiredUnits() {
-        Set<CharSequence> requiredUnits = new HashSet<CharSequence>();
+    private Set<Integer> getRequiredUnits() {
+        Set<Integer> requiredUnits = new HashSet<Integer>();
         for (Key dependent : this.getLibrariesKeys()) {
-            requiredUnits.add(dependent.getUnit());
+            requiredUnits.add(dependent.getUnitId());
         }
         return requiredUnits;
-    }
+    }    
 
 //    private void disposeFiles() {
 //        Collection<FileImpl> list = getFileContainer().getFileImpls();

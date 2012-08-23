@@ -14,6 +14,7 @@ FormattingToken{kind=WHITESPACE, offset=23, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=24, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=25, text= }
 FormattingToken{kind=TEXT, offset=26, text=0}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -36,6 +37,7 @@ FormattingToken{kind=WHITESPACE, offset=49, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=50, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=51, text= }
 FormattingToken{kind=TEXT, offset=52, text=-}
 FormattingToken{kind=AFTER_UNARY_OPERATOR, offset=-1, text=null}
@@ -47,6 +49,7 @@ FormattingToken{kind=BEFORE_FOR_TEST, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=55, text= }
 FormattingToken{kind=TEXT, offset=56, text=a}
 FormattingToken{kind=WHITESPACE, offset=57, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=58, text=<}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
@@ -75,6 +78,7 @@ FormattingToken{kind=WHITESPACE, offset=87, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=88, text=+=}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=90, text= }
 FormattingToken{kind=TEXT, offset=91, text=Math}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
@@ -94,6 +98,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=113, text=(}
 FormattingToken{kind=TEXT, offset=114, text=)}
 FormattingToken{kind=WHITESPACE, offset=115, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=116, text=*}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}

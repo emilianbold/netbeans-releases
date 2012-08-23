@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.twig.editor.completion;
 
 import java.util.MissingResourceException;
+import org.netbeans.modules.php.twig.editor.completion.TwigDocumentation.TwigDocumentationImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,7 +51,7 @@ import org.openide.util.NbBundle;
  */
 public interface TwigDocumentationFactory {
 
-    public String createDocumentation(String elementName);
+    public TwigDocumentation create(String elementName);
 
     public abstract static class BaseDocumentationFactory implements TwigDocumentationFactory {
 
@@ -58,12 +59,12 @@ public interface TwigDocumentationFactory {
 
         @Override
         @NbBundle.Messages("MSG_NoDocumentation=Documentation not found.")
-        public String createDocumentation(String elementName) {
-            String result;
+        public TwigDocumentation create(String elementName) {
+            TwigDocumentation result;
             try {
-                result = NbBundle.getMessage(TagDocumentationFactory.class, getDocumentationKey() + elementName); //NOI18N
+                result = new TwigDocumentationImpl(NbBundle.getMessage(TagDocumentationFactory.class, getDocumentationKey() + elementName));
             } catch (MissingResourceException ex) {
-                result = Bundle.MSG_NoDocumentation();
+                result = new TwigDocumentationImpl(Bundle.MSG_NoDocumentation());
             }
             return result;
         }

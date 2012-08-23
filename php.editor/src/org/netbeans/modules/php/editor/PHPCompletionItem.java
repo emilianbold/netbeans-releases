@@ -892,17 +892,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        @NbBundle.Messages("Generate=- generate")
         public String getLhsHtml(HtmlFormatter formatter) {
             StringBuilder sb = new StringBuilder();
             sb.append(super.getLhsHtml(formatter));
-            sb.append(' ').append(NbBundle.getMessage(PHPCompletionItem.class, "Generate"));//NOI18N
+            sb.append(' ').append(Bundle.Generate());
             return sb.toString();
         }
 
         @Override
+        @NbBundle.Messages("MagicMethod=Magic Method")
         public String getRhsHtml(HtmlFormatter formatter) {
             if (isMagic()) {
-                final String message = NbBundle.getMessage(PHPCompletionItem.class, "MagicMethod");//NOI18N
+                final String message = Bundle.MagicMethod();
                 formatter.appendText(message);
                 return formatter.getText();
             }
