@@ -73,6 +73,7 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -194,7 +195,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      */
     final void updatePageModel() {
         if (pageModel != null) {
-            pageModel.removePropertyChangeListener(listener);
+            pageModel.removePropertyChangeListener(getListener());
+            pageModel.getWebKit().getCSS().removeListener(getListener());
         }
         PageModel page = PageInspectorImpl.getDefault().getPage();
         if (page instanceof WebKitPageModel) {
@@ -203,9 +205,10 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             pageModel = null;
         }
         if (pageModel != null) {
-            pageModel.addPropertyChangeListener(listener);
+            pageModel.addPropertyChangeListener(getListener());
+            pageModel.getWebKit().getCSS().addListener(getListener());
         }
-        updateContent();
+        updateContent(false);
     }
 
     /**
@@ -233,11 +236,27 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
     /**
      * Updates the content of this panel.
+     *
+     * @param keepSelection if {@code true} then an attempt to keep the current
+     * selection is made, otherwise the selection is cleared.
      */
-    void updateContent() {
-        documentPanel.updateContent(pageModel);
-        selectionPanel.updateContent(pageModel);
+    void updateContent(boolean keepSelection) {
+        try {
+            contentUpdateInProgress = keepSelection;
+            documentPanel.updateContent(pageModel, keepSelection);
+            selectionPanel.updateContent(pageModel, keepSelection);
+        } finally {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    contentUpdateInProgress = false;
+                }
+            });
+        }
     }
+
+    /** Determines whether the content update is in progress. */
+    boolean contentUpdateInProgress;
 
     /**
      * Updates the rules editor window to show information about the selected rule.
@@ -297,7 +316,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * Listener for various events important for {@code CSSStylesPanel}.
      */
-    class Listener implements ActionListener, PropertyChangeListener, LookupListener {
+    class Listener implements ActionListener, PropertyChangeListener, LookupListener, CSS.Listener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -315,14 +334,39 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
                 updatePageModel();
             } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
-                updateContent();
+                updateContent(false);
             }
         }
 
         @Override
         public void resultChanged(LookupEvent ev) {
             Collection<? extends Rule> rules = ruleLookupResult.allInstances();
-            updateRulesEditor(rules);
+            // Trying to avoid unwanted flashing of Rule Editor
+            if (!contentUpdateInProgress || !rules.isEmpty()) {
+                updateRulesEditor(rules);
+            }
+        }
+
+        @Override
+        public void mediaQueryResultChanged() {
+            updateContentInRP();
+        }
+
+        @Override
+        public void styleSheetChanged(String styleSheetId) {
+            updateContentInRP();
+        }
+
+        /**
+         * Invokes {@code updateContent()} in a request processor.
+         */
+        private void updateContentInRP() {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateContent(true);
+                }
+            });
         }
 
     }

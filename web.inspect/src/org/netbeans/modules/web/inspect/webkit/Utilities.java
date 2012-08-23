@@ -58,6 +58,7 @@ import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.SourceRange;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetOrigin;
+import org.openide.nodes.Node;
 
 /**
  * WebKit-related utility methods that don't fit well anywhere else.
@@ -226,6 +227,30 @@ public class Utilities {
      */
     public static boolean showInCSSStyles(Rule rule) {
         return (rule.getOrigin() != StyleSheetOrigin.USER_AGENT);
+    }
+
+    /**
+     * Finds a node that represents the specified rule in a tree
+     * represented by the given root node.
+     *
+     * @param root root of a tree to search.
+     * @param rule rule to find.
+     * @return node that represents the rule or {@code null}.
+     */
+    public static Node findRule(Node root, Rule rule) {
+        Rule candidate = root.getLookup().lookup(Rule.class);
+        if (candidate != null &&  rule.getId().equals(candidate.getId())
+                && rule.getSourceURL().equals(candidate.getSourceURL())
+                && rule.getSelector().equals(candidate.getSelector())) {
+            return root;
+        }
+        for (Node node : root.getChildren().getNodes()) {
+            Node result = findRule(node, rule);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
 }

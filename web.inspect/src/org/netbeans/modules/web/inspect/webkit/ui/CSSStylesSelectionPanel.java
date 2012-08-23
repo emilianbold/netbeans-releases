@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -63,12 +64,15 @@ import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
+import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.RuleId;
 import org.openide.awt.HtmlRenderer;
@@ -122,7 +126,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         initMessageLabel();
         initSelectionOfOwningRule();
         add(splitPane, BorderLayout.CENTER);
-        updateContent(null);
+        updateContent(null, false);
     }
 
     /**
@@ -236,8 +240,10 @@ public class CSSStylesSelectionPanel extends JPanel {
      * Updates the content of and sets a new page model to this panel.
      *
      * @param pageModel page model to use by this panel.
+     * @param if {@code true} then an attempt to keep the current
+     * selection is made, otherwise the selection is cleared.
      */
-    final void updateContent(WebKitPageModel pageModel) {
+    final void updateContent(WebKitPageModel pageModel, boolean keepSelection) {
         if (this.pageModel != null) {
             this.pageModel.removePropertyChangeListener(getListener());
         }
@@ -245,13 +251,16 @@ public class CSSStylesSelectionPanel extends JPanel {
         if (this.pageModel != null) {
             this.pageModel.addPropertyChangeListener(getListener());
         }
-        updateContent();
+        updateContent(keepSelection);
     }
 
     /**
      * Updates the content of this panel.
+     *
+     * @param if {@code true} then an attempt to keep the current
+     * selection is made, otherwise the selection is cleared.
      */
-    void updateContent() {
+    void updateContent(boolean keepSelection) {
         if (pageModel == null) {
             setDummyRoots();
         } else {
@@ -273,9 +282,48 @@ public class CSSStylesSelectionPanel extends JPanel {
                     CSS css = webKit.getCSS();
                     MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
                     if (matchedStyles != null) {
+                        final Node[] selectedRules = rulePaneManager.getSelectedNodes();
+                        final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
                         Project project = pageModel.getProject();
-                        rulePaneManager.setRootContext(new MatchedRulesNode(project, selectedNode, matchedStyles));
-                        propertyPaneManager.setRootContext(new MatchedPropertiesNode(project, matchedStyles));
+                        final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
+                        rulePaneManager.setRootContext(rulePaneRoot);
+                        final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles);
+                        propertyPaneManager.setRootContext(propertyPaneRoot);
+                        if (keepSelection) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (selectedProperties.length > 0) {
+                                        Node selectedProperty = selectedProperties[0];
+                                        Property property = selectedProperty.getLookup().lookup(Property.class);
+                                        if (property != null) {
+                                            String propertyName = property.getName();
+                                            for (Node candidate : propertyPaneRoot.getChildren().getNodes()) {
+                                                Property candProperty = candidate.getLookup().lookup(Property.class);
+                                                if (candProperty != null && propertyName.equals(candProperty.getName())) {
+                                                    try {
+                                                        propertyPaneManager.setSelectedNodes(new Node[] {candidate});
+                                                    } catch (PropertyVetoException pvex) {}
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (selectedRules.length > 0) {
+                                        Node selectedRuleNode = selectedRules[0];
+                                        Rule selectedRule = selectedRuleNode.getLookup().lookup(Rule.class);
+                                        if (selectedRule != null) {
+                                            Node newSelectedRuleNode = Utilities.findRule(rulePaneRoot, selectedRule);
+                                            if (newSelectedRuleNode != null) {
+                                                try {
+                                                    rulePaneManager.setSelectedNodes(new Node[] {newSelectedRuleNode});
+                                                } catch (PropertyVetoException pvex) {}
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
                     }
                 } else {
                     setDummyRoots();
@@ -353,7 +401,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (PageModel.PROP_SELECTED_NODES.equals(propertyName)) {
-                updateContent();
+                updateContent(false);
             }
         }
 
@@ -390,6 +438,7 @@ public class CSSStylesSelectionPanel extends JPanel {
          */
         CustomTreeTableView() {
             setRootVisible(false);
+            setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             final TreeCellRenderer renderer = tree.getCellRenderer();
             tree.setCellRenderer(new TreeCellRenderer() {
                 @Override

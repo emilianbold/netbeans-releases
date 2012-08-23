@@ -43,10 +43,14 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
@@ -61,9 +65,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.ui.FakeRootNode;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
+import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -99,7 +105,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
         setLayout(new BorderLayout());
         initTreeView();
         initFilter();
-        updateContent(null);
+        updateContent(null, true);
     }
 
     /**
@@ -206,12 +212,14 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
      * Updates the content of this panel.
      *
      * @param webKit WebKit debugging.
+     * @param keepSelection if {@code true} then an attempt to keep the current
+     * selection is made, otherwise the selection is cleared.
      */
-    final void updateContent(final WebKitPageModel pageModel) {
+    final void updateContent(final WebKitPageModel pageModel, final boolean keepSelection) {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                Node root;
+                final Node root;
                 if (pageModel == null) {
                     // Using dummy node as the root to release the old root
                     root = new AbstractNode(Children.LEAF);
@@ -224,8 +232,29 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                     root = new FakeRootNode<DocumentNode>(documentNode,
                             new Action[] { new RefreshAction() });
                 }
+                final Node[] oldSelection = manager.getSelectedNodes();
                 manager.setRootContext(root);
                 treeView.expandAll();
+                if (keepSelection) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<Node> selection = new ArrayList<Node>(oldSelection.length);
+                            for (Node oldSelected : oldSelection) {
+                                Rule rule = oldSelected.getLookup().lookup(Rule.class);
+                                if (rule != null) {
+                                    Node newSelected = Utilities.findRule(root, rule);
+                                    if (newSelected != null) {
+                                        selection.add(newSelected);
+                                    }
+                                }
+                            }
+                            try {
+                                manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
+                            } catch (PropertyVetoException pvex) {}
+                        }
+                    });
+                }
             }
         });
     }
@@ -254,7 +283,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
         @Override
         public void actionPerformed(ActionEvent e) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-            updateContent(pageModel instanceof WebKitPageModel ? (WebKitPageModel)pageModel : null);
+            updateContent(pageModel instanceof WebKitPageModel ? (WebKitPageModel)pageModel : null, false);
         }
 
     }
