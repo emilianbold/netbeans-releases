@@ -64,33 +64,33 @@ public interface TwigElement extends ElementHandle {
 
     public static class Factory {
 
-         public static TwigElement create(final String name) {
-             return new TwigElementWithoutParams(name);
-         }
+        public static TwigElement create(final String name) {
+            return new TwigElementWithoutParams(name);
+        }
 
-         public static TwigElement create(final String name, final List<Parameter> parameters) {
-             return new TwigElementWithParams(name, parameters);
-         }
+        public static TwigElement create(final String name, final List<Parameter> parameters) {
+            return new TwigElementWithParams(name, parameters);
+        }
 
-         public static TwigElement create(final String name, final String customTemplate) {
-             return new TwigElementWithCustomTemplate(name, customTemplate);
-         }
+        public static TwigElement create(final String name, final String customTemplate) {
+            return new TwigElementWithCustomTemplate(name, customTemplate);
+        }
+    }
 
-     }
+    abstract static class BaseTwigElementItem implements TwigElement {
 
-     abstract static class BaseTwigElementItem implements TwigElement {
-         private final String name;
+        private final String name;
 
-         public BaseTwigElementItem(final String name) {
-             this.name = name;
-         }
+        public BaseTwigElementItem(final String name) {
+            this.name = name;
+        }
 
-         @Override
-         public String getName() {
-             return name;
-         }
+        @Override
+        public String getName() {
+            return name;
+        }
 
-         @Override
+        @Override
         public FileObject getFileObject() {
             return null;
         }
@@ -124,10 +124,9 @@ public interface TwigElement extends ElementHandle {
         public OffsetRange getOffsetRange(ParserResult result) {
             return OffsetRange.NONE;
         }
+    }
 
-     }
-
-     static class TwigElementWithoutParams extends BaseTwigElementItem {
+    static class TwigElementWithoutParams extends BaseTwigElementItem {
 
         public TwigElementWithoutParams(final String name) {
             super(name);
@@ -141,10 +140,10 @@ public interface TwigElement extends ElementHandle {
         @Override
         public void formatParameters(final HtmlFormatter formatter) {
         }
+    }
 
-     }
+    static class TwigElementWithCustomTemplate extends BaseTwigElementItem {
 
-     static class TwigElementWithCustomTemplate extends BaseTwigElementItem {
         private final String customTemplate;
 
         public TwigElementWithCustomTemplate(final String name, final String customTemplate) {
@@ -160,10 +159,10 @@ public interface TwigElement extends ElementHandle {
         @Override
         public void formatParameters(HtmlFormatter formatter) {
         }
+    }
 
-     }
+    static class TwigElementWithParams extends BaseTwigElementItem {
 
-     static class TwigElementWithParams extends BaseTwigElementItem {
         private final List<Parameter> parameters;
 
         public TwigElementWithParams(final String name, final List<Parameter> parameters) {
@@ -199,16 +198,15 @@ public interface TwigElement extends ElementHandle {
             template.append(")"); //NOI18N
             return template.toString();
         }
+    }
 
-     }
-
-     public static class Parameter {
+    public static class Parameter {
 
         public enum Need {
+
             OPTIONAL,
             MANDATORY;
         }
-
         private final String name;
         private final Need need;
 
@@ -238,7 +236,5 @@ public interface TwigElement extends ElementHandle {
         private boolean isMandatory() {
             return Need.MANDATORY.equals(need);
         }
-
     }
-
 }
