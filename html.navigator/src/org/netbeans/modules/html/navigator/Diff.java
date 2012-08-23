@@ -157,6 +157,11 @@ public class Diff {
         if (!d1.getName().equals(d2.getName())) {
             return false;
         }
+        
+        if("html".equalsIgnoreCase(d1.getName())) {
+            //there is only one <html> tag in document. They are equals.
+            return true;
+        }
 
         //compare by id attribute, so far quite simple
         if(forceIdAttrEquality) {
@@ -217,6 +222,11 @@ public class Diff {
         int hash = 11;
 
         hash = 37 * hash + d.getName().hashCode();
+        
+        if ("html".equalsIgnoreCase(d.getName())) {
+            //there is only one <html> tag in document. They have the same hash code.
+            return hash;
+        }
 
         String idAttrVal = d.getAttributeValue(ID_ATTR_NAME);
         if (idAttrVal != null) {
