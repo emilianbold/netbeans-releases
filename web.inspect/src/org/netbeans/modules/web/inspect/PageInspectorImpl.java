@@ -251,8 +251,9 @@ public class PageInspectorImpl extends PageInspector {
                     }
                 }
             });
-            if( toolBar.getComponentCount() == 0 )
+            if (toolBar.getComponentCount() == 0) {
                 toolBar.addSeparator();
+            }
             toolBar.add(selectionModeButton);
             selectionModeButton.setSelected(pageModel.isSelectionMode());
             selectionModeButton.setVisible(pageModel.isSynchronizeSelection());
