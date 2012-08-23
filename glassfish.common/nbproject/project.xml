@@ -6,7 +6,7 @@
             <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.toolingSDK</code-name-base>
+                    <code-name-base>org.netbeans.libs.glassfish.sdk</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

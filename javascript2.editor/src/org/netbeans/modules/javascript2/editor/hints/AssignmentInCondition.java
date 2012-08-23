@@ -47,23 +47,23 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class BetterConditionHint extends JsConventionHint {
-    
-    @Override
-    @NbBundle.Messages("BetterConditionDisplayName=Using === or !== instead == or !=")
-    public String getDisplayName() {
-        return Bundle.BetterConditionDisplayName();
-    }
+public class AssignmentInCondition extends JsConventionHint {
 
     @Override
     public String getId() {
-        return "jsbettercondition.hint"; //NOI18N
+        return "jsassignmentincondition.hint"; //NOI18N
     }
 
     @Override
-    @NbBundle.Messages("BetterConditionDescription=Reports cases where in condition is used == or != instead === or !==.")
+    @NbBundle.Messages("AssignmentInConditionDescription=Warns if there is an assignment instead a condition.")
     public String getDescription() {
-        return Bundle.BetterConditionDescription();
+        return Bundle.AssignmentInConditionDescription();
+    }
+
+    @Override
+    @NbBundle.Messages("AssignmentInConditionDisplayName=Assignment in condition")
+    public String getDisplayName() {
+        return Bundle.AssignmentInConditionDisplayName();
     }
     
 }

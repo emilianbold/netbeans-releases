@@ -43,9 +43,12 @@ package org.netbeans.modules.javascript2.editor.hint;
 
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.css.editor.properties.Semitones;
+import org.netbeans.modules.javascript2.editor.hints.AssignmentInCondition;
 import org.netbeans.modules.javascript2.editor.hints.BetterConditionHint;
+import org.netbeans.modules.javascript2.editor.hints.DuplicatePropertyName;
 import org.netbeans.modules.javascript2.editor.hints.JsConventionRule;
 import org.netbeans.modules.javascript2.editor.hints.MissingSemicolonHint;
+import org.netbeans.modules.javascript2.editor.hints.UnexpectedCommaInObjectLiteral;
 
 /**
  *
@@ -70,6 +73,10 @@ public class JsConventionHintTest extends HintTestBase {
         return new BetterConditionHint();
     }
     
+    private Rule createDuplicatePropertyHint() {
+        return new DuplicatePropertyName();
+    }
+    
     public void testSemicolon1() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/coloring/assignments01.js", null);
     }
@@ -87,11 +94,11 @@ public class JsConventionHintTest extends HintTestBase {
     }
     
     public void testUnexpectedComma01() throws Exception {
-        checkHints(this, createSemicolonHint(), "testfiles/hints/unexpectedComma.js", null);
+        checkHints(this, new UnexpectedCommaInObjectLiteral(), "testfiles/hints/unexpectedComma.js", null);
     }
     
     public void testAccidentalAssignment01() throws Exception {
-        checkHints(this, createBetterConditionHint(), "testfiles/hints/accidentalAssignment.js", null);
+        checkHints(this, new AssignmentInCondition(), "testfiles/hints/accidentalAssignment.js", null);
     }
     
     public void testBetterCondition01() throws Exception {
@@ -99,14 +106,14 @@ public class JsConventionHintTest extends HintTestBase {
     }
     
     public void testDuplicateName01() throws Exception {
-        checkHints(this, createBetterConditionHint(), "testfiles/hints/duplicateName.js", null);
+        checkHints(this, createDuplicatePropertyHint(), "testfiles/hints/duplicateName.js", null);
     }
     
     public void testDuplicateName02() throws Exception {
-        checkHints(this, createSemicolonHint(), "testfiles/hints/duplicateName02.js", null);
+        checkHints(this, createDuplicatePropertyHint(), "testfiles/hints/duplicateName02.js", null);
     }
     
     public void testDuplicateName03() throws Exception {
-        checkHints(this, createSemicolonHint(), "testfiles/hints/duplicateName03.js", null);
+        checkHints(this, createDuplicatePropertyHint(), "testfiles/hints/duplicateName03.js", null);
     }
 }

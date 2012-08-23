@@ -47,23 +47,23 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class BetterConditionHint extends JsConventionHint {
-    
-    @Override
-    @NbBundle.Messages("BetterConditionDisplayName=Using === or !== instead == or !=")
-    public String getDisplayName() {
-        return Bundle.BetterConditionDisplayName();
-    }
+public class UnexpectedCommaInObjectLiteral extends JsConventionHint {
 
     @Override
     public String getId() {
-        return "jsbettercondition.hint"; //NOI18N
+        return "jsunexpectedcommainobjectliteral.hint"; //NOI18N
     }
 
     @Override
-    @NbBundle.Messages("BetterConditionDescription=Reports cases where in condition is used == or != instead === or !==.")
+    @NbBundle.Messages("UnexpectedCommaInOLDescription=Warns if there are ',' after the last property definition in an object literal.")
     public String getDescription() {
-        return Bundle.BetterConditionDescription();
+        return Bundle.UnexpectedCommaInOLDescription();
+    }
+
+    @Override
+    @NbBundle.Messages("UnexpectedCommaInOLDisplayName=Unexpected comma in object literal")
+    public String getDisplayName() {
+        return Bundle.UnexpectedCommaInOLDisplayName();
     }
     
 }
