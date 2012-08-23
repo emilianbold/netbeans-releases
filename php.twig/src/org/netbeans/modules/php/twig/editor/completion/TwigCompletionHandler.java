@@ -187,6 +187,10 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         return TwigTokenId.T_TWIG_VARIABLE.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId);
     }
 
+    private boolean startsWith(String theString, String prefix) {
+        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
+    }
+
     private void completeAll(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         completeTags(completionProposals, request);
         completeFilters(completionProposals, request);
@@ -197,31 +201,41 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     private void completeTags(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String tag : TAGS) {
-            completionProposals.add(new TwigCompletionItem.TagCompletionItem(tag, request));
+            if (startsWith(tag, request.prefix)) {
+                completionProposals.add(new TwigCompletionItem.TagCompletionItem(tag, request));
+            }
         }
     }
 
     private void completeFilters(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String filter : FILTERS) {
-            completionProposals.add(new TwigCompletionItem.FilterCompletionItem(filter, request));
+            if (startsWith(filter, request.prefix)) {
+                completionProposals.add(new TwigCompletionItem.FilterCompletionItem(filter, request));
+            }
         }
     }
 
     private void completeFunctions(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (TwigFunction function : FUNCTIONS) {
-            completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(function, request));
+            if (startsWith(function.getName(), request.prefix)) {
+                completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(function, request));
+            }
         }
     }
 
     private void completeTests(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String test : TESTS) {
-            completionProposals.add(new TwigCompletionItem.TestCompletionItem(test, request));
+            if (startsWith(test, request.prefix)) {
+                completionProposals.add(new TwigCompletionItem.TestCompletionItem(test, request));
+            }
         }
     }
 
     private void completeOperators(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         for (String operator : OPERATORS) {
-            completionProposals.add(new TwigCompletionItem.OperatorCompletionItem(operator, request));
+            if (startsWith(operator, request.prefix)) {
+                completionProposals.add(new TwigCompletionItem.OperatorCompletionItem(operator, request));
+            }
         }
     }
 
