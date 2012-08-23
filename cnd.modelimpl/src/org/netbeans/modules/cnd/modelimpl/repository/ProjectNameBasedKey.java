@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
     protected ProjectNameBasedKey(CharSequence project) {
         assert project != null;
-        this.unitIndex = (short)KeyUtilities.getUnitId(project);
+        this.unitIndex = KeyUtilities.getUnitId(project);
     }
 
     protected ProjectNameBasedKey(KeyDataPresentation presentation) {
