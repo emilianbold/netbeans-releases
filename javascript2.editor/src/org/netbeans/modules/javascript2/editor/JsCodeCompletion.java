@@ -385,7 +385,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
-        return Collections.emptySet();
+        // must return null - CSL reasons, see #217101 for more information
+        return null;
     }
 
     @Override

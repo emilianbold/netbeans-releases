@@ -45,11 +45,222 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                                 "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
 <codetemplates>
-    <codetemplate uuid="org.netbeans.modules.javascript2.editor.codetemplate.fcom" abbreviation="fcom" contexts="js-code">
+
+    <!-- base JavaScript structures -->
+    <codetemplate abbreviation="catch">
         <code>
-<![CDATA[// <editor-fold defaultstate="collapsed" desc="${comment}">
-${selection}${cursor}// </editor-fold>
+<![CDATA[catch (${exception}) {
+    ${cursor}
+}
 ]]>
         </code>
     </codetemplate>
+    <codetemplate abbreviation="do">
+        <code>
+<![CDATA[do {
+    ${cursor}
+} while (${expr default="true"});]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="else">
+        <code>
+<![CDATA[else {
+	${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="elseif">
+        <code>
+<![CDATA[else if (${condition}) {
+	${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="fcom">
+        <code>
+<![CDATA[${no-format}//<editor-fold defaultstate="collapsed" desc="${comment}">
+${selection}${cursor}
+//</editor-fold>
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="for">
+        <code>
+<![CDATA[for (${var default="i"} = 0; ${var} < ${max default="10"}; ${var}++) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="forin">
+        <code>
+<![CDATA[for (var ${item} in ${object}) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="func">
+        <code>
+<![CDATA[/**
+ * ${1 default="Comment"}
+ */
+function ${name}(${parameters}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="funcp">
+        <code>
+<![CDATA[/**
+ * ${1 default="Comment"}
+ * @param {${type}} ${parameter}
+ */
+function ${name}(${parameter}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="function">
+        <code>
+<![CDATA[/**
+ * ${1 default="Comment"}
+ */
+function ${name}(${parameters}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="if">
+        <code>
+<![CDATA[if (${expr}) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="ife">
+        <code>
+<![CDATA[if (${expr}) {
+   ${selection}${cursor}
+} else {
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="lb">
+        <code>
+<![CDATA[${label}:
+    ${cursor}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="new">
+        <code><![CDATA[${no-indent}var ${name} = new ${type}(${arguments});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="sw">
+        <code>
+<![CDATA[switch (${key}) {
+    case ${value}:
+        ${cursor}
+        break;
+
+    default:
+        ${defaultCode default=""}
+        break;
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="th">
+        <code><![CDATA[${no-indent}throw ]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="the">
+        <code><![CDATA[${no-indent}throw new Error("${errorMessage}");]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="try" descriptionId="ct_try" xml:space="preserve">
+        <code>
+<![CDATA[try {
+    ${selection}${cursor}
+} catch (${e}) {
+    ${catchcode default=""}
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="var">
+        <code><![CDATA[${no-indent}var ${name} = ${value};]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="wh">
+        <code>
+<![CDATA[while (${expr default="true"}) {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="wi">
+        <code>
+<![CDATA[with (${object}) {
+    ${code default=""}
+}]]>
+        </code>
+    </codetemplate>
+
+    <!-- JavaScript keyword, most used words shortcuts -->
+    <codetemplate abbreviation="br"><code><![CDATA[${no-indent}break;]]></code></codetemplate>
+    <codetemplate abbreviation="ca"><code><![CDATA[${no-indent}case ]]></code></codetemplate>
+    <codetemplate abbreviation="ct"><code><![CDATA[${no-indent}catch]]></code></codetemplate>
+    <codetemplate abbreviation="co"><code><![CDATA[${no-indent}continue]]></code></codetemplate>
+    <codetemplate abbreviation="df"><code><![CDATA[${no-indent}default:]]></code></codetemplate>
+    <codetemplate abbreviation="fa"><code><![CDATA[${no-indent}false]]></code></codetemplate>
+    <codetemplate abbreviation="fi"><code><![CDATA[${no-indent}finally]]></code></codetemplate>
+    <codetemplate abbreviation="le"><code><![CDATA[${no-indent}length]]></code></codetemplate>
+    <codetemplate abbreviation="iof"><code><![CDATA[${no-indent}instanceof ]]></code></codetemplate>
+    <codetemplate abbreviation="re"><code><![CDATA[${no-indent}return ]]></code></codetemplate>
+    <codetemplate abbreviation="tr"><code><![CDATA[${no-indent}true]]></code></codetemplate>
+    <codetemplate abbreviation="ty"><code><![CDATA[${no-indent}typeof]]></code></codetemplate>
+
+    <!-- additional JavaScript code templates -->
+    <codetemplate abbreviation="json">
+        <code><![CDATA[{"${field}": "${value}"}]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="prf">
+        <code>
+<![CDATA[${propertyName}: function(${parameters}) {
+    ${cursor}
+},]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="pro">
+        <code>
+<![CDATA[${propertyName}: {
+    ${cursor}
+},]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="prt">
+        <code><![CDATA[${propertyName}: ${value},]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="to">
+        <code><![CDATA[typeof(${object})]]></code>
+    </codetemplate>
+
+    <!-- Client-Side and W3C DOM JavaScript code templates -->
+    <codetemplate abbreviation="al">
+        <code><![CDATA[window.alert(${message});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="cond">
+        <code><![CDATA[window.console.debug(${debug});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="coni">
+        <code><![CDATA[window.console.info(${info});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="conl">
+        <code><![CDATA[window.console.log(${log});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="conw">
+        <code><![CDATA[window.console.warn(${warn});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="dw">
+        <code><![CDATA[document.write(${message});]]></code>
+    </codetemplate>
+
 </codetemplates>

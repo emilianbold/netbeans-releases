@@ -411,10 +411,10 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
             }
+            handleFunctionCallChain(callNode);
         }
         return super.visit(callNode, onset);
     }
-
 
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
@@ -636,6 +636,22 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         return super.visit(varNode, onset);
+    }
+
+    private void handleFunctionCallChain(CallNode callNode) {
+        Node function = callNode.getFunction();
+        if (function instanceof AccessNode) {
+            Node base = ((AccessNode) function).getBase();
+            if (base instanceof CallNode) {
+                CallNode chained = (CallNode) base;
+                int finish = getFinish(chained);
+                FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_DOT);
+                if (formatToken != null) {
+                    appendTokenAfterLastVirtual(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.AFTER_CHAIN_CALL_DOT));
+                }
+            }
+        }
     }
 
     private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
@@ -1112,7 +1128,7 @@ public class FormatVisitor extends NodeVisitor {
         // in case it is string literal.
         int finish = node.getFinish();
         ts.move(finish);
-        if(!ts.moveNext()) {
+        if (!ts.moveNext()) {
             return finish;
         }
         Token<? extends JsTokenId> token = ts.token();

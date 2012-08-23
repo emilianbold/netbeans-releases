@@ -46,6 +46,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 
@@ -54,9 +55,9 @@ import org.netbeans.modules.csl.api.RuleContext;
  * @author Petr Pisl
  */
 public abstract class JsAstRule implements Rule.AstRule {
-    public static final String JSCONVENTION_HINTS = "jsconvention.line.hints"; //NOI18N
+    public static final String JS_OTHER_HINTS = "js.other.hints"; //NOI18N
 
-    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints);
+    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager);
     
     @Override
     public boolean getDefaultEnabled() {
