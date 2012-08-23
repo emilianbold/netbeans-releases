@@ -50,6 +50,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -59,6 +61,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
@@ -69,9 +72,11 @@ import org.netbeans.modules.css.visual.filters.FiltersManager;
 import org.netbeans.modules.css.visual.filters.FiltersSettings;
 import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -110,6 +115,8 @@ import org.openide.util.NbBundle;
         "label.add.property=Add Property"
 })
 public class RuleEditorPanel extends JPanel {
+    
+    private static final Logger LOG = Logger.getLogger(RuleEditorPanel.class.getSimpleName());
 
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
@@ -247,18 +254,73 @@ public class RuleEditorPanel extends JPanel {
         return model;
     }
     
-    public void setModel(Model model) {
+    //runs in EDT
+    public void setModel(final Model model) {
+        LOG.log(Level.INFO, "setModel({0})", model);
+        
+        assert SwingUtilities.isEventDispatchThread();
         if(this.model == model) {
             return ; //no change
         }
-        Model oldModel = this.model;
-        Rule oldRule = this.rule;
+        
+        final Model oldModel = this.model;
+        final Rule oldRule = this.rule;
         
         this.model = model;
-        this.rule = null;
-        
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
-        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, this.rule);
+        
+        if(this.rule != null) {
+            //try to resolve the old rule from the previous model to corresponding
+            //rule in the new model
+            final AtomicReference<CharSequence> oldRuleId_ref = new AtomicReference<CharSequence>();
+            oldModel.runReadTask(new Model.ModelTask() {
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    oldRuleId_ref.set(oldModel.getElementSource(oldRule.getSelectorsGroup()));
+                }
+            });
+            final CharSequence oldRuleId = oldRuleId_ref.get();
+            
+            final AtomicReference<Rule> match_ref = new AtomicReference<Rule>();
+            model.runReadTask(new Model.ModelTask() {
+
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    styleSheet.accept(new ModelVisitor.Adapter() {
+                        @Override
+                        public void visitRule(Rule rule) {
+                            CharSequence ruleId = model.getElementSource(rule.getSelectorsGroup());
+                            if(LexerUtils.equals(oldRuleId, ruleId, false, false)) {
+                                //should be the same rule
+
+                                //TODO - having some API for resolving old to new model elements between
+                                //two model instances would be great. Something like ElementHandle.resolve
+                                //TODO - the handles would be usefull as well as the elements shouldn't 
+                                //be kept outside of the ModelTask-s.
+
+                                LOG.log(Level.INFO, "found matching rule {0}", rule);
+                                match_ref.set(rule);
+
+                            }
+                        }
+                    });
+                }
+            });
+            
+            Rule match = match_ref.get();
+            if(match == null) {
+                setNoRuleState();
+            } else {
+                setRule(match_ref.get());
+            }
+            CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
+            
+            
+        } else {
+            LOG.log(Level.INFO, "no rule was set before");
+            //no rule was set - fire event anyway
+            CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, rule);
+        }
         
         //do not fire change event since it is required
         //to call setRule(...) subsequently which will 
@@ -270,6 +332,8 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setRule(final Rule rule) {
+        LOG.log(Level.INFO, "setRule({0})", rule);
+        
         assert SwingUtilities.isEventDispatchThread();
         if(model == null) {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
@@ -315,6 +379,8 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setNoRuleState() {
+        LOG.log(Level.INFO, "setNoRuleState()");
+        
         assert SwingUtilities.isEventDispatchThread();
         this.rule = null;
         titleLabel.setText(null);
