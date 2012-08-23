@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -313,6 +314,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
     
+    private HashMap<org.openide.nodes.Node, org.openide.nodes.Node> domToNb = new HashMap<Node, Node>();
+    
     private RequestProcessor.Task task;
     void refreshDOM() {
         try {
@@ -336,6 +339,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 @Override
                 public void run() {
                     refreshNodeDOMStatus();
+                    domToNb.clear();
+                    cacheDomToNb(getRootNode());
                 }
             });
         } catch (MalformedURLException ex) {
@@ -343,6 +348,18 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
     
+    private void cacheDomToNb(Node root) {
+        if (root instanceof HtmlElementNode) {
+            Node res = ((HtmlElementNode) root).getDOMNode();
+            if (res!=null) {
+                domToNb.put(res, root);
+            }
+        }
+        for (Node n:root.getChildren().getNodes()) {
+            cacheDomToNb(n);
+        }
+    }
+
     private void refreshNodeDOMStatus() {
         LOGGER.info("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
@@ -470,6 +487,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (contextResult !=null) {
             contextResult.removeLookupListener(ll);
         }
+        domToNb.clear();
     }
 
     private void showWaitNode() {
@@ -809,7 +827,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             highlightedTreeNodes.clear();
             System.out.println("highlighted treenodes cleared");
             for (Node node : pageModel.getHighlightedNodes()) {
-                Node n = getHtmlNode(manager.getRootContext(), node);
+                Node n = getHtmlNode(node);
                 if (n!=null) {
                     TreeNode visualizer = Visualizer.findVisualizer(n);
                     highlightedTreeNodes.add(visualizer);
@@ -824,20 +842,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * TODO: 
      * Unefficient, stupid, demoware. Needs to be improved.
      */
-    private Node getHtmlNode(Node root, Node node) {
-        if (root instanceof HtmlElementNode) {
-            Node res = ((HtmlElementNode) root).getDOMNode();
-            if (res!=null && res.equals(node)) {
-                return root;
-            }
-        }
-        for (Node n:root.getChildren().getNodes()) {
-            Node res = getHtmlNode(n, node);
-            if (res!=null) {
-                return res;
-            }
-        }
-        return null;
+    private Node getHtmlNode(Node node) {
+        return domToNb.get(node);
     }
     
 
@@ -917,7 +923,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             
             int i = 0;
             for (Node n:nodes) {
-                Node htmlNode = getHtmlNode(manager.getRootContext(), n);
+                Node htmlNode = getHtmlNode(n);
                 if (htmlNode!=null) {
                     selection[i++] = htmlNode;
                 }
