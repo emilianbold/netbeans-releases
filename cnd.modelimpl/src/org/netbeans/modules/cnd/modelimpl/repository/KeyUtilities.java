@@ -85,8 +85,8 @@ public class KeyUtilities {
         return createProjectKey(project.getUniqueName());
     }
 
-    public static Key createProjectKey(CharSequence projectQualifiedName) {
-        return new ProjectKey(projectQualifiedName);
+    public static Key createProjectKey(CharSequence projectQualifiedName) {        
+        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName));
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
