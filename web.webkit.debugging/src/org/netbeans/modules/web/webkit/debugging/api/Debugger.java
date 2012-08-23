@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
@@ -70,6 +72,8 @@ import org.openide.util.RequestProcessor;
 public final class Debugger {
     
     public static final String PROP_CURRENT_FRAME = "currentFrame";     // NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(Debugger.class.getName());
 
     private TransportHelper transport;
     private boolean enabled = false;
@@ -82,7 +86,6 @@ public final class Debugger {
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private CallFrame currentCallFrame = null;
-    //private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
 
@@ -318,9 +321,14 @@ public final class Debugger {
         params.put("columnNumber", columnNumber);
         Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointByUrl", params));
         if (resp != null) {
-            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            //currentBreakpoints.add(b);
-            return b;
+            JSONObject result = (JSONObject) resp.getResponse().get("result");
+            if (result != null) {
+                Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                return b;
+            } else {
+                // What can we do when we have no results?
+                LOG.log(Level.WARNING, "No result in setBreakpointByUrl response: {0}", resp);
+            }
         }
         return null;
     }
@@ -330,7 +338,6 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("breakpointId", b.getBreakpointID());
         transport.sendBlockingCommand(new Command("Debugger.removeBreakpoint", params));
-        //currentBreakpoints.remove(b);
     }
     
     // TODO: this method is used only internally so far and it needs to be revisisted
@@ -340,9 +347,14 @@ public final class Debugger {
         params.put("type", type);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
         if (resp != null) {
-            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            //currentBreakpoints.add(b);
-            return b;
+            JSONObject result = (JSONObject) resp.getResponse().get("result");
+            if (result != null) {
+                Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                return b;
+            } else {
+                // What can we do when we have no results?
+                LOG.log(Level.WARNING, "No result in setDOMBreakpoint response: {0}", resp);
+            }
         }
         return null;
     }
@@ -360,9 +372,14 @@ public final class Debugger {
         params.put("url", urlSubstring);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setXHRBreakpoint", params));
         if (resp != null) {
-            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            //currentBreakpoints.add(b);
-            return b;
+            JSONObject result = (JSONObject) resp.getResponse().get("result");
+            if (result != null) {
+                Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                return b;
+            } else {
+                // What can we do when we have no results?
+                LOG.log(Level.WARNING, "No result in setXHRBreakpoint response: {0}", resp);
+            }
         }
         return null;
     }
@@ -377,9 +394,14 @@ public final class Debugger {
         params.put("eventName", event);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setEventListenerBreakpoint", params));
         if (resp != null) {
-            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
-            //currentBreakpoints.add(b);
-            return b;
+            JSONObject result = (JSONObject) resp.getResponse().get("result");
+            if (result != null) {
+                Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                return b;
+            } else {
+                // What can we do when we have no results?
+                LOG.log(Level.WARNING, "No result in setEventListenerBreakpoint response: {0}", resp);
+            }
         }
         return null;
     }
