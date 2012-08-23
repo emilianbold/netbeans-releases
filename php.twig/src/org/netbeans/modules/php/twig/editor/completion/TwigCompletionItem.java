@@ -167,7 +167,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.OTHER;
+            return ElementKind.RULE;
         }
 
         @Override
@@ -217,6 +217,11 @@ public abstract class TwigCompletionItem implements CompletionProposal {
             return template.toString();
         }
 
+        @Override
+        public String getSortText() {
+            return "10" + getName(); //NOI18N
+        }
+
     }
 
     static class TestCompletionItem extends TwigCompletionItem {
@@ -239,6 +244,11 @@ public abstract class TwigCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             return getName();
+        }
+
+        @Override
+        public String getSortText() {
+            return "20" + getName(); //NOI18N
         }
 
     }
