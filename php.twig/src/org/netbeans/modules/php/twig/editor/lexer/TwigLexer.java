@@ -100,22 +100,22 @@ public class TwigLexer implements Lexer<TwigTokenId> {
     int OPERATOR_LENGTH = 0;
     final static List<String> OPERATORS = new ArrayList<String>();
     static {
-        OPERATORS.add("import"); //NOI18N
-        OPERATORS.add("from"); //NOI18N
         OPERATORS.add("as"); //NOI18N
         OPERATORS.add("="); //NOI18N
         OPERATORS.add("not"); //NOI18N
         OPERATORS.add("+"); //NOI18N
         OPERATORS.add("-"); //NOI18N
         OPERATORS.add("or"); //NOI18N
+        OPERATORS.add("b-or"); //NOI18N
+        OPERATORS.add("b-xor"); //NOI18N
         OPERATORS.add("and"); //NOI18N
+        OPERATORS.add("b-and"); //NOI18N
         OPERATORS.add("=="); //NOI18N
         OPERATORS.add("!="); //NOI18N
         OPERATORS.add(">"); //NOI18N
         OPERATORS.add("<"); //NOI18N
         OPERATORS.add(">="); //NOI18N
         OPERATORS.add("<="); //NOI18N
-        OPERATORS.add("not in"); //NOI18N
         OPERATORS.add("in"); //NOI18N
         OPERATORS.add("~"); //NOI18N
         OPERATORS.add("*"); //NOI18N
@@ -123,7 +123,6 @@ public class TwigLexer implements Lexer<TwigTokenId> {
         OPERATORS.add("//"); //NOI18N
         OPERATORS.add("%"); //NOI18N
         OPERATORS.add("is"); //NOI18N
-        OPERATORS.add("is not"); //NOI18N
         OPERATORS.add(".."); //NOI18N
         OPERATORS.add("**"); //NOI18N
     }

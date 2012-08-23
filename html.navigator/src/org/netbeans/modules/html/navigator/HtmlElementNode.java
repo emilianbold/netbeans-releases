@@ -123,6 +123,14 @@ public class HtmlElementNode extends AbstractNode {
         highlightInBrowserAction = new HighlightInBrowserAction(this, ui);
     }
     
+    public Node getDOMNode() {
+        Description domDescription = getDOMDescription();
+        if (domDescription instanceof WebKitNodeDescription) {
+            return ((WebKitNodeDescription) domDescription).getOONNode();
+        }
+        return null;
+    }
+    
     private State getState() {
         Description s = getSourceDescription();
         Description d = getDOMDescription();

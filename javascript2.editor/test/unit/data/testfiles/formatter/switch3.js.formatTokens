@@ -266,7 +266,9 @@ FormattingToken{kind=WHITESPACE, offset=393, text= }
 FormattingToken{kind=TEXT, offset=394, text=b}
 FormattingToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=395, text=)}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=396, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=397, text=test}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=401, text=(}

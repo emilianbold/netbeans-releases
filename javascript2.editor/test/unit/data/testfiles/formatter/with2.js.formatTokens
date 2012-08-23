@@ -154,7 +154,9 @@ FormattingToken{kind=WHITESPACE, offset=125, text= }
 FormattingToken{kind=TEXT, offset=126, text=c}
 FormattingToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=127, text=)}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=128, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=129, text=test}
 FormattingToken{kind=TEXT, offset=133, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}

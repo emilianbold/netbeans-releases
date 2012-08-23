@@ -701,8 +701,8 @@ final class UnitsCache {
      */
     private final class RequiredUnit {
 
-        private int unitId;
-        private long timestamp;
+        private final int unitId;
+        private final long timestamp;
 
         public RequiredUnit(int unitId, long time) {
             this.unitId = unitId;
@@ -710,12 +710,12 @@ final class UnitsCache {
         }
 
         public RequiredUnit(DataInput stream) throws IOException {
-            unitId = stream.readInt();
+            unitId = UnitsUtil.readUnitId(stream);
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeInt(unitId);
+            UnitsUtil.writeUnitId(unitId, stream);
             stream.writeLong(timestamp);
         }
 

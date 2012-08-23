@@ -95,6 +95,11 @@ public class TaskTest extends NbTestCase {
     }
 
     public void testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll () throws Exception {
+        if (!canWait1s()) {
+            LOG.warning("Skipping testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll, as the computer is not able to wait 1s!");
+            return;
+        }
+        
         long time = -1;
         
         CharSequence log = Log.enable("org.openide.util.Task", Level.FINER);
@@ -171,7 +176,7 @@ public class TaskTest extends NbTestCase {
      */
     public void testWaitFinished0WaitsUntilFinished() throws Exception {
         Task task = new Task(new Runnable() {
-
+            @Override
             public void run() {
                 try {
                     Thread.sleep(5000);
@@ -184,5 +189,20 @@ public class TaskTest extends NbTestCase {
         thread.start();
         task.waitFinished(0);
         assertTrue ("Should be finished", task.isFinished());
+    }
+    
+    static synchronized boolean canWait1s() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            long before = System.currentTimeMillis();
+            TaskTest.class.wait(1000);
+            long after = System.currentTimeMillis();
+            
+            long delta = after - before;
+            
+            if (delta < 900 || delta > 1100) {
+                return false;
+            }
+        }
+        return true;
     }
 }

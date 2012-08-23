@@ -240,8 +240,9 @@ public final class Watcher extends AnnotationProvider {
                 try {
                     getReferences().add(new NotifierKeyRef<KEY>(fo, NotifierAccessor.getDefault().addWatch(impl, fo.getPath()), REF, impl));
                 } catch (IOException ex) {
+                    Level l = fo.isValid() ? Level.WARNING : Level.FINE;
                     // XXX: handle resource overflow gracefully
-                    LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}: {1}", new Object[] {fo.getPath(), ex});
+                    LOG.log(l, "Cannot add filesystem watch for {0}: {1}", new Object[] {fo.getPath(), ex});
                     LOG.log(Level.FINE, null, ex);
                 }
             }
