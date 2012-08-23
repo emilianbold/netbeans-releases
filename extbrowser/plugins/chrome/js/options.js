@@ -449,6 +449,6 @@ function nbRemoveCssClass(element, cssClass) {
 }
 
 // run!
-window.onload = function() {
+window.addEventListener('load', function() {
     NetBeans_PresetCustomizer.show(NetBeans_Presets.getPresets(true));
-}
+}, false);

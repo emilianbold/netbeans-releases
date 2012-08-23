@@ -169,6 +169,6 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
 }
 
 // run!
-window.onload = function() {
+window.addEventListener('load', function() {
     NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
-}
+}, false);
