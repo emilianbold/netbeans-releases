@@ -118,4 +118,20 @@ public class LazyPanel implements NavigatorPanelWithUndo, NavigatorPanelWithTool
         NavigatorPanel p = initialize();
         return p instanceof NavigatorPanelWithToolbar ? ((NavigatorPanelWithToolbar) p).getToolbarComponent() : null;
     }
+
+    public boolean panelMatch(NavigatorPanel panel) {
+        if (panel == null) {
+            return false;
+        }
+        if (this.getClass().equals(panel.getClass())) {
+            return super.equals(panel);
+        }
+        if (delegate != null) {
+            return delegate.equals(panel);
+        } else if (panel.getDisplayName().equals(attrs.get("displayName"))) {
+            return initialize().equals(panel);
+        } else {
+            return false;
+        }
+    }
 }
