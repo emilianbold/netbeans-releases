@@ -12,46 +12,69 @@
     <body>
         <h2>Attach Profiler: Attach Settings Dialog Box</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The Attach Wizard helps you configure the settings for profiling an application using the attach method.
-        Attach settings are associated with the project.</p>
+        <p>The Attach Settings dialog box enables you to configure and review the settings for attaching the profiling tool to an application.
+        To attach the profiler to an application you need to specify the location of the target JVM 
+        and a connection method.
+        The attach settings are specific for each project.</p>
         
-        <p>The Attach Settings dialog box enables you to configure and review the settings 
-            for attaching the profiling tool to the application.
-        If the settings are correct, do one of the following:</p>
-
-<!--        <ul>
-            <li>Click Finish if the application or remote JVM is already configured to accept attachment and you are familiar with the
-            instructions.</li>
-            <li>Click Next if you are not familiar with how to configure the application or remote JVM to accept attachment.
-        The manual integration instructions describe the steps necessary to prepare the application or remote JVM so that you can attach the IDE.</li>
-        </ul>-->
-        <p>To attach the profiler to an application you first need to specify location of the target JVM by selecting one of the
-        following Target options and then performing the steps to </p>
-                <ul>    
-                    <li><strong>Local.</strong> Select this option if the application is running on the local machine.
-                        <p>If you select this option you need to select one of the following Connection options.</p>
-                        <ul>
-                            <li>Dynamic. Connect to a process that is running.</li> 
-                            <li>Direct. Select this option if you want the application to start after the profiler attaches. 
-                            If you select this option you will need to modify the startup script of the application for standalone
-                            Java SE applications. 
-                            If you are attaching to a server you will need to modify the startup script and configuration file 
-                            of the server.</li>
-                        </ul>
-                    </li>
-                    <li><strong>Remote.</strong> Select this option if the application is running on a remote machine.
-                        <p>If you select Remote you need to specify the following connection details for the remote host.</p>
-                        <ul>
-                            <li>Hostname. Specify the hostname of the target.</li>
-                            <li>OS &amp; JVM. Select the operating system of the target.</li>
-                        </ul>
-                        <p>After you specify the connection details you need to perform the steps in the dialog box.
-                            You will need to start the remote application on a Remote Profiling Pack that the IDE will generate
-                            based on the connection details that you specified.</p>
-                    </li>
+        <p>You open this dialog box by choosing Profile &gt; Attach Profiler in the main menu
+        and then clicking <strong>define</strong> in the Attach Profiler dialog box.</p>
+            
+        <p>The default setting is to attach to a 
+            project running locally using the Dynamic attach method.
+            No additional configuration is required to attach the tool to the application
+            if you select the default attach setting.
+            Specifying other attach settings might require you to modify the startup scripts
+            for the application or server or perform additional configuration steps.</p>
+            
+        <p>In this dialog box you must perform the following steps
+            to attach the profiling tool to an application.</p>
+            
+        <ol>
+            <li>Select Local or Remote as the target JVM.</li>
+            <li>Select a connection method and perform
+                the configuration steps displayed in the dialog box. Click OK.</li>
+        </ol>
+        
+        <p>In this dialog box you can select the following attach setting options.</p>
+        <ul>    
+            <li><strong>Local.</strong> Select this option if the application is running on the local machine.
+                <p>If you select this option you need to select one of the following Connection options.</p>
+                <ul>
+                    <li>Dynamic. Connect to a process that is running.</li> 
+                    <li>Direct. Select this option if you want the application to start after the profiler attaches. 
+                    If you select this option you will need to modify the startup script of the application for standalone
+                    Java SE applications. 
+                    If you are attaching to a server you will need to modify the startup script and configuration file 
+                    of the server.</li>
                 </ul>
+            </li>
+            <li><strong>Remote.</strong> Select this option if the application is running on a remote machine.
+                <p>If you select Remote you need to specify the following connection details for the remote host.</p>
+                <ul>
+                    <li><strong>Hostname.</strong> Specify the hostname of the target.</li>
+                    <li><strong>OS &amp; JVM.</strong> Select the operating system of the target.</li>
+                </ul>
+                <p>After you specify the connection details you need to perform the configuration steps in the dialog box.
+                    You will need to start the remote application on a Remote Profiling Pack that the IDE will generate
+                    based on the connection details that you specified.</p>
+            </li>
+        </ul>
         
         <h3>Using the Remote Profiling Pack</h3>
+        <p>To attach the profiling tool to an application that is running on a remote JVM you
+        need to configure the remote JVM to start up using a remote profiling pack.
+        The remote profiling pack is a collection of libraries that will enable the profiling
+        tool to attach to the remote JVM.</p>
+        
+        <ol>
+            <li>Select Remote for the target JVM in the Attach Settings dialog box.</li>
+            <li>Specify the OS and JVM of the target JVM.</li>
+            <li>Click <strong>create a Remote Profiling Pack</strong> in the dialog box.</li>
+            <li>Save the remote profiling pack to your local system.</li>
+            <li>Expand the zip archive and copy the files to the remote system.</li>
+            <li>Modify the startup script of the remote system to use the profiling pack.</li>
+        </ol>
             
             
             
@@ -59,7 +82,7 @@
             <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../profile_attach.html">Profiling Using Attach Mode</a></dd>
-            <!--<dd><a href="csh_attachwiz_3_manual.html">Attach Wizard: Manual Integration</a></dd>-->
+            <dd><a href="../profile_remote.html">Attaching to a Remote Application</a></dd>
         </dl>
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small>

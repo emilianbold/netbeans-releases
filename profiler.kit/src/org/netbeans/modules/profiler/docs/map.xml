@@ -157,6 +157,8 @@ made subject to such option by the copyright holder.
         <!--CSH ID for Snapshot windows -->
         <mapID target="CpuSnapshot.HelpCtx" url="helppages/csh/view_snap_cpu.html"/>
         <mapID target="MemorySnapshot.HelpCtx" url="helppages/csh/view_snap_memory.html"/>
+        <!--CSH ID for Compare CPU Snapshot window -->
+        <mapID target="CpuDiff.HelpCtx" url="helppages/csh/view_snap_cpucompare.html"/>
         <!--CSH ID for Compare Memory Snapshot window -->
         <mapID target="MemoryDiff.HelpCtx" url="helppages/csh/view_snap_memorycompare.html"/>
         <!--CSH ID for Select Snapshot to Compare dialog - invoked from main menu -->
