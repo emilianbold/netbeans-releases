@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.twig.editor.completion.TwigCompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.twig.editor.completion.TwigCompletionProposal.CompletionRequest;
 import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
@@ -190,7 +191,20 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                         request.prefix = codeCompletionContext.getPrefix();
                         int caretOffset = codeCompletionContext.getCaretOffset();
                         request.anchorOffset = caretOffset - getPrefix(codeCompletionContext.getParserResult(), caretOffset, true).length();
-                        completeAll(completionProposals, request);
+                        CompletionContext context = TwigCompletionContextFinder.find(tokenSequence);
+                        switch (context) {
+                            case INSTRUCTION:
+                                completeAll(completionProposals, request);
+                                break;
+                            case VARIABLE:
+                                completeFilters(completionProposals, request);
+                                completeFunctions(completionProposals, request);
+                                break;
+                            case NONE:
+                                break;
+                            default:
+                                completeAll(completionProposals, request);
+                        }
                     }
                 }
             }
