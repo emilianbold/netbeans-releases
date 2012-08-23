@@ -185,13 +185,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         init(model, platformProject);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();
-        declarationsSorageKey = new ProjectDeclarationContainerKey(getUniqueName());
+        declarationsSorageKey = new ProjectDeclarationContainerKey(unitId);
         weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
-        classifierStorageKey = new ClassifierContainerKey(getUniqueName());
+        classifierStorageKey = new ClassifierContainerKey(unitId);
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
-        fileContainerKey = new FileContainerKey(getUniqueName());
+        fileContainerKey = new FileContainerKey(unitId);
         weakFileContainer = new WeakContainer<FileContainer>(this, fileContainerKey);
-        graphStorageKey = new GraphContainerKey(getUniqueName());
+        graphStorageKey = new GraphContainerKey(unitId);
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
         includedFileContainer = new IncludedFileContainer(this);
         initFields();
@@ -3496,7 +3496,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.hasFileSystemProblems = aStream.readBoolean();
     }
 
-    protected int getUnitId() {
+    public int getUnitId() {
         return unitId;
     }
 

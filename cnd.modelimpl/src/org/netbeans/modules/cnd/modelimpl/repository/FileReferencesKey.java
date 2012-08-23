@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 public final class FileReferencesKey extends ProjectFileNameBasedKey {
 
     public FileReferencesKey(FileImpl file) {
-	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
+	super(file);
     }
 
     public FileReferencesKey(RepositoryDataInput aStream) throws IOException {
