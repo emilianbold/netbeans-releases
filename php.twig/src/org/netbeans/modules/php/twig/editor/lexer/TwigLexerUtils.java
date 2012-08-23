@@ -39,45 +39,52 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.completion;
+package org.netbeans.modules.php.twig.editor.lexer;
 
-import org.netbeans.api.lexer.Token;
+import java.util.List;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
-import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
-import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigCompletionContextFinder {
+public final class TwigLexerUtils {
 
-    public static enum CompletionContext {
-        VARIABLE,
-        INSTRUCTION,
-        NONE;
+    private TwigLexerUtils() {
     }
 
-    static CompletionContext find(final TwigParserResult parserResult, final int offset) {
-        assert parserResult != null;
-        TokenSequence<? extends TwigTokenId> tokenSequence = TwigLexerUtils.getTwigMarkupTokenSequence(null, offset);
-        CompletionContext result = CompletionContext.NONE;
-        do {
-            Token<? extends TwigTokenId> token = tokenSequence.token();
-            if (token == null) {
-                break;
+    public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Snapshot snapshot, final int offset) {
+        return getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigTokenId.language());
+    }
+
+    public static <L> TokenSequence<? extends L> getTokenSequence(final TokenHierarchy<?> th, final int offset, final Language<? extends L> language) {
+        TokenSequence<? extends L> ts = th.tokenSequence(language);
+        if (ts == null) {
+            List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
+            for (TokenSequence t : list) {
+                if (t.language() == language) {
+                    ts = t;
+                    break;
+                }
             }
-            TwigTokenId tokenId = token.id();
-            if (TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId)) {
-                result = CompletionContext.INSTRUCTION;
-                break;
-            } else if (TwigTokenId.T_TWIG_VARIABLE.equals(tokenId)) {
-                result = CompletionContext.VARIABLE;
-                break;
+            if (ts == null) {
+                list = th.embeddedTokenSequences(offset, false);
+                for (TokenSequence t : list) {
+                    if (t.language() == language) {
+                        ts = t;
+                        break;
+                    }
+                }
             }
-        } while (tokenSequence.movePrevious());
-        return result;
+        }
+        return ts;
+    }
+
+    public static boolean isDelimiter(final TwigTokenId tokenId) {
+        return TwigTokenId.T_TWIG_VARIABLE.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId);
     }
 
 }

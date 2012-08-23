@@ -48,6 +48,8 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.twig.editor.completion.TwigCompletionContextFinder.CompletionContext;
+import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -245,6 +247,8 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
     public static class CompletionRequest {
         public int anchorOffset;
         public String prefix;
+        public TwigParserResult parserResult;
+        public CompletionContext context;
     }
 
 }

@@ -52,7 +52,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -62,11 +61,12 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.twig.editor.completion.TwigCompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.twig.editor.completion.TwigCompletionProposal.CompletionRequest;
 import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
+import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
+import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 import org.openide.util.NbBundle;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
@@ -178,46 +178,37 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     @Override
     public CodeCompletionResult complete(CodeCompletionContext codeCompletionContext) {
         final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
-        final TokenSequence<TwigTopTokenId> topTokenSequence = codeCompletionContext.getParserResult().getSnapshot().getTokenHierarchy().tokenSequence(TwigTopTokenId.language());
-        if (topTokenSequence != null) {
-            topTokenSequence.move(codeCompletionContext.getCaretOffset());
-            if (topTokenSequence.moveNext()) {
-                TokenSequence<TwigTokenId> tokenSequence = topTokenSequence.embedded(TwigTokenId.language());
-                if (tokenSequence != null) {
-                    tokenSequence.move(codeCompletionContext.getCaretOffset());
-                    tokenSequence.moveNext();
-                    if (tokenSequence.token() != null && !isDelimiter(tokenSequence.token().id())) {
-                        CompletionRequest request = new CompletionRequest();
-                        request.prefix = codeCompletionContext.getPrefix();
-                        int caretOffset = codeCompletionContext.getCaretOffset();
-                        request.anchorOffset = caretOffset - getPrefix(codeCompletionContext.getParserResult(), caretOffset, true).length();
-                        CompletionContext context = TwigCompletionContextFinder.find(tokenSequence);
-                        switch (context) {
-                            case INSTRUCTION:
-                                completeAll(completionProposals, request);
-                                break;
-                            case VARIABLE:
-                                completeFilters(completionProposals, request);
-                                completeFunctions(completionProposals, request);
-                                break;
-                            case NONE:
-                                break;
-                            default:
-                                completeAll(completionProposals, request);
-                        }
-                    }
-                }
+        int caretOffset = codeCompletionContext.getCaretOffset();
+        TwigParserResult parserResult = (TwigParserResult) codeCompletionContext.getParserResult();
+        TokenSequence<? extends TwigTokenId> tokenSequence = TwigLexerUtils.getTwigMarkupTokenSequence(parserResult.getSnapshot(), caretOffset);
+        if (tokenSequence != null) {
+            tokenSequence.move(caretOffset);
+            if (canComplete(tokenSequence)) {
+                CompletionRequest request = new CompletionRequest();
+                request.prefix = codeCompletionContext.getPrefix();
+                request.anchorOffset = caretOffset - getPrefix(parserResult, caretOffset, true).length();
+                request.parserResult = parserResult;
+                request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
+                doCompletion(completionProposals, request);
             }
         }
         return new TwigCompletionResult(completionProposals, false);
     }
 
-    private static boolean isDelimiter(final TokenId tokenId) {
-        return TwigTokenId.T_TWIG_VARIABLE.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId);
-    }
-
-    private static boolean startsWith(String theString, String prefix) {
-        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
+    private void doCompletion(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
+        switch (request.context) {
+            case INSTRUCTION:
+                completeAll(completionProposals, request);
+                break;
+            case VARIABLE:
+                completeFilters(completionProposals, request);
+                completeFunctions(completionProposals, request);
+                break;
+            case NONE:
+                break;
+            default:
+                completeAll(completionProposals, request);
+        }
     }
 
     private void completeAll(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
@@ -302,6 +293,14 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     @Override
     public ParameterInfo parameters(ParserResult pr, int i, CompletionProposal cp) {
         return new ParameterInfo(new ArrayList<String>(), 0, 0);
+    }
+
+    private static boolean canComplete(final TokenSequence<? extends TwigTokenId> tokenSequence) {
+        return tokenSequence.moveNext() && tokenSequence.token() != null && !TwigLexerUtils.isDelimiter(tokenSequence.token().id());
+    }
+
+    private static boolean startsWith(String theString, String prefix) {
+        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
     private static class TwigCompletionResult extends DefaultCompletionResult {
