@@ -1897,7 +1897,7 @@ public final class FileImpl implements CsmFile,
     }
     private CsmUID<CsmFile> uid = null;
 
-    private int getUnitId() {
+    public int getUnitId() {
         return ((KeyBasedUID)projectUID).getKey().getUnitId();
     }
 

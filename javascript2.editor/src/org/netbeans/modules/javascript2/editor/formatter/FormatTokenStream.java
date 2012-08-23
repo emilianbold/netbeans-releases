@@ -51,16 +51,16 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
  * @author Petr Hejl
  */
 public final class FormatTokenStream implements Iterable<FormatToken> {
-    
+
     private final Map<Integer, FormatToken> tokenPosition = new TreeMap<Integer, FormatToken>();
-    
+
     private FormatToken firstToken;
-    
+
     private FormatToken lastToken;
 
     private FormatTokenStream() {
-    }   
-    
+    }
+
     public static FormatTokenStream create(TokenSequence<? extends JsTokenId> ts, int start, int end) {
         FormatTokenStream ret = new FormatTokenStream();
         int diff = ts.move(start);
@@ -109,6 +109,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_RIGHT_SHIFT:
                 case OPERATOR_PLUS:
                 case OPERATOR_MINUS:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_BINARY_OPERATOR));
@@ -128,6 +129,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ASSIGNMENT_OPERATOR));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR_WRAP));
                     break;
                 case OPERATOR_COMMA:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_COMMA));
@@ -198,7 +200,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         }
         return ret;
     }
-    
+
     public FormatToken getToken(int offset) {
         return tokenPosition.get(offset);
     }
@@ -207,7 +209,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
     public Iterator<FormatToken> iterator() {
         return new FormatTokenIterator();
     }
-    
+
     public List<FormatToken> getTokens() {
         List<FormatToken> tokens = new ArrayList<FormatToken>((int) (tokenPosition.size() * 1.5));
         for (FormatToken token : this) {
@@ -215,7 +217,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         }
         return tokens;
     }
-    
+
     public void addToken(FormatToken token) {
         if (firstToken == null) {
             firstToken = token;
@@ -258,7 +260,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         previous.setNext(next);
         next.setPrevious(previous);
     }
-    
+
     private class FormatTokenIterator implements Iterator<FormatToken> {
 
         private FormatToken current = firstToken;
@@ -282,6 +284,6 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         public void remove() {
             throw new UnsupportedOperationException("Remove operation not supported.");
         }
-        
+
     }
 }

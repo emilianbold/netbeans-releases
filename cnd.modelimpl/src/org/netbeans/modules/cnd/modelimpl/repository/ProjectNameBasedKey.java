@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * A common ancestor for nearly all keys 
@@ -55,10 +56,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 /*package*/ abstract class ProjectNameBasedKey extends AbstractKey {
 
     private final int unitIndex;
+    
+    /*package*/ static final CharSequence NO_PROJECT = CharSequences.create("<No Project Name>"); // NOI18N
 
-    protected ProjectNameBasedKey(CharSequence project) {
-        assert project != null;
-        this.unitIndex = KeyUtilities.getUnitId(project);
+    protected ProjectNameBasedKey(int unitIndex) {
+        this.unitIndex = unitIndex;
     }
 
     protected ProjectNameBasedKey(KeyDataPresentation presentation) {
@@ -115,6 +117,9 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
     @Override
     public CharSequence getUnit() {
+        if (this.unitIndex < 0) {
+            return NO_PROJECT;
+        }
         // having this functionality here to be sure unit is the same thing as project
         return KeyUtilities.getUnitName(this.unitIndex);
     }

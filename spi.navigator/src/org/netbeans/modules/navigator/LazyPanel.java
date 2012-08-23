@@ -45,6 +45,7 @@ package org.netbeans.modules.navigator;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithToolbar;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
@@ -52,7 +53,7 @@ import org.openide.util.Lookup;
 /**
  * Delegating panel for use from {@link NavigatorPanel.Registration}.
  */
-public class LazyPanel implements NavigatorPanelWithUndo {
+public class LazyPanel implements NavigatorPanelWithUndo, NavigatorPanelWithToolbar {
 
     /**
      * Referenced from generated layer.
@@ -112,4 +113,9 @@ public class LazyPanel implements NavigatorPanelWithUndo {
         return p instanceof NavigatorPanelWithUndo ? ((NavigatorPanelWithUndo) p).getUndoRedo() : UndoRedo.NONE;
     }
 
+    @Override
+    public JComponent getToolbarComponent() {
+        NavigatorPanel p = initialize();
+        return p instanceof NavigatorPanelWithToolbar ? ((NavigatorPanelWithToolbar) p).getToolbarComponent() : null;
+    }
 }

@@ -600,10 +600,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     public Collection<? extends ProjectProblem> getProblems() {
         List<ProjectProblem> toRet = new ArrayList<ProjectProblem>();
         for (ProblemReport pr : getReports()) {
-            ProjectProblemResolver res = pr.getCorrectiveAction() != null 
-                    //if i got it correctly we need to construct some unique id for the resolver's equals() method.
-                    ? new MavenProblemResolver(pr.getCorrectiveAction(), pr.getId() + "|" + this.nbproject.getPOMFile())
-                    : null;
+            ProjectProblemResolver res = new MavenProblemResolver(pr.getCorrectiveAction(), pr.getId() + "|" + this.nbproject.getPOMFile());
             ProjectProblem pp = pr.getSeverityLevel() == ProblemReport.SEVERITY_HIGH ? 
                     ProjectProblem.createError(pr.getShortDescription(), pr.getLongDescription(), res) :
                     ProjectProblem.createWarning(pr.getShortDescription(), pr.getLongDescription(), res);
@@ -627,17 +624,20 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
 
         @Override
+        @Messages("TXT_No_Res=No resolution for the problem")
         public Future<ProjectProblemsProvider.Result> resolve() {
             FutureTask<Result> toRet = new FutureTask<ProjectProblemsProvider.Result>(new Callable<ProjectProblemsProvider.Result>() {
 
                                    @Override
                                    public ProjectProblemsProvider.Result call() throws Exception {
-                                       String text = null;
                                        if (action != null) {
                                            action.actionPerformed(null);
-                                           text = (String) action.getValue(ACT_START_MESSAGE);
+                                           String text = (String) action.getValue(ACT_START_MESSAGE);
+                                           return ProjectProblemsProvider.Result.create(Status.RESOLVED, text);
+                                       } else {
+                                           return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, TXT_No_Res());
                                        }
-                                       return ProjectProblemsProvider.Result.create(Status.RESOLVED, text);
+                                       
                                    }
                                });
             RP.post(toRet);

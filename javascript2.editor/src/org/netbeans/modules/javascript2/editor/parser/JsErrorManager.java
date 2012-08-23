@@ -56,17 +56,17 @@ import org.openide.filesystems.FileObject;
 public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
-    
+
     private List<ParserError> parserErrors;
-    
+
     private List<JsParserError> convertedErrors;
-    
+
     private FileObject fileObject;
-    
+
     public JsErrorManager(FileObject fileObject) {
         this.fileObject = fileObject;
     }
-    
+
     public Error getMissingCurlyError() {
         if (parserErrors == null) {
             return null;
@@ -79,11 +79,24 @@ public class JsErrorManager extends ErrorManager {
         }
         return null;
     }
-    
+
+    public Error getMissingSemicolonError() {
+        if (parserErrors == null) {
+            return null;
+        }
+        for (ParserError error : parserErrors) {
+            if (error.message != null
+                    && error.message.contains("Expected ;")) { // NOI18N
+                return convert(error);
+            }
+        }
+        return null;
+    }
+
     public boolean isEmpty() {
         return parserErrors == null;
     }
-    
+
     @Override
     public void error(String message, Source source, int line, int column, long token) {
         LOGGER.log(Level.FINE, "Error {0} [{1}, {2}]", new Object[] {message, line, column});
@@ -101,13 +114,13 @@ public class JsErrorManager extends ErrorManager {
         LOGGER.log(Level.FINE, "Error {0} ({1})", new Object[] {message, token});
         addParserError(new ParserError(message, token));
     }
-    
+
     @Override
     public void error(String message) {
         LOGGER.log(Level.FINE, "Error {0}", message);
         addParserError(new ParserError(message));
     }
-    
+
     @Override
     public void warning(String message, Source source, int line, int column, long token) {
         LOGGER.log(Level.FINE, "Warning {0} [{1}, {2}]",  new Object[] {message, line, column});
@@ -117,7 +130,7 @@ public class JsErrorManager extends ErrorManager {
     public void warning(String message, Source source, long token) {
         LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
     }
-    
+
     @Override
     public void warning(String message, long token) {
         LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
@@ -127,7 +140,7 @@ public class JsErrorManager extends ErrorManager {
     public void warning(String message) {
         LOGGER.log(Level.FINE, "Warning {0}", message);
     }
-    
+
     public List<? extends Error> getErrors() {
         if (convertedErrors == null) {
             if (parserErrors == null) {
@@ -143,7 +156,7 @@ public class JsErrorManager extends ErrorManager {
         }
         return Collections.unmodifiableList(convertedErrors);
     }
-    
+
     JsErrorManager fill(JsErrorManager original) {
         this.fileObject = original.fileObject;
         if (original.parserErrors != null) {
@@ -154,7 +167,7 @@ public class JsErrorManager extends ErrorManager {
         this.convertedErrors = null;
         return this;
     }
-    
+
     private void addParserError(ParserError error) {
         convertedErrors = null;
         if (parserErrors == null) {
@@ -162,7 +175,7 @@ public class JsErrorManager extends ErrorManager {
         }
         parserErrors.add(error);
     }
-    
+
     private JsParserError convert(ParserError error) {
         String message = error.message;
         int offset = -1;
@@ -176,7 +189,7 @@ public class JsErrorManager extends ErrorManager {
                 if (index > 0) {
                     message = message.substring(0, index);
                 }
-                    
+
             }
             if (parts.length > 3) {
                 try {
@@ -186,10 +199,10 @@ public class JsErrorManager extends ErrorManager {
                 }
             }
         }
-        
+
         return new JsParserError(message, fileObject, offset, offset, Severity.ERROR, null,  true);
     }
-    
+
     private static class ParserError {
         protected String message;
         protected int line;
@@ -202,11 +215,11 @@ public class JsErrorManager extends ErrorManager {
             this.column = column;
             this.token = token;
         }
-        
+
         public ParserError(String message, long token) {
             this(message, -1, -1, token);
         }
-        
+
         public ParserError(String message) {
             this(message, -1, -1, -1);
         }
