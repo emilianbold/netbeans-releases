@@ -160,17 +160,17 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         TESTS.add(TwigItem.Factory.create("sameas", Arrays.asList(new Parameter[] {new Parameter("variable")}))); //NOI18N
     }
 
-    private static final Set<String> OPERATORS = new HashSet<String>();
+    private static final Set<TwigItem> OPERATORS = new HashSet<TwigItem>();
     static {
-        OPERATORS.add("in"); //NOI18N
-        OPERATORS.add("as"); //NOI18N
-        OPERATORS.add("is"); //NOI18N
-        OPERATORS.add("and"); //NOI18N
-        OPERATORS.add("or"); //NOI18N
-        OPERATORS.add("not"); //NOI18N
-        OPERATORS.add("b-and"); //NOI18N
-        OPERATORS.add("b-or"); //NOI18N
-        OPERATORS.add("b-xor"); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("in")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("as")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("is")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("and")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("or")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("not")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("b-and")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("b-or")); //NOI18N
+        OPERATORS.add(TwigItem.Factory.create("b-xor")); //NOI18N
     }
 
     @Override
@@ -246,8 +246,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeOperators(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (String operator : OPERATORS) {
-            if (startsWith(operator, request.prefix)) {
+        for (TwigItem operator : OPERATORS) {
+            if (startsWith(operator.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionItem.OperatorCompletionItem(operator, request));
             }
         }

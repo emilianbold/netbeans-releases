@@ -265,9 +265,18 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     }
 
     static class OperatorCompletionItem extends TwigCompletionItem {
+        private final TwigItem twigItem;
 
-        public OperatorCompletionItem(String name, CompletionRequest request) {
-            super(name, request);
+        public OperatorCompletionItem(TwigItem twigItem, CompletionRequest request) {
+            super(twigItem.getName(), request);
+            this.twigItem = twigItem;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            super.getLhsHtml(formatter);
+            twigItem.formatParameters(formatter);
+            return formatter.getText();
         }
 
         @Override
@@ -283,7 +292,9 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
         @Override
         public String getCustomInsertTemplate() {
-            return getName();
+            StringBuilder template = new StringBuilder();
+            twigItem.prepareTemplate(template);
+            return template.toString();
         }
 
     }
