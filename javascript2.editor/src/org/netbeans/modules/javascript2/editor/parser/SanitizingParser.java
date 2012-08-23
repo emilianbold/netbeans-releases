@@ -135,29 +135,19 @@ public abstract class SanitizingParser extends Parser {
         }
         
         if (sanitizing != Sanitize.NEVER) {
-            if (!sanitized && current.getMissingCurlyError() != null) {
-                return parseContext(context, Sanitize.MISSING_CURLY, errorManager, false);
+            if (!sanitized) {
+                if (current.getMissingCurlyError() != null) {
+                    return parseContext(context, Sanitize.MISSING_CURLY, errorManager, false);
+                }
+                if (current.getMissingSemicolonError() != null) {
+                    return parseContext(context, Sanitize.MISSING_SEMICOLON, errorManager, false);
+                }
+            }
             // TODO not very clever check
-            } if (node == null || !current.isEmpty()) {
+            if (node == null || !current.isEmpty()) {
                 return parseContext(context, sanitizing.next(), errorManager, false);
             }
         }
-        
-//        // process comment elements
-//        Map<Integer, ? extends JsComment> comments = Collections.<Integer, JsComment>emptyMap();
-//        if (context.getSnapshot() != null) {
-//            try {
-//                long startTime = System.nanoTime();
-//                comments = JsDocumentationParser.parse(context.getSnapshot());
-//                if (LOGGER.isLoggable(Level.FINE)) {
-//                    LOGGER.log(Level.FINE, "Parsing of comments took: {0} ms source: {1}",
-//                            new Object[]{(System.nanoTime() - startTime) / 1000000, context.getName()});
-//                }
-//            } catch (Exception ex) {
-//                // if anything wrong happen during parsing comments
-//                LOGGER.log(Level.WARNING, null, ex);
-//            }
-//        }
         return new JsParserResult(context.getSnapshot(), node);
     }
     
@@ -192,6 +182,31 @@ public abstract class SanitizingParser extends Parser {
                             balance--;
                         }
                     }
+                    context.setSanitizedSource(builder.toString());
+                    context.setSanitization(sanitizing);
+                    return true;
+                }
+            }
+        } else if (sanitizing == Sanitize.MISSING_SEMICOLON) {
+            org.netbeans.modules.csl.api.Error error = errorManager.getMissingSemicolonError();
+            if (error != null) {
+                String source = context.getOriginalSource();
+
+                boolean ok = false;
+                StringBuilder builder = new StringBuilder(source);
+                if (error.getStartPosition() >= source.length()) {
+                    builder.append(';'); // NOI18N
+                    ok = true;
+                } else {
+                    int replaceOffset = error.getStartPosition();
+                    if (replaceOffset >= 0 && Character.isWhitespace(replaceOffset)) {
+                        builder.delete(replaceOffset, replaceOffset + 1);
+                        builder.insert(replaceOffset, ';'); // NOI18N
+                        ok = true;
+                    }
+                }
+
+                if (ok) {
                     context.setSanitizedSource(builder.toString());
                     context.setSanitization(sanitizing);
                     return true;
@@ -316,6 +331,15 @@ public abstract class SanitizingParser extends Parser {
             builder.insert(i, ' ');
         }
     }
+
+    private static void eraseWithInit(StringBuilder builder, int start, int end, char init) {
+        assert (end - start) >= 1 : start + " " + end;
+        builder.delete(start, end);
+        builder.insert(start, init);
+        for (int i = start + 1; i < end; i++) {
+            builder.insert(i, ' ');
+        }
+    }
     
     /**
      * Parsing context
@@ -406,6 +430,15 @@ public abstract class SanitizingParser extends Parser {
         
         /** Attempt to fix missing } */
         MISSING_CURLY {
+
+            @Override
+            public Sanitize next() {
+                return MISSING_SEMICOLON;
+            }
+        },
+
+        /** Attempt to fix missing } */
+        MISSING_SEMICOLON {
 
             @Override
             public Sanitize next() {
