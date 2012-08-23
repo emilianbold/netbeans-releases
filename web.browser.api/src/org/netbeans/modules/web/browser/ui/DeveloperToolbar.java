@@ -47,6 +47,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
@@ -68,6 +70,7 @@ public class DeveloperToolbar {
     private ResizeOption currentSize = ResizeOption.SIZE_TO_FIT;
     private final JToolBar resizeBar;
     private final ArrayList<BrowserResizeButton> resizeButtons;
+    private final JToggleButton btnResizeMenu;
     private final ItemListener resizeListener;
     private boolean ignoreSelectionChanges;
     private final JComboBox comboZoom = new JComboBox();
@@ -113,6 +116,32 @@ public class DeveloperToolbar {
                 //TODO remove action from TC's map
             }
         };
+        btnResizeMenu = new JToggleButton( ImageUtilities.loadImageIcon( "org/netbeans/modules/web/browser/ui/resources/menu.png", true ) ); //NOI18N
+        btnResizeMenu.setToolTipText( NbBundle.getMessage( DeveloperToolbar.class, "Tip_ResizeOptions") ); //NOI18N
+        btnResizeMenu.addActionListener( new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                JPopupMenu popup = buildResizePopup();
+                popup.addPopupMenuListener( new PopupMenuListener() {
+
+                    @Override
+                    public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+                    }
+
+                    @Override
+                    public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+                        setBrowserSize( currentSize );
+                    }
+
+                    @Override
+                    public void popupMenuCanceled( PopupMenuEvent e ) {
+                        setBrowserSize( currentSize );
+                    }
+                });
+                popup.show( btnResizeMenu, 0, btnResizeMenu.getHeight() );
+            }
+        });
     }
 
     public static DeveloperToolbar create() {
@@ -203,18 +232,7 @@ public class DeveloperToolbar {
             button.setEnabled( resizingEnabled );
         }
 
-        final JButton btnDropDown = new JButton( ImageUtilities.loadImageIcon( "org/netbeans/modules/web/browser/ui/resources/menu.png", true ) ); //NOI18N
-        resizeBar.add( btnDropDown );
-        btnDropDown.setToolTipText( NbBundle.getMessage( DeveloperToolbar.class, "Tip_ResizeOptions") ); //NOI18N
-        btnDropDown.setEnabled( resizingEnabled );
-        btnDropDown.addActionListener( new ActionListener() {
-
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                JPopupMenu popup = buildResizePopup();
-                popup.show( btnDropDown, 0, btnDropDown.getHeight() );
-            }
-        });
+        resizeBar.add( btnResizeMenu );
 
         resizeBar.add( comboZoom );
     }
@@ -223,10 +241,19 @@ public class DeveloperToolbar {
         ignoreSelectionChanges = true;
         boolean doResize = !resizeOption.equals( currentSize );
         this.currentSize = resizeOption;
+        boolean isToolbarSelection = false;
         for( BrowserResizeButton b : resizeButtons ) {
             b.setSelected( b.getResizeOption().equals( resizeOption ) );
+            isToolbarSelection |= b.isSelected();
         }
+
         ignoreSelectionChanges = false;
+        btnResizeMenu.setSelected( !isToolbarSelection );
+        if( isToolbarSelection || null == resizeOption ) {
+            btnResizeMenu.setToolTipText( NbBundle.getMessage( DeveloperToolbar.class, "Tip_ResizeOptions") ); //NOI18N
+        } else {
+            btnResizeMenu.setToolTipText( resizeOption.getToolTip() );
+        }
         if( doResize ) {
             doResize( resizeOption.getWidth(), resizeOption.getHeight() );
         }
@@ -241,13 +268,13 @@ public class DeveloperToolbar {
             final ResizeOption size = ro;
             JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem( ro.getToolTip() );
             res.add( menuItem );
+            menuItem.setSelected( size.equals( currentSize ) );
             menuItem.addItemListener( new ItemListener() {
                 @Override
                 public void itemStateChanged( ItemEvent e ) {
                     setBrowserSize( size );
                 }
             });
-            menuItem.setSelected( size.equals( currentSize ) );
             menuItem.setIcon( BrowserResizeButton.toIcon( ro ) );
         }
         res.addSeparator();
