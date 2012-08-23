@@ -149,15 +149,15 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     private static final Set<TwigItem> TESTS = new HashSet<TwigItem>();
     static {
-        TESTS.add(TwigItem.Factory.create("constant")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("constant", Arrays.asList(new Parameter[] {new Parameter("'const'")}))); //NOI18N
         TESTS.add(TwigItem.Factory.create("defined")); //NOI18N
-        TESTS.add(TwigItem.Factory.create("divisibleby")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("divisibleby", Arrays.asList(new Parameter[] {new Parameter("number")}))); //NOI18N
         TESTS.add(TwigItem.Factory.create("empty")); //NOI18N
         TESTS.add(TwigItem.Factory.create("even")); //NOI18N
         TESTS.add(TwigItem.Factory.create("iterable")); //NOI18N
         TESTS.add(TwigItem.Factory.create("null")); //NOI18N
         TESTS.add(TwigItem.Factory.create("odd")); //NOI18N
-        TESTS.add(TwigItem.Factory.create("sameas")); //NOI18N
+        TESTS.add(TwigItem.Factory.create("sameas", Arrays.asList(new Parameter[] {new Parameter("variable")}))); //NOI18N
     }
 
     private static final Set<String> OPERATORS = new HashSet<String>();
