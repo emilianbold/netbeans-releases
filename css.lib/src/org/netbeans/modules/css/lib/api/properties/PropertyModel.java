@@ -74,6 +74,11 @@ public class PropertyModel {
         return properties.iterator().next();
     }
         
+    /**
+     * Returns the root element of the property grammar.
+     * 
+     * @return a non null value.
+     */
     public synchronized GroupGrammarElement getGrammarElement() {
         if(values == null) {
             values = GrammarParser.parse(getGrammar(), propertyName);

@@ -111,7 +111,7 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
         "titleLabel.text={0} properties",
-        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only",
+        "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only",
         "label.add.property=Add Property"
 })
 public class RuleEditorPanel extends JPanel {

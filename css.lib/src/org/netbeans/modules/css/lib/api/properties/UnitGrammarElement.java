@@ -64,7 +64,7 @@ public class UnitGrammarElement extends ValueGrammarElement {
     public String getValue() {
         return name;
     }
-
+    
     @Override
     public boolean accepts(Token token) {
         return tokenAcceptor.accepts(token);
