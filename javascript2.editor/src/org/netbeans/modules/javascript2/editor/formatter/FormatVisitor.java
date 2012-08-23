@@ -732,10 +732,10 @@ public class FormatVisitor extends NodeVisitor {
         handleBlockContent(block);
 
         Node statement = block.getStatements().get(0);
-        
+
         // indentation mark & block start
         Token token = getPreviousNonEmptyToken(getStart(statement));
-        
+
         /*
          * If its VarNode it does not contain var keyword so we have to search
          * for it.
@@ -743,7 +743,7 @@ public class FormatVisitor extends NodeVisitor {
         if (statement instanceof VarNode && token.id() == JsTokenId.KEYWORD_VAR) {
             token = getPreviousNonEmptyToken(ts.offset());
         }
-        
+
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
             if (!isScript(block)) {
