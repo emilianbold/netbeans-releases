@@ -41,278 +41,161 @@
  */
 package org.netbeans.modules.php.twig.editor.completion;
 
-import java.util.Collections;
-import java.util.Set;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
+import java.util.List;
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class TwigCompletionItem implements CompletionProposal {
-    private final String name;
-    private final CompletionRequest request;
+public interface TwigCompletionItem {
 
-    public TwigCompletionItem(final String name, final CompletionRequest request) {
-        this.name = name;
-        this.request = request;
-    }
+     public String getName();
 
-    @Override
-    public int getAnchorOffset() {
-        return request.anchorOffset;
-    }
+     public void prepareTemplate(StringBuilder template);
 
-    @Override
-    public ElementHandle getElement() {
-        return null;
-    }
+     public void formatParameters(HtmlFormatter formatter);
 
-    @Override
-    public String getName() {
-        return name;
-    }
+     public static class Factory {
 
-    @Override
-    public String getInsertPrefix() {
-        return getName();
-    }
+         public static TwigCompletionItem create(final String name) {
+             return new TwigItemWithoutParams(name);
+         }
 
-    @Override
-    public String getSortText() {
-        return getName();
-    }
+         public static TwigCompletionItem create(final String name, final List<Parameter> parameters) {
+             return new TwigItemWithParams(name, parameters);
+         }
 
-    @Override
-    public ImageIcon getIcon() {
-        return null;
-    }
+         public static TwigCompletionItem create(final String name, final String customTemplate) {
+             return new TwigItemWithCustomTemplate(name, customTemplate);
+         }
 
-    @Override
-    public Set<Modifier> getModifiers() {
-        return Collections.EMPTY_SET;
-    }
+     }
 
-    @Override
-    public boolean isSmart() {
-        return getName().startsWith(request.prefix);
-    }
+     abstract static class BaseTwigCompletionItem implements TwigCompletionItem {
+         private final String name;
 
-    @Override
-    public int getSortPrioOverride() {
-        return 0;
-    }
+         public BaseTwigCompletionItem(final String name) {
+             this.name = name;
+         }
 
-    @Override
-    public String getLhsHtml(HtmlFormatter formatter) {
-        formatter.name(getKind(), true);
-        formatter.appendText(getName());
-        formatter.name(getKind(), false);
-        return formatter.getText();
-    }
+         @Override
+         public String getName() {
+             return name;
+         }
 
-    static class TagCompletionItem extends TwigCompletionItem {
-        private final TwigItem twigItem;
+     }
 
-        public TagCompletionItem(TwigItem twigItem, CompletionRequest request) {
-            super(twigItem.getName(), request);
-            this.twigItem = twigItem;
+     static class TwigItemWithoutParams extends BaseTwigCompletionItem {
+
+        public TwigItemWithoutParams(final String name) {
+            super(name);
         }
 
         @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            super.getLhsHtml(formatter);
-            twigItem.formatParameters(formatter);
-            return formatter.getText();
+        public void prepareTemplate(final StringBuilder template) {
+            template.append(getName());
         }
 
         @Override
-        @NbBundle.Messages("TagRhs=Tag")
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.TagRhs();
+        public void formatParameters(final HtmlFormatter formatter) {
+        }
+
+     }
+
+     static class TwigItemWithCustomTemplate extends BaseTwigCompletionItem {
+        private final String customTemplate;
+
+        public TwigItemWithCustomTemplate(final String name, final String customTemplate) {
+            super(name);
+            this.customTemplate = customTemplate;
         }
 
         @Override
-        public ElementKind getKind() {
-            return ElementKind.TAG;
+        public void prepareTemplate(StringBuilder template) {
+            template.append(customTemplate);
         }
 
         @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            twigItem.prepareTemplate(template);
-            return template.toString();
+        public void formatParameters(HtmlFormatter formatter) {
         }
 
-    }
+     }
 
-    static class FilterCompletionItem extends TwigCompletionItem {
+     static class TwigItemWithParams extends BaseTwigCompletionItem {
+        private final List<Parameter> parameters;
 
-        private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/filter.png")); //NOI18N
-        private final TwigItem twigItem;
-
-        public FilterCompletionItem(TwigItem twigItem, CompletionRequest request) {
-            super(twigItem.getName(), request);
-            this.twigItem = twigItem;
+        public TwigItemWithParams(final String name, final List<Parameter> parameters) {
+            super(name);
+            this.parameters = parameters;
         }
 
         @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            super.getLhsHtml(formatter);
-            twigItem.formatParameters(formatter);
-            return formatter.getText();
+        public void formatParameters(final HtmlFormatter formatter) {
+            formatter.appendText("("); //NOI18N
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = parameters.get(i);
+                if (i != 0) {
+                    formatter.appendText(", "); //NOI18N
+                }
+                parameter.format(formatter);
+            }
+            formatter.appendText(")"); //NOI18N
         }
 
         @Override
-        @NbBundle.Messages("FilterRhs=Filter")
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.FilterRhs();
+        public void prepareTemplate(final StringBuilder template) {
+            template.append(getName());
+            template.append("("); //NOI18N
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = parameters.get(i);
+                if (i != 0) {
+                    template.append(", "); //NOI18N
+                }
+                parameter.prepareTemplate(template);
+            }
+            template.append(")"); //NOI18N
         }
 
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.RULE;
+     }
+
+     public static class Parameter {
+
+        public enum Need {
+            OPTIONAL,
+            MANDATORY;
         }
 
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            twigItem.prepareTemplate(template);
-            return template.toString();
+        private final String name;
+        private final Need cardinality;
+
+        public Parameter(final String name) {
+            this(name, Need.MANDATORY);
         }
 
-        @Override
-        public ImageIcon getIcon() {
-            return ICON;
+        public Parameter(final String name, final Need cardinality) {
+            this.name = name;
+            this.cardinality = cardinality;
         }
 
-    }
-
-    static class FunctionCompletionItem extends TwigCompletionItem {
-        private final TwigItem twigItem;
-
-        public FunctionCompletionItem(TwigItem twigItem, CompletionRequest request) {
-            super(twigItem.getName(), request);
-            this.twigItem = twigItem;
+        public void format(final HtmlFormatter formatter) {
+            if (!isMandatory()) {
+                formatter.appendText(name);
+            } else {
+                formatter.emphasis(true);
+                formatter.appendText(name);
+                formatter.emphasis(false);
+            }
         }
 
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            super.getLhsHtml(formatter);
-            twigItem.formatParameters(formatter);
-            return formatter.getText();
+        public void prepareTemplate(StringBuilder template) {
+            template.append("${").append(name).append("}"); //NOI18N
         }
 
-        @Override
-        @NbBundle.Messages("FunctionRhs=Function")
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.FunctionRhs();
+        private boolean isMandatory() {
+            return Need.MANDATORY.equals(cardinality);
         }
 
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            twigItem.prepareTemplate(template);
-            return template.toString();
-        }
-
-        @Override
-        public String getSortText() {
-            return "10" + getName(); //NOI18N
-        }
-
-    }
-
-    static class TestCompletionItem extends TwigCompletionItem {
-        private final TwigItem twigItem;
-
-        public TestCompletionItem(TwigItem twigItem, CompletionRequest request) {
-            super(twigItem.getName(), request);
-            this.twigItem = twigItem;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            super.getLhsHtml(formatter);
-            twigItem.formatParameters(formatter);
-            return formatter.getText();
-        }
-
-        @Override
-        @NbBundle.Messages("TestRhs=Test")
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.TestRhs();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.TEST;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            twigItem.prepareTemplate(template);
-            return template.toString();
-        }
-
-        @Override
-        public String getSortText() {
-            return "20" + getName(); //NOI18N
-        }
-
-    }
-
-    static class OperatorCompletionItem extends TwigCompletionItem {
-        private final TwigItem twigItem;
-
-        public OperatorCompletionItem(TwigItem twigItem, CompletionRequest request) {
-            super(twigItem.getName(), request);
-            this.twigItem = twigItem;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            super.getLhsHtml(formatter);
-            twigItem.formatParameters(formatter);
-            return formatter.getText();
-        }
-
-        @Override
-        @NbBundle.Messages("OperatorRhs=Operator")
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.OperatorRhs();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.KEYWORD;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            twigItem.prepareTemplate(template);
-            return template.toString();
-        }
-
-    }
-
-    public static class CompletionRequest {
-        public int anchorOffset;
-        public String prefix;
     }
 
 }
