@@ -88,7 +88,9 @@ FormattingToken{kind=TEXT, offset=160, text=+}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=161, text= }
 FormattingToken{kind=TEXT, offset=162, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=166, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=167, text=cylinders}
 FormattingToken{kind=WHITESPACE, offset=176, text= }
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
@@ -104,7 +106,9 @@ FormattingToken{kind=TEXT, offset=195, text=+}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=196, text= }
 FormattingToken{kind=TEXT, offset=197, text=this}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=201, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=202, text=power}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=207, text=)}

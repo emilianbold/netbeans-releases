@@ -671,6 +671,9 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
+            if (ternaryNode.lhs() instanceof IdentNode) {
+                addOccurence((IdentNode)ternaryNode.lhs());
+            }
             if (ternaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)ternaryNode.rhs());
             }
