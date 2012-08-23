@@ -168,10 +168,6 @@ function ${name}(${parameters}) {
 }]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="th">
-        <code><![CDATA[${no-indent}throw ]]>
-        </code>
-    </codetemplate>
     <codetemplate abbreviation="the">
         <code><![CDATA[${no-indent}throw new Error("${errorMessage}");]]>
         </code>
@@ -210,13 +206,20 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="ct"><code><![CDATA[${no-indent}catch]]></code></codetemplate>
     <codetemplate abbreviation="co"><code><![CDATA[${no-indent}continue]]></code></codetemplate>
     <codetemplate abbreviation="df"><code><![CDATA[${no-indent}default:]]></code></codetemplate>
+    <codetemplate abbreviation="eq"><code><![CDATA[${no-indent}equals ]]></code></codetemplate>
     <codetemplate abbreviation="fa"><code><![CDATA[${no-indent}false]]></code></codetemplate>
     <codetemplate abbreviation="fi"><code><![CDATA[${no-indent}finally]]></code></codetemplate>
     <codetemplate abbreviation="le"><code><![CDATA[${no-indent}length]]></code></codetemplate>
     <codetemplate abbreviation="iof"><code><![CDATA[${no-indent}instanceof ]]></code></codetemplate>
+    <codetemplate abbreviation="nu"><code><![CDATA[${no-indent}null]]></code></codetemplate>
+    <codetemplate abbreviation="ob"><code><![CDATA[${no-indent}object]]></code></codetemplate>
+    <codetemplate abbreviation="pro"><code><![CDATA[${no-indent}prototype]]></code></codetemplate>
     <codetemplate abbreviation="re"><code><![CDATA[${no-indent}return ]]></code></codetemplate>
+    <codetemplate abbreviation="th"><code><![CDATA[${no-indent}throw ]]></code></codetemplate>
+    <codetemplate abbreviation="thn"><code><![CDATA[${no-indent}throw new]]></code></codetemplate>
     <codetemplate abbreviation="tr"><code><![CDATA[${no-indent}true]]></code></codetemplate>
     <codetemplate abbreviation="ty"><code><![CDATA[${no-indent}typeof]]></code></codetemplate>
+    <codetemplate abbreviation="va"><code><![CDATA[${no-indent}value]]></code></codetemplate>
 
     <!-- additional JavaScript code templates -->
     <codetemplate abbreviation="json">
@@ -262,5 +265,9 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="dw">
         <code><![CDATA[document.write(${message});]]></code>
     </codetemplate>
+    <codetemplate abbreviation="do"><code><![CDATA[${no-indent}document]]></code></codetemplate>
+    <codetemplate abbreviation="lo"><code><![CDATA[${no-indent}window.location]]></code></codetemplate>
+    <codetemplate abbreviation="hi"><code><![CDATA[${no-indent}window.history]]></code></codetemplate>
+    <codetemplate abbreviation="win"><code><![CDATA[${no-indent}window]]></code></codetemplate>
 
 </codetemplates>
