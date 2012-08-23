@@ -137,7 +137,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
         @Override
         public void resultChanged(LookupEvent ev) {
-            refresh((Lookup.Result<FileObject>) ev.getSource());
+            refresh((Lookup.Result<Object>) ev.getSource());
         }
     };
     
@@ -379,18 +379,44 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         return panelActions;
     }
 
+    private Result<Object> contextResult;
     void activate(Lookup context) {
-        Result<FileObject> fileResult = context.lookupResult(FileObject.class);
-        fileResult.addLookupListener(WeakListeners.create(LookupListener.class, ll, fileResult));
-        refresh(fileResult);
+        contextResult = context.lookupResult(Object.class);
+        contextResult.addLookupListener(ll);
+        refresh(contextResult);
     }
     
-    private void refresh(Lookup.Result<FileObject> fileResult) {
-        Collection<? extends FileObject> allInstances = fileResult.allInstances();
+    private void refresh(Lookup.Result<Object> result) {
+        Collection<? extends Object> allInstances = result.allInstances();
         if (allInstances.isEmpty()) {
             return;
         }
-        final FileObject fo = allInstances.iterator().next();
+
+        Project p = null;
+        FileObject f = null;
+        URL url = null;
+        for (Object o : result.allInstances()) {
+            if (o instanceof Project) {
+                p = (Project) o;
+            } else if (o instanceof FileObject) { 
+                f = (FileObject) o;
+            } else if (o instanceof URL) {
+                url = (URL) o;
+            }
+        }
+        
+        if (f==null) {
+            return;
+        }
+        
+        final FileObject fo = (p==null || url ==null)?f:ServerURLMapping.fromServer(p, url);
+        
+        if (fo==null)
+            return;
+        if (inspectedFileObject == fo) {
+            refreshDOM();
+            return;
+        }
         
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
@@ -419,6 +445,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     void deactivate() {
         setPageModel(null);
+        if (contextResult !=null) {
+            contextResult.removeLookupListener(ll);
+        }
     }
 
     private void showWaitNode() {
