@@ -66,6 +66,7 @@ import org.netbeans.modules.php.twig.editor.completion.TwigCompletionProposal.Co
 import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
+import org.openide.util.NbBundle;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
 
@@ -254,8 +255,9 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
+    @NbBundle.Messages("MSG_NoDocumentation=Documentation not found.")
     public String document(ParserResult pr, ElementHandle eh) {
-        return "";
+        return Bundle.MSG_NoDocumentation();
     }
 
     @Override
