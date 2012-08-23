@@ -145,9 +145,18 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     static class FilterCompletionItem extends TwigCompletionItem {
 
         private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/filter.png")); //NOI18N
+        private final TwigItem parameterizedItem;
 
-        public FilterCompletionItem(String name, CompletionRequest request) {
-            super(name, request);
+        public FilterCompletionItem(TwigItem parameterizedItem, CompletionRequest request) {
+            super(parameterizedItem.getName(), request);
+            this.parameterizedItem = parameterizedItem;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            super.getLhsHtml(formatter);
+            parameterizedItem.formatParameters(formatter);
+            return formatter.getText();
         }
 
         @Override
@@ -163,7 +172,9 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
         @Override
         public String getCustomInsertTemplate() {
-            return getName();
+            StringBuilder template = new StringBuilder();
+            parameterizedItem.prepareTemplate(template);
+            return template.toString();
         }
 
         @Override
@@ -174,9 +185,9 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     }
 
     static class FunctionCompletionItem extends TwigCompletionItem {
-        private final TwigParameterizedItem parameterizedItem;
+        private final TwigItem parameterizedItem;
 
-        public FunctionCompletionItem(TwigParameterizedItem parameterizedItem, CompletionRequest request) {
+        public FunctionCompletionItem(TwigItem parameterizedItem, CompletionRequest request) {
             super(parameterizedItem.getName(), request);
             this.parameterizedItem = parameterizedItem;
         }

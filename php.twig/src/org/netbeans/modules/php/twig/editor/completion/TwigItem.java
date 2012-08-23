@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.twig.editor.completion;
 
+import java.util.List;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -50,5 +53,126 @@ public interface TwigItem {
      public String getName();
 
      public void prepareTemplate(StringBuilder template);
+
+     public void formatParameters(HtmlFormatter formatter);
+
+     public static class Factory {
+
+         public static TwigItem create(final String name) {
+             return new TwigItemWithoutParams(name);
+         }
+
+         public static TwigItem create(final String name, final List<Parameter> parameters) {
+             return new TwigItemWithParams(name, parameters);
+         }
+
+     }
+
+     abstract static class BaseTwigItem implements TwigItem {
+         private final String name;
+
+         public BaseTwigItem(final String name) {
+             this.name = name;
+         }
+
+         @Override
+         public String getName() {
+             return name;
+         }
+
+     }
+
+     static class TwigItemWithoutParams extends BaseTwigItem {
+
+        public TwigItemWithoutParams(final String name) {
+            super(name);
+        }
+
+        @Override
+        public void prepareTemplate(final StringBuilder template) {
+            template.append(getName());
+        }
+
+        @Override
+        public void formatParameters(final HtmlFormatter formatter) {
+        }
+
+     }
+
+     static class TwigItemWithParams extends BaseTwigItem {
+        private final List<Parameter> parameters;
+
+        public TwigItemWithParams(final String name, final List<Parameter> parameters) {
+            super(name);
+            this.parameters = parameters;
+        }
+
+        @Override
+        public void formatParameters(final HtmlFormatter formatter) {
+            formatter.appendText("("); //NOI18N
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = parameters.get(i);
+                if (i != 0) {
+                    formatter.appendText(", "); //NOI18N
+                }
+                parameter.format(formatter);
+            }
+            formatter.appendText(")"); //NOI18N
+        }
+
+        @Override
+        public void prepareTemplate(final StringBuilder template) {
+            template.append(getName());
+            template.append("("); //NOI18N
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = parameters.get(i);
+                if (i != 0) {
+                    template.append(", "); //NOI18N
+                }
+                parameter.prepareTemplate(template);
+            }
+            template.append(")"); //NOI18N
+        }
+
+     }
+
+     public static class Parameter {
+
+        public enum Need {
+            OPTIONAL,
+            MANDATORY;
+        }
+
+        private final String name;
+        private final Need cardinality;
+
+        public Parameter(final String name) {
+            this(name, Need.MANDATORY);
+        }
+
+        public Parameter(final String name, final Need cardinality) {
+            this.name = name;
+            this.cardinality = cardinality;
+        }
+
+        public void format(final HtmlFormatter formatter) {
+            if (!isMandatory()) {
+                formatter.appendText(name);
+            } else {
+                formatter.emphasis(true);
+                formatter.appendText(name);
+                formatter.emphasis(false);
+            }
+        }
+
+        public void prepareTemplate(StringBuilder template) {
+            template.append("${").append(name).append("}"); //NOI18N
+        }
+
+        private boolean isMandatory() {
+            return Need.MANDATORY.equals(cardinality);
+        }
+
+    }
 
 }
