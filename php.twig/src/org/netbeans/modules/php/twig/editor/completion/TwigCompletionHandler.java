@@ -63,7 +63,6 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.twig.editor.completion.TwigCompletionProposal.CompletionRequest;
 import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
-import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
