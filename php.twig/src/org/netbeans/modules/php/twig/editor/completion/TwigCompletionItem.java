@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.twig.editor.completion.TwigCompletionHandler.Function;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -145,7 +146,7 @@ public abstract class TwigCompletionItem implements CompletionProposal {
 
     static class FilterCompletionItem extends TwigCompletionItem {
 
-        private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/twig-logo.png")); //NOI18N
+        private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/filter.png")); //NOI18N
 
         public FilterCompletionItem(String name, CodeCompletionContext codeCompletionContext) {
             super(name, codeCompletionContext);
@@ -175,9 +176,20 @@ public abstract class TwigCompletionItem implements CompletionProposal {
     }
 
     static class FunctionCompletionItem extends TwigCompletionItem {
+        private final Function function;
 
-        public FunctionCompletionItem(String name, CodeCompletionContext codeCompletionContext) {
-            super(name, codeCompletionContext);
+        public FunctionCompletionItem(Function function, CodeCompletionContext codeCompletionContext) {
+            super(function.getName(), codeCompletionContext);
+            this.function = function;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            super.getLhsHtml(formatter);
+            formatter.appendText("("); //NOI18N
+            function.formatParameters(formatter);
+            formatter.appendText(")"); //NOI18N
+            return formatter.getText();
         }
 
         @Override

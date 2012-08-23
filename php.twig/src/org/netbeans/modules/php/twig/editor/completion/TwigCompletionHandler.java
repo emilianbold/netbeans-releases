@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.twig.editor.completion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
@@ -56,6 +58,7 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -116,17 +119,17 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         FILTERS.add("url_encode"); //NOI18N
     }
 
-    private static final Set<String> FUNCTIONS = new HashSet<String>();
+    private static final Set<Function> FUNCTIONS = new HashSet<Function>();
     static {
-        FUNCTIONS.add("attribute"); //NOI18N
-        FUNCTIONS.add("block"); //NOI18N
-        FUNCTIONS.add("constant"); //NOI18N
-        FUNCTIONS.add("cycle"); //NOI18N
-        FUNCTIONS.add("date"); //NOI18N
-        FUNCTIONS.add("dump"); //NOI18N
-        FUNCTIONS.add("parent"); //NOI18N
-        FUNCTIONS.add("random"); //NOI18N
-        FUNCTIONS.add("range"); //NOI18N
+        FUNCTIONS.add(new Function("attribute", Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new Function("block", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
+        FUNCTIONS.add(new Function("constant", Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
+        FUNCTIONS.add(new Function("cycle", Arrays.asList(new Parameter[] {new Parameter("array"), new Parameter("i")}))); //NOI18N
+        FUNCTIONS.add(new Function("date", Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new Function("dump", Arrays.asList(new Parameter[] {new Parameter("variable", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(new Function("parent")); //NOI18N
+        FUNCTIONS.add(new Function("random", Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
+        FUNCTIONS.add(new Function("range", Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
     private static final Set<String> TESTS = new HashSet<String>();
@@ -199,7 +202,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeFunctions(final List<CompletionProposal> completionProposals, final CodeCompletionContext codeCompletionContext) {
-        for (String function : FUNCTIONS) {
+        for (Function function : FUNCTIONS) {
             completionProposals.add(new TwigCompletionItem.FunctionCompletionItem(function, codeCompletionContext));
         }
     }
@@ -228,7 +231,22 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, int offset, boolean upToOffset) {
-        return "";
+        String result = "";
+        final TokenSequence<TwigTopTokenId> topTokenSequence = info.getSnapshot().getTokenHierarchy().tokenSequence(TwigTopTokenId.language());
+        if (topTokenSequence != null) {
+            topTokenSequence.move(offset);
+            if (topTokenSequence.moveNext()) {
+                TokenSequence<TwigTokenId> tokenSequence = topTokenSequence.embedded(TwigTokenId.language());
+                if (tokenSequence != null) {
+                    tokenSequence.move(offset);
+                    if (tokenSequence.moveNext()) {
+                        Token<TwigTokenId> token = tokenSequence.token();
+                        result = token.text().toString();
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     @Override
@@ -255,6 +273,70 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
         public TwigCompletionResult(List<CompletionProposal> list, boolean truncated) {
             super(list, truncated);
+        }
+
+    }
+
+    static class Function {
+        private final String name;
+        private final List<Parameter> parameters;
+
+        public Function(final String name) {
+            this(name, Collections.EMPTY_LIST);
+        }
+
+        public Function(final String name, final List<Parameter> parameters) {
+            this.name = name;
+            this.parameters = new ArrayList<Parameter>(parameters);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void formatParameters(final HtmlFormatter formatter) {
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = parameters.get(i);
+                if (i != 0) {
+                    formatter.appendText(", "); //NOI18N
+                }
+                parameter.format(formatter);
+            }
+        }
+
+    }
+
+    static class Parameter {
+
+        enum Need {
+            OPTIONAL,
+            MANDATORY;
+        }
+
+        private final String name;
+        private final Need cardinality;
+
+        public Parameter(final String name) {
+            this(name, Need.MANDATORY);
+        }
+
+        public Parameter(final String name, final Need cardinality) {
+            this.name = name;
+            this.cardinality = cardinality;
+        }
+
+        public void format(final HtmlFormatter formatter) {
+            if (!isMandatory()) {
+                formatter.appendText(name);
+            } else {
+                formatter.emphasis(true);
+                formatter.appendText(name);
+                formatter.emphasis(false);
+            }
+        }
+
+        private boolean isMandatory() {
+            return Need.MANDATORY.equals(cardinality);
         }
 
     }
