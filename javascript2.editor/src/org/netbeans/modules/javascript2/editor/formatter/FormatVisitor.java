@@ -143,9 +143,11 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
 
             FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
-            FormatToken beforeWhile = whileToken.previous();
-            if (beforeWhile != null) {
-                appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+            if (whileToken != null) {
+                FormatToken beforeWhile = whileToken.previous();
+                if (beforeWhile != null) {
+                    appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+                }
             }
             if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
                 return null;
