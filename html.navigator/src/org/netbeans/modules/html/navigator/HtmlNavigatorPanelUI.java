@@ -838,10 +838,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         view.repaint();
     }
     
-    /**
-     * TODO: 
-     * Unefficient, stupid, demoware. Needs to be improved.
-     */
     private Node getHtmlNode(Node node) {
         return domToNb.get(node);
     }
