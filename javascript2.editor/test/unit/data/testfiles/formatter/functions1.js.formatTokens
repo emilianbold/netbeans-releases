@@ -33,6 +33,7 @@ FormattingToken{kind=WHITESPACE, offset=44, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=46, text= }
 FormattingToken{kind=TEXT, offset=47, text=color}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -51,6 +52,7 @@ FormattingToken{kind=WHITESPACE, offset=68, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=69, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=70, text= }
 FormattingToken{kind=TEXT, offset=71, text=maker}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -71,6 +73,7 @@ FormattingToken{kind=WHITESPACE, offset=96, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=97, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=98, text= }
 FormattingToken{kind=TEXT, offset=99, text=function}
 FormattingToken{kind=WHITESPACE, offset=107, text= }
@@ -115,6 +118,7 @@ FormattingToken{kind=WHITESPACE, offset=165, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=166, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=167, text= }
 FormattingToken{kind=TEXT, offset=168, text=function}
 FormattingToken{kind=WHITESPACE, offset=176, text= }
@@ -200,6 +204,7 @@ FormattingToken{kind=WHITESPACE, offset=301, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=302, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=303, text= }
 FormattingToken{kind=TEXT, offset=304, text=street}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -218,6 +223,7 @@ FormattingToken{kind=WHITESPACE, offset=325, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=326, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=327, text= }
 FormattingToken{kind=TEXT, offset=328, text=town}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -236,6 +242,7 @@ FormattingToken{kind=WHITESPACE, offset=350, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=351, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=352, text= }
 FormattingToken{kind=TEXT, offset=353, text=country}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
