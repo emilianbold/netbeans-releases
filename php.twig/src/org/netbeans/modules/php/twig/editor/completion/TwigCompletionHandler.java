@@ -69,39 +69,39 @@ import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
 
-    private static final Set<String> TAGS = new HashSet<String>();
+    private static final Set<TwigItem> TAGS = new HashSet<TwigItem>();
     static {
-        TAGS.add("autoescape"); //NOI18N
-        TAGS.add("endautoescape"); //NOI18N
-        TAGS.add("block"); //NOI18N
-        TAGS.add("endblock"); //NOI18N
-        TAGS.add("do"); //NOI18N
-        TAGS.add("embed"); //NOI18N
-        TAGS.add("endembed"); //NOI18N
-        TAGS.add("extends"); //NOI18N
-        TAGS.add("filter"); //NOI18N
-        TAGS.add("endfilter"); //NOI18N
-        TAGS.add("flush"); //NOI18N
-        TAGS.add("for"); //NOI18N
-        TAGS.add("endfor"); //NOI18N
-        TAGS.add("from"); //NOI18N
-        TAGS.add("if"); //NOI18N
-        TAGS.add("else"); //NOI18N
-        TAGS.add("elseif"); //NOI18N
-        TAGS.add("endif"); //NOI18N
-        TAGS.add("import"); //NOI18N
-        TAGS.add("include"); //NOI18N
-        TAGS.add("macro"); //NOI18N
-        TAGS.add("endmacro"); //NOI18N
-        TAGS.add("raw"); //NOI18N
-        TAGS.add("endraw"); //NOI18N
-        TAGS.add("sandbox"); //NOI18N
-        TAGS.add("endsandbox"); //NOI18N
-        TAGS.add("set"); //NOI18N
-        TAGS.add("endset"); //NOI18N
-        TAGS.add("spaceless"); //NOI18N
-        TAGS.add("endspaceless"); //NOI18N
-        TAGS.add("use"); //NOI18N
+        TAGS.add(TwigItem.Factory.create("autoescape")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endautoescape")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("block")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endblock")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("do")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("embed")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endembed")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("extends")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("filter")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endfilter")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("flush")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("for")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endfor")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("from")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("if")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("else")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("elseif")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endif")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("import")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("include")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("macro")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endmacro")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("raw")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endraw")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("sandbox")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endsandbox")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("set")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endset")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("spaceless")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("endspaceless")); //NOI18N
+        TAGS.add(TwigItem.Factory.create("use")); //NOI18N
     }
 
     private static final Set<TwigItem> FILTERS = new HashSet<TwigItem>();
@@ -214,8 +214,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     private void completeTags(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
-        for (String tag : TAGS) {
-            if (startsWith(tag, request.prefix)) {
+        for (TwigItem tag : TAGS) {
+            if (startsWith(tag.getName(), request.prefix)) {
                 completionProposals.add(new TwigCompletionItem.TagCompletionItem(tag, request));
             }
         }
