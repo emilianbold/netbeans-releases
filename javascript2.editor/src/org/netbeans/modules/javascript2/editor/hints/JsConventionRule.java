@@ -83,6 +83,7 @@ public class JsConventionRule extends JsAstRule {
         Rule betterConditionRule = null;
         Rule missingSemicolon = null;
         Rule duplicatePropertyName = null;
+        Rule assignmentInCondition = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
                 if(manager.isEnabled(astRule)) {
@@ -92,11 +93,14 @@ public class JsConventionRule extends JsAstRule {
                         missingSemicolon = astRule;
                     } else if (astRule instanceof DuplicatePropertyName) {
                         duplicatePropertyName = astRule;
+                    } else if (astRule instanceof AssignmentInCondition) {
+                        assignmentInCondition = astRule;
                     }
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName);
+        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName,
+                assignmentInCondition);
         conventionVisitor.process(context, hints);
     }
             
@@ -130,12 +134,15 @@ public class JsConventionRule extends JsAstRule {
         private final Rule betterConditionRule;
         private final Rule missingSemicolon;
         private final Rule duplicatePropertyName;
+        private final Rule assignmentInCondition;
         
-        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, Rule duplicatePropertyName) {
+        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, 
+                Rule duplicatePropertyName, Rule assignmentInCondition) {
             this.rule = rule;
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
             this.duplicatePropertyName = duplicatePropertyName;
+            this.assignmentInCondition = assignmentInCondition;
         }
         
         @NbBundle.Messages({"# {0} - expected char or string",
@@ -184,16 +191,20 @@ public class JsConventionRule extends JsAstRule {
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
         private void checkCondition(Node condition) {
-            if (betterConditionRule == null) {
+            if (betterConditionRule == null && assignmentInCondition == null) {
                 return;
             }
             if(condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
-                if (binaryNode.isAssignment()) {
-                    hints.add(new Hint(betterConditionRule, Bundle.AssignmentCondition(), 
+                if (assignmentInCondition != null && binaryNode.isAssignment()) {
+                    
+                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(), 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
                 } else {
+                    if (betterConditionRule == null) {
+                        return;
+                    }
                     String message = null;
                     switch(binaryNode.tokenType()) {
                         case EQ:
@@ -204,7 +215,7 @@ public class JsConventionRule extends JsAstRule {
                             break;
                     }
                     if (message != null) {
-                        hints.add(new Hint(rule, message, 
+                        hints.add(new Hint(betterConditionRule, message, 
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
                     }
