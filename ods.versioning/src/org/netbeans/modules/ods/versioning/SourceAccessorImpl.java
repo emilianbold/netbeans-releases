@@ -89,7 +89,7 @@ import org.openide.windows.WindowManager;
  */
 
 @ServiceProviders( { @ServiceProvider(service=SourceAccessor.class),
-    @ServiceProvider(service=VCSAccessor.class),
+    @ServiceProvider(service=VCSAccessor.class)
 })
 public class SourceAccessorImpl extends VCSAccessor {
 
