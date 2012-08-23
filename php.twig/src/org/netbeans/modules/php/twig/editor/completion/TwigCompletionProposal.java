@@ -221,6 +221,8 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
 
     static class OperatorCompletionProposal extends TwigCompletionProposal {
 
+        private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/twig/resources/twig-logo.png")); //NOI18N
+
         public OperatorCompletionProposal(TwigCompletionItem twigCompletionItem, CompletionRequest request) {
             super(twigCompletionItem, request);
         }
@@ -234,6 +236,11 @@ public abstract class TwigCompletionProposal implements CompletionProposal {
         @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            return ICON;
         }
 
     }
