@@ -332,8 +332,8 @@ public abstract class ModelElement implements Element {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getModelClass(this).getSimpleName());
-//        sb.append(":");
-//        sb.append(getClass().getSimpleName());
+        sb.append(":");
+        sb.append(System.identityHashCode(this));
         return sb.toString();
     }
 

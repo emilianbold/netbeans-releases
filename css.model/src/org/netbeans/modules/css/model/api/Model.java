@@ -65,6 +65,7 @@ import org.netbeans.modules.css.model.impl.ElementFactoryImpl;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.diff.DiffProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -393,6 +394,14 @@ public final class Model {
 
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append(super.toString())
+                .append("file=")
+                .append(getLookup().lookup(FileObject.class))
+                .toString();
     }
     
     private static ElementFactoryImpl getElementFactoryImpl(Model model) {
