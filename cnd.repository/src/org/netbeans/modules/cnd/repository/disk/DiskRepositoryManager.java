@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -239,7 +240,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         for (Entry<Integer, Unit> entry : entries) {
             // iz #146241 IllegalStateException in the case revious session terminated with ^C in console
             // if there are projects that aren't yet closed => the data might be corrupted! => clean untit
-            closeUnit(translator.getUnitName(entry.getKey()), true, null);
+            closeUnit(entry.getKey(), true, null);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.INFO, "Closing unit{0} done.", entry.getValue().getName());
             }
@@ -313,6 +314,21 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         }
     }
 
+    @Override
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+        CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
+        Set<CharSequence> requiredUnitNames = null;
+        if (requiredUnits != null) {
+            requiredUnitNames = new LinkedHashSet<CharSequence>(requiredUnits.size());
+            for (Integer integer : requiredUnits) {
+                requiredUnitNames.add(translator.getUnitName(unitId));
+            }
+        }
+        synchronized (getUnitLock(unitId)) {
+            closeUnit2(unitName, cleanRepository, requiredUnitNames);
+        }
+    }
+
     private void closeUnit2(final CharSequence unitName, final boolean cleanRepository, Set<CharSequence> requiredUnits) {
 
         int unitId = translator.getUnitId(CharSequences.create(unitName));
@@ -367,6 +383,15 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     @Override
     public void removeUnit(CharSequence unitName) {
         int unitId = translator.getUnitId(CharSequences.create(unitName));
+        synchronized (getUnitLock(unitId)) {
+            closeUnit(unitName, true, Collections.<CharSequence>emptySet());
+            ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
+        }
+    }
+
+    @Override
+    public void removeUnit(int unitId) {
+        CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         synchronized (getUnitLock(unitId)) {
             closeUnit(unitName, true, Collections.<CharSequence>emptySet());
             ((RepositoryTranslatorImpl)translator).removeUnit(unitName);

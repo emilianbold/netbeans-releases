@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
 /**
@@ -169,7 +170,12 @@ public class HashMapRepository implements Repository {
     public synchronized void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
         removeUnit(unitName);
     }
-    
+
+    @Override
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+        removeUnit(RepositoryAccessor.getTranslator().getUnitName(unitId));
+    }
+
     @Override
     public synchronized void removeUnit(CharSequence unitName) {
         for( Iterator<CharSequence> iter = units.keySet().iterator(); iter.hasNext(); ) {
@@ -181,6 +187,11 @@ public class HashMapRepository implements Repository {
                 }
             }
         }
+    }
+
+    @Override
+    public void removeUnit(int unitId) {
+        removeUnit(RepositoryAccessor.getTranslator().getUnitName(unitId));
     }
 
     @Override

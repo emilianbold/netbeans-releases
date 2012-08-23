@@ -289,25 +289,25 @@ public final class RepositoryUtils {
         repository.debugClear();
     }
 
-    public static<T> void closeUnit(CsmUID<T> uid, Set<CharSequence> requiredUnits, boolean cleanRepository) {
+    public static<T> void closeUnit(CsmUID<T> uid, Set<Integer> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(CharSequence unitName, Set<CharSequence> requiredUnits, boolean cleanRepository) {
-        RepositoryListenerImpl.instance().onExplicitClose(unitName);
-        _closeUnit(unitName, requiredUnits, cleanRepository);
+    public static void closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {
+        RepositoryListenerImpl.instance().onExplicitClose(KeyUtilities.getUnitName(unitId));
+        _closeUnit(unitId, requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(Key key, Set<CharSequence> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(Key key, Set<Integer> requiredUnits, boolean cleanRepository) {
         assert key != null;
-        _closeUnit(key.getUnit(), requiredUnits, cleanRepository);
+        _closeUnit(key.getUnitId(), requiredUnits, cleanRepository);
         if (cleanRepository) {
             UIDManager.instance().clearProjectCache(key);
         }
     }
 
-    private static void _closeUnit(CharSequence unit, Set<CharSequence> requiredUnits, boolean cleanRepository) {
-        assert unit != null;
+    private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {
+        CharSequence unit = KeyUtilities.getUnitName(unitId);
         if (!cleanRepository) {
             int errors = myRepositoryListenerProxy.getErrorCount(unit);
             if (errors > 0) {
@@ -318,7 +318,7 @@ public final class RepositoryUtils {
             }
         }
         myRepositoryListenerProxy.cleanErrorCount(unit);
-        repository.closeUnit(unit, cleanRepository, requiredUnits);
+        repository.closeUnit(unitId, cleanRepository, requiredUnits);
     }
 
     public static int getRepositoryErrorCount(ProjectBase project){
@@ -334,7 +334,7 @@ public final class RepositoryUtils {
     
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
-        repository.removeUnit(key.getUnit());
+        repository.removeUnit(key.getUnitId());
     }
 
     public static void openUnit(ProjectBase project) {
@@ -350,7 +350,7 @@ public final class RepositoryUtils {
 
     private static void openUnit(int unitId, CharSequence unitName) {
         // TODO explicit open should be called here:
-        RepositoryListenerImpl.instance().onExplicitOpen(unitName);
+        RepositoryListenerImpl.instance().onExplicitOpen(unitId);
         repository.openUnit(unitId, unitName);
     }
 
