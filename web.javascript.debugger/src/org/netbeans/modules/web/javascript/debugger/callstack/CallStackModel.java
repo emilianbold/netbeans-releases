@@ -50,11 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
-import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
-import org.netbeans.modules.web.javascript.debugger.annotation.CurrentLineAnnotation;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -64,8 +60,6 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -81,21 +75,16 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
 
     private Debugger debugger;
-    private Project project;
 
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
     
-    private List<Annotation> annotations = new ArrayList<Annotation>();
-    
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
-        project = contextProvider.lookupFirst(null, Project.class);
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
         setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : new ArrayList<CallFrame>());
-        updateAnnotations();
     }
 
     private void setStackTrace(List<? extends CallFrame> stackTrace) {
@@ -240,41 +229,15 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         throw new UnknownTypeException(node);
     }
     
-    private void updateAnnotations() {
-        for (Annotation ann : annotations) {
-            ann.detach();
-        }
-        annotations.clear();
-        boolean first = true;
-        for (CallFrame cf : stackTrace.get()) {
-            final Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
-            if (line == null) {
-                first = false;
-                continue;
-            }
-            Annotation anno;
-            if (first) {
-                anno = new CurrentLineAnnotation(line);
-                MiscEditorUtil.showLine(line, true);
-                first = false;
-            } else {
-                anno = new CallStackAnnotation(line);
-            }
-            annotations.add(anno);
-        }
-    }
-
     @Override
     public void paused(List<CallFrame> callStack, String reason) {
         setStackTrace(callStack);
-        updateAnnotations();
         refresh();
     }
 
     @Override
     public void resumed() {
         setStackTrace(new ArrayList<CallFrame>());
-        updateAnnotations();
         refresh();
     }
 
@@ -287,11 +250,6 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         String propertyName = evt.getPropertyName();
         if (Debugger.PROP_CURRENT_FRAME.equals(propertyName)) {
             refresh();
-            CallFrame cf = (CallFrame) evt.getNewValue();
-            if (cf != null) {
-                Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
-                MiscEditorUtil.showLine(line, true);
-            }
         }
     }
     

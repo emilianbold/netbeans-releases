@@ -41,17 +41,32 @@
  */
 package org.netbeans.modules.web.javascript.debugger.callstack;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
+import org.netbeans.modules.web.javascript.debugger.annotation.CurrentLineAnnotation;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.TreeModel;
+import org.openide.text.Annotation;
+import org.openide.text.Line;
 
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
-public class CallStackAnnotationListener extends DebuggerManagerAdapter {
+public class CallStackAnnotationListener extends DebuggerManagerAdapter
+                                         implements Debugger.Listener, PropertyChangeListener {
+    
+    private Project project;
+    private final List<Annotation> annotations = new ArrayList<Annotation>();
     
     @Override
     public String[] getProperties() {
@@ -61,17 +76,81 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter {
     @Override
     public void engineAdded(DebuggerEngine engine) {
         Debugger d = engine.lookupFirst("", Debugger.class);
-        if (d == null) {
-            return;
+        if (d != null) {
+            d.addListener(this);
+            d.addPropertyChangeListener(this);
+            project = engine.lookupFirst(null, Project.class);
+            List<CallFrame> stackTrace;
+            if (d.isSuspended()) {
+                stackTrace = d.getCurrentCallStack();
+            } else {
+                stackTrace = Collections.emptyList();
+            }
+            updateAnnotations(stackTrace);
         }
-        // force init of CallStackModel and its listeners which will
-        // update call stack annotations:
-        CallStackModel model = (CallStackModel)engine.lookupFirst(
-            DebuggerConstants.CALL_STACK_VIEW, TreeModel.class);
     }
 
     @Override
     public void engineRemoved(DebuggerEngine engine) {
+        Debugger d = engine.lookupFirst("", Debugger.class);
+        if (d != null) {
+            d.removeListener(this);
+            d.removePropertyChangeListener(this);
+            project = null;
+        }
+    }
+
+    @Override
+    public void paused(List<CallFrame> callStack, String reason) {
+        updateAnnotations(callStack);
+    }
+
+    @Override
+    public void resumed() {
+        updateAnnotations(Collections.EMPTY_LIST);
+    }
+
+    @Override
+    public void reset() {}
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (Debugger.PROP_CURRENT_FRAME.equals(propertyName)) {
+            CallFrame cf = (CallFrame) evt.getNewValue();
+            if (cf != null) {
+                Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
+                MiscEditorUtil.showLine(line, true);
+            }
+        }
+    }
+    
+    private void updateAnnotations(List<CallFrame> stackTrace) {
+        for (Annotation ann : annotations) {
+            ann.detach();
+        }
+        annotations.clear();
+        boolean first = true;
+        for (CallFrame cf : stackTrace) {
+            Script script = cf.getScript();
+            if (script == null) {
+                continue;
+            }
+            final Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
+            if (line == null) {
+                first = false;
+                continue;
+            }
+            Annotation anno;
+            if (first) {
+                anno = new CurrentLineAnnotation(line);
+                MiscEditorUtil.showLine(line, true);
+                first = false;
+            } else {
+                anno = new CallStackAnnotation(line);
+            }
+            annotations.add(anno);
+        }
     }
 
 }
