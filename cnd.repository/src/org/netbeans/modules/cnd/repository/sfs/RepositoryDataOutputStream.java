@@ -45,6 +45,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
 
 /**
  *
@@ -59,7 +60,12 @@ public class RepositoryDataOutputStream extends DataOutputStream implements Repo
     public void writeCharSequenceUTF(CharSequence s) throws IOException {
         UTF.writeUTF(s, this);
     }
-    
+
+    @Override
+    public void writeUnitId(int unitId) throws IOException {
+        UnitsUtil.writeUnitId(unitId, this);
+    }
+
     private static final int sharedArrySize = 1024;
     private final byte[] sharedByteArray = new byte[sharedArrySize];
     private final char[] sharedCharArray = new char[sharedArrySize];

@@ -480,7 +480,11 @@ worth of mentioning.
         </question>
 -->
 <answer id="exec-privateaccess">
-I'm not aware.
+    <api category="friend" group="java" name="FileObjectMoveLookup" type="import">
+    <code>BaseFileObj</code> implementation of <code>FileObject</code> is using
+    a reflection to re-associate the lookup after a move operation. This is a 
+    contract established with <code>openide.filesystems</code> module.
+    </api>
 </answer>
 
 

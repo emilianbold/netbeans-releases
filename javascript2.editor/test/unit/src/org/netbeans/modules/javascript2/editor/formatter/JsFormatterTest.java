@@ -308,6 +308,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall4.js");
     }
 
+    public void testFunctionCall5Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testFunctionCall5Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapNever.formatted");
+    }
+
+    public void testFunctionCall5IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFunctionCall5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionCall5.js");
+    }
+
     public void testComments1() throws Exception {
         reformatFileContents("testfiles/formatter/comments1.js",new IndentPrefs(4, 4));
     }

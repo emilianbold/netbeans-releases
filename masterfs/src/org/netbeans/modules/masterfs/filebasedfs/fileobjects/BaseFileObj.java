@@ -59,6 +59,8 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
@@ -295,6 +297,7 @@ public abstract class BaseFileObj extends FileObject {
         }
 
         FileUtil.copyAttributes(this, result);
+        Utils.reassignLkp(this, result);
         } catch (IOException ioe) {
             extensions.moveFailure(this, to);
             throw ioe;

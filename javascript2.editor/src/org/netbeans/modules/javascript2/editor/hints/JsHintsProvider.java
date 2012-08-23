@@ -63,15 +63,28 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
-        List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionRule.JSCONVENTION_HINTS);
+        
+        // find out whether there is a convention hint enabled
+        List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionHint.JSCONVENTION_OPTION_HINTS);
+        boolean countConventionHints = false;
         if (conventionHints != null) {
             for (Rule.AstRule astRule : conventionHints) {
-                if(cancel) {
-                    break;
+                if (manager.isEnabled(astRule)) {
+                    countConventionHints = true;
                 }
+            }
+        }
+        if (countConventionHints && !cancel) {
+            JsConventionRule rule = new JsConventionRule();
+            rule.computeHints((JsRuleContext)context, hints, manager);
+        }
+        
+        List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
+        if (otherHints != null) {
+            for (Rule.AstRule astRule : otherHints) {
                 if (manager.isEnabled(astRule)) {
                     JsAstRule rule = (JsAstRule)astRule;
-                    rule.computeHints((JsRuleContext)context, hints);
+                    rule.computeHints((JsRuleContext)context, hints, manager);
                 }
             }
         }
