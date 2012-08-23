@@ -25,7 +25,7 @@
         <ul>
             <li>You want to profile an application running on a remote JVM, such as a remote application server</li>
             <li>You want to profile a Java EE or web application and the target server is not Tomcat, 
-        Sun Java System Application Server/GlassFish or JBoss</li>
+        GlassFish, WebLogic or JBoss</li>
         </ul>
         
         <p>The Attach mode enables you to attach the profiling tool to an application that is already running,
@@ -35,16 +35,16 @@
         running on top of an application server. 
         You can also use the attach mode to profile the code of the application server itself.</p>
 
-        <h3>Using the Attach Wizard</h3>        
+        <h3>Configuring the Attach Settings</h3>        
         <p>Before you can attach to an application, the startup options for the target application or server need to be configured.
-        You use the Attach Wizard to specify the attachment settings for a project.
+        You use the Attach Settings dialog box to specify the attachment settings for a project.
         You only need to configure the attachment settings once. 
         The attachment settings are project specific, which means that each project has its own settings.
-        You can go through the Attach Wizard at any time if you want to modify any of the attachment settings.</p> 
+        You can open the Attach Settings dialog box at any time if you want to review or modify any of the attachment settings.</p> 
         
-        <p>In the Attach Wizard you specify the type of application and the location.
-        Based on the details that you provide, the Attach Wizard provides you with a set of instructions on how to 
-        configure the application or server so that you can attach the profiler.</p>
+        <p>In the Attach Settings dialog box you specify the location of the application and the connection method.
+        Based on the details that you provide, the Attach Settings dialog box provides you with a set of instructions on how to 
+        configure the application so that you can attach the profiler.</p>
 
         <h3>Attach Modes</h3>
         <p>The attach mode you choose depends on the type of profiling data you want to obtain and
@@ -57,14 +57,6 @@
             <th align="left" scope="col" valign="top"><b>Description</b></th>
           </tr>
           <tr> 
-            <td valign="top"><b>Local Direct</b></td>
-            <td valign="top">Use this mode if you want to obtain profiling data on the startup of a <a href="profile_running.html">local application</a>.
-            
-            <p>When you use this mode, the target JVM and application wait until you attach the profiler before starting.
-            After you detach from the application, you need to restart the application to start another profiling session.</p></td>
-          </tr>
-          
-          <tr> 
             <td valign="top"><b>Local Dynamic</b></td>
             <td valign="top">Use this mode if you want to obtain profiling data 
             on a <a href="profile_running.html">local application</a>.
@@ -73,14 +65,22 @@
             <p>When you use this mode, you can attach to and detach from the
             application without restarting application.</td>
           </tr>
+          <tr> 
+            <td valign="top"><b>Local Direct</b></td>
+            <td valign="top">Use this mode if you want to obtain profiling data on the startup of a <a href="profile_running.html">local application</a>.
+            
+            <p>When you use this mode, the target JVM and application wait until you attach the profiler before starting.
+            After you detach from the application, you need to restart the application to start another profiling session.</p></td>
+          </tr>
+          
           
           <tr> 
             <td valign="top"><b>Remote Direct</b></td>
             <td valign="top">Use this mode if you want to obtain profiling data 
             on an <a href="profile_remote.html">application running on a remote JVM</a>.
-            To use this mode, you need to install the Profiler Remote Pack on the target machine.
+            To use this mode, you need to install the Profiler Remote Pack on the remote target machine.
             You specify the details of the remote system and generate the Profiler Remote Pack 
-            using the Attach Wizard.
+            using the Attach Settings dialog box.
             
             <p>When you use this mode, the remote application starts after the profiler is attached.
             This mode enables you to obtain profiling data on the startup of the target JVM.</p></td>
