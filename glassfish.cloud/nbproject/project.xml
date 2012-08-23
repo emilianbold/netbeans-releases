@@ -11,7 +11,7 @@
                     <compile-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.toolingSDK</code-name-base>
+                    <code-name-base>org.netbeans.libs.glassfish.sdk</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

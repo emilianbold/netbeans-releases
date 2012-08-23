@@ -75,7 +75,7 @@ public class GlassFishCloudInstanceProvider
 
     /** Singleton object instance. */
     private static volatile GlassFishCloudInstanceProvider instance;
-
+   
     ////////////////////////////////////////////////////////////////////////////
     // Static methods used as provider interface                              //
     ////////////////////////////////////////////////////////////////////////////
@@ -90,10 +90,17 @@ public class GlassFishCloudInstanceProvider
         if (instance != null) {
             return instance;
         }
+        boolean first;
         synchronized (GlassFishCloudInstanceProvider.class) {
             if (instance == null) {
                 instance = new GlassFishCloudInstanceProvider();
+                first = true;
+            } else {
+                first = false;
             }
+        }
+        if (first) {
+            instance.register();
         }
         return instance;
     }
@@ -211,7 +218,8 @@ public class GlassFishCloudInstanceProvider
      * Add new GlassFish cloud instance into this provider.
      * <p/>
      * Instance is registered in this provider without being stored into
-     * persistence properties.
+     * persistence properties. Instance is not registered for NetBeans UI server
+     * components.
      * <p/>
      * @param instance GlassFish cloud instance to be added.
      */
@@ -220,6 +228,15 @@ public class GlassFishCloudInstanceProvider
             serverInstances.add(instance.getServerInstance());
             cloudInstances.put(instance.getDisplayName(), instance);
         }
+        changeListeners.fireChange();
+    }
+
+    /**
+     * Register the instance for NetBeans UI server components.
+     * <p/>
+     * @param instance GlassFish cloud instance to be registered.
+     */
+    private void registerInstance(GlassFishCloudInstance instance) {
         if (instance.getLocalServer() != null
                 && instance.getLocalServer().getUrl() != null) {
             try {
@@ -230,21 +247,22 @@ public class GlassFishCloudInstanceProvider
                         instance.getDisplayName(), null);
             } catch (InstanceCreationException ice) {
             }
-        }
-        changeListeners.fireChange();
+        }         
     }
 
-    /**
+     /**
      * Add new GlassFish cloud instance into this provider.
      * <p/>
      * Instance is registered in this provider and stored into persistence
-     * properties.
+     * properties. Instance is also registered for NetBeans UI server
+     * components.
      * <p/>
      * @param instance GlassFish cloud instance to be added.
      */
     private void addInstance(GlassFishCloudInstance instance) {
         store(instance);
         addInstanceWithoutStoring(instance);
+        registerInstance(instance);
     }
 
     /**
@@ -297,6 +315,18 @@ public class GlassFishCloudInstanceProvider
                     = GlassFishCloudInstance.load(props);
             if (cloudInstance != null) {
                 addInstanceWithoutStoring(cloudInstance);
+            }
+        }
+    }
+
+    /**
+     * Register all GlassFish cloud instances for NetBeans UI server components.
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    private void register() {
+        synchronized (this) {
+            for (GlassFishCloudInstance instance : cloudInstances.values()) {
+                registerInstance(instance);
             }
         }
     }
