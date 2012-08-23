@@ -327,7 +327,7 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private void registerStructureScanner(LayerBuilder b, String mimeType) {
-        instanceFile(b, "Navigator/Panels/" + mimeType, null, ClassMemberPanel.class, null).write(); //NOI18N
+        instanceFile(b, "Navigator/Panels/" + mimeType, null, ClassMemberPanel.class, null).intvalue("position", 1000).write(); //NOI18N
         File sideBar = instanceFile(b, "Editors/" + mimeType + "/SideBar", null, "org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController", "createSideBarFactory");
         sideBar.stringvalue("location", "South")
                .intvalue("position", 5238)
