@@ -395,14 +395,22 @@ public final class CompletionContext {
         switch (type) {
             case PROPERTY: {
                 // the next position is within the value, if it is present
+                boolean wsFound = false;
+                
                 while (ts.moveNext()) {
                     t = ts.token();
                     switch (t.id()) {
-                        case ARGUMENT:
-                        case OPERATOR:
                         case WS:
+                            wsFound = true;
                             break;
-
+                            
+                        case ARGUMENT:
+                            if (wsFound) {
+                                // ws before next attribute name, bail out
+                                return;
+                            }
+                        case OPERATOR:
+                
                         case VALUE:
                             replaceExisting = true;
                             nextCaretPos = ts.offset() + 1;
@@ -485,7 +493,7 @@ public final class CompletionContext {
             return null;
         }
         FxNode parent = parents.get(0);
-        if (parent.getKind() == FxNode.Kind.Property) {
+        if (parent instanceof PropertySetter) {
             return ((PropertySetter)parent).getPropertyInfo();
         } else if (parent.getKind() == FxNode.Kind.Instance) {
             FxInstance inst = (FxInstance)parent;

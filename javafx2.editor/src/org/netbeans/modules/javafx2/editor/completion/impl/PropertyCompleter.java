@@ -102,13 +102,20 @@ public class PropertyCompleter extends InstanceCompleter {
                 beanInfo.getSimplePropertyNames() : beanInfo.getPropertyNames()));
         FxBean parentInfo = beanInfo.getSuperclassInfo();
 
+        String pref = ctx.getPrefix();
+        if (pref.startsWith("<")) {
+            pref = pref.substring(1);
+        }
         for (String s : propNames) {
             FxProperty pi = beanInfo.getProperty(s);
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
 
-            if (existingPropNames.contains(s) && !ctx.isReplaceExisting()) {
-                continue;
+            if (existingPropNames.contains(s)) {
+                // if replacing, leave the property being replaced in the list
+                if (!s.startsWith(pref) || !ctx.isReplaceExisting()) {
+                    continue;
+                }
             }
 
             if (attribute && !pi.isSimple()) {
@@ -178,7 +185,7 @@ public class PropertyCompleter extends InstanceCompleter {
         if (ctx.getType() == CompletionContext.Type.PROPERTY) {
             if (instance.getId() == null) {
                 // suggest also fx:id
-                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id",
+                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id", // NOI18N
                         true);
                 pi.setPrimitive(true);
                 pi.setInherited(false);
@@ -189,7 +196,7 @@ public class PropertyCompleter extends InstanceCompleter {
             }
             if (ctx.isRootElement() && ctx.getModel().getController() == null) {
                 // suggest also fx:id
-                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller",
+                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller", // NOI18N
                         true);
                 pi.setPrimitive(true);
                 pi.setInherited(false);
