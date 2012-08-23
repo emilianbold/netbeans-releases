@@ -389,7 +389,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         HierarchyTopComponent component = instance;
 
         if (component == null) {
-            TopComponent tc = WindowManager.getDefault().findTopComponent("HierarchyTopComponent"); //NOI18N
+            TopComponent tc = WindowManager.getDefault().findTopComponent("JavaHierarchyTopComponent"); //NOI18N
             if (tc instanceof HierarchyTopComponent) {
                 component = instance = (HierarchyTopComponent) tc;
             } else {
