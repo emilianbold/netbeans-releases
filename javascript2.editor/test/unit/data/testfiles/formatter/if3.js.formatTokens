@@ -226,7 +226,9 @@ FormattingToken{kind=WHITESPACE, offset=196, text= }
 FormattingToken{kind=TEXT, offset=197, text=(}
 FormattingToken{kind=AFTER_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=198, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=205, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=206, text=select}
 FormattingToken{kind=WHITESPACE, offset=212, text= }
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
@@ -237,9 +239,13 @@ FormattingToken{kind=TEXT, offset=216, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=217, text= }
 FormattingToken{kind=TEXT, offset=218, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=225, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=226, text=tagName}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=233, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=234, text=toLowerCase}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=245, text=(}
@@ -282,14 +288,18 @@ FormattingToken{kind=TEXT, offset=290, text=submit}
 FormattingToken{kind=TEXT, offset=296, text='}
 FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=297, text=]}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=298, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=299, text=include}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=306, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=307, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=314, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=315, text=type}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=319, text=)}
@@ -308,7 +318,9 @@ FormattingToken{kind=EOL, offset=327, text=
 }
 FormattingToken{kind=WHITESPACE, offset=328, text=      }
 FormattingToken{kind=TEXT, offset=334, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=341, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=342, text=select}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=348, text=(}

@@ -116,6 +116,18 @@ public abstract class NamedServicesProvider {
         NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
         return prov != null ? prov.lookupObject(filePath, type) : null;
     }
+    
+    /** Allows the providers to donate a special lookup for a given object.
+     * Right now it is used only for obtaining <code>FileObject.getLookup</code>.
+     * 
+     * @param obj the object to find lookup for
+     * @return <code>null</code> or new lookup to be associated with the <code>obj</code>
+     * @since 8.17
+     */
+    public static Lookup createLookupFor(Object obj) {
+        NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
+        return prov != null ? prov.lookupFor(obj) : null;
+    }
 
     static void clearCache() {
         boolean assertsOn = false;
@@ -165,5 +177,16 @@ public abstract class NamedServicesProvider {
      */
     protected <T> T lookupObject(String path, Class<T> type) {
         return create(path).lookup(type);
+    }
+
+    /** Method for providers to work in orchestration with {@link #createLookupFor(java.lang.Object)}.
+     * By default return <code>null</code>.
+     * 
+     * @param obj the object to find lookup for
+     * @return <code>null</code> or new lookup to be associated with the <code>obj</code>
+     * @since 8.17
+     */
+    protected Lookup lookupFor(Object obj) {
+        return null;
     }
 }

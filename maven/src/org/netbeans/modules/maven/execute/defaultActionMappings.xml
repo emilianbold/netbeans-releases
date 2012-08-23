@@ -122,13 +122,11 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
             <exec.executable>java</exec.executable>
-            <!-- once upgrading to 1.1.2, we can get rid of this -->
-            <exec.classpathScope>runtime</exec.classpathScope>
         </properties>
     </action>
     <action>
@@ -138,13 +136,11 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
             <exec.executable>java</exec.executable>
-            <!-- once upgrading to 1.1.2, we can get rid of this -->
-            <exec.classpathScope>runtime</exec.classpathScope>
             <jpda.listen>true</jpda.listen>
         </properties>
     </action>
@@ -155,7 +151,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
@@ -171,7 +167,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
@@ -218,7 +214,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
@@ -233,7 +229,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.2:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
         </goals>
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
