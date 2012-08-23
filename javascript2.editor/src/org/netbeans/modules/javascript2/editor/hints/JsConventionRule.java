@@ -82,6 +82,7 @@ public class JsConventionRule extends JsAstRule {
         List<? extends AstRule> conventionHints = allHints.get(BetterConditionHint.JSCONVENTION_OPTION_HINTS);
         Rule betterConditionRule = null;
         Rule missingSemicolon = null;
+        Rule duplicatePropertyName = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
                 if(manager.isEnabled(astRule)) {
@@ -89,11 +90,13 @@ public class JsConventionRule extends JsAstRule {
                         betterConditionRule = astRule;
                     } else if(astRule instanceof MissingSemicolonHint) {
                         missingSemicolon = astRule;
+                    } else if (astRule instanceof DuplicatePropertyName) {
+                        duplicatePropertyName = astRule;
                     }
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon);
+        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName);
         conventionVisitor.process(context, hints);
     }
             
@@ -126,11 +129,13 @@ public class JsConventionRule extends JsAstRule {
         private final Rule rule;
         private final Rule betterConditionRule;
         private final Rule missingSemicolon;
+        private final Rule duplicatePropertyName;
         
-        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon) {
+        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, Rule duplicatePropertyName) {
             this.rule = rule;
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
+            this.duplicatePropertyName = duplicatePropertyName;
         }
         
         @NbBundle.Messages({"# {0} - expected char or string",
@@ -217,6 +222,9 @@ public class JsConventionRule extends JsAstRule {
         @NbBundle.Messages({"# {0} - name of the duplicated property",
             "DuplicateName=Duplicate name of property \"{0}\"."})
         private void checkDuplicateLabels(ObjectNode objectNode) {
+            if (duplicatePropertyName == null) {
+                return;
+            }
             int startOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getStart());
             int endOffset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
             if (startOffset == -1 || endOffset == -1) {
@@ -236,7 +244,7 @@ public class JsConventionRule extends JsAstRule {
                         case BEFORE_COLON:
                             if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
                                 if (!names.add(ts.token().text().toString())) {
-                                    hints.add(new Hint(rule, Bundle.DuplicateName(ts.token().text().toString()),
+                                    hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(ts.token().text().toString()),
                                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                                             new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
                                 }
