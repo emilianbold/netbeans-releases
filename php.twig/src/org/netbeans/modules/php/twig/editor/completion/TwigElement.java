@@ -62,7 +62,7 @@ public interface TwigElement extends ElementHandle {
 
     public void formatParameters(HtmlFormatter formatter);
 
-    public String getDocumentation();
+    public TwigDocumentation getDocumentation();
 
     public static class Factory {
 
@@ -130,8 +130,8 @@ public interface TwigElement extends ElementHandle {
         }
 
         @Override
-        public String getDocumentation() {
-            return documentationFactory.createDocumentation(getName());
+        public TwigDocumentation getDocumentation() {
+            return documentationFactory.create(getName());
         }
     }
 
