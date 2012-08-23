@@ -84,6 +84,7 @@ public class JsConventionRule extends JsAstRule {
         Rule missingSemicolon = null;
         Rule duplicatePropertyName = null;
         Rule assignmentInCondition = null;
+        Rule unexpectedCommaInOL = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
                 if(manager.isEnabled(astRule)) {
@@ -95,12 +96,14 @@ public class JsConventionRule extends JsAstRule {
                         duplicatePropertyName = astRule;
                     } else if (astRule instanceof AssignmentInCondition) {
                         assignmentInCondition = astRule;
+                    } else if (astRule instanceof UnexpectedCommaInObjectLiteral) {
+                        unexpectedCommaInOL = astRule;
                     }
                 }
             }
         }
         ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName,
-                assignmentInCondition);
+                assignmentInCondition, unexpectedCommaInOL);
         conventionVisitor.process(context, hints);
     }
             
@@ -135,14 +138,16 @@ public class JsConventionRule extends JsAstRule {
         private final Rule missingSemicolon;
         private final Rule duplicatePropertyName;
         private final Rule assignmentInCondition;
+        private final Rule unexpectedCommaInOL;
         
         public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, 
-                Rule duplicatePropertyName, Rule assignmentInCondition) {
+                Rule duplicatePropertyName, Rule assignmentInCondition, Rule unexpectedCommaInOL) {
             this.rule = rule;
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
             this.duplicatePropertyName = duplicatePropertyName;
             this.assignmentInCondition = assignmentInCondition;
+            this.unexpectedCommaInOL = unexpectedCommaInOL;
         }
         
         @NbBundle.Messages({"# {0} - expected char or string",
@@ -353,19 +358,21 @@ public class JsConventionRule extends JsAstRule {
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
                 checkDuplicateLabels(objectNode);
-                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                if (offset > -1) {
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                    ts.move(offset);
-                    if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
-                        LexUtilities.findPrevious(ts, Arrays.asList(
-                                JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                                JsTokenId.BLOCK_COMMENT));
-                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                            hints.add(new Hint(rule, Bundle.Unexpected(ts.token().text().toString()), 
-                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                if (unexpectedCommaInOL != null) {
+                    int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+                    if (offset > -1) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
+                        ts.move(offset);
+                        if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                            LexUtilities.findPrevious(ts, Arrays.asList(
+                                    JsTokenId.EOL, JsTokenId.WHITESPACE, 
+                                    JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                    JsTokenId.BLOCK_COMMENT));
+                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()), 
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+                                    new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                            }
                         }
                     }
                 }
