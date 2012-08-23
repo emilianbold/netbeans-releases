@@ -112,6 +112,10 @@ public class HtmlIndexer extends EmbeddingIndexer {
     
     static private void fireChangeImpl(FileObject fo) {
         Project p = FileOwnerQuery.getOwner(fo);
+        if (p == null) {
+            // no project to notify
+            return;
+        }
         try {
             HtmlIndex index = HtmlIndex.get(p, false);
             if (index != null) {
