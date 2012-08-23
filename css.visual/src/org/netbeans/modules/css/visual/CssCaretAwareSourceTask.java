@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
@@ -58,6 +60,7 @@ import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
+import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -66,6 +69,8 @@ import org.openide.windows.WindowManager;
  * @author mfukala@netbeans.org
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
+    
+    private static final Logger LOG = Logger.getLogger(CssCaretAwareSourceTask.class.getSimpleName());
 
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
@@ -103,20 +108,23 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
+        
+                
+        FileObject file = result.getSnapshot().getSource().getFileObject();
+        LOG.log(Level.FINE, "run(), file: {0}", file);
 
         final int caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
 
         final boolean newModel = lastResult == null || result.getSnapshot() != lastResult.getSnapshot();
-        lastResult = result;
 
         final Runnable task = new Runnable() {
             @Override
             public void run() {
                 if (cancelled) {
-            return;
-        }
-                if(newModel) {
-                    updateModel(RULE_EDITOR_TC, result);
+                    return;
+                }
+                if (newModel) {
+                    updateModel(RULE_EDITOR_TC, result, caretOffset);
                 } else {
                     updateCaret(RULE_EDITOR_TC, result, caretOffset);
                 }
@@ -145,13 +153,25 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     }
 
     //need not to be called from EDT
-    private void updateModel(final RuleEditorTC ruleEditorTC, final CssCslParserResult result) {
+    private void updateModel(final RuleEditorTC ruleEditorTC, final CssCslParserResult result, int documentOffset) {
+        LOG.log(Level.FINE, "updateModel()");
+        Rule rule = findRuleAtOffset(result, documentOffset);
+        if (rule == null) {
+            //do not re-set the model, keep the old one 
+            LOG.log(Level.FINE, "no rule found at {0} offset, exiting w/o change of the RuleEditor", documentOffset);
+            return;
+        }
+
         RuleEditorController controller = ruleEditorTC.getRuleEditorController();
         controller.setModel(result.getModel());
+
+        lastResult = result;
     }
-    
+
     //need not to be called from EDT
     private void updateCaret(final RuleEditorTC ruleEditorTC, final CssCslParserResult result, int documentOffset) {
+        LOG.log(Level.FINE, "updateCaret()");
+                
         final RuleEditorController controller = ruleEditorTC.getRuleEditorController();
 
         final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
@@ -193,6 +213,38 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
             }
         });
+
+    }
+
+    private Rule findRuleAtOffset(final CssCslParserResult result, int documentOffset) {
+        final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
+        if (astOffset == -1) {
+            return null;
+        }
+        Model model = result.getModel();
+        final AtomicReference<Rule> ruleRef = new AtomicReference<Rule>();
+        model.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                styleSheet.accept(new ModelVisitor.Adapter() {
+                    @Override
+                    public void visitRule(Rule rule) {
+                        if (cancelled) {
+                            return;
+                        }
+                        if (astOffset >= rule.getStartOffset() && astOffset < rule.getEndOffset()) {
+                            ruleRef.set(rule);
+                        }
+                    }
+                });
+
+                if (cancelled) {
+                    return;
+                }
+
+            }
+        });
+        return ruleRef.get();
 
     }
 

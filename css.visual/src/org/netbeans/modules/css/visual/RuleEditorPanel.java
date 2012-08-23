@@ -256,7 +256,7 @@ public class RuleEditorPanel extends JPanel {
     
     //runs in EDT
     public void setModel(final Model model) {
-        LOG.log(Level.INFO, "setModel({0})", model);
+        LOG.log(Level.FINE, "setModel({0})", model);
         
         assert SwingUtilities.isEventDispatchThread();
         if(this.model == model) {
@@ -298,7 +298,7 @@ public class RuleEditorPanel extends JPanel {
                                 //TODO - the handles would be usefull as well as the elements shouldn't 
                                 //be kept outside of the ModelTask-s.
 
-                                LOG.log(Level.INFO, "found matching rule {0}", rule);
+                                LOG.log(Level.FINE, "found matching rule {0}", rule);
                                 match_ref.set(rule);
 
                             }
@@ -317,7 +317,7 @@ public class RuleEditorPanel extends JPanel {
             
             
         } else {
-            LOG.log(Level.INFO, "no rule was set before");
+            LOG.log(Level.FINE, "no rule was set before");
             //no rule was set - fire event anyway
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, rule);
         }
@@ -332,7 +332,7 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setRule(final Rule rule) {
-        LOG.log(Level.INFO, "setRule({0})", rule);
+        LOG.log(Level.FINE, "setRule({0})", rule);
         
         assert SwingUtilities.isEventDispatchThread();
         if(model == null) {
@@ -379,7 +379,7 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setNoRuleState() {
-        LOG.log(Level.INFO, "setNoRuleState()");
+        LOG.log(Level.FINE, "setNoRuleState()");
         
         assert SwingUtilities.isEventDispatchThread();
         this.rule = null;
