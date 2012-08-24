@@ -41,7 +41,7 @@ package org.netbeans.modules.maven.spi.queries;
 /**
  * Permits a project to indicate that its JAR might bundle classes from dependencies.
  * Service in project lookup. The lookup merger checks for any "no" response (i.e. default is "yes").
- * @since 2.17
+ * @since 2.55
  */
 public interface ForeignClassBundler {
 
@@ -51,5 +51,12 @@ public interface ForeignClassBundler {
      * @see org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2.Result#preferSources
      */
     boolean preferSources();
+    
+    /**
+     * typically called by the SourceForBinaryQueryImplementation when project changes to force recalculation of 
+     * the <code>preferSources()</code> value in case it depends on some complex state of the maven project.
+     * @since 2.55
+     */
+    void resetCachedValue();
 
 }

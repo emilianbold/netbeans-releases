@@ -42,14 +42,25 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.queries.Bundle.*;
 
 /**
  * Indicates that a shaded JAR should be consulted in preference to sources.
  */
 @ProjectServiceProvider(service=ForeignClassBundler.class, projectType="org-netbeans-modules-maven")
+@NbBundle.Messages({
+    "PRBL_Name=Project's main artifact is processed through maven-shade-plugin",
+    "PRBL_DESC=When the final artifact jar contains classes not originating in current project, NetBeans internal compiler cannot use the sources of the project for compilation. Then changes done in project's source code only appears in depending projects when project is recompiled. Also applies to features like Refactoring which will not be able to find usages in depending projects."
+})
+
 public class ShadePluginDetector implements ForeignClassBundler { // #155091
+    private static final ProblemReport PROBLEM_REPORT = new ProblemReport(ProblemReport.SEVERITY_MEDIUM, 
+            PRBL_Name(), PRBL_DESC(), null);
 
     private final Project project;
 
@@ -57,7 +68,12 @@ public class ShadePluginDetector implements ForeignClassBundler { // #155091
         this.project = project;
     }
 
-    @Override public boolean preferSources() {
+    private boolean calculateValue() {
+        ProblemReporter pr = project.getLookup().lookup(ProblemReporter.class);
+        if (pr != null) {
+            pr.removeReport(PROBLEM_REPORT);
+        }
+        
         NbMavenProject nbmp = project.getLookup().lookup(NbMavenProject.class);
         if (nbmp == null) {
             return true;
@@ -65,7 +81,32 @@ public class ShadePluginDetector implements ForeignClassBundler { // #155091
         if (PluginPropertyUtils.getPluginVersion(nbmp.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-shade-plugin") == null) {
             return true;
         }
-        return Boolean.valueOf(PluginPropertyUtils.getPluginProperty(nbmp.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-shade-plugin", "shadedArtifactAttached", "shade"));
+        Boolean toret = Boolean.valueOf(PluginPropertyUtils.getPluginProperty(nbmp.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-shade-plugin", "shadedArtifactAttached", "shade"));
+        if (toret == Boolean.FALSE) {
+            if (pr != null) {
+                pr.addReport(PROBLEM_REPORT);
+            }
+        }
+        return toret;
+    }
+    
+    private boolean calculated = false;
+    private boolean calculatedValue = false;
+
+
+    @Override 
+    public synchronized boolean preferSources() {
+        if (calculated) {
+            return calculatedValue;
+        }
+        calculatedValue = calculateValue(); 
+        calculated = true;
+        return calculatedValue; 
+    }
+
+    @Override
+    public synchronized void resetCachedValue() {
+        calculated = false;
     }
 
 }

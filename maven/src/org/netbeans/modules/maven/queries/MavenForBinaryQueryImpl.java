@@ -95,11 +95,15 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
+                    ForeignClassBundler bundler = p.getLookup().lookup(ForeignClassBundler.class);
+                    boolean oldprefer = bundler.preferSources();
+                    bundler.resetCachedValue();
+                    boolean preferChanged = oldprefer != bundler.preferSources();
                     synchronized (map) {
                         for (BinResult res : map.values()) {
                             FileObject[] cached = res.getCached();
                             FileObject[] current = res.getRoots();
-                            if (!Arrays.equals(cached, current)) {
+                            if (preferChanged || !Arrays.equals(cached, current)) {
                                 LOGGER.log(Level.FINE, "SFBQ.Result changed from {0} to {1}", new Object[]{Arrays.toString(cached), Arrays.toString(current)});
                                 res.fireChanged();
                             }
