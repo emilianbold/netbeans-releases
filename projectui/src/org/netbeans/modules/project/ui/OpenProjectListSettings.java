@@ -53,6 +53,9 @@ import java.util.List;
 import java.io.File;
 import java.util.prefs.Preferences;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -100,6 +103,31 @@ public class OpenProjectListSettings {
     protected final String getProperty(String key) {
         return getPreferences().get(key, null);
     }    
+    
+    private String getGroupedProperty(String key) {
+        ProjectGroup act = OpenProjects.getDefault().getActiveProjectGroup();
+        if (act != null) {
+            return getGroupPreferences(act).get(key, null);
+        }
+        return getProperty(key);
+    }
+    
+    private String putGroupedProperty(String key, String value, boolean notify) {
+        ProjectGroup act = OpenProjects.getDefault().getActiveProjectGroup();
+        if (act != null) {
+            Preferences prefs = getGroupPreferences(act);
+            String retvalue = prefs.get(key, null);
+            if (value != null) {
+                prefs.put(key, value);
+            } else {
+                prefs.remove(key);
+            }
+            return retvalue;
+        }
+        return putProperty(key, value, notify);
+        
+    }
+    
     
     protected final List<URL> getURLList(String key) {
         List<String> strs = getStringList(key);
@@ -196,6 +224,11 @@ public class OpenProjectListSettings {
         return NbPreferences.forModule(OpenProjectListSettings.class);
     }
 
+    protected final Preferences getGroupPreferences(ProjectGroup group) {
+        return group.preferencesForPackage(OpenProjectListSettings.class);
+    }
+    
+
     public List<URL> getOpenProjectsURLs() {
         return getURLList(OPEN_PROJECTS_URLS);
     }
@@ -254,7 +287,7 @@ public class OpenProjectListSettings {
     }
     
     public String getLastOpenProjectDir() {
-        String result = getProperty( LAST_OPEN_PROJECT_DIR );
+        String result = getGroupedProperty( LAST_OPEN_PROJECT_DIR );
         if (result == null) {
             result = getProjectsFolder(/* #89624 */false).getAbsolutePath();
         }
@@ -262,7 +295,7 @@ public class OpenProjectListSettings {
     }
     
     public void setLastOpenProjectDir( String path ) {
-        putProperty( LAST_OPEN_PROJECT_DIR, path, true  );
+        putGroupedProperty( LAST_OPEN_PROJECT_DIR, path, true  );
     }
     
     public List<URL> getRecentProjectsURLs() {

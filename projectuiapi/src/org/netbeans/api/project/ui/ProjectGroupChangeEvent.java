@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.api.project.ui;
 
-package org.netbeans.modules.project.uiapi;
+import java.util.EventObject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
-import java.beans.PropertyChangeListener;
-import java.util.concurrent.Future;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.ProjectGroup;
-import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 
 /**
- * List of projects open in the GUI.
- * @author Petr Hrebejk
+ * event describing the change of active project group by the user.
+ * @author mkleint
+ * @since 1.61
  */
-public interface OpenProjectsTrampoline {
-
-    public Project[] getOpenProjectsAPI();
-
-    public void openAPI (Project[] projects, boolean openRequiredProjects, boolean showProgress);
-
-    public void closeAPI (Project[] projects);
-
-    public void addPropertyChangeListenerAPI( PropertyChangeListener listener, Object source );
-
-    public Future<Project[]> openProjectsAPI();
-
-    public void removePropertyChangeListenerAPI( PropertyChangeListener listener );
+public final class ProjectGroupChangeEvent extends EventObject {
+    private final ProjectGroup newGroup;
+    private final ProjectGroup oldGroup;
     
-    public Project getMainProject();
-    
-    public void setMainProject(Project project);
-    
-    public ProjectGroup getActiveProjectGroupAPI();
+    public ProjectGroupChangeEvent(@NullAllowed ProjectGroup o, @NullAllowed ProjectGroup n) {
+        super(OpenProjects.getDefault());
+        this.oldGroup = o;
+        this.newGroup = n;
+    }
 
-    public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener);
+    /**
+     * the newly current project group, can be null
+     * @return 
+     */
+    public @CheckForNull ProjectGroup getNewGroup() {
+        return newGroup;
+    }
 
-    public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener);
- 
+    /**
+     * the previous active project group, can be null
+     * @return 
+     */
+    public @CheckForNull ProjectGroup getOldGroup() {
+        return oldGroup;
+    }
 }
+
