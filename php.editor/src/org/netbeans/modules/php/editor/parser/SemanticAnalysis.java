@@ -367,6 +367,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 Expression expr = node.getField().getName();
                 (new FieldAccessVisitor(ColoringAttributes.FIELD_SET)).scan(expr);
             }
+            scan(node.getField());
             super.scan(node.getDispatcher());
         }
 

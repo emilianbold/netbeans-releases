@@ -8,6 +8,8 @@
         <folder name="text">
             <folder name="javascript">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
+
+                <!-- colors -->
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -17,17 +19,30 @@
                         </folder>
                     </folder>
                 </folder>
+
                 <!-- custom editor folding -->
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
                 </folder>
-                
+
+                <!-- code templates -->
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-javascript2-editor-codetemplates.xml" url="codetemplates.xml">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
                         </file>
                     </folder>
+                </folder>
+
+                <!-- file popup menu -->
+                <folder name="Popup">
+                    <file name="select-connection">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                        <attr name="position" intvalue="110"/>
+                    </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
                 
             </folder>
@@ -173,11 +188,12 @@
     </folder>
 
     <folder name="OptionsDialog">
-        <!--        <folder name="PreviewExamples">
+        <folder name="PreviewExamples">
             <folder name="text">
                 <file name="javascript" url="JsExample"/>
+                <file name="x-json" url="JsonExample.json"/>
             </folder>
-        </folder>-->
+        </folder>
         <folder name="Editor">
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>

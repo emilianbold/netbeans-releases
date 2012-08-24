@@ -404,7 +404,8 @@ public class FormatVisitor extends NodeVisitor {
                 FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
                         JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
                 if (rightBrace != null) {
-                    previous = findPreviousVirtual(rightBrace, FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS);
+                    previous = findVirtualToken(rightBrace,
+                            FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS, true);
                     assert previous != null
                             && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                     tokenStream.removeToken(previous);
@@ -541,23 +542,26 @@ public class FormatVisitor extends NodeVisitor {
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
                         // we remove blindly inserted binary op markers
-                        FormatToken toRemove = findPreviousVirtual(formatToken,
-                                FormatToken.Kind.BEFORE_BINARY_OPERATOR);
+                        FormatToken toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
-                        toRemove = findPreviousVirtual(formatToken, FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP);
+                        toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP, true);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
                         tokenStream.removeToken(toRemove);
 
-                        toRemove = formatToken.next();
-                        while (toRemove != null && toRemove.isVirtual()
-                                && toRemove.getKind() != FormatToken.Kind.AFTER_BINARY_OPERATOR) {
-                            toRemove = toRemove.next();
-                        }
+                        toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.AFTER_BINARY_OPERATOR, false);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
+                        tokenStream.removeToken(toRemove);
+                        toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP, false);
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP : toRemove;
                         tokenStream.removeToken(toRemove);
                     }
 
@@ -583,6 +587,7 @@ public class FormatVisitor extends NodeVisitor {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
                 }
                 appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+                appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
                 FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
                 if (colon != null) {
                     previous = colon.previous();
@@ -591,6 +596,7 @@ public class FormatVisitor extends NodeVisitor {
                         appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
                     }
                     appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+                    appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
                 }
             }
         }
@@ -1173,11 +1179,12 @@ public class FormatVisitor extends NodeVisitor {
                 && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
     }
 
-    private static FormatToken findPreviousVirtual(FormatToken token, FormatToken.Kind kind) {
-        FormatToken result = token.previous();
+    private static FormatToken findVirtualToken(FormatToken token, FormatToken.Kind kind,
+            boolean backwards) {
+        FormatToken result = backwards ? token.previous() : token.next();
         while (result != null && result.isVirtual()
                 && result.getKind() != kind) {
-            result = result.previous();
+            result = backwards ? result.previous() : result.next();;
         }
         return result;
     }

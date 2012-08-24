@@ -1415,12 +1415,12 @@ public class VariousUtils {
 
     public static boolean isPrimitiveType(String typeName) {
         boolean retval = false;
-        if (typeName.toLowerCase().equals("bool") || typeName.toLowerCase().equals("boolean") || typeName.toLowerCase().equals("int")
-                || typeName.toLowerCase().equals("integer") || typeName.toLowerCase().equals("float") || typeName.toLowerCase().equals("real")
-                || typeName.toLowerCase().equals("array") || typeName.toLowerCase().equals("object") || typeName.toLowerCase().equals("mixed")
-                || typeName.toLowerCase().equals("number") || typeName.toLowerCase().equals("callback") || typeName.toLowerCase().equals("resource")
-                || typeName.toLowerCase().equals("double") || typeName.toLowerCase().equals("string") || typeName.toLowerCase().equals("null")
-                || typeName.toLowerCase().equals("void")) { //NOI18N
+        if ("bool".equals(typeName) || "boolean".equals(typeName) || "int".equals(typeName)
+                || "integer".equals(typeName) || "float".equals(typeName) || "real".equals(typeName)
+                || "array".equals(typeName) || "object".equals(typeName) || "mixed".equals(typeName)
+                || "number".equals(typeName) || "callback".equals(typeName) || "resource".equals(typeName)
+                || "double".equals(typeName) || "string".equals(typeName) || "null".equals(typeName)
+                || "void".equals(typeName)) { //NOI18N
             retval = true;
         }
         return retval;

@@ -80,6 +80,7 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
     public InstantiatingIterator getInstantiatingIterator() {
         return new ServerWizardIterator(new ServerDetails[] { 
             ServerDetails.GLASSFISH_SERVER_3_1_1, 
+            ServerDetails.GLASSFISH_SERVER_3_1_2_2,
             ServerDetails.GLASSFISH_SERVER_3_1_2,
             ServerDetails.GLASSFISH_SERVER_4_0,
             ServerDetails.GLASSFISH_SERVER_3_0_1, 
