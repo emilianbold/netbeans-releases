@@ -64,6 +64,8 @@ public class ExtDocDocumentationProvider implements JsDocumentationProvider {
     private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
             Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
 
+    private static final SyntaxProvider SYNTAX_PROVIDER = new ExtDocSyntaxProvider();
+
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
         return new ExtDocDocumentationHolder(snapshot);
@@ -89,6 +91,6 @@ public class ExtDocDocumentationProvider implements JsDocumentationProvider {
 
     @Override
     public SyntaxProvider getSyntaxProvider() {
-        return null;
+        return SYNTAX_PROVIDER;
     }
 }
