@@ -111,14 +111,7 @@ public final class ClassMemberFilters extends Filters<Description> {
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
                 true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
                 null
-        );
-        desc.addFilter(SHOW_INNER_CLASSES,
-                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClasses"),     //NOI18N
-                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClassesTip"),     //NOI18N
-                true,
-                ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet()),
-                null
-        );
+        );        
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
@@ -131,7 +124,13 @@ public final class ClassMemberFilters extends Filters<Description> {
                 true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png", false), //NOI18N
                 null
         );
-        
+        desc.addFilter(SHOW_INNER_CLASSES,
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClasses"),     //NOI18N
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInnerClassesTip"),     //NOI18N
+                true,
+                ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet()),
+                null
+        );
         return FiltersDescription.createManager(desc);
     }
 
