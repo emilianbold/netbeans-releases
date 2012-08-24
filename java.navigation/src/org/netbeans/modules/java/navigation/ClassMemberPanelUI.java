@@ -251,6 +251,11 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
         RP.execute(refresh);
     }
 
+    void scheduleJavadocRefresh(final int time) {
+        jdocFinder.cancel();
+        jdocTask.schedule(time);
+    }
+
     void refresh( final Description description ) {
         
         final ElementNode rootNode = getRootNode();
@@ -600,8 +605,7 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
                 selectedNodes.add(n);
             }
             if (newNodes.length > 0 && JavadocTopComponent.shouldUpdate()) {
-                jdocFinder.cancel();
-                jdocTask.schedule(JDOC_TIME);
+                scheduleJavadocRefresh(JDOC_TIME);
             }
         } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
             NbPreferences.forModule(ClassMemberPanelUI.class)

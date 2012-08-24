@@ -268,6 +268,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             final TopComponent win = JavadocTopComponent.findInstance();
             if (win != null && !win.isShowing()) {
                 win.open();
+                win.requestVisible();
                 jdocTask.schedule(NOW);
             }
         } else if (historyCombo == e.getSource()) {
