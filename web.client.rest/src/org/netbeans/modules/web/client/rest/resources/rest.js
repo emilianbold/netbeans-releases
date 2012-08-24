@@ -34,16 +34,24 @@ var app = {
 (function(views) {
     
     views.ListView = Backbone.View.extend({
+    <#if ui??>
+        tagName:'tbody',
+    <#else>
         tagName:'ul',
+    </#if>
         initialize:function () {
             
             this.model.bind("reset", this.render, this);
             var self = this;
             this.model.bind("add", function (modelName) {
-                $(self.el).append(new views.ListItemView({
+		var row = new views.ListItemView({
                     model:modelName,
                     templateName: self.options.templateName
-                }).render().el);
+                }).render().el;
+                $(self.el).append($(row));
+	    <#if ui??>
+		$(self.el).parent().trigger('addRows', [$(row)]);
+	    </#if>
             });
         },
  
@@ -60,7 +68,11 @@ var app = {
     });
 
     views.ListItemView = Backbone.View.extend({  
+    <#if ui??>
+        tagName:'tr',
+    <#else>
         tagName:"li",
+    </#if>
         
         initialize:function () {
             this.model.bind("change", this.render, this);
@@ -77,13 +89,24 @@ var app = {
         },
         
         render:function (eventName) {
+        <#if ui??>
+            $(this.el).html(this.template(this.model.toJSON()));
+        <#else>
             $(this.el).html(this.template(this.model.toViewJson()));
+        </#if>
             return this;
         },
         
         close:function () {
+        <#if ui??>
+	    var table = $(this.el).parent().parent();
+            table.trigger('disable.pager');
+        </#if>
             $(this.el).unbind();
             $(this.el).remove();
+        <#if ui??>
+  	    table.trigger('enable.pager');
+        </#if>
         }
         
     });
@@ -95,7 +118,11 @@ var app = {
         },
  
         render:function (eventName) {
+        <#if ui??>
+            $(this.el).html(this.template(this.model.toJSON()));
+        <#else>
             $(this.el).html(this.template(this.model.toViewJson()));
+        </#if>
             return this;
         },
         
@@ -138,6 +165,9 @@ var app = {
                 });
             } else {
                 this.model.save();
+            <#if ui??>
+		this.model.el.parent().parent().trigger("update");
+            </#if>
             }
             return false;
         },
