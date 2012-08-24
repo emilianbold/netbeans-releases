@@ -81,6 +81,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     //holds a reference to the RuleEditorTC top component
     private CssCslParserResult lastResult;
 
+    private RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
+    
     public CssCaretAwareSourceTask() {
         RuleEditorTCController.init();
     }
@@ -157,7 +159,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
         final RuleEditorTC ruleEditorTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
         if (ruleEditorTC != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     if (cancelled) {
