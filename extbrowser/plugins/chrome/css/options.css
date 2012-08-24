@@ -170,9 +170,6 @@ button.disabled, button[disabled=disabled], .button.disabled {
 #presetCustomizerTable input.error {
     color: red;
 }
-#presetCustomizerTable .number {
-    text-align: right;
-}
 #presetCustomizerTable .toolbar {
     text-align: center;
 }
