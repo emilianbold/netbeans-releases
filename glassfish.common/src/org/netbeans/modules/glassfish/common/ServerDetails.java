@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.spi.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -105,12 +107,25 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2(?:\\.[0-9]+|)"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2"}, // NOI18N
+        new String[0],
+        312,
+        "http://download.java.net/glassfish/3.1.2/release/glassfish-3.1.2-ml.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
+    ),
+
+    /**
+     * details for an instance of GlassFish Server 3.1.2.2
+     */
+    GLASSFISH_SERVER_3_1_2_2(NbBundle.getMessage(ServerDetails.class, "STR_3122_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2.[0-9]{1,2}"}, // NOI18N
         new String[0],
         312,
         "http://download.java.net/glassfish/3.1.2.2/release/glassfish-3.1.2.2-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
     ),
+
     /**
      * details for an instance of GlassFish Server 4.0.0
      */
@@ -132,6 +147,8 @@ public enum ServerDetails {
         ServerDetails sd = null;
         if (GLASSFISH_SERVER_4_0.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_4_0;
+        } else if (GLASSFISH_SERVER_3_1_2_2.isInstalledInDirectory(glassfishDir)) {
+            sd = GLASSFISH_SERVER_3_1_2_2;
         } else if (GLASSFISH_SERVER_3_1_2.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_3_1_2;
         } else if (GLASSFISH_SERVER_3_1_1.isInstalledInDirectory(glassfishDir)){
