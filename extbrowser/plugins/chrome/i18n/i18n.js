@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "__MSG__pluginName__",
-  "version": "0.4.21",
 
-  "background_page": "html/main.html",
+var I18n = {
 
-  "options_page": "html/options.html",
+    /**
+     * Get message for the given key (and optional substitutions).
+     */
+    message: function(messageKey, substitutions) {
+        return chrome.i18n.getMessage(messageKey, substitutions);
+    },
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
-
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "debugger"
-  ],
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  },
-
-  "default_locale": "en"
+    /**
+     * Translate page title.
+     */
+    pageTitle: function() {
+        document.title = this.message(document.title);
+    },
+    /**
+     * Translate text (content) of the element with the given identifier.
+     */
+    element: function(elementId) {
+        var element = document.getElementById(elementId);
+        element.innerHTML = this.message(element.innerHTML);
+    },
+    /**
+     * Translate text (content) of the given elements.
+     */
+    elements: function(elements) {
+        for (var index in elements) {
+            var element = elements[index];
+            element.innerHTML = this.message(element.innerHTML);
+        }
+    },
+    /**
+     * Translate given attribute of the element with the given identifier.
+     */
+    attribute: function(elementId, attrname) {
+        var element = document.getElementById(elementId);
+        element.setAttribute(attrname, this.message(element.getAttribute(attrname)));
+    },
+    /**
+     * Translate text (content) and given attribute of the element with the given identifier.
+     */
+    elementAttribute: function(elementId, attrname) {
+        var element = document.getElementById(elementId);
+        element.innerHTML = this.message(element.innerHTML);
+        element.setAttribute(attrname, this.message(element.getAttribute(attrname)));
+    }
 
 }

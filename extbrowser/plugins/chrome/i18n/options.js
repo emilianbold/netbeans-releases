@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "__MSG__pluginName__",
-  "version": "0.4.21",
 
-  "background_page": "html/main.html",
-
-  "options_page": "html/options.html",
-
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
-
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "debugger"
-  ],
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  },
-
-  "default_locale": "en"
-
-}
+window.addEventListener('load', function() {
+    I18n.pageTitle();
+    // texts
+    I18n.attribute('closePresetCustomizer', 'title');
+    I18n.element('title');
+    I18n.element('perex');
+    I18n.element('sizes');
+    // table
+    I18n.elements(document.getElementById('presetCustomizerTable').getElementsByTagName('thead')[0].getElementsByTagName('th'));
+    // preset buttons
+    I18n.elementAttribute('addPreset', 'title');
+    I18n.elementAttribute('removePreset', 'title');
+    I18n.elementAttribute('moveUpPreset', 'title');
+    I18n.elementAttribute('moveDownPreset', 'title');
+    // main buttons
+    I18n.elementAttribute('presetCustomizerOk', 'title');
+    I18n.elementAttribute('presetCustomizerCancel', 'title');
+    I18n.elementAttribute('presetCustomizerHelp', 'title');
+}, false);
