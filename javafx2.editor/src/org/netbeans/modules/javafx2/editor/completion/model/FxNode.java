@@ -160,7 +160,10 @@ public abstract class FxNode {
     }
     
     void addChild(FxNode child) {
-        child.model = model;
+    }
+    
+    void setModel(FxModel model) {
+        this.model = model;
     }
     
     public FxModel  getRoot() {
