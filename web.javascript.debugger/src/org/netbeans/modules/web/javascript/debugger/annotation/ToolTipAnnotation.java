@@ -289,6 +289,7 @@ public class ToolTipAnnotation extends Annotation
         } catch (BadLocationException ble) {
             return null;
         }
+        column = Math.min(column, t.length());
         int identStart = column;
         while (identStart > 0 &&
                 (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) ||
