@@ -453,6 +453,10 @@ NetBeans_Preset.NETBOOK = {
     ident: 'NETBOOK',
     title: I18n.message('_Netbook')
 };
+NetBeans_Preset.WIDESCREEN = {
+    ident: 'WIDESCREEN',
+    title: I18n.message('_Widescreen')
+};
 // preset type for Tablets (Landscape)
 NetBeans_Preset.TABLET_LANDSCAPE = {
     ident: 'TABLET_LANDSCAPE',
@@ -478,6 +482,7 @@ NetBeans_Preset.allTypes = function() {
     return [
         NetBeans_Preset.DESKTOP,
         NetBeans_Preset.NETBOOK,
+        NetBeans_Preset.WIDESCREEN,
         NetBeans_Preset.TABLET_LANDSCAPE,
         NetBeans_Preset.TABLET_PORTRAIT,
         NetBeans_Preset.SMARTPHONE_LANDSCAPE,

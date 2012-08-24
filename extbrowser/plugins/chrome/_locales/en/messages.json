@@ -32,6 +32,9 @@
     "_Netbook": {
         "message": "Netbook"
     },
+    "_Widescreen": {
+        "message": "Widescreen"
+    },
     "_TabletLandscape": {
         "message": "Tablet Landscape"
     },
