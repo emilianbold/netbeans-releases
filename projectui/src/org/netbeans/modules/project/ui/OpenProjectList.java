@@ -91,6 +91,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.netbeans.modules.project.ui.groups.Group;
@@ -184,6 +187,7 @@ public final class OpenProjectList {
     
     private PropertyChangeListener infoListener;
     private final LoadOpenProjects LOAD;
+    private final ArrayList<ProjectGroupChangeListener> projectGroupSupport;
     
     OpenProjectList() {
         LOAD = new LoadOpenProjects(0);
@@ -200,6 +204,7 @@ public final class OpenProjectList {
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
         recentTemplates = new ArrayList<String>();
+        projectGroupSupport = new ArrayList<ProjectGroupChangeListener>();
     }
     
            
@@ -261,6 +266,45 @@ public final class OpenProjectList {
     private List<String> getRecentTemplates() {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         return recentTemplates;
+    }
+    
+
+    void addProjectGroupChangeListener(ProjectGroupChangeListener listener) {
+        synchronized (projectGroupSupport) {
+            projectGroupSupport.add(listener);
+        }
+    }
+    
+    void removeProjectGroupChangeListener(ProjectGroupChangeListener listener) {
+        synchronized (projectGroupSupport) {
+            projectGroupSupport.remove(listener);
+        }
+    }
+    
+    public void fireProjectGroupChanging(Group oldGroup, Group newGroup) {
+        List<ProjectGroupChangeListener> list = new ArrayList<ProjectGroupChangeListener>();
+        synchronized (projectGroupSupport) {
+            list.addAll(projectGroupSupport);
+        }
+        ProjectGroup o = oldGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(oldGroup.getName(), oldGroup.prefs()) : null;
+        ProjectGroup n = newGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(newGroup.getName(), newGroup.prefs()) : null;
+        ProjectGroupChangeEvent event = new ProjectGroupChangeEvent(o, n);
+        for (ProjectGroupChangeListener l : list) {
+            l.projectGroupChanging(event);
+        }
+    }
+    
+    public void fireProjectGroupChanged(Group oldGroup, Group newGroup) {
+        List<ProjectGroupChangeListener> list = new ArrayList<ProjectGroupChangeListener>();
+        synchronized (projectGroupSupport) {
+            list.addAll(projectGroupSupport);
+        }
+        ProjectGroup o = oldGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(oldGroup.getName(), oldGroup.prefs()) : null;
+        ProjectGroup n = newGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(newGroup.getName(), newGroup.prefs()) : null;
+        ProjectGroupChangeEvent event = new ProjectGroupChangeEvent(o, n);
+        for (ProjectGroupChangeListener l : list) {
+            l.projectGroupChanged(event);
+        }
     }
     
     private final class LoadOpenProjects implements Runnable, LookupListener, Future<Project[]> {

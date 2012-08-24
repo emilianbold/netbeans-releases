@@ -50,6 +50,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -62,6 +63,9 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -84,7 +88,10 @@ import org.openide.util.lookup.ServiceProviders;
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private final PropertyChangeListener projectListener;
+    private final ProjectGroupChangeListener groupListener;
     private final ChangeSupport cs = new ChangeSupport(this);
+
+    private static final AtomicReference<Preferences> prefs = new AtomicReference<Preferences>(NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"));
 
     private static final Logger LOG = Logger.getLogger(MavenFileOwnerQueryImpl.class.getName());
     
@@ -98,6 +105,22 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                 }
             }
         };
+        groupListener = new ProjectGroupChangeListener() {
+
+            @Override
+            public void projectGroupChanging(ProjectGroupChangeEvent event) {
+                Preferences old = prefs();
+                Preferences n = event.getNewGroup() != null ? event.getNewGroup().preferencesForPackage(MavenFileOwnerQueryImpl.class).node("externalOwners") : NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners");
+                prefs.compareAndSet(old, n);
+    }
+    
+            @Override
+            public void projectGroupChanged(ProjectGroupChangeEvent event) {
+                //TODO should we check what projects were kept open and register them with current group?
+            }
+        };
+        //not worth making weak, both are singletons kept forever
+        OpenProjects.getDefault().addProjectGroupChangeListener(groupListener);
     }
     
     public static MavenFileOwnerQueryImpl getInstance() {
@@ -368,6 +391,6 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
 
     static Preferences prefs() {
-        return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"); // NOI18N
+        return prefs.get();
     }
 }

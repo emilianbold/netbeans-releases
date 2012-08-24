@@ -171,10 +171,12 @@ public abstract class Group {
         if (projectsLoaded) {
             // OK if g == old; still want to fix open projects.
             switchingGroup.set(true);
+            OpenProjectList.getDefault().fireProjectGroupChanging(old, getActiveGroup());
             try {
                 open(nue);
             } finally {
                 switchingGroup.set(false);
+                OpenProjectList.getDefault().fireProjectGroupChanged(old, getActiveGroup());
             }
         } else {
             OpenProjectListSettings settings = OpenProjectListSettings.getInstance();
@@ -252,7 +254,7 @@ public abstract class Group {
         assert id.indexOf('/') == -1;
     }
 
-    protected Preferences prefs() {
+    public Preferences prefs() {
         return NODE.node(id);
     }
 
