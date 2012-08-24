@@ -56,6 +56,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -134,6 +135,7 @@ public class CssIdsVisitor implements ElementVisitor {
         if (referredFilesWithTheId.isEmpty()) {
             //unknown id
             hints.add(new MissingCssElement(rule,
+                    NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssId"),
                     context,
                     getAttributeValueOffsetRange(attribute, context),
                     filesWithTheId));
