@@ -151,6 +151,18 @@ public final class ODSClientImpl implements ODSClient {
     }
 
     @Override
+    public List<Project> getWatchedProjects () throws ODSException {
+        return run(new Callable<List<Project>> () {
+            @Override
+            public List<Project> call () throws Exception {
+                ProjectsQuery query = new ProjectsQuery(ProjectRelationship.WATCHER, null);
+                QueryResult<Project> res = profileClient.findProjects(query);
+                return res.getResultPage();
+            }
+        }, profileClient, PROFILE_SERVICE);
+    }
+
+    @Override
     public boolean isWatchingProject (final String projectId) throws ODSException {
         return Boolean.TRUE.equals(run(new Callable<Boolean> () {
             @Override

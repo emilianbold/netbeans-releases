@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
@@ -96,6 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.ods.versioning.Bundle.*;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
@@ -410,7 +412,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    List<ProjectHandle<ODSProject>> openedProjects = getOpenProjects();
+                    ProjectHandle<ODSProject>[] openedProjects = getOpenProjects();
                     if (openedProjects != null) {
                         for (final ProjectHandle<ODSProject> prjHandle : openedProjects) {
                             if(prjHandle == null) {
@@ -460,41 +462,41 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     }
                 }
 
-                private List<ProjectHandle<ODSProject>> getOpenProjects() {
+                private ProjectHandle<ODSProject>[] getOpenProjects() {
                     if (server == null) {
-                        return Collections.emptyList();
+                        return new ProjectHandle[0];
                     }
-//                    String cloudName = server.getUrl().getHost();
+                    String cloudName = server.getUrl().getHost();
                     
                     // XXX do we need this for ODS projects? >>>>>>>>>>>>>>>>>>>>>>>>>>
                     // XXX define a different place for preferences. here as well as at all other places.
-//                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(cloudName) ? "" : "-" + cloudName)); //NOI18N
-//                    int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
-//                    ProjectHandle[] handles = new ProjectHandle[count];
-//                    ArrayList<String> ids = new ArrayList<String>(count);
-//                    for (int i = 0; i < count; i++) {
-//                        String id = prefs.get(DefaultDashboard.PREF_ID + i, null); //NOI18N
-//                        if (null != id && id.trim().length() > 0) {
-//                            ids.add(id.trim());
-//                        }
-//                    }
-//
-//                    for (String id : ids) {
-//                        ProjectHandle handle = projectAcccessor.getNonMemberProject(server, id, false);
-//                        if (handle != null) {
-//                            projects.add(handle);
-//                        } else {
-//                            //projects=null;
-//                        }
-//                    }
-                    // XXX do we need this for ODS projects? <<<<<<<<<<<<<<<<<<<<<<<<<<<
+                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(cloudName) ? "" : "-" + cloudName)); //NOI18N
+                    int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
+                    ProjectHandle[] handles = new ProjectHandle[count];
+                    ArrayList<String> ids = new ArrayList<String>(count);
+                    for (int i = 0; i < count; i++) {
+                        String id = prefs.get(DefaultDashboard.PREF_ID + i, null); //NOI18N
+                        if (null != id && id.trim().length() > 0) {
+                            ids.add(id.trim());
+                        }
+                    }
+
+                    HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
+                    ProjectAccessor<CloudUiServer, ODSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
+                    for (String id : ids) {
+                        ProjectHandle handle = projectAcccessor.getNonMemberProject(server, id, false);
+                        if (handle != null) {
+                            projects.add(handle);
+                        } else {
+                            //projects=null;
+                        }
+                    }
                     
                     PasswordAuthentication pa = server.getPasswordAuthentication();
-                    if (pa == null) {
-                        return Collections.emptyList();
+                    if (pa != null) {
+                        projects.addAll(projectAcccessor.getMemberProjects(server, new LoginHandleImpl(pa.getUserName()), false));
                     }
-                    ProjectAccessor<CloudUiServer, ODSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
-                    return projectAcccessor.getMemberProjects(server, new LoginHandleImpl(pa.getUserName()), false);
+                    return projects.toArray(handles);
                 }
             });
         }

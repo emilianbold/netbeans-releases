@@ -167,6 +167,11 @@ public final class ODSMockClient implements ODSClient {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public List<Project> getWatchedProjects () throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private JobDetails convertToJobDetails(JobSummary jobSummary) {
         JobDetails jobDetails = new JobDetails();
 

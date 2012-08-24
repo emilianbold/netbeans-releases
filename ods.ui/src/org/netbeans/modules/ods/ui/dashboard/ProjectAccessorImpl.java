@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.ods.ui.dashboard;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.ods.ui.project.DetailsAction;
 import java.awt.event.ActionEvent;
 import java.util.List;
@@ -49,16 +50,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.ods.api.CloudServer;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.ui.OpenProjectAction;
 import org.netbeans.modules.ods.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.ods.ui.api.OdsUIUtil;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
+import static org.netbeans.modules.ods.ui.dashboard.Bundle.*;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -106,7 +116,14 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getOpenNonMemberProjectAction() {
-        return null;
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
+                assert ts instanceof CloudUiServer;
+                new OpenProjectAction((CloudUiServer) ts).actionPerformed(new ActionEvent(ts, ActionEvent.ACTION_PERFORMED, null));
+            }
+        };
     }
 
     @Override
@@ -158,68 +175,59 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
+    @Messages({"LBL_ReallyLeave=Really leave this project?", "LBL_ReallyLeaveTitle=Leave Project"})
     public Action getBookmarkAction(final ProjectHandle<ODSProject> project) {
-        // XXX is bookmark the same as watch?
-//        return new AbstractAction() {
-//            public void actionPerformed(ActionEvent e) {
-//                Kenai kenai = project.getProject().getKenai();
-//                try {
-//                    if (kenai.getStatus()==Kenai.Status.OFFLINE) {
-//                        UIUtils.showLogin(kenai);
-//                        return;
-//                    }
-//                    if (kenai.getMyProjects().contains(project.getProject())) {
-//                        if (JOptionPane.YES_OPTION != 
-//                                JOptionPane.showConfirmDialog(
-//                                WindowManager.getDefault().getMainWindow(),
-//                                NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeave"),
-//                                NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeaveTitle"),
-//                                JOptionPane.YES_NO_OPTION)) {
-//                            return;
-//                        }
-//                    }
-//                } catch (KenaiException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//                DashboardImpl.getInstance().bookmarkingStarted();
-//                RequestProcessor.getDefault().post(new Runnable() {
-//                    public void run() {
-//                        try {
-//                            Project prj = project.getProject();
-//                            if (prj.getKenai().getMyProjects().contains(prj)) {
-//                                unbookmark(prj);
-//                            } else {
-//                                bookmark(prj);
-//                            }
-//                        } catch (KenaiException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        } finally {
-//                            SwingUtilities.invokeLater(new Runnable() {
-//                                public void run() {
-//                                    DashboardImpl.getInstance().bookmarkingFinished();
-//                                }
-//                            });
-//                        }
-//                    }
-//                });
-//            }
-//        };
-        return null;
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                final CloudServer server = project.getTeamProject().getServer();
+                try {
+                    if (!server.isLoggedIn()) {
+                        OdsUIUtil.showLogin(server);
+                        return;
+                    }
+                    if (server.getWatchedProjects(enabled).contains(project.getTeamProject())) {
+                        if (JOptionPane.YES_OPTION
+                                != JOptionPane.showConfirmDialog(
+                                WindowManager.getDefault().getMainWindow(),
+                                LBL_ReallyLeave(),
+                                LBL_ReallyLeaveTitle(),
+                                JOptionPane.YES_NO_OPTION)) {
+                            return;
+                        }
+                    }
+                } catch (ODSException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                final DefaultDashboard<CloudUiServer, ODSProject> dashboard = CloudUiServer.forServer(server).getDashboard();
+                dashboard.bookmarkingStarted();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            ODSProject prj = project.getTeamProject();
+                            if (server.getMyProjects().contains(prj)) {
+                                server.unwatch(prj);
+                            } else {
+                                server.watch(prj);
+                            }
+                        } catch (ODSException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    dashboard.bookmarkingFinished();
+                                    dashboard.refreshMemberProjects(false);
+                                    dashboard.refreshMemberProjects(true);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        };
     }
-
-//    private void unbookmark(Project prj) throws KenaiException {
-//        String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
-//         + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
-//        KenaiUser user = KenaiUser.forName(fullName);
-//        prj.deleteMember(user);
-//    }
-//
-//    private void bookmark(Project prj) throws KenaiException {
-//        String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
-//         + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
-//        KenaiUser user = KenaiUser.forName(fullName);
-//        prj.addMember(user, Role.OBSERVER);
-//    }
 
     @Override
     public Action getNewTeamProjectAction() {

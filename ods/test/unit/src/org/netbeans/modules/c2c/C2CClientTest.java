@@ -185,10 +185,16 @@ public class C2CClientTest extends NbTestCase  {
         String projectIdent = "qatestingproject";
         client.unwatchProject(projectIdent);
         assertFalse(client.isWatchingProject(projectIdent));
+        List<Project> watchedProjects = client.getWatchedProjects();
+        assertTrue(watchedProjects.isEmpty());
         client.watchProject(projectIdent);
+        watchedProjects = client.getWatchedProjects();
+        assertFalse(watchedProjects.isEmpty());
         assertTrue(client.isWatchingProject(projectIdent));
         client.unwatchProject(projectIdent);
         assertFalse(client.isWatchingProject(projectIdent));
+        watchedProjects = client.getWatchedProjects();
+        assertTrue(watchedProjects.isEmpty());
     }
     
     public void testGetRecentActivities () throws Exception {

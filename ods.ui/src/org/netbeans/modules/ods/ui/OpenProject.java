@@ -39,50 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.client.api;
+package org.netbeans.modules.ods.ui;
 
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
-import com.tasktop.c2c.server.profile.domain.project.Profile;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.util.List;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.ui.api.CloudUiServer;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author jpeska
+ * @author Ondrej Vrabec
  */
-public interface ODSClient {
+class OpenProject {
+    private final CloudUiServer server;
 
+    public OpenProject (CloudUiServer server) {
+        this.server = server;
+    }
 
-    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws ODSException;
+    boolean showDialog () {
+        return true;
+    }
 
-    Profile getCurrentProfile() throws ODSException;
-
-    HudsonStatus getHudsonStatus(String projectId) throws ODSException;
-
-    JobDetails getJobDetails(String projectId, final String jobName) throws ODSException;
-
-    List<Project> getMyProjects() throws ODSException;
-
-    Project getProjectById(final String projectId) throws ODSException;
-
-    List<ProjectActivity> getRecentActivities(final String projectId) throws ODSException;
-
-    List<ProjectActivity> getRecentShortActivities(final String projectId) throws ODSException;
-
-    List<ScmRepository> getScmRepositories(String projectId) throws ODSException;
-
-    List<Project> getWatchedProjects () throws ODSException;
+    ODSProject[] getSelectedProjects () {
+        try {
+            ODSProject p = server.getServer().getProject("qatestingproject", true);
+            return new ODSProject[] { p };
+        } catch (ODSException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new ODSProject[0];
+    }
     
-    boolean isWatchingProject(final String projectId) throws ODSException;
-
-    List<Project> searchProjects(final String pattern) throws ODSException;
-
-    void unwatchProject(final String projectId) throws ODSException;
-
-    void watchProject(final String projectId) throws ODSException;
-
 }

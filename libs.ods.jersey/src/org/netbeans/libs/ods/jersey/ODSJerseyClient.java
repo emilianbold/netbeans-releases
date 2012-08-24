@@ -107,6 +107,11 @@ public class ODSJerseyClient implements ODSClient {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public List<Project> getWatchedProjects () throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private Client getClient() {
         ClientConfig clientConfig = new DefaultClientConfig();
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
