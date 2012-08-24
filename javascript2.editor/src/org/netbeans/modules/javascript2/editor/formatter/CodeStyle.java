@@ -605,6 +605,10 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterBinaryOps() {
+        return preferences.getBoolean(wrapAfterBinaryOps, getDefaultAsBoolean(wrapAfterBinaryOps));
+    }
+    
     public WrapStyle wrapTernaryOps() {
         String wrap = preferences.get(wrapTernaryOps, getDefaultAsString(wrapTernaryOps));
         return WrapStyle.valueOf(wrap);
@@ -613,6 +617,10 @@ public final class CodeStyle {
     public WrapStyle wrapAssignOps() {
         String wrap = preferences.get(wrapAssignOps, getDefaultAsString(wrapAssignOps));
         return WrapStyle.valueOf(wrap);
+    }
+
+    public boolean wrapAfterTernaryOps() {
+        return preferences.getBoolean(wrapAfterTernaryOps, getDefaultAsBoolean(wrapAfterTernaryOps));
     }
 
     public boolean wrapBlockBrace() {

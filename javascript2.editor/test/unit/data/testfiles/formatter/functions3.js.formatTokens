@@ -163,6 +163,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=229, text=+}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=230, text= }
 FormattingToken{kind=TEXT, offset=231, text=3}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

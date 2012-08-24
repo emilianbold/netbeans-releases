@@ -59,6 +59,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=46, text=<}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=47, text= }
 FormattingToken{kind=TEXT, offset=48, text=q}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -232,6 +233,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=186, text=<}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=187, text= }
 FormattingToken{kind=TEXT, offset=188, text=q}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}

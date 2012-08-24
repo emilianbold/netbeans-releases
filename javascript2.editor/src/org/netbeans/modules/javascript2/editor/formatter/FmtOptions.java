@@ -220,7 +220,9 @@ public class FmtOptions {
     public static final String wrapDoWhileStatement = "wrapDoWhileStatement"; //NOI18N
     public static final String wrapWithStatement = "wrapWithStatement"; //NOI18N
     public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
+    public static final String wrapAfterBinaryOps = "wrapAfterBinaryOps"; //NOI18N
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
+    public static final String wrapAfterTernaryOps = "wrapAfterTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
@@ -394,7 +396,9 @@ public class FmtOptions {
             { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapWithStatement, WRAP_ALWAYS}, //NOI18N
             { wrapBinaryOps, WRAP_NEVER}, //NOI18N
+            { wrapAfterBinaryOps, FALSE}, //NOI18N
             { wrapTernaryOps, WRAP_NEVER},
+            { wrapAfterTernaryOps, FALSE}, //NOI18N
             { wrapAssignOps, WRAP_NEVER},
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
