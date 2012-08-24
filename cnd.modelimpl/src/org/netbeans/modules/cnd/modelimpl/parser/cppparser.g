@@ -517,20 +517,24 @@ tokens {
             return isTemplateTooDeep(currentLevel, maxLevel, 0);
         }
 	
+        public static int TEMPLATE_PREVIEW_POS_LIMIT = 4096;
         public boolean isTemplateTooDeep(int currentLevel, int maxLevel, int startPos) {
             int level = currentLevel;
             int pos = startPos;            
-            while(true) {
+            while(pos < TEMPLATE_PREVIEW_POS_LIMIT) {
                 int token = LA(pos);
                 pos++;
                 if(token == EOF || token == 0) {
+                    break;
+                }
+                if(token == LCURLY || token == RCURLY) {
                     break;
                 }
                 if(token == LESSTHAN) {
                     level++;
                 } else if(token == GREATERTHAN) {
                     level--;
-                }
+                } 
                 if(level == 0) {
                     return false;
                 }
