@@ -59,6 +59,8 @@ import org.openide.windows.WindowManager;
 public class PageInspectionTCGroupManager implements PropertyChangeListener {
     /** The only instance of this class. */
     private static PageInspectionTCGroupManager INSTANCE = new PageInspectionTCGroupManager();
+    /** Determines whether DOM Tree view should be shown with the page inspection group. */
+    private static boolean showDomTree = Boolean.getBoolean("org.netbeans.modules.web.inspect.showDomTree"); // NOI18N
     
     /**
      * Creates a new {@code PageInspectionTCGroupManager}.
@@ -107,15 +109,22 @@ public class PageInspectionTCGroupManager implements PropertyChangeListener {
                     Level.INFO, "TopComponentGroup webinspect not found!"); // NOI18N
         } else if (visible) {
             group.open();
-            TopComponent tc = manager.findTopComponent(DomTC.ID);
-            if (tc == null) {
-                Logger.getLogger(Installer.class.getName()).log(
-                        Level.INFO, "TopComponent {0} not found!", DomTC.ID); // NOI18N
-            } else {
-                tc.requestVisible();
+            if (showDomTree) {
+                TopComponent tc = manager.findTopComponent(DomTC.ID);
+                if (tc == null) {
+                    Logger.getLogger(Installer.class.getName()).log(
+                            Level.INFO, "TopComponent {0} not found!", DomTC.ID); // NOI18N
+                } else {
+                    tc.open();
+                    tc.requestVisible();
+                }
             }
         } else {
             group.close();
+            TopComponent tc = manager.findTopComponent(DomTC.ID);
+            if (tc != null) {
+                tc.close();
+            }
         }
     }
 

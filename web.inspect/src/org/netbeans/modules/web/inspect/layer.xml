@@ -47,7 +47,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <folder name="Groups">
             <file name="webinspect.wsgrp" url="resources/webinspect.wsgrp"/>
             <folder name="webinspect">
-                <file name="DomTC.wstcgrp" url="resources/DomTC.xml"/>
+                <!--<file name="DomTC.wstcgrp" url="resources/DomTC.xml"/>-->
                 <file name="properties.wstcgrp" url="resources/properties.xml"/>
                 <file name="MatchedRulesTC.wstcgrp" url="resources/MatchedRulesTC.xml"/>
                 <file name="RuleEditorTC.wstcgrp" url="resources/RuleEditorTC.xml"/>
