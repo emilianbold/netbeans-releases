@@ -254,7 +254,7 @@ public class CssFileModel {
         
         @Override
         public boolean visit(Node node) {
-            if (node.type() == NodeType.imports) {
+            if (node.type() == NodeType.importItem) {
                 Entry entry = getImportedEntry(node);
                 if (entry != null) {
                     getImportsCollectionInstance().add(entry);

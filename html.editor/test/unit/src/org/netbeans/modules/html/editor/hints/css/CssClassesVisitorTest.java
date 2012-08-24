@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.hints.css;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
-import org.netbeans.modules.web.common.api.WebUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import java.util.regex.Pattern;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class MissingCssElement extends Hint {
+public class CssClassesVisitorTest extends NbTestCase {
 
-    public MissingCssElement(Rule rule, String msg, HtmlRuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
-        super(rule,
-                msg,
-                context.getFile(),
-                range,
-                getFixes(foundInFiles, context),
-                10);
+    public CssClassesVisitorTest(String name) {
+        super(name);
     }
     
-    private static List<HintFix> getFixes(Collection<FileObject> foundInFiles, HtmlRuleContext context) {
-        if (foundInFiles == null) {
-            //no id/class found in the stylesheets
-            return Collections.emptyList();
-        }
-        FileObject sourceFile = context.getFile();
-        List<HintFix> fixes = new ArrayList<HintFix>();
-        for (FileObject file : foundInFiles) {
-            String path = WebUtils.getRelativePath(sourceFile, file);
-            fixes.add(new AddStylesheetLinkHintFix(
-                    NbBundle.getMessage(MissingCssElement.class, "MSG_AddStyleSheetLink", path),
-                    sourceFile,
-                    file));
-        }
-        return fixes;
+    public void testClassesPattern() {
+        Pattern p = CssClassesVisitor.CLASSES_PATTERN;
+        CharSequence input = "  one   two ";
+        String[] parts = p.split(input);
+        assertEquals(3, parts.length);
+        assertTrue(parts[0].trim().isEmpty());
+        assertEquals("one", parts[1]);
+        assertEquals("two", parts[2]);
     }
-    
 }
