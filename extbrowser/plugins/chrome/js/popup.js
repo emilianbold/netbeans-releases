@@ -126,7 +126,7 @@ NetBeans_PresetMenu._putPresetsInternal = function(showInToolbar) {
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
-        item.setAttribute('title', preset.displayName + ' (' + preset.width + ' x ' + preset.height + ')');
+        item.setAttribute('title', I18n.message('_PresetTitle', [preset.displayName, preset.width, preset.height]));
         item.setAttribute('onclick', 'NetBeans_PresetMenu.resizePage(' + p + ');');
         // type
         var typeDiv = document.createElement('div');
@@ -139,7 +139,7 @@ NetBeans_PresetMenu._putPresetsInternal = function(showInToolbar) {
         // label - size
         var sizeDiv = document.createElement('div');
         sizeDiv.setAttribute('class', 'size');
-        sizeDiv.appendChild(document.createTextNode(preset.width + ' x ' + preset.height));
+        sizeDiv.appendChild(document.createTextNode(I18n.message('_PresetWidthHeight', [preset.width, preset.height])));
         labelDiv.appendChild(sizeDiv);
         // label - title
         var titleDiv = document.createElement('div');

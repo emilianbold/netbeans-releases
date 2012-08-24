@@ -46,14 +46,19 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="../css/popup.css">
+        <script type="text/javascript" src="../i18n/i18n.js"></script>
+        <script type="text/javascript" src="../i18n/popup.js"></script>
         <script type="text/javascript" src="../js/popup.js"></script>
     </head>
     <body>
         <div id="presetMenu">
             <div id="menuPresets"></div>
-            <a href="#" id="autoPresetMenu" title="Actual Window Size"><div class="type">&nbsp;</div><div class="label size">Size to Fit</div></a>
-            <a href="#" id="customizePresetsMenu" title="Customize Window Settings..." class="clear"><div class="type">&nbsp;</div><div class="label size">Customize...</div></a>
-            <div class="clear" id="selectionModeDiv"><div class="type"><input class="right" type="checkbox" id="selectionModeCheckBox"></div><a href="#" id="selectionModeMenu"><div class="label size">Select Mode</div></a></div>
+            <a href="#" id="autoPresetMenu" title="_ActualWindowSize"><div class="type">&nbsp;</div><div id="sizeToFit" class="label size">_SizeToFit</div></a>
+            <a href="#" id="customizePresetsMenu" title="_CustomizeWindowSettings_hellip" class="clear"><div class="type">&nbsp;</div><div id="customize" class="label size">_Customize_hellip</div></a>
+            <div class="clear" id="selectionModeDiv">
+                <div class="type"><input class="right" type="checkbox" id="selectionModeCheckBox"></div>
+                <a href="#" id="selectionModeMenu"><div id="selectMode" class="label size">_SelectMode</div></a>
+            </div>
             <div class="clear"></div>
         </div>
 

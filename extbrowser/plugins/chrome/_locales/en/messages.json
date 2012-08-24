@@ -79,6 +79,48 @@
     },
     "_New_hellip": {
         "message": "New..."
+    },
+
+    // popup
+    "_ActualWindowSize": {
+        "message": "Actual Window Size"
+    },
+    "_SizeToFit": {
+        "message": "Size to Fit"
+    },
+    "_CustomizeWindowSettings_hellip": {
+        "message": "Customize Window Settings..."
+    },
+    "_Customize_hellip": {
+        "message": "Customize..."
+    },
+    "_SelectMode": {
+        "message": "Select Mode"
+    },
+    "_PresetTitle": {
+        "message": "$PRESET$ ($WIDTH$ x $HEIGHT$)",
+        "placeholders": {
+            "PRESET": {
+                "content": "$1"
+            },
+            "WIDTH": {
+                "content": "$2"
+            },
+            "HEIGHT": {
+                "content": "$3"
+            }
+        }
+    },
+    "_PresetWidthHeight": {
+        "message": "$WIDTH$ x $HEIGHT$",
+        "placeholders": {
+            "WIDTH": {
+                "content": "$1"
+            },
+            "HEIGHT": {
+                "content": "$2"
+            }
+        }
     }
 
 }
