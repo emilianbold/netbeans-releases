@@ -66,6 +66,8 @@ public interface Unit {
      */
     public CharSequence getName();
 
+    public int getId();
+
     /** 
      * Gets the object stored by the given key 
      * Typically, the implementation first looks it up in a cache,

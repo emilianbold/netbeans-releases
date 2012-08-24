@@ -118,17 +118,15 @@ public interface Repository {
      * @param unitName the unique identifier of the unit to open
      */
 
-    void openUnit(int unitId, CharSequence unitName);
+    void openUnit(int unitId, CharSequence unitName);   
+
     /**
      * Close Repository Unit, e.g. Project for IDE
      * @param unitName the name of unit
      */
-    void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits);
-    
-    /**
-     * Removes repository unit from disk
-     */
-    void removeUnit(CharSequence unitName);
+    void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits);
+
+    void removeUnit(int unitId);
     
     /**
      * clean the disk caches of all repositories

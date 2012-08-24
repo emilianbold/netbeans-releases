@@ -50,6 +50,8 @@ import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -62,6 +64,8 @@ public class CreateClass183980Test extends ErrorHintsTestBase {
     }
     
     public void testNoTemplateWhatSoEver183980() throws Exception {
+        FileObject classTemplate = FileUtil.getConfigFile("Templates/Classes/Class.java");
+        classTemplate.delete();
         performFixTest("test/Test.java",
                        "package test; public class Test { private St|ate f;}",
                        "CreateClass:test.State:[]:CLASS",

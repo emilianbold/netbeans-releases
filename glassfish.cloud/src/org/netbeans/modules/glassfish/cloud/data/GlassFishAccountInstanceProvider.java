@@ -108,10 +108,17 @@ public class GlassFishAccountInstanceProvider
         if (instance != null) {
             return instance;
         }
+        boolean first;
         synchronized (GlassFishAccountInstanceProvider.class) {
             if (instance == null) {
                 instance = new GlassFishAccountInstanceProvider();
+                first = true;
+            } else {
+                first = false;
             }
+        }
+        if (first) {
+            instance.register();
         }
         return instance;
     }
@@ -204,7 +211,8 @@ public class GlassFishAccountInstanceProvider
      * Add new GlassFish user account instance into this provider.
      * <p/>
      * Instance is registered in this provider without being stored into
-     * persistence properties.
+     * persistence properties. Instance is not registered for NetBeans UI server
+     * components.
      * <p/>
      * @param instance GlassFish user account instance to be added.
      */
@@ -213,6 +221,15 @@ public class GlassFishAccountInstanceProvider
             serverInstances.add(instance.getServerInstance());
             accountInstances.put(instance.getDisplayName(), instance);
         }
+        changeListeners.fireChange();
+    }
+
+    /**
+     * Register the instance for NetBeans UI server components.
+     * <p/>
+     * @param instance GlassFish user account instance to be registered.
+     */
+    private void registerInstance(GlassFishAccountInstance instance) {
         if (instance.getUrl() != null) {
             try {
                 org.netbeans.modules.j2ee.deployment.plugins.api
@@ -222,21 +239,22 @@ public class GlassFishAccountInstanceProvider
                         instance.getDisplayName(), null);
             } catch (InstanceCreationException ice) {
             }
-        }
-        changeListeners.fireChange();
+        }        
     }
 
     /**
      * Add new GlassFish user account instance into this provider.
      * <p/>
      * Instance is registered in this provider and stored into persistence
-     * properties.
+     * properties. Instance is also registered for NetBeans UI server
+     * components.
      * <p/>
      * @param instance GlassFish user account instance to be added.
      */
     private void addInstance(GlassFishAccountInstance instance) {
         store(instance);
         addInstanceWithoutStoring(instance);
+        registerInstance(instance);
     }
 
     /**
@@ -313,6 +331,20 @@ public class GlassFishAccountInstanceProvider
         }
     }
     
+    /**
+     * Register all GlassFish user account instances for NetBeans UI server
+     * components.
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    private void register() {
+        synchronized (this) {
+            for (GlassFishAccountInstance instance
+                    : accountInstances.values()) {
+                registerInstance(instance);
+            }
+        }
+    }
+
     /**
      * Remove given GlassFish user account instance from properties to persist.
      * <p/>

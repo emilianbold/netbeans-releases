@@ -4,9 +4,3 @@ HINT:Duplicate name of property "key".
     TODAY : {
     -----
 HINT:Duplicate name of property "TODAY".
-        supercedes:["pagedate"],
-                               -
-HINT:Unexpected ",".
-    },
-     -
-HINT:Unexpected ",".

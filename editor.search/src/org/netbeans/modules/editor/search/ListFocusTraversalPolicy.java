@@ -44,14 +44,9 @@ package org.netbeans.modules.editor.search;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author mito
- */
 public class ListFocusTraversalPolicy extends FocusTraversalPolicy {
 
     private final List<Component> focusList = new ArrayList<Component>();

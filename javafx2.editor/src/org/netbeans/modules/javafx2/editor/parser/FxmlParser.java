@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -108,7 +109,7 @@ class FxmlParser extends Parser implements ErrorReporter {
     @SuppressWarnings("unchecked")
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         this.snapshot = snapshot;
-        TokenHierarchy<XMLTokenId> h = (TokenHierarchy<XMLTokenId>)snapshot.getTokenHierarchy();
+        TokenHierarchy<?> h = (TokenHierarchy<?>)snapshot.getTokenHierarchy();
         XmlLexerParser tokenParser = new XmlLexerParser(h);
         FxModelBuilder builder = new FxModelBuilder();
         
@@ -169,7 +170,7 @@ class FxmlParser extends Parser implements ErrorReporter {
     private static final class ResultImpl extends FxmlParserResult {
         private ImportProcessor importProcessor;
         
-        public ResultImpl(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, TokenHierarchy<XMLTokenId>  h) {
+        public ResultImpl(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, TokenHierarchy<?>  h) {
             super(_snapshot, sourceModel, problems, h);
         }
 

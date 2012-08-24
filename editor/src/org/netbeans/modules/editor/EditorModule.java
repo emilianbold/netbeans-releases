@@ -78,6 +78,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
@@ -98,6 +99,8 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ClipboardListener;
+import org.openide.util.datatransfer.ExClipboard;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -260,7 +263,9 @@ public class EditorModule extends ModuleInstall {
         SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
         EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
       
-
+        final ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+        clipboard.addClipboardListener(ClipboardHistory.getInstance());
+            
          if (GraphicsEnvironment.isHeadless()) {
              return;
          }
@@ -295,7 +300,7 @@ public class EditorModule extends ModuleInstall {
             }
         });
     }
-
+    
     /** Called when module is uninstalled. Overrides superclass method. */
     public @Override void uninstalled() {
 

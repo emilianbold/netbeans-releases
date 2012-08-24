@@ -545,6 +545,17 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         //TODO: the actual code for kinds differs for NFABased search and REBased search:
 //        assertEquals(Arrays.asList(new HashSet<String>(Arrays.asList(Kind.METHOD_INVOCATION.name()))), bp.getKinds());
     }
+    
+    public void testModifiersMultiVariable() throws Exception {
+        String code = "package test;\n" +
+                       "public class Test {\n" +
+                       "     @Deprecated @Override public Test test;\n" +
+                       "}\n";
+
+        performTest(code,
+                    Collections.singletonMap("$mods$ @Deprecated public $type $name = $init$;", Arrays.asList("@Deprecated @Override public Test test;")),
+                    Collections.<String>emptyList());
+    }
 
     protected abstract BulkSearch createSearch();
     

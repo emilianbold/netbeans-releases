@@ -41,9 +41,36 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.ir.AccessNode;
+import com.oracle.nashorn.ir.BinaryNode;
+import com.oracle.nashorn.ir.Block;
+import com.oracle.nashorn.ir.CallNode;
+import com.oracle.nashorn.ir.CaseNode;
+import com.oracle.nashorn.ir.CatchNode;
+import com.oracle.nashorn.ir.DoWhileNode;
+import com.oracle.nashorn.ir.ForNode;
+import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.IdentNode;
+import com.oracle.nashorn.ir.IfNode;
+import com.oracle.nashorn.ir.LiteralNode;
+import com.oracle.nashorn.ir.Node;
+import com.oracle.nashorn.ir.NodeVisitor;
+import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.SwitchNode;
+import com.oracle.nashorn.ir.TernaryNode;
+import com.oracle.nashorn.ir.TryNode;
+import com.oracle.nashorn.ir.UnaryNode;
+import com.oracle.nashorn.ir.VarNode;
+import com.oracle.nashorn.ir.WhileNode;
+import com.oracle.nashorn.ir.WithNode;
 import com.oracle.nashorn.parser.TokenType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -377,11 +404,7 @@ public class FormatVisitor extends NodeVisitor {
                 FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
                         JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
                 if (rightBrace != null) {
-                    previous = rightBrace.previous();
-                    while (previous != null && previous.isVirtual()
-                            && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
-                        previous = previous.previous();
-                    }
+                    previous = findPreviousVirtual(rightBrace, FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS);
                     assert previous != null
                             && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
                     tokenStream.removeToken(previous);
@@ -517,13 +540,15 @@ public class FormatVisitor extends NodeVisitor {
                         assert formatToken != null && formatToken.getText() != null
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
-                        FormatToken toRemove = formatToken.previous();
-                        while (toRemove != null && toRemove.isVirtual()
-                                && toRemove.getKind() != FormatToken.Kind.BEFORE_BINARY_OPERATOR) {
-                            toRemove = toRemove.previous();
-                        }
+                        // we remove blindly inserted binary op markers
+                        FormatToken toRemove = findPreviousVirtual(formatToken,
+                                FormatToken.Kind.BEFORE_BINARY_OPERATOR);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
+                        tokenStream.removeToken(toRemove);
+                        toRemove = findPreviousVirtual(formatToken, FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP);
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
                         tokenStream.removeToken(toRemove);
 
                         toRemove = formatToken.next();
@@ -555,6 +580,7 @@ public class FormatVisitor extends NodeVisitor {
                 FormatToken previous = question.previous();
                 if (previous != null) {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
                 }
                 appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
                 FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
@@ -562,6 +588,7 @@ public class FormatVisitor extends NodeVisitor {
                     previous = colon.previous();
                     if (previous != null) {
                         appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
                     }
                     appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
                 }
@@ -1144,6 +1171,15 @@ public class FormatVisitor extends NodeVisitor {
     private boolean isScript(Node node) {
         return (node instanceof FunctionNode)
                 && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
+    }
+
+    private static FormatToken findPreviousVirtual(FormatToken token, FormatToken.Kind kind) {
+        FormatToken result = token.previous();
+        while (result != null && result.isVirtual()
+                && result.getKind() != kind) {
+            result = result.previous();
+        }
+        return result;
     }
 
     private static void appendTokenAfterLastVirtual(FormatToken previous,

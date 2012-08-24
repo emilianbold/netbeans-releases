@@ -48,27 +48,27 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.util.NbPreferences;
 
-public class SearchPropertiesSupport {
-    
+public final class SearchPropertiesSupport {
+
     private static final String PREFS_NODE = "SearchProperties";  //NOI18N
     private static SearchPropertiesSupport instance = null;
-    private static Preferences prefs;
-    private static final String SEARCH_ID = "searchprops";
+    private static final Preferences prefs = NbPreferences.forModule(SearchPropertiesSupport.class).node(PREFS_NODE);
+    private static final String SEARCH_ID = "searchprops";  //NOI18N
     private static SearchProperties searchProps;
-    private static final String REPLACE_ID = "replaceprops";
+    private static final String REPLACE_ID = "replaceprops";  //NOI18N
     private static SearchProperties replaceProps;
-    private static final List<String> editorfindSupportConstants = Arrays.asList(EditorFindSupport.FIND_MATCH_CASE, EditorFindSupport.FIND_WHOLE_WORDS, EditorFindSupport.FIND_REG_EXP, EditorFindSupport.FIND_WRAP_SEARCH, EditorFindSupport.FIND_PRESERVE_CASE);
+    private static final List<String> EDITOR_FIND_SUPPORT_CONSTANTS = Arrays.asList(EditorFindSupport.FIND_MATCH_CASE, EditorFindSupport.FIND_WHOLE_WORDS, EditorFindSupport.FIND_REG_EXP, EditorFindSupport.FIND_WRAP_SEARCH, EditorFindSupport.FIND_PRESERVE_CASE);
 
     private SearchPropertiesSupport() {
-        prefs = NbPreferences.forModule(SearchPropertiesSupport.class).node(PREFS_NODE);
     }
-    
+
     private static SearchPropertiesSupport getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new SearchPropertiesSupport();
+        }
         return instance;
     }
-    
+
     private Preferences getPrefs() {
         return prefs;
     }
@@ -79,17 +79,17 @@ public class SearchPropertiesSupport {
         }
         return searchProps;
     }
-    
+
     public static SearchProperties getReplaceProperties() {
         if (replaceProps == null) {
             replaceProps = createDefaultReplaceProperties();
         }
         return replaceProps;
     }
-    
+
     private static SearchProperties createDefaultSearchProperties() {
         Map<String, Object> props = EditorFindSupport.getInstance().createDefaultFindProperties();
-        for (String constant : editorfindSupportConstants) {
+        for (String constant : EDITOR_FIND_SUPPORT_CONSTANTS) {
             props.put(constant, Boolean.parseBoolean(getInstance().getPrefs().get(SEARCH_ID + constant, props.get(constant).toString())));
         }
         return new SearchProperties(props, SEARCH_ID);
@@ -98,32 +98,37 @@ public class SearchPropertiesSupport {
     private static SearchProperties createDefaultReplaceProperties() {
         Map<String, Object> props = EditorFindSupport.getInstance().createDefaultFindProperties();
         props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.TRUE);
-        for (String constant : editorfindSupportConstants) {
+        for (String constant : EDITOR_FIND_SUPPORT_CONSTANTS) {
             props.put(constant, Boolean.parseBoolean(getInstance().getPrefs().get(REPLACE_ID + constant, props.get(constant).toString())));
         }
         return new SearchProperties(props, REPLACE_ID);
     }
-    
-    public static class SearchProperties {
+
+    public static final class SearchProperties {
         private Map<String, Object> props;
         private String id;
-        private SearchProperties(Map<String, Object> props, String identification) {            
+        private SearchProperties(Map<String, Object> props, String identification) {
             this.props = props;
             this.id = identification;
         }
-        
+
         public void setProperty(String editorFindSupportProperty, Object value) {
-            if (editorFindSupportProperty.equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH))
+            if (editorFindSupportProperty.equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
                  EditorFindSupport.getInstance().putFindProperty(editorFindSupportProperty, value);
+            }
             props.put(editorFindSupportProperty, value);
-            getInstance().getPrefs().put(id + editorFindSupportProperty, value.toString());
+            if (value != null) {
+                getInstance().getPrefs().put(id + editorFindSupportProperty, value.toString());
+            } else {
+                getInstance().getPrefs().remove(id + editorFindSupportProperty);
+            }
         }
-        
+
         public Object getProperty(String editorFindSupportProperty) {
             props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH));
             return props.get(editorFindSupportProperty);
         }
-        
+
         public Map<String, Object> getProperties() {
             props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH));
             return props;

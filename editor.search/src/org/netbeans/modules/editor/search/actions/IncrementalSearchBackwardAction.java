@@ -53,12 +53,12 @@ import org.openide.util.NbBundle;
 public class IncrementalSearchBackwardAction extends SearchAction {
 
     static final long serialVersionUID = -1;
-    private static final Map<String, String> searchAttrs;
+    private static final Map<String, String> SEARCH_ATTRS;
 
     static {
         Map<String, String> aMap = new HashMap<String, String>();
         aMap.put(Action.NAME, SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD);
-        searchAttrs = Collections.unmodifiableMap(aMap);
+        SEARCH_ATTRS = Collections.unmodifiableMap(aMap);
     }
 
     public IncrementalSearchBackwardAction(Map<String, ?> attrs) {
@@ -68,6 +68,6 @@ public class IncrementalSearchBackwardAction extends SearchAction {
     }
 
     public IncrementalSearchBackwardAction() {
-        this(searchAttrs);
+        this(SEARCH_ATTRS);
     }
 }

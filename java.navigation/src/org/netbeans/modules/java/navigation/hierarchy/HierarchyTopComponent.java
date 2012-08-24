@@ -107,6 +107,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.netbeans.modules.java.navigation.base.Pair;
+import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -160,7 +161,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     
     private static HierarchyTopComponent instance;
 
-    private final JDocFinder jdocFinder;
+    private final SelectJavadocTask jdocFinder;
     private final RequestProcessor.Task jdocTask;
     private final ExplorerManager explorerManager;
     private final InstanceContent selectedNodes;
@@ -181,7 +182,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         "TXT_NonActiveContent=<No View Available - Refresh Manually>"
     })
     public HierarchyTopComponent() {
-        jdocFinder = new JDocFinder();
+        jdocFinder = SelectJavadocTask.create(this);
         jdocTask = RP.create(jdocFinder);
         explorerManager = new ExplorerManager();
         rootChildren = new RootChildren();
@@ -680,88 +681,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             }
         }
     }
-
-    private class JDocFinder implements Runnable, Callable<Boolean>, Task<CompilationController> {
-
-        //@NotThreadSafe
-        private ElementHandle<?> handle;
-        //@NotThreadSafe
-        private ElementJavadoc doc;
-        private volatile boolean cancelled;
-
-        @Override
-        public void run() {
-            cancelled = false;
-            if (JavadocTopComponent.shouldUpdate()) {
-                final ElementJavadoc documentation = getJavaDoc();
-                if (documentation != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            final JavadocTopComponent tc = JavadocTopComponent.findInstance();
-                            if (tc != null) {
-                                tc.open();
-                                tc.setJavadoc(documentation);
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        @Override
-        public void run(CompilationController cc) throws Exception {
-            if (cancelled) {
-                return;
-            }
-            cc.toPhase( JavaSource.Phase.UP_TO_DATE );
-            if (cancelled) {
-                return;
-            }
-            final Element e = handle.resolve(cc);
-            if (e != null && !cancelled) {
-                doc = ElementJavadoc.create(cc, e, this);
-            }
-        }
-
-        @Override
-        @NonNull
-        public Boolean call() throws Exception {
-            return cancelled;
-        }
-
-        void cancel() {
-            cancelled = true;
-        }
-
-        @CheckForNull
-        private ElementJavadoc getJavaDoc() {
-            final Node node = getLookup().lookup(Node.class);
-            if (node == null) {
-                return null;
-            }
-            final TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
-            if (tph == null) {
-                return null;
-            }
-            final FileObject fo = node.getLookup().lookup(FileObject.class);
-            if (fo == null) {
-                return null;
-            }
-            final JavaSource js = JavaSource.forFileObject(fo);
-            if (js == null) {
-                return null;
-            }
-            handle = tph.getElementHandle();
-            try {
-                js.runUserActionTask(this, true);
-            } catch( IOException ioE ) {
-                Exceptions.printStackTrace(ioE);
-                return null;
-            }
-            return doc;
-        }
-    };
 
     private static final class NodeToFileObjectConvertor implements InstanceContent.Convertor<Node,FileObject> {
 

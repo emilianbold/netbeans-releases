@@ -45,10 +45,10 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -57,19 +57,19 @@ import org.openide.util.CharSequences;
  */
 
 /*package*/ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
-    protected static final CharSequence NO_PROJECT = CharSequences.create("<No Project Name>"); // NOI18N
+
     protected static final CharSequence NO_FILE = CharSequences.create("<No File Name>"); // NOI18N
 
     protected final int fileNameIndex;
 
-    protected ProjectFileNameBasedKey(CharSequence prjName, CharSequence fileName) {
-        super(prjName);
+    protected ProjectFileNameBasedKey(int unitId, CharSequence fileName) {
+        super(unitId);
         assert fileName != null;
         this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
     }
 
     protected ProjectFileNameBasedKey(FileImpl file) {
-        this(getProjectName(file), getFileName(file));
+        this(getFileUnitId(file), getFileName(file)); 
     }
 
     protected ProjectFileNameBasedKey(KeyDataPresentation presentation) {
@@ -77,15 +77,10 @@ import org.openide.util.CharSequences;
         fileNameIndex = presentation.getFilePresentation();
     }
 
-    protected static CharSequence getProjectName(FileImpl file) {
-        assert (file != null);
-        if (file == null) {
-            // extra check for #208877 
-            return NO_PROJECT;
-        }
-        ProjectBase prj = file.getProjectImpl(true);
-        assert (prj != null);
-        return prj == null ? NO_PROJECT : prj.getUniqueName();  // NOI18N
+    private static int getFileUnitId(FileImpl file) {
+        CndUtils.assertNotNull(file, "Null file"); //NOI18N
+        // judging by #208877 null might occur here, although it's definitely wrong
+        return file == null ? -1 : file.getUnitId();
     }
 
     private static CharSequence getFileName(FileImpl file) {
