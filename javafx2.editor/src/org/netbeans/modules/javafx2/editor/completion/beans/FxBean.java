@@ -447,8 +447,10 @@ public final class FxBean extends FxDefinition {
         } else {
             events.putAll(superBi.getEvents());
         }
+        if (defaultPropertyName == null && superBi.getDefaultProperty() != null) {
+            defaultPropertyName = superBi.getDefaultProperty().getName();
+        }
         
-        defaultPropertyName = superBi.getDefaultProperty() == null ? null : superBi.getDefaultProperty().getName();
     }
     
     /**
