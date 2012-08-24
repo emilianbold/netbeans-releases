@@ -70,6 +70,13 @@ public class ForeignClassBundlerMerger implements LookupMerger<ForeignClassBundl
             return true;
         }
 
+        @Override
+        public void resetCachedValue() {
+            for (ForeignClassBundler fcb : lookup.lookupAll(ForeignClassBundler.class)) {
+                fcb.resetCachedValue();
+            }
+        }
+
     }
 
 }
