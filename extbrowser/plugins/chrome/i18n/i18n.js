@@ -43,10 +43,10 @@
 var I18n = {
 
     /**
-     * Get message for the given key.
+     * Get message for the given key (and optional substitutions).
      */
-    message: function(messageKey) {
-        return chrome.i18n.getMessage(messageKey);
+    message: function(messageKey, substitutions) {
+        return chrome.i18n.getMessage(messageKey, substitutions);
     },
 
     /**
