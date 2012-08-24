@@ -126,17 +126,6 @@ public interface Repository {
      */
     void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits);
 
-    /**
-     * Close Repository Unit, e.g. Project for IDE
-     * @param unitName the name of unit
-     */
-    void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits);
-    
-    /**
-     * Removes repository unit from disk
-     */
-    void removeUnit(CharSequence unitName);
-
     void removeUnit(int unitId);
     
     /**

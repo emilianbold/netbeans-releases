@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.CharSequences;
 
 /**
  *
@@ -307,14 +306,6 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     }
 
     @Override
-    public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
-        int unitId = translator.getUnitId(unitName);
-        synchronized (getUnitLock(unitId)) {
-            closeUnit2(unitName, cleanRepository, requiredUnits);
-        }
-    }
-
-    @Override
     public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
         CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         Set<CharSequence> requiredUnitNames = null;
@@ -325,17 +316,15 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             }
         }
         synchronized (getUnitLock(unitId)) {
-            closeUnit2(unitName, cleanRepository, requiredUnitNames);
+            closeUnit2(unitId, unitName, cleanRepository, requiredUnitNames);
         }
     }
 
-    private void closeUnit2(final CharSequence unitName, final boolean cleanRepository, Set<CharSequence> requiredUnits) {
-
-        int unitId = translator.getUnitId(CharSequences.create(unitName));
+    private void closeUnit2(final int unitId, final CharSequence unitName, final boolean cleanRepository, Set<CharSequence> requiredUnits) {
 
         try {
             queueLock.writeLock().lock();
-            Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitName));
+            Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitId));
             if (!cleanRepository) {
                 for (RepositoryQueue.Entry<Key, Persistent> entry : removedEntries) {
                     write(entry.getKey(), entry.getValue());
@@ -357,7 +346,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             queueLock.writeLock().unlock();
         }
         if (CndUtils.isDebugMode()) {
-            Collection<KeyValueQueue.Entry<Key, Persistent>> clearQueue = queue.clearQueue(new UnitFilter(unitName));
+            Collection<KeyValueQueue.Entry<Key, Persistent>> clearQueue = queue.clearQueue(new UnitFilter(unitId));
             if (!clearQueue.isEmpty()) {
                 if (LOG.isLoggable(Level.INFO)) {
                     LOG.log(Level.INFO, "UNSAVED ENTRIES FOR {0}", unitName);
@@ -381,19 +370,10 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     }
 
     @Override
-    public void removeUnit(CharSequence unitName) {
-        int unitId = translator.getUnitId(CharSequences.create(unitName));
-        synchronized (getUnitLock(unitId)) {
-            closeUnit(unitName, true, Collections.<CharSequence>emptySet());
-            ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
-        }
-    }
-
-    @Override
     public void removeUnit(int unitId) {
         CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         synchronized (getUnitLock(unitId)) {
-            closeUnit(unitName, true, Collections.<CharSequence>emptySet());
+            closeUnit2(unitId, unitName, true, Collections.<CharSequence>emptySet());
             ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
         }
     }
@@ -449,15 +429,15 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     private static class UnitFilter implements RepositoryQueue.Filter {
 
-        private CharSequence unitName;
+        private int unitId;
 
-        public UnitFilter(CharSequence unitName) {
-            this.unitName = unitName;
+        public UnitFilter(int unitId) {
+            this.unitId = unitId;
         }
 
         @Override
         public boolean accept(Key key, Persistent value) {
-            return key.getUnit().equals(unitName);
+            return key.getUnitId() == unitId;
         }
     }
 
