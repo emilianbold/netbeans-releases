@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -60,12 +61,27 @@ import org.openide.util.HelpCtx;
  */
 public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> 
 {
+    static enum JsUi {
+        NO_UI(NbBundle.getMessage(RestPanel.class, "TXT_NoUi")),                // NOI18N
+        TABLESORTER(NbBundle.getMessage(RestPanel.class, "TXT_TablesorterUi")); // NOI18N
+        
+        private JsUi( String displayName ){
+            myDisplayName = displayName;
+        }
+        
+        @Override
+        public String toString(){
+            return myDisplayName;
+        }
+        private String myDisplayName;
+    }
     
     public static String FILE_NAME = "js-file-name";                // NOI18N
     public static String ADD_BACKBONE = "backbone";                 // NOI18N
     public static String EXISTED_BACKBONE ="existed-backbone";      // NOI18N
     public static String EXISTED_UNDERSCORE ="existed-underscore";  // NOI18N
     public static String EXISTED_JQUERY ="existed-jquery";          // NOI18N
+    public static String UI ="ui";                                  // NOI18N    
     
     
     RestPanel(WizardDescriptor descriptor) {

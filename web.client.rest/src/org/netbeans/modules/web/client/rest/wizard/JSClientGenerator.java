@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.openide.filesystems.FileObject;
 
@@ -82,6 +83,10 @@ import org.openide.filesystems.FileObject;
  *
  */
 class JSClientGenerator {
+    
+    static final String TABLESORTER_URL = 
+            "http://mottie.github.com/tablesorter/";                 // NOI18N
+    
     
     enum MethodType {
         GET,
@@ -119,13 +124,14 @@ class JSClientGenerator {
     private static final String XML_ROOT_ELEMENT = 
         "javax.xml.bind.annotation.XmlRootElement";                  // NOI18N
     
-    private JSClientGenerator(RestServiceDescription description){
+    private JSClientGenerator(RestServiceDescription description, JsUi ui){
         myDescription = description;
+        myUi = ui;
     }
 
-    static JSClientGenerator create( RestServiceDescription description )
+    static JSClientGenerator create( RestServiceDescription description, JsUi ui )
     {
-        return new JSClientGenerator(description);
+        return new JSClientGenerator(description, ui);
     }
 
     public Map<String,String> generate( ) {
@@ -216,8 +222,15 @@ class JSClientGenerator {
         result.put("tpl_create", myTmplCreate.toString());  // NOI18N 
         result.put("tpl_list_item", myTmplList.toString()); // NOI18N 
         result.put("tpl_details", myTmplDetails.toString());// NOI18N 
+        if ( hasUi() ){
+            result.put("ui", Boolean.TRUE.toString());      // NOI18N
+        }
         
         return result;
+    }
+    
+    boolean hasUi(){
+        return hasUi;
     }
     
     private void handleRestMethods( CompilationController controller,  
@@ -428,7 +441,7 @@ class JSClientGenerator {
     {
         isModelGenerated = true;
         ModelGenerator generator = new ModelGenerator(myDescription,
-                myModels, myEntities);
+                myModels, myEntities, myUi);
         generator.generateModel(entity, path, 
                 collectionPath, httpPaths, useIds, controller);
         generateRouter(entity, path, collectionPath, httpPaths, useIds, 
@@ -447,9 +460,10 @@ class JSClientGenerator {
         if ( myModelsCount >0 ){
             name = name +myModelsCount;                              
         }
-        RouterGenerator generator = new RouterGenerator(myRouters, name);
+        RouterGenerator generator = new RouterGenerator(myRouters, name, 
+                modelGenerator);
         generator.generateRouter(entity, path, collectionPath, httpPaths, useIds, 
-                controller, modelGenerator );
+                controller );
         
         if ( myModelsCount == 0 ){
             // Create HTML "view" for header identifier 
@@ -459,15 +473,11 @@ class JSClientGenerator {
             
             if ( generator.getSideBarId()!= null) {
                 // Create HTML "view" for sidebar identifier
-                mySidebar.append("<div id='");                      // NOI18N
-                mySidebar.append(generator.getSideBarId());
-                mySidebar.append("'></div>\n");                     // NOI18N
+                generateCollection(generator);
             }
             
             // Create HTML "view" for content identifier
-            myContent.append("<div id='");                          // NOI18N
-            myContent.append(generator.getContentId());
-            myContent.append("'></div>\n");                         // NOI18N
+            generateContent(generator);
             
             if ( generator.getCreateTemplate()!= null){
                 // Create HTML "view" for "create new item" template
@@ -484,14 +494,13 @@ class JSClientGenerator {
             
             if ( generator.getListItemTemplate()!= null){
                 // Create HTML "view" for list item
+                if ( generator.useUi() ){
+                    generateHeadTemplate(generator);
+                }
                 myTmplList.append("<script type='text/template' id='");                 // NOI18N
                 myTmplList.append(generator.getListItemTemplate());
                 myTmplList.append("'>\n");                                              // NOI18N
-                myTmplList.append("<!-- modify output display name for item here");     // NOI18N
-                myTmplList.append(" or change displayName in the JS model code -->\n"); // NOI18N
-                myTmplList.append("<a href='#<%= ");                                    // NOI18N
-                myTmplList.append(modelGenerator.getIdAttribute().getName());
-                myTmplList.append(" %>'><%= displayName %></a>\n");                     // NOI18N
+                generateItemContent(generator);
                 myTmplList.append("</script>\n");                                       // NOI18N
             }
             
@@ -502,53 +511,83 @@ class JSClientGenerator {
                 myTmplDetails.append("'>\n");                                           // NOI18N
                 myTmplDetails.append("<div>\n");                                        // NOI18N
                 String idAttribute = null; 
+                if ( generator.useUi()){
+                    myTmplDetails.append("<table>\n<tbody>\n");
+                }
                 if ( modelGenerator.getIdAttribute()!= null ){
                     idAttribute = modelGenerator.getIdAttribute().getName();
-                    myTmplDetails.append("<label>Id:</label>\n");                       // NOI18N
+                    if ( generator.useUi()){
+                        myTmplDetails.append("<tr><td>Id</td>\n<td>\n");                // NOI18N
+                    }
+                    else {
+                        myTmplDetails.append("<label>Id:</label>\n");                   // NOI18N
+                    }
                     myTmplDetails.append("<input type='text' id='");                    // NOI18N
                     myTmplDetails.append(idAttribute);
                     myTmplDetails.append("' name='id' value='<%= typeof(");             // NOI18N
                     myTmplDetails.append(idAttribute);
                     myTmplDetails.append(")!== \"undefined\" ? ");                      // NOI18N
                     myTmplDetails.append(idAttribute);
-                    myTmplDetails.append(" : \"\" %>' disabled />\n");                  // NOI18N
+                    myTmplDetails.append(" : \"\" %>'  />\n");                          // NOI18N
+                    if ( generator.useUi()){
+                        myTmplDetails.append("</td>\n</tr>\n");                         // NOI18N
+                    }
                 }
                 String nameAttribute = modelGenerator.getDisplayNameAlias();
-                if ( !nameAttribute.equals( idAttribute )){
-                    myTmplDetails.append("<label>Name:</label>\n");                     // NOI18N
-                    myTmplDetails.append("<input type='text' id='");                    // NOI18N
-                    myTmplDetails.append(nameAttribute);
-                    myTmplDetails.append("' name='");                                   // NOI18N
-                    myTmplDetails.append(nameAttribute);
-                    myTmplDetails.append("' value='<%= ");                              // NOI18N
-                    myTmplDetails.append(nameAttribute);
-                    myTmplDetails.append(" %>'/>\n");                                   // NOI18N
+                if ( !generator.useUi()){
+                    if ( !nameAttribute.equals( idAttribute )){
+                        myTmplDetails.append("<label>Name:</label>\n");                 // NOI18N
+                        myTmplDetails.append("<input type='text' id='");                // NOI18N
+                        myTmplDetails.append(nameAttribute);
+                        myTmplDetails.append("' name='");                               // NOI18N
+                        myTmplDetails.append(nameAttribute);
+                        myTmplDetails.append("' value='<%= ");                          // NOI18N
+                        myTmplDetails.append(nameAttribute);
+                        myTmplDetails.append(" %>'/>\n");                               // NOI18N
+                    }
+                    myTmplDetails.append("<!--\n");                                     // NOI18N
+                    myTmplDetails.append("\tPut your editing controls for model\n");    // NOI18N
+                    myTmplDetails.append("attribute data (text fields, ...) here\n");   // NOI18N
                 }
                 
-                myTmplDetails.append("<!--\n");                                         // NOI18N
-                myTmplDetails.append("\tPut your editing controls for model\n");        // NOI18N
-                myTmplDetails.append("attribute data (text fields, ...) here\n");       // NOI18N
                 Set<ModelAttribute> attributes = modelGenerator.getAttributes();
                 for (ModelAttribute attribute : attributes) {
                     String attrName = attribute.getName();
-                    if ( attrName.equals( nameAttribute)||
+                    if ( !generator.useUi() && attrName.equals( nameAttribute)||
                             attrName.equals(idAttribute))
                     {
                         continue;
                     }
-                    myTmplDetails.append("<label>");                                    // NOI18N
+                    if ( generator.useUi() ){
+                        myTmplDetails.append("<tr>\n<td>");                             // NOI18N
+                    }
+                    else {
+                        myTmplDetails.append("<label>");                                // NOI18N
+                    }
                     myTmplDetails.append(attrName);
-                    myTmplDetails.append(":</label>\n");                                // NOI18N
+                    if ( generator.useUi() ){
+                        myTmplDetails.append("</td><td>");                              // NOI18N   
+                    }
+                    else {
+                        myTmplDetails.append(":</label>\n");                            // NOI18N    
+                    }
                     myTmplDetails.append("<input type='text' id='");                    // NOI18N
                     myTmplDetails.append(attrName);
                     myTmplDetails.append("' name='");                                   // NOI18N
                     myTmplDetails.append(attrName);
                     myTmplDetails.append("' value='<%= ");                              // NOI18N
                     myTmplDetails.append(attrName);
-                    myTmplDetails.append(" %>'/>\n");                                   // NOI18N
+                    myTmplDetails.append(" %>'/>");                                     // NOI18N
+                    if ( generator.useUi() ){
+                        myTmplDetails.append("</td></tr>\n");                           // NOI18N
+                    }
                 }
-                myTmplDetails.append("-->\n");                                          // NOI18N
-                
+                if ( generator.useUi()){
+                    myTmplDetails.append("</tbody>\n</table>\n");                        // NOI18N
+                }
+                else {
+                    myTmplDetails.append("-->\n");                                      // NOI18N    
+                }
                 myTmplDetails.append("<!--\n");
                 myTmplDetails.append("\tPut your controls to create new entity here.\n");// NOI18N
                 myTmplDetails.append("\tClasses 'save' and 'delete' are used ");        // NOI18N
@@ -561,9 +600,109 @@ class JSClientGenerator {
             }
         }
         else {
-            myRouters.append("*/");                                 // NOI18N
+            myRouters.append("*/");                                         // NOI18N
         }
         myModelsCount++;
+    }
+
+    private void generateHeadTemplate( RouterGenerator generator ) {
+        myTmplList.append("<script type='text/template' id='");                 // NOI18N
+        myTmplList.append(generator.getTableHeadId());
+        myTmplList.append("'>\n<thead>");                                       // NOI18N
+         
+        if (generator.getModelGenerator().getIdAttribute() != null) {
+            String id = generator.getModelGenerator().getIdAttribute()
+                    .getName();
+            myTmplList.append("<th>");                                          // NOI18N
+            myTmplList.append(id);
+            myTmplList.append("</th>\n");                                       // NOI18N
+        }
+        Set<ModelAttribute> attributes = generator.getModelGenerator()
+                .getAttributes();
+        for (ModelAttribute attribute : attributes) {
+            myTmplList.append("<th>");                                          // NOI18N
+            myTmplList.append(attribute.getName());
+            myTmplList.append("</th>\n");                                       // NOI18N
+        }
+        
+        myTmplList.append("</thead>\n</script>\n");                             // NOI18N
+    }
+
+    private void generateItemContent( RouterGenerator generator ) {
+        if ( generator.useUi()){
+            if ( generator.getModelGenerator().getIdAttribute() != null ){
+                String id = generator.getModelGenerator().getIdAttribute().getName();
+                myTmplList.append("<td><a href='#<%= ");                // NOI18N
+                myTmplList.append(id);
+                myTmplList.append(" %>'><%= ");                         // NOI18N
+                myTmplList.append(id);
+                myTmplList.append(" %></a></td>\n");                    // NOI18N
+            }
+            Set<ModelAttribute> attributes = generator.getModelGenerator().getAttributes();
+            for( ModelAttribute attribute : attributes ){
+                myTmplList.append("<td><%= ");                          // NOI18N
+                myTmplList.append(attribute.getName());
+                myTmplList.append(" %></td>\n");                      // NOI18N
+            }
+        }
+        else {
+            myTmplList.append("<!-- modify output display name for item here");     // NOI18N
+            myTmplList.append(" or change displayName in the JS model code -->\n"); // NOI18N
+            if (generator.getModelGenerator().getIdAttribute()!= null){
+                myTmplList.append("<a href='#<%= ");                                // NOI18N
+                myTmplList.append(generator.getModelGenerator().getIdAttribute().getName());
+                myTmplList.append(" %>'><%= displayName %></a>\n");                 // NOI18N
+            }
+            else {
+                myTmplList.append("<%= displayName %>\n");                          // NOI18N
+            }
+        }
+    }
+
+    private void generateCollection( RouterGenerator generator ) {
+        if ( generator.useUi()){
+            hasUi = true;
+            mySidebar.append("<table id='");                                 // NOI18N
+            mySidebar.append(generator.getSideBarId());
+            mySidebar.append("' class='tablesorter' >\n</table>\n");         // NOI18N
+            mySidebar.append("<div class='pager' id='pager'>\n");            // NOI18N
+            mySidebar.append("<img src='");                                  // NOI18N
+            mySidebar.append(TABLESORTER_URL);
+            mySidebar.append("addons/pager/icons/first.png' class='first' ");// NOI18N
+            mySidebar.append("alt='First'/>\n");                             // NOI18N
+            mySidebar.append("<img src='");                                  // NOI18N
+            mySidebar.append(TABLESORTER_URL);
+            mySidebar.append("addons/pager/icons/prev.png' class='prev' ");  // NOI18N
+            mySidebar.append("alt='Prev'/>\n");                              // NOI18N
+            mySidebar.append("<span class='pagedisplay'></span>");           // NOI18N   
+            mySidebar.append(" <!-- this can be any element, including an input -->\n");// NOI18N  
+            mySidebar.append("<img src='");                                  // NOI18N
+            mySidebar.append(TABLESORTER_URL);
+            mySidebar.append("addons/pager/icons/next.png' class='next' ");  // NOI18N
+            mySidebar.append("alt='Next'/>\n");                              // NOI18N
+            mySidebar.append("<img src='");                                  // NOI18N
+            mySidebar.append(TABLESORTER_URL);
+            mySidebar.append("addons/pager/icons/last.png' class='last' ");  // NOI18N
+            mySidebar.append("alt='Last'/>\n");                              // NOI18N                        
+            mySidebar.append("<select class='pagesize'>\n");                 // NOI18N
+            mySidebar.append("<option selected='selected' value='10'>");     // NOI18N
+            mySidebar.append("10</option>\n");                               // NOI18N
+            mySidebar.append("<option value='20'>20</option>\n");            // NOI18N
+            mySidebar.append("<option value='30'>30</option>\n");            // NOI18N
+            mySidebar.append("<option value='40'>40</option>\n");            // NOI18N
+            mySidebar.append("</select>\n</div>\n<br>\n");                   // NOI18N   
+        }
+        else {
+            mySidebar.append("<div id='");                                  // NOI18N
+            mySidebar.append(generator.getSideBarId());
+            mySidebar.append("'></div>\n");                                 // NOI18N
+        }
+    }
+
+    private void generateContent( RouterGenerator generator ) {
+        myContent.append("<div id='");                          // NOI18N
+        myContent.append(generator.getContentId());
+        myContent.append("'></div>\n");                         // NOI18N
     }
 
     private String removeParamTemplate( String path, String param ) {
@@ -718,6 +857,7 @@ class JSClientGenerator {
     }
     
     private RestServiceDescription myDescription;
+    private JsUi myUi;
     private StringBuilder myModels;
     private StringBuilder myRouters;
     private StringBuilder myHeader;
@@ -729,5 +869,6 @@ class JSClientGenerator {
     private Set<String> myEntities  = new HashSet<String>();
     private boolean isModelGenerated;
     private int myModelsCount;
+    private boolean hasUi;
 
 }

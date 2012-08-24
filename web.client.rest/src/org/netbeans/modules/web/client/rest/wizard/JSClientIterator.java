@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
@@ -188,6 +189,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         FileObject existedJQuery = (FileObject)myWizard.getProperty(
                 RestPanel.EXISTED_JQUERY);
         
+        JsUi ui = (JsUi)myWizard.getProperty(RestPanel.UI);
+        
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
                 FileObject libs = FileUtil.createFolder(project.
@@ -209,7 +212,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                 "TXT_GenerateModel"));   // NOI18N
-        JSClientGenerator generator = JSClientGenerator.create( description );
+        JSClientGenerator generator = JSClientGenerator.create( description, ui );
         Map<String,String> map = generator.generate() ;
         
         FileObject templateFO = FileUtil.getConfigFile("Templates/ClientSide/rest.js");  //NOI18N
@@ -226,7 +229,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                     "TXT_GenerateHtml"));                         // NOI18N
             FileObject html = createHtml( htmlFile , jsFile, existedBackbone , 
-                    existedUnderscore, existedJQuery , map );
+                    existedUnderscore, existedJQuery , map , generator );
         }
 
         handle.finish();
@@ -252,7 +255,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     
     private FileObject createHtml( File htmlFile, FileObject appFile, 
             FileObject backbone , FileObject underscore, FileObject jQuery,
-            Map<String,String> map) throws IOException 
+            Map<String,String> map, JSClientGenerator generator ) throws IOException 
     {
         File parentFile = htmlFile.getParentFile();
         parentFile.mkdirs();
@@ -266,6 +269,16 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         }
         
         StringBuilder builder = new StringBuilder();
+        
+        if ( generator.hasUi() ){
+            builder.append("<link rel='stylesheet' href='");                // NOI18N
+            builder.append(JSClientGenerator.TABLESORTER_URL);
+            builder.append("css/blue/style.css'>\n");                       // NOI18N
+            builder.append("<link rel='stylesheet' href='");                // NOI18N
+            builder.append(JSClientGenerator.TABLESORTER_URL);
+            builder.append("addons/pager/jquery.tablesorter.pager.css'>\n");// NOI18N
+        }
+        
         if ( underscore == null ){
             builder.append("<script src='http://documentcloud.github.com/underscore/underscore-min.js'>"); // NOI18N
             builder.append("</script>\n");  // NOI18N
@@ -293,6 +306,16 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("<script src='");// NOI18N
             builder.append(relativePath);
             builder.append("'></script>\n");  // NOI18N
+        }
+        
+        if ( generator.hasUi() ){
+            builder.append("<script src='");                                // NOI18N
+            builder.append(JSClientGenerator.TABLESORTER_URL);
+            builder.append("js/jquery.tablesorter.min.js'></script>\n");    // NOI18N
+            builder.append("<script src='");                                // NOI18N
+            builder.append(JSClientGenerator.TABLESORTER_URL);
+            builder.append("addons/pager/jquery.tablesorter.pager.js'>");   // NOI18N
+            builder.append("</script>\n");                                  // NOI18N
         }
         
         String relativePath = FileUtil.getRelativePath(folder, appFile );
