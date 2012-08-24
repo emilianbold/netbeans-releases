@@ -101,7 +101,7 @@ public class HashMapRepository implements Repository {
         }        
     }
     
-    private final Map<CharSequence, Unit> units;
+    private final Map<Integer, Unit> units;
     private static final class Lock {}
     private final Object unitsLock = new Lock();
     
@@ -110,7 +110,7 @@ public class HashMapRepository implements Repository {
      *  no need for public constructor
      */
     public HashMapRepository() {
-        units = new ConcurrentHashMap<CharSequence, Unit>();
+        units = new ConcurrentHashMap<Integer, Unit>();
     }
 
     /** Never returns null */
@@ -118,13 +118,13 @@ public class HashMapRepository implements Repository {
         int id = key.getUnitId();
         CharSequence name = key.getUnit();
         assert name != null;
-        Unit unit = units.get(name);
+        Unit unit = units.get(id);
         if (unit == null) {
             synchronized (unitsLock) {
-                unit = units.get(name);
+                unit = units.get(id);
                 if (unit == null) {
                     unit = new Unit(id, name);
-                    units.put(name, unit);
+                    units.put(id, unit);
                 }
             }
         }
