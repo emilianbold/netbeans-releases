@@ -124,6 +124,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=122, text=+}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=123, text= }
 FormattingToken{kind=TEXT, offset=124, text=r}
 FormattingToken{kind=WHITESPACE, offset=125, text=     }
@@ -169,6 +170,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=160, text=||}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=162, text=b}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=163, text=.}
@@ -221,6 +223,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=205, text=&&}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=207, text= }
 FormattingToken{kind=TEXT, offset=208, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
@@ -237,6 +240,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=218, text=||}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=220, text= }
 FormattingToken{kind=TEXT, offset=221, text=x}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
