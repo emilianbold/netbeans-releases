@@ -395,7 +395,7 @@ public class CssFileModel {
         //computed lazily
         private OffsetRange documentRange, documentBodyRange;
         private CharSequence elementText, elementLineText;
-        private int lineOffset;
+        private int lineOffset = -1;
 
         public LazyEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
             this.name = name;
