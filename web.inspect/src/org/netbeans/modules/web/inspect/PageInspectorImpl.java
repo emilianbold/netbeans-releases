@@ -390,10 +390,10 @@ public class PageInspectorImpl extends PageInspector {
                     // Message about selection mode modification
                     if (MESSAGE_SELECTION_MODE.equals(type)) {
                         boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
+                        pageModel.setSelectionMode(selectionMode);
                         if (!selectionMode) {
                             pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
                         }
-                        pageModel.setSelectionMode(selectionMode);
                     }
                 } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())
