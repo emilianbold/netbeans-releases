@@ -88,6 +88,8 @@ public class PageInspectorImpl extends PageInspector {
     public static final String PROP_MODEL = "model"; // NOI18N
     /** Name of the toolbar component responsible for selection mode switching. */
     private static final String SELECTION_MODE_COMPONENT_NAME = "selectionModeSwitch"; // NOI18N
+    /** Request processor for this class. */
+    static final RequestProcessor RP = new RequestProcessor(PageInspectorImpl.class.getName());
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     /** Current inspected page. */
@@ -220,7 +222,7 @@ public class PageInspectorImpl extends PageInspector {
                 @Override
                 public void itemStateChanged( ItemEvent e ) {
                     final boolean selectionMode = selectionModeButton.isSelected();
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             if (!selectionMode) {
@@ -335,8 +337,6 @@ public class PageInspectorImpl extends PageInspector {
         private static final String MESSAGE_SELECTION_MODE = "selection_mode"; // NOI18N
         /** Name of the attribute holding the new value of the selection mode. */
         private static final String MESSAGE_SELECTION_MODE_ATTR = "selectionMode"; // NOI18N
-        /** Request processor for this class. */
-        private RequestProcessor RP = new RequestProcessor(InspectionMessageListener.class.getName(), 5);
         /** Page model this message listener is related to. */
         private PageModel pageModel;
         /** Context of the page this listener is related to. */
