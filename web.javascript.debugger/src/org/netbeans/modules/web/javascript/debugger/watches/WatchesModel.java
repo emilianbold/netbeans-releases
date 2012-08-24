@@ -60,10 +60,11 @@ import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
-@DebuggerServiceRegistration(path="javascript-debuggerengine/WatchesView", types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
-public final class WatchesModel extends VariablesModel {
+@DebuggerServiceRegistration(path="javascript-debuggerengine/WatchesView", types={ TreeModelFilter.class, ExtendedNodeModel.class, TableModel.class })
+public final class WatchesModel extends VariablesModel implements TreeModelFilter {
 
     public static final String WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
@@ -78,20 +79,26 @@ public final class WatchesModel extends VariablesModel {
         listener = new WatchesListener(this);
     }
 
-    // TreeModel implementation ................................................
+    // TreeModelFilter implementation ................................................
 
     @Override
     public Object[] getChildren(Object parent, int from, int to)
             throws UnknownTypeException {
+        throw new IllegalStateException("TreeModelFilter.getChildren() should be called instead!");
+    }
+
+    @Override
+    public Object[] getChildren(TreeModel original, Object parent, int from, int to)
+            throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
         if (parent == ROOT) {
             evaluateWatches(frame);
-            return DebuggerManager.getDebuggerManager().getWatches();
+            return original.getChildren(parent, from, to);
         } else if (parent instanceof Watch && frame != null) {
             ScopedRemoteObject var = evaluateWatch(frame, (Watch)parent);
             if (var == null) {
                 return new Object[0];
-        } else {
+            } else {
                 return super.getChildren(var, from, to);
             }
         } else {
@@ -115,6 +122,11 @@ public final class WatchesModel extends VariablesModel {
     
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
+        throw new IllegalStateException("TreeModelFilter.isLeaf() should be called instead!");
+    }
+
+    @Override
+    public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
         if (node instanceof Watch) {
             if (frame == null) {
@@ -135,11 +147,16 @@ public final class WatchesModel extends VariablesModel {
             return super.isLeaf(node);
         }
     }
-
+    
     @Override
     public int getChildrenCount(Object node) throws UnknownTypeException {
+        throw new IllegalStateException("TreeModelFilter.getChildrenCount() should be called instead!");
+    }
+
+    @Override
+    public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            return DebuggerManager.getDebuggerManager().getWatches().length;
+            return original.getChildrenCount(node);
         } else if (node instanceof Watch) {
             CallFrame frame = getCurrentStack();
             if (frame == null) {
@@ -156,6 +173,11 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
+    @Override
+    public Object getRoot(TreeModel original) {
+        return super.getRoot();
+    }
+
     // NodeModel implementation ................................................
 
     @Override
