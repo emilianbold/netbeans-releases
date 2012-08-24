@@ -492,7 +492,9 @@ NetBeans_Preset.typeForIdent = function(ident) {
             return allTypes[i];
         }
     }
-    return null;
+    console.error('Type not found for ident: ' + ident);
+    // fallback, avoid NPE
+    return allTypes[0];
 }
 
 /**
