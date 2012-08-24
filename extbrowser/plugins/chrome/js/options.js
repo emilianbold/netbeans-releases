@@ -115,7 +115,7 @@ NetBeans_PresetCustomizer._registerEvents = function() {
         that._cancel();
     }, false);
     document.getElementById('presetCustomizerHelp').addEventListener('click', function() {
-        alert('[not implemented]');
+        alert('[TODO: not implemented]');
     }, false);
 }
 // put presets to the customizer?
@@ -133,7 +133,7 @@ NetBeans_PresetCustomizer._putNoPresets = function() {
     var info = document.createElement('td');
     info.setAttribute('colspan', '5');
     info.setAttribute('class', 'info');
-    info.appendChild(document.createTextNode("Window settings not available (NetBeans IDE is not running?)."));
+    info.appendChild(document.createTextNode(I18n.message('_WindowSettingsNotAvailable')));
     row.appendChild(info);
     this._rowContainer.appendChild(row);
 }
@@ -225,7 +225,7 @@ NetBeans_PresetCustomizer._cleanUp = function() {
 }
 // add a new preset
 NetBeans_PresetCustomizer._addPreset = function() {
-    var preset = new NetBeans_Preset(NetBeans_Preset.DESKTOP.ident, 'New...', '800', '600', true, false);
+    var preset = new NetBeans_Preset(NetBeans_Preset.DESKTOP.ident, I18n.message('_New_hellip'), '800', '600', true, false);
     this._presets.push(preset);
     this._putPresets([preset]);
     this._enableButtons();
