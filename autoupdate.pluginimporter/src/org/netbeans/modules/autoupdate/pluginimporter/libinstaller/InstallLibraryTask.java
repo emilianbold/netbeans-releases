@@ -84,7 +84,7 @@ public class InstallLibraryTask implements Runnable {
             LOG.fine("Content of $userdir/var/license_accepted: " + content);
             if (content != null && content.indexOf(JUNIT_APPROVED) != -1) {
                 // IDE license accepted, JUnit accpeted => let's install silently
-                LOG.fine(" IDE license accepted, JUnit accpeted => let's install silently"); 
+                LOG.fine(" IDE license accepted, JUnit accepted => let's install silently"); 
                 JUnitLibraryInstaller.install(true);
             } else if (content != null && content.indexOf(JUNIT_DENIED) != -1) {
                 // IDE license accepted but JUnit disapproved => do nothing
