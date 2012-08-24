@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
  */
 public class FormLAF {
     private static final String SWING_NOXP = "swing.noxp"; // NOI18N
+    private static final String NO_LAF_SWITCHING = "netbeans.form.no_laf_switching"; // NOI18N
     /** Determines whether the FormLAF has been initialized (e.g. DelegatingDefaults has been installed). */
     private static boolean initialized = false;
     /** Determines whether we already are in LAF block. */
@@ -90,6 +91,9 @@ public class FormLAF {
     }
     
     public static PreviewInfo initPreviewLaf(Class lafClass, ClassLoader formClassLoader) {
+        if (noLafSwitching()) {
+            return null;
+        }
         try {
             boolean previewLafIsMetal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
             if (!ideLafIsMetal && previewLafIsMetal &&
@@ -265,6 +269,9 @@ public class FormLAF {
     static Object executeWithLookAndFeel(final FormModel formModel, final Mutex.ExceptionAction act)
         throws Exception
     {
+        if (noLafSwitching()) {
+            return act.run();
+        }
         try {
             return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Object>() {
                 @Override
@@ -302,6 +309,10 @@ public class FormLAF {
     }
 
     public static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
+        if (noLafSwitching()) {
+            run.run();
+            return;
+        }
         Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
             @Override
             public Object run() {
@@ -335,6 +346,10 @@ public class FormLAF {
     }
 
     public static void executeWithLAFLocks(Runnable runnable) {
+        if (noLafSwitching()) {
+            runnable.run();
+            return;
+        }
         synchronized (Introspector.class) {
             synchronized (UIManager.getDefaults()) {
                 runnable.run();
@@ -415,6 +430,9 @@ public class FormLAF {
     private static Map<Object,Object> classLoaderDefaults;
 
     static void setUseDesignerDefaults(FormModel formModel) {
+        if (noLafSwitching()) {
+            return;
+        }
         ClassLoader classLoader = null;
         UIDefaults defaults = UIManager.getDefaults();
         if (formModel == null) {
@@ -442,6 +460,9 @@ public class FormLAF {
     static String oldNoXP;
     static Object origLAF;
     public static void setUsePreviewDefaults(ClassLoader classLoader, PreviewInfo info) {
+        if (noLafSwitching()) {
+            return;
+        }
         boolean classic = (info == null)
             ? ((previewLaf == null) ? false : isClassicWinLAF(previewLaf.getName()))
             : isClassicWinLAF(info.lafClass.getName());
@@ -513,7 +534,11 @@ public class FormLAF {
     }
     
     public static boolean inLAFBlock() {
-        return preview || delDefaults.isDelegating();
+        return preview || (!noLafSwitching() && delDefaults.isDelegating());
+    }
+
+    public static boolean noLafSwitching() {
+        return Boolean.getBoolean(NO_LAF_SWITCHING);
     }
 
     /**
