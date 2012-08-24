@@ -98,7 +98,7 @@ abstract class AbstractCompletionItem implements CompletionItem {
         return text;
     }
     
-    protected int getCaretShift() {
+    protected int getCaretShift(Document d) {
         return getSubstituteText().length();
     }
 
@@ -115,7 +115,7 @@ abstract class AbstractCompletionItem implements CompletionItem {
         bd.extWriteLock();
         try {
             substPos = bd.createPosition(substOffset);
-            doSubstituteText(c, d, text);
+            doSubstituteText(c, bd, text);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -123,15 +123,29 @@ abstract class AbstractCompletionItem implements CompletionItem {
         }
     }
     
-    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+    protected void doSubstituteText(JTextComponent c, BaseDocument d, String text) throws BadLocationException {
         int offset = getSubstOffset();
         String old = d.getText(offset, length);
+        int nextOffset = ctx.getNextCaretPos();
+        Position p = null;
+        
+        if (nextOffset >= 0) {
+            p = d.createPosition(nextOffset);
+        }
         if (text.equals(old)) {
-            c.setCaretPosition(offset + getCaretShift());
+            if (p != null) {
+                c.setCaretPosition(p.getOffset());
+            } else {
+                c.setCaretPosition(offset + getCaretShift(d));
+            }
         } else {
             d.remove(offset, length);
             d.insertString(offset, text, null);
-            c.setCaretPosition(offset + getCaretShift());
+            if (p != null) {
+                c.setCaretPosition(p.getOffset());
+            } else {
+                c.setCaretPosition(offset + getCaretShift(d));
+            }
         }
     }
 

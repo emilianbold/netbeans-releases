@@ -107,7 +107,7 @@ public class PropertyCompleter extends InstanceCompleter {
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
 
-            if (existingPropNames.contains(s)) {
+            if (existingPropNames.contains(s) && !ctx.isReplaceExisting()) {
                 continue;
             }
 

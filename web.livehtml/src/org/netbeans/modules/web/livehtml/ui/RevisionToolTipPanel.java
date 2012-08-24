@@ -48,6 +48,7 @@ import javax.swing.SingleSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.ui.data.DataToolTipProvider;
 import org.netbeans.modules.web.livehtml.ui.stacktrace.StackTraceToolTipProvider;
@@ -64,10 +65,10 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
     /**
      * Creates new form RevisionToolTipPanel
      */
-    public RevisionToolTipPanel() {
+    public RevisionToolTipPanel(Project p) {
         initComponents();
         
-        revisionToolTipServices.add(new StackTraceToolTipProvider());
+        revisionToolTipServices.add(new StackTraceToolTipProvider(p));
 //        revisionToolTipServices.add(new ChangesToolTipProvider());
         revisionToolTipServices.add(new DataToolTipProvider());
         
@@ -138,7 +139,7 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+            .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -149,7 +150,8 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(7, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

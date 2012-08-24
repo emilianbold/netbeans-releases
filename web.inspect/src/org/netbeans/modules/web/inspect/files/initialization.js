@@ -215,18 +215,55 @@ NetBeans.repaintGlassPane = function() {
         }
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = "#0000FF";
-        NetBeans.paintElements(ctx, NetBeans.selection);
+        NetBeans.paintSelectedElements(ctx, NetBeans.selection);
         ctx.globalAlpha = 0.25;
-        NetBeans.paintElements(ctx, NetBeans.highlight);
+        NetBeans.paintHighlightedElements(ctx, NetBeans.highlight);
     } else {
         console.log('canvas.getContext not supported!');
     }
 }
 
-NetBeans.paintElements = function(ctx, elements) {
+NetBeans.paintSelectedElements = function(ctx, elements) {
+    ctx.lineWidth = 2;
+    var dash = 3;
+    var dashedLine = function(x, y, dx, dy, length) {
+        var d = Math.max(dx,dy);
+        var i;
+        for (i=0; i<length/(2*d); i++) {
+            ctx.moveTo(x+Math.min(2*i*dx,length),y+Math.min(2*i*dy,length));
+            ctx.lineTo(x+Math.min(2*i*dx+dx,length),y+Math.min(2*i*dy+dy,length));
+        }
+    }
     for (var i=0; i<elements.length; i++) {
         var selectedElement = elements[i];
         var rects = selectedElement.getClientRects();
+        for (var j=0; j<rects.length; j++) {
+            var rect = rects[j];
+            ctx.strokeStyle = '#0000FF';
+            ctx.beginPath();
+            dashedLine(rect.left,rect.top,dash,0,rect.width);
+            dashedLine(rect.left,rect.top+rect.height,dash,0,rect.width);
+            dashedLine(rect.left,rect.top,0,dash,rect.height);
+            dashedLine(rect.left+rect.width,rect.top,0,dash,rect.height);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.beginPath();
+            dashedLine(rect.left+dash,rect.top,dash,0,rect.width-dash);
+            dashedLine(rect.left+dash,rect.top+rect.height,dash,0,rect.width-dash);
+            dashedLine(rect.left,rect.top+dash,0,dash,rect.height-dash);
+            dashedLine(rect.left+rect.width,rect.top+dash,0,dash,rect.height-dash);
+            ctx.stroke();
+            
+            ctx.beginPath();
+        }
+    }
+}
+
+NetBeans.paintHighlightedElements = function(ctx, elements) {
+    for (var i=0; i<elements.length; i++) {
+        var highlightedElement = elements[i];
+        var rects = highlightedElement.getClientRects();
         for (var j=0; j<rects.length; j++) {
             var rect = rects[j];
             ctx.fillRect(rect.left, rect.top, rect.width, rect.height);

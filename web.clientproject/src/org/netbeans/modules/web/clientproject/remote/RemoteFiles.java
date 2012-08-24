@@ -49,9 +49,11 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.html.editor.api.index.HtmlIndex;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.openide.filesystems.FileObject;
-import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -62,7 +64,6 @@ import org.openide.util.RequestProcessor;
 public class RemoteFiles {
 
     private ClientSideProject project;
-    private RequestProcessor RP = new RequestProcessor();
     private List<URL> urls;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
@@ -89,24 +90,16 @@ public class RemoteFiles {
     }
     
     private void update() {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-// 215101 prevents me from using ParserManager.parseWhenScanFinished;
-// adding 500 dalay for task to run to give indexing enough time to finish
-                
-//                try {
-//                    ParserManager.parseWhenScanFinished("text/html", new UserTask() {
-//                        @Override
-//                        public void run(ResultIterator resultIterator) throws Exception {
-                            updateRemoteFiles();
-//                        }
-//                    });
-//                } catch (ParseException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-            }
-        }, 500);
+        try {
+            ParserManager.parseWhenScanFinished("text/html", new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    updateRemoteFiles();
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     private void updateRemoteFiles() {

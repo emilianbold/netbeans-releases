@@ -7,7 +7,9 @@ FormattingToken{kind=AFTER_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=4, text=!}
 FormattingToken{kind=AFTER_UNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=5, text=window}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=11, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=12, text=Element}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=19, text=)}
@@ -25,6 +27,7 @@ FormattingToken{kind=WHITESPACE, offset=34, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=35, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=36, text= }
 FormattingToken{kind=TEXT, offset=37, text=new}
 FormattingToken{kind=WHITESPACE, offset=40, text= }
@@ -54,6 +57,7 @@ FormattingToken{kind=TEXT, offset=61, text=a}
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=62, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=63, text=1}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}

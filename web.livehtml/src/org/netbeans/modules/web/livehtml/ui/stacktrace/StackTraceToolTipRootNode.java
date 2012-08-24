@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.livehtml.ui.stacktrace;
 
 import org.json.simple.JSONArray;
+import org.netbeans.api.project.Project;
 import org.openide.nodes.AbstractNode;
 
 /**
@@ -50,8 +51,8 @@ import org.openide.nodes.AbstractNode;
  */
 public class StackTraceToolTipRootNode extends AbstractNode {
 
-    public StackTraceToolTipRootNode(JSONArray stackTrace) {
-        super(new StackTraceToolTipNodeContainer(stackTrace));
+    public StackTraceToolTipRootNode(JSONArray stackTrace, Project p) {
+        super(new StackTraceToolTipNodeContainer(stackTrace, p));
         setDisplayName("Root");
     }
     

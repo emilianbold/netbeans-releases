@@ -132,7 +132,7 @@ public final class ExternalBrowserPlugin {
     private String urlToString(URL url) {
         try {
             // try to 'normalize' the URL
-            return url.toURI().toASCIIString();
+            return url.toURI().toASCIIString().toLowerCase();
         } catch (URISyntaxException ex) {
             return url.toExternalForm();
         }
@@ -163,7 +163,9 @@ public final class ExternalBrowserPlugin {
     }
 
     public void detachWebKitDebugger(BrowserTabDescriptor tab) {
-        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
+        if (tab != null) {
+            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
+        }
     }
 
     public void sendWebKitDebuggerCommand(BrowserTabDescriptor tab, JSONObject command) {

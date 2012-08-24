@@ -308,6 +308,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall4.js");
     }
 
+    public void testFunctionCall5Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testFunctionCall5Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapNever.formatted");
+    }
+
+    public void testFunctionCall5IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFunctionCall5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionCall5.js");
+    }
+
     public void testComments1() throws Exception {
         reformatFileContents("testfiles/formatter/comments1.js",new IndentPrefs(4, 4));
     }
@@ -856,6 +878,64 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testOperators1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/operators1.js");
+    }
+
+    public void testOperators2BinaryWrapAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".binary.wrapAlways.formatted");
+    }
+
+    public void testOperators2BinaryWrapNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".binary.wrapNever.formatted");
+    }
+
+    public void testOperators2BinaryWrapIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".binary.wrapIfLong.formatted");
+    }
+
+    public void testOperators2AssignmentWrapAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".assignment.wrapAlways.formatted");
+    }
+
+    public void testOperators2AssignmentWrapNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".assignment.wrapNever.formatted");
+    }
+
+    public void testOperators2AssignmentWrapIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".assignment.wrapIfLong.formatted");
+    }
+
+    public void testOperators2TernaryWrapAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapAlways.formatted");
+    }
+
+    public void testOperators2TernaryWrapNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapNever.formatted");
+    }
+
+    public void testOperators2TernaryWrapIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapIfLong.formatted");
+    }
+
+    public void testOperators2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/operators2.js");
     }
 
     public void testSpacesSemicolons1Enabled() throws Exception {

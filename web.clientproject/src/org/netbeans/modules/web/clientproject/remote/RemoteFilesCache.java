@@ -131,7 +131,7 @@ public class RemoteFilesCache {
             is = url.openStream();
         } catch (FileNotFoundException ex) {
             is = new ByteArrayInputStream(("file not found at "+url.toExternalForm()+" \n"+ex.toString()).getBytes());
-        } catch (IOException ex) {
+        } catch (Throwable ex) {
             is = new ByteArrayInputStream(("could not open stream for "+url.toExternalForm()+" \n"+ex.toString()).getBytes());
         }
         OutputStream os = null;

@@ -177,7 +177,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     @Override
     public void deactivate() {
         if (browserSupport != null) {
-            getBrowserSupport().close(true);
+            getBrowserSupport().close(false);
         }
     }
 

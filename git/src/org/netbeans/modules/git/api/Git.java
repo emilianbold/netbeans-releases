@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.clone.CloneAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
 
 /**
@@ -71,6 +72,15 @@ public final class Git {
 
     public static void addRecentUrl(String url) throws URISyntaxException {
         GitModuleConfig.getDefault().insertRecentConnectionSettings(new ConnectionSettings(new GitURI(url)));
+    }
+
+    public static boolean isOwner (File file) {
+        return org.netbeans.modules.git.Git.getInstance().isManaged(file);
+    }
+
+    public static void openSearchHistory (File file, String commitId) {
+        SearchHistoryAction.openSearch(org.netbeans.modules.git.Git.getInstance().getRepositoryRoot(file), 
+                file, file.getName(), commitId);
     }
     
 }

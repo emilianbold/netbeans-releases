@@ -163,9 +163,17 @@ import org.openide.util.Parameters;
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable, 
         CndFileSystemProvider.CndFileSystemProblemListener {
-    
+
+    protected ProjectBase(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
+        this(model, fs, (Object) platformProject, name);
+    }
+
+    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name) {
+        this(model, fs, (Object) platformProject, name);
+    }
+
     /** Creates a new instance of CsmProjectImpl */
-    protected ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         this.uniqueName = getUniqueName(fs, platformProject);
         Key key = createProjectKey(fs, platformProject);
@@ -177,13 +185,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         init(model, platformProject);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();
-        declarationsSorageKey = new ProjectDeclarationContainerKey(getUniqueName());
+        declarationsSorageKey = new ProjectDeclarationContainerKey(unitId);
         weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
-        classifierStorageKey = new ClassifierContainerKey(getUniqueName());
+        classifierStorageKey = new ClassifierContainerKey(unitId);
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
-        fileContainerKey = new FileContainerKey(getUniqueName());
+        fileContainerKey = new FileContainerKey(unitId);
         weakFileContainer = new WeakContainer<FileContainer>(this, fileContainerKey);
-        graphStorageKey = new GraphContainerKey(getUniqueName());
+        graphStorageKey = new GraphContainerKey(unitId);
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
         includedFileContainer = new IncludedFileContainer(this);
         initFields();
@@ -211,6 +219,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         this.platformProject = platformProject;
         // remember in repository
         RepositoryUtils.hang(this);
@@ -435,11 +444,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** Gets an object, which represents correspondent IDE project */
     @Override
     public final Object getPlatformProject() {
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         return platformProject;
     }
 
     /** Gets an object, which represents correspondent IDE project */
-    protected final void setPlatformProject(Object platformProject) {
+    protected final void setPlatformProject(CharSequence platformProject) {
+        setPlatformProjectImpl(platformProject);
+    }
+
+    protected final void setPlatformProject(NativeProject platformProject) {
+        setPlatformProjectImpl(platformProject);
+    }
+
+    private void setPlatformProjectImpl(Object platformProject) {
+        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         CndUtils.assertTrue(this.platformProject == null);
         CndUtils.assertNotNull(platformProject, "Passing null project for ", this);
         this.platformProject = platformProject;
@@ -1006,7 +1025,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void reopenUnit() {
         setStatus(Status.Initial);
         ParserQueue.instance().clean(this);
-        RepositoryUtils.closeUnit(this.getUniqueName(), null, true);
+        RepositoryUtils.closeUnit(this.getUnitId(), null, true);
         RepositoryUtils.openUnit(this);
         RepositoryUtils.hang(this);
         initFields();
@@ -2745,13 +2764,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected final Set<CharSequence> getRequiredUnits() {
-        Set<CharSequence> requiredUnits = new HashSet<CharSequence>();
+    private Set<Integer> getRequiredUnits() {
+        Set<Integer> requiredUnits = new HashSet<Integer>();
         for (Key dependent : this.getLibrariesKeys()) {
-            requiredUnits.add(dependent.getUnit());
+            requiredUnits.add(dependent.getUnitId());
         }
         return requiredUnits;
-    }
+    }    
 
 //    private void disposeFiles() {
 //        Collection<FileImpl> list = getFileContainer().getFileImpls();
@@ -3329,6 +3348,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CharSequence name;
     private CsmUID<CsmNamespace> globalNamespaceUID;
     private NamespaceImpl FAKE_GLOBAL_NAMESPACE;
+    /** Either NativeProject or CharSequence */
     private volatile Object platformProject;
     private final FileSystem fileSystem;
 
@@ -3402,7 +3422,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
-        aStream.writeInt(unitId);
+        aStream.writeUnitId(unitId);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
@@ -3477,7 +3497,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.hasFileSystemProblems = aStream.readBoolean();
     }
 
-    protected int getUnitId() {
+    public int getUnitId() {
         return unitId;
     }
 

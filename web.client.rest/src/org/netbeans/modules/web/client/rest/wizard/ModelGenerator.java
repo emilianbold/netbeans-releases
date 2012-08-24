@@ -66,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.client.rest.wizard.JSClientGenerator.HttpRequests;
 import org.netbeans.modules.web.client.rest.wizard.JSClientGenerator.MethodType;
+import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 
@@ -80,11 +81,12 @@ class ModelGenerator {
     private static final String ID = "javax.persistence.Id";         // NOI18N
     
     ModelGenerator(RestServiceDescription description , 
-            StringBuilder builder, Set<String> entities )
+            StringBuilder builder, Set<String> entities , JsUi ui)
     {
         myDescription = description;
         myCommonModels = builder;
         myEntities = entities;
+        myUi = ui;
     }
 
     void generateModel(TypeElement entity, String path,
@@ -181,6 +183,34 @@ class ModelGenerator {
         myCommonModels.append("\",\n");                              // NOI18N
         myCommonModels.append( getModifierdSync(""));
         myCommonModels.append("});\n\n");                            // NOI18N
+    }
+    
+    JsUi getUi(){
+        return myUi;
+    }
+    
+    boolean hasCollection(){
+        return myCollectionModelName!= null;
+    }
+    
+    Set<ModelAttribute> getAttributes(){
+        return myAttributes;
+    }
+    
+    String getDisplayNameAlias(){
+        return myDisplayNameAlias;
+    }
+    
+    String getModelName(){
+        return myModelName;
+    }
+    
+    String getCollectionModelName(){
+        return myCollectionModelName;
+    }
+    
+    ModelAttribute getIdAttribute(){
+        return myIdAttribute;
     }
     
     private String overrideSync( String url,
@@ -492,29 +522,10 @@ class ModelGenerator {
         return path;
     }
     
-    Set<ModelAttribute> getAttributes(){
-        return myAttributes;
-    }
-    
-    String getDisplayNameAlias(){
-        return myDisplayNameAlias;
-    }
-    
-    String getModelName(){
-        return myModelName;
-    }
-    
-    String getCollectionModelName(){
-        return myCollectionModelName;
-    }
-    
-    ModelAttribute getIdAttribute(){
-        return myIdAttribute;
-    }
-    
     private StringBuilder myCommonModels;
     private RestServiceDescription myDescription;
     private Set<String> myEntities ;
+    private JsUi myUi;
     private Set<ModelAttribute> myAttributes;
     private String myDisplayNameAlias;
     private String myModelName;

@@ -44,11 +44,13 @@ package org.netbeans.modules.web.client.rest.wizard;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.web.client.rest.wizard.JSClientGenerator.HttpRequests;
+import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 
 
 /**
@@ -57,22 +59,22 @@ import org.netbeans.modules.web.client.rest.wizard.JSClientGenerator.HttpRequest
  */
 class RouterGenerator {
     
-    RouterGenerator(StringBuilder routers, String name ){
+    RouterGenerator(StringBuilder routers, String name , ModelGenerator generator){
         myRouters = routers;
         myRouterName = name;
+        myModelGenerator = generator;
     }
 
     void generateRouter( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths,
-            Map<HttpRequests, Boolean> useIds, CompilationController controller, 
-            ModelGenerator modelGenerator )
+            Map<HttpRequests, Boolean> useIds, CompilationController controller)
     {
         myRouters.append("var ");                                         // NOI18N
         myRouters.append(myRouterName);
         myRouters.append(" = Backbone.Router.extend({\n");                // NOI18N
         
         boolean hasCollection = collectionPath != null; 
-        String modelVar = modelGenerator.getModelName().toLowerCase(Locale.ENGLISH);
+        String modelVar = getModelGenerator().getModelName().toLowerCase(Locale.ENGLISH);
         /*
          *  Fill routes
          */
@@ -109,10 +111,15 @@ class RouterGenerator {
         myRouters.append("}).render().el);\n},\n");                       // NOI18N
         
         if ( hasCollection ){
-            mySideBarId = "sidebar";                                      // NOI18N
+            if ( useUi() ){
+                mySideBarId = "datatable";                                // NOI18N
+            }
+            else {
+                mySideBarId = "sidebar";                                  // NOI18N
+            }
             myRouters.append("list:function () {\n");                     // NOI18N
             myRouters.append("this.collection = new models.");            // NOI18N
-            myRouters.append(modelGenerator.getCollectionModelName());
+            myRouters.append(getModelGenerator().getCollectionModelName());
             myRouters.append("();\nvar self = this;\n");                  // NOI18N
             myRouters.append("this.collection.fetch({\n");                // NOI18N
             myRouters.append("success:function () {\n");                  // NOI18N
@@ -128,12 +135,36 @@ class RouterGenerator {
             myRouters.append("templateName : '#");                        // NOI18N
             myRouters.append(myListItemTemplate);
             myRouters.append("'\n});\n");                                 // NOI18N
-            myRouters.append("$('#");                                      // NOI18N
-            myRouters.append(mySideBarId);
-            myRouters.append("').html(self.listView.render().el);\n");    // NOI18N
-            myRouters.append("if (self.requestedId) {\n");                // NOI18N
-            myRouters.append("self.details(self.requestedId);\n");        // NOI18N
-            myRouters.append("}\n}\n});\n},\n");                          // NOI18N
+            myRouters.append("$('#");                                     // NOI18N
+            myRouters.append(getSideBarId());
+            myRouters.append("').html(self.listView.render().el)");       // NOI18N
+            if ( useUi() ){
+                myRouters.append(".append(_.template($('#");              // NOI18N
+                myRouters.append(getTableHeadId());
+                myRouters.append("').html())())");
+            }
+            myRouters.append(";\nif (self.requestedId) {\n");             // NOI18N
+            myRouters.append("self.details(self.requestedId);\n}\n");     // NOI18N
+            if ( useUi() ){
+                myRouters.append("var pagerOptions = {\n");                   // NOI18N
+                myRouters.append("// target the pager markup \n");            // NOI18N
+                myRouters.append("container: $('.pager'),\n");                // NOI18N
+                myRouters.append("// output string - default is ");           // NOI18N
+                myRouters.append("'{page}/{totalPages}'; possible");          // NOI18N
+                myRouters.append("variables: {page}, {totalPages},");         // NOI18N
+                myRouters.append("{startRow}, {endRow} and {totalRows}\n");   // NOI18N
+                myRouters.append("output: '{startRow} to");                   // NOI18N
+                myRouters.append(" {endRow} ({totalRows})',\n");              // NOI18N
+                myRouters.append("// starting page of the pager (zero based index)\n");// NOI18N
+                myRouters.append("page: 0,\n");                               // NOI18N
+                myRouters.append("// Number of visible rows - default is 10\n");// NOI18N
+                myRouters.append("size: 10\n};\n$('#");                       // NOI18N
+                myRouters.append(getSideBarId());
+                myRouters.append("').tablesorter({widthFixed: true, \n");     // NOI18N
+                myRouters.append("widgets: ['zebra']}).\n");                  // NOI18N
+                myRouters.append("tablesorterPager(pagerOptions);\n");        // NOI18N
+            }
+            myRouters.append("}\n});\n},\n");                             // NOI18N
         }
         
         StringBuilder builder = new StringBuilder("tpl-");                // NOI18N
@@ -179,7 +210,7 @@ class RouterGenerator {
             myRouters.append("this.");                                    // NOI18N 
             myRouters.append(modelVar);
             myRouters.append(" = models.");                               // NOI18N 
-            myRouters.append(modelGenerator.getModelName());
+            myRouters.append(getModelGenerator().getModelName());
             myRouters.append("();\nthis.");                               // NOI18N
             myRouters.append(modelVar);
             myRouters.append(".fetch({\n");                               // NOI18N
@@ -203,7 +234,7 @@ class RouterGenerator {
             myRouters.append("var self = this;\n");                       // NOI18N
             
             myRouters.append("var dataModel = new models.");
-            myRouters.append( modelGenerator.getModelName());
+            myRouters.append( getModelGenerator().getModelName());
             myRouters.append("();\n");                                    // NOI18N
             myRouters.append(" // see isNew() method implementation in the model\n");// NOI18N
             myRouters.append("dataModel.notSynced = true;\n");            // NOI18N
@@ -232,20 +263,50 @@ class RouterGenerator {
         // add method getData which returns composite object data got from HTML controls 
         myRouters.append("getData: function(){\n");                       // NOI18N
         myRouters.append("return {\n");                                   // NOI18N
-        String mainModelAttribute = modelGenerator.getDisplayNameAlias();
-        myRouters.append("/*\n * get values from the HTML controls and"); // NOI18N
-        myRouters.append(" put them here as a hash of attributes\n");     // NOI18N
-        myRouters.append(" * f.e.\n * ");                                 // NOI18N
-        myRouters.append(mainModelAttribute);
-        myRouters.append(":$('#");                                        // NOI18N
-        myRouters.append(mainModelAttribute);
-        myRouters.append("').val(),\n * ....\n */\n");                    // NOI18N
+        if ( useUi() ){
+            ModelAttribute id = getModelGenerator().getIdAttribute();
+            if ( id!= null ){
+                myRouters.append(id.getName());
+                myRouters.append(":$('#");                                // NOI18N
+                myRouters.append(id.getName());
+                myRouters.append("').val(),\n");                          // NOI18N
+            }
+            Set<ModelAttribute> attributes = getModelGenerator().getAttributes();
+            int size = attributes.size();
+            int i=0;
+            for (ModelAttribute attribute : attributes) {
+                myRouters.append(attribute.getName());
+                myRouters.append(":$('#");                                // NOI18N
+                myRouters.append(attribute.getName());
+                myRouters.append("').val()");                             // NOI18N
+                i++;
+                if ( i <size ){
+                    myRouters.append(',');
+                }
+                myRouters.append("\n");                                   // NOI18N
+            }
+        }
+        else {
+            String mainModelAttribute = getModelGenerator()
+                    .getDisplayNameAlias();
+            myRouters.append("/*\n * get values from the HTML controls and"); // NOI18N
+            myRouters.append(" put them here as a hash of attributes\n"); // NOI18N
+            myRouters.append(" * f.e.\n * ");                             // NOI18N
+            myRouters.append(mainModelAttribute);
+            myRouters.append(":$('#");                                    // NOI18N
+            myRouters.append(mainModelAttribute);
+            myRouters.append("').val(),\n * ....\n */\n");                // NOI18N
+        }
         myRouters.append("};\n}\n");                                      // NOI18N
         
         myRouters.append("});\n");                                        // NOI18N
         myRouters.append("new ");                                         // NOI18N
         myRouters.append(myRouterName);                              
         myRouters.append("();\n");                                        // NOI18N
+    }
+    
+    ModelGenerator getModelGenerator(){
+        return myModelGenerator;
     }
     
     String getDetailsTemplate(){
@@ -260,11 +321,26 @@ class RouterGenerator {
         return "tpl-create";                                               // NOI18N
     }
     
+    String getTableHeadId(){
+        return "thead";                                                    // NOI18N
+    }
+    
     String getHeaderId(){
+        if ( useUi() ){
+            return "create";                                               // NOI18N
+        }
         return "header";                                                   // NOI18N
     }
     
+    boolean useUi(){
+        return getModelGenerator().hasCollection() && 
+                getModelGenerator().getUi() == JsUi.TABLESORTER;
+    }
+    
     String getContentId(){
+        if ( useUi() ){
+            return "details";                                              // NOI18N
+        }
         return "content";                                                  // NOI18N
     }
     
@@ -272,6 +348,7 @@ class RouterGenerator {
         return mySideBarId;
     }
     
+    private ModelGenerator myModelGenerator;
     private StringBuilder myRouters;
     private String myRouterName;
     private String myDetailsTemplateName;

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.livehtml.ui.stacktrace;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.simple.JSONArray;
+import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -54,9 +55,11 @@ import org.openide.nodes.Node;
 public class StackTraceToolTipNodeContainer extends Children.Keys<JSONArray> {
     
     private final JSONArray stackTrace;
+    private Project p;
 
-    public StackTraceToolTipNodeContainer(JSONArray stackTrace) {
+    public StackTraceToolTipNodeContainer(JSONArray stackTrace,Project p) {
         this.stackTrace = stackTrace;
+        this.p = p;
     }
 
     @Override
@@ -69,7 +72,7 @@ public class StackTraceToolTipNodeContainer extends Children.Keys<JSONArray> {
         List<Node> nodes = new ArrayList<Node>();
         
         for (Object object : key) {
-            nodes.add(new StackTraceToolTipLeafNode(object));
+            nodes.add(new StackTraceToolTipLeafNode(object, p));
         }
         
         return nodes.toArray(new Node[nodes.size()]);

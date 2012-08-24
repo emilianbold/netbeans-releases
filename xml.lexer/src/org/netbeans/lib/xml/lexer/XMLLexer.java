@@ -929,6 +929,8 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                         state = ISA_REF_HASH;
                         break;
                     }
+                    // get back to &, proclaim as character, although not according to spec.
+                    input.backup(1);
                     state = subState;
                     continue;
                     

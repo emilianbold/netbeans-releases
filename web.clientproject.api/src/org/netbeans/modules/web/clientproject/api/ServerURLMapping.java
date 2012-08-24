@@ -53,6 +53,7 @@ import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Provides mapping between project's source file and its location on server
@@ -70,6 +71,8 @@ public final class ServerURLMapping {
      *   not accessible
      */
     public static URL toServer(Project p, FileObject projectFile) {
+        Parameters.notNull("project", p);
+        Parameters.notNull("projectFile", projectFile);
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             URL u = impl.toServer(projectFile);
@@ -98,6 +101,8 @@ public final class ServerURLMapping {
      * @return returns null if nothing is known about this server URL
      */
     public static FileObject fromServer(Project p, URL serverURL) {
+        Parameters.notNull("project", p);
+        Parameters.notNull("serverURL", serverURL);
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             FileObject fo = impl.fromServer(serverURL);

@@ -188,9 +188,9 @@
                   <Connection code="CloneableEditorSupport.getEditorKit(&quot;text/html&quot;)" type="code"/>
                 </Property>
               </Properties>
-              <Events>
-                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="revisionEditorPaneMouseMoved"/>
-              </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MyEditorPane(this)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

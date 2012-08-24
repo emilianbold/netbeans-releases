@@ -68,6 +68,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
+import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 
@@ -219,13 +220,13 @@ public final class CompletionContext {
     
     private FxmlParserResult    fxmlParserResult;
     
-    private TokenHierarchy hierarchy;
+    private TokenHierarchy<?> hierarchy;
     
     private List<? extends FxNode>  parents;
     
     private FxNode  elementParent;
     
-    public CompletionContext(CompletionResultSet set, Document doc, int offset, int completionType) {
+    public CompletionContext(Document doc, int offset, int completionType) {
         this.doc = doc;
         this.caretOffset = offset;
         this.completionType = completionType;
@@ -300,15 +301,30 @@ public final class CompletionContext {
     @SuppressWarnings("unchecked")
     private void processTokens(TokenHierarchy h) {
         TokenSequence<XMLTokenId> ts = (TokenSequence<XMLTokenId>)h.tokenSequence();
+        
+        readRootElement(ts);
+
+        // no completion after root end:
+        FxModel m = fxmlParserResult.getSourceModel();
+        FxNode n = m.getRootComponent();
+        if (n != null) {
+            TextPositions pos = fxmlParserResult.getTreeUtilities().positions(n);
+            int end = pos.getEnd();
+            // if root is not defined, offer.
+            if (caretOffset >= end && pos.isDefined(TextPositions.Position.End)) {
+                type = Type.UNKNOWN;
+            }
+        }
+
         processType(ts);
         processValueType();
         
-        readRootElement(ts);
         
         // do not allow real content before root tag
-        if (caretOffset < rootTagStartOffset) {
+        if (rootTagStartOffset != -1 && caretOffset < rootTagStartOffset) {
             switch (type) {
                 case BEAN:
+                case PROPERTY_VALUE:
                 case PROPERTY_ELEMENT:
                 case CHILD_ELEMENT:
                 case ROOT:
@@ -323,10 +339,23 @@ public final class CompletionContext {
         
         processPath();
         
+        // no parents above
+        if (parents.size() == 1) {
+            switch (type) {
+                case PROPERTY_VALUE:
+                    type = Type.UNKNOWN;
+                    break;
+                    
+                case PROPERTY_ELEMENT:
+                case CHILD_ELEMENT:
+                    type = Type.BEAN;
+            }
+        }
+        
         // try to narrow the CHILD_ELEMENT if possible:
         if (getType() == Type.CHILD_ELEMENT && !getParents().isEmpty()) {
             List<? extends FxNode> parents = getParents();
-            FxNode n = parents.get(0);
+            n = parents.get(0);
             if (n.getKind() == FxNode.Kind.Property) {
                 type = Type.BEAN;
             } else if (n.getKind() == FxNode.Kind.Instance) {
@@ -347,7 +376,95 @@ public final class CompletionContext {
                 }
             }
         }
+        findNextCaretPos(ts);
     }
+    
+    private boolean replaceExisting;
+
+    public boolean isReplaceExisting() {
+        return replaceExisting;
+    }
+    
+    private void findNextCaretPos(TokenSequence ts) {
+        int off = ts.move(caretOffset);
+        Token<XMLTokenId>  t;
+        if (off == 0 && caretOffset == startOffset) {
+            return;
+        }
+        
+        switch (type) {
+            case PROPERTY: {
+                // the next position is within the value, if it is present
+                while (ts.moveNext()) {
+                    t = ts.token();
+                    switch (t.id()) {
+                        case ARGUMENT:
+                        case OPERATOR:
+                        case WS:
+                            break;
+
+                        case VALUE:
+                            replaceExisting = true;
+                            nextCaretPos = ts.offset() + 1;
+                            return;
+
+                        default:
+                            return;
+                    }
+                }
+                break;
+            }
+            case ROOT:
+            case BEAN:
+            case CHILD_ELEMENT:
+            case PROPERTY_ELEMENT:
+                // do not search, if the prefix is just "<" and nothing important follows
+                if (prefix.length() == 1 && this.tokenTail == 0) {
+                    return;
+                }
+                // after the > sign, or the 1st attribute start
+                while (ts.moveNext()) {
+                    t = ts.token();
+                    switch (t.id()) {
+                        case WS:
+                            break;
+
+                        case TAG:
+                            if (ts.offset() == startOffset) {
+                                break;
+                            }
+                            if (t.text().charAt(0) != '>' || (t.length() >= 2 && t.text().subSequence(0, 1).toString().equals("/>"))) {
+                                replaceExisting = true;
+                                return;
+                            }
+                            replaceExisting = true;
+                            if (type == Type.PROPERTY_ELEMENT) {
+                                // properties do not have attributes, position after
+                                // the closing >
+                                nextCaretPos = ts.offset() + 1;
+                                return;
+                            }
+                        case ARGUMENT:
+                            replaceExisting = true;
+                            nextCaretPos = ts.offset();
+                            return;
+
+                        default:
+                            return;
+                    }
+                }
+        }
+    }
+
+    public int getNextCaretPos() {
+        return nextCaretPos;
+    }
+    
+    /**
+     * Caret offset after completion into the original text. -1, 
+     * if the caret should be positioned within the newly inserted text.
+     */
+    private int nextCaretPos = -1;
 
     public List<? extends FxNode> getParents() {
         return Collections.unmodifiableList(parents);
@@ -387,11 +504,18 @@ public final class CompletionContext {
     
     private void processPath() {
         parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
-                getCaretOffset(), getType() == CompletionContext.Type.PROPERTY_ELEMENT, true);
+                getCaretOffset(), isTag(), true);
         if (parents.isEmpty()) {
             return;
         }
+        int index = 1;
+        
         FxNode parent = parents.get(0);
+        if (fxmlParserResult.getTreeUtilities().isAttribute(parent)) {
+            if (parents.size() > index) {
+                parent = parents.get(index++);
+            }
+        }
         
         if (parent instanceof PropertySetter) {
             PropertySetter ps = (PropertySetter)parent;
@@ -400,8 +524,8 @@ public final class CompletionContext {
             if (ps.isImplicit()) {
                 // the caret is inside some char content. It's legal to suggest 
                 // a property element here
-                if (parents.size() > 1) {
-                    FxNode superParent = parents.get(1);
+                if (parents.size() > index) {
+                    FxNode superParent = parents.get(index++);
                     if (superParent.getKind() != FxNode.Kind.Instance) {
                         throw new IllegalStateException();
                     }
@@ -419,7 +543,7 @@ public final class CompletionContext {
             case Element:
             case Namespace:
             case Error:
-                candidate = parents.size() > 1 ? parents.get(1) : null;
+                candidate = parents.size() > index ? parents.get(index) : null;
                 break;
             case Instance:
                 candidate = parent;
@@ -1051,6 +1175,8 @@ public final class CompletionContext {
                 case PI_TARGET:
                     type = Type.INSTRUCTION_TARGET;
                     piTarget = t.text().toString();
+                    tagStartOffset = ts.offset();
+                    dontAdvance = caretOffset == ts.offset() + t.length();
                     break;
 
                 case PI_START:
@@ -1064,7 +1190,9 @@ public final class CompletionContext {
 
                 case OPERATOR:
                     type = Type.PROPERTY_VALUE;
-                    startOffset = caretOffset;
+                    if (startOffset == -1) {
+                        startOffset = caretOffset;
+                    }
                     prefix = ""; // NOI18N
                     dontAdvance = true;
                     break;
@@ -1080,7 +1208,9 @@ public final class CompletionContext {
                         if (nonWh.startsWith("<")) {
                             // correct start & end offset:
                             int nonWhPos = t.text().toString().indexOf(nonWh);
-                            startOffset = ts.offset() + nonWhPos;
+                            if (startOffset == -1) {
+                                startOffset = ts.offset() + nonWhPos;
+                            }
                             if (caretOffset > startOffset + nonWh.length()) {
                                 type = Type.UNKNOWN;
                             } else {
@@ -1091,8 +1221,13 @@ public final class CompletionContext {
                             tagStartOffset = ts.offset();
                             break;
                         }
-                        // some content; assume it is a property value
-                        type = Type.PROPERTY_VALUE;
+
+                        if (rootTagStartOffset == -1 || rootTagStartOffset <= startOffset) {
+                            type = Type.ROOT;
+                        } else {
+                            // some content; assume it is a property value
+                            type = Type.PROPERTY_VALUE;
+                        }
                         
                         // traverse back to the 1st nonWhite character, record start position and length of the token
                         setTextContentBoundaries(ts);
@@ -1114,8 +1249,10 @@ public final class CompletionContext {
                     if (s.length() == 1 && s.charAt(0) == '>') {
                         // after the ending > of a tag
                         type = Type.CHILD_ELEMENT;
-                        startOffset = ts.offset() + 1;
-                        prefix = "";
+                        if (startOffset == -1) {
+                            startOffset = ts.offset() + 1;
+                            prefix = "";
+                        }
                         break;
                     }
                     if (s.length() < 2) {
@@ -1164,7 +1301,9 @@ public final class CompletionContext {
         }
 
         if (!wsFound && prefix == null) {
-            if (diff > 0) {
+            if (t == null) {
+                prefix = "";
+            } else if (diff > 0) {
                 prefix = t.text().subSequence(0, diff).toString();
             } else if (ts.offset() < caretOffset) {
                 // assume preceding token
@@ -1173,9 +1312,13 @@ public final class CompletionContext {
             }
         }
         if (startOffset == -1) {
-            startOffset = ts.offset();
+            if (hasToken) {
+                startOffset = ts.offset();
+            } else {
+                startOffset = caretOffset;
+            }
         }
-        if (!dontAdvance && (wsFound || !middle)) {
+        if (!dontAdvance && (wsFound || !middle) && type != null) {
             // in between tokens, so shift the type
             Type oldType = this.type;
             switch (oldType) {
@@ -1252,6 +1395,10 @@ public final class CompletionContext {
                 case WS:
                     break;
             }
+        }
+        
+        if (cont && type == null) {
+            type = Type.ROOT;
         }
         
         // CHILD_ELEMENT in a clearly non-instance content means that instance should be present,

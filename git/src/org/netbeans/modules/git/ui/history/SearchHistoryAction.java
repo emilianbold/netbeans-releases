@@ -49,6 +49,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 
@@ -76,8 +77,23 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 tc.open();
                 tc.requestActive();
                 if (roots != null && (roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
-                    tc.search();
+                    tc.search(false);
                 }
+            }
+        });
+    }
+    
+    public static void openSearch (final File repository, final File root, final String contextName, final String commitId) {
+        final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, new File[] { root });
+                tc.setDisplayName(title);
+                tc.open();
+                tc.requestActive();
+                tc.setSearchCommitId(commitId);
+                tc.search(true);
             }
         });
     }

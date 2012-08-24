@@ -43,9 +43,7 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
@@ -57,6 +55,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -64,6 +64,9 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.actions.AddPropertyAction;
+import org.netbeans.modules.css.visual.actions.AddRuleAction;
+import org.netbeans.modules.css.visual.actions.RemoveRuleAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
@@ -73,13 +76,11 @@ import org.netbeans.modules.css.visual.filters.FiltersSettings;
 import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  * Rule editor panel is a {@link JPanel} component which can be embedded in 
@@ -111,12 +112,13 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
         "titleLabel.text={0} properties",
-        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only",
-        "label.add.property=Add Property"
+        "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only",
 })
 public class RuleEditorPanel extends JPanel {
     
-    private static final Logger LOG = Logger.getLogger(RuleEditorPanel.class.getSimpleName());
+    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
 
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
@@ -130,16 +132,24 @@ public class RuleEditorPanel extends JPanel {
     
     private Model model;
     private Rule rule;
+    
+    private Action addPropertyAction;
+    private Action addRuleAction;
+    private Action removeRuleAction;
+    
     private Action[] actions;
+    private JPopupMenu popupMenu;
+    
     private RuleEditorFilters filters;
     private boolean showAllProperties, showCategories;
     private SortMode sortMode;
     
-    private RuleNode node;
+    public RuleNode node;
     
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     
     private boolean addPropertyMode;
+    
     
     /**
      * Creates new form RuleEditorPanel
@@ -148,7 +158,7 @@ public class RuleEditorPanel extends JPanel {
         this(false);
     }
     
-    private RuleEditorPanel(boolean addPropertyMode) {
+    public RuleEditorPanel(boolean addPropertyMode) {
         
         this.addPropertyMode = addPropertyMode;
         FiltersSettings filtersSettings = addPropertyMode
@@ -169,15 +179,63 @@ public class RuleEditorPanel extends JPanel {
             
         });
         
+        //initialize actions
+        addPropertyAction = new AddPropertyAction(this);
+        addRuleAction = new AddRuleAction(this);
+        removeRuleAction = new RemoveRuleAction(this);
+        
+        //keep actions status
+        addRuleEditorListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(RuleEditorController.PropertyNames.MODEL_SET.name())) {
+                    addRuleAction.setEnabled(evt.getNewValue() != null);
+                } else if (evt.getPropertyName().equals(RuleEditorController.PropertyNames.RULE_SET.name())) {
+                    addPropertyAction.setEnabled(evt.getNewValue() != null);
+                    removeRuleAction.setEnabled(evt.getNewValue() != null);
+                }
+            }
+        });
+        
         actions = new Action[] {            
+            addPropertyAction,
+            addRuleAction,
+            removeRuleAction,
+            null,
             new SortActionSupport.NaturalSortAction( filters ),
             new SortActionSupport.AlphabeticalSortAction( filters ),
             null,
             new FilterSubmenuAction(filters)            
         };
         
+        //custom popop for the whole panel
+        //TODO possibly use some NB way, but I don't know it, no time for exploring now...
+        JPopupMenu pm = new JPopupMenu();
+        for(Action action : actions) {
+            if(action != null) {
+                if(action instanceof Presenter.Popup) {
+                    pm.add(((Presenter.Popup)action).getPopupPresenter());
+                } else {
+                    pm.add(action);
+                }
+            } else {
+                pm.addSeparator();
+            }
+        }
+        
+        setComponentPopupMenu(pm);
+        
+        //custom popup for the "menu icon"
+        popupMenu = new JPopupMenu();
+        popupMenu.add(addPropertyAction);
+        popupMenu.add(addRuleAction);
+        popupMenu.add(removeRuleAction);
+                
         //init default components
         initComponents();
+        
+        menuLabel.setComponentPopupMenu(popupMenu);
+        
         
         addPropertyButton.setVisible(!addPropertyMode);
         
@@ -196,12 +254,13 @@ public class RuleEditorPanel extends JPanel {
         
         add(sheet, BorderLayout.CENTER);
         
-        northPanel.add(filters.getComponent(), BorderLayout.EAST);
+        northEastPanel.add(filters.getComponent(), BorderLayout.WEST);
         
         updateFiltersPresenters();
+        
     }
     
-    private void updateFiltersPresenters() {
+    public final void updateFiltersPresenters() {
         if(filters.getSettings().isShowCategoriesEnabled()) {
             setShowCategories(filters.getInstance().isSelected(RuleEditorFilters.SHOW_CATEGORIES));
         }
@@ -382,7 +441,10 @@ public class RuleEditorPanel extends JPanel {
         LOG.log(Level.FINE, "setNoRuleState()");
         
         assert SwingUtilities.isEventDispatchThread();
+        Rule old = this.rule;
         this.rule = null;
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, null);
+        
         titleLabel.setText(null);
         addPropertyButton.setEnabled(false);
         node.fireContextChanged();
@@ -397,14 +459,14 @@ public class RuleEditorPanel extends JPanel {
      * Registers an instance of {@link PropertyChangeListener} to the component.
      * @param listener
      */
-    public void addRuleEditorListener(PropertyChangeListener listener) {
+    public final void addRuleEditorListener(PropertyChangeListener listener) {
         CHANGE_SUPPORT.addPropertyChangeListener(listener);
     }
     /**
      * Unregisters an instance of {@link PropertyChangeListener} from the component.
      * @param listener
      */
-    public void removeRuleEditorListener(PropertyChangeListener listener) {
+    public final void removeRuleEditorListener(PropertyChangeListener listener) {
         CHANGE_SUPPORT.removePropertyChangeListener(listener);
     }
     
@@ -423,6 +485,8 @@ public class RuleEditorPanel extends JPanel {
 
         northPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
+        northEastPanel = new javax.swing.JPanel();
+        menuLabel = new javax.swing.JLabel();
         southPanel = new javax.swing.JPanel();
         addPropertyButton = new javax.swing.JButton();
 
@@ -432,52 +496,43 @@ public class RuleEditorPanel extends JPanel {
         northPanel.setLayout(new java.awt.BorderLayout());
         northPanel.add(titleLabel, java.awt.BorderLayout.CENTER);
 
+        northEastPanel.setLayout(new java.awt.BorderLayout());
+
+        menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/menu.png"))); // NOI18N
+        menuLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.menuLabel.text")); // NOI18N
+        menuLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 16, 0, 0));
+        menuLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                menuLabelMouseClicked(evt);
+            }
+        });
+        northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
+
+        northPanel.add(northEastPanel, java.awt.BorderLayout.EAST);
+
         add(northPanel, java.awt.BorderLayout.NORTH);
 
         southPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         southPanel.setLayout(new java.awt.BorderLayout());
 
+        addPropertyButton.setAction(addPropertyAction);
         addPropertyButton.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.addPropertyButton.text")); // NOI18N
         addPropertyButton.setEnabled(false);
         addPropertyButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        addPropertyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addPropertyButtonActionPerformed(evt);
-            }
-        });
         southPanel.add(addPropertyButton, java.awt.BorderLayout.WEST);
 
         add(southPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addPropertyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPropertyButtonActionPerformed
-        
-        //use the default rule editor panel with some modifications
-        final RuleEditorPanel addPropertyPanel = new RuleEditorPanel(true);
-        addPropertyPanel.setModel(model);
-        addPropertyPanel.setRule(rule);
-        addPropertyPanel.setShowAllProperties(true);
-        addPropertyPanel.setShowCategories(true);
-        
-        addPropertyPanel.updateFiltersPresenters();
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(
-                new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if("OK".equals(e.getActionCommand())) { 
-                    addPropertyPanel.node.applyModelChanges();
-                }
-            }
-        }));
-        
-        dialog.setVisible(true);
-        
-    }//GEN-LAST:event_addPropertyButtonActionPerformed
+    private void menuLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuLabelMouseClicked
+        //just invoke popup as if right-clicked
+        popupMenu.show(menuLabel, 0,0);
+    }//GEN-LAST:event_menuLabelMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
+    private javax.swing.JLabel menuLabel;
+    private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
     private javax.swing.JPanel southPanel;
     private javax.swing.JLabel titleLabel;

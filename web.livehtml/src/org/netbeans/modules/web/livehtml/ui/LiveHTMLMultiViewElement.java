@@ -43,6 +43,8 @@ package org.netbeans.modules.web.livehtml.ui;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -61,8 +63,9 @@ public class LiveHTMLMultiViewElement extends AnalysisPanel implements MultiView
 
     public LiveHTMLMultiViewElement(Lookup lookup) {
         final FileObject fileObject = lookup.lookup(FileObject.class);
+        Project p = FileOwnerQuery.getOwner(fileObject);
         if (fileObject != null) {
-            setSourceUrl(fileObject.toURL());
+            setSourceUrl(fileObject.toURL(), p);
         }
     }
 

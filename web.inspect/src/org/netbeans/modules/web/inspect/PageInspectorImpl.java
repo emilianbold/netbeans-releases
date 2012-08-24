@@ -53,10 +53,13 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -85,6 +88,8 @@ public class PageInspectorImpl extends PageInspector {
     public static final String PROP_MODEL = "model"; // NOI18N
     /** Name of the toolbar component responsible for selection mode switching. */
     private static final String SELECTION_MODE_COMPONENT_NAME = "selectionModeSwitch"; // NOI18N
+    /** Request processor for this class. */
+    static final RequestProcessor RP = new RequestProcessor(PageInspectorImpl.class.getName());
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     /** Current inspected page. */
@@ -217,7 +222,7 @@ public class PageInspectorImpl extends PageInspector {
                 @Override
                 public void itemStateChanged( ItemEvent e ) {
                     final boolean selectionMode = selectionModeButton.isSelected();
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             if (!selectionMode) {
@@ -254,6 +259,11 @@ public class PageInspectorImpl extends PageInspector {
             if (toolBar.getComponentCount() == 0) {
                 toolBar.addSeparator();
             }
+            int gapSize = LayoutStyle.getInstance().getPreferredGap(
+                    selectionModeButton, selectionModeButton,
+                    LayoutStyle.ComponentPlacement.RELATED,
+                    SwingConstants.WEST, toolBar);
+            toolBar.add(Box.createHorizontalStrut(gapSize));
             toolBar.add(selectionModeButton);
             selectionModeButton.setSelected(pageModel.isSelectionMode());
             selectionModeButton.setVisible(pageModel.isSynchronizeSelection());
@@ -327,8 +337,6 @@ public class PageInspectorImpl extends PageInspector {
         private static final String MESSAGE_SELECTION_MODE = "selection_mode"; // NOI18N
         /** Name of the attribute holding the new value of the selection mode. */
         private static final String MESSAGE_SELECTION_MODE_ATTR = "selectionMode"; // NOI18N
-        /** Request processor for this class. */
-        private RequestProcessor RP = new RequestProcessor(InspectionMessageListener.class.getName(), 5);
         /** Page model this message listener is related to. */
         private PageModel pageModel;
         /** Context of the page this listener is related to. */
@@ -382,10 +390,10 @@ public class PageInspectorImpl extends PageInspector {
                     // Message about selection mode modification
                     if (MESSAGE_SELECTION_MODE.equals(type)) {
                         boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
+                        pageModel.setSelectionMode(selectionMode);
                         if (!selectionMode) {
                             pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
                         }
-                        pageModel.setSelectionMode(selectionMode);
                     }
                 } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())

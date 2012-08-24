@@ -41,8 +41,15 @@
  */
 package org.netbeans.modules.web.livehtml.ui.stacktrace;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.json.simple.JSONObject;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.livehtml.StackTrace;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
@@ -52,24 +59,49 @@ import org.openide.nodes.Children;
  */
 public class StackTraceToolTipLeafNode extends AbstractNode {
     
-    public StackTraceToolTipLeafNode(Object object) {
+    public StackTraceToolTipLeafNode(Object object, Project project) {
         super(Children.LEAF);
         
         if (object instanceof JSONObject) {
             JSONObject jSONObject = (JSONObject) object;
-            final Object function = jSONObject.get(StackTrace.FUNCTION);
-            final Object lineNumber = jSONObject.get(StackTrace.LINE_NUMBER);
-            final Object columnNumber = jSONObject.get(StackTrace.COLUMN_NUMBER);
-            final Object script = jSONObject.get(StackTrace.SCRIPT);
+            final String function = (String)jSONObject.get(StackTrace.FUNCTION);
+            final Number lineNumber = (Number)jSONObject.get(StackTrace.LINE_NUMBER);
+            final Number columnNumber = (Number)jSONObject.get(StackTrace.COLUMN_NUMBER);
+            String script = (String)jSONObject.get(StackTrace.SCRIPT);
             
             StringBuilder sb = new StringBuilder();
             
-            if (function != null) {
-                sb.append(function);
+            if (script != null) {
+                try {
+                    URL url = new URL(script);
+                    if (project != null) {
+                        FileObject fo = ServerURLMapping.fromServer(project, url);
+                        if (fo != null) {
+                            String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                            if (relPath != null) {
+                                script = relPath;
+                            }
+                        } else {
+                            FileObject localFile = URLMapper.findFileObject(url);
+                            if (localFile != null) {
+                                String p = FileUtil.getRelativePath(project.getProjectDirectory(), localFile);
+                                if (p != null) {
+                                    script = p;
+                                }
+                            }
+                        }
+                    } else {
+                        int index = script.lastIndexOf('/');
+                        if (index != -1) {
+                            script = script.substring(index+1);
+                        }
+                    }
+                } catch (MalformedURLException murl) {}
+                sb.append(script);
             }
             
             if (lineNumber != null) {
-                sb.append(" ");
+                sb.append(":");
                 sb.append(lineNumber);
             }
             
@@ -78,11 +110,11 @@ public class StackTraceToolTipLeafNode extends AbstractNode {
                 sb.append(columnNumber);
             }
             
-            setDisplayName(sb.toString());
+//            if (function != null) {
+//                sb.append(" "+function);
+//            }
             
-            if (script != null) {
-                setShortDescription("Script: " + script.toString());
-            }
+            setDisplayName(sb.toString());
         }
         
     }

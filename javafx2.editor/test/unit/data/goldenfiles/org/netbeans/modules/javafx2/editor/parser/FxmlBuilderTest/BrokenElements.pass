@@ -9,8 +9,8 @@
 [209 - 225]         setter: name=minWidth, content=220.0
 [226 - 244]         setter: name=prefHeight, content=300.0
 [299 - 1808]        setter: name=children, content=null
-[314 - 1807]          instance: id=null, className=CheckBox
-[432 - 1807]            setter: name=null, content=null
+[314 - 1797]          instance: id=null, className=CheckBox
+[432 - 1797]            setter: name=null, content=null
 [432 - 533]               instance: id=null, className=Button
 [440 - 457]                 setter: name=id, content=SubmitButton
 [458 - 471]                 setter: name=text, content=Submit

@@ -120,6 +120,7 @@ public class ClientSideProject implements Project {
         configurationProvider = new ClientSideConfigurationProvider(this);
         lookup = createLookup(configuration);
         remoteFiles = new RemoteFiles(this);
+        lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
         configurationProvider.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -127,8 +128,8 @@ public class ClientSideProject implements Project {
                     refreshOnSaveListener = null;
                     if (lastActiveConfiguration != null) {
                         lastActiveConfiguration.deactivate();
-                        lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
                     }
+                    lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
                 }
             }
         });
@@ -423,7 +424,10 @@ public class ClientSideProject implements Project {
         public void fileChanged(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                r.fileChanged(fe.getFile());
+                // #217284 - ignore changes in CSS
+                if (!fe.getFile().hasExt("css")) {
+                    r.fileChanged(fe.getFile());
+                }
             }
         }
 
@@ -431,7 +435,10 @@ public class ClientSideProject implements Project {
         public void fileDeleted(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                r.fileDeleted(fe.getFile());
+                // #217284 - ignore changes in CSS
+                if (!fe.getFile().hasExt("css")) {
+                    r.fileDeleted(fe.getFile());
+                }
             }
         }
 

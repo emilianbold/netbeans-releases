@@ -131,6 +131,6 @@ NetBeans_Infobar.setSynchronizeSelection = function(synchronizeSelection) {
 }
 
 // run!
-window.onload = function() {
+window.addEventListener('load', function() {
     NetBeans_Infobar.show(NetBeans_Presets.getPresets());
-}
+}, false);

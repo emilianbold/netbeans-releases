@@ -49,7 +49,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -61,9 +60,9 @@ import org.openide.util.NbBundle;
  */
 public class MissingCssElement extends Hint {
 
-    public MissingCssElement(Rule rule, HtmlRuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
+    public MissingCssElement(Rule rule, String msg, HtmlRuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
         super(rule,
-                rule.getDisplayName(),
+                msg,
                 context.getFile(),
                 range,
                 getFixes(foundInFiles, context),

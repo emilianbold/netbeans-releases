@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
 
-    public ProjectDeclarationContainerKey(CharSequence project) {
-        super(project);
+    public ProjectDeclarationContainerKey(int unitId) {
+        super(unitId);
     }
 
     ProjectDeclarationContainerKey(RepositoryDataInput in) throws IOException {

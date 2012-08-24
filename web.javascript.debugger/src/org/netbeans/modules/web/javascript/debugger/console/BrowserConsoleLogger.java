@@ -140,11 +140,13 @@ public class BrowserConsoleLogger implements Console.Listener {
                 // is turned into: "js/app.js:8:9"
                 try {
                     URL url = new URL(urlStr);
-                    FileObject fo = ServerURLMapping.fromServer(project, url);
-                    if (fo != null) {
-                        String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
-                        if (relPath != null) {
-                            urlStr = relPath;
+                    if (project != null) {
+                        FileObject fo = ServerURLMapping.fromServer(project, url);
+                        if (fo != null) {
+                            String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                            if (relPath != null) {
+                                urlStr = relPath;
+                            }
                         }
                     }
                 } catch (MalformedURLException murl) {}

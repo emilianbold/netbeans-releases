@@ -40,8 +40,8 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 {
-  "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.19",
+  "name": "__MSG__pluginName__",
+  "version": "0.4.21",
 
   "background_page": "html/main.html",
 
@@ -63,6 +63,8 @@
     "16": "img/netbeans16.png",
     "48": "img/netbeans48.png",
     "128": "img/netbeans128.png"
-  }
+  },
+
+  "default_locale": "en"
 
 }

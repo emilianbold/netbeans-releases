@@ -363,6 +363,46 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_CHAIN_CALL_DOT {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_BINARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ASSIGNMENT_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_TERNARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {
@@ -389,6 +429,10 @@ public final class FormatToken {
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,
+
+        // around dot
+        BEFORE_DOT,
+        AFTER_DOT,
 
         // keywords with possible space before parentheses
         AFTER_IF_KEYWORD,

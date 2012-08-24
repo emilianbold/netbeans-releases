@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.livehtml.ui.stacktrace;
 
 import org.json.simple.JSONArray;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
 import org.openide.explorer.ExplorerManager;
@@ -60,11 +61,12 @@ public class StackTraceToolTipProvider extends RevisionToolTipService implements
     private static final String NAME = Bundle.CTL_StackTraceToolTipProvider_DisplayName();
     
     private ExplorerManager explorerManager = new ExplorerManager();
-    
+    private Project p;
     /**
      * Creates new form NewJPanel
      */
-    public StackTraceToolTipProvider() {
+    public StackTraceToolTipProvider(Project p) {
+        this.p = p;
         initComponents();
         stackTraceListView.setShowParentNode(false);
     }
@@ -77,7 +79,7 @@ public class StackTraceToolTipProvider extends RevisionToolTipService implements
     @Override
     protected void setRevision(Revision revision, boolean reformatContent) {
         final JSONArray stackTrace = revision.getStacktrace();
-        explorerManager.setRootContext(stackTrace == null ? Node.EMPTY : new StackTraceToolTipRootNode(stackTrace));
+        explorerManager.setRootContext(stackTrace == null ? Node.EMPTY : new StackTraceToolTipRootNode(stackTrace, p));
     }
 
     @Override

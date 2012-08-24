@@ -55,6 +55,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 
@@ -63,6 +64,7 @@ import org.netbeans.junit.RandomlyFails;
  * @author Tim Boudreau
  */
 public class RequestProcessor180386Test extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(RequestProcessor180386Test.class.getName());
 
     public RequestProcessor180386Test(java.lang.String testName) {
         super(testName);
@@ -1003,6 +1005,10 @@ public class RequestProcessor180386Test extends NbTestCase {
 
     @RandomlyFails
     public void testScheduleFixedRateAreRoughlyCorrect() throws Exception {
+        if (!TaskTest.canWait1s()) {
+            LOG.warning("Skipping testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll, as the computer is not able to wait 1s!");
+            return;
+        }
         int runCount = 5;
         final CountDownLatch latch = new CountDownLatch(runCount);
         final List<Long> intervals = Collections.synchronizedList(new ArrayList<Long> (runCount));
