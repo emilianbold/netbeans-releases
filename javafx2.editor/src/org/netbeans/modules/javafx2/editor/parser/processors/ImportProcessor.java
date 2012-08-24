@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -96,15 +97,14 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
     
     private ErrorReporter   errors;
     
-    private TokenHierarchy<XMLTokenId>  hierarchy;
+    private TokenHierarchy<?>  hierarchy;
     
     private ImportDecl    current;
     
     private FxTreeUtilities nodes;
     
-    public ImportProcessor(TokenHierarchy<XMLTokenId> h, ErrorReporter errors, FxTreeUtilities nodes) {
+    public ImportProcessor(TokenHierarchy<?> h, ErrorReporter errors, FxTreeUtilities nodes) {
         Parameters.notNull("h", h);
-        this.info = info;
         this.hierarchy = h;
         this.errors = errors;
         this.nodes = nodes;

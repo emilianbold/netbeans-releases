@@ -46,6 +46,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -113,7 +114,7 @@ final class PropertyElementItem extends AbstractCompletionItem {
     public void setInherited(boolean inherited) {
         this.inherited = inherited;
     }
-
+    
     @NbBundle.Messages({
         "# {0} - property name",
         "FMT_ownProperty=<b>{0}</b>"
@@ -128,7 +129,7 @@ final class PropertyElementItem extends AbstractCompletionItem {
     }
 
     @Override
-    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+    protected void doSubstituteText(JTextComponent c, BaseDocument d, String text) throws BadLocationException {
         if (namespaceCreator != null) {
             try {
                 String s = namespaceCreator.call();
@@ -144,17 +145,31 @@ final class PropertyElementItem extends AbstractCompletionItem {
     
     @Override
     protected String getSubstituteText() {
+        boolean replaceExisting = ctx.isReplaceExisting();
         if (attribute) {
-            return super.getSubstituteText() + "=\"\" ";
+            if (replaceExisting) {
+                return super.getSubstituteText();
+            } else {
+                return super.getSubstituteText() + "=\"\" ";
+            }
         } else if (map) {
-            return "<" + super.getSubstituteText() + " />";
+            if (replaceExisting) {
+                return "<" + super.getSubstituteText(); // NOI18N
+            } else {
+                return "<" + super.getSubstituteText() + " />";
+            }
         } else {
-            return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+            if (replaceExisting) {
+                // leave the matching end tag unchanged
+                return "<" + super.getSubstituteText();
+            } else {
+                return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+            }
         }
     }
     
     @Override
-    protected int getCaretShift() {
+    protected int getCaretShift(Document d) {
         // incidentally, for all 3 cases:
         return 2 + super.getSubstituteText().length();
     }
@@ -187,5 +202,8 @@ final class PropertyElementItem extends AbstractCompletionItem {
             return ICON;
         }
     }
-    
+
+    public String toString() {
+        return "property[" + super.getSubstituteText() + "]";
+    }
 }

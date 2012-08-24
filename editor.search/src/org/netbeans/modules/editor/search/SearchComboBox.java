@@ -80,10 +80,10 @@ public class SearchComboBox extends JComboBox {
         return new Dimension(width,
                 super.getPreferredSize().height);
     }
-    
+
     public JEditorPane getEditorPane() {
         return searchComboBoxEditor.getEditorPane();
     }
-    
-    
+
+
 }

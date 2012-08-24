@@ -39,16 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
 
-/**
- * Completion item for classes, which must be initialized using fx:factory.
- * Adds the fx:factory attribute to the class, together with the factory name, 
- * if there is just a single choice. Otherwise, position caret inside the fx:factory
- * and reinvoke the code completion
- *
- * @author sdedic
- */
-public class FactoryClassItem {
-    
-}
+@TemplateRegistrations({
+    @TemplateRegistration(folder = "Classes/Code", position = 100, content = "resources/GeneratedMethodBody.template", scriptEngine = "freemarker", displayName = "#GeneratedMethodBody", category = "java-code-snippet"),
+    @TemplateRegistration(folder = "Classes/Code", position = 200, content = "resources/OverridenMethodBody.template", scriptEngine = "freemarker", displayName = "#OverridenMethodBody", category = "java-code-snippet")
+})
+@NbBundle.Messages({
+    "GeneratedMethodBody=Generated Method Body", "OverridenMethodBody=Overriden Method Body" //NOI18N
+})
+package org.netbeans.modules.java.source;
+
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
+import org.openide.util.NbBundle;
+

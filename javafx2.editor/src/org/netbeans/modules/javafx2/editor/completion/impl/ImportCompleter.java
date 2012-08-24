@@ -103,7 +103,8 @@ public class ImportCompleter implements Completer, Completer.Factory {
 
     private CompletionItem completeTarget() {
         String prefix = ctx.getPrefix();
-        if (!("".equals(prefix) || PI_IMPORT.startsWith(prefix))) {
+        if (!("<?".startsWith(prefix) ||
+              PI_IMPORT2.startsWith(prefix))) {
             return null;
         }
         return new ImportInstruction(ctx);
@@ -111,10 +112,7 @@ public class ImportCompleter implements Completer, Completer.Factory {
     
     @Override
     public List<CompletionItem> complete() {
-        if (!accepts(ctx)) {
-            return null;
-        }
-        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET) {
+        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET || ctx.getType() == CompletionContext.Type.ROOT) {
             CompletionItem item = completeTarget();
             return item != null ? Collections.singletonList(completeTarget()) : null;
         }
@@ -132,10 +130,14 @@ public class ImportCompleter implements Completer, Completer.Factory {
 
     @Override
     public Completer createCompleter(CompletionContext ctx) {
-        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET ||
-            (ctx.getType() == CompletionContext.Type.INSTRUCTION_DATA && 
-                PI_IMPORT2.equals(ctx.getPiTarget()))) {
-            return new ImportCompleter(ctx);
+        switch (ctx.getType()) {
+            case INSTRUCTION_DATA:
+            case ROOT:
+                return new ImportCompleter(ctx);
+            case INSTRUCTION_TARGET:
+                if (ctx.getPiTarget() == null || PI_IMPORT2.startsWith(ctx.getPiTarget())) {
+                    return new ImportCompleter(ctx);
+                }
         }
         return null;
     }
@@ -147,7 +149,7 @@ public class ImportCompleter implements Completer, Completer.Factory {
         private static ImageIcon  ICON;
         
         public ImportInstruction(CompletionContext ctx) {
-            super(ctx, PI_IMPORT);
+            super(ctx, ctx.getPrefix().isEmpty() || ctx.getPrefix().startsWith("<") ? PI_IMPORT : PI_IMPORT2 + " ");
         }
 
         @Override
@@ -167,6 +169,10 @@ public class ImportCompleter implements Completer, Completer.Factory {
                 ICON = ImageUtilities.loadImageIcon(IMG_INSTRUCTION, false);
             }
             return ICON;
+        }
+        
+        public String toString() {
+            return getSubstituteText();
         }
     }
 }

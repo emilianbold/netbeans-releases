@@ -74,6 +74,8 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
 
     private List<FxNode>    children = Collections.emptyList();
     
+    private boolean includeEnd;
+    
     public static NodeInfo newNode() {
         return new NodeInfo(-1);
     }
@@ -131,6 +133,16 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
 
     public int getContentEnd() {
         return offset(contentEnd);
+    }
+    
+    public NodeInfo endsAt(int e, boolean includeEnd) {
+        this.end = e;
+        this.includeEnd = includeEnd;
+        return this;
+    }
+
+    public void markIncludeEnd() {
+        this.includeEnd = true;
     }
     
     public NodeInfo endsAt(int e) {
@@ -192,7 +204,7 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
                 return true;
             }
             return (s <= position) &&
-                   offset(end) > position;
+                   (offset(end) > position || (includeEnd && offset(end) == position));
         } else {
             if (s == offset(contentEnd) && position == s && caret) {
                 return true;
@@ -210,12 +222,14 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
             return false;
         }
         int e = end;
+        boolean incEnd = includeEnd;
         if (end == -1) {
             return false;
         } else if (end < 0) {
             e = (-end) - 1;
+            incEnd = true;
         }
-        return position < e;
+        return position < e || (incEnd && e == position);
     }
 
     @Override

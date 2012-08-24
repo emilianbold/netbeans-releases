@@ -146,11 +146,15 @@ public class EventCompleter implements Completer, Completer.Factory {
             default:
                 return null;
         }
-        FxNode n = ctx.getInstanceElement();
+        FxNode n = ctx.getElementParent();
         if (n == null || n.getKind() != FxNode.Kind.Instance) {
             return null;
         }
-        return new EventCompleter(ctx, (FxInstance)n);
+        FxInstance inst = (FxInstance)n;
+        if (inst.getDefinition() == null) {
+            return null;
+        }
+        return new EventCompleter(ctx, inst);
     }
    
 }

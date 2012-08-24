@@ -92,9 +92,10 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
         this.text = text;
     }
     
-    private void prepareData(String tokenName) throws Exception  {
+    private void prepareData(String tokenName, String fname) throws Exception  {
         File dataDir = getDataDir();
-        File f = new File(dataDir, CompletionContextTest.class.getPackage().getName().replaceAll("\\.", "/") + "/Simple.fxml");
+        File f = new File(dataDir, CompletionContextTest.class.getPackage().getName().replaceAll("\\.", "/") + 
+                "/" + fname);
         InputStream stream = new FileInputStream(f);
         InputStreamReader rd = new InputStreamReader(stream, "UTF-8");
         
@@ -158,7 +159,11 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
     }
     
     private void runNamedTest(String name) throws Exception {
-        prepareData(name);
+        runNamedTest(name, "Simple.fxml");
+    }
+    
+    private void runNamedTest(String name, String file) throws Exception {
+        prepareData(name, file);
         writeSourceFile();
         Source s = Source.create(sourceFO);
         ParserManager.parse(Collections.singleton(s), new UserTask() {
@@ -211,6 +216,10 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
         runNamedTest("whitespaceAfterInstruction");
     }
     
+    public void testWitespaceAfterInstructionB() throws Exception {
+        runNamedTest("whitespaceAfterInstructionB");
+    }
+
     // elements
 
     public void testExistingClassNameStart() throws Exception {
@@ -282,5 +291,21 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
     
     public void testResourceReference() throws Exception {
         runNamedTest("resourceReference");
+    }
+    
+    public void testMiddlePropertyName() throws Exception {
+        runNamedTest("middlePropertyName");
+    }
+    
+    public void testAfterPropertyNameBeforeSign() throws Exception {
+        runNamedTest("afterPropertyNameBeforeSign");
+    }
+    
+    public void testMiddleStaticPropertyName() throws Exception {
+        runNamedTest("middleStaticPropertyName");
+    }
+    
+    public void testNoRootElement() throws Exception {
+        runNamedTest("noRootElement", "Empty.fxml");
     }
 }
