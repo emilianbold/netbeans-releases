@@ -119,7 +119,7 @@ public class Reindenter implements IndentTask {
     private SourcePositions sp;
     private Map<Integer, Integer> newIndents;
     private Region currentRegion;
-    private Embedding currentEmbedding = null;
+    private Embedding currentEmbedding;
 
     private Reindenter(Context context) {
         this.context = context;
@@ -127,6 +127,8 @@ public class Reindenter implements IndentTask {
 
     @Override
     public void reindent() throws BadLocationException {
+        ts = null;
+        currentEmbedding = null;        
         newIndents = new HashMap<Integer, Integer>();
         cs = CodeStyle.getDefault(context.document());
         for (Region region : context.indentRegions()) {
