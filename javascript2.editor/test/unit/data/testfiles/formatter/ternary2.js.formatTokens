@@ -57,6 +57,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=54, text=&&}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=56, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=57, text=y}
@@ -66,6 +67,7 @@ FormattingToken{kind=TEXT, offset=60, text=]}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=61, text=?}
+FormattingToken{kind=AFTER_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=AFTER_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=62, text=d}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
@@ -76,11 +78,13 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=73, text=!==}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=76, text="}
 FormattingToken{kind=TEXT, offset=77, text="}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=78, text=:}
+FormattingToken{kind=AFTER_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=AFTER_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=79, text=d}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
@@ -92,6 +96,7 @@ FormattingToken{kind=TEXT, offset=90, text=)}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=91, text=?}
+FormattingToken{kind=AFTER_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=AFTER_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=92, text=d}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
@@ -101,6 +106,7 @@ FormattingToken{kind=TEXT, offset=94, text=nodeValue}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=103, text=:}
+FormattingToken{kind=AFTER_TERNARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=AFTER_TERNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=104, text=b}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
