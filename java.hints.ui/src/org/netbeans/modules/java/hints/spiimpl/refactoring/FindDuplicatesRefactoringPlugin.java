@@ -51,6 +51,7 @@ import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.openide.util.NbBundle.Messages;
 
@@ -122,6 +123,8 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
     private Iterable<? extends HintDescription> filterQueries(Iterable<? extends HintDescription> hints, boolean positive) {
         ArrayList<HintDescription> result = new ArrayList<HintDescription>();
         for (HintDescription hint: hints) {
+            if (hint.getMetadata().options.contains(Options.NO_BATCH)) continue;
+            if (hint.getMetadata().kind != Kind.INSPECTION) continue;
             if (positive ^ !(hint.getMetadata().options.contains(Options.QUERY) || hint.getOptions().contains(Options.QUERY))) {
                 result.add(hint);
             }
