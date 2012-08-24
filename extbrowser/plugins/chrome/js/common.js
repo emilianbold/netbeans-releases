@@ -446,32 +446,32 @@ function NetBeans_Preset(type, displayName, width, height, showInToolbar, isDefa
 // preset type for Desktops
 NetBeans_Preset.DESKTOP = {
     ident: 'DESKTOP',
-    title: 'Desktop' // XXX i18n
+    title: I18n.message('_Desktop')
 };
 // preset type for Netbooks
 NetBeans_Preset.NETBOOK = {
     ident: 'NETBOOK',
-    title: 'Netbook'
+    title: I18n.message('_Netbook')
 };
 // preset type for Tablets (Landscape)
 NetBeans_Preset.TABLET_LANDSCAPE = {
     ident: 'TABLET_LANDSCAPE',
-    title: 'Tablet Landscape'
+    title: I18n.message('_TabletLandscape')
 };
 // preset type for Tablets (Portrait)
 NetBeans_Preset.TABLET_PORTRAIT = {
     ident: 'TABLET_PORTRAIT',
-    title: 'Tablet Portrait'
+    title: I18n.message('_TabletPortrait')
 };
 // preset type for Smartphones  (Landscape)
 NetBeans_Preset.SMARTPHONE_LANDSCAPE = {
     ident: 'SMARTPHONE_LANDSCAPE',
-    title: 'Smartphone Landscape'
+    title: I18n.message('_SmartphoneLandscape')
 };
 // preset type for Smartphones  (Portrait)
 NetBeans_Preset.SMARTPHONE_PORTRAIT = {
     ident: 'SMARTPHONE_PORTRAIT',
-    title: 'Smartphone Portrait'
+    title: I18n.message('_SmartphonePortrait')
 };
 // get a list of all preset types
 NetBeans_Preset.allTypes = function() {

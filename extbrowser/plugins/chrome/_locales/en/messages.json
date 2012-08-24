@@ -25,6 +25,27 @@
         "message": "Show Help"
     },
 
+    // presets
+    "_Desktop": {
+        "message": "Desktop"
+    },
+    "_Netbook": {
+        "message": "Netbook"
+    },
+    "_TabletLandscape": {
+        "message": "Tablet Landscape"
+    },
+    "_TabletPortrait": {
+        "message": "Tablet Portrait"
+    },
+    "_SmartphoneLandscape": {
+        "message": "Smartphone Landscape"
+    },
+    "_SmartphonePortrait": {
+        "message": "Smartphone Portrait"
+    },
+
+
     // options
     "_CloseWithoutSaving": {
         "message": "Close without Saving"
