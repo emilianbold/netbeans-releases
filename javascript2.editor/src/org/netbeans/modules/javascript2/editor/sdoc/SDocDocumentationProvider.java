@@ -64,6 +64,8 @@ public class SDocDocumentationProvider implements JsDocumentationProvider {
     private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
             Arrays.<AnnotationCompletionTagProvider>asList(new SDocAnnotationCompletionTagProvider("SDoc"));
 
+    private static final SyntaxProvider SYNTAX_PROVIDER = new SDocSyntaxProvider();
+
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
         return new SDocDocumentationHolder(snapshot);
@@ -89,6 +91,6 @@ public class SDocDocumentationProvider implements JsDocumentationProvider {
 
     @Override
     public SyntaxProvider getSyntaxProvider() {
-        return null;
+        return SYNTAX_PROVIDER;
     }
 }
