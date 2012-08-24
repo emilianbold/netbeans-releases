@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 public final class FileInstantiationsKey extends ProjectFileNameBasedKey {
 
     public FileInstantiationsKey(FileImpl file) {
-	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
+	super(file);
     }
 
     public FileInstantiationsKey(RepositoryDataInput aStream) throws IOException {

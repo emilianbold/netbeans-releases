@@ -54,8 +54,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class ClassifierContainerKey extends ProjectNameBasedKey {
 
-    public ClassifierContainerKey(CharSequence project) {
-        super(project);
+    public ClassifierContainerKey(int unitId) {
+        super(unitId);
     }
 
     ClassifierContainerKey(RepositoryDataInput in) throws IOException {

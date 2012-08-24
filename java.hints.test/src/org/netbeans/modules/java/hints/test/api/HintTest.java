@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
@@ -279,6 +280,8 @@ public class HintTest {
         NbBundle.setBranding("test");
 
         sourcePath = ClassPathSupport.createClassPath(sourceRoot);
+        
+        Main.initializeURLFactory();
     }
 
     /**Bootstraps the test framework.

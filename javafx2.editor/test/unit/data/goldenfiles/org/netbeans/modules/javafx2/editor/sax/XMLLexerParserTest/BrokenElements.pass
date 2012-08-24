@@ -16,7 +16,8 @@
    [elem] AnchorPane
        id=ValuePane, minHeight=127.0, minWidth=330.0, prefHeight=127.0, prefWidth=330.0, AnchorPane.leftAnchor=72.0, AnchorPane.rightAnchor=-2.0, AnchorPane.topAnchor=5.0
     [chars] <
-            [elem] Text
+        
+    [elem] Text
         Field=null, id=NameTextField, AnchorPane.leftAnchor=0.0, AnchorPane.rightAnchor=0.0, AnchorPane.topAnchor=0.0
     [end-elem] Text]
     [elem] TextField

@@ -54,7 +54,6 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.search.ReplaceBar;
-import org.netbeans.modules.editor.search.SearchNbEditorKit.SearchJPanel;
 import org.netbeans.modules.editor.search.SearchBar;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
 import org.netbeans.spi.editor.AbstractEditorAction;
@@ -64,12 +63,12 @@ import org.openide.util.NbBundle;
 public class ReplaceAction extends AbstractEditorAction {
 
     static final long serialVersionUID = -1;
-    private static final Map<String, String> replaceAttrs;
+    private static final Map<String, String> REPLACE_ATTRS;
 
     static {
         Map<String, String> aMap = new HashMap<String, String>();
         aMap.put(Action.NAME, SearchNbEditorKit.REPLACE_ACTION);
-        replaceAttrs = Collections.unmodifiableMap(aMap);
+        REPLACE_ATTRS = Collections.unmodifiableMap(aMap);
     }
 
     public ReplaceAction(Map<String, ?> attrs) {
@@ -79,7 +78,7 @@ public class ReplaceAction extends AbstractEditorAction {
     }
 
     public ReplaceAction() {
-        this(replaceAttrs);
+        this(REPLACE_ATTRS);
     }
 
     @Override

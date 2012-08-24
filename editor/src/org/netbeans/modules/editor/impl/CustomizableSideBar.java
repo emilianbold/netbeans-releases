@@ -50,6 +50,7 @@ import java.awt.BorderLayout;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +80,12 @@ import org.openide.util.LookupListener;
  *  @author  Martin Roskanin
  */
 public final class CustomizableSideBar {
+    
+    /**
+     * Client property of the Editor component, which constraints sidebars which are attached to the editor.
+     * Note that changes to the property after the component was displayed has no effect - sidebars cannot be hidden or shown programmatically.
+     */
+    public static final String PROP_SELECT_SIDEBAR_LOCATIONS = "nbeditorui.selectSidebarLocations"; // NOI18N
 
     // -J-Dorg.netbeans.modules.editor.impl.CustomizableSideBar.level=FINE
     private static final Logger LOG = Logger.getLogger(CustomizableSideBar.class.getName());
@@ -210,10 +217,21 @@ public final class CustomizableSideBar {
         Map<SideBarPosition, List<SideBarFactory>> factoriesMap = getFactoriesMap(mimeType);
         Map<SideBarPosition, List<JComponent>> sideBarsMap = new HashMap<SideBarPosition, List<JComponent>>(factoriesMap.size());
         
+        Collection<String> locations = null;
+        
+        String constraint = (String)target.getClientProperty(PROP_SELECT_SIDEBAR_LOCATIONS);
+        if (constraint != null) {
+            locations = Arrays.asList(constraint.split(","));
+        }
+        
         // XXX: We should better let clients to register a regexp filter
         boolean errorStripeOnly = Boolean.TRUE.equals(target.getClientProperty("errorStripeOnly")); //NOI18N
 
         for(SideBarPosition pos : factoriesMap.keySet()) {
+            if (locations != null &&
+                !locations.contains(pos.getPositionName())) {
+                continue;
+            }
             List<SideBarFactory> factoriesList = factoriesMap.get(pos);
             
             // Get sideBars list
@@ -332,6 +350,21 @@ public final class CustomizableSideBar {
             if (this.scrollable && (this.position == SOUTH || this.position == EAST)) {
                 if (Logger.getLogger("global").isLoggable(Level.FINE))
                     Logger.getLogger("global").log(Level.FINE, "Unsupported combination: scrollable == true, position=" + getBorderLayoutPosition());
+            }
+        }
+        
+        public String getPositionName() {
+            switch (position) {
+                case EAST:
+                    return EAST_NAME;
+                case SOUTH:
+                    return SOUTH_NAME;
+                case WEST:
+                    return WEST_NAME;
+                case NORTH:
+                    return NORTH_NAME;
+                default:
+                    throw new IllegalArgumentException();
             }
         }
         

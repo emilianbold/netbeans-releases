@@ -145,7 +145,7 @@ public class SimpleClassItem extends AbstractCompletionItem {
     @Override
     protected String getSubstituteText() {
         // the opening < is a part of the replacement area
-        return "<" + super.getSubstituteText() + " "; // NOI18N
+        return "<" + super.getSubstituteText() + (ctx.isReplaceExisting() ? "" : " "); // NOI18N
     }
 
     @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=ClassItemFactory.class)
@@ -188,6 +188,6 @@ public class SimpleClassItem extends AbstractCompletionItem {
     }
     
     public String toString() {
-        return "SCI[" + getFullClassName() + "]";
+        return "simple-class[" + getFullClassName() + "]";
     }
 }

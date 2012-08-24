@@ -160,10 +160,19 @@ final public class ClassCompleter implements Completer, Completer.Factory {
             return propertyType;
         }
         FxProperty prop = ctx.getEnclosingProperty();
+        // if we start root tag with prefix longer than "<", it already appears in the parent list;
+        // so minimal depth that does not fall back to j.n.Node is 2 in that case.
+        int minDepth = (ctx.getPrefix().length() > 1) ? 2 : 1;
         if (prop != null) {
             TypeMirrorHandle propTypeH = prop.getType();
             if (propTypeH != null) {
                 propertyType = propTypeH.resolve(ctx.getCompilationInfo());
+            }
+        } else if (ctx.getParents().size() <= minDepth) {
+            // root element should be constrainted to Node subclass
+            TypeElement e = ctx.getCompilationInfo().getElements().getTypeElement(JavaFXEditorUtils.FXML_NODE_CLASS);
+            if (e != null) {
+                propertyType = e.asType();
             }
         }
         propertyTypeResolved = true;
@@ -246,8 +255,9 @@ final public class ClassCompleter implements Completer, Completer.Factory {
                 e.getModifiers().contains(Modifier.ABSTRACT) ||
                 !FxClassUtils.isFxmlAccessible(e) ||
                 !ctx.getCompilationInfo().getTypes().isAssignable(e.asType(), nodeType)) {
-                    it.remove();
+                    continue;
             }
+            handles.add(h);
         }
         return handles;
     }
@@ -319,8 +329,11 @@ final public class ClassCompleter implements Completer, Completer.Factory {
     
     private Set<ElementHandle<TypeElement>> loadFromAllTypes() {
         ClasspathInfo info = ctx.getClasspathInfo();
-        Set<ElementHandle<TypeElement>> els = info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
-                EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE));
+        Set<ElementHandle<TypeElement>> els = 
+                new HashSet<ElementHandle<TypeElement>>(
+                    info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
+                    EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE)
+                ));
 
         TypeMirror pt = getPropertyType();
         if (pt == null) {

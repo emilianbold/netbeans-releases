@@ -77,6 +77,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -84,11 +85,13 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -109,6 +112,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spiimpl.Hacks;
@@ -125,8 +130,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbCollections;
 
 /**Factory methods for various predefined {@link JavaFix} implementations.
  *
@@ -151,9 +158,17 @@ public class JavaFixUtilities {
 
     static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
         final Map<String, TreePathHandle> params = new HashMap<String, TreePathHandle>();
+        final Map<String, Object> extraParamsData = new HashMap<String, Object>();
 
         for (Entry<String, TreePath> e : parameters.entrySet()) {
             params.put(e.getKey(), TreePathHandle.create(e.getValue(), info));
+            if (e.getValue() instanceof Callable) {
+                try {
+                    extraParamsData.put(e.getKey(), ((Callable) e.getValue()).call());
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
 
         final Map<String, Collection<TreePathHandle>> paramsMulti = new HashMap<String, Collection<TreePathHandle>>();
@@ -178,7 +193,7 @@ public class JavaFixUtilities {
             displayName = defaultFixDisplayName(info, parameters, to);
         }
 
-        return new JavaFixRealImpl(info, what, options, displayName, to, params, paramsMulti, parameterNames, constraintsHandles, Arrays.asList(imports)).toEditorFix();
+        return new JavaFixRealImpl(info, what, options, displayName, to, params, extraParamsData, paramsMulti, parameterNames, constraintsHandles, Arrays.asList(imports)).toEditorFix();
     }
 
     /**Creates a fix that removes the given code corresponding to the given tree
@@ -351,18 +366,20 @@ public class JavaFixUtilities {
     private static class JavaFixRealImpl extends JavaFix {
         private final String displayName;
         private final Map<String, TreePathHandle> params;
+        private final Map<String, Object> extraParamsData;
         private final Map<String, Collection<TreePathHandle>> paramsMulti;
         private final Map<String, String> parameterNames;
         private final Map<String, TypeMirrorHandle<?>> constraintsHandles;
         private final Iterable<? extends String> imports;
         private final String to;
 
-        public JavaFixRealImpl(CompilationInfo info, TreePath what, Map<String, String> options, String displayName, String to, Map<String, TreePathHandle> params, Map<String, Collection<TreePathHandle>> paramsMulti, final Map<String, String> parameterNames, Map<String, TypeMirrorHandle<?>> constraintsHandles, Iterable<? extends String> imports) {
+        public JavaFixRealImpl(CompilationInfo info, TreePath what, Map<String, String> options, String displayName, String to, Map<String, TreePathHandle> params, Map<String, Object> extraParamsData, Map<String, Collection<TreePathHandle>> paramsMulti, final Map<String, String> parameterNames, Map<String, TypeMirrorHandle<?>> constraintsHandles, Iterable<? extends String> imports) {
             super(info, what, options);
 
             this.displayName = displayName;
             this.to = to;
             this.params = params;
+            this.extraParamsData = extraParamsData;
             this.paramsMulti = paramsMulti;
             this.parameterNames = parameterNames;
             this.constraintsHandles = constraintsHandles;
@@ -506,7 +523,7 @@ public class JavaFixUtilities {
                 }
             }.scan(original, null);
             
-            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, parametersMulti, parameterNames, rewriteFromTo, originalTrees).scan(new TreePath(tp.getParentPath(), parsed), null);
+            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, extraParamsData, parametersMulti, parameterNames, rewriteFromTo, originalTrees).scan(new TreePath(tp.getParentPath(), parsed), null);
 
             if (inPackage) {
                 String newPackage = wc.getTreeUtilities().translate(wc.getCompilationUnit().getPackageName(), new IdentityHashMap<Tree, Tree>(rewriteFromTo))./*XXX: not correct*/toString();
@@ -536,17 +553,19 @@ public class JavaFixUtilities {
         private final boolean canShowUI;
         private final boolean inImport;
         private final Map<String, TreePath> parameters;
+        private final Map<String, Object> extraParamsData;
         private final Map<String, Collection<TreePath>> parametersMulti;
         private final Map<String, String> parameterNames;
         private final Map<Tree, Tree> rewriteFromTo;
         private final Set<Tree> originalTrees;
 
-        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo, Set<Tree> originalTrees) {
+        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Object> extraParamsData, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo, Set<Tree> originalTrees) {
             this.parameters = parameters;
             this.info = wc;
             this.make = wc.getTreeMaker();
             this.canShowUI = canShowUI;
             this.inImport = inImport;
+            this.extraParamsData = extraParamsData;
             this.parametersMulti = parametersMulti;
             this.parameterNames = parameterNames;
             this.rewriteFromTo = rewriteFromTo;
@@ -700,7 +719,36 @@ public class JavaFixUtilities {
             
             rewrite(node, nue);
             
-            return super.visitMethod(node, p);
+            return super.visitMethod(nue, p);
+        }
+
+        @Override
+        public Number visitClass(ClassTree node, Void p) {
+            String name = node.getSimpleName().toString();
+            String newName = name;
+
+            if (name.startsWith("$")) {
+                if (parameterNames.containsKey(name)) {
+                    newName = parameterNames.get(name);
+                }
+            }
+
+            List<? extends TypeParameterTree> typeParams = resolveMultiParameters(node.getTypeParameters());
+            List<? extends Tree> implementsClauses = resolveMultiParameters(node.getImplementsClause());
+            List<? extends Tree> members = resolveMultiParameters(Utilities.filterHidden(getCurrentPath(), node.getMembers()));
+            Tree extend = node.getExtendsClause();
+            
+            if (extend != null && Utilities.isMultistatementWildcardTree(extend)) {
+                TreePath nueExtend = parameters.get(Utilities.getWildcardTreeName(extend).toString());
+                if (nueExtend != null) extend = nueExtend.getLeaf();
+                else extend = null;
+            }
+            
+            ClassTree nue = make.Class(node.getModifiers(), newName, typeParams, extend, implementsClauses, members);
+            
+            rewrite(node, nue);
+            
+            return super.visitClass(nue, p);
         }
 
         @Override
@@ -978,6 +1026,77 @@ public class JavaFixUtilities {
 
             rewrite(node, nue);
             return super.visitTry(node, p);
+        }
+
+        @Override
+        public Number visitModifiers(ModifiersTree node, Void p) {
+            List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(node.getAnnotations());
+            IdentifierTree ident = !annotations.isEmpty() && annotations.get(0).getAnnotationType().getKind() == Kind.IDENTIFIER ? (IdentifierTree) annotations.get(0).getAnnotationType() : null;
+
+            if (ident != null) {
+                annotations.remove(0);
+                
+                String name = ident.getName().toString();
+                TreePath orig = parameters.get(name);
+                ModifiersTree nue;
+                
+                if (orig != null && orig.getLeaf().getKind() == Kind.MODIFIERS) {
+                    ModifiersTree origMods = (ModifiersTree) orig.getLeaf();
+                    Object actualContent = extraParamsData.get(name);
+                    Set<Modifier> actualFlags = EnumSet.noneOf(Modifier.class);
+                    boolean[] actualAnnotationsMask = new boolean[0];
+                    
+                    if (actualContent instanceof Object[] && ((Object[]) actualContent)[0] instanceof Set) {
+                        actualFlags.addAll(NbCollections.checkedSetByFilter((Set) ((Object[]) actualContent)[0], Modifier.class, false));
+                    }
+                    
+                    if (actualContent instanceof Object[] && ((Object[]) actualContent)[1] instanceof boolean[]) {
+                        actualAnnotationsMask = (boolean[]) ((Object[]) actualContent)[1];
+                    }
+                    
+                    nue = origMods;
+                    
+                    for (Modifier m : origMods.getFlags()) {
+                        if (actualFlags.contains(m)) continue;
+                        nue = make.removeModifiersModifier(nue, m);
+                    }
+                    
+                    for (Modifier m : node.getFlags()) {
+                        nue = make.addModifiersModifier(nue, m);
+                    }
+                    
+                    int ai = 0;
+                    
+                    OUTER: for (AnnotationTree a : origMods.getAnnotations()) {
+                        if (actualAnnotationsMask.length <= ai || actualAnnotationsMask[ai++]) continue;
+                        for (Iterator<AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                            AnnotationTree toCheck = it.next();
+                            Collection<? extends Occurrence> match = org.netbeans.api.java.source.matching.Matcher.create(info).setTreeTopSearch().setSearchRoot(new TreePath(getCurrentPath(), a)).match(Pattern.createSimplePattern(new TreePath(getCurrentPath(), toCheck)));
+                            
+                            if (!match.isEmpty()) {
+                                //should be kept:
+                                it.remove();
+                                break OUTER;
+                            }
+                        }
+                        
+                        nue = make.removeModifiersAnnotation(nue, a);
+                    }
+                    
+                    for (AnnotationTree a : annotations) {
+                        nue = make.addModifiersAnnotation(nue, a);
+                        scan(a, p);
+                    }
+                } else {
+                    nue = make.removeModifiersAnnotation(node, 0);
+                }
+                
+                rewrite(node, nue);
+                
+                return null;
+            }
+            
+            return super.visitModifiers(node, p);
         }
 
         private <T extends Tree> List<T> resolveMultiParameters(List<T> list) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.editor.parser;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,6 +80,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.javafx2.editor.completion.model.StaticProperty;
+import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
 import org.openide.util.Utilities;
 
 /**
@@ -171,7 +173,26 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         addElementErrors();
         accessor.initModel(fxModel, controllerName, rootComponent, language);
         int end = contentLocator.getElementOffset();
-        i(fxModel).endContent(end).endsAt(end);
+        i(fxModel).endContent(end).endsAt(end, true);
+        // attempt to fix up unclosed elements
+        //fixNodes(i(fxModel), end);
+    }
+    
+    private void fixNodes(NodeInfo ni, int pos) {
+        for (Enumeration<FxNode> en = ni.getEnclosedNodes(); en.hasMoreElements(); ) {
+            fixNode(i(en.nextElement()), pos);
+        }
+    }
+    
+    private void fixNode(NodeInfo ni, int pos) {
+        if (ni.isDefined(TextPositions.Position.End)) {
+            return;
+        }
+        if (ni.getEnd() == pos) {
+            ni.markIncludeEnd();
+            // recursively fix children
+            fixNodes(ni, pos);
+        }
     }
 
     @Override
@@ -276,13 +297,15 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     private FxNode processEventHandlerAttribute(String event, String content) {
         EventHandler eh;
 
-        if (content.startsWith(EVENT_HANDLER_METHOD_PREFIX)) {
+        if (content != null && content.startsWith(EVENT_HANDLER_METHOD_PREFIX)) {
             eh = accessor.asMethodRef(accessor.createEventHandler(event));
             accessor.addContent(eh, content.substring(1));
             
         } else {
             eh = accessor.createEventHandler(event);
-            accessor.addContent(eh, content);
+            if (content != null) {
+                accessor.addContent(eh, content);
+            }
         }
         return eh;
     }
@@ -551,6 +574,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         end = contentLocator.getEndOffset();
         
         addElementErrors();
+        
         
         if (uri == null && !qName.equals(localName)) {
             // undeclared prefix
@@ -1043,7 +1067,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     private void attachChildNode(FxNode node) {
         FxNode top = nodeStack.peek();
         i(top).addChild(node);
-        if (!node.isBroken() && (node.getKind() != FxNode.Kind.Element)) {
+//        if (!node.isBroken() && (node.getKind() != FxNode.Kind.Element)) {
+        accessor.attach(node, fxModel);
+        if (!node.isBroken()) {
             accessor.addChild(top, node);
         }
         if (i(node).isElement()) {

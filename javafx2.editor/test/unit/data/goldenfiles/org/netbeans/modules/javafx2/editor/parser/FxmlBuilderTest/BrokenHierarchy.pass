@@ -26,8 +26,8 @@
 [585 - 601]             setter: name=minWidth, content=330.0
 [602 - 620]             setter: name=prefHeight, content=127.0
 [732 - 1310]            setter: name=children, content=null
-[751 - 1309]              instance: id=null, className=TextField
-[873 - 1309]                setter: name=null, content=null
+[751 - 1299]              instance: id=null, className=TextField
+[873 - 1299]                setter: name=null, content=null
 [873 - 1165]                  instance: id=newTextField, className=TextField
 [884 - 901]                     setter: name=id, content=newTextField
 [1035 - 1046]                   setter: name=text, content=Ahoj
@@ -35,7 +35,7 @@
 [999 - 1016]                    setter: name=prefWidth, content=321.0
 [931 - 955]                     setter: name=minHeight, content=21.310546875
 [1079 - 1144]                   setter: name=effect, content=null
-[1100 - 1143]                     instance: id=null, className=MotionBlur
+[1100 - 1135]                     instance: id=null, className=MotionBlur
 [1112 - 1124]                       setter: name=radius, content=5.0
 [902 - 915]                     setter: name=layoutX, content=1.0
 [956 - 972]                     setter: name=minWidth, content=321.0
@@ -55,7 +55,7 @@
 [639 - 667]             attached: name=leftAnchor, source=AnchorPane, content=72.0
 [1350 - 1749]         instance: id=null, className=AnchorPane
 [1362 - 1376]           setter: name=id, content=LabelPane
-[1439 - 1748]           setter: name=children2, content=null
+[1439 - 1736]           setter: name=children2, content=null
 [1459 - 1580]             instance: id=null, className=Label
 [1466 - 1480]               setter: name=id, content=NameLabel
 [1481 - 1493]               setter: name=text, content=Name:

@@ -487,6 +487,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
                 tooltipPane.setEditable(false);
                 tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
                 tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
                 
                 if (matches != null && origin != null) {
                     tooltipPane.putClientProperty(MATCHED_BRACES, origin);
