@@ -87,7 +87,7 @@ preferredID = RuleEditorTC.ID)
     "CTL_RuleEditorTC=Rule Editor", // NOI18N
     "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
 })
-public final class RuleEditorTC extends TopComponent implements PropertyChangeListener {
+public final class RuleEditorTC extends TopComponent {
 
     /**
      * TopComponent ID.
@@ -118,35 +118,7 @@ public final class RuleEditorTC extends TopComponent implements PropertyChangeLi
     private void initComponents() {
         setLayout(new BorderLayout());
         controller = RuleEditorController.createInstance();
-        controller.addRuleEditorListener(this);
         add(controller.getRuleEditorComponent(), BorderLayout.CENTER);
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        //XXX activated nodes workaround: if one sets the model, the top component
-        //sets the activated node from the peer dataobject.
-        if (RuleEditorController.PropertyNames.MODEL_SET.name().equals(evt.getPropertyName())) {
-            Model model = (Model) evt.getNewValue();
-            if (model != null) {
-                FileObject file = model.getLookup().lookup(FileObject.class);
-                if (file != null) {
-                    try {
-                        DataObject dobj = DataObject.find(file);
-                        final Node node = dobj.getLookup().lookup(Node.class);
-                        if (node != null) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    setActivatedNodes(new Node[]{node});
-                                }
-                            });
-                        }
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
-    }
 }
