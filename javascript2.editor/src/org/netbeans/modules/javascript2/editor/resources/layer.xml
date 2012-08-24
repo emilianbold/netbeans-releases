@@ -160,11 +160,12 @@
     </folder>
 
     <folder name="OptionsDialog">
-        <!--        <folder name="PreviewExamples">
+        <folder name="PreviewExamples">
             <folder name="text">
                 <file name="javascript" url="JsExample"/>
+                <file name="x-json" url="JsonExample.json"/>
             </folder>
-        </folder>-->
+        </folder>
         <folder name="Editor">
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>
