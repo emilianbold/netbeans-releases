@@ -223,9 +223,15 @@ public class TemplateWizard extends WizardDescriptor {
     *
     * @param obj the template to start with
     */
-    public void setTemplate (DataObject obj) {
+    public void setTemplate (final DataObject obj) {
         if (obj != null) {
-            setTemplateImpl (obj, true);
+            Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+                @Override
+                public Void run() {
+                    setTemplateImpl (obj, true);
+                    return null;
+                }
+            });
         }
     }
     
