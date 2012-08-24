@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.hint;
 
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.css.editor.properties.Semitones;
 import org.netbeans.modules.javascript2.editor.hints.BetterConditionHint;
 import org.netbeans.modules.javascript2.editor.hints.JsConventionRule;
 import org.netbeans.modules.javascript2.editor.hints.MissingSemicolonHint;
