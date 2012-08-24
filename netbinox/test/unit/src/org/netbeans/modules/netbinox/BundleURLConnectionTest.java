@@ -45,20 +45,20 @@ import java.awt.GraphicsEnvironment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.netbinox.ContextClassLoaderTest.Compile;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.NetigsoFramework;
 import org.netbeans.core.netigso.NetigsoUtil;
 import org.netbeans.core.startup.Main;
+import org.netbeans.junit.MemoryFilter;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.util.Lookup;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.launch.Framework;
 
@@ -131,6 +131,11 @@ public class BundleURLConnectionTest extends NbTestCase {
         assertNotNull("fileURL found", fileURL);
         // file:/home/jarda/src/netbeans/netbinox/netbinox/build/test/unit/work/userdir0/var/cache/netigso/org.eclipse.osgi/bundles/46/1/.cp/org/activate/entry.txt
         assertEquals("Ahoj", readLine(fileURL));
+        
+        
+        URL u = (URL) System.getProperties().get("activated.entry.url");
+        assertNotNull("URL found", u);
+        assertNoByteArray(u, "Ahoj");
     }
     
     static String readLine(String url) throws Exception {
@@ -139,4 +144,30 @@ public class BundleURLConnectionTest extends NbTestCase {
         BufferedReader r = new BufferedReader(new InputStreamReader(u.openStream()));
         return r.readLine();
     }
+    
+    private static void assertNoByteArray(URL u, final String text) {
+        final Object[] found = { null };
+        class MF implements MemoryFilter {
+            @Override
+            public boolean reject(Object obj) {
+                if (obj instanceof byte[]) {
+                    String s;
+                    try {
+                        s = new String((byte[])obj, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                    if (s.startsWith(text)) {
+                        found[0] = s;
+                    }
+                }
+                return false;
+            }
+        }
+        
+        assertSize("Find the array", Collections.singleton(u), 3200000, new MF());
+        assertEquals("The array should not be referenced by the URL", null, found[0]);
+    }
+    
+    
 }
