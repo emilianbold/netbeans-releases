@@ -88,7 +88,7 @@ import org.openide.util.NbBundle;
  *
  * @author sp153251
  */
-@MimeRegistration(mimeType = JPQLEditorCodeCompletionProvider.MIME_JPQL, service = CompletionProvider.class, position = 405)//NOI18N
+@MimeRegistration(mimeType = JPQLEditorCodeCompletionProvider.MIME_JPQL, service = CompletionProvider.class)//NOI18N
 public class JPQLEditorCodeCompletionProvider implements CompletionProvider {
 
     public static final String MIME_JPQL = "text/x-jpql";//NOI18N
