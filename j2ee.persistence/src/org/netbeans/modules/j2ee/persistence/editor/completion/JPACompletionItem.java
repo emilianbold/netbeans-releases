@@ -539,12 +539,17 @@ public abstract class JPACompletionItem implements CompletionItem {
         private final ContentAssistProposals caProposal;
         private final int internalOffset;
         private int customOffset = 0;
+        private boolean toQuote = true;
 
-        public JPQLElementItem(String name, boolean quote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
+        public JPQLElementItem(String name, boolean quote, boolean toQuote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
             super(name, quote, substituteOffset);
             this.initialvalue = valueInitial;
             this.caProposal = buildContentAssistProposals;
             this.internalOffset = internalOffset;
+            this.toQuote = toQuote;
+        }
+        public JPQLElementItem(String name, boolean quote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
+            this(name, quote, true, substituteOffset, internalOffset, valueInitial, buildContentAssistProposals);
         }
 
         @Override
@@ -564,7 +569,7 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         @Override
         public int getCutomPosition() {
-            return customOffset + 1;
+            return customOffset + (toQuote ? 1 : 0);
         }
 
         @Override
@@ -595,18 +600,18 @@ public abstract class JPACompletionItem implements CompletionItem {
                     }
 
                     //dirty hack for @Table(name=CUS|
-                    if (!text.startsWith("\"")) {
+                    if (toQuote && !text.startsWith("\"")) {
                         text = quoteText(text);
                     }
 
                     //check if there is already an end quote
                     char ch = doc.getText(offset + len, 1).charAt(0);
-                    if (ch == '"') {
+                    if (toQuote && ch == '"') {
                         //remove also this end quote since the inserted value is always quoted
                         len++;
                     }
 
-                    doc.remove(offset, getCutomPosition() - ((text.length() - 2) - initialvalue.length()));
+                    doc.remove(offset, getCutomPosition() - ((text.length() - (toQuote ? 2 : 0)) - initialvalue.length()));
                     doc.insertString(offset, text.substring(0, getCutomPosition()), null);
                 } catch (BadLocationException e) {
                     // Can't update
