@@ -307,14 +307,6 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     }
 
     @Override
-    public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
-        int unitId = translator.getUnitId(unitName);
-        synchronized (getUnitLock(unitId)) {
-            closeUnit2(unitName, cleanRepository, requiredUnits);
-        }
-    }
-
-    @Override
     public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
         CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         Set<CharSequence> requiredUnitNames = null;
@@ -381,19 +373,10 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     }
 
     @Override
-    public void removeUnit(CharSequence unitName) {
-        int unitId = translator.getUnitId(CharSequences.create(unitName));
-        synchronized (getUnitLock(unitId)) {
-            closeUnit(unitName, true, Collections.<CharSequence>emptySet());
-            ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
-        }
-    }
-
-    @Override
     public void removeUnit(int unitId) {
         CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         synchronized (getUnitLock(unitId)) {
-            closeUnit(unitName, true, Collections.<CharSequence>emptySet());
+            closeUnit2(unitName, true, Collections.<CharSequence>emptySet());
             ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
         }
     }
