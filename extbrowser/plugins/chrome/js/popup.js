@@ -131,7 +131,13 @@ NetBeans_PresetMenu._putPresetsInternal = function(showInToolbar) {
         // type
         var typeDiv = document.createElement('div');
         typeDiv.setAttribute('class', 'type');
-        typeDiv.appendChild(document.createTextNode(NetBeans_Preset.typeForIdent(preset.type).title));
+        var presetType = NetBeans_Preset.typeForIdent(preset.type);
+        // type - image
+        var img = document.createElement('img');
+        img.setAttribute('src', '../img/presets/' + presetType.ident + '.png');
+        img.setAttribute('alt', presetType.title);
+        img.setAttribute('title', presetType.title);
+        typeDiv.appendChild(img);
         item.appendChild(typeDiv);
         // label
         var labelDiv = document.createElement('div');
