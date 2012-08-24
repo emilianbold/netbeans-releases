@@ -145,7 +145,9 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                 }
 
             } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+                //possibly deleted file, give up
+                return ;
+                
             }
             LOG.log(Level.INFO, "workarounded caret offset: {0}", caretOffset);
         }
