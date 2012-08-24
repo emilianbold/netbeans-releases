@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
@@ -55,21 +58,54 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  * @author sdedic
  */
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
-public class FxIncludeCompleter implements Completer, Completer.Factory { 
-    private CompletionContext   context;
-
-    public FxIncludeCompleter() {
+public class IdReferenceCompleter implements Completer, Completer.Factory {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/variable_ref.png"; // NOI18N
+    private CompletionContext ctx;
+    
+    public IdReferenceCompleter() {
     }
 
-    FxIncludeCompleter(CompletionContext context) {
-        this.context = context;
+    IdReferenceCompleter(CompletionContext ctx) {
+        this.ctx = ctx;
     }
-
+    
     @Override
     public List<? extends CompletionItem> complete() {
-        FxInstructionItem item = new FxInstructionItem("fx:include", context, 
-                "<fx:include source=\"\"/>", CompletionUtils.makeFxNamespaceCreator(context));
-        return Collections.singletonList(item);
+        Set<String> names = ctx.getModel().getInstanceNames();
+        String prefix = ctx.getPrefix();
+        if (prefix.startsWith("$")) {
+            prefix = prefix.substring(1);
+        }
+        
+        FxProperty prop = ctx.getEnclosingProperty();
+        TypeMirror el = prop.getType().resolve(ctx.getCompilationInfo());
+        List<CompletionItem>    items = new ArrayList<CompletionItem>();
+        for (String s : names) {
+            if (!prefix.isEmpty() && !s.startsWith(prefix)) {
+                continue;
+            }
+            FxInstance inst = ctx.getModel().getInstance(s);
+            if (inst == null) {
+                // ?? error in model ?
+                throw new IllegalStateException();
+            }
+            FxBean def = inst.getDefinition();
+            if (def == null) {
+                continue;
+            }
+            // be conservative, allow unknown items in completion
+            if (def.getJavaType() != null) {
+                TypeElement clazz = def.getJavaType().resolve(ctx.getCompilationInfo());
+                if (clazz != null) {
+                    if (!ctx.getCompilationInfo().getTypes().isAssignable(el, clazz.asType())) {
+                        continue;
+                    }
+                }
+            }
+            
+            items.add(new ValueItem(ctx, s, "$", ICON_RESOURCE));
+        }
+        return items;
     }
 
     @Override
@@ -80,27 +116,20 @@ public class FxIncludeCompleter implements Completer, Completer.Factory {
     @Override
     public Completer createCompleter(CompletionContext ctx) {
         switch (ctx.getType()) {
-            case BEAN:
-            case ROOT:
-            case CHILD_ELEMENT:
+            case VARIABLE:
+            case PROPERTY_VALUE:
+            case PROPERTY_VALUE_CONTENT:
                 break;
+                
             default:
                 return null;
         }
         FxProperty prop = ctx.getEnclosingProperty();
-        if (prop != null) {
-            TypeMirror tm = prop.getType().resolve(ctx.getCompilationInfo());
-            // check that the type is a subclass of javafx.scene.Node
-            TypeElement te = ctx.getCompilationInfo().getElements().getTypeElement("javafx.scene.Node");
-            if (te != null && ctx.getCompilationInfo().getTypes().isAssignable(te.asType(), tm)) {
-                return new FxIncludeCompleter(ctx);                
-                
-            }
+        if (prop == null) {
+            return null;
         }
-        return null;
-        
+        return new IdReferenceCompleter(ctx);
     }
 
-    
     
 }
