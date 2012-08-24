@@ -96,37 +96,35 @@
                         <th scope="col">Modification</th>
                     </tr>
                     <tr>
-                        <td>Tomcat</td>
-                        <td><tt>catalina.bat/sh</tt></td>
-                        <td><tt>JAVA_HOME=</tt>"&lt;path to JDK directory&gt;"<br>
-                            <tt>CATALINA_OPTS=</tt>"path to profiler agent"</td>
+                        <td>Tomcat 7</td>
+                        <td><tt>catalina.bat/catalina.sh</tt></td>
+                        <td>set <tt>JAVA_HOME</tt> to path to JDK for server<br>
+                            modify <tt>CATALINA_OPTS</tt> to include profiler <tt>-agentpath</tt> parameter</td>
                     </tr>
                     <tr>
-                        <td>GlassFish</td>
+                        <td>GlassFish 3</td>
                         <td><tt>asenv.bat/asenv.conf</tt><br>
                             <tt>domain.xml</tt></td>
-                        <td><tt>AS_JAVA=</tt>"&lt;path to JDK directory&gt;"<br>
-                        <tt>&lt;profiler ...&gt;</tt> path to profiler agent </td>
+                        <td>set <tt>AS_JAVA</tt> to path to JDK for server<br>
+                        add <tt>&lt;jvm-options&gt;</tt> elements to include profiler <tt>-agentpath</tt> parameter</td>
                     </tr>
                     <tr>
-                        <td>WebLogic</td>
-                        <td><tt>startWebLogic.cmd/sh</tt></td>
-                        <td><tt>JAVA_HOME=</tt>"&lt;path to JDK directory&gt;"<br>
-                            <tt>JAVA_OPTIONS=</tt>"path to profiler agent"</td>
+                        <td>WebLogic 12</td>
+                        <td><tt>startWebLogic.cmd/startWebLogic.sh</tt></td>
+                        <td>set <tt>JAVA_HOME</tt> to path to JDK for server<br>
+                            modify <tt>JAVA_OPTIONS</tt> to include profiler <tt>-agentpath</tt> parameter</td>
                     </tr>
                     <tr>
-                        <td>JBoss</td>
-                        <td><tt>run.bat/sh</tt></td>
-                        <td><tt>JAVA_HOME=</tt>"&lt;path to JDK directory&gt;"<br>
-                        <tt>JAVA_OPTS=</tt>"path to profiler agent"
-                        <!--JAVA_OPTS=-agentpath:&lt;remote&gt;\lib\deployed\jdk16\windows\profilerinterface.dll=&lt;remote&gt;\lib,5141-->
-                        </td>
+                        <td>JBoss 7</td>
+                        <td><tt>standalone.conf.bat/standalone.conf</tt></td>
+                        <td>set <tt>JAVA_HOME</tt> to path to JDK for server<br>
+                        modify <tt>JAVA_OPTS</tt> to include profiler <tt>-agentpath</tt> parameter</td>
                     </tr>
                 </table>
                 
                 <p><strong>Notes.</strong></p>
                 <ul class="note">
-                    <li>For the GlassFish server you need to set the path to the JDK in the <tt>asenv.bat/asenv</tt> file and
+                    <li>For the GlassFish server you need to set the path to the JDK in the <tt>asenv.bat/asenv.conf</tt> file and
                     the path to the profiler agent in <tt>domain.xml</tt>.</li>
                     <li>For more details about configuring the servers for attaching the profiler tool,
                     see the following NetBeans FAQ:<br>
