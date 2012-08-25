@@ -65,6 +65,7 @@ public final class SmartyOptions {
     private static final String CLOSE_DELIMITER = "}"; // NOI18N
     protected static final String PROP_TPL_SCANNING_DEPTH = "tpl-scanning-depth";
     protected static final String PROP_TPL_VERSION = "tpl-version";
+    protected static final String PROP_TPL_TOGGLE_COMMENT = "tpl-toggle-comment";
 
     // TODO - temporary property which should be removed release after NB71
     protected static final String PROP_TPL_SCANNING_DEPTH_OLD = "1";
@@ -118,6 +119,17 @@ public final class SmartyOptions {
     public void setSmartyVersion(SmartyFramework.Version version) {
         getPreferences().put(PROP_TPL_VERSION, version.name());
         SmartyFramework.setSmartyVersion(version);
+    }
+
+    public SmartyFramework.ToggleCommentOption getToggleCommentOption() {
+        String commentOption = getPreferences().get(PROP_TPL_TOGGLE_COMMENT,
+                SmartyFramework.ToggleCommentOption.SMARTY.name());
+        return SmartyFramework.ToggleCommentOption.valueOf(commentOption);
+    }
+
+    public void setToggleCommentOption(SmartyFramework.ToggleCommentOption commentOption) {
+        getPreferences().put(PROP_TPL_TOGGLE_COMMENT, commentOption.name());
+        SmartyFramework.setToggleCommentOption(commentOption);
     }
 
     private static Preferences getPreferences() {
