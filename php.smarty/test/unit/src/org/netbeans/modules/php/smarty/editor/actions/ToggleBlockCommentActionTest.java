@@ -45,10 +45,13 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.core.CslEditorKit;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.TplTestBase;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -71,8 +74,8 @@ public class ToggleBlockCommentActionTest extends TplTestBase {
         try {
             TestLanguageProvider.register(HTMLTokenId.language());
             TestLanguageProvider.register(PHPTokenId.language());
+            TestLanguageProvider.register(JsTokenId.javascriptLanguage());
             TestLanguageProvider.register(TplTopTokenId.language());
-            TestLanguageProvider.register(TplTokenId.language());
         } catch (IllegalStateException ise) {
             // Ignore -- we've already registered this either via layers or other means
         }
@@ -84,59 +87,113 @@ public class ToggleBlockCommentActionTest extends TplTestBase {
     }
 
     public void testSmartyOptionCursor1()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor1.tpl");
     }
 
     public void testSmartyOptionCursor2()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor2.tpl");
     }
 
     public void testSmartyOptionCursor3()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor3.tpl");
     }
 
     public void testSmartyOptionCursor4()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor4.tpl");
     }
 
     public void testSmartyOptionSelection1()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testSelectionInFile("testfiles/toggleComment/smarty_selection1.tpl");
     }
 
     public void testSmartyOptionSelection2()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testSelectionInFile("testfiles/toggleComment/smarty_selection2.tpl");
     }
 
     public void testSmartyOptionSelection3()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testSelectionInFile("testfiles/toggleComment/smarty_selection3.tpl");
     }
 
     public void testSmartyOptionSelection4()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testSelectionInFile("testfiles/toggleComment/smarty_selection4.tpl");
     }
 
     public void testSmartyOptionSelection5()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testSelectionInFile("testfiles/toggleComment/smarty_selection5.tpl");
     }
 
     public void testSmartyOptionCursorUncomment1()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor_uncomment1.tpl");
     }
 
     public void testSmartyOptionCursorUncomment2()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor_uncomment2.tpl");
     }
 
     public void testSmartyOptionCursorUncomment3()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor_uncomment3.tpl");
     }
 
     public void testSmartyOptionCursorUncomment4()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor_uncomment4.tpl");
     }
 
     public void testSmartyOptionCursorUncomment5()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
         testCursorInFile("testfiles/toggleComment/smarty_cursor_uncomment5.tpl");
+    }
+
+    public void testContextOptionCursor1()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor1.tpl");
+    }
+
+    public void testContextOptionCursor2()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor2.tpl");
+    }
+
+    public void testContextOptionCursor3()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor3.tpl");
+    }
+
+    public void testContextOptionCursor4()throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor4.tpl");
+    }
+
+    public void testContextOptionCursorUncomment1() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment1.tpl");
+    }
+
+    public void testContextOptionCursorUncomment2() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment2.tpl");
+    }
+
+    public void testContextOptionCursorUncomment3() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment3.tpl");
+    }
+
+    public void testContextOptionCursorUncomment4() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment4.tpl");
     }
 
     protected void testCursorInFile(String file) throws Exception {
