@@ -435,14 +435,14 @@ webkitKeyframes
 webkitKeyframesBlock
 	:
 	webkitKeyframeSelectors ws?
-	LBRACE  ws? syncTo_IDENT_RBRACE
+	LBRACE  ws? syncToDeclarationsRule
 		declarations
 	RBRACE 
 	;	
 	
 webkitKeyframeSelectors
 	:
-	( 'FROM' | 'TO' | PERCENTAGE ) ( ws? COMMA ws? ( 'FROM' | 'TO' | PERCENTAGE ) )*
+	( IDENT | PERCENTAGE ) ( ws? COMMA ws? ( IDENT | PERCENTAGE ) )*
 	;
     
 page
@@ -457,20 +457,20 @@ page
     
 counterStyle
     : COUNTER_STYLE_SYM ws? IDENT ws?
-        LBRACE ws? syncTo_IDENT_RBRACE
+        LBRACE ws? syncToDeclarationsRule
 		declarations
         RBRACE
     ;
     
 fontFace
     : FONT_FACE_SYM ws?
-        LBRACE ws? syncTo_IDENT_RBRACE
+        LBRACE ws? syncToDeclarationsRule
 		declarations
         RBRACE
     ;
 
 margin	
-	: margin_sym ws? LBRACE ws? syncTo_IDENT_RBRACE declarations RBRACE
+	: margin_sym ws? LBRACE ws? syncToDeclarationsRule declarations RBRACE
        ;
        
 margin_sym 
@@ -521,7 +521,7 @@ property
     
 rule 
     :   selectorsGroup
-        LBRACE ws? syncTo_IDENT_RBRACE
+        LBRACE ws? syncToDeclarationsRule
             declarations
         RBRACE
     ;
@@ -534,7 +534,8 @@ rule
 declarations
     :
         //Allow empty rule. Allows? multiple semicolons
-        declaration? (SEMI ws? declaration?)*
+        //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
+        (STAR? declaration)? (SEMI ws? (STAR? declaration)?)*
     ;
     
 selectorsGroup
@@ -683,9 +684,9 @@ propertyValue
 
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
 //since the rule matches epsilon it will always be entered
-syncTo_IDENT_RBRACE
+syncToDeclarationsRule
     @init {
-        syncToSet(BitSet.of(IDENT, RBRACE));
+        syncToSet(BitSet.of(IDENT, RBRACE, STAR));
     }
     	:	
     	;

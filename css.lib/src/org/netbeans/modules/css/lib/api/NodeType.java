@@ -218,7 +218,7 @@ public enum NodeType {
     /**
      * error recovery rule
      */
-    syncTo_IDENT_RBRACE,
+    syncToDeclarationsRule,
     /**
      * error recovery rule
      */

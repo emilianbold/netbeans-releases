@@ -1098,5 +1098,29 @@ public class Css3ParserTest extends CssTestBase {
         
     }
     
-    
+    //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
+    //Bug 215168 - Netbeans doesn't know about CSS star hack 
+    public void testIEPropertyStarHack() throws ParseException, BadLocationException {
+        //case #1 error appears before declarations grammar rule
+        String source = ".aclass { *color: red; }";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+        
+        //case #2 - error happens in the declarations grammar rule
+        source = ".aclass { padding: 2px; *color: red; }";
+        result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+    }
+
+    public void testFromTextPropertyValueBug() {
+        String source = ".x { background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#149bdf), to(#0480be)) }";
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+    }
 }
