@@ -182,7 +182,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 if (media == null) {
                     //add to the body
                     Body body = styleSheet.getBody();
-                    if (body != null) {
+                    if (body == null) {
                         //create body if empty file
                         body = factory.createBody();
                         styleSheet.setBody(body);
