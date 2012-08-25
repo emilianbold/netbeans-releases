@@ -1,5 +1,5 @@
 BeanInfo[
-  className: javafx.scene.layout.AnchorPane; default: <null>; value: false
+  className: javafx.scene.layout.AnchorPane; default: Property[name: children; kind: LIST; simple: false; type: javafx.scene.Node; target: <null>; accessor: ElementHandle[kind=METHOD; sigs=javafx.scene.layout.Pane getChildren ()Ljavafx/collections/ObservableList; ]]; value: false
  factories: []
  properties: 
     Property[name: blendMode; kind: SETTER; simple: true; type: javafx.scene.effect.BlendMode; target: <null>; accessor: ElementHandle[kind=METHOD; sigs=javafx.scene.Node setBlendMode (Ljavafx/scene/effect/BlendMode;)V ]]
