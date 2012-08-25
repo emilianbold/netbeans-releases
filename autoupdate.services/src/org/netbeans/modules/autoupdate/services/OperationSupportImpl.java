@@ -127,6 +127,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForEnable extends OperationSupportImpl {
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
@@ -156,6 +157,7 @@ public abstract class OperationSupportImpl {
                 final ModuleManager fmm = mm;
                 try {
                     fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
+                        @Override
                         public Boolean run () throws Exception {
                             return enable(fmm, modules);
                         }
@@ -176,6 +178,7 @@ public abstract class OperationSupportImpl {
             return false;
         }
         
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
@@ -193,10 +196,12 @@ public abstract class OperationSupportImpl {
             return retval;
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
@@ -206,6 +211,7 @@ public abstract class OperationSupportImpl {
     private static class ForDisable extends OperationSupportImpl {
         private Collection<File> controlFileForDisable = null;
         private Collection<UpdateElement> affectedModules = null;
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
@@ -244,6 +250,7 @@ public abstract class OperationSupportImpl {
             return true;
         }
         
+        @Override
         public void doCancel () throws OperationException {
             if (controlFileForDisable != null) {
                 controlFileForDisable = null;
@@ -253,6 +260,7 @@ public abstract class OperationSupportImpl {
             }
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             // write files marked to delete (files4remove) into temp file
             // Updater will handle it
@@ -265,6 +273,7 @@ public abstract class OperationSupportImpl {
             doRestartLater (restarter);
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             // write files marked to delete (files4remove) into temp file
             // Updater will handle it
@@ -282,6 +291,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForDirectDisable extends OperationSupportImpl {
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
@@ -310,6 +320,7 @@ public abstract class OperationSupportImpl {
                 final ModuleManager fmm = mm;
                 try {
                     fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
+                        @Override
                         public Boolean run () throws Exception {
                             return disable(fmm, modules);
                         }
@@ -341,14 +352,17 @@ public abstract class OperationSupportImpl {
             return retval;
         }
 
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
@@ -358,6 +372,7 @@ public abstract class OperationSupportImpl {
     private static class ForUninstall extends OperationSupportImpl {
         private Collection<File> files4remove = null;
         private Collection<UpdateElement> affectedModules = null;
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
@@ -408,6 +423,7 @@ public abstract class OperationSupportImpl {
 
             return true;
         }
+        @Override
         public void doCancel () throws OperationException {
             if (files4remove != null) {
                 files4remove = null;
@@ -417,6 +433,7 @@ public abstract class OperationSupportImpl {
             }
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             // write files marked to delete (files4remove) into temp file
             // Updater will handle it
@@ -429,6 +446,7 @@ public abstract class OperationSupportImpl {
             doRestartLater (restarter);
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             // write files marked to delete (files4remove) into temp file
             // Updater will handle it
@@ -446,6 +464,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForDirectUninstall extends OperationSupportImpl {
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
@@ -507,14 +526,17 @@ public abstract class OperationSupportImpl {
             
             return false;
         }
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
@@ -522,18 +544,22 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForInstall extends OperationSupportImpl {
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
@@ -541,18 +567,22 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForUpdate extends OperationSupportImpl {
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
@@ -560,18 +590,22 @@ public abstract class OperationSupportImpl {
     }
 
     private static class ForInternalUpdate extends OperationSupportImpl {
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
@@ -581,6 +615,7 @@ public abstract class OperationSupportImpl {
     private static class ForCustomInstall extends OperationSupportImpl {
         private Collection<UpdateElement> affectedModules = null;
 
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             boolean success = false;
@@ -633,10 +668,12 @@ public abstract class OperationSupportImpl {
             return success;
 
         }
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             markForRestart();
             LifecycleManager.getDefault ().exit ();
@@ -644,6 +681,7 @@ public abstract class OperationSupportImpl {
             doRestartLater (restarter);
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             // shedule module for restart
             markForRestart();
@@ -657,6 +695,7 @@ public abstract class OperationSupportImpl {
 
     private static class ForCustomUninstall extends OperationSupportImpl {
         private Collection<UpdateElement> affectedModules = null;
+        @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             boolean success = false;
@@ -701,10 +740,12 @@ public abstract class OperationSupportImpl {
             return success;
 
         }
+        @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
 
+        @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
             markForRestart();
             LifecycleManager.getDefault ().exit ();
@@ -712,6 +753,7 @@ public abstract class OperationSupportImpl {
             doRestartLater (restarter);
         }
 
+        @Override
         public void doRestartLater (Restarter restarter) {
             // shedule module for restart
             markForRestart();

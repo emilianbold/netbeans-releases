@@ -472,7 +472,7 @@ public final class OperationContainerImpl<Support> {
     private OperationContainerImpl (OperationType type) {
         this.type = type;
     }
-    
+        
     public OperationType getType () {
         return type;
     }
