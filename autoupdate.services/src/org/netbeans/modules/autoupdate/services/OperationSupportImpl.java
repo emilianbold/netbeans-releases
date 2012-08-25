@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,6 +58,8 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.*;
+import org.netbeans.api.autoupdate.InstallSupport.Installer;
+import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.progress.ProgressHandle;
@@ -570,8 +573,21 @@ public abstract class OperationSupportImpl {
         @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            
+            OperationContainer<InstallSupport> containerForUpdate = OperationContainer.createForUpdate();
+            List<? extends OperationInfo> infos = container.listAll();
+            for (OperationInfo info : infos) {
+                containerForUpdate.add(info.getUpdateUnit(), info.getUpdateElement());
+            }
+            System.out.println("###: EMPTY: " + containerForUpdate.listInvalid());
+            assert containerForUpdate.listInvalid().isEmpty();
+            
+            Validator v = containerForUpdate.getSupport().doDownload(ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()), null, false);
+            Installer i = containerForUpdate.getSupport().doValidate(v, ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()));
+            Restarter r = containerForUpdate.getSupport().doInstall(i, ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()));
+            return r == null;
         }
+        
         @Override
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";

@@ -65,7 +65,7 @@ import org.openide.modules.OnStart;
 public class InstallUpdateOnStart implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(InstallUpdateOnStart.class.getName());
-    
+
     public @Override
     void run() {
         // only if IDE is running in silent mode
@@ -93,7 +93,7 @@ public class InstallUpdateOnStart implements Runnable {
                 LOG.log(Level.INFO, "While refreshing " + p + " thrown " + ex, ex);
             }
         }
-        
+
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
 
         // check for updates
@@ -125,12 +125,12 @@ public class InstallUpdateOnStart implements Runnable {
             assert ! oc.listAll().isEmpty() : "listAll elements is not empty";
             if (oc.listInvalid().isEmpty() && ! oc.listAll().isEmpty()) {
                 LOG.fine("Try to invoke the installation...");
-                Restarter restart = oc.getSupport().doOperation(ProgressHandleFactory.createHandle (InstallUpdateOnStart.class.getName()));
+                Restarter restart = oc.getSupport().doOperation(ProgressHandleFactory.createHandle(InstallUpdateOnStart.class.getName()));
                 LOG.info("... Restarter found? " + (restart != null));
                 assert restart == null;
                 if (restart != null) {
                     LOG.fine("Try to restart...");
-                    oc.getSupport().doRestart(restart, ProgressHandleFactory.createHandle (InstallUpdateOnStart.class.getName()));
+                    oc.getSupport().doRestart(restart, ProgressHandleFactory.createHandle(InstallUpdateOnStart.class.getName()));
                 }
             }
             LOG.fine("Update done.");
