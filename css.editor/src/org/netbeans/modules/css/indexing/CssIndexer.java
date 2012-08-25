@@ -44,6 +44,7 @@ package org.netbeans.modules.css.indexing;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -147,18 +148,27 @@ public class CssIndexer extends EmbeddingIndexer {
 
     private int storeEntries(Collection<Entry> entries, IndexDocument doc, String key) {
         if (!entries.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            Iterator<Entry> i = entries.iterator();
-            while (i.hasNext()) {
-                Entry entry = i.next();
+            
+            //eliminate duplicated entries
+            Collection<String> entryStrings = new HashSet<String>();
+            for(Entry entry : entries) {
+                StringBuilder sb = new StringBuilder();
                 sb.append(entry.getName());
                 if(entry.isVirtual()) {
                     sb.append(VIRTUAL_ELEMENT_MARKER);
                 }
+                entryStrings.add(sb.toString());
+            }
+            
+            StringBuilder sb = new StringBuilder();
+            Iterator<String> i = entryStrings.iterator();
+            while(i.hasNext()) {
+                sb.append(i.next());
                 if (i.hasNext()) {
                     sb.append(','); //NOI18N
                 }
             }
+            
             sb.append(';'); //end of string
             doc.addPair(key, sb.toString(), true, true);
             return sb.toString().hashCode();

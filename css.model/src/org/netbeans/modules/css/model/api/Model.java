@@ -65,6 +65,7 @@ import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.ModelAccess;
 import org.netbeans.modules.css.model.impl.ElementFactoryImpl;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.cookies.EditorCookie;
@@ -152,11 +153,20 @@ public final class Model {
             lookupContent.add((StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode));
         }
         
+        Snapshot snapshot = parserResult.getSnapshot();
+        Source source = snapshot.getSource();
+        FileObject file = source.getFileObject();
+        Document doc = source.getDocument(true);
+        
         lookupContent.add(parserResult);
-        lookupContent.add(parserResult.getSnapshot());
-        lookupContent.add(parserResult.getSnapshot().getText());
-        lookupContent.add(parserResult.getSnapshot().getSource().getFileObject());
-        lookupContent.add(parserResult.getSnapshot().getSource().getDocument(true));
+        lookupContent.add(snapshot);
+        lookupContent.add(snapshot.getText());
+        if(file != null) {
+            lookupContent.add(file);
+        }
+        if(doc != null) {
+            lookupContent.add(doc);
+        }
         
         MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
     }

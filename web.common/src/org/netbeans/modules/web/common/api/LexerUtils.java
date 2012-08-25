@@ -127,7 +127,7 @@ public class LexerUtils {
         }
 
         //for position just at the length of the text
-        return linecount;
+        return text.length();
     }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {

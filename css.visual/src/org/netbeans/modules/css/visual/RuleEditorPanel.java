@@ -65,8 +65,8 @@ import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
-import org.netbeans.modules.css.visual.actions.AddRuleAction;
-import org.netbeans.modules.css.visual.actions.RemoveRuleAction;
+import org.netbeans.modules.css.visual.actions.CreateRuleAction;
+import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
@@ -181,8 +181,8 @@ public class RuleEditorPanel extends JPanel {
         
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
-        addRuleAction = new AddRuleAction(this);
-        removeRuleAction = new RemoveRuleAction(this);
+        addRuleAction = new CreateRuleAction(this);
+        removeRuleAction = new DeleteRuleAction(this);
         
         //keep actions status
         addRuleEditorListener(new PropertyChangeListener() {

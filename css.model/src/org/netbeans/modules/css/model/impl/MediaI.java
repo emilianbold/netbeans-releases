@@ -127,7 +127,14 @@ public class MediaI extends ModelElement implements Media {
 
     @Override
     public void addRule(Rule rule) {
-        int index = setElement(rule, true);
+        int index;
+        if(isArtificialElement()) {
+            index = setElement(rule, true);;
+        } else {
+            //insert before last element (should be PlainElement("})
+            index = getElementsCount() - 1;
+            insertElement(index, rule);
+        }
         insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
     }
 

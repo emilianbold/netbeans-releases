@@ -41,83 +41,61 @@
  */
 package org.netbeans.modules.css.visual.actions;
 
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.model.api.Element;
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.css.model.api.StyleSheet;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.css.visual.CreateRulePanel;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "label.remove.rule=Remove Rule",
-    "remove.rule.confirmation=Do you really want to remove the rule {0} from file {1}?"
+    "label.create.rule=Create Rule"
 })
-public class RemoveRuleAction extends AbstractAction {
+public class CreateRuleAction extends AbstractAction {
 
-    private RuleEditorPanel panel;
+    private RuleEditorPanel ruleEditorPanel;
 
-    public RemoveRuleAction(RuleEditorPanel panel) {
-        super(Bundle.label_remove_rule());
-        this.panel = panel;
+    public CreateRuleAction(RuleEditorPanel ruleEditorPanel) {
+        super(Bundle.label_create_rule());
+        this.ruleEditorPanel = ruleEditorPanel;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final Model model = panel.getModel();
-        final Rule rule = panel.getRule();
-        assert model != null;
-        assert rule != null;
+        final CreateRulePanel panel = new CreateRulePanel(ruleEditorPanel);
         
-        final AtomicReference<String> ruleName_ref = new AtomicReference<String>();
-        model.runReadTask(new Model.ModelTask() {
-
-            @Override
-            public void run(StyleSheet styleSheet) {
-                ruleName_ref.set(model.getElementSource(rule.getSelectorsGroup()).toString());
-            }
-        });
-        String ruleName = ruleName_ref.get();
-        assert ruleName != null;
-        
-        FileObject file = model.getLookup().lookup(FileObject.class);
-        String fileName = file != null ? file.getNameExt() : "???"; //NOI18N
-        
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(Bundle.remove_rule_confirmation(ruleName, fileName), NotifyDescriptor.YES_NO_OPTION);
-        
-        Object option = DialogDisplayer.getDefault().notify(nd);
-        if(option == NotifyDescriptor.YES_OPTION) {
-            model.runWriteTask(new Model.ModelTask() {
-
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    Element parent = rule.getParent();
-                    if(parent.removeElement(rule)) {
-                        try {
-                            model.applyChanges();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                Bundle.label_create_rule(),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if(e.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                            //should be called out of EDT, but due to Honza's hacks in Model.saveIfNotOpenInEditor()
+                            //I better keep it as it is at least for the John's demo.
+                            //XXX replan out of EDT, fix Model.saveIfNotOpenInEditor() not to require EDT and do I/O there.
+                            panel.applyChanges();
                         }
                     }
-                    
-                }
-            });
-        }
+                });
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.setVisible(true);
+        
     }
-
-    
 }
