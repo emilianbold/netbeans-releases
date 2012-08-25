@@ -70,6 +70,7 @@ public class CreateRuleAction extends AbstractAction {
     public CreateRuleAction(RuleEditorPanel ruleEditorPanel) {
         super(Bundle.label_create_rule());
         this.ruleEditorPanel = ruleEditorPanel;
+        setEnabled(false);
     }
 
     @Override

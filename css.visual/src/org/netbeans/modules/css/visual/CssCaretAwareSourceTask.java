@@ -130,7 +130,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         });
     }
 
-    private void runInEDT(final CssCslParserResult result, FileObject file, int caretOffset) {
+    private void runInEDT(final CssCslParserResult result, final FileObject file, int caretOffset) {
         LOG.log(Level.FINE, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
 
         if (caretOffset == -1) {
@@ -168,11 +168,18 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                     }
                     Rule rule = findRuleAtOffset(result, final_caretOffset);
                     RuleEditorController controller = ruleEditorTC.getRuleEditorController();
+
+                    FileObject lastFile = lastResult != null ? lastResult.getSnapshot().getSource().getFileObject() : null;
                     
-                    if (lastResult == null || result.getSnapshot() != lastResult.getSnapshot()) {
+                    boolean sameFile = lastFile != null && lastFile.equals(file);
+                    boolean sameResult = lastResult != null && lastResult.getSnapshot() == result.getSnapshot();
+                    
+                    LOG.log(Level.FINE, "samefile:{0}, sameresult:{1}", new Object[]{sameFile, sameResult});
+                    
+                    if (!sameResult) {
                         //the parse result has changed, we need to update the RuleEditor's css source model
-                        if (rule == null) {
-                            //do not re-set the model, keep the old one 
+                        if (!sameFile && rule == null) {
+                            //if the result represents a new file and there's no rule at the offset, just ignore 
                             LOG.log(Level.FINE, "no rule found at {0} offset, exiting w/o change of the RuleEditor", final_caretOffset);
                             return ;
                         } else {

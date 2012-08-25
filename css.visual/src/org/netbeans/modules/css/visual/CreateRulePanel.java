@@ -59,6 +59,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ElementFactory;
 import org.netbeans.modules.css.model.api.Media;
@@ -81,112 +82,117 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 @NbBundle.Messages({
-        "none.item=<html><font color=\"777777\">&lt;none&gt;</font></html>",
-        "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
-        "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",
-        "element.selector.descr=Applies to html elements with the selector name.",
-        "compound.selector.descr="
+    "none.item=<html><font color=\"777777\">&lt;none&gt;</font></html>",
+    "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
+    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",
+    "element.selector.descr=Applies to html elements with the selector name.",
+    "compound.selector.descr="
 })
 public class CreateRulePanel extends javax.swing.JPanel {
 
     private RuleEditorPanel ruleEditorPanel;
-    
     private String selector;
-    
     private String[] SELECTOR_TYPE_DESCRIPTIONS = new String[]{
         Bundle.class_selector_descr(),
         Bundle.id_selector_descr(),
         Bundle.element_selector_descr(),
         Bundle.compound_selector_descr()
     };
-    
+
     /**
      * Creates new form AddRuleDialog
      */
     public CreateRulePanel(RuleEditorPanel ruleEditorPanel) {
         this.ruleEditorPanel = ruleEditorPanel;
-        
+
         initComponents();
-        
+
         selectorTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 //update the description
                 int index = selectorTypeList.getSelectedIndex();
                 descriptionPane.setText(SELECTOR_TYPE_DESCRIPTIONS[index]);
-                
+
                 //disable editing mode for html elements
                 selectorCB.setEditable(index != 2);
-                        
+
             }
         });
         selectorTypeList.setSelectedIndex(0);
-        
+
         selectorCB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 String item = e.getItem().toString();
-                if(item.isEmpty()) {
-                    return ;
+                if (item.isEmpty()) {
+                    return;
                 }
-                switch(selectorTypeList.getSelectedIndex()) {
+                switch (selectorTypeList.getSelectedIndex()) {
                     case 0:
                         //class
-                        if(item.charAt(0) != '.') {
+                        if (item.charAt(0) != '.') {
                             item = '.' + item;
                         }
                         break;
                     case 1:
                         //id
-                        if(item.charAt(0) != '#') {
+                        if (item.charAt(0) != '#') {
                             item = '#' + item;
                         }
                         break;
                     case 2:
                         //element
                         break;
-                    case 3: 
+                    case 3:
                         //compound
                         break;
                     default:
                         throw new IllegalStateException();
                 }
                 selectorSet(item);
-                
+
             }
         });
-        
+
     }
-    
-    /** call outside of AWT thread, it does some I/Os */
+
+    /**
+     * call outside of AWT thread, it does some I/Os
+     */
     public void applyChanges() {
-        if(selector == null) {
+        if (selector == null) {
             //no value set
-            return ;
+            return;
         }
-        
+
         final Model model = ruleEditorPanel.getModel();
         //called if the dialog is confirmed
         model.runWriteTask(new Model.ModelTask() {
-
             @Override
             public void run(StyleSheet styleSheet) {
-                
+
                 ElementFactory factory = model.getElementFactory();
                 Selector s = factory.createSelector(selector);
                 SelectorsGroup sg = factory.createSelectorsGroup(s);
                 Declarations ds = factory.createDeclarations();
                 Rule rule = factory.createRule(sg, ds);
-                
+
                 Media media = getSelectedMedia();
-                if(media == null) {
+                if (media == null) {
                     //add to the body
-                   styleSheet.getBody().addRule(rule); 
+                    Body body = styleSheet.getBody();
+                    if (body != null) {
+                        //create body if empty file
+                        body = factory.createBody();
+                        styleSheet.setBody(body);
+                    }
+                    styleSheet.getBody().addRule(rule);
                 } else {
                     //add to the media
                     media.addRule(rule);
                 }
-                
+
                 try {
                     model.applyChanges();
                 } catch (IOException ex) {
@@ -195,48 +201,46 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     Exceptions.printStackTrace(ex);
                 }
             }
-             
         });
-        
+
     }
-    
+
     private void selectorSet(String selector) {
         this.selector = selector;
     }
-    
+
     private Media getSelectedMedia() {
         Object selected = atRuleCB.getSelectedItem();
-        if(selected == null) {
+        if (selected == null) {
             return null;
         }
-        return ((MediaItem)selected).getMedia();
+        return ((MediaItem) selected).getMedia();
     }
-    
+
     private ComboBoxModel createStylesheetsModel() {
         return new DefaultComboBoxModel(new Object[]{getFile().getNameExt()});
     }
-    
+
     private ComboBoxModel createSelectorModel() {
         HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         Collection<String> tagNames = new ArrayList<String>();
         tagNames.add(null);
-        for(HtmlTag tag : model.getAllTags()) {
+        for (HtmlTag tag : model.getAllTags()) {
             tagNames.add(tag.getName());
         }
         return new DefaultComboBoxModel(tagNames.toArray());
-        
+
     }
-    
+
     private ComboBoxModel createAtRulesModel() {
         final Model model = ruleEditorPanel.getModel();
-        
+
         //adding just medias for now
         //TODO, add page, font-face, ...
         final List<MediaItem> medias = new ArrayList<MediaItem>();
         medias.add(null);
-        
-        model.runReadTask(new Model.ModelTask() {
 
+        model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
                 ModelVisitor visitor = new ModelVisitor.Adapter() {
@@ -249,36 +253,33 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 styleSheet.accept(visitor);
             }
         });
-        
-        
+
+
         return new DefaultComboBoxModel(medias.toArray());
     }
-    
+
     private ListCellRenderer createAtRulesRenderer() {
         return new DefaultListCellRenderer() {
-
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if(value == null) {
+                if (value == null) {
                     setText(Bundle.none_item());
                 } else {
-                    setText(((MediaItem)value).getDisplayName());
+                    setText(((MediaItem) value).getDisplayName());
                 }
                 return c;
             }
         };
     }
-    
-    
-    
+
     private FileObject getFile() {
         Model cssModel = ruleEditorPanel.getModel();
         return cssModel.getLookup().lookup(FileObject.class);
     }
-    
+
     private static class MediaItem {
-        
+
         private Media media;
         private String displayName;
 
@@ -294,10 +295,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
         public String getDisplayName() {
             return displayName;
         }
-
     }
-    
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -401,8 +400,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox atRuleCB;
     private javax.swing.JTextPane descriptionPane;

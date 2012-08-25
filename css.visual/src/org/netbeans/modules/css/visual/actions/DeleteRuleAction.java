@@ -72,6 +72,7 @@ public class DeleteRuleAction extends AbstractAction {
     public DeleteRuleAction(RuleEditorPanel panel) {
         super(Bundle.label_delete_rule());
         this.panel = panel;
+        setEnabled(false);
     }
 
     @Override

@@ -64,6 +64,7 @@ public class AddPropertyAction extends AbstractAction {
     public AddPropertyAction(RuleEditorPanel panel) {
         super(Bundle.label_add_property());
         this.panel = panel;
+        setEnabled(false);
     }
 
     @Override
