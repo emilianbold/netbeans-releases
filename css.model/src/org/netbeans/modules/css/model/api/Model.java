@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.css.live.LiveUpdater;
 import java.io.IOException;
 import java.io.Reader;
@@ -88,6 +90,12 @@ import org.openide.util.lookup.Lookups;
  */
 public final class Model {
 
+    //property names:
+    public static final String CHANGES_APPLIED_TO_DOCUMENT = "changes.applied"; //NOI18N
+    
+    
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
 
     private final Mutex MODEL_MUTEX = new Mutex();
@@ -284,6 +292,8 @@ public final class Model {
         
         Snapshot snapshot = getLookup().lookup(Snapshot.class);
         applyChanges(doc, new SnapshotOffsetConvertor(snapshot));
+        
+        support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
     }
     
     
@@ -314,6 +324,15 @@ public final class Model {
         return ELEMENT_FACTORY;
     }
 
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
     /**
      * Allows clients to read/write access the css source model
      */

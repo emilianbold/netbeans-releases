@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.css.visual;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,8 +64,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -78,11 +75,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     private static final Logger LOG = Logger.getLogger(RuleEditorPanel.RULE_EDITOR_LOGGER_NAME);
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
-    //holds a reference to the RuleEditorTC top component
-    private CssCslParserResult lastResult;
 
-    private RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
-    
     public CssCaretAwareSourceTask() {
         RuleEditorTCController.init();
     }
@@ -105,6 +98,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     @Override
     public void run(final CssCslParserResult result, SchedulerEvent event) {
         final FileObject file = result.getSnapshot().getSource().getFileObject();
+        final String mimeType = file.getMIMEType();
+
         LOG.log(Level.FINE, "run(), file: {0}", new Object[]{file});
 
         cancelled = false;
@@ -122,24 +117,31 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             }
         }
 
+        final Model model = result.getModel(); //do this outside EDT
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                runInEDT(result, file, caretOffset);
+                runInEDT(result, model, file, mimeType, caretOffset);
             }
         });
     }
 
-    private void runInEDT(final CssCslParserResult result, final FileObject file, int caretOffset) {
+    private void runInEDT(final CssCslParserResult result, Model model, final FileObject file, String mimeType, int caretOffset) {
         LOG.log(Level.FINE, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
+
+        if (cancelled) {
+            LOG.log(Level.INFO, "cancelled");
+            return;
+        }
 
         if (caretOffset == -1) {
             try {
                 //dirty workaround
                 DataObject dobj = DataObject.find(file);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane[] panes = ec.getOpenedPanes();
+                    JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
                     if (panes != null && panes.length > 0) {
                         JEditorPane pane = panes[0]; //hopefully the active one
                         caretOffset = pane.getCaretPosition();
@@ -148,74 +150,47 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
             } catch (DataObjectNotFoundException ex) {
                 //possibly deleted file, give up
-                return ;
-                
+                return;
+
             }
+            
             LOG.log(Level.INFO, "workarounded caret offset: {0}", caretOffset);
         }
 
 
-        final int final_caretOffset = caretOffset;
+        //find rule corresponding to the offset
+        Rule rule = findRuleAtOffset(result.getSnapshot(), model, caretOffset);
+        
+        if (!mimeType.equals("text/css")) {
+            //if not a css file, 
+            //update the rule editor only if there's a rule in an embedded css code
+            if (rule == null) {
+                LOG.log(Level.FINE, "not a css file and rule not found at {0} offset, exiting w/o change of the RuleEditor", caretOffset);
+                return;
+            }
+        }
 
         final RuleEditorTC ruleEditorTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
-        if (ruleEditorTC != null) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (cancelled) {
-                        LOG.log(Level.INFO, "cancelled");
-                        return;
-                    }
-                    Rule rule = findRuleAtOffset(result, final_caretOffset);
-                    RuleEditorController controller = ruleEditorTC.getRuleEditorController();
-
-                    FileObject lastFile = lastResult != null ? lastResult.getSnapshot().getSource().getFileObject() : null;
-                    
-                    boolean sameFile = lastFile != null && lastFile.equals(file);
-                    boolean sameResult = lastResult != null && lastResult.getSnapshot() == result.getSnapshot();
-                    
-                    LOG.log(Level.FINE, "samefile:{0}, sameresult:{1}", new Object[]{sameFile, sameResult});
-                    
-                    if (!sameResult) {
-                        //the parse result has changed, we need to update the RuleEditor's css source model
-                        if (!sameFile && rule == null) {
-                            //if the result represents a new file and there's no rule at the offset, just ignore 
-                            LOG.log(Level.FINE, "no rule found at {0} offset, exiting w/o change of the RuleEditor", final_caretOffset);
-                            return ;
-                        } else {
-                            updateModel(controller, result);
-                        }
-                    } 
-                    updateCaret(controller, rule);
-                }
-            });
+        if (ruleEditorTC == null) {
+            return;
         }
-    }
-
-    private void updateModel(RuleEditorController controller, CssCslParserResult result) {
-        LOG.log(Level.FINE, "updateModel()");
+        
+        //update the RuleEditor TC name
+        RuleEditorController controller = ruleEditorTC.getRuleEditorController();
         controller.setModel(result.getModel());
-        lastResult = result;
-    }
 
-    private void updateCaret(RuleEditorController controller, Rule foundRule) {
-        LOG.log(Level.FINE, "updateCaret()");
-
-        if (foundRule == null) {
+        if (rule == null) {
             controller.setNoRuleState();
         } else {
-            controller.setRule(foundRule);
+            controller.setRule(rule);
         }
-
-
     }
 
-    private Rule findRuleAtOffset(final CssCslParserResult result, int documentOffset) {
-        final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
+    private Rule findRuleAtOffset(Snapshot snapshot, Model model, int documentOffset) {
+        final int astOffset = snapshot.getEmbeddedOffset(documentOffset);
         if (astOffset == -1) {
             return null;
         }
-        Model model = result.getModel();
         final AtomicReference<Rule> ruleRef = new AtomicReference<Rule>();
         model.runReadTask(new Model.ModelTask() {
             @Override

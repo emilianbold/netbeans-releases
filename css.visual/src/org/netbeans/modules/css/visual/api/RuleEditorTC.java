@@ -84,7 +84,7 @@ position = 900)
 preferredID = RuleEditorTC.ID)
 @NbBundle.Messages({
     "CTL_RuleEditorAction=Rule Editor", // NOI18N
-    "CTL_RuleEditorTC=Rule Editor", // NOI18N
+    "CTL_RuleEditorTC=Rule Editor {0}", // NOI18N
     "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
 })
 public final class RuleEditorTC extends TopComponent {
@@ -100,7 +100,7 @@ public final class RuleEditorTC extends TopComponent {
 
     public RuleEditorTC() {
         initComponents();
-        setName(Bundle.CTL_RuleEditorTC());
+        setFileNameInTitle(null);
         setToolTipText(Bundle.HINT_RuleEditorTC());
     }
 
@@ -112,12 +112,28 @@ public final class RuleEditorTC extends TopComponent {
         return controller;
     }
 
+    private void setFileNameInTitle(FileObject file) {
+        String fileName = file == null ? "" : " - " + file.getNameExt();
+        setName(Bundle.CTL_RuleEditorTC(fileName));
+    }
+    
     /**
      * Initializes the components in this {@code TopComponent}.
      */
     private void initComponents() {
         setLayout(new BorderLayout());
         controller = RuleEditorController.createInstance();
+        controller.addRuleEditorListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(RuleEditorController.PropertyNames.MODEL_SET.name())) {
+                    Model model = (Model)evt.getNewValue();
+                    FileObject file = model == null ? null : model.getLookup().lookup(FileObject.class);
+                    setFileNameInTitle(file);
+                }
+            }
+        });
+        
         add(controller.getRuleEditorComponent(), BorderLayout.CENTER);
     }
 

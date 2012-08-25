@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,9 +57,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.Document;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
@@ -75,11 +77,20 @@ import org.netbeans.modules.css.visual.filters.FiltersManager;
 import org.netbeans.modules.css.visual.filters.FiltersSettings;
 import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -116,12 +127,18 @@ import org.openide.util.actions.Presenter;
 })
 public class RuleEditorPanel extends JPanel {
     
+    private RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
+
+    
     public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
     
     private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
 
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
+    private static final Icon APPLIED_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/database.gif")); //NOI18N
+    
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
+    private static final JLabel APPLIED_LABEL = new JLabel(APPLIED_ICON);
     static {
         ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
     }
@@ -150,6 +167,59 @@ public class RuleEditorPanel extends JPanel {
     
     private boolean addPropertyMode;
     
+    private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        northWestPanel.add(APPLIED_LABEL, BorderLayout.EAST);    
+                        northWestPanel.validate();
+                    }
+                });
+                //re-set the css model as the CssCaretAwareSourceTask won't work 
+                //if the modified file is not opened in editor
+                RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Model model = getModel();
+                        if(model != null) {
+                            Document doc = model.getLookup().lookup(Document.class);
+                            if(doc != null) {
+                                try {
+                                    Source source = Source.create(doc);
+                                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
+                                            resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
+                                            if(resultIterator != null) {
+                                                CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
+                                                final Model model = result.getModel();
+                                                SwingUtilities.invokeLater(new Runnable() {
+
+                                                    @Override
+                                                    public void run() {
+                                                        setModel(model);
+                                                    }
+                                                    
+                                                });
+                                            }
+                                        }
+                                    });
+                                } catch (ParseException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+                    }
+                    
+                });
+            }
+        }
+    };
     
     /**
      * Creates new form RuleEditorPanel
@@ -317,15 +387,30 @@ public class RuleEditorPanel extends JPanel {
     public void setModel(final Model model) {
         LOG.log(Level.FINE, "setModel({0})", model);
         
+        if(model == null) {
+            throw new NullPointerException();
+        }
+        
         assert SwingUtilities.isEventDispatchThread();
         if(this.model == model) {
             return ; //no change
+        }
+        
+        if(this.model != null) {
+            this.model.removePropertyChangeListener(MODEL_LISTENER);
         }
         
         final Model oldModel = this.model;
         final Rule oldRule = this.rule;
         
         this.model = model;
+        
+        this.model.addPropertyChangeListener(MODEL_LISTENER);
+        
+        //remove the "applied changes mark"
+        northWestPanel.remove(APPLIED_LABEL);
+        northWestPanel.validate();
+        
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
         
         if(this.rule != null) {
@@ -407,22 +492,23 @@ public class RuleEditorPanel extends JPanel {
         
         //check if the rule is valid
         if(!rule.isValid()) {
-            northPanel.add(ERROR_LABEL, BorderLayout.WEST);
+            northWestPanel.add(ERROR_LABEL, BorderLayout.WEST);
             //the component returns different RGB color that is really pained, at least on motif
-            Color npc = northPanel.getBackground();
+            Color npc = northWestPanel.getBackground();
             Color bitMoreRed = new Color(
                 Math.min(255, npc.getRed() + 6), 
                 Math.max(0, npc.getGreen() - 3), 
                 Math.max(0, npc.getBlue() - 3));
-            northPanel.setBackground(bitMoreRed);
+            northWestPanel.setBackground(bitMoreRed);
             
             addPropertyButton.setEnabled(false);
         } else {
-            northPanel.remove(ERROR_LABEL);
-            northPanel.setBackground(defaultPanelBackground);
+            northWestPanel.remove(ERROR_LABEL);
+            northWestPanel.setBackground(defaultPanelBackground);
             
             addPropertyButton.setEnabled(true);
         }
+        northWestPanel.validate();
         
         node.fireContextChanged();
         
@@ -484,9 +570,10 @@ public class RuleEditorPanel extends JPanel {
     private void initComponents() {
 
         northPanel = new javax.swing.JPanel();
-        titleLabel = new javax.swing.JLabel();
         northEastPanel = new javax.swing.JPanel();
         menuLabel = new javax.swing.JLabel();
+        northWestPanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
         southPanel = new javax.swing.JPanel();
         addPropertyButton = new javax.swing.JButton();
 
@@ -494,7 +581,6 @@ public class RuleEditorPanel extends JPanel {
 
         northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
         northPanel.setLayout(new java.awt.BorderLayout());
-        northPanel.add(titleLabel, java.awt.BorderLayout.CENTER);
 
         northEastPanel.setLayout(new java.awt.BorderLayout());
 
@@ -509,6 +595,11 @@ public class RuleEditorPanel extends JPanel {
         northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
 
         northPanel.add(northEastPanel, java.awt.BorderLayout.EAST);
+
+        northWestPanel.setLayout(new java.awt.BorderLayout());
+        northWestPanel.add(titleLabel, java.awt.BorderLayout.CENTER);
+
+        northPanel.add(northWestPanel, java.awt.BorderLayout.CENTER);
 
         add(northPanel, java.awt.BorderLayout.NORTH);
 
@@ -534,6 +625,7 @@ public class RuleEditorPanel extends JPanel {
     private javax.swing.JLabel menuLabel;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
+    private javax.swing.JPanel northWestPanel;
     private javax.swing.JPanel southPanel;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
