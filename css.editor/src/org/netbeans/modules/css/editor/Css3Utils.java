@@ -49,6 +49,8 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.csl.CssErrorFactory;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -120,6 +122,22 @@ public final class Css3Utils {
     
     public static boolean isVendorSpecificProperty(CharSequence propertyName) {
         return CharSequenceUtilities.startsWith(propertyName, "_") || CharSequenceUtilities.startsWith(propertyName, "-"); //NOI18N
+    }
+    
+    public static boolean isVendorSpecificPropertyValue(CharSequence value) {
+        if(value == null) {
+            throw new NullPointerException();
+        }
+        if(value.length() == 0) {
+            return false;
+        }
+        for(Browser b : CssModuleSupport.getBrowsers()) {
+            if(LexerUtils.startsWith(value, b.getVendorSpecificPropertyPrefix(), true, false)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     public static List<CompletionProposal> filterCompletionProposals(List<CompletionProposal> proposals, CharSequence prefix, boolean ignoreCase) {

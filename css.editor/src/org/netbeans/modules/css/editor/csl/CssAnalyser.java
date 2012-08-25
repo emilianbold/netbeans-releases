@@ -128,7 +128,9 @@ public class CssAnalyser {
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!Css3Utils.containsGeneratedCode(valueImage)) {
+                            if (!Css3Utils.containsGeneratedCode(valueImage) 
+                                    //TODO add support for checking value of vendor specific properties, not it is disabled.
+                                    && !Css3Utils.isVendorSpecificPropertyValue(valueImage)) {
                                 ResolvedProperty pv = new ResolvedProperty(property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;
