@@ -50,6 +50,8 @@ public interface ModelVisitor {
     public void visitElement(Element element);
     
     public void visitRule(Rule rule);
+    
+    public void visitMedia(Media media);
  
     public static class Adapter implements ModelVisitor {
 
@@ -59,6 +61,10 @@ public interface ModelVisitor {
 
         @Override
         public void visitRule(Rule rule) {
+        }
+
+        @Override
+        public void visitMedia(Media media) {
         }
     
     }
