@@ -383,6 +383,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_BINARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         AFTER_ASSIGNMENT_OPERATOR_WRAP {
             @Override
             public boolean isLineWrapMarker() {
@@ -394,6 +404,16 @@ public final class FormatToken {
             }
         },
         BEFORE_TERNARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_TERNARY_OPERATOR_WRAP {
             @Override
             public boolean isLineWrapMarker() {
                 return true;

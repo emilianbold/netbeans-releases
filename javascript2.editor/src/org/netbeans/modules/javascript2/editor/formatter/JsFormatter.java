@@ -738,11 +738,27 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapFor();
             case AFTER_CHAIN_CALL_DOT:
                 return CodeStyle.get(context).wrapChainedMethodCalls();
+            case AFTER_BINARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterBinaryOps()) {
+                    return CodeStyle.get(context).wrapBinaryOps();
+                }
+                return CodeStyle.WrapStyle.WRAP_NEVER;
             case BEFORE_BINARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterBinaryOps()) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
                 return CodeStyle.get(context).wrapBinaryOps();
             case AFTER_ASSIGNMENT_OPERATOR_WRAP:
                 return CodeStyle.get(context).wrapAssignOps();
+            case AFTER_TERNARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterTernaryOps()) {
+                    return CodeStyle.get(context).wrapTernaryOps();
+                }
+                return CodeStyle.WrapStyle.WRAP_NEVER;
             case BEFORE_TERNARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterTernaryOps()) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
                 return CodeStyle.get(context).wrapTernaryOps();
             default:
                 return null;

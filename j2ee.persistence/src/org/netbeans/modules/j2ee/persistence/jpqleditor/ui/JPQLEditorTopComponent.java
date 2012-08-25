@@ -62,7 +62,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -86,6 +85,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -95,10 +96,7 @@ import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
-import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -148,6 +146,10 @@ public final class JPQLEditorTopComponent extends TopComponent {
     public static JPQLEditorTopComponent getInstance() {
         return new JPQLEditorTopComponent(null);
     }
+    
+    public PUDataObject getDataObject(){
+        return puObject;
+    }
 
     public JPQLEditorTopComponent(JPQLEditorController controller) {
         this.controller = controller;
@@ -168,8 +170,13 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
         sqlToggleButton.setSelected(true);
         jpqlEditor.getDocument().addDocumentListener(new JPQLDocumentListener());
+        ((NbEditorDocument) jpqlEditor.getDocument()).runAtomic(new Runnable() {//hack to unlock editor (make modifieble)
+            @Override
+            public void run() {
+            }
+        });
         jpqlEditor.addMouseListener(new JPQLEditorPopupMouseAdapter());
-
+        
     }
 
     private class JPQLEditorPopupMouseAdapter extends PopupMouseAdapter {
