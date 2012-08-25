@@ -72,6 +72,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spiimpl.RulesManagerImpl;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -171,6 +172,7 @@ public class Utilities {
 
         for (Map.Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> entry: cpBased.getHints().entrySet()) {
             if (entry.getKey().options.contains(Options.NO_BATCH)) continue;
+            if (entry.getKey().kind != Kind.INSPECTION) continue;
             result.put(entry.getKey(), entry.getValue());
         }
         

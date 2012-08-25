@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -71,9 +72,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 
@@ -337,6 +340,17 @@ public class Utils {
             }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Invalid or corrupted file: " + fo.getPath(), ex); //NOI18N
+        }
+    }
+    
+    @ServiceProvider(service=EntityCatalog.class)
+    public static final class NoNetworkAccessEntityCatalog extends EntityCatalog {
+        private final boolean NO_NETWORK_ACCESS = Boolean.getBoolean("editor.storage.no.network.access");
+
+        @Override
+        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+            if (!NO_NETWORK_ACCESS) return null;
+            return new InputSource(new ByteArrayInputStream(new byte[0]));
         }
     }
 }

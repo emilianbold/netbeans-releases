@@ -1,5 +1,4 @@
 <?import 
-instruction[fx:include]
 simple-class[com.sun.javafx.charts.Legend]
 simple-class[com.sun.javafx.scene.control.FocusableTextField]
 simple-class[com.sun.javafx.scene.control.skin.VirtualFlow]

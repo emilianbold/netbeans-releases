@@ -99,7 +99,7 @@ final class ValueClassItem extends SimpleClassItem {
         if (!isValueAttributePresent()) {
             addAttribute(c, d, text);
         } else {
-            if (!ctx.isTagClosed()) {
+            if (!ctx.isTagFinished()) {
                 int off = getStartOffset() + text.length();
                 d.insertString(off, ">", null); // NOI18N
             }
@@ -131,7 +131,7 @@ final class ValueClassItem extends SimpleClassItem {
 
         int l = sb.length();
         sb.append("\"");
-        if (!ctx.isTagClosed()) {
+        if (!ctx.isTagFinished()) {
             if (shouldClose) {
                 sb.append("/>");
             } else {

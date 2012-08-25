@@ -153,6 +153,10 @@ public class SimpleClassItem extends AbstractCompletionItem {
 
         @Override
         public CompletionItem convert(TypeElement elem, CompletionContext ctx, int priorityHint) {
+            // ignore Strings, they are written as char content
+            if (elem.getQualifiedName().contentEquals("java.lang.String")) { // NOI18N
+                return null;
+            }
             Collection<? extends ExecutableElement> execs = ElementFilter.constructorsIn(elem.getEnclosedElements());
             for (ExecutableElement e : execs) {
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
