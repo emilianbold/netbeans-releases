@@ -102,6 +102,10 @@ public class HtmlElementProperties {
             if (file == null) {
                 return;
             }
+            
+            if(!file.isValid()) {
+                return ;
+            }
 
             DataObject dobj = DataObject.find(file);
             HtmlEditorSupportControl control = HtmlEditorSupportControl.Query.get(dobj);
