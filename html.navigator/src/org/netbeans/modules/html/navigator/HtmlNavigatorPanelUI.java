@@ -825,13 +825,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     final void updateHighlight() {
         synchronized (highlightedTreeNodes) {
             highlightedTreeNodes.clear();
-            System.out.println("highlighted treenodes cleared");
+            //System.out.println("highlighted treenodes cleared");
             for (Node node : pageModel.getHighlightedNodes()) {
                 Node n = getHtmlNode(node);
                 if (n!=null) {
                     TreeNode visualizer = Visualizer.findVisualizer(n);
                     highlightedTreeNodes.add(visualizer);
-                    System.out.println("added " + highlightedTreeNodes);
+                    //System.out.println("added " + highlightedTreeNodes);
                 }
             }
         }
@@ -852,8 +852,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     boolean isHighlighted(Object treeNode) {
         synchronized (highlightedTreeNodes) {
-            System.out.println("isHighlighted " + highlightedTreeNodes );
-            System.out.println("treeNode " + treeNode );
+            //System.out.println("isHighlighted " + highlightedTreeNodes );
+            //System.out.println("treeNode " + treeNode );
             return highlightedTreeNodes.contains(treeNode);
         }
     } 
