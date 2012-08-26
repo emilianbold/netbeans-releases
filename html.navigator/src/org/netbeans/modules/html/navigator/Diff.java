@@ -110,7 +110,7 @@ public class Diff {
             
             wrappers.add(new DescriptionSetWrapper(d));
         }
-        LOGGER.info(sb.toString());
+        LOGGER.log(Level.FINE, sb.toString());
 
         sb = new StringBuilder();
         sb.append("DOM Keys (");
@@ -122,7 +122,7 @@ public class Diff {
             
             wrappers.add(new DescriptionSetWrapper(d));
         }
-        LOGGER.info(sb.toString());
+        LOGGER.log(Level.FINE, sb.toString());
 
         sb = new StringBuilder();
         sb.append("Merged Keys (");

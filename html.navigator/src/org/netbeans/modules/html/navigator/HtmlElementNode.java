@@ -418,7 +418,7 @@ public class HtmlElementNode extends AbstractNode {
      * @param nodesToExpandRec 
      */
     private void updateRecursively(Description newDescription, List<Node> nodesToExpand, List<Node> nodesToExpandRec) {
-        LOGGER.log(Level.INFO, "{0}: entering updateRecursively()", getDisplayName());
+        LOGGER.log(Level.FINE, "{0}: entering updateRecursively()", getDisplayName());
 
         State currentState = getState();
         int descriptionType = newDescription.getType();
