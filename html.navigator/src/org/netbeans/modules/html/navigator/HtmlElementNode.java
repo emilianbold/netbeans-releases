@@ -44,6 +44,8 @@
 package org.netbeans.modules.html.navigator;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +56,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.html.editor.api.actions.DeleteElementAction;
+import org.netbeans.modules.html.editor.api.actions.ModifyElementRulesAction;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -90,6 +94,8 @@ public class HtmlElementNode extends AbstractNode {
     //actions
     private OpenAction openAction;
     private HighlightInBrowserAction highlightInBrowserAction;
+    private ModifyElementRulesAction editRulesAction;
+    private DeleteElementAction deleteElementAction;
     
     //static description (of the source element)
     private SourceDescription source;
@@ -106,15 +112,21 @@ public class HtmlElementNode extends AbstractNode {
         this(ui, fileObject);
         this.source = sourceDescription;
         getElementChildren().setStaticKeys(sourceDescription.getChildren(), true);
+        
+        deleteElementAction = new DeleteElementAction(fileObject, sourceDescription.getElementPath());
+        editRulesAction = new ModifyElementRulesAction(fileObject, sourceDescription.getElementPath());
     }
     
     public HtmlElementNode(Description domDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
         this(ui, fileObject);
         this.dom = domDescription;
         getElementChildren().setDynamicKeys(domDescription.getChildren(), true);
+        
+        deleteElementAction = new DeleteElementAction(fileObject, null);
+        editRulesAction = new ModifyElementRulesAction(fileObject, domDescription.getElementPath());
     }
     
-    public HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject) {
+    private HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject) {
         super(new ElementChildren(ui, fileObject));
         this.ui = ui;
         this.fileObject = fileObject;
@@ -353,16 +365,18 @@ public class HtmlElementNode extends AbstractNode {
         if (context || getDescription().getName() == null) {
             return ui.getActions();
         } else {
-            Action panelActions[] = ui.getActions();
-
-            Action actions[] = new Action[4 + panelActions.length];
-            actions[0] = openAction;
-            actions[1] = null;
-            actions[2] = highlightInBrowserAction;
-            actions[3] = null;
-            System.arraycopy(panelActions, 0, actions, 4, panelActions.length);
+            Collection<Action> actions = new ArrayList<Action>();
             
-            return actions;
+            actions.add(openAction);
+            actions.add(null);
+            actions.add(editRulesAction);
+            actions.add(deleteElementAction);
+            actions.add(null);
+            actions.add(highlightInBrowserAction);
+            actions.add(null);
+            actions.addAll(Arrays.asList(ui.getActions()));
+            
+            return actions.toArray(new Action[]{});
         }
     }
 
