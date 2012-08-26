@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "label.delete.rule=Delete Rule",
-    "delete.rule.confirmation=Do you really want to remove the rule {0} from file {1}?"
+    "delete.rule.confirmation=Do you really want to delete the rule {0} from file {1}?"
 })
 public class DeleteRuleAction extends AbstractAction {
 
