@@ -314,10 +314,16 @@ public final class Model {
     public void applyChanges(final Document document) throws IOException, BadLocationException {
         //workaround:
         if(document instanceof BaseDocument) {
+            
+            BaseDocument bdoc = (BaseDocument)document;
+            if(!bdoc.isAtomicLock()) {
+                LOGGER.log(Level.FINE, "Called w/o document atomic lock!", new IllegalStateException());
+            }
+            
             final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
             final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
             
-            ((BaseDocument)document).runAtomicAsUser(new Runnable() {
+            bdoc.runAtomicAsUser(new Runnable() {
 
                 @Override
                 public void run() {
@@ -339,7 +345,6 @@ public final class Model {
             }
             
         } else {
-            applyChanges(document, DIRECT_OFFSET_CONVERTOR);
         }
     }
     
