@@ -81,7 +81,8 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "none.item=<font color=\"777777\">&lt;none&gt;</font>",
     "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
-    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",})
+    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign."
+})
 public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
     private AbstractSourceElementAction sourceAction;
