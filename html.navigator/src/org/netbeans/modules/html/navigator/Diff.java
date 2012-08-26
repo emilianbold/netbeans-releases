@@ -94,7 +94,7 @@ public class Diff {
      * @return merged set of {@link Description} 
      */
     public static Collection<? extends Description> mergeSourceAndDOM(Collection<? extends Description> source, Collection<? extends Description> dom, HtmlElementNode sourceNode) {
-        LOGGER.log(Level.INFO, "Diff.merge(''{0}'')", sourceNode.getDisplayName());
+        LOGGER.log(Level.FINE, "Diff.merge(''{0}'')", sourceNode.getDisplayName());
 
         final Set<DescriptionSetWrapper> wrappers = new LinkedHashSet<DescriptionSetWrapper>();
 
@@ -134,7 +134,7 @@ public class Diff {
             result.add(w.getPeer());
             sb.append(',');
         }
-        LOGGER.info(sb.toString());
+        LOGGER.log(Level.FINE, sb.toString());
 
         return result;
     }
