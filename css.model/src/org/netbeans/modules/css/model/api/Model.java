@@ -54,12 +54,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -74,6 +76,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -308,8 +311,36 @@ public final class Model {
      * model creation. 3) the method is called under document atomic lock </b>
      *
      */
-    public void applyChanges(Document document) throws IOException, BadLocationException {
-        applyChanges(document, DIRECT_OFFSET_CONVERTOR);
+    public void applyChanges(final Document document) throws IOException, BadLocationException {
+        //workaround:
+        if(document instanceof BaseDocument) {
+            final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
+            final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
+            
+            ((BaseDocument)document).runAtomicAsUser(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        applyChanges(document, DIRECT_OFFSET_CONVERTOR);
+                    } catch (IOException ex) {
+                        io_exc_ref.set(ex);
+                    } catch (BadLocationException ex) {
+                        ble_exc_ref.set(ex);
+                    }
+                }
+                
+            });
+            if(io_exc_ref.get() != null) {
+                throw io_exc_ref.get();
+            }
+            if(ble_exc_ref.get() != null) {
+                throw ble_exc_ref.get();
+            }
+            
+        } else {
+            applyChanges(document, DIRECT_OFFSET_CONVERTOR);
+        }
     }
     
     
@@ -427,22 +458,30 @@ public final class Model {
             }
 
         }
+        
+        FileObject file = getLookup().lookup(FileObject.class);
+        String filename = file == null ? "???" : file.getNameExt();
+        LOGGER.log(Level.INFO, "Changes applied to document for {0}", filename);
+        
         saveIfNotOpenInEditor(document);
     }
 
     //>>> TEMPORARY HACK - TO BE REMOVED FROM THE MODULE !!! 
-    private static void saveIfNotOpenInEditor(Document document) throws IOException {
+    private void saveIfNotOpenInEditor(Document document) throws IOException {
         DataObject dataObject = getDataObject(document);
         if (dataObject == null) {
             LOGGER.log(Level.FINE, "Cannot find DataObject for document " + document );
             return;
         }
-        final LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+        LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+        FileObject file = getLookup().lookup(FileObject.class);
+        String filename = file == null ? "???" : file.getNameExt();
         EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
         if (ec!=null && ec.getOpenedPanes() == null) {
             //file not open in any editor
             SaveCookie save = dataObject.getLookup().lookup(SaveCookie.class);
             if (save!=null) {
+                LOGGER.log(Level.INFO, "Changes saved to file {0}", filename);
                 save.save();
             }
             liveUpdater.update(document);
