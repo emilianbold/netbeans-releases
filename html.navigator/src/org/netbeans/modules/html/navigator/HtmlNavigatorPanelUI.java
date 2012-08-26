@@ -914,7 +914,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     private void updateSelection() {
         if (EventQueue.isDispatchThread()) {
-            List<? extends Node> nodes = pageModel.getSelectedNodes();
+            List<? extends Node> nodes = pageModel==null?Collections.EMPTY_LIST:pageModel.getSelectedNodes();
             ArrayList<Node> selection = new ArrayList<Node>();
             
             int i = 0;
