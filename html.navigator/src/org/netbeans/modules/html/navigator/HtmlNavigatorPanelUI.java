@@ -287,11 +287,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private void updateInspectedFileUI() {
         if (inspectedFileObject == null) {
-            LOGGER.log(Level.INFO, "inspectedFileObject set to null");
+            LOGGER.log(Level.FINE, "inspectedFileObject set to null");
             setStatusText("No Inspected File");
             stateLabel.setText("No Inspected File");
         } else {
-            LOGGER.log(Level.INFO, "inspectedFileObject set to {0}", inspectedFileObject.getPath());
+            LOGGER.log(Level.FINE, "inspectedFileObject set to {0}", inspectedFileObject.getPath());
             setStatusText("Inspecting " + inspectedFileObject.getNameExt());
             stateLabel.setText(String.format("Inspecting %s", inspectedFileObject.getNameExt()));
         }
@@ -361,7 +361,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
 
     private void refreshNodeDOMStatus() {
-        LOGGER.info("refreshNodeDOMStatus()");
+        LOGGER.fine("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
         if (root != null) {
             //if we are inspecting the current file, the source changes propagates just after the fresh DOM is received
@@ -384,7 +384,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
             root.setDescription(domDescription);
             
-            LOGGER.info("root.refreshDOMStatus() called");
+            LOGGER.fine("root.refreshDOMStatus() called");
         }
     }
 
@@ -397,7 +397,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
 
     private void setStatusText(String text) {
-        LOGGER.log(Level.INFO, "HtmlNavigator: {0}", text);
+        LOGGER.log(Level.FINE, "HtmlNavigator: {0}", text);
 
         statusLabel.setText(text);
 
@@ -528,7 +528,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == match)) {
                     try {
                         manager.setSelectedNodes(new Node[]{match});
-                        LOGGER.log(Level.INFO, "Selected node set to {0}", match.getDisplayName());
+                        LOGGER.log(Level.FINE, "Selected node set to {0}", match.getDisplayName());
                     } catch (PropertyVetoException propertyVetoException) {
                         Exceptions.printStackTrace(propertyVetoException);
                     }
@@ -581,7 +581,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
                             new Object[]{fileObject, endTime - startTime});
 
-                    LOGGER.info("refresh() - same file, descriptions updated");
+                    LOGGER.fine("refresh() - same file, descriptions updated");
                 }
             };
             RP.post(r);
@@ -596,7 +596,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     HtmlElementNode root = new HtmlElementNode(description, HtmlNavigatorPanelUI.this, fileObject);
                     manager.setRootContext(root);
                     
-                    LOGGER.info("refresh() - new file, set new explorer root node");
+                    LOGGER.fine("refresh() - new file, set new explorer root node");
 
                     int expandDepth = -1;
 
@@ -825,13 +825,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     final void updateHighlight() {
         synchronized (highlightedTreeNodes) {
             highlightedTreeNodes.clear();
-            System.out.println("highlighted treenodes cleared");
+            //System.out.println("highlighted treenodes cleared");
             for (Node node : pageModel.getHighlightedNodes()) {
                 Node n = getHtmlNode(node);
                 if (n!=null) {
                     TreeNode visualizer = Visualizer.findVisualizer(n);
                     highlightedTreeNodes.add(visualizer);
-                    System.out.println("added " + highlightedTreeNodes);
+                    //System.out.println("added " + highlightedTreeNodes);
                 }
             }
         }
@@ -852,8 +852,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     boolean isHighlighted(Object treeNode) {
         synchronized (highlightedTreeNodes) {
-            System.out.println("isHighlighted " + highlightedTreeNodes );
-            System.out.println("treeNode " + treeNode );
+            //System.out.println("isHighlighted " + highlightedTreeNodes );
+            //System.out.println("treeNode " + treeNode );
             return highlightedTreeNodes.contains(treeNode);
         }
     } 
@@ -928,7 +928,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             try {
                 manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
             } catch (PropertyVetoException pvex) {
-                Logger.getLogger(HtmlNavigatorPanelUI.class.getName()).log(Level.INFO, null, pvex);
+                Logger.getLogger(HtmlNavigatorPanelUI.class.getName()).log(Level.FINE, null, pvex);
             } finally {
                 updatingView = false;
             }

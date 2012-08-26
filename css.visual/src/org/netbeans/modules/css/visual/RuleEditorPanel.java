@@ -202,6 +202,7 @@ public class RuleEditorPanel extends JPanel {
 
                                                     @Override
                                                     public void run() {
+                                                        LOG.info("Setting new model upon Model.applyChanges()");
                                                         setModel(model);
                                                     }
                                                     
@@ -393,6 +394,7 @@ public class RuleEditorPanel extends JPanel {
         
         assert SwingUtilities.isEventDispatchThread();
         if(this.model == model) {
+            LOG.log(Level.FINE, "no update - attempt to set the same model");
             return ; //no change
         }
         
