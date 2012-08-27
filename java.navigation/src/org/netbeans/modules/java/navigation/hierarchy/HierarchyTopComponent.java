@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.java.navigation.hierarchy;
 
-import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
@@ -55,9 +54,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -66,18 +62,11 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -88,9 +77,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.editor.EditorRegistry;
@@ -98,15 +85,14 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
+import org.netbeans.modules.java.navigation.base.HistorySupport;
 import org.netbeans.modules.java.navigation.base.Pair;
+import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.awt.StatusDisplayer;
@@ -175,6 +161,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final JButton jdocButton;
     private final HierarchyFilters filters;
     private final RootChildren rootChildren;
+    private final HistorySupport history;
 
     @NbBundle.Messages({
         "TXT_RefreshContent=Refresh",
@@ -182,6 +169,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         "TXT_NonActiveContent=<No View Available - Refresh Manually>"
     })
     public HierarchyTopComponent() {
+        history = HistorySupport.getInstnace(this.getClass());
         jdocFinder = SelectJavadocTask.create(this);
         jdocTask = RP.create(jdocFinder);
         explorerManager = new ExplorerManager();
@@ -196,7 +184,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
         viewTypeCombo.addActionListener(this);
-        historyCombo = new JComboBox(HierarchyHistoryUI.createModel()){
+        historyCombo = new JComboBox(HistorySupport.createModel(history)){
             @Override
             public Dimension getMinimumSize() {
                 Dimension res = super.getMinimumSize();
@@ -206,7 +194,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 return res;
             }
         };
-        historyCombo.setRenderer(HierarchyHistoryUI.createRenderer());
+        historyCombo.setRenderer(HistorySupport.createRenderer(history));
         historyCombo.addActionListener(this);
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
@@ -245,22 +233,17 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
 
     public void setContext(
             @NonNull final JavaSource js,
-            @NonNull final JTextComponent tc) {
-        final Collection<FileObject> fos = js.getFileObjects();
-        assert fos.size() == 1;
-        final FileObject fo = fos.iterator().next();
-        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver = new EditorResolver(
+            @NonNull final JTextComponent tc) {        
+        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver =
+                Resolvers.createEditorResolver(
                 js,
-                fo,
                 tc.getCaret().getDot());
         schedule(resolver);
     }
 
     public void setContext (@NonNull final JavaSource js) {
-        final Collection<FileObject> fos = js.getFileObjects();
-        assert fos.size() == 1;
-        final FileObject fo = fos.iterator().next();
-        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver = new FileResolver(js, fo);
+        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver =
+                Resolvers.createFileResolver(js);
         schedule(resolver);
 
     }
@@ -288,6 +271,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             final TopComponent win = JavadocTopComponent.findInstance();
             if (win != null && !win.isShowing()) {
                 win.open();
+                win.requestVisible();
                 jdocTask.schedule(NOW);
             }
         } else if (historyCombo == e.getSource()) {
@@ -409,7 +393,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         HierarchyTopComponent component = instance;
 
         if (component == null) {
-            TopComponent tc = WindowManager.getDefault().findTopComponent("HierarchyTopComponent"); //NOI18N
+            TopComponent tc = WindowManager.getDefault().findTopComponent("JavaHierarchyTopComponent"); //NOI18N
             if (tc instanceof HierarchyTopComponent) {
                 component = instance = (HierarchyTopComponent) tc;
             } else {
@@ -475,139 +459,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
-    private static final class FileResolver implements Callable<Pair<URI,ElementHandle<TypeElement>>>{
-
-        private final JavaSource js;
-        private final FileObject fo;
-
-        public FileResolver(
-                @NonNull final JavaSource js,
-                @NonNull final FileObject fo) {
-            assert js != null;
-            assert fo != null;
-            this.js = js;
-            this.fo = fo;
-        }
-
-        @Override
-        public Pair<URI,ElementHandle<TypeElement>> call() throws Exception {
-            final List<ElementHandle<TypeElement>> ret = new ArrayList<ElementHandle<TypeElement>>(1);
-            ret.add(null);
-            js.runUserActionTask(
-                    new Task<CompilationController>(){
-                        @Override
-                        public void run(CompilationController cc) throws Exception {
-                            cc.toPhase (Phase.ELEMENTS_RESOLVED);
-                            ret.set(0,findMainElement(cc,fo.getName()));
-                        }
-                    },
-                    true);
-            final ElementHandle<TypeElement> handle = ret.get(0);
-            if (handle == null) {
-                return null;
-            }
-            final FileObject file = SourceUtils.getFile(handle, js.getClasspathInfo());
-            if (file == null) {
-                return null;
-            }
-            return Pair.<URI,ElementHandle<TypeElement>>of(file.toURI(),handle);
-        }
-
-        @CheckForNull
-        static ElementHandle<TypeElement> findMainElement(
-                @NonNull final CompilationController cc,
-                @NonNull final String fileName) {
-            final List<? extends TypeElement> topLevels = cc.getTopLevelElements();
-            if (topLevels.isEmpty()) {
-                return null;
-            }
-            TypeElement candidate = topLevels.get(0);
-            for (int i = 1; i< topLevels.size(); i++) {
-                if (fileName.contentEquals(topLevels.get(i).getSimpleName())) {
-                    candidate = topLevels.get(i);
-                    break;
-                }
-            }
-            return ElementHandle.create(candidate);
-        }
-    }
-
-    private static final class EditorResolver implements Callable<Pair<URI,ElementHandle<TypeElement>>> {
-
-        private final JavaSource js;
-        private final FileObject fo;
-        private final int dot;
-
-        public EditorResolver(
-                @NonNull final JavaSource js,
-                @NonNull final FileObject fo,
-                final int dot) {
-            assert js != null;
-            assert fo != null;
-            this.js = js;
-            this.fo = fo;
-            this.dot = dot;
-        }
-
-        @Override
-        public Pair<URI,ElementHandle<TypeElement>> call() throws Exception {
-            final List<ElementHandle<TypeElement>> ret = new ArrayList<ElementHandle<TypeElement>>();
-            ret.add(null);
-            js.runUserActionTask(
-                    new Task<CompilationController>(){
-                        @Override
-                        public void run(CompilationController cc) throws Exception {
-                            cc.toPhase (Phase.RESOLVED);
-                            Document document = cc.getDocument ();
-                            if (document != null) {
-                                // Find the TreePath for the caret position
-                                final TreePath tp = cc.getTreeUtilities ().pathFor(dot);
-                                // Get Element
-                                Element element = cc.getTrees().getElement(tp);
-                                if (element instanceof TypeElement) {
-                                    ret.set(0, ElementHandle.create((TypeElement) element));
-                                } else if (element instanceof VariableElement) {
-                                    TypeMirror typeMirror = ((VariableElement) element).asType();
-                                    if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                        element = ((DeclaredType) typeMirror).asElement();
-                                        if (element != null) {
-                                            ret.set(0, ElementHandle.create((TypeElement) element));
-                                        }
-                                    }
-                                } else if (element instanceof ExecutableElement) {
-                                    if (element.getKind() == ElementKind.METHOD) {
-                                        TypeMirror typeMirror = ((ExecutableElement) element).getReturnType();
-                                        if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                            element = ((DeclaredType) typeMirror).asElement();
-                                            if (element != null) {
-                                                ret.set(0, ElementHandle.create((TypeElement) element));
-                                            }
-                                        }
-                                    } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                                        element = element.getEnclosingElement();
-                                        if (element != null) {
-                                            ret.set(0, ElementHandle.create((TypeElement) element));
-                                        }
-                                    }
-                                } else {
-                                    ret.set(0,FileResolver.findMainElement(cc, fo.getName()));
-                                }
-                            }
-                        }
-                    },
-                    true);
-            final ElementHandle<TypeElement> handle = ret.get(0);
-            if (handle == null) {
-                return null;
-            }
-            final FileObject file = SourceUtils.getFile(handle, js.getClasspathInfo());
-            if (file == null) {
-                return null;
-            }
-            return Pair.<URI,ElementHandle<TypeElement>>of(file.toURI(),handle);
-        }
-    }
-
 
     private final class RefreshTask implements Runnable {
 
@@ -635,7 +486,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                     JavaSource js;
                     if (file != null && (js=JavaSource.forFileObject(file)) != null) {
                         LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
-                        HierarchyHistory.getInstance().addToHistory(pair);
+                        history.addToHistory(pair);
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
                             public void run(CompilationController cc) throws Exception {
