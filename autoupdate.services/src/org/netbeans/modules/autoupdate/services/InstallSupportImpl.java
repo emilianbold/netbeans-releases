@@ -435,9 +435,6 @@ public class InstallSupportImpl {
                                     }
                                 });
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
-                                    if (forceInstall) {
-                                        break;
-                                    }
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
