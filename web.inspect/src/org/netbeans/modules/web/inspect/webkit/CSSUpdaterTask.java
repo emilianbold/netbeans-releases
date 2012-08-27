@@ -66,7 +66,8 @@ class CSSUpdaterTask extends ParserResultTask<ParserResult> {
         if (!updater.isStarted()) {
             return;
         }
-        if (!hasFatalErrors(result)) {
+        String sourceMimeType = result.getSnapshot().getSource().getMimeType();
+        if (!hasFatalErrors(result) && "text/css".equals(sourceMimeType)) { // NOI18N
             updater.update(result.getSnapshot().getSource().getFileObject(), result.getSnapshot().getText().toString());
         }
     }
