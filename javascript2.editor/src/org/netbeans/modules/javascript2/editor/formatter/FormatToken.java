@@ -423,6 +423,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_ARRAY_LITERAL {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {

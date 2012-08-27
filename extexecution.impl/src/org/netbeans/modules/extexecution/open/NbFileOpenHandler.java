@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,104 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extexecution.print;
+package org.netbeans.modules.extexecution.open;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-
-import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.spi.extexecution.open.FileOpenHandler;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * An OutputProcessor takes filename and lineno information
- * and produces hyperlinks. Actually resolving filenames
- * into real FileObjects is done lazily via user-supplied
- * FileLocators when the links are actually clicked.
  *
- * @author Tor Norbye, Petr Hejl
+ * @author Petr Hejl
  */
-public class FindFileListener implements OutputListener {
+@ServiceProvider(service=FileOpenHandler.class)
+public class NbFileOpenHandler implements FileOpenHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(FindFileListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NbFileOpenHandler.class.getName());
 
-    private final String file;
-    private final int lineno;
-    private final FileLocator fileLocator;
-
-    public FindFileListener(String file, int lineno, FileLocator fileLocator) {
-        if (lineno < 0) {
-            lineno = 0;
-        }
-
-        // TODO : columns?
-        this.file = file;
-        this.lineno = lineno;
-        this.fileLocator = fileLocator;
-    }
-
-    public void outputLineSelected(OutputEvent ev) {
-
-    }
-
-    public void outputLineAction(OutputEvent ev) {
-        // Find file such and such and warp to it
-        FileObject fo = findFile(file);
-
-        if (fo != null) {
-            open(fo, lineno);
-        }
-    }
-
-    private FileObject findFile(final String path) {
-        if (fileLocator != null) {
-            FileObject fo = fileLocator.find(path);
-            if (fo != null) {
-                return fo;
-            }
-        }
-
-        // Perhaps it's an absolute path of some sort... try to resolve those
-        // Absolute path? Happens for stack traces in libraries and such
-        File file  = new File(path);
-        if (file.isFile()) {
-            return FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        } else {
-            LOGGER.warning("Cannot resolve file for \"" + path + "\" path.");
-            return null;
-        }
-    }
-
-    public void outputLineCleared(OutputEvent ev) {
-    }
-
-    public static boolean open(final FileObject fo, final int lineno) {
+    @Override
+    public void open(final FileObject file, final int lineno) {
+        // FIXME this should not be needed
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        open(fo, lineno);
+                        open(file, lineno);
                     }
                 });
 
-            return true; // not exactly accurate, but....
+            return; // not exactly accurate, but....
         }
 
         try {
-            DataObject od = DataObject.find(fo);
+            DataObject od = DataObject.find(file);
             EditorCookie ec = od.getCookie(EditorCookie.class);
             LineCookie lc = od.getCookie(LineCookie.class);
 
@@ -162,7 +105,7 @@ public class FindFileListener implements OutputListener {
                         Line l = lines.getCurrent(line - 1);
                         if (l != null) {
                             l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
-                            return true;
+                            return;
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // OK, since .size() cannot be used, see above
@@ -174,12 +117,10 @@ public class FindFileListener implements OutputListener {
 
             if (oc != null) {
                 oc.open();
-                return true;
+                return;
             }
         } catch (IOException e) {
             LOGGER.log(Level.INFO, null, e);
         }
-
-        return false;
     }
 }
