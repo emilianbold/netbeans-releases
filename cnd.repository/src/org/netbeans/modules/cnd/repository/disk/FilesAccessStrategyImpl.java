@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.impl.DelegateRepository;
@@ -220,7 +219,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
     
     private void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
-        ConcurrentFileRWAccess removedFile = null;
+        ConcurrentFileRWAccess removedFile;
         synchronized (cacheLock) {
             removedFile = nameToFileCache.put(fileName, aFile);
         }
@@ -243,7 +242,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         String fileName = resolveFileName(id);
         assert fileName != null;
         
-        ConcurrentFileRWAccess removedFile = null;
+        ConcurrentFileRWAccess removedFile;
         synchronized (cacheLock) {
             removedFile = nameToFileCache.remove(fileName);
         }
