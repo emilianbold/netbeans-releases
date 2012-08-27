@@ -45,8 +45,10 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
@@ -68,6 +70,14 @@ public class RepositorySelector {
 
     public RepositoryImpl create(boolean selectNode) {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        List<DelegatingConnector> l = new ArrayList<DelegatingConnector>(connectors.length);
+        Iterator<DelegatingConnector> it = l.iterator();
+        for(DelegatingConnector dc : connectors) {
+            if(dc.providesRepositoryManagement()) {
+                l.add(dc);
+            }
+        }
+        connectors = l.toArray(new DelegatingConnector[l.size()]);
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
         if(!selectorPanel.open()) {

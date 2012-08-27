@@ -62,11 +62,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.Utilities;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -79,10 +80,10 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Virtual filesystem representing the remote workspace of a job or artifacts of a build.
  */
-final class RemoteFileSystem extends AbstractFileSystem implements
+final class HudsonRemoteFileSystem extends RemoteFileSystem implements
         AbstractFileSystem.Attr, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Info {
 
-    private static final Logger LOG = Logger.getLogger(RemoteFileSystem.class.getName());
+    private static final Logger LOG = Logger.getLogger(HudsonRemoteFileSystem.class.getName());
     private static final int TIMEOUT = 10000;
 
     /** base URL of filesystem */
@@ -92,7 +93,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
     /** for {@link ConnectionBuilder#job} */
     private final HudsonJob job;
 
-    private RemoteFileSystem(URL baseURL, String displayName, HudsonJob job) {
+    private HudsonRemoteFileSystem(URL baseURL, String displayName, HudsonJob job) {
         this.baseURL = baseURL;
         this.displayName = displayName;
         this.job = job;
@@ -102,28 +103,29 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         info = this;
         synchronized (Mapper.class) {
             if (Mapper.workspaces == null) {
-                Mapper.workspaces = new WeakSet<RemoteFileSystem>();
+                Mapper.workspaces = new WeakSet<HudsonRemoteFileSystem>();
             }
             Mapper.workspaces.add(this);
         }
     }
 
-    RemoteFileSystem(HudsonJob job) throws MalformedURLException {
+    HudsonRemoteFileSystem(HudsonJob job) throws MalformedURLException {
         this(new URL(job.getUrl() + "ws/"), job.getDisplayName(), job); // NOI18N
     }
 
-    RemoteFileSystem(HudsonJobBuild build) throws MalformedURLException {
+    HudsonRemoteFileSystem(HudsonJobBuild build) throws MalformedURLException {
         this(new URL(build.getUrl() + "artifact/"), build.getDisplayName(), build.getJob()); // NOI18N
     }
 
-    RemoteFileSystem(HudsonMavenModuleBuild module) throws MalformedURLException {
+    HudsonRemoteFileSystem(HudsonMavenModuleBuild module) throws MalformedURLException {
         this(new URL(module.getUrl() + "artifact/"), module.getBuildDisplayName(), module.getBuild().getJob()); // NOI18N
     }
 
     /**
      * For {@link HudsonInstanceImpl} to refresh after the workspace has been synchronized.
      */
-    void refreshAll() {
+    @Override
+    public void refreshAll() {
         LOG.log(Level.FINE, "refreshing files in {0}", baseURL);
         synchronized (nonDirs) {
             nonDirs.clear();
@@ -386,7 +388,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
     @ServiceProvider(service=URLMapper.class)
     public static class Mapper extends URLMapper {
 
-        static Set<RemoteFileSystem> workspaces = null;
+        static Set<HudsonRemoteFileSystem> workspaces = null;
 
         public URL getURL(FileObject fo, int type) {
             synchronized (Mapper.class) {
@@ -409,8 +411,8 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         private static URL doGetURL(FileObject fo) {
             try {
                 FileSystem fs = fo.getFileSystem();
-                if (fs instanceof RemoteFileSystem) {
-                    return new URL(((RemoteFileSystem) fs).baseURL, Utilities.uriEncode(fo.getPath()));
+                if (fs instanceof HudsonRemoteFileSystem) {
+                    return new URL(((HudsonRemoteFileSystem) fs).baseURL, Utilities.uriEncode(fo.getPath()));
                 }
             } catch (IOException x) {
                 LOG.log(Level.INFO, "trying to get URL for " + fo, x);
@@ -419,10 +421,10 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         }
 
         private static FileObject[] doGetFileObjects(URL url) {
-            RemoteFileSystem fs = null;
+            HudsonRemoteFileSystem fs = null;
             String urlS = url.toString();
             synchronized (Mapper.class) {
-                for (RemoteFileSystem _fs : workspaces) {
+                for (HudsonRemoteFileSystem _fs : workspaces) {
                     if (urlS.startsWith(_fs.baseURL.toString())) {
                         fs = _fs;
                         break;
