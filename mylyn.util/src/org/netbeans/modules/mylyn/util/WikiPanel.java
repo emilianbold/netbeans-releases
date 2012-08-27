@@ -64,4 +64,6 @@ public abstract class WikiPanel extends JPanel {
     public abstract void registerHighlights(JTextPane wikiPreviewPane);
 
     public abstract JTextPane getPreviewPane();
+
+    public abstract JTextPane getCodePane();
 }
