@@ -76,9 +76,13 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        synchronized (siteTemplateWizardLock) {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
-            getComponent().prepareTemplate();
+        if (settings.getValue() == WizardDescriptor.NEXT_OPTION
+                || settings.getValue() == WizardDescriptor.FINISH_OPTION) {
+            // next step or finish
+            synchronized (siteTemplateWizardLock) {
+                wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
+                getComponent().prepareTemplate();
+            }
         }
     }
 
