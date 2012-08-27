@@ -170,11 +170,18 @@ public class SiteZip implements SiteTemplateImplementation {
             return panel;
         }
 
-        @NbBundle.Messages("SiteZip.error.template=Template file does not exist.")
+        @NbBundle.Messages({
+            "SiteZip.error.template.missing=Template file must be specified.",
+            "SiteZip.error.template.invalid=Template file does not exist."
+        })
         public boolean isValid() {
             String tpl = panel.getTemplate();
+            if (tpl.isEmpty()) {
+                error = Bundle.SiteZip_error_template_missing();
+                return false;
+            }
             if (!tpl.startsWith("http")  && !new File(tpl).exists()) {
-                error = Bundle.SiteZip_error_template();
+                error = Bundle.SiteZip_error_template_invalid();
                 return false;
             }
             error = null;
