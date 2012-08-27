@@ -100,7 +100,7 @@ import org.openide.util.NbBundle;
 @TemplateRegistrations(value = {
     @TemplateRegistration(
         folder = "Groovy",
-        position = 120,
+        position = 121,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.groovy",
         scriptEngine = "freemarker",
         displayName = "Groovy JUnit Test",
@@ -110,7 +110,7 @@ import org.openide.util.NbBundle;
 
     @TemplateRegistration(
         folder = "Groovy",
-        position = 130,
+        position = 131,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnit3Test.groovy",
         scriptEngine = "freemarker",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
@@ -119,7 +119,7 @@ import org.openide.util.NbBundle;
 
     @TemplateRegistration(
         folder = "Groovy",
-        position = 140,
+        position = 141,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnit4Test.groovy",
         scriptEngine = "freemarker",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
