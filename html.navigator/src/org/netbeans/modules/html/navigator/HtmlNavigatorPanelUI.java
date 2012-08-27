@@ -232,6 +232,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             //no need to explicitly call pageModelDocumentChanged() as the
             //PageModel fill fire change event
         }
+        inspectedFileObject = getInspectedFileFromPageModel();
 
     }
     
@@ -349,6 +350,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     private void cacheDomToNb(Node root) {
+        if (root==null)
+            return;
         if (root instanceof HtmlElementNode) {
             Node res = ((HtmlElementNode) root).getDOMNode();
             if (res!=null) {
@@ -363,9 +366,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void refreshNodeDOMStatus() {
         LOGGER.fine("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
+        boolean refresh = true;
         if (root != null) {
             //if we are inspecting the current file, the source changes propagates just after the fresh DOM is received
             if(sourceDescription != null) {
+                refresh = sourceDescription.getFileObject().equals(inspectedFileObject);
                 root.setDescription(sourceDescription);
                 sourceDescription = null;
                 setSynchronizationState(true);
@@ -382,7 +387,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             };
             domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
-            root.setDescription(domDescription);
+            if (refresh) {
+                root.setDescription(domDescription);
+            } else {
+                root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));
+            }
             
             LOGGER.fine("root.refreshDOMStatus() called");
         }
@@ -452,10 +461,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         
         if (fo==null)
             return;
-        if (inspectedFileObject == fo) {
-            refreshDOM();
-            return;
-        }
         
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
@@ -465,14 +470,16 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (source == null) {
             return;
         }
-        showWaitNode();
+        
+        //TODO: uncomment when working again
+        //showWaitNode();
         
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     setParserResult((HtmlParserResult)resultIterator.getParserResult());
-                    inspectedFileObject = fo;
+                    //inspectedFileObject = getInspectedFileFromPageModel();
                     refreshDOM();
                 }
             });
@@ -793,10 +800,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                         if (node instanceof HtmlElementNode) {
                             final Node domNode = ((HtmlElementNode) node).getDOMNode();
                             if (domNode!=null) {
-                                node = domNode;
+                                highlight = Arrays.asList(domNode);
+                            } else {
+                                highlight = Collections.EMPTY_LIST;
                             }
+                        } else {
+                            highlight = Arrays.asList(node);
                         }
-                        highlight = Arrays.asList(node);
                     } else {
                         highlight = Collections.EMPTY_LIST;
                     }
