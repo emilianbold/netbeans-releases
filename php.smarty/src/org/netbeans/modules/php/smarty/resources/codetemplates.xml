@@ -99,7 +99,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="if">
+    <codetemplate abbreviation="if" descriptionId="CT_if">
         <code>
 <![CDATA[{if ${condition}}
     ${selection}${cursor}
@@ -107,7 +107,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ife">
+    <codetemplate abbreviation="ife" descriptionId="CT_ife">
         <code>
 <![CDATA[{if ${condition}}
     ${selection}${cursor}
