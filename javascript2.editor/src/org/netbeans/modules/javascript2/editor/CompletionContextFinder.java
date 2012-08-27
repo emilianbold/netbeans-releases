@@ -90,7 +90,9 @@ public class CompletionContextFinder {
         if (ts == null) {
             return CompletionContext.NONE;
         }
-        ts.move(caretOffset);
+        
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        ts.move(offset);
         
         if (!ts.moveNext() && !ts.movePrevious()){
             return CompletionContext.NONE;
