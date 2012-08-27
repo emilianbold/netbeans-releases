@@ -169,12 +169,12 @@ public class ReformatSupport {
      * @param document Document instance to process. Can be null.
      * @return content of Document without JavaScript. Returns null when input parameter is null or any error occurs.
      */
-    public static Map<Integer, Integer> getIndexesOfJavaScript(Document document) {
+    public static Map<Integer, Integer> getIndexesOfJavaScript(CharSequence document) {
         if (document == null) {
             return null;
         }
         
-        final TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
+        final TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(document, Language.find("text/html"));
         final TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
         Map<Integer, Integer> indexesToReplace = new HashMap<Integer, Integer>();

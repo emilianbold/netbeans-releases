@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -83,7 +84,6 @@ public class Analysis implements Comparable<Analysis> {
     public static final String DATA = "data";
     
     public static final String NO_JS_CONTENT = "no_js_content";
-    public static final String FORMATTED_NO_JS_CONTENT = "formatted_no_js_content";
     
     private URL sourceUrl;
     private Date created = new Date();
@@ -138,6 +138,7 @@ public class Analysis implements Comparable<Analysis> {
         StringBuilder diff = read(DIFF, timeStamp);
         StringBuilder beautifiedDiff = read(BDIFF, timeStamp);
         StringBuilder beautifiedContent = read(BCONTENT, timeStamp);
+        StringBuilder previewContent = read(NO_JS_CONTENT, timeStamp);
         
         //TODO: Rewrite this part of code to read data of current timesamp only!
         if (changeIndex > 0) {
@@ -153,9 +154,8 @@ public class Analysis implements Comparable<Analysis> {
                 Change.decodeFromJSON(diff == null ? null : diff.toString()), 
                 Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString()), 
                 stacktrace,
-                data);
-        revision.setPreviewContent(read(NO_JS_CONTENT, timeStamp));
-        revision.setReformattedPreviewContent(read(FORMATTED_NO_JS_CONTENT, timeStamp));
+                data, 
+                previewContent);
         
         return revision;
     }
@@ -367,6 +367,11 @@ public class Analysis implements Comparable<Analysis> {
                     beautifiedChanges);
             store(BDIFF, timestamp, Change.encodeToJSON(beautifiedChanges));
             store(BCONTENT, timestamp, beautifiedContent.toString());
+
+            // XXX should reuse already parsed tree instead of creating token hierarchy here:
+            Map<Integer, Integer> indexesOfJavaScript = ReformatSupport.getIndexesOfJavaScript(content);
+            StringBuilder replaceBySpaces = ReformatSupport.replaceBySpaces(indexesOfJavaScript, new StringBuilder(content));
+            store(Analysis.NO_JS_CONTENT, timestamp, replaceBySpaces.toString());
             
             if (realChange) {
                 setLastDiff(d);

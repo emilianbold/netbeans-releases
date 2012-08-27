@@ -115,6 +115,7 @@ public class FilteredAnalysis extends Analysis {
         // This code is specific for this class.
         StringBuilder stackTrace = read(STACKTRACE, timeStamp);
         StringBuilder data = read(DATA, timeStamp);
+        StringBuilder previewContent = read(NO_JS_CONTENT, timeStamp);
         
         Revision revision = new Revision(
                 changeIndex,
@@ -124,9 +125,8 @@ public class FilteredAnalysis extends Analysis {
                 Change.decodeFromJSON(diff == null ? null : diff.toString()), 
                 Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString()), 
                 stackTrace,
-                data);
-        revision.setPreviewContent(read(NO_JS_CONTENT, timeStamp));
-        revision.setReformattedPreviewContent(read(FORMATTED_NO_JS_CONTENT, timeStamp));
+                data,
+                previewContent);
         
         return revision;
     }
