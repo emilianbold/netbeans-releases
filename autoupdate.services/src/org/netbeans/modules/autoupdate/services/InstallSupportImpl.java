@@ -288,7 +288,7 @@ public class InstallSupportImpl {
     private Set<ModuleUpdateElementImpl> affectedModuleImpls = null;
     private Set<FeatureUpdateElementImpl> affectedFeatureImpls = null; 
     
-    public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/) throws OperationException {
+    public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/, final boolean forceInstall) throws OperationException {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
             @Override
@@ -403,7 +403,7 @@ public class InstallSupportImpl {
                         }
                     }
 
-                    if (! needsRestart) {
+                    if (! needsRestart || forceInstall) {
                         synchronized(LOCK) {
                             if (currentStep == STEP.CANCEL) {
                                 if (progress != null) progress.finish ();
@@ -470,7 +470,7 @@ public class InstallSupportImpl {
                     }
                 }
                 
-                return needsRestart ? Boolean.TRUE : Boolean.FALSE;
+                return needsRestart && ! forceInstall ? Boolean.TRUE : Boolean.FALSE;
             }
         };
         
