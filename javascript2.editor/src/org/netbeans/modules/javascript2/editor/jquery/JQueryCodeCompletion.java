@@ -56,8 +56,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.html.editor.lib.api.HtmlParser;
-import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
