@@ -43,43 +43,59 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
+import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.modules.Places;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class)
-public final class DelegateRepository implements Repository {
+public final class DelegateRepository implements Repository {    
 
-    private Repository delegate;
+    /** guards cacheToDelegate and delegates *modification* */
+    private final Object delegatesLock = new Object();    
+
+    /** read access - without lock, write access guarded by delegatesLock */
+    private final ArrayList<BaseRepository> delegates = new ArrayList<BaseRepository>();
+    
+    /** guarded by delegatesLock */
+    private final Map<File, BaseRepository> cacheToDelegate = new HashMap<File, BaseRepository>();
+    
+    private int persistMechanismVersion = -1;
 
     public DelegateRepository() {
     }
 
     @Override
     public void hang(Key key, Persistent obj) {
-        delegate.hang(key, obj);
+        getDelegate(key.getUnitId()).hang(key, obj);
     }
 
     @Override
     public void put(Key key, Persistent obj) {
-        delegate.put(key, obj);
+        getDelegate(key.getUnitId()).put(key, obj);
     }
 
     @Override
     public Persistent get(Key key) {
+        Repository delegate = getDelegate(key.getUnitId());
         Persistent result = delegate.get(key);
         if (result == null && Stats.useNullWorkaround) {
             String keyClassName = key.getClass().getName();
@@ -95,46 +111,51 @@ public final class DelegateRepository implements Repository {
 
     @Override
     public Persistent tryGet(Key key) {
-        return delegate.tryGet(key);
+        return getDelegate(key.getUnitId()).tryGet(key);
     }
 
     @Override
     public void remove(Key key) {
-        delegate.remove(key);
+        getDelegate(key.getUnitId()).remove(key);
     }
 
     @Override
     public void debugClear() {
-        delegate.debugClear();
-        delegate = null;
+        synchronized (delegatesLock) {
+            for (Repository delegate : getDelegates()) {
+                delegate.debugClear();
+            }
+            //delegates.clear();
+        }
     }
 
     @Override
     public void shutdown() {
-        Repository aDelegate = delegate;
-        if (aDelegate != null) {
+        for (Repository aDelegate : getDelegates()) {
             aDelegate.shutdown();
         }
     }
 
     @Override
     public void openUnit(int unitId, CharSequence unitName) {
-        delegate.openUnit(unitId, unitName);
+        getDelegate(unitId).openUnit(unitId, unitName);
     }
 
     @Override
     public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
-        delegate.closeUnit(unitId, cleanRepository, requiredUnits);
+        getDelegate(unitId).closeUnit(unitId, cleanRepository, requiredUnits);
     }
 
     @Override
     public void removeUnit(int unitId) {
-        delegate.removeUnit(unitId);
+        getDelegate(unitId).removeUnit(unitId);
     }
 
     @Override
     public void cleanCaches() {
-        delegate.cleanCaches();
+        for (Repository delegate : getDelegates()) {
+            delegate.cleanCaches();
+        }
     }
 
     @Override
@@ -149,35 +170,78 @@ public final class DelegateRepository implements Repository {
 
     @Override
     public void startup(int persistMechanismVersion) {
-        initDelegate();
-        ((RepositoryTranslatorImpl) RepositoryAccessor.getTranslator()).startup(persistMechanismVersion);
-        delegate.startup(persistMechanismVersion);
+        this.persistMechanismVersion = persistMechanismVersion;
     }
 
-    private synchronized void initDelegate() {
-        if (delegate == null) {
-            // we have to ask sys property each time, because tests changes
-            // settings in runtime
-            if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
-                Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
-                delegate = new KeyValidatorRepository();
-            } else if (CndUtils.getBoolean("cnd.repository.hardrefs", false)) { // NOI18N
-                Stats.log("Using HashMapRepository."); // NOI18N
-                delegate = new HashMapRepository();
-            } else {
-                Stats.log("by default using HybridRepository."); // NOI18N
-                delegate = new DiskRepositoryManager();
-            }
+    private BaseRepository createRepository(int id, File cacheLocation) {
+        BaseRepository delegate;
+        if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
+            Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
+            delegate = new KeyValidatorRepository(id, cacheLocation);
+        } else if (CndUtils.getBoolean("cnd.repository.hardrefs", false)) { // NOI18N
+            Stats.log("Using HashMapRepository."); // NOI18N
+            delegate = new HashMapRepository(id, cacheLocation);
+        } else {
+            Stats.log("by default using HybridRepository."); // NOI18N
+            delegate = new DiskRepositoryManager(id, cacheLocation);
         }
+        delegate.getTranslation().startup(persistMechanismVersion);
+        delegate.startup(persistMechanismVersion);
+        return delegate;
     }
 
     @Override
     public void debugDistribution() {
-        delegate.debugDistribution();
+        for (Repository delegate : getDelegates()) {
+            delegate.debugDistribution();
+        }
     }
 
     @Override
     public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
-        return delegate.getDatabaseTable(unitKey, tableID);
+        return getDelegate(unitKey.getUnitId()).getDatabaseTable(unitKey, tableID);
     }
+
+    private BaseRepository getDelegate(int unitId) {
+        int repoId = unitId / BaseRepository.REPO_DENOM;
+        boolean assertions = false;
+        assert (assertions = true);
+        if (assertions && repoId >= delegates.size()) {
+	    throw new IndexOutOfBoundsException("Index: "+repoId+", Size: "+delegates.size()); //NOI18N
+        }
+        return delegates.get(repoId);
+    }
+
+    public Iterable<BaseRepository> testGetDelegates() {
+        return getDelegates();
+    }
+
+    private Iterable<BaseRepository> getDelegates() {
+        synchronized (delegatesLock) {
+            return new ArrayList<BaseRepository>(delegates);
+        }
+    }
+
+    public RepositoryTranslation getTranslator(int unitId) {
+        return getDelegate(unitId).getTranslation();
+    }
+
+    public int getUnitId(CharSequence unitName, File cacheLocation) {
+        if (cacheLocation == null) {
+            cacheLocation = StorageAllocator.getDefaultCacheLocation();
+        }
+        assert cacheLocation != null;
+        synchronized (delegatesLock) {
+            BaseRepository repo = cacheToDelegate.get(cacheLocation);
+            if (repo == null) {
+                int newId = delegates.size();
+                repo = createRepository(newId, cacheLocation);
+                cacheToDelegate.put(cacheLocation, repo);
+                delegates.add(repo);
+            }
+            return repo.getTranslation().getUnitId(unitName, cacheLocation);
+        }        
+    }
+    
+    
 }

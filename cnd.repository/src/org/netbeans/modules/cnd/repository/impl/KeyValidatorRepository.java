@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +59,10 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 public class KeyValidatorRepository extends HashMapRepository {
     
     Map<Key, Key> keyMap = Collections.synchronizedMap(new HashMap<Key, Key>());
+
+    public KeyValidatorRepository(int id, File cacheLocation) {
+        super(id, cacheLocation);
+    }
 
     @Override
     public void put(Key key, Persistent obj) {

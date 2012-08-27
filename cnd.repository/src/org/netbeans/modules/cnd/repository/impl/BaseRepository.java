@@ -39,57 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.platform;
+package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.File;
-import java.util.Collection;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.repository.spi.RepositoryCacheDirectoryProvider;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategy;
+import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategyImpl;
+import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
+import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
-@ServiceProvider(service=RepositoryCacheDirectoryProvider.class, position=1000)
-public class RepositoryCacheDirectoryProviderImpl implements RepositoryCacheDirectoryProvider  {
+public abstract class BaseRepository implements Repository {
+    
+    public static final int REPO_DENOM = 100000;
+    
+    private final int id;
+    private final File cacheLocation;
+    private final RepositoryTranslatorImpl translator;
+    private final StorageAllocator storageAllocator;
+    private final FilesAccessStrategy filesAccessStrategy;
+    
 
-    @Override
-    public File getCacheBaseDirectory() {
-        // That's a temporary solution we need to prove the concept
-        // Sure it isn't appropriate to get first NativeProject
-        Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
-        if (projects != null && !projects.isEmpty()) {
-            NativeProject np = projects.iterator().next();
-            if (CndFileUtils.isLocalFileSystem(np.getFileSystem())) {
-                File cache = new File(np.getProjectRoot() + "/nbproject/private/cache/model"); //NOI18N
-                if (TraceFlags.CACHE_IN_PROJECT) {
-                    cache.mkdirs();
-                }
-                if (cache.exists()) {
-                    return cache;
-                }
-            }
-        }
-        return null;
+    protected BaseRepository(int id, File cacheLocation) {
+        this.id = id;
+        this.cacheLocation = cacheLocation;
+        this.storageAllocator = new StorageAllocator(cacheLocation);
+        this.filesAccessStrategy = new FilesAccessStrategyImpl(storageAllocator);
+        this.translator = new RepositoryTranslatorImpl(storageAllocator);
     }
 
-//    @Override
-//    public File getUnitCacheBaseDirectory(CharSequence unitName) {
-//        CharSequence projectName = ProjectBase.getProjectName(unitName);
-//        if (projectName != null) {
-//            File projectDir = new File(projectName + "/nbproject"); //NOI18N
-//            if (projectDir.exists()) {
-//                File cache = new File(projectDir + "/private/cache"); //NOI18N
-//                cache.mkdirs();
-//                if (cache.exists()) {
-//                    return cache;
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    public final RepositoryTranslatorImpl getTranslation() {
+        return translator;
+    }
+
+    public StorageAllocator getStorageAllocator() {
+        return storageAllocator;
+    }
+
+    public FilesAccessStrategy getFilesAccessStrategy() {
+        return filesAccessStrategy;
+    }
+
+    public File getCacheLocation() {
+        return cacheLocation;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + id + ' ' + cacheLocation.getAbsolutePath();
+    }
 }

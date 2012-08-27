@@ -49,6 +49,10 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
+import org.netbeans.modules.cnd.repository.impl.DelegateRepository;
 import org.netbeans.modules.cnd.repository.sfs.BufferedRWAccess;
 import org.netbeans.modules.cnd.repository.sfs.statistics.BaseStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -76,12 +80,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     private static final class Lock {}
+
     private final Object cacheLock = new Lock();
     private final RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
+    private final StorageAllocator storageAllocator;
     
     private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N
-    
-    private static final FilesAccessStrategyImpl instance = new FilesAccessStrategyImpl();
     
     private static final boolean TRACE_CONFLICTS = Boolean.getBoolean("cnd.repository.trace.conflicts");
     
@@ -93,17 +97,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     BaseStatistics<String> writeStatistics;
     BaseStatistics<String> readStatistics;
     
-    private FilesAccessStrategyImpl() {
+    public FilesAccessStrategyImpl(StorageAllocator storageAllocator) {
+        this.storageAllocator = storageAllocator;
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
         if( Stats.multyFileStatistics ) {
             resetStatistics();
         }
     }
     
-    public static FilesAccessStrategy getInstance() {
-        return instance;
-    }
-
     @Override
     public Persistent read(Key key) throws IOException {
         readCnt++; // always increment counters
@@ -319,7 +320,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
     private final static char SEPARATOR_CHAR = '-';
     
-    private static String resolveFileName(Key id) throws IOException {
+    private String resolveFileName(Key id) throws IOException {
         
         assert id != null;
         int size = id.getDepth();
@@ -340,8 +341,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
 
         fileName = URLEncoder.encode(fileName, Stats.ENCODING);
 
-        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
-                StorageAllocator.getInstance().reduceString(fileName);
+        fileName = storageAllocator.getUnitStorageName(id.getUnit()) + 
+                storageAllocator.reduceString(fileName);
 
         return fileName;
     }
@@ -365,6 +366,16 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         synchronized( cacheLock ) {
             return nameToFileCache.keys();
         }
+    }
+    
+    public static FilesAccessStrategyImpl testGetStrategy(File cacheLocation) {
+        DelegateRepository repository = (DelegateRepository) RepositoryAccessor.getRepository();
+        for (BaseRepository delegate : repository.testGetDelegates()) {
+            if (delegate.getCacheLocation().equals(cacheLocation)) {
+                return (FilesAccessStrategyImpl) delegate.getFilesAccessStrategy();
+            }
+        }
+        return null;
     }
 
     /** For test purposes ONLY! - gets read hit count */

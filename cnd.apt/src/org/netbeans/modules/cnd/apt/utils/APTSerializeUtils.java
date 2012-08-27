@@ -86,8 +86,12 @@ public class APTSerializeUtils {
     private APTSerializeUtils() {
     }
 
-    public static int getUnitId(CharSequence unitName) {
-        return translator.getUnitId(unitName);
+    /**
+     * @param cacheLocation can be null, in this case standard location 
+     * ${userdir}/var/cache/cnd/model will be used
+     */
+    public static int getUnitId(CharSequence unitName, File cacheLocation) {
+        return translator.getUnitId(unitName, null);
     }
 
     public static CharSequence getUnitName(int unitIndex) {

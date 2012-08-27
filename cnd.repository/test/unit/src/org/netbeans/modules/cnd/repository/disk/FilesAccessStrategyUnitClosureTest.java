@@ -69,10 +69,8 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     private static final boolean TRACE = true;
     
     public void testClosure() throws Exception {
-        
-        final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
-                
-        assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
+                        
+        //assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
         
 	final TraceModelBase traceModel = new TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
@@ -81,6 +79,11 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         
         // Open a project, make sure cache is NOT empty
         ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
+        projectRoot1.waitParse();
+        
+        final FilesAccessStrategyImpl strategy = FilesAccessStrategyImpl.testGetStrategy(
+                StorageAllocator.getDefaultCacheLocation());
+        
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override
             boolean check() {

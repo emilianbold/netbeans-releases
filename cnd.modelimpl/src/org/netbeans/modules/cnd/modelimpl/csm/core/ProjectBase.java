@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -219,8 +220,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
-        assert (platformProject == null) || (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
+        assert (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         this.platformProject = platformProject;
+        cacheLocation = getCacheBaseDirectory(platformProject);        
         // remember in repository
         RepositoryUtils.hang(this);
         // create global namespace
@@ -345,7 +347,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private static Key createProjectKey(FileSystem fs, Object platfProj) {
-        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj));
+        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), getCacheBaseDirectory(platfProj));
     }
 
     protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, Object platformProject, String name) {
@@ -406,7 +408,40 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static CharSequence getUniqueName(NativeProject platformProject) {
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
+    
+    public File getCacheBaseDirectory() {
+        return cacheLocation;
+    }
 
+    public static File getCacheBaseDirectory(Object platfProj) {
+        if (platfProj instanceof NativeProject) {
+            return getCacheBaseDirectory((NativeProject) platfProj);
+        } else if (platfProj instanceof CharSequence) {
+            return getCacheBaseDirectory((CharSequence) platfProj);
+        } else if (platfProj == null) {
+            throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
+        } else {
+            throw new IllegalArgumentException("Incorrect platform project class: " + platfProj.getClass()); // NOI18N
+        }        
+    }
+    
+    public static File getCacheBaseDirectory(CharSequence platfProj) {
+        return null;
+    }
+    
+    public static File getCacheBaseDirectory(NativeProject np) {
+        if (CndFileUtils.isLocalFileSystem(np.getFileSystem())) {
+            File cache = new File(np.getProjectRoot() + "/nbproject/private/cache/model"); //NOI18N
+            if (TraceFlags.CACHE_IN_PROJECT) {
+                cache.mkdirs();
+            }
+            if (cache.exists()) {
+                return cache;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public String getDisplayName() {
         if (CndFileUtils.isLocalFileSystem(fileSystem)) {
@@ -1317,7 +1352,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTFileSearch searcher = null;
         Object aPlatformProject = getPlatformProject();
         if (aPlatformProject != null){
-            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(ProjectBase.getUniqueName(fileSystem, aPlatformProject)));
+            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(
+                    ProjectBase.getUniqueName(fileSystem, aPlatformProject),
+                    ProjectBase.getCacheBaseDirectory(platformProject)));
         }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
@@ -3350,6 +3387,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private NamespaceImpl FAKE_GLOBAL_NAMESPACE;
     /** Either NativeProject or CharSequence */
     private volatile Object platformProject;
+    private File cacheLocation;
     private final FileSystem fileSystem;
 
     private boolean hasFileSystemProblems;
@@ -3442,7 +3480,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         aStream.writeBoolean(hasFileSystemProblems);
     }
 
-    protected ProjectBase(RepositoryDataInput aStream) throws IOException {
+    protected ProjectBase(RepositoryDataInput aStream) throws IOException {        
         unitId = aStream.readInt();
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();

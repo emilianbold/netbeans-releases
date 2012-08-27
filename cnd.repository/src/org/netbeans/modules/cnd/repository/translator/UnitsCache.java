@@ -75,9 +75,11 @@ import org.openide.util.NbBundle;
  *
  * @author Nickolay Dalmatov
  */
-final class UnitsCache {
+/*package*/ final class UnitsCache {
+
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
-    private final static File MASTER_INDEX_FILE = new File(StorageAllocator.getInstance().getCacheBaseDirectory(), "index"); // NOI18N
+
+    private final File masterIndexFile;
     private final List<CharSequence> cache = new ArrayList<CharSequence>();
     private final long timestamp;
 
@@ -114,6 +116,7 @@ final class UnitsCache {
     private RandomAccessFile randomAccessFile;
     private FileChannel channel;
     private FileLock masterIndexLock;
+    private final StorageAllocator storageAllocator;
 
     /**
      * Loads master index and unit/timestamp pairs
@@ -123,12 +126,14 @@ final class UnitsCache {
      *	- their required units 
      *	- required units  timestamps 
      */
-    UnitsCache() {
+    /*package*/ UnitsCache(StorageAllocator storageAllocator) {
         //this.version = RepositoryTranslatorImpl.getVersion();
+        this.storageAllocator = storageAllocator;
+        masterIndexFile = new File(storageAllocator.getCacheBaseDirectory(), "index"); // NOI18N
         this.timestamp = System.currentTimeMillis();
         boolean inited = false;
         try {
-            randomAccessFile = new RandomAccessFile(MASTER_INDEX_FILE, "rw"); // NOI18N
+            randomAccessFile = new RandomAccessFile(masterIndexFile, "rw"); // NOI18N
 	    channel = randomAccessFile.getChannel();
             masterIndexLock = channel.tryLock();
             if (masterIndexLock == null) {
@@ -196,8 +201,8 @@ final class UnitsCache {
         stream.readInt();
         stream.readLong();
         String oldIndexCanonicalPath = stream.readUTF();
-        if( ! oldIndexCanonicalPath.equals(MASTER_INDEX_FILE.getCanonicalPath())) {
-            converter = new IndexConverter(oldIndexCanonicalPath, MASTER_INDEX_FILE.getCanonicalPath());
+        if( ! oldIndexCanonicalPath.equals(masterIndexFile.getCanonicalPath())) {
+            converter = new IndexConverter(oldIndexCanonicalPath, masterIndexFile.getCanonicalPath());
         }
         int size = stream.readInt();
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -236,9 +241,9 @@ final class UnitsCache {
                 cache.set(i, newValue);
                 Collection<RequiredUnit> reqUnits = unit2requnint.remove(value);
                 unit2requnint.put(newValue, reqUnits);
-                if (!StorageAllocator.getInstance().renameUnitDirectory(value, newValue)) {
-                    StorageAllocator.getInstance().deleteUnitFiles(newValue, true);
-                    StorageAllocator.getInstance().deleteUnitFiles(value, true);
+                if (!storageAllocator.renameUnitDirectory(value, newValue)) {
+                    storageAllocator.deleteUnitFiles(newValue, true);
+                    storageAllocator.deleteUnitFiles(value, true);
                 }
             }
         }
@@ -276,7 +281,7 @@ final class UnitsCache {
                             }
                         }
                         if (!success) {
-                            StorageAllocator.getInstance().deleteUnitFiles(unitName, true);
+                            storageAllocator.deleteUnitFiles(unitName, true);
                         }
                     }
                 }
@@ -288,7 +293,7 @@ final class UnitsCache {
     void storeMasterIndex() {
         try {
             if (randomAccessFile == null) {
-                randomAccessFile = new RandomAccessFile(MASTER_INDEX_FILE, "rw"); // NOI18N
+                randomAccessFile = new RandomAccessFile(masterIndexFile, "rw"); // NOI18N
             }
             randomAccessFile.seek(0);
             randomAccessFile.setLength(0);
@@ -391,7 +396,7 @@ final class UnitsCache {
             }
         }
         if (!indexStored) {
-            StorageAllocator.getInstance().deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(unitName, false);
 //            System.err.println("storeUnitIndex: unit file deleted for " + unitName);            
         }
     }
@@ -402,7 +407,7 @@ final class UnitsCache {
     }
 
     private String getUnitIndexName(final CharSequence unitName) {
-        return StorageAllocator.getInstance().getUnitStorageName(unitName) + PROJECT_INDEX_FILE_NAME;
+        return storageAllocator.getUnitStorageName(unitName) + PROJECT_INDEX_FILE_NAME;
     }
     
     private boolean readUnitFilesCache(CharSequence name, DataInput stream, Set<CharSequence> antiLoop) throws IOException {
@@ -506,7 +511,7 @@ final class UnitsCache {
         String unitIndexFileName = getUnitIndexName(unitName);
         boolean indexLoaded = loadUnitIndex(unitName, unitIndexFileName, antiLoop);
         if (!indexLoaded) {
-            StorageAllocator.getInstance().deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(unitName, false);
             cleanUnitData(unitName);
 //            System.err.println("loadUnitIndex: unit file deleted for " + unitName);
         }
@@ -554,7 +559,7 @@ final class UnitsCache {
         assert stream != null;
         stream.writeInt(RepositoryTranslatorImpl.getVersion());
         stream.writeLong(timestamp);
-        stream.writeUTF(MASTER_INDEX_FILE.getCanonicalPath());
+        stream.writeUTF(masterIndexFile.getCanonicalPath());
         int size = cache.size();
         stream.writeInt(size);
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {

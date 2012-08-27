@@ -39,27 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.translator;
 
 import java.io.File;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
+import org.netbeans.modules.cnd.repository.impl.DelegateRepository;
 
 /**
- * Allows to provide an alternative location of repository unit cache
  *
  * @author Vladimir Kvashin
  */
-public interface RepositoryCacheDirectoryProvider {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.RepositoryTranslation.class)
+public class DelegateRepositoryTranslator implements RepositoryTranslation {
 
-    File getCacheBaseDirectory();
+    private final DelegateRepository repositoryImpl;
+    
+    public DelegateRepositoryTranslator() {
+        Repository repo = RepositoryAccessor.getRepository();
+        repositoryImpl =  (repo instanceof DelegateRepository) ? ((DelegateRepository) repo) : null;
+        assert repositoryImpl != null : "No DelegateRepository found"; //NOI18N
+    }
+    
+    @Override
+    public int getFileIdByName(int unitId, CharSequence fileName) {
+        return repositoryImpl.getTranslator(unitId).getFileIdByName(unitId, fileName);
+    }
 
-//    /**
-//     * Gets base directory for unit cache.
-//     *
-//     * It does not contain directory of the unit itself -
-//     * it's repository responsibility to create a  subdirectory with appropriate name.
-//     *
-//     * @param unitName unit name
-//     * @return base directory; it can be null, in which case it will be ignored
-//     */
-//    File getUnitCacheBaseDirectory(CharSequence unitName);
+    @Override
+    public CharSequence getFileNameById(int unitId, int fileId) {
+        return repositoryImpl.getTranslator(unitId).getFileNameById(unitId, fileId);
+    }
+
+    @Override
+    public CharSequence getFileNameByIdSafe(int unitId, int fileId) {
+        return repositoryImpl.getTranslator(unitId).getFileNameByIdSafe(unitId, fileId);
+    }
+
+    @Override
+    public int getUnitId(CharSequence unitName, File cacheLocation) {
+        return repositoryImpl.getUnitId(unitName, cacheLocation);
+    }
+
+    @Override
+    public CharSequence getUnitName(int unitId) {
+        return repositoryImpl.getTranslator(unitId).getUnitName(unitId);
+    }
+
+    @Override
+    public CharSequence getUnitNameSafe(int unitId) {
+        return repositoryImpl.getTranslator(unitId).getUnitNameSafe(unitId);
+    }
 }

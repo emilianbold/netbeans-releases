@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.repository.util.IntToStringCache;
  * 
  * @author Nickolay Dalmatov
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.RepositoryTranslation.class)
 public class RepositoryTranslatorImpl implements RepositoryTranslation {
 
     /**
@@ -90,15 +89,17 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
      * 2) a container for int/string table for each unit's file names (a table per unit)
      * (stores units timestamps as well)
      */
-    private static UnitsCache unitNamesCache = null;
-    private static final Object initLock = new Object();
-    private static boolean loaded = false;
+    private UnitsCache unitNamesCache = null;
+    private final Object initLock = new Object();
+    private boolean loaded = false;
+    private final StorageAllocator storageAllocator;
+
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
 
     /** Creates a new instance of RepositoryTranslatorImpl */
-    public RepositoryTranslatorImpl() {
-        // load master index
+    public RepositoryTranslatorImpl(StorageAllocator storageAllocator) {
+        this.storageAllocator = storageAllocator;
     }
 
     @Override
@@ -138,11 +139,11 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
     }
 
     @Override
-    public int getUnitId(CharSequence unitName) {
+    public int getUnitId(CharSequence unitName, java.io.File cacheLocation) {
         if (!unitNamesCache.containsValue(unitName)) {
             // NB: this unit can't be open (since there is no such unit in unitNamesCache)
             // so we are just removing some ocassionally existing in persisntence files
-            StorageAllocator.getInstance().deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(unitName, false);
         }
         return unitNamesCache.getId(unitName);
     }
@@ -171,7 +172,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
 
     public void shutdown() {
         unitNamesCache.storeMasterIndex();
-        StorageAllocator.getInstance().purgeCaches();
+        storageAllocator.purgeCaches();
     }
 
     public void loadUnitIndex(final CharSequence unitName) {
@@ -196,7 +197,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         if (!aLoaded) {
             synchronized (initLock) {
                 if (!loaded) {
-                    unitNamesCache = new UnitsCache();
+                    unitNamesCache = new UnitsCache(storageAllocator);
                     loaded = true;
                 }
             }

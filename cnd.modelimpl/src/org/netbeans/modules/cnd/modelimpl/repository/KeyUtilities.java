@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import java.io.File;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -81,16 +82,8 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
 
-    public static Key createProjectKey(ProjectBase project) {
-        return createProjectKey(project.getUniqueName());
-    }
-
-    public static Key createProjectKey(CharSequence projectQualifiedName) {        
-        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName));
-    }
-
-    public static Key createProjectKey(NativeProject nativeProject) {
-        return createProjectKey(ProjectBase.getUniqueName(nativeProject));
+    public static Key createProjectKey(CharSequence projectQualifiedName, File cacheLocation) {       
+        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName, cacheLocation));
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
@@ -143,8 +136,12 @@ public class KeyUtilities {
     
     ////////////////////////////////////////////////////////////////////////////
 
-    public static int getUnitId(CharSequence unitName) {
-        return APTSerializeUtils.getUnitId(unitName);
+    /**
+     * @param cacheLocation can be null, in this case standard location 
+     * ${userdir}/var/cache/cnd/model will be used
+     */
+    public static int getUnitId(CharSequence unitName, File cacheLocation) {
+        return APTSerializeUtils.getUnitId(unitName, cacheLocation);
     }
 
     public static CharSequence getUnitName(int unitIndex) {

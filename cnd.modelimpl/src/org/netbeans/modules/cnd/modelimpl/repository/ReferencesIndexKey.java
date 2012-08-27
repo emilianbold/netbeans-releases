@@ -56,7 +56,7 @@ public class ReferencesIndexKey extends ProjectNameBasedKey {
     private final int hashCode; // cashed hash code
 
     public ReferencesIndexKey() {
-        super(KeyUtilities.getUnitId(UNIT_NAME));
+        super(KeyUtilities.getUnitId(UNIT_NAME, null));
         KeyUtilities.getFileIdByName(getUnitId(), "ReferencesIndexKey$$"); // NOI18N
         hashCode = _hashCode();
     }

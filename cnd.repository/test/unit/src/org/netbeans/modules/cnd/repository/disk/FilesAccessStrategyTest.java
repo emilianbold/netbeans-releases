@@ -69,7 +69,8 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         //System.setProperty("access.strategy.threads", "12");
         //System.setProperty("cnd.repository.trace.conflicts", "true");
     }
-    private final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
+    private final FilesAccessStrategyImpl strategy = new FilesAccessStrategyImpl(
+            new StorageAllocator(StorageAllocator.getDefaultCacheLocation()));
 
     public FilesAccessStrategyTest(String testName) {
         super(testName);
