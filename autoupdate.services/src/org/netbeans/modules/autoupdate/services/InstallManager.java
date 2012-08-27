@@ -84,6 +84,9 @@ public class InstallManager extends InstalledFileLocator{
     
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, Boolean globalOrLocal, boolean useUserdirAsFallback) throws OperationException {
         File res;
+        if (globalOrLocal == null) {
+            globalOrLocal = isGlobalInstallation();
+        }
         boolean isGlobal = globalOrLocal == null ? false : globalOrLocal;
         
         if (Boolean.FALSE.equals(globalOrLocal)) {
@@ -413,4 +416,17 @@ public class InstallManager extends InstalledFileLocator{
     private static File makeFile(File dir, String prefix, String name) {        
         return FileUtil.normalizeFile(new File(dir, prefix.replace('/', File.separatorChar) + name));
     }
+    
+    private static Boolean isGlobalInstallation() {
+        String s = System.getProperty("plugin.manager.install.global"); // NOI18N
+        
+        if (Boolean.parseBoolean(s)) {
+            return Boolean.TRUE;
+        } else if (Boolean.FALSE.toString().equalsIgnoreCase(s)) {
+            return Boolean.FALSE;
+        } else {
+            return null;
+        }
+    }
+
 }

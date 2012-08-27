@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -77,7 +76,6 @@ import org.openide.util.NbBundle;
  */
 public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_INSTALL = new ForInstall();
-    private static final OperationSupportImpl FOR_UPDATE = new ForUpdate();
     private static final OperationSupportImpl FOR_ENABLE = new ForEnable();
     private static final OperationSupportImpl FOR_DISABLE = new ForDisable();
     private static final OperationSupportImpl FOR_DIRECT_DISABLE = new ForDirectDisable();
@@ -85,15 +83,11 @@ public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_DIRECT_UNINSTALL = new ForDirectUninstall();
     private static final OperationSupportImpl FOR_CUSTOM_INSTALL = new ForCustomInstall ();
     private static final OperationSupportImpl FOR_CUSTOM_UNINSTALL = new ForCustomUninstall ();
-    private static final OperationSupportImpl FOR_INTERNAL_UPDATE = new ForInternalUpdate();
     
     private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationSupportImpl");
     
     public static OperationSupportImpl forInstall() {
         return FOR_INSTALL;
-    }
-    public static OperationSupportImpl forUpdate() {
-        return FOR_UPDATE;
     }
     public static OperationSupportImpl forUninstall() {
         return FOR_UNINSTALL;
@@ -115,9 +109,6 @@ public abstract class OperationSupportImpl {
     }
     public static OperationSupportImpl forCustomUninstall () {
         return FOR_CUSTOM_UNINSTALL;
-    }
-    public static OperationSupportImpl forInternalUpdate () {
-        return FOR_INTERNAL_UPDATE;
     }
     
     public abstract Boolean doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
@@ -550,66 +541,19 @@ public abstract class OperationSupportImpl {
         @Override
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public void doCancel () throws OperationException {
-            assert false : "Not supported yet";
-        }
-
-        @Override
-        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            throw new UnsupportedOperationException ("Not supported yet.");
-        }
-
-        @Override
-        public void doRestartLater (Restarter restarter) {
-            throw new UnsupportedOperationException ("Not supported yet.");
-        }
-        
-    }
-    
-    private static class ForUpdate extends OperationSupportImpl {
-        @Override
-        public synchronized Boolean doOperation(ProgressHandle progress,
-                OperationContainer container) throws OperationException {
             
             OperationContainer<InstallSupport> containerForUpdate = OperationContainer.createForUpdate();
             List<? extends OperationInfo> infos = container.listAll();
             for (OperationInfo info : infos) {
                 containerForUpdate.add(info.getUpdateUnit(), info.getUpdateElement());
             }
-            System.out.println("###: EMPTY: " + containerForUpdate.listInvalid());
             assert containerForUpdate.listInvalid().isEmpty();
             
             Validator v = containerForUpdate.getSupport().doDownload(ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()), null, false);
             Installer i = containerForUpdate.getSupport().doValidate(v, ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()));
-            Restarter r = containerForUpdate.getSupport().doInstall(i, ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()));
-            return r == null;
-        }
-        
-        @Override
-        public void doCancel () throws OperationException {
-            assert false : "Not supported yet";
-        }
-
-        @Override
-        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            throw new UnsupportedOperationException ("Not supported yet.");
-        }
-
-        @Override
-        public void doRestartLater (Restarter restarter) {
-            throw new UnsupportedOperationException ("Not supported yet.");
-        }
-        
-    }
-
-    private static class ForInternalUpdate extends OperationSupportImpl {
-        @Override
-        public synchronized Boolean doOperation(ProgressHandle progress,
-                OperationContainer container) throws OperationException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            InstallSupportImpl installSupportImpl = Trampoline.API.impl(containerForUpdate.getSupport());
+            Boolean needRestart = installSupportImpl.doInstall(i, ProgressHandleFactory.createHandle(OperationSupportImpl.class.getName()), true);
+            return needRestart;
         }
         @Override
         public void doCancel () throws OperationException {
@@ -625,7 +569,7 @@ public abstract class OperationSupportImpl {
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
-
+        
     }
     
     private static class ForCustomInstall extends OperationSupportImpl {

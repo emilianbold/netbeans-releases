@@ -105,16 +105,4 @@ public class InstallLibraryTask implements Runnable {
         }
     }
     
-    public static Boolean isGlobalInstallation() {
-        String s = System.getProperty("plugin.manager.install.global"); // NOI18N
-        
-        if (Boolean.parseBoolean(s)) {
-            return Boolean.TRUE;
-        } else if (Boolean.FALSE.toString().equalsIgnoreCase(s)) {
-            return Boolean.FALSE;
-        } else {
-            return null;
-        }
-    }
-
 }
