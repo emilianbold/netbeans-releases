@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -92,6 +94,10 @@ public class C2CQuery {
     
     public C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery) {
         this(name, repository, savedQuery, true);
+    }
+    
+    public C2CQuery(SavedTaskQuery savedQuery, C2CRepository repository) {
+        this(savedQuery.getName(), repository, null, true);
     }
         
     private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, boolean saved) {
@@ -320,6 +326,10 @@ public class C2CQuery {
                             if(values != null) {
                                 query.setAttribute(p.getAttribute(), p.getValues());
                             }
+                        }
+                        if (query.getAttributes().isEmpty()) {
+                            //TODO remove when query full implemented
+                            query = repository.getPredefinedQuery(PredefinedTaskQuery.ALL).serverQuery;
                         }
                     } else {
                         query = serverQuery;

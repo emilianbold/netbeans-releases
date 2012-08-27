@@ -42,6 +42,8 @@
 package org.netbeans.modules.ods.tasks.repository;
 
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -50,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -75,6 +78,7 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.netbeans.modules.ods.tasks.DummyUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -95,6 +99,7 @@ public class C2CRepository {
     private Cache cache;
     private C2CExecutor executor;
     private Map<PredefinedTaskQuery, C2CQuery> predefinedQueries;
+    private Collection<C2CQuery> remoteSavedQueries;
     private static final String ICON_PATH = "org/netbeans/modules/ods/tasks/resources/repository.png"; //NOI18N
     private final Image icon;
     
@@ -175,6 +180,9 @@ public class C2CRepository {
 //        if(!keepConfiguration) {
 //            bc = null;
 //        }
+        synchronized (QUERIES_LOCK) {
+            remoteSavedQueries = null;
+        }
         if(getTaskRepository() != null) {
             C2CExtender.repositoryRemoved(
                 C2C.getInstance().getRepositoryConnector(),
@@ -319,8 +327,37 @@ public class C2CRepository {
         synchronized (QUERIES_LOCK) {
             initializePredefinedQueries();
             ret.addAll(predefinedQueries.values());
+            if (remoteSavedQueries == null) {
+                C2C.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        getRemoteSavedQueries();
+                    }
+                });
+            } else {
+                ret.addAll(remoteSavedQueries);
+            }
         }
         return ret;
+    }
+    
+    protected void getRemoteSavedQueries () {
+        List<C2CQuery> queries = new ArrayList<C2CQuery>();
+        RepositoryConfiguration conf = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
+        if (conf != null) {
+            List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
+            for (SavedTaskQuery sq : savedQueries) {
+                C2CQuery q = new C2CQuery(sq, this);
+                queries.add(q);
+            }
+        }
+        synchronized (QUERIES_LOCK) {
+            remoteSavedQueries = new HashSet<C2CQuery>();
+            remoteSavedQueries.addAll(queries);
+        }
+        for (C2CQuery q : queries) {
+            q.fireQuerySaved();
+        }
     }
 
     private void initializePredefinedQueries () {
