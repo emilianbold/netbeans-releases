@@ -45,12 +45,13 @@ package org.netbeans.modules.groovy.grailsproject;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.spi.project.ActionProvider;
@@ -88,11 +89,12 @@ public class GrailsActionProvider implements ActionProvider {
         this.project = project;
     }
 
-
+    @Override
     public String[] getSupportedActions() {
         return supportedActions.clone();
     }
 
+    @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         final GrailsPlatform runtime = GrailsPlatform.getDefault();
         if (!runtime.isConfigured()) {
@@ -123,6 +125,7 @@ public class GrailsActionProvider implements ActionProvider {
         }
     }
 
+    @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         return true;
     }
@@ -152,6 +155,7 @@ public class GrailsActionProvider implements ActionProvider {
         final Process oldProcess = process;
         Callable<Process> callable = new Callable<Process>() {
 
+            @Override
             public Process call() throws Exception {
                 if (oldProcess != null) {
                     oldProcess.waitFor();
@@ -168,7 +172,7 @@ public class GrailsActionProvider implements ActionProvider {
             }
         };
 
-        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation inf = ProjectUtils.getInformation(project);
         String displayName = inf.getDisplayName() + " (run-app)"; // NOI18N
 
         ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor(debug);
@@ -178,7 +182,7 @@ public class GrailsActionProvider implements ActionProvider {
     }
 
     private void executeSimpleAction(String command) {
-        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation inf = ProjectUtils.getInformation(project);
         String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
