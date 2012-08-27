@@ -61,7 +61,7 @@ import org.openide.windows.WindowManager;
     preferredID = "DeclarationTopComponent",
 iconBase=DeclarationTopComponent.ICON_PATH,
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "output", openAtStartup = false)
+@TopComponent.Registration(mode = "output", openAtStartup = false, position=2400)
 @Messages({
     "CTL_DeclarationTopComponent=Declaration",
     "HINT_DeclarationTopComponent=The Declaration window shows the Java code of the element under the caret."
