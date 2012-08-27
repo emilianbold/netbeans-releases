@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
 })
 public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
-    private AbstractSourceElementAction sourceAction;
+    private AbstractSourceElementAction.SourceElementHandle sourceHandle;
     private int state = 0; //0 == class, 1 == id
     //index data
     private Collection<FileObject> linkedStyleSheets;
@@ -106,11 +106,11 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     /**
      * Creates new form AddRuleDialog
      */
-    public ModifyElementRulesPanel(AbstractSourceElementAction sourceAction) {
-        this.sourceAction = sourceAction;
+    public ModifyElementRulesPanel(AbstractSourceElementAction.SourceElementHandle sourceHandle) {
+        this.sourceHandle = sourceHandle;
 
         //set the default state of combos according to the already set attributes
-        OpenTag openTag = sourceAction.getSourceElement();
+        OpenTag openTag = sourceHandle.getOpenTag();
         clz = openTag.getAttribute("class");
         id = openTag.getAttribute("id");
 
@@ -173,7 +173,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         StringBuilder sb = new StringBuilder();
         sb.append("<html>");
         sb.append("&lt;");
-        sb.append(sourceAction.getSourceElement().name());
+        sb.append(sourceHandle.getOpenTag().name());
 
         //rewrite that please!!!!!!!! :-)
 
@@ -300,7 +300,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
     private void loadIndexData() {
         try {
-            FileObject file = sourceAction.getFileObject();
+            FileObject file = sourceHandle.getFile();
             Project project = FileOwnerQuery.getOwner(file);
 
             if (project == null) {

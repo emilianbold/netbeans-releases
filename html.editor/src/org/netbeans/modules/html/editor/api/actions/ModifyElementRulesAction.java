@@ -44,15 +44,19 @@ package org.netbeans.modules.html.editor.api.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.html.editor.Utils;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.ui.ModifyElementRulesPanel;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -60,6 +64,10 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
+ * Opens a UI which allows to edit css rules associated to the selected element.
+ *
+ * TODO replace the ugly manual document update by something more elegant I
+ * already have for the html/css refactoring.
  *
  * @author marekfukala
  */
@@ -68,6 +76,9 @@ import org.openide.util.NbBundle;
 })
 public class ModifyElementRulesAction extends AbstractSourceElementAction {
 
+    private int pos; //last change offset
+    private int diff; //aggregated document modifications diff
+
     public ModifyElementRulesAction(FileObject file, String elementPath) {
         super(file, elementPath);
         putValue(Action.NAME, Bundle.action_name_modify_rules());
@@ -75,61 +86,73 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final ModifyElementRulesPanel panel = new ModifyElementRulesPanel(this);
+        try {
+            final SourceElementHandle handle = createSourceElementHandle();
+            final ModifyElementRulesPanel panel = new ModifyElementRulesPanel(handle);
 
-        DialogDescriptor descriptor = new DialogDescriptor(
-                panel,
-                Bundle.action_name_modify_rules(),
-                true,
-                DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.OK_OPTION,
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                            applyChanges(panel);
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    panel,
+                    Bundle.action_name_modify_rules(),
+                    true,
+                    DialogDescriptor.OK_CANCEL_OPTION,
+                    DialogDescriptor.OK_OPTION,
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                                applyChanges(panel, handle);
+                            }
                         }
-                    }
-                });
+                    });
 
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.setVisible(true);
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+            dialog.setVisible(true);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    private void applyChanges(final ModifyElementRulesPanel panel) {
-        final BaseDocument doc = (BaseDocument) DataLoadersBridge.getDefault().getDocument(file);
+    private void applyChanges(final ModifyElementRulesPanel panel, final SourceElementHandle handle) {
+        final BaseDocument doc = (BaseDocument) Utils.getDocument(file);
+        final AtomicBoolean success = new AtomicBoolean();
+
+        pos = Integer.MAX_VALUE;
+        diff = -1;
         doc.runAtomicAsUser(new Runnable() {
             @Override
             public void run() {
                 try {
-                    pos = Integer.MAX_VALUE;
-                    diff = -1;
-                    updateAttribute(doc, panel.getOriginalClassAttribute(), panel.getNewClassAttributeValue(), "class");
-                    updateAttribute(doc, panel.getOriginalIdAttribute(), panel.getNewIdAttributeValue(), "id");
-                    
+                    updateAttribute(handle, doc, panel.getOriginalClassAttribute(), panel.getNewClassAttributeValue(), "class");
+                    updateAttribute(handle, doc, panel.getOriginalIdAttribute(), panel.getNewIdAttributeValue(), "id");
+
+                    success.set(true); //better not to do the save from within the atomic modification task
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         });
 
-        invalidate();
+        //possibly save the document if not opened in editor
+        if (success.get()) {
+            try {
+                Utils.saveDocumentIfNotOpened(doc);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
-    int pos;
-    int diff;
-
-    private void updateAttribute(Document doc, Attribute a, String value, String name) throws BadLocationException {
-        OpenTag ot = getSourceElement();
-        Snapshot snap = getSnapshot();
-        if(a == null && value == null) {
-            return ; //no change
+    private void updateAttribute(SourceElementHandle handle, Document doc, Attribute a, String value, String name) throws BadLocationException {
+        OpenTag ot = handle.getOpenTag();
+        Snapshot snap = handle.getSnapshot();
+        if (a == null && value == null) {
+            return; //no change
         }
-        
-        if(a == null && value != null) {
+
+        if (a == null && value != null) {
             //insert whole new attribute 
             int insertPos = snap.getOriginalOffset(ot.from() + 1 + ot.name().length());
-            
+
             StringBuilder sb = new StringBuilder();
             sb.append(' ');
             sb.append(name);
@@ -137,59 +160,57 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
             sb.append('"');
             sb.append(value);
             sb.append('"');
-            
+
             doc.insertString(insertPos, sb.toString(), null);
-            
+
             pos = insertPos;
             diff = sb.length();
-        } else if(a != null && value == null) {
+        } else if (a != null && value == null) {
             //remove
-            int removeFrom = a.from();
+            int removeFrom = a.from() - 1; //include the WS before attribute name
             int removeTo = a.to();
-            
+
             int rfdoc = snap.getOriginalOffset(removeFrom);
             int rtdoc = snap.getOriginalOffset(removeTo);
-            
-            if(rfdoc >= pos) {
+
+            if (rfdoc >= pos) {
                 rfdoc += diff;
                 rtdoc += diff;
             }
-            
+
             doc.remove(rfdoc, rtdoc - rfdoc);
-            
+
             pos = removeFrom;
             diff = rfdoc - rtdoc;
-            
+
         } else {
             //change
             int removeFrom = a.from();
             int removeTo = a.to();
-            
+
             int rfdoc = snap.getOriginalOffset(removeFrom);
             int rtdoc = snap.getOriginalOffset(removeTo);
-            
-            if(rfdoc >= pos) {
+
+            if (rfdoc >= pos) {
                 rfdoc += diff;
                 rtdoc += diff;
             }
-            
+
             doc.remove(rfdoc, rtdoc - rfdoc);
-            
+
             int insertPos = rfdoc;
-            
+
             StringBuilder sb = new StringBuilder();
             sb.append(name);
             sb.append('=');
             sb.append('"');
             sb.append(value);
             sb.append('"');
-            
+
             doc.insertString(insertPos, sb.toString(), null);
-            
+
             pos = insertPos;
             diff = rfdoc - rtdoc + sb.length();
         }
     }
-    
-    
 }

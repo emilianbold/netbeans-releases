@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -57,7 +56,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,11 +66,6 @@ public abstract class AbstractSourceElementAction extends AbstractAction {
     protected FileObject file;
     private String elementPath;
 
-    private OpenTag openTag;
-    private Snapshot snapshot;
-    
-    private boolean initialized;
-    
     public AbstractSourceElementAction(FileObject file, String elementPath) {
         this.file = file;
         this.elementPath = elementPath;
@@ -82,52 +75,70 @@ public abstract class AbstractSourceElementAction extends AbstractAction {
     public boolean isEnabled() {
         return elementPath != null;
     }
-    
-    public synchronized OpenTag getSourceElement() {
-        if(!initialized) {
-            initialize();
-        }
-        return openTag;
-    }
-    
-    public synchronized Snapshot getSnapshot() {
-        if(!initialized) {
-            initialize();
-        }
-        return snapshot;
-    }
-    
+
     public FileObject getFileObject() {
         return file;
     }
-    
-    protected void invalidate() {
-        initialized = false;
-    }
-    
-    private void initialize() {
-        try {
-            Source source = Source.create(file);
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/html");
-                    if(ri == null) {
-                        return ;
-                    }
-                    
-                    HtmlParserResult result = (HtmlParserResult)ri.getParserResult();
-                    snapshot = result.getSnapshot();
-                    
-                    Node root = result.root();
-                    openTag = ElementUtils.query(root, elementPath);
+    /**
+     * Resolves the {@link FileObject} and source element path to a parser
+     * result and {@link OpenTag}.
+     *
+     * The returned value is not cached and will run a parsing api task each
+     * time is called.
+     *
+     * @return An instance of {@link  SourceElementHandle}
+     * exception is thrown.
+     * @throws ParseException
+     */
+    public SourceElementHandle createSourceElementHandle() throws ParseException {
+        final AtomicReference<SourceElementHandle> seh_ref = new AtomicReference<SourceElementHandle>();
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/html");
+                if (ri == null) {
+                    return;
                 }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+
+                HtmlParserResult result = (HtmlParserResult) ri.getParserResult();
+                Snapshot snapshot = result.getSnapshot();
+
+                Node root = result.root();
+                OpenTag openTag = ElementUtils.query(root, elementPath);
+
+                seh_ref.set(new SourceElementHandle(openTag, snapshot, file));
+
+            }
+        });
+        return seh_ref.get();
+    }
+
+    public class SourceElementHandle {
+
+        private final OpenTag openTag;
+        private final Snapshot snapshot;
+        private final FileObject file;
+
+        private SourceElementHandle(OpenTag openTag, Snapshot snapshot, FileObject file) {
+            this.openTag = openTag;
+            this.snapshot = snapshot;
+            this.file = file;
+        }
+
+        public OpenTag getOpenTag() {
+            return openTag;
+        }
+
+        public Snapshot getSnapshot() {
+            return snapshot;
+        }
+
+        public FileObject getFile() {
+            return file;
         }
         
-        initialized = true;
+        
     }
 }

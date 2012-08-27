@@ -39,71 +39,68 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.api.actions;
+package org.netbeans.modules.html.editor;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.text.BadLocationException;
+import java.io.IOException;
+import java.util.logging.Level;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
  * @author marekfukala
  */
-@NbBundle.Messages({
-    "action.name_delete.element=Delete"
-})
-public class DeleteElementAction extends AbstractSourceElementAction {
+public class Utils {
 
-    public DeleteElementAction(FileObject file, String elementPath) {
-        super(file, elementPath);
-        putValue(Action.NAME, Bundle.action_name_delete_element());
+    /**
+     * Saves the given document to its underlying {@link FileObject} if the document
+     * is not opened in the nb editor, more formally if EditorCookie.getOpenedPanes() == null.
+     * 
+     * @param document
+     * @throws IOException 
+     */
+    public static void saveDocumentIfNotOpened(Document document) throws IOException {
 
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        try {
-            SourceElementHandle handle = createSourceElementHandle();
-            OpenTag tag = handle.getOpenTag();
-            if (tag == null) {
-                return;
-            }
-
-            int from = tag.from();
-            int to = tag.semanticEnd();
-
-            final int ast_from = handle.getSnapshot().getOriginalOffset(from);
-            final int ast_to = handle.getSnapshot().getOriginalOffset(to);
-
-            final BaseDocument doc = (BaseDocument)DataLoadersBridge.getDefault().getDocument(file);
-            if(doc == null) {
-                return ;
-            }
-            
-            doc.runAtomicAsUser(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        doc.remove(ast_from, ast_to - ast_from);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                
-            });
-
-            //TODO possibly save if not opened in editor
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+        Object o = document.getProperty(Document.StreamDescriptionProperty);
+        if (o == null || !(o instanceof DataObject)) {
+            return;
         }
+        DataObject dobj = (DataObject) o;
+        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        if (ec != null && ec.getOpenedPanes() == null) {
+            //file not open in any editor
+            SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
+            if (save != null) {
+                save.save();
+            }
+        }
+    }
+    
+    /**
+     * Gets a {@link Document} instance for the given {@link FileObject}.
+     * 
+     * Formally it does EditorCookie.openDocument().
+     * 
+     * @param file
+     * @return 
+     */
+    public static Document getDocument(FileObject file) {
+        try {
+            DataObject d = DataObject.find(file);
+            EditorCookie ec = (EditorCookie) d.getLookup().lookup(EditorCookie.class);
 
+            if (ec == null) {
+                return null;
+            }
+            return ec.openDocument();
+        } catch (IOException e) {
+            return null;
+        }
     }
 }
