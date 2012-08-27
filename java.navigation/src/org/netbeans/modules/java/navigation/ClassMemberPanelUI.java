@@ -411,6 +411,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
 
     private void schedule(@NonNull final Callable<Pair<URI, ElementHandle<TypeElement>>> resolver) {
+        showWaitNode();
         final Future<Pair<URI, ElementHandle<TypeElement>>> becomesHandle = RP.submit(resolver);
         final RefreshTask refresh = new RefreshTask(becomesHandle);
         RP.execute(refresh);
@@ -682,18 +683,22 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                                 targetJs.runUserActionTask(this, true);
                                 ((Toolbar)getToolbar()).select(handlePair);
                             } else {
+                                clearNodes();
                                 StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
                                     handlePair.second.getQualifiedName()));
                             }
                         } else {
+                            clearNodes();
                             StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
                                     handlePair.second.getQualifiedName()));
                         }
                     } else {
+                        clearNodes();
                         StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
                                     handlePair.second.getQualifiedName()));
                     }
                 } else {
+                    clearNodes();
                     StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Not_Declared_Type());
                 }
             } catch (InterruptedException ex) {
