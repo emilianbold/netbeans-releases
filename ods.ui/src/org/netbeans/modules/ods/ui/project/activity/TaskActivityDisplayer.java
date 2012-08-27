@@ -58,6 +58,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import org.netbeans.modules.mylyn.util.WikiPanel;
+import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
@@ -146,13 +149,15 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
     }
 
     private JComponent updateDetailsPanel(List<FieldUpdate> fieldUpdates) {
+        String wikiLanguage = projectHandle.getTeamProject().getWikiLanguage();
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 0, 3, 10);
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
+
         gbc.gridy = 0;
 
         gbc.gridx = 0;
@@ -178,24 +183,25 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
             FieldUpdate update = fieldUpdates.get(i);
             gbc.gridx = 0;
             JLabel lblField = new JLabel(update.getFieldDescription());
+            lblField.setVerticalAlignment(SwingConstants.TOP);
             panel.add(lblField, gbc);
 
             gbc.gridx = 1;
-            JLabel lblOldValue = new JLabel();
-            String oldText = "<html>" + update.getOldValue() + "</html>";
-            if (update.getOldValue().isEmpty()) {
+            WikiPanel lblOldValue = WikiUtils.getWikiPanel(wikiLanguage, false, false);
+            String oldText = update.getOldValue();
+            if (oldText.isEmpty()) {
                 oldText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
             }
-            lblOldValue.setText(oldText);
+            lblOldValue.setWikiFormatText(oldText);
             panel.add(lblOldValue, gbc);
 
             gbc.gridx = 2;
-            JLabel lblNewValue = new JLabel();
-            String newText = "<html>" + update.getNewValue() + "</html>";
-            if (update.getNewValue().isEmpty()) {
+            WikiPanel lblNewValue = WikiUtils.getWikiPanel(wikiLanguage, false, false);
+            String newText = update.getOldValue();
+            if (newText.isEmpty()) {
                 newText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
             }
-            lblNewValue.setText(newText);
+            lblNewValue.setWikiFormatText(newText);
             panel.add(lblNewValue, gbc);
         }
 
@@ -211,7 +217,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        
+
         JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Comment"));
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);

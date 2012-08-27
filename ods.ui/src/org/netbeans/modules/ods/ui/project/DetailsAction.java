@@ -48,7 +48,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ods.api.ODSProject;
-import org.netbeans.modules.ods.ui.dashboard.ProjectAccessorImpl;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -63,7 +62,7 @@ public class DetailsAction {
 
     public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> proj) {
 
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Dashboard")) { //NOI18N
+        return new AbstractAction(NbBundle.getMessage(DetailsAction.class, "LBL_Dashboard")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (t != null && !t.isFinished()) {
