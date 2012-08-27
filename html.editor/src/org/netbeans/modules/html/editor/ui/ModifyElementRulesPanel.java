@@ -42,8 +42,12 @@
 package org.netbeans.modules.html.editor.ui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +59,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -148,99 +153,133 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                 updateSelectorComboBoxModel(false);
             }
         });
+
+        //updates the sample as user types to the editable combobox
+        selectorCB.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                //haaaack for: the key even is received before the selectorCB.getEditor().getItem() is updated
+                //so postponong the sample update to a separate EDT task
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        //user changed the value
+                        String value = selectorCB.getEditor().getItem().toString();
+                        if (value != null && value.trim().isEmpty()) {
+                            value = null;
+                        }
+                        switch (state) {
+                            case 0:
+                                clzName = value;
+                                break;
+                            case 1:
+                                idName = value;
+                                break;
+                        }
+                        updateResultCodeSample();
+                    }
+                });
+            }
+        });
+
         selectorTypeList.setSelectedIndex(0);
 
         updateResultCodeSample();
     }
-    
+
     public Attribute getOriginalClassAttribute() {
         return clz;
     }
-    
+
     public Attribute getOriginalIdAttribute() {
         return id;
     }
-    
+
     public String getNewClassAttributeValue() {
         return clzName;
     }
-    
+
     public String getNewIdAttributeValue() {
         return idName;
     }
-
+    
+    public boolean classExistsInSelectedStyleSheet() {
+        if(getNewClassAttributeValue() == null) {
+            return true;
+        }
+        return files2classes.get(getSelectedStyleSheet()).contains(getNewClassAttributeValue());
+    }
+    
+    public boolean idExistsInSelectedStyleSheet() {
+        if(getNewIdAttributeValue() == null) {
+            return true;
+        }
+        return files2ids.get(getSelectedStyleSheet()).contains(getNewIdAttributeValue());
+    }
+    
+    public FileObject getSelectedStyleSheet() {
+        return (FileObject)styleSheetCB.getSelectedItem();
+    }
+    
     private void updateResultCodeSample() {
+        FileObject file = (FileObject) styleSheetCB.getSelectedItem();
+        boolean classExistInSS = files2classes.get(file).contains(clzName);
+        boolean idExistInSS = files2ids.get(file).contains(idName);
+
         StringBuilder sb = new StringBuilder();
         sb.append("<html>");
         sb.append("&lt;");
         sb.append(sourceHandle.getOpenTag().name());
 
-        //rewrite that please!!!!!!!! :-)
-
-        if (originalClzName != null && clzName != null && !originalClzName.equals(clzName)) {
-            //changed
-            sb.append(' ');
-            sb.append("<b>");
-            sb.append("class=");
-            sb.append(clzName);
-            sb.append("</b>");
-        } else if (originalClzName == null && clzName != null) {
-            //added
-            sb.append(' ');
-            sb.append("<b>");
-            sb.append("class=");
-            sb.append(clzName);
-            sb.append("</b>");
-        } else if (originalClzName != null && clzName == null) {
-            //removed
-            sb.append(' ');
-            sb.append("<s>");
-            sb.append("class=");
-            sb.append(originalClzName);
-            sb.append("</s>");
-        } else {
-            //no change
-            if (clzName != null) {
-                sb.append(' ');
-                sb.append("class=");
-                sb.append(originalClzName);
-            }
-        }
-
-        if (originalIdName != null && idName != null && !originalIdName.equals(idName)) {
-            //changed
-            sb.append(' ');
-            sb.append("<b>");
-            sb.append("id=");
-            sb.append(idName);
-            sb.append("</b>");
-        } else if (originalIdName == null && idName != null) {
-            //added
-            sb.append(' ');
-            sb.append("<b>");
-            sb.append("id=");
-            sb.append(idName);
-            sb.append("</b>");
-        } else if (originalIdName != null && idName == null) {
-            //removed
-            sb.append(' ');
-            sb.append("<s>");
-            sb.append("id=");
-            sb.append(originalIdName);
-            sb.append("</s>");
-        } else {
-            //no change
-            if (idName != null) {
-                sb.append(' ');
-                sb.append("id=");
-                sb.append(originalIdName);
-            }
-        }
+        appendCode(sb, "id", originalIdName, idName, idExistInSS);
+        appendCode(sb, "class", originalClzName, clzName, classExistInSS);
 
         sb.append("&gt;");
         sb.append("</html>");
 
         resultCodeLabel.setText(sb.toString());
+    }
+
+    private void appendCode(StringBuilder sb, String type, String originalValue,  String value, boolean elementExistsInSS) {
+        if (originalValue != null && value != null && !originalValue.equals(value)) {
+            //changed
+            append(sb, type, value, "b", elementExistsInSS);
+        } else if (originalValue == null && value != null) {
+            //added
+            append(sb, type, value, "b", elementExistsInSS);
+        } else if (originalValue != null && value == null) {
+            //removed
+            append(sb, type, originalValue, "s", true);
+        } else {
+            //no change
+            if (value != null) {
+                append(sb, type, originalValue, null, true);
+            }
+        }
+
+    }
+
+    private void append(StringBuilder sb, String type, String value, String surroundingTag, boolean elementExistsInSS) {
+        if (!elementExistsInSS) {
+            sb.append("<font color=\"55bb55\">");
+        }
+        if(surroundingTag != null) {
+            sb.append('<');
+            sb.append(surroundingTag);
+            sb.append('>');
+        }
+        sb.append(' ');
+        sb.append(type);
+        sb.append("=");
+        sb.append(value);
+        if(surroundingTag != null) {
+            sb.append("</");
+            sb.append(surroundingTag);
+            sb.append('>');
+        }
+        if (!elementExistsInSS) {
+            sb.append("</font>");
+        }
     }
 
     private void stateChanged() {
@@ -385,7 +424,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value == null) {
-                    setText("<html>"+Bundle.none_item());
+                    setText("<html>" + Bundle.none_item());
                 } else {
                     FileObject file = (FileObject) value;
                     FileObject webRoot = ProjectWebRootQuery.getWebRoot(file);
@@ -412,12 +451,12 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
                 boolean bold = false;
                 String strval = (String) value;
-                
+
                 //???
-                if(strval != null && strval.trim().isEmpty()) {
+                if (strval != null && strval.trim().isEmpty()) {
                     return c;
                 }
-                
+
                 switch (state) {
                     case 0:
                         //class
@@ -444,9 +483,9 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                 }
 
                 sb.append("</html>");
-                
+
                 setText(sb.toString());
-                
+
                 return c;
             }
         };
@@ -519,6 +558,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ModifyElementRulesPanel.class, "ModifyElementRulesPanel.jLabel4.text")); // NOI18N
 
+        selectorCB.setEditable(true);
         selectorCB.setModel(createSelectorModel());
         selectorCB.setRenderer(createSelectorCellRenderer());
         selectorCB.addActionListener(new java.awt.event.ActionListener() {
@@ -589,17 +629,20 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
     private void selectorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectorCBActionPerformed
         //user changed the value
+        String value = (String) selectorCB.getSelectedItem();
+        if (value != null && value.trim().isEmpty()) {
+            value = null;
+        }
         switch (state) {
             case 0:
-                clzName = (String) selectorCB.getSelectedItem();
+                clzName = value;
                 break;
             case 1:
-                idName = (String) selectorCB.getSelectedItem();
+                idName = value;
                 break;
         }
 
         updateResultCodeSample();
-
     }//GEN-LAST:event_selectorCBActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox atRuleCB;

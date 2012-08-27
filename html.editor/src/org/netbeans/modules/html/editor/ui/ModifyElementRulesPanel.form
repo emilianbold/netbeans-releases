@@ -182,6 +182,7 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="selectorCB">
       <Properties>
+        <Property name="editable" type="boolean" value="true"/>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="createSelectorModel()" type="code"/>
         </Property>
