@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

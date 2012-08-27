@@ -85,22 +85,9 @@ public class JQueryCodeCompletion {
             case GLOBAL:
             case EXPRESSION:
                 if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
-//                    String functionName = findFunctionName(parserResult, lastTsOffset);
-//                    if (functionName != null) {
-//                        int paramIndex = findParamIndex(parserResult, lastTsOffset);
-//                        if (paramIndex > -1) {
-//                            System.out.println("paramIndex: " + paramIndex);
-//                            
-//                        }
-//                    }
-//                    System.out.println("functionName: " + functionName);
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
-            case OBJECT_PROPERTY:
-                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
-                    
-                }
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));
