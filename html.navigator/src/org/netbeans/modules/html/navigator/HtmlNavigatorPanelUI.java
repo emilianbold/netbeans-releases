@@ -793,10 +793,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                         if (node instanceof HtmlElementNode) {
                             final Node domNode = ((HtmlElementNode) node).getDOMNode();
                             if (domNode!=null) {
-                                node = domNode;
+                                highlight = Arrays.asList(domNode);
+                            } else {
+                                highlight = Collections.EMPTY_LIST;
                             }
+                        } else {
+                            highlight = Arrays.asList(node);
                         }
-                        highlight = Arrays.asList(node);
                     } else {
                         highlight = Collections.EMPTY_LIST;
                     }
