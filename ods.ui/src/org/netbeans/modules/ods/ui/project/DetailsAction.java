@@ -63,7 +63,7 @@ public class DetailsAction {
 
     public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> proj) {
 
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
+        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Dashboard")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (t != null && !t.isFinished()) {
