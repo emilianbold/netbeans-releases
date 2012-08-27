@@ -197,6 +197,9 @@ public class XmlLexerParser implements ContentLocator {
         if (contentHandler instanceof ContentLocator.Receiver) {
             ((ContentLocator.Receiver)contentHandler).setContentLocator(this);
         }
+        if (contentHandler instanceof SequenceContentHandler) {
+            seqHandler = (SequenceContentHandler)contentHandler;
+        }
     }
     
     private int[] targetOffset;

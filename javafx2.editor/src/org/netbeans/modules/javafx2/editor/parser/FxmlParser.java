@@ -69,6 +69,7 @@ import org.netbeans.modules.javafx2.editor.parser.processors.IncludeResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.NamedInstancesCollector;
 import org.netbeans.modules.javafx2.editor.parser.processors.PropertyResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.ReferenceResolver;
+import org.netbeans.modules.javafx2.editor.parser.processors.ScriptEmbeddingProcessor;
 import org.netbeans.modules.javafx2.editor.parser.processors.TypeResolver;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -203,6 +204,7 @@ class FxmlParser extends Parser implements ErrorReporter {
         steps.add(new ReferenceResolver());
         steps.add(new PropertyResolver());
         steps.add(new EventResolver());
+        steps.add(new ScriptEmbeddingProcessor());
     }
     
     @SuppressWarnings("unchecked")

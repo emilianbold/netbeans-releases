@@ -303,7 +303,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             
         } else {
             eh = accessor.createEventHandler(event);
-            if (content != null) {
+            if (content != null && content.length() > 0) {
                 accessor.addContent(eh, content);
             }
         }
@@ -557,7 +557,12 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     private int end;
     
     private FxNode handleEventHandlerTag(String eventName) {
-        return accessor.createEventHandler(eventName);
+        FxNode node = accessor.createEventHandler(eventName);
+        FxNode parent = nodeStack.peek();
+        if (!(parent instanceof FxInstance)) {
+            accessor.makeBroken(node);
+        }
+        return node;
     }
 
     @NbBundle.Messages({
@@ -828,6 +833,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     })
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
+        System.err.println("");
     }
     
     private FxNode handleInstanceContent(CharSequence seq) {
