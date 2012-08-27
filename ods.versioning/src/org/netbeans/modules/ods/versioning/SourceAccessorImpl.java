@@ -281,7 +281,9 @@ public class SourceAccessorImpl extends VCSAccessor {
                 }
             }
         } catch (ODSException ex) {
-            Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.WARNING, prjHandle.getId(), ex);
+            Logger.getLogger(SourceAccessorImpl.class.getName()).log(ex instanceof ODSException.ODSCanceledException
+                    ? Level.FINE
+                    : Level.WARNING, prjHandle.getId(), ex);
         }
         
         return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
