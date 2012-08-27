@@ -61,6 +61,8 @@ public interface TeamServerProvider {
 
     public String getDisplayName ();
 
+    public String getDescription ();
+
     public TeamServer createTeamServer (String displayName, String url) throws MalformedURLException;
 
     public void initialize ();
