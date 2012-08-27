@@ -237,7 +237,7 @@ public class CommentsPanel extends JPanel {
         // replay button
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
         replyButton.addActionListener(getReplyListener());
-        replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
+        replyButton.putClientProperty(REPLY_TO_PROPERTY, wikiPanel.getCodePane());
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         replyButton.setOpaque(false);
         
