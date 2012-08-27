@@ -760,6 +760,8 @@ public class JsFormatter implements Formatter {
                     return CodeStyle.WrapStyle.WRAP_NEVER;
                 }
                 return CodeStyle.get(context).wrapTernaryOps();
+            case AFTER_PROPERTY:
+                return CodeStyle.get(context).wrapProperties();
             default:
                 return null;
         }
