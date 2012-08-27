@@ -100,7 +100,6 @@ public class CompletionContextFinder {
         
         Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
-        int tokenOffset = ts.offset();
         
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
