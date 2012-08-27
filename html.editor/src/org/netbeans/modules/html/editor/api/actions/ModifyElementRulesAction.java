@@ -88,6 +88,9 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
     public void actionPerformed(ActionEvent e) {
         try {
             final SourceElementHandle handle = createSourceElementHandle();
+            if(!handle.isResolved()) {
+                return ;
+            }
             final ModifyElementRulesPanel panel = new ModifyElementRulesPanel(handle);
 
             DialogDescriptor descriptor = new DialogDescriptor(

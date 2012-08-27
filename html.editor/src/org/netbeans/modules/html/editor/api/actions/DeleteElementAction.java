@@ -71,10 +71,10 @@ public class DeleteElementAction extends AbstractSourceElementAction {
     public void actionPerformed(ActionEvent e) {
         try {
             SourceElementHandle handle = createSourceElementHandle();
-            OpenTag tag = handle.getOpenTag();
-            if (tag == null) {
-                return;
+            if(!handle.isResolved()) {
+                return ;
             }
+            OpenTag tag = handle.getOpenTag();
 
             int from = tag.from();
             int to = tag.semanticEnd();

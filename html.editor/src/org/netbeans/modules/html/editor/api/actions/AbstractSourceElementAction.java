@@ -139,6 +139,8 @@ public abstract class AbstractSourceElementAction extends AbstractAction {
             return file;
         }
         
-        
+        public boolean isResolved() {
+            return openTag != null;
+        }
     }
 }
