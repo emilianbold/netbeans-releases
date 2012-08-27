@@ -118,7 +118,7 @@ public class Reindenter implements IndentTask {
     private CompilationUnitTree cut;
     private SourcePositions sp;
     private Map<Integer, Integer> newIndents;
-    private Region currentRegion;
+    private int currentEmbeddingStartOffset;
     private Embedding currentEmbedding;
 
     private Reindenter(Context context) {
@@ -210,7 +210,7 @@ public class Reindenter implements IndentTask {
     }
     
     private boolean initRegionData(final Region region) {
-        currentRegion = region;
+        currentEmbeddingStartOffset = 0;
         if (ts == null || (currentEmbedding != null
                 && !(currentEmbedding.containsOriginalOffset(region.getStartOffset())
                 && currentEmbedding.containsOriginalOffset(region.getEndOffset())))) {
@@ -241,6 +241,15 @@ public class Reindenter implements IndentTask {
                 Source source = Source.create(context.document());
                 if (source == null) {
                     return false;
+                }
+                TokenSequence<?> tseq = TokenHierarchy.get(context.document()).tokenSequence();
+                while(tseq != null && (region.getStartOffset() == 0 || tseq.moveNext())) {
+                    tseq.move(region.getStartOffset());
+                    if (tseq.language() == JavaTokenId.language() || !(tseq.moveNext() || tseq.movePrevious())) {
+                        break;
+                    }
+                    currentEmbeddingStartOffset = tseq.offset();
+                    tseq = tseq.embedded();
                 }
                 try {
                     ParserManager.parse(Collections.singletonList(source), new UserTask() {
@@ -308,7 +317,7 @@ public class Reindenter implements IndentTask {
         Tree last = path.get(0);
         int lastPos = (int)sp.getStartPosition(cut, last);
         int lastOriginalOffset = getOriginalOffset(lastPos);
-        int lastLineStartOffset = context.lineStartOffset(lastOriginalOffset < 0 ? currentRegion.getStartOffset() : lastOriginalOffset);
+        int lastLineStartOffset = context.lineStartOffset(lastOriginalOffset < 0 ? currentEmbeddingStartOffset : lastOriginalOffset);
         Integer newIndent = newIndents.get(lastLineStartOffset);
         int currentIndent = newIndent != null ? newIndent : context.lineIndent(lastLineStartOffset);
         switch (last.getKind()) {
