@@ -90,7 +90,7 @@ import org.openide.windows.TopComponent;
  * @author  phrebejk
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class ClassMemberPanelUI extends javax.swing.JPanel
+public class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, Lookup.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
 
     private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
