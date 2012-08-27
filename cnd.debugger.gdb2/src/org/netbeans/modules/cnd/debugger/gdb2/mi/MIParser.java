@@ -344,7 +344,7 @@ public class MIParser {
 	throws MIParserException {
         
         Token t = getToken();
-        if ((t.type == TokenType.SYM) && (t.value.equals("bkpt"))) {
+        if ((t.type == TokenType.SYM) && (t.value.equals("bkpt"))) { // NOI18N
             t = getToken();
             if (t.type != TokenType.EQ) {
                 error("result", "=", t); // NOI18N
@@ -376,7 +376,7 @@ public class MIParser {
         Token t;
         while (true) {
             MIValue value = parseValue(topLevel);
-	    list.add(new MIResult("bkpt", value));
+	    list.add(new MIResult("bkpt", value)); // NOI18N
             
             t = getToken();
             
