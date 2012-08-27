@@ -64,6 +64,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
 import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
 import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -86,12 +87,13 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({@ServiceProvider(service=FileOwnerQueryImplementation.class, position=97), @ServiceProvider(service=MavenFileOwnerQueryImpl.class)})
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
+    private static final String EXTERNAL_OWNERS = "externalOwners";
     
     private final PropertyChangeListener projectListener;
     private final ProjectGroupChangeListener groupListener;
     private final ChangeSupport cs = new ChangeSupport(this);
 
-    private static final AtomicReference<Preferences> prefs = new AtomicReference<Preferences>(NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"));
+    private static final AtomicReference<Preferences> prefs = new AtomicReference<Preferences>(NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node(EXTERNAL_OWNERS));
 
     private static final Logger LOG = Logger.getLogger(MavenFileOwnerQueryImpl.class.getName());
     
@@ -110,15 +112,23 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             @Override
             public void projectGroupChanging(ProjectGroupChangeEvent event) {
                 Preferences old = prefs();
-                Preferences n = event.getNewGroup() != null ? event.getNewGroup().preferencesForPackage(MavenFileOwnerQueryImpl.class).node("externalOwners") : NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners");
+                Preferences n = event.getNewGroup() != null 
+                        ? event.getNewGroup().preferencesForPackage(MavenFileOwnerQueryImpl.class).node(EXTERNAL_OWNERS)
+                        : NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node(EXTERNAL_OWNERS);
                 prefs.compareAndSet(old, n);
-    }
+            }
     
             @Override
             public void projectGroupChanged(ProjectGroupChangeEvent event) {
                 //TODO should we check what projects were kept open and register them with current group?
             }
         };
+        ProjectGroup pg = OpenProjects.getDefault().getActiveProjectGroup();
+        //initial value is non-group setting but we need to check if a group is active
+        if (pg != null) {
+            Preferences old = prefs();
+            prefs.compareAndSet(old, pg.preferencesForPackage(MavenFileOwnerQueryImpl.class).node(EXTERNAL_OWNERS));
+        }
         //not worth making weak, both are singletons kept forever
         OpenProjects.getDefault().addProjectGroupChangeListener(groupListener);
     }
