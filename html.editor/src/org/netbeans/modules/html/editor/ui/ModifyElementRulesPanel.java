@@ -141,7 +141,6 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                 stateChanged();
             }
         });
-        selectorTypeList.setSelectedIndex(0);
 
         styleSheetCB.addItemListener(new ItemListener() {
             @Override
@@ -149,6 +148,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                 updateSelectorComboBoxModel(false);
             }
         });
+        selectorTypeList.setSelectedIndex(0);
 
         updateResultCodeSample();
     }
@@ -280,7 +280,7 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                 //B.
                 if (doB) {
                     if (idName != null) {
-                        Collection<FileObject> infiles = ids2files.get(clzName);
+                        Collection<FileObject> infiles = ids2files.get(idName);
                         if (infiles == null) {
                             break;
                         }
