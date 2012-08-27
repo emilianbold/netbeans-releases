@@ -430,4 +430,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         dashboard.myProjectsProgressFinished();
         dashboard.dashboardComponent.repaint();
     }
+
+    @Override
+    public String toString () {
+        return project.getDisplayName();
+    }
 }
