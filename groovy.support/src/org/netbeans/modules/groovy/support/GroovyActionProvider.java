@@ -232,7 +232,7 @@ public class GroovyActionProvider implements ActionProvider {
     private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         if (supportedActions.keySet().contains(command)) {
             if (command.equals(COMMAND_TEST)) {
-                return new String[] {"test-with-groovy"}; // NOI18N
+                return setupTestAll(p);
             }
 
             FileObject[] testSources = findTestSources(context);
@@ -384,14 +384,24 @@ public class GroovyActionProvider implements ActionProvider {
         return map.get(key);
     }
 
+    private String[] setupTestAll(Properties p) {
+        // Convert foo/FooTest.java -> foo.FooTest
+        p.setProperty("test.binarytestincludes", "**/*Test.class"); // NOI18N
+        p.setProperty("test.binaryexcludes", "**/*$*");             // NOI18N
+        p.setProperty("test.binaryincludes", "");                   // NOI18N
+        return new String[] {"test-with-groovy"};                   // NOI18N
+    }
+
     private String[] setupTestSingle(Properties p, FileObject[] files) {
         FileObject[] testSrcPath = getTestSourceRoots(project);
         FileObject root = getRoot(testSrcPath, files[0]);
         String path = FileUtil.getRelativePath(root, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
-        p.setProperty("test.includes", path.substring(0, path.length() - 7) + ".class"); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"test-single-groovy"}; // NOI18N
+        p.setProperty("test.binarytestincludes", path.substring(0, path.length() - 7) + ".class");  // NOI18N
+        p.setProperty("test.binaryexcludes", "**/*$*");                                             // NOI18N
+        p.setProperty("test.binaryincludes", "");                                                   // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root));                  // NOI18N
+        return new String[] {"test-single-groovy"};                                                 // NOI18N
     }
 
     private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
@@ -399,9 +409,12 @@ public class GroovyActionProvider implements ActionProvider {
         FileObject root = getRoot(testSrcPath, files[0]);
         String path = FileUtil.getRelativePath(root, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
-        p.setProperty("test.class", path.substring(0, path.length() - 7).replace('/', '.')); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"debug-test"}; // NOI18N
+        p.setProperty("test.binarytestincludes", path.substring(0, path.length() - 7) + ".class");   // NOI18N
+        p.setProperty("test.binaryexcludes", "**/*$*");                                              // NOI18N
+        p.setProperty("test.binaryincludes", "");                                                    // NOI18N
+        p.setProperty("test.class", path.substring(0, path.length() - 7).replace('/', '.'));         // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root));                   // NOI18N
+        return new String[] {"debug-test"};                                                          // NOI18N
     }
 
     private String[] setupCompileSingle(Properties p, FileObject[] files) {

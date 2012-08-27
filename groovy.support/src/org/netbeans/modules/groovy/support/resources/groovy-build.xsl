@@ -233,7 +233,7 @@ made subject to such option by the copyright holder.
             <!--    Test project    -->
             <!--                    -->
             <target depends="init,compile-test,-pre-test-run" if="have.tests" name="-do-test-run-with-groovy">
-                <j2seproject3:test testincludes="**/*Test.class" excludes="**/*$*"/>
+                <j2seproject3:test testincludes=""/>
             </target>
             <target depends="init,compile-test,-pre-test-run,-do-test-run-with-groovy" if="have.tests" name="-post-test-run-with-groovy">
                 <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
@@ -244,13 +244,25 @@ made subject to such option by the copyright holder.
             <!--    Single groovy file test runner      -->
             <!--                                        -->
             <target depends="init,compile-test-single,-pre-test-run-single" if="have.tests" name="-do-test-run-single-groovy">
-                <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-                <j2seproject3:test includes="${{test.includes}}" testincludes="${{test.includes}}" excludes="**/*$*" />
+                <fail unless="test.binarytestincludes">Must select some files in the IDE or set test.includes</fail>
+                <j2seproject3:test testincludes=""/>
             </target>
             <target depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single-groovy" if="have.tests" name="-post-test-run-single-groovy">
                 <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
             </target>
             <target depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single-groovy,-post-test-run-single-groovy" description="Run single unit test." name="test-single-groovy"/>
+
+            <!--                                             -->
+            <!--    Single groovy file debug test runner     -->
+            <!--                                             -->
+            <target depends="init,compile-test-single,-pre-test-run-single,-debug-start-debugger-test" name="-do-test-debug-single-groovy">
+                <fail unless="test.binarytestincludes">Must select some files in the IDE or set test.binarytestincludes</fail>
+                <j2seproject3:test-debug testincludes="" />
+            </target>
+            <target depends="init,compile-test-single,-pre-test-run-single,-do-test-debug-single-groovy" if="have.tests" name="-post-test-debug-single-groovy">
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
+            </target>
+            <target depends="init,compile-test-single,-pre-test-run-single,-debug-start-debugger-test,-do-test-debug-single-groovy,-post-test-debug-single-groovy" name="debug-test-with-groovy"/>
         </project>
     </xsl:template>
 
