@@ -8,6 +8,9 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -15,6 +18,8 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -29,7 +34,14 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.JTextComponent;
@@ -47,6 +59,7 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
+import org.netbeans.modules.java.navigation.base.HistorySupport;
 import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
@@ -54,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.java.navigation.base.TapPanel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
@@ -62,12 +76,14 @@ import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -76,6 +92,11 @@ import org.openide.util.lookup.InstanceContent;
 @SuppressWarnings("ClassWithMultipleLoggers")
 public final class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, Lookup.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
+
+    private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
+    private static final String CMD_JDOC = "jdoc";  //NOI18N
+    private static final String CMD_HISTORY = "history";    //NOI18N
+    private static final int MIN_HISTORY_WIDTH = 50;
 
     private final ExplorerManager manager = new ExplorerManager();
     private final MyBeanTreeView elementView;
@@ -102,7 +123,10 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
         }
     });
     private final RequestProcessor.Task jdocTask;
+    private final HistorySupport history;
     private long lastShowWaitNodeTime = -1;
+    //@GuardedBy this
+    private Toolbar toolbar;
 
     private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(ClassMemberPanelUI.class.getName()); //NOI18N
@@ -114,6 +138,7 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
+        history = HistorySupport.getInstnace(this.getClass());
         jdocFinder = SelectJavadocTask.create(this);
         jdocTask = RP.create(jdocFinder);
         initComponents();
@@ -246,14 +271,14 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
                 Resolvers.createEditorResolver(
                     js,
                     target.getCaret().getDot());
-        final Future<Pair<URI, ElementHandle<TypeElement>>> becomesHandle = RP.submit(resolver);
-        final RefreshTask refresh = new RefreshTask(becomesHandle);
-        RP.execute(refresh);
+        schedule(resolver);
     }
 
-    void scheduleJavadocRefresh(final int time) {
-        jdocFinder.cancel();
-        jdocTask.schedule(time);
+    synchronized JComponent getToolbar() {
+        if (toolbar == null) {
+            toolbar = new Toolbar();
+        }
+        return toolbar;
     }
 
     void refresh( final Description description ) {
@@ -379,7 +404,17 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
     private MyBeanTreeView createBeanTreeView() {
         return new MyBeanTreeView();
     }
-    
+
+    private void scheduleJavadocRefresh(final int time) {
+        jdocFinder.cancel();
+        jdocTask.schedule(time);
+    }
+
+    private void schedule(@NonNull final Callable<Pair<URI, ElementHandle<TypeElement>>> resolver) {
+        final Future<Pair<URI, ElementHandle<TypeElement>>> becomesHandle = RP.submit(resolver);
+        final RefreshTask refresh = new RefreshTask(becomesHandle);
+        RP.execute(refresh);
+    }
     
     // ExplorerManager.Provider imlementation ----------------------------------
     
@@ -629,6 +664,9 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
         }
 
         @Override
+        @NbBundle.Messages({
+        "ERR_Cannot_Resolve_File=Cannot resolve type: {0}.",
+        "ERR_Not_Declared_Type=Not a declared type."})
         public void run() {
             try {
                 final Pair<URI,ElementHandle<TypeElement>> handlePair = becomesHandle.get();
@@ -640,10 +678,23 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
                         if (target != null) {
                             final JavaSource targetJs = JavaSource.forFileObject(target);
                             if (targetJs != null) {
+                                history.addToHistory(handlePair);
                                 targetJs.runUserActionTask(this, true);
+                                ((Toolbar)getToolbar()).select(handlePair);
+                            } else {
+                                StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
+                                    handlePair.second.getQualifiedName()));
                             }
+                        } else {
+                            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
+                                    handlePair.second.getQualifiedName()));
                         }
+                    } else {
+                        StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
+                                    handlePair.second.getQualifiedName()));
                     }
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Not_Declared_Type());
                 }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
@@ -660,5 +711,93 @@ public final class ClassMemberPanelUI extends javax.swing.JPanel
             getTask().run(cc);
         }
 
+    }
+
+    private class Toolbar extends JPanel implements ActionListener {
+
+        private final JComboBox historyCombo;
+
+        @NbBundle.Messages({
+        "TXT_OpenJDoc=Open Javadoc Window",
+        })
+        Toolbar() {
+            setLayout(new GridBagLayout());
+            final Box box = new Box(BoxLayout.X_AXIS);
+            box.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
+            final JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorderPainted(false);
+            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setOpaque(false);
+            toolbar.setFocusable(false);
+            historyCombo = new JComboBox(HistorySupport.createModel(history)){
+                @Override
+                public Dimension getMinimumSize() {
+                    Dimension res = super.getMinimumSize();
+                    if (res.width > MIN_HISTORY_WIDTH) {
+                        res = new Dimension(MIN_HISTORY_WIDTH, res.height);
+                    }
+                    return res;
+                }
+            };
+            historyCombo.setRenderer(HistorySupport.createRenderer(history));
+            historyCombo.setActionCommand(CMD_HISTORY);
+            historyCombo.addActionListener(this);
+            toolbar.add(historyCombo);
+            final JButton jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
+            jdocButton.setActionCommand(CMD_JDOC);
+            jdocButton.addActionListener(this);
+            jdocButton.setFocusable(false);
+            jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
+            toolbar.add(jdocButton);
+            box.add (toolbar);
+            final GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            c.weighty = 0;
+            add(box,c);
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (CMD_JDOC.equals(e.getActionCommand())) {
+                final TopComponent win = JavadocTopComponent.findInstance();
+                if (win != null && !win.isShowing()) {
+                    win.open();
+                    win.requestVisible();
+                    scheduleJavadocRefresh(0);
+                }
+            } else if (CMD_HISTORY.equals(e.getActionCommand())) {
+                final Object selItem = historyCombo.getSelectedItem();
+                if (selItem instanceof Pair) {
+                    final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
+                    schedule(new Callable<Pair<URI, ElementHandle<TypeElement>>>() {
+                        @Override
+                        public Pair<URI, ElementHandle<TypeElement>> call() throws Exception {
+                            return pair;
+                        }
+                    });
+                }
+            }
+        }
+
+        void select(@NonNull final Pair<URI,ElementHandle<TypeElement>> pair) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    historyCombo.getModel().setSelectedItem(pair);
+                }
+            });
+        }
     }
 }

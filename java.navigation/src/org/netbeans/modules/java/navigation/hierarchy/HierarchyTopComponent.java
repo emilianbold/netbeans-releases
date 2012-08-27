@@ -90,6 +90,7 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
+import org.netbeans.modules.java.navigation.base.HistorySupport;
 import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
@@ -160,6 +161,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final JButton jdocButton;
     private final HierarchyFilters filters;
     private final RootChildren rootChildren;
+    private final HistorySupport history;
 
     @NbBundle.Messages({
         "TXT_RefreshContent=Refresh",
@@ -167,6 +169,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         "TXT_NonActiveContent=<No View Available - Refresh Manually>"
     })
     public HierarchyTopComponent() {
+        history = HistorySupport.getInstnace(this.getClass());
         jdocFinder = SelectJavadocTask.create(this);
         jdocTask = RP.create(jdocFinder);
         explorerManager = new ExplorerManager();
@@ -181,7 +184,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
         viewTypeCombo.addActionListener(this);
-        historyCombo = new JComboBox(HierarchyHistoryUI.createModel()){
+        historyCombo = new JComboBox(HistorySupport.createModel(history)){
             @Override
             public Dimension getMinimumSize() {
                 Dimension res = super.getMinimumSize();
@@ -191,7 +194,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 return res;
             }
         };
-        historyCombo.setRenderer(HierarchyHistoryUI.createRenderer());
+        historyCombo.setRenderer(HistorySupport.createRenderer(history));
         historyCombo.addActionListener(this);
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
@@ -483,7 +486,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                     JavaSource js;
                     if (file != null && (js=JavaSource.forFileObject(file)) != null) {
                         LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
-                        HierarchyHistory.getInstance().addToHistory(pair);
+                        history.addToHistory(pair);
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
                             public void run(CompilationController cc) throws Exception {

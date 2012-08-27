@@ -68,8 +68,6 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
 
     //@GuardedBy("this")
     private ClassMemberPanelUI component;
-    //@GuardedBy("this")
-    private ClassMemberPanelToolbar toolbar;
 
     private static volatile ClassMemberPanel INSTANCE;   //Apparently not accessed in event dispatch thread in CaretListeningTask
     
@@ -151,9 +149,6 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
 
     @Override
     public synchronized JComponent getToolbarComponent() {
-        if (this.toolbar == null) {
-            this.toolbar = new ClassMemberPanelToolbar(getClassMemberPanelUI());
-        }
-        return this.toolbar;
+        return getClassMemberPanelUI().getToolbar();
     }
 }
