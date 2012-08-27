@@ -148,8 +148,14 @@ public class C2CRepository {
     }
     
     private void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
+        String oldUser = taskRepository == null ? null : taskRepository.getUserName();
+        if (oldUser == null) {
+            oldUser = ""; //NOI18N
+        }
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
-        resetRepository(keepConfiguration);
+        if (!oldUser.equals(user)) {
+            resetRepository(keepConfiguration);
+        }
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
