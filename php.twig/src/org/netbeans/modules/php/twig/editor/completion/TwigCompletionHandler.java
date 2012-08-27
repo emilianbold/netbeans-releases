@@ -208,6 +208,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
             case VARIABLE:
                 completeFilters(completionProposals, request);
                 completeFunctions(completionProposals, request);
+                completeTests(completionProposals, request);
+                completeOperators(completionProposals, request);
                 break;
             case NONE:
                 break;
