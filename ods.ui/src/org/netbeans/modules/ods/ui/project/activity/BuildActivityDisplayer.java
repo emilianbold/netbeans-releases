@@ -47,23 +47,33 @@ import com.tasktop.c2c.server.profile.domain.build.BuildDetails.BuildResult;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
 import org.netbeans.modules.ods.ui.utils.Utils;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class BuildActivityDisplayer extends ActivityDisplayer {
 
     private final BuildActivity activity;
+    private final ProjectHandle<ODSProject> projectHandle;
+    private Action openIDEAction;
 
-    public BuildActivityDisplayer(BuildActivity activity, int maxWidth) {
+    public BuildActivityDisplayer(BuildActivity activity, ProjectHandle<ODSProject> projectHandle, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
         this.activity = activity;
+        this.projectHandle = projectHandle;
     }
 
     @Override
@@ -88,9 +98,14 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkJobName = new LinkLabel(activity.getJobSummary().getName()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(activity.getJobSummary().getUrl());
+                Action openAction = getOpenIDEAction();
+                if (openAction == null || !openAction.isEnabled()) {
+                    openAction = getOpenBrowserAction(getBuildUrl());
+                }
+                openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
+        linkJobName.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getBuildUrl()));
         panel.add(linkJobName, gbc);
         panel.add(new JLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Resulted", getResultText())), gbc); //NOI18N
 
@@ -159,5 +174,35 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
             resultName = result.getFriendlyName().toLowerCase();
         }
         return resultName;
+    }
+
+    private Action getOpenIDEAction() {
+        if (openIDEAction == null) {
+            BuildAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
+            final Action action;
+            if (buildAccessor != null) {
+                action = buildAccessor.getBuildHandle(projectHandle, activity.getJobSummary().getName()).getDefaultAction();
+            } else {
+                action = null;
+            }
+            openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (isEnabled()) {
+                        action.actionPerformed(e);
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return action != null;
+                }
+            };
+        }
+        return openIDEAction;
+    }
+
+    private String getBuildUrl() {
+        return activity.getJobSummary().getUrl();
     }
 }

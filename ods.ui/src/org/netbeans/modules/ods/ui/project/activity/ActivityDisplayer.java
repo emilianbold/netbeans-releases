@@ -44,11 +44,13 @@ package org.netbeans.modules.ods.ui.project.activity;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Date;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.netbeans.modules.ods.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -59,6 +61,7 @@ public abstract class ActivityDisplayer {
 
     Date activityDate;
     final int maxWidth;
+    private Action openBrowserAction;
 
     public ActivityDisplayer(Date activityDate, int maxWidth) {
         this.activityDate = activityDate;
@@ -87,5 +90,12 @@ public abstract class ActivityDisplayer {
      */
     public Icon getActivityIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/unknown.png", true); //NOI18N
+    }
+
+    Action getOpenBrowserAction(String url) {
+        if (openBrowserAction == null) {
+            openBrowserAction = Utils.getOpenBrowserAction(url);
+        }
+        return openBrowserAction;
     }
 }

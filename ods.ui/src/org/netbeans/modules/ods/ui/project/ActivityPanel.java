@@ -77,7 +77,7 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable {
         if (activity instanceof TaskActivity) {
             activityAccessor = new TaskActivityDisplayer((TaskActivity) activity, projectHandle, maxWidth);
         } else if (activity instanceof BuildActivity) {
-            activityAccessor = new BuildActivityDisplayer((BuildActivity) activity, maxWidth);
+            activityAccessor = new BuildActivityDisplayer((BuildActivity) activity, projectHandle, maxWidth);
         } else if (activity instanceof ScmActivity) {
             ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.findInstance(activity.getProjectIdentifier());
             activityAccessor = new ScmActivityDisplayer((ScmActivity) activity, projectHandle, tc.getProject().getScmUrl(), maxWidth);

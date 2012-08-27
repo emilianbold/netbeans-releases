@@ -52,6 +52,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -74,6 +75,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     private TaskActivity activity;
     private final ProjectHandle<ODSProject> projectHandle;
+    private Action openIDEAction;
 
     public TaskActivityDisplayer(TaskActivity activity, ProjectHandle<ODSProject> projectHandle, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
@@ -94,15 +96,14 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkDisplayName = new LinkLabel() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                QueryAccessor<ODSProject> queryAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODSProject.class);
-                Action openAction = queryAccessor == null ? null : queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
-                if (openAction == null) {
-                    Utils.openBrowser(activity.getActivity().getTask().getUrl());
-                } else {
-                    openAction.actionPerformed(new ActionEvent(TaskActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                Action openAction = getOpenIDEAction();
+                if (openAction == null || !openAction.isEnabled()) {
+                    openAction = getOpenBrowserAction(getTaskUrl());
                 }
+                openAction.actionPerformed(new ActionEvent(TaskActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
+        linkDisplayName.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getTaskUrl()));
         String taskName = Utils.computeFitText(linkDisplayName, maxWidth, getTaskDisplayName(), false);
         linkDisplayName.setText(taskName);
         panel.add(linkDisplayName, gbc);
@@ -227,5 +228,35 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         JLabel lblComment = new JLabel(formatedText);
         panel.add(lblComment, gbc);
         return panel;
+    }
+
+    private Action getOpenIDEAction() {
+        if (openIDEAction == null) {
+            QueryAccessor<ODSProject> queryAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODSProject.class);
+            final Action action;
+            if (queryAccessor != null) {
+                action = queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
+            } else {
+                action = null;
+            }
+            openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (isEnabled()) {
+                        action.actionPerformed(e);
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return action != null;
+                }
+            };
+        }
+        return openIDEAction;
+    }
+
+    private String getTaskUrl() {
+        return activity.getActivity().getTask().getUrl();
     }
 }
