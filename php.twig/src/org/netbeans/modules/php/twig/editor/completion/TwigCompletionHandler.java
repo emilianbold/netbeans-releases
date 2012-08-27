@@ -71,8 +71,11 @@ import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
+import org.openide.util.NbBundle;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
+
+    private static final DocumentationDecorator DOCUMENTATION_DECORATOR = DocumentationDecorator.getInstance();
 
     private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
     static {
@@ -265,7 +268,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     public String document(ParserResult pr, ElementHandle eh) {
         String result = "";
         if (eh instanceof TwigElement) {
-            result = ((TwigElement) eh).getDocumentation().asText();
+            DOCUMENTATION_DECORATOR.setDocumentation(((TwigElement) eh).getDocumentation());
+            result = DOCUMENTATION_DECORATOR.asText();
         }
         return result;
     }
@@ -308,6 +312,30 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
         public TwigCompletionResult(List<CompletionProposal> list, boolean truncated) {
             super(list, truncated);
+        }
+
+    }
+
+    private static class DocumentationDecorator implements TwigDocumentation {
+
+        private static final DocumentationDecorator INSTANCE = new DocumentationDecorator();
+        private TwigDocumentation documentation;
+
+        public static DocumentationDecorator getInstance() {
+            return INSTANCE;
+        }
+
+        private DocumentationDecorator() {
+        }
+
+        public void setDocumentation(final TwigDocumentation documentation) {
+            this.documentation = documentation;
+        }
+
+        @Override
+        @NbBundle.Messages("OnlineDocumentation=<p><strong>Online Documentation:</strong> <a href=\"http://twig.sensiolabs.org/documentation\">http://twig.sensiolabs.org/documentation</a></p>")
+        public String asText() {
+            return documentation.asText() + Bundle.OnlineDocumentation();
         }
 
     }
