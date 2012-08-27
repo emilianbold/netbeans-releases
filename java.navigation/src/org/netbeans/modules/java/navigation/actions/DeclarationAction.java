@@ -65,7 +65,7 @@ public class DeclarationAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent evt) {
-        TopComponent win = DeclarationTopComponent.getDefault();
+        final TopComponent win = DeclarationTopComponent.findDefault();
         win.open();
         win.requestActive();
     }

@@ -48,6 +48,7 @@ import javax.lang.model.element.Element;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithToolbar;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
@@ -63,8 +64,9 @@ import org.openide.util.lookup.Lookups;
     @NavigatorPanel.Registration(mimeType="text/x-java", position=100, displayName="#LBL_members"),
     @NavigatorPanel.Registration(mimeType="application/x-class-file", displayName="#LBL_members")
 })
-public class ClassMemberPanel implements NavigatorPanelWithUndo {
+public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelWithToolbar {
 
+    //@GuardedBy("this")
     private ClassMemberPanelUI component;
 
     private static volatile ClassMemberPanel INSTANCE;   //Apparently not accessed in event dispatch thread in CaretListeningTask
@@ -143,5 +145,10 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo {
     public UndoRedo getUndoRedo() {
         final UndoRedo undoRedo = Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
         return undoRedo==null?UndoRedo.NONE:undoRedo;
+    }
+
+    @Override
+    public synchronized JComponent getToolbarComponent() {
+        return getClassMemberPanelUI().getToolbar();
     }
 }
