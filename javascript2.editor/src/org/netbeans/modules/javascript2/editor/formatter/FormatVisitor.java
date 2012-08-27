@@ -114,7 +114,7 @@ public class FormatVisitor extends NodeVisitor {
                 // so we need to remove it to be handled normally later
                 caseNodes.remove(block);
                 handleCaseBlock(block);
-            } else if (isScript(block)){
+            } else if (isScript(block)) {
                 handleBlockContent(block);
             } else {
                 handleStandardBlock(block);
