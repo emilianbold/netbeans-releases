@@ -651,6 +651,12 @@ public class FormatVisitor extends NodeVisitor {
                         }
                     }
                 }
+                for (Node item : literalNode.getArray()) {
+                    FormatToken comma = getNextToken(getStart(item), JsTokenId.OPERATOR_COMMA, finish);
+                    if (comma != null) {
+                        appendTokenAfterLastVirtual(comma, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
+                    }
+                }
             }
         }
         return super.visit(literalNode, onset);

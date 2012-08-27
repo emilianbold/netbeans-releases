@@ -1095,6 +1095,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/arrays1.js");
     }
 
+    public void testArrays2Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testArrays2Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapNever.formatted");
+    }
+
+    public void testArrays2IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrays2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrays2.js");
+    }
+
     public void testPartialFormat1() throws Exception {
         reformatFileContents("testfiles/formatter/partialFormat1.js", Collections.<String, Object>emptyMap());
     }
