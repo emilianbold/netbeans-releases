@@ -44,6 +44,7 @@ package org.netbeans.modules.ods.api;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
+import com.tasktop.c2c.server.profile.domain.project.WikiMarkupLanguage;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -260,6 +261,11 @@ public final class ODSProject {
 
     public synchronized String getWebUrl() {
         return server.getUrl().toString() + "/#projects/" +  project.getIdentifier();
+    }
+
+    public synchronized String getWikiLanguage () {
+        WikiMarkupLanguage wikiLanguage = project.getProjectPreferences().getWikiLanguage();
+        return wikiLanguage == null ? null : wikiLanguage.toString();
     }
 
     private synchronized boolean hasService(ServiceType type) {

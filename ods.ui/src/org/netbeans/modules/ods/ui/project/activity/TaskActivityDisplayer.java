@@ -52,12 +52,16 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import org.netbeans.modules.mylyn.util.WikiPanel;
+import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
@@ -71,6 +75,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     private TaskActivity activity;
     private final ProjectHandle<ODSProject> projectHandle;
+    private Action openIDEAction;
 
     public TaskActivityDisplayer(TaskActivity activity, ProjectHandle<ODSProject> projectHandle, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
@@ -91,15 +96,14 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkDisplayName = new LinkLabel() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                QueryAccessor<ODSProject> queryAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODSProject.class);
-                Action openAction = queryAccessor == null ? null : queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
-                if (openAction == null) {
-                    Utils.openBrowser(activity.getActivity().getTask().getUrl());
-                } else {
-                    openAction.actionPerformed(new ActionEvent(TaskActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                Action openAction = getOpenIDEAction();
+                if (openAction == null || !openAction.isEnabled()) {
+                    openAction = getOpenBrowserAction(getTaskUrl());
                 }
+                openAction.actionPerformed(new ActionEvent(TaskActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
+        linkDisplayName.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getTaskUrl()));
         String taskName = Utils.computeFitText(linkDisplayName, maxWidth, getTaskDisplayName(), false);
         linkDisplayName.setText(taskName);
         panel.add(linkDisplayName, gbc);
@@ -146,13 +150,15 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
     }
 
     private JComponent updateDetailsPanel(List<FieldUpdate> fieldUpdates) {
+        String wikiLanguage = projectHandle.getTeamProject().getWikiLanguage();
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 0, 3, 10);
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
+
         gbc.gridy = 0;
 
         gbc.gridx = 0;
@@ -178,24 +184,25 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
             FieldUpdate update = fieldUpdates.get(i);
             gbc.gridx = 0;
             JLabel lblField = new JLabel(update.getFieldDescription());
+            lblField.setVerticalAlignment(SwingConstants.TOP);
             panel.add(lblField, gbc);
 
             gbc.gridx = 1;
-            JLabel lblOldValue = new JLabel();
-            String oldText = "<html>" + update.getOldValue() + "</html>";
-            if (update.getOldValue().isEmpty()) {
+            WikiPanel lblOldValue = WikiUtils.getWikiPanel(wikiLanguage, false, false);
+            String oldText = update.getOldValue();
+            if (oldText.isEmpty()) {
                 oldText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
             }
-            lblOldValue.setText(oldText);
+            lblOldValue.setWikiFormatText(oldText);
             panel.add(lblOldValue, gbc);
 
             gbc.gridx = 2;
-            JLabel lblNewValue = new JLabel();
-            String newText = "<html>" + update.getNewValue() + "</html>";
-            if (update.getNewValue().isEmpty()) {
+            WikiPanel lblNewValue = WikiUtils.getWikiPanel(wikiLanguage, false, false);
+            String newText = update.getOldValue();
+            if (newText.isEmpty()) {
                 newText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
             }
-            lblNewValue.setText(newText);
+            lblNewValue.setWikiFormatText(newText);
             panel.add(lblNewValue, gbc);
         }
 
@@ -211,7 +218,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        
+
         JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Comment"));
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
@@ -221,5 +228,35 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         JLabel lblComment = new JLabel(formatedText);
         panel.add(lblComment, gbc);
         return panel;
+    }
+
+    private Action getOpenIDEAction() {
+        if (openIDEAction == null) {
+            QueryAccessor<ODSProject> queryAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODSProject.class);
+            final Action action;
+            if (queryAccessor != null) {
+                action = queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
+            } else {
+                action = null;
+            }
+            openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (isEnabled()) {
+                        action.actionPerformed(e);
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return action != null;
+                }
+            };
+        }
+        return openIDEAction;
+    }
+
+    private String getTaskUrl() {
+        return activity.getActivity().getTask().getUrl();
     }
 }

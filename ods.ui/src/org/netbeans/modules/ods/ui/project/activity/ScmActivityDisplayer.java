@@ -48,6 +48,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -65,6 +67,7 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
     private ScmActivity activity;
     private final String scmUrl;
     private final ProjectHandle<ODSProject> projectHandle;
+    private Action openIDEAction;
 
     public ScmActivityDisplayer(ScmActivity activity, ProjectHandle<ODSProject> projectHandle, String scmUrl, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
@@ -84,35 +87,14 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkCommit = new LinkLabel(activity.getCommit().getMinimizedCommitId()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run () {
-                        VCSAccessor accessor = VCSAccessor.getDefault();
-                        ActionListener action = null;
-                        if (accessor != null) {
-                            action = accessor.getOpenHistoryAction(projectHandle,
-                                    activity.getCommit().getRepository(),
-                                    activity.getCommit().getCommitId());
-                        }
-                        if (action == null) {
-                            action = new ActionListener() {
-                                @Override
-                                public void actionPerformed (ActionEvent e) {
-                                    Utils.openBrowser(getCommitUrl());
-                                }
-                            };
-                        }
-                        final ActionListener fAction = action;
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run () {
-                                fAction.actionPerformed(new ActionEvent(ScmActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
-                            }
-                        });
-                    }
-                });
+                Action action = getOpenIDEAction();
+                if (action == null || !action.isEnabled()) {
+                    action = getOpenBrowserAction(getCommitUrl());
+                }
+                action.actionPerformed(new ActionEvent(ScmActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
+        linkCommit.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getCommitUrl()));
         titlePanel.add(linkCommit, gbc);
         return titlePanel;
     }
@@ -145,5 +127,50 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         }
         url += activity.getCommit().getRepository() + "/" + activity.getCommit().getCommitId(); //NOI18N
         return url;
+    }
+
+    private Action getOpenIDEAction() {
+        if (openIDEAction == null) {
+            openIDEAction = new OpenInIDEAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE"));
+        }
+        return openIDEAction;
+    }
+
+    private class OpenInIDEAction extends AbstractAction {
+
+        private VCSAccessor accessor;
+
+        public OpenInIDEAction(String name) {
+            super(name);
+            accessor = VCSAccessor.getDefault();
+        }
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            if (isEnabled()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Action action = accessor.getOpenHistoryAction(projectHandle,
+                        activity.getCommit().getRepository(),
+                        activity.getCommit().getCommitId());
+                        final ActionListener fAction = action;
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (fAction != null) {
+                                    fAction.actionPerformed(e);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return accessor != null;
+        }
     }
 }

@@ -43,12 +43,16 @@ package org.netbeans.modules.ods.ui.utils;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import org.netbeans.modules.ods.ui.project.activity.TaskActivityDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -114,6 +118,15 @@ public class Utils {
 
     public static String getRealUrl(String defaultUrl) {
         return defaultUrl.replaceFirst("/s/", "/#projects/"); //NOI18N
+    }
+
+    public static Action getOpenBrowserAction(final String url) {
+        return new AbstractAction(NbBundle.getMessage(Utils.class, "LBL_OpenBrowser")) { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openBrowser(url);
+            }
+        };
     }
 
     public static class Settings {

@@ -44,20 +44,26 @@ package org.netbeans.modules.ods.ui.project;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author jpeska
  */
-public abstract class LinkLabel extends JLabel implements MouseListener{
+public abstract class LinkLabel extends JLabel implements MouseListener {
 
     private Map<TextAttribute, Object> underlineFontMap;
     private static final Color FOREGROUND_COLOR = Color.BLUE;
@@ -65,6 +71,7 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
     private static final Icon ICON_LINK = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/link.png", true); //NOI18N
     private static final Icon ICON_LINK_FOCUS = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/link_focus.png", true); //NOI18N
     private final boolean showIcon;
+    private Action[] popupActions = new Action[0];
 
     public LinkLabel(String text, boolean showIcon) {
         this.showIcon = showIcon;
@@ -89,8 +96,6 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
         this("", false);
     }
 
-
-
     private void init() {
         if (showIcon) {
             setIcon(ICON_LINK);
@@ -100,6 +105,10 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
         setFont(font);
         setForeground(FOREGROUND_COLOR);
         addMouseListener(this);
+    }
+
+    public void setPopupActions(Action... popupActions) {
+        this.popupActions = popupActions;
     }
 
     @Override
@@ -113,10 +122,16 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
 
     @Override
     public void mousePressed(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e.getPoint());
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e.getPoint());
+        }
     }
 
     @Override
@@ -134,6 +149,13 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
         setForeground(FOREGROUND_COLOR);
         if (showIcon) {
             setIcon(ICON_LINK);
+        }
+    }
+
+    private void showPopup(Point p) {
+        if (popupActions.length > 0) {
+            JPopupMenu menu = Utilities.actionsToPopup(popupActions, this);
+            menu.show(this, p.x, p.y);
         }
     }
 }
