@@ -30,6 +30,8 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
+ * markiewb@netbeans.org
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -85,9 +87,15 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
@@ -219,8 +227,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     
     @Override
-    public ListCellRenderer getListCellRenderer( JList list ) {
-        return new Renderer( list );        
+    public ListCellRenderer getListCellRenderer(
+            @NonNull final JList list,
+            @NonNull final Document nameFieldDocument) {
+        Renderer renderer = new Renderer(list);
+        //notify the render of the changed search text
+        nameFieldDocument.addDocumentListener(renderer);
+        return renderer;
     }
     
     
@@ -622,7 +635,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static final class Renderer extends EntitiesListCellRenderer {
+    private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener {
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -638,6 +651,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private Color fgSelectionColor;
         
         private JList jList;
+        private String searchText = "";
+        private final HighlightingNameFormatter typeNameFormatter;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public Renderer( JList list ) {
@@ -712,7 +727,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                     Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
                             );
             bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();        
+            fgSelectionColor = list.getSelectionForeground();
+            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter(false);  //TODO: fix me
         }
         
         public @Override Component getListCellRendererComponent( JList list,
@@ -751,7 +767,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 long time = System.currentTimeMillis();
                 TypeDescriptor td = (TypeDescriptor)value;                
                 jlName.setIcon(td.getIcon());
-                jlName.setText(td.getTypeName());
+                //highlight matching search text patterns in type
+                final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText);
+                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
@@ -776,6 +794,25 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            try {
+                searchText = e.getDocument().getText(0, e.getDocument().getLength());
+            } catch (BadLocationException ex) {
+                searchText = "";    //NOI18N
+            }
         }
 
      } // Renderer
