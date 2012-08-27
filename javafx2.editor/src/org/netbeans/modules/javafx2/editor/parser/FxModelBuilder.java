@@ -743,6 +743,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                         propName.substring(stProp + 1), atts);
                 break;
         }
+        
         return pv;
     }
 
@@ -774,6 +775,8 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         }
         if (!nodeStack.isEmpty() && nodeStack.peek().getKind() == Kind.Instance) {
             current = (FxInstance)nodeStack.peek();
+        } else {
+            current = null;
         }
         
     }

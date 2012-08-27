@@ -290,12 +290,16 @@ public class XmlLexerParser implements ContentLocator {
         parse2();
     }
     
-    private void callCharacters(Token<XMLTokenId> t) throws SAXException {
+    private void callCharacters(CharSequence t) throws SAXException {
         if (seqHandler != null) {
-            seqHandler.characterSequence(t.text());
+            seqHandler.characterSequence(t);
         } else {
-            contentHandler.characters(t.text().toString().toCharArray(), 0, t.length());
+            contentHandler.characters(t.toString().toCharArray(), 0, t.length());
         }
+    }
+    
+    private void callCharacters(Token<XMLTokenId> t) throws SAXException {
+        callCharacters(t.text());
     }
     
     private void callIgnorableWhitespace(Token<XMLTokenId> t) throws SAXException {
@@ -367,12 +371,33 @@ public class XmlLexerParser implements ContentLocator {
                 default: {
                     consume();
                     String s = t.text().toString();
-                    if (whitespacePossible && s.trim().isEmpty()) {
-                        callIgnorableWhitespace(t);
-                    } else {
-                        callCharacters(t);
-                        whitespacePossible = false;
+                    if (whitespacePossible) {
+                        String trimmed = s.trim();
+                        if (trimmed.isEmpty()) {
+                            callIgnorableWhitespace(t);
+                            break;
+                            
+                        } else {
+                            if (trimmed.startsWith("<")) {
+                                // error, "<" is present in the text
+                                int idx = s.indexOf(trimmed);
+                                ErrorMark mark = new ErrorMark(seq.offset() + idx, 1,
+                                        ERR_UnexpectedToken, "Unexpected character: <");
+                                addError(mark);
+
+                                if (trimmed.length() == 1) {
+                                    // consumed everything important
+                                    break;
+                                }
+                                // move the offset until after the <
+                                elementOffset = seq.offset() + idx + 1;
+                                s = s.substring(idx);
+                                
+                            }
+                        }
                     }
+                    callCharacters(s);
+                    whitespacePossible = false;
                     break;
                 }
             }
@@ -623,7 +648,7 @@ public class XmlLexerParser implements ContentLocator {
         if (found == null) {
             return false;
         }
-        
+        /*
         if (depth == 1) {
             // simple case, the immediate parent matches the closing tagname
             // mark error, close this level etc
@@ -633,7 +658,7 @@ public class XmlLexerParser implements ContentLocator {
             contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
             terminateLevel();
             return true;
-        }
+        }*/
         
         // some additional assuarance is needed before popping more levels:
         // parse ahead and match 2* popped levels or root
@@ -643,7 +668,7 @@ public class XmlLexerParser implements ContentLocator {
         XmlLexerParser parser = duplicate();
         parser.consume();
         
-        ParentCollector pm = new ParentCollector((depth - 1) * 2);
+        ParentCollector pm = new ParentCollector((depth - 1) * 2 + 1);
         parser.setContentHandler(pm);
         
         boolean success = false;
@@ -688,7 +713,7 @@ public class XmlLexerParser implements ContentLocator {
             return false;
         }
 
-        for (int i = 0; i <= count; i++) {
+        for (int i = 0; i <= count && currentLevel != null; i++) {
             processTagName(qName = currentLevel.tagQName);
             markUnclosedElement(qName);
             // the elements are artifical; discard all offset information
@@ -791,6 +816,7 @@ public class XmlLexerParser implements ContentLocator {
         parser.levelStack = new LinkedList<Level>(levelStack);
         parser.levelBound = levelStack.size();
         parser.currentLevel = this.currentLevel;
+        parser.currentToken = this.currentToken;
         
         return parser;
     }
@@ -994,9 +1020,7 @@ public class XmlLexerParser implements ContentLocator {
                     consume();
                     break;
                 case ARGUMENT:
-                    if (parseAttribute(t)) {
-                        inError = false;
-                    }
+                    inError = !parseAttribute(t);
                     break;
                     
                 case TAG: {
@@ -1004,6 +1028,7 @@ public class XmlLexerParser implements ContentLocator {
                     CharSequence cs = t.text();
                     if (cs.charAt(0) == TAG_START_CHAR) {
                         // some error - bail out
+                        inError = true;
                         errorStartTagInTagName();
                         // report tag start as usual
                         break out;
@@ -1031,7 +1056,42 @@ public class XmlLexerParser implements ContentLocator {
             }
         }
         
-        handleStartElement(selfClosed);
+        boolean close = selfClosed;
+        
+        if (inError) {
+            close |= determineClosedTag();
+        }
+        
+        handleStartElement(close);
+    }
+    
+    /**
+     * Called when opening tag is not closed, to find & determine whether
+     * there's a matching close tag later in the document
+     * 
+     * @return 
+     */
+    private boolean determineClosedTag() throws SAXException {
+        int markSequence = seq.offset();
+        
+        XmlLexerParser parser = duplicate();
+        
+        ParentCollector pm = new ParentCollector(levelStack.size());
+        parser.setContentHandler(pm);
+        
+        try {
+            parser.parse2();
+        } catch (StopParseException ex) {
+            // expected
+        } finally {
+            seq.move(markSequence);
+            seq.moveNext();
+        }
+        if (levelStack.isEmpty() || pm.closingTags.isEmpty()) {
+            return false;
+        }
+        Level l = levelStack.peek();
+        return !pm.closingTags.peekLast().equals(l.tagQName);
     }
     
     private void handleStartElement(boolean selfClosed) throws SAXException {

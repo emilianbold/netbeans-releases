@@ -131,7 +131,8 @@ final public class ClassCompleter implements Completer, Completer.Factory {
         }
         if (ctx.getType() == CompletionContext.Type.BEAN ||
             ctx.getType() == CompletionContext.Type.ROOT ||
-            ctx.getType() == CompletionContext.Type.CHILD_ELEMENT) {
+            ctx.getType() == CompletionContext.Type.CHILD_ELEMENT || 
+            ctx.getType() == CompletionContext.Type.PROPERTY_ELEMENT) {
             
             if (pi == null || pi.getKind() == FxDefinitionKind.LIST) {
                 return new ClassCompleter(ctx);
