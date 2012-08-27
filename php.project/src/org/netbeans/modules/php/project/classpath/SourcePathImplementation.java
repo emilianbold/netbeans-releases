@@ -63,6 +63,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -216,7 +217,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         @Override
         public boolean includes(URL root, String resource) {
             if (matcher == null) {
-                File rootFile = new File(URI.create(root.toExternalForm()));
+                File rootFile = Utilities.toFile(URI.create(root.toExternalForm()));
                 matcher = new PathMatcher(
                         null,
                         computeExcludes(rootFile),
