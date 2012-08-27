@@ -53,9 +53,11 @@ import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
@@ -80,8 +82,18 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
 
-    public static Key createProjectKey(CharSequence projectQualifiedName, File cacheLocation) {       
+    public static Key createProjectKey(CharSequence projectQualifiedName, File cacheLocation) {
         return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName, cacheLocation));
+    }
+
+    public static Key createProjectKey(NativeProject nativeProject) {
+        return new ProjectKey(KeyUtilities.getUnitId(
+                ProjectBase.getUniqueName(nativeProject),
+                ProjectBase.getCacheBaseDirectory(nativeProject)));
+    }
+
+    public static Key createProjectKey(ProjectBase project) {
+        return new ProjectKey(project.getUnitId());
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {

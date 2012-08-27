@@ -333,7 +333,7 @@ public final class RepositoryUtils {
     }
     
     public static void onProjectDeleted(NativeProject nativeProject) {
-        Key key = KeyUtilities.createProjectKey(ProjectBase.getUniqueName(nativeProject), ProjectBase.getCacheBaseDirectory(nativeProject));
+        Key key = KeyUtilities.createProjectKey(nativeProject);
         repository.removeUnit(key.getUnitId());
     }
 

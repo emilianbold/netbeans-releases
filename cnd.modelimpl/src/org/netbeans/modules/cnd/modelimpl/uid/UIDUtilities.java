@@ -546,11 +546,7 @@ public class UIDUtilities {
     /* package */ static final class ProjectUID extends CachedUID<CsmProject> { //KeyBasedUID<CsmProject> {
 
         public ProjectUID(ProjectBase project) {
-            super(KeyUtilities.createProjectKey(
-                    project.getUniqueName(), 
-                    project.getCacheBaseDirectory()), 
-                    //ProjectBase.getCacheBaseDirectory(project.getPlatformProject())), 
-                project);
+            super(KeyUtilities.createProjectKey(project), project);
         }
 
         /* package */ ProjectUID(RepositoryDataInput aStream) throws IOException {
