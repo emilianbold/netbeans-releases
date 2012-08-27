@@ -135,6 +135,12 @@ public class CloudServerProviderImpl implements TeamServerProvider {
     }
 
     @Override
+    @Messages("LBL_ProviderDescription=Supports team servers built on top of the Oracle Developer Services.")
+    public String getDescription () {
+        return LBL_ProviderDescription();
+    }
+
+    @Override
     public TeamServer createTeamServer (String name, String url) throws MalformedURLException {
         CloudServer server = CloudServerManager.getDefault().createServer(name, url);
         if (server != null) {
