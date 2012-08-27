@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,60 +40,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.api.extexecution;
-
-import java.util.Map;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.extexecution.WrapperProcess;
-import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
-import org.openide.util.Lookup;
-import org.openide.util.Parameters;
 
 /**
- * Utility class capable of properly terminating external process along with any
- * child processes created during execution.
+ * The support SPI to allow pluggability of predefined 
+ * {@link org.netbeans.api.extexecution.print.LineConvertors}.
+ * Also allows you to define way how option dialog should be opened.
  *
- * @author mkleint
- * @since 1.16
+ * @see org.netbeans.spi.extexecution.open.FileOpenHandler
+ * @see org.netbeans.spi.extexecution.open.HttpOpenHandler
+ * @see org.netbeans.spi.extexecution.open.OptionOpenHandler
  */
-public final class ExternalProcessSupport {
+package org.netbeans.spi.extexecution.open;
 
-    private ExternalProcessSupport() {
-        super();
-    }
-
-    /**
-     * Destroys the process passed as parameter and attempts to terminate all child
-     * processes created during the process' execution.
-     * <p>
-     * Any process running in environment containing the same variables
-     * with the same values as those passed in <code>env</code> (all of them)
-     * is supposed to be part of the process tree and may be terminated.
-     *
-     * @param process process to kill
-     * @param env map containing the variables and their values which the
-     *             process must have to be considered being part of
-     *             the tree to kill
-     */
-    public static void destroy(@NonNull Process process, @NonNull Map<String, String> env) {
-        Parameters.notNull("process", process);
-        Parameters.notNull("env", env);
-
-        if (process instanceof WrapperProcess) {
-            process.destroy();
-            return;
-        }
-        ProcessDestroyPerformer pdp = Lookup.getDefault().lookup(ProcessDestroyPerformer.class);
-        if (pdp != null) {
-            pdp.destroy(process, env);
-        } else {
-            process.destroy();
-        }
-    }
-}
