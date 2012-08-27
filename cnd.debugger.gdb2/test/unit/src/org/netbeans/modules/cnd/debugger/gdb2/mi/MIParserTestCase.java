@@ -89,4 +89,34 @@ public class MIParserTestCase extends TestCase {
         MIRecord result = parser.parse();
         result.results().valueOf("xxx");
     }
+    
+    @Test
+    public void testMultipleLocationBreakpoint() {
+        String testLine = "15^done,bkpt={number=\"2\",type=\"breakpoint\","
+                + "disp=\"keep\",enabled=\"y\",addr=\"<MULTIPLE>\",times=\"0\","
+                + "original-location=\"Customer::Customer\"},{number=\"2.1\","
+                + "enabled=\"y\",addr=\"0x0000000000403efe\","
+                + "func=\"Customer::Customer(Customer const&)\","
+                + "file=\"customer.h\","
+                + "fullname=\"/home/henk/tmp/Quote_2/customer.h\",line=\"38\"},"
+                + "{number=\"2.2\",enabled=\"y\",addr=\"0x0000000000404707\","
+                + "func=\"Customer::Customer(std::string, int)\","
+                + "file=\"customer.cc\","
+                + "fullname=\"/home/henk/tmp/Quote_2/customer.cc\",line=\"35\"}";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup(testLine);
+        MIRecord result = parser.parse();
+        MITList resultList = result.results();
+        
+        assertEquals(3, resultList.size());
+        assertEquals(resultList.get(0).toString(),
+            "bkpt={number=\"2\",type=\"breakpoint\",disp=\"keep\",enabled=\"y\",addr=\"<MULTIPLE>\",times=\"0\",original-location=\"Customer::Customer\"}"
+        );
+        assertEquals(resultList.get(1).toString(),
+            "bkpt={number=\"2.1\",enabled=\"y\",addr=\"0x0000000000403efe\",func=\"Customer::Customer(Customer const&)\",file=\"customer.h\",fullname=\"/home/henk/tmp/Quote_2/customer.h\",line=\"38\"}"
+        );
+        assertEquals(resultList.get(2).toString(),
+            "bkpt={number=\"2.2\",enabled=\"y\",addr=\"0x0000000000404707\",func=\"Customer::Customer(std::string, int)\",file=\"customer.cc\",fullname=\"/home/henk/tmp/Quote_2/customer.cc\",line=\"35\"}"
+        );
+    }
 }
