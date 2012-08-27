@@ -42,10 +42,20 @@
 package org.netbeans.modules.html.editor;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -103,4 +113,30 @@ public class Utils {
             return null;
         }
     }
+    
+        /**
+     * Creates a new {@link Model} instance for the given {@link Source}.
+     * 
+     * @since 1.3
+     * @param source
+     * @return
+     * @throws ParseException 
+     */
+    public static Model createCssSourceModel(Source source) throws ParseException {
+        final AtomicReference<Model> model_ref = new AtomicReference<Model>();
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
+                if(ri != null) {
+                    CssCslParserResult result = (CssCslParserResult)ri.getParserResult();
+                    model_ref.set(Model.getModel(result.getWrappedCssParserResult()));
+                }
+                
+            }
+        });
+        return model_ref.get();
+    }
+    
 }

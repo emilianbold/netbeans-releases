@@ -305,8 +305,10 @@ public class RuleEditorPanel extends JPanel {
         //init default components
         initComponents();
         
-        menuLabel.setComponentPopupMenu(popupMenu);
-        
+        if(!addPropertyMode) {
+            northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
+            menuLabel.setComponentPopupMenu(popupMenu);
+        }
         
         addPropertyButton.setVisible(!addPropertyMode);
         
@@ -571,20 +573,13 @@ public class RuleEditorPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        menuLabel = new javax.swing.JLabel();
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
-        menuLabel = new javax.swing.JLabel();
         northWestPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         southPanel = new javax.swing.JPanel();
         addPropertyButton = new javax.swing.JButton();
-
-        setLayout(new java.awt.BorderLayout());
-
-        northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        northPanel.setLayout(new java.awt.BorderLayout());
-
-        northEastPanel.setLayout(new java.awt.BorderLayout());
 
         menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/menu.png"))); // NOI18N
         menuLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.menuLabel.text")); // NOI18N
@@ -594,8 +589,13 @@ public class RuleEditorPanel extends JPanel {
                 menuLabelMouseClicked(evt);
             }
         });
-        northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
 
+        setLayout(new java.awt.BorderLayout());
+
+        northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        northPanel.setLayout(new java.awt.BorderLayout());
+
+        northEastPanel.setLayout(new java.awt.BorderLayout());
         northPanel.add(northEastPanel, java.awt.BorderLayout.EAST);
 
         northWestPanel.setLayout(new java.awt.BorderLayout());
