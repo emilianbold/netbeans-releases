@@ -172,7 +172,7 @@ public class SiteZip implements SiteTemplateImplementation {
 
         @NbBundle.Messages({
             "SiteZip.error.template.missing=Template file must be specified.",
-            "SiteZip.error.template.invalid=Template file does not exist."
+            "SiteZip.error.template.invalid=Template file is invalid (http://... or local file expected)."
         })
         public boolean isValid() {
             String tpl = panel.getTemplate();
