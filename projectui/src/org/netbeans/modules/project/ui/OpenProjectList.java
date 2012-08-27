@@ -188,6 +188,7 @@ public final class OpenProjectList {
     private PropertyChangeListener infoListener;
     private final LoadOpenProjects LOAD;
     private final ArrayList<ProjectGroupChangeListener> projectGroupSupport;
+    private final AtomicBoolean groupChanging = new AtomicBoolean(false);
     
     OpenProjectList() {
         LOAD = new LoadOpenProjects(0);
@@ -282,6 +283,7 @@ public final class OpenProjectList {
     }
     
     public void fireProjectGroupChanging(Group oldGroup, Group newGroup) {
+        groupChanging();
         List<ProjectGroupChangeListener> list = new ArrayList<ProjectGroupChangeListener>();
         synchronized (projectGroupSupport) {
             list.addAll(projectGroupSupport);
@@ -295,6 +297,7 @@ public final class OpenProjectList {
     }
     
     public void fireProjectGroupChanged(Group oldGroup, Group newGroup) {
+        groupChanged();
         List<ProjectGroupChangeListener> list = new ArrayList<ProjectGroupChangeListener>();
         synchronized (projectGroupSupport) {
             list.addAll(projectGroupSupport);
@@ -305,6 +308,25 @@ public final class OpenProjectList {
         for (ProjectGroupChangeListener l : list) {
             l.projectGroupChanged(event);
         }
+    }
+
+    private void groupChanged() {
+        groupChanging.compareAndSet(true, false);
+        recentProjects.load();
+        pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
+
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
+                    List<String> rt = OpenProjectListSettings.getInstance().getRecentTemplates();
+                    getRecentTemplates().clear();
+                    getRecentTemplates().addAll(rt);
+                    return null;
+                }
+        });
+    }
+
+    private void groupChanging() {
+        groupChanging.compareAndSet(false, true);
     }
     
     private final class LoadOpenProjects implements Runnable, LookupListener, Future<Project[]> {
@@ -878,11 +900,11 @@ public final class OpenProjectList {
                 return null;
             }
             });
-            if (!notifyList.isEmpty()) {
+            if (!notifyList.isEmpty() && !groupChanging.get()) {
                 for (Project p : notifyList) {
                     recentProjects.add(p); // #183681: call outside of lock
-                    recentProjects.save();
                 }
+                recentProjects.save();
             }
             //#125750 not necessary to call notifyClosed() under synchronized lock.
             OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
