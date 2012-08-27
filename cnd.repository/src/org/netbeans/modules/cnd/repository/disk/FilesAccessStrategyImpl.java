@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.Filter;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  * Implements FilesAccessStrategy
@@ -67,13 +68,13 @@ import org.netbeans.modules.cnd.repository.util.Filter;
  */
 public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
-    private static class ConcurrentFileRWAccess extends BufferedRWAccess {
+    private class ConcurrentFileRWAccess extends BufferedRWAccess {
        
         public final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
         public final CharSequence unit;
 
         public ConcurrentFileRWAccess(File file, CharSequence unit) throws IOException {
-            super(file);
+            super(file, unitCodec);
             this.unit = unit;
         }
     }
@@ -95,8 +96,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private int writeHitCnt = 0;
     BaseStatistics<String> writeStatistics;
     BaseStatistics<String> readStatistics;
+    private final UnitCodec unitCodec;
     
-    public FilesAccessStrategyImpl(StorageAllocator storageAllocator) {
+    public FilesAccessStrategyImpl(StorageAllocator storageAllocator, UnitCodec unitCodec) {
+        this.unitCodec = unitCodec;
         this.storageAllocator = storageAllocator;
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
         if( Stats.multyFileStatistics ) {

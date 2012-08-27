@@ -48,6 +48,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  * This class is responsible for int <-> String translation for both
@@ -183,21 +184,21 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         unitNamesCache.removeUnit(unitName);
     }
 
-    public void startup(int newVersion) {
+    public void startup(int newVersion, UnitCodec unitCodec) {
         version = newVersion;
-        init();
+        init(unitCodec);
     }
 
     private IntToStringCache getUnitFileNames(int unitId) {
         return unitNamesCache.getFileNames(unitId);
     }
 
-    private void init() {
+    private void init(UnitCodec unitCodec) {
         boolean aLoaded = loaded;
         if (!aLoaded) {
             synchronized (initLock) {
                 if (!loaded) {
-                    unitNamesCache = new UnitsCache(storageAllocator);
+                    unitNamesCache = new UnitsCache(storageAllocator, unitCodec);
                     loaded = true;
                 }
             }

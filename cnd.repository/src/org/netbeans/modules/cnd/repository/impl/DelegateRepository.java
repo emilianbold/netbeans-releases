@@ -185,7 +185,7 @@ public final class DelegateRepository implements Repository {
             Stats.log("by default using HybridRepository."); // NOI18N
             delegate = new DiskRepositoryManager(id, cacheLocation);
         }
-        delegate.getTranslation().startup(persistMechanismVersion);
+        delegate.getTranslation().startup(persistMechanismVersion, delegate);
         delegate.startup(persistMechanismVersion);
         return delegate;
     }

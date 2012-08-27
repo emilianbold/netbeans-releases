@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,7 +71,18 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         //System.setProperty("cnd.repository.trace.conflicts", "true");
     }
     private final FilesAccessStrategyImpl strategy = new FilesAccessStrategyImpl(
-            new StorageAllocator(StorageAllocator.getDefaultCacheLocation()));
+            new StorageAllocator(StorageAllocator.getDefaultCacheLocation()),
+            new UnitCodec() {
+                @Override
+                public int codeUnitIdBeforeWriting(int unitId) {
+                    return unitId;
+                }
+
+                @Override
+                public int decodeUnitIdAfterReading(int unitId) {
+                    return unitId;
+                }
+            });
 
     public FilesAccessStrategyTest(String testName) {
         super(testName);

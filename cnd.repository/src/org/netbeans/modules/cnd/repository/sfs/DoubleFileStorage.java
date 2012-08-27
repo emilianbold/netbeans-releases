@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  * Stores Persistent objects in two files;
@@ -90,8 +91,8 @@ public class DoubleFileStorage extends FileStorage {
     }
     
     // package-local - for test purposes
-    public DoubleFileStorage(final File basePath) throws IOException {
-        this (basePath, false);
+    public DoubleFileStorage(final File basePath, UnitCodec unitCodec) throws IOException {
+        this (basePath, false, unitCodec);
     }
     /**
      * Creates a new <code>DoubleFileStorage</code> instance 
@@ -100,12 +101,12 @@ public class DoubleFileStorage extends FileStorage {
      * @param createCleanExistent    A flag if the storage should be created, not opened
      */
     // package-local - for test purposes
-    DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
+    DoubleFileStorage (final File basePath, boolean createCleanExistent, UnitCodec unitCodec) throws IOException {
         this.basePath = basePath;
 
-        cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent); // NOI18N
+        cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent, unitCodec); // NOI18N
         
-        cache_1_dataFile = new IndexedStorageFile(basePath, "cache-1", createCleanExistent); // NOI18N
+        cache_1_dataFile = new IndexedStorageFile(basePath, "cache-1", createCleanExistent, unitCodec); // NOI18N
 
         if ((cache_0_dataFile.getDataFileUsedSize() == 0 ) &&
             (cache_1_dataFile.getDataFileUsedSize() == 0)) {

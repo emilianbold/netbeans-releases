@@ -39,23 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.translator;
-
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.IOException;
+package org.netbeans.modules.cnd.repository.util;
 
 /**
  *
  * @author vk155633
  */
-public class UnitsUtil {
-
-    public static int readUnitId(DataInput dataInput) throws IOException {
-        return dataInput.readInt();
-    }
-    public static void writeUnitId(int unitId, DataOutput dataOutput) throws IOException {
-        dataOutput.writeInt(unitId);
-    }
+public interface UnitCodec {
+    int codeUnitIdBeforeWriting(int unitId);
+    int decodeUnitIdAfterReading(int unitId);
 }

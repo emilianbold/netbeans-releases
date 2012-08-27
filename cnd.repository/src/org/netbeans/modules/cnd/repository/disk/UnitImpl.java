@@ -81,7 +81,7 @@ public final class UnitImpl implements Unit {
         assert repository != null;
         this.repository = repository;
         File homeDir = new File(repository.getStorageAllocator().getUnitStorageName(unitName));
-        singleFileStorage = FileStorage.create(homeDir);
+        singleFileStorage = FileStorage.create(homeDir, repository);
         multyFileStorage = new MultyFileStorage(repository.getFilesAccessStrategy(), getName());
         Collection<? extends Provider> providers = Lookup.getDefault().lookupAll(DatabaseStorage.Provider.class);
         
@@ -121,7 +121,7 @@ public final class UnitImpl implements Unit {
 
     @Override
     public String toString() {
-        return "UnitImpl{" + unitName + '}'; // NOI18N
+        return "UnitImpl{" + id + ' ' + unitName + '}'; // NOI18N
     }
 
     @Override

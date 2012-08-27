@@ -223,6 +223,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert (platformProject instanceof NativeProject) || (platformProject instanceof CharSequence);
         this.platformProject = platformProject;
         cacheLocation = getCacheBaseDirectory(platformProject);        
+        this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
         // remember in repository
         RepositoryUtils.hang(this);
         // create global namespace
@@ -3531,7 +3532,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();
 
-        this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
+        // moved into init, otherwise it tried to ccess wrong repository (as cacheLocation is not set yet)
+        //this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
         this.hasFileSystemProblems = aStream.readBoolean();
     }
 

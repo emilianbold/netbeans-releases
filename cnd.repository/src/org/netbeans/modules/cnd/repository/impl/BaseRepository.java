@@ -47,12 +47,14 @@ import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategy;
 import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategyImpl;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class BaseRepository implements Repository {
+public abstract class BaseRepository implements Repository, UnitCodec {
     
     public static final int REPO_DENOM = 100000;
     
@@ -67,8 +69,18 @@ public abstract class BaseRepository implements Repository {
         this.id = id;
         this.cacheLocation = cacheLocation;
         this.storageAllocator = new StorageAllocator(cacheLocation);
-        this.filesAccessStrategy = new FilesAccessStrategyImpl(storageAllocator);
+        this.filesAccessStrategy = new FilesAccessStrategyImpl(storageAllocator, this);
         this.translator = new RepositoryTranslatorImpl(storageAllocator);
+    }
+
+    @Override
+    public int codeUnitIdBeforeWriting(int unitId) {
+        return unitId / REPO_DENOM; // write it *without* repository ID
+    }
+
+    @Override
+    public int decodeUnitIdAfterReading(int unitId) {
+        return id * REPO_DENOM + unitId / REPO_DENOM; // add repository ID
     }
 
     public final RepositoryTranslatorImpl getTranslation() {

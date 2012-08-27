@@ -62,6 +62,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -117,6 +118,7 @@ import org.openide.util.NbBundle;
     private FileChannel channel;
     private FileLock masterIndexLock;
     private final StorageAllocator storageAllocator;
+    private final UnitCodec unitCodec;
 
     /**
      * Loads master index and unit/timestamp pairs
@@ -126,9 +128,10 @@ import org.openide.util.NbBundle;
      *	- their required units 
      *	- required units  timestamps 
      */
-    /*package*/ UnitsCache(StorageAllocator storageAllocator) {
+    /*package*/ UnitsCache(StorageAllocator storageAllocator, UnitCodec unitCodec) {
         //this.version = RepositoryTranslatorImpl.getVersion();
         this.storageAllocator = storageAllocator;
+        this.unitCodec = unitCodec;
         masterIndexFile = new File(storageAllocator.getCacheBaseDirectory(), "index"); // NOI18N
         this.timestamp = System.currentTimeMillis();
         boolean inited = false;
@@ -451,7 +454,7 @@ import org.openide.util.NbBundle;
         if (reqUnits != null) {
             for (CharSequence rUnitName : reqUnits) {
                 long ts = unit2timestamp.get(rUnitName).longValue();
-                RequiredUnit rU = new RequiredUnit(getId(rUnitName), ts);
+                RequiredUnit rU = new RequiredUnit(getId(rUnitName), ts, unitCodec);
                 unitReqUnits.add(rU);
             }
         }
@@ -545,7 +548,7 @@ import org.openide.util.NbBundle;
         Collection<RequiredUnit> units = new CopyOnWriteArraySet<RequiredUnit>();
         int size = stream.readInt();
         for (int i = 0; i < size; i++) {
-            RequiredUnit unit = new RequiredUnit(stream);
+            RequiredUnit unit = new RequiredUnit(stream, unitCodec);
             units.add(unit);
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
                 trace("\t\tRead req. unit %s ts=%d\n", unit.getUnitId(), unit.getTimestamp()); // NOI18N
@@ -708,19 +711,22 @@ import org.openide.util.NbBundle;
 
         private final int unitId;
         private final long timestamp;
+        private final UnitCodec unitCodec;
 
-        public RequiredUnit(int unitId, long time) {
+        public RequiredUnit(int unitId, long time, UnitCodec unitCodec) {
+            this.unitCodec = unitCodec;
             this.unitId = unitId;
             this.timestamp = time;
         }
 
-        public RequiredUnit(DataInput stream) throws IOException {
-            unitId = UnitsUtil.readUnitId(stream);
+        public RequiredUnit(DataInput stream, UnitCodec unitCodec) throws IOException {
+            this.unitCodec = unitCodec;
+            unitId = unitCodec.decodeUnitIdAfterReading(stream.readInt());
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            UnitsUtil.writeUnitId(unitId, stream);
+            stream.writeInt(unitCodec.codeUnitIdBeforeWriting(unitId));
             stream.writeLong(timestamp);
         }
 

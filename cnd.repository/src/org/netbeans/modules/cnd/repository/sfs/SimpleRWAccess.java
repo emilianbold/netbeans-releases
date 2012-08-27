@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.repository.sfs;
 import java.io.*;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  * An implementation of FileRWAccess
@@ -58,8 +59,8 @@ public class SimpleRWAccess implements FileRWAccess {
     private static final class Lock {}
     private final Object lock = new Lock();
 
-    public SimpleRWAccess(File file) throws IOException {
-	randomAccessFile = new RepositoryRandomAccessFile(file, "rw"); // NOI18N
+    public SimpleRWAccess(File file, UnitCodec unitCodec) throws IOException {
+	randomAccessFile = new RepositoryRandomAccessFile(file, "rw", unitCodec); // NOI18N
     }
 
     @Override

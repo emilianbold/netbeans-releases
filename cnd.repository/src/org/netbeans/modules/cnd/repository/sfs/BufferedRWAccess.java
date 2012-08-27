@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  * 
@@ -88,8 +89,10 @@ public class BufferedRWAccess implements FileRWAccess {
     protected FileChannel channel;
     private ByteBuffer writeBuffer;
     private int bufSize;
+    private final UnitCodec unitCodec;
     
-    public BufferedRWAccess(File file) throws IOException {
+    public BufferedRWAccess(File file, UnitCodec unitCodec) throws IOException {
+        this.unitCodec = unitCodec;
 	this.bufSize = Stats.bufSize > 0 ? Stats.bufSize : 32*1024;
         File parent = new File(file.getParent());
         
@@ -108,7 +111,7 @@ public class BufferedRWAccess implements FileRWAccess {
 	    ByteBuffer buffer = getReadBuffer(size);
 	    channel.read(buffer, offset);
 	    buffer.flip();
-	    RepositoryDataInput in = new BufferDataInput(buffer);
+	    RepositoryDataInput in = new BufferDataInput(buffer, unitCodec);
 	    return factory.read(in);
 	}
 	catch( BufferOverflowException e ) {
@@ -125,7 +128,7 @@ public class BufferedRWAccess implements FileRWAccess {
     public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
 	channel.position(offset);
 	ByteBufferOutputStream bos = new ByteBufferOutputStream(getWriteBuffer());
-	RepositoryDataOutput out = new RepositoryDataOutputStream(bos);
+	RepositoryDataOutput out = new RepositoryDataOutputStream(bos, unitCodec);
 	factory.write(out, object);
 	int count = bos.count();
 	writeBuffer();
