@@ -52,6 +52,8 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     // @GuardedBy("siteTemplateWizardLock")
     private SiteTemplateWizard siteTemplateWizard;
     private volatile WizardDescriptor wizardDescriptor;
+    // #216416
+    private volatile boolean templatePrepared = false;
 
 
     @Override
@@ -72,6 +74,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
+        templatePrepared = false;
     }
 
     @Override
@@ -79,6 +82,10 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
         if (settings.getValue() == WizardDescriptor.NEXT_OPTION
                 || settings.getValue() == WizardDescriptor.FINISH_OPTION) {
             // next step or finish
+            if (templatePrepared) {
+                return;
+            }
+            templatePrepared = true;
             synchronized (siteTemplateWizardLock) {
                 wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
                 getComponent().prepareTemplate();
