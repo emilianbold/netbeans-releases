@@ -631,6 +631,11 @@ public final class CodeStyle {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
     }
 
+    public WrapStyle wrapProperties() {
+        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+        return WrapStyle.valueOf(wrap);
+    }
+
     // Uses
 
     public boolean preferFullyQualifiedNames() {
