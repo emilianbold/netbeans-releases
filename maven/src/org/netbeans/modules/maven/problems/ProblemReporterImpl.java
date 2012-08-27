@@ -127,7 +127,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
     
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
+    public static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
 
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;

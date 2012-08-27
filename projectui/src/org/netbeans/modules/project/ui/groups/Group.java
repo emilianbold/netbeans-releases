@@ -82,6 +82,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents a project group.
@@ -208,20 +209,27 @@ public abstract class Group {
     };
     static {
         LOG.fine("initializing open projects listener");
-        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override 
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (!projectsLoaded || switchingGroup.get()) {
-                    return;
-                }
-                String propertyName = evt.getPropertyName();
-                if (propertyName != null) {
-                    Group g = getActiveGroup();
-                    if (g != null) {
-                        LOG.log(Level.FINE, "received {0} on {1}", new Object[] {propertyName, g.id});
-                        g.openProjectsEvent(propertyName);
+        //cannot call OpenProjects.getDefault() here as we appear in the constuctor of the 
+        //OpenProjects class
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override 
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (!projectsLoaded || switchingGroup.get()) {
+                            return;
+                        }
+                        String propertyName = evt.getPropertyName();
+                        if (propertyName != null) {
+                            Group g = getActiveGroup();
+                            if (g != null) {
+                                LOG.log(Level.FINE, "received {0} on {1}", new Object[] {propertyName, g.id});
+                                g.openProjectsEvent(propertyName);
+                            }
+                        }
                     }
-                }
+                });
             }
         });
     }
