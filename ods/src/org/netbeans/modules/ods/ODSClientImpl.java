@@ -286,8 +286,9 @@ public final class ODSClientImpl implements ODSClient {
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof InterruptedException) {
                 throw new ODSException.ODSCanceledException(ex);
+            } else {
+                throw new ODSException(ex);
             }
-            throw ex;
         } catch (Exception ex) {
             throw new ODSException(ex);
         }
