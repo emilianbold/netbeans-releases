@@ -513,7 +513,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // threadsSamplingCheckbox
         threadsSamplingCheckbox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, Bundle.MemorySettingsAdvancedPanel_EnableSamplingCheckboxText());
-        threadsSamplingCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
+        threadsSamplingCheckbox.setToolTipText(Bundle.StpSamplingTooltip());
         threadsSamplingCheckbox.setOpaque(false);
         threadsSamplingCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
