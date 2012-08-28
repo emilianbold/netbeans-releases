@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
@@ -55,10 +54,14 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -122,9 +125,9 @@ public final class ChangeParametersFix implements Fix {
         for (ParameterInfo parameterInfo : newParameterInfo) {
             ic.add(parameterInfo);
         }
-        Lookup actionContext = new AbstractLookup(ic);
-
-        final Action a = JavaRefactoringActionsFactory.changeParametersAction().createContextAwareInstance(actionContext);
+        Lookup nodeLookup = new AbstractLookup(ic);
+        Node actionContext = new AbstractNode(Children.LEAF, nodeLookup);
+        final Action a = JavaRefactoringActionsFactory.changeParametersAction().createContextAwareInstance(Lookups.singleton(actionContext));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);

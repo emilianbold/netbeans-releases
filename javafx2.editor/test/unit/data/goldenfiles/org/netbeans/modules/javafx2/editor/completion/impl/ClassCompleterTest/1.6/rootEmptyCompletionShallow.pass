@@ -1,5 +1,4 @@
 <?import 
-instruction[fx:include]
 simple-class[javafx.scene.control.Accordion]
 simple-class[javafx.scene.control.Button]
 simple-class[javafx.scene.control.Cell]

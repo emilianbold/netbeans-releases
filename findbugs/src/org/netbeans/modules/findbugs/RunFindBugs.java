@@ -454,12 +454,14 @@ public class RunFindBugs {
         for (DetectorFactory df : dfc.getFactories()) {
             boolean enable = false;
 
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                BugCategory c = dfc.getBugCategory(bp.getCategory());
+            if (!df.isHidden()) {
+                for (BugPattern bp : df.getReportedBugPatterns()) {
+                    BugCategory c = dfc.getBugCategory(bp.getCategory());
 
-                if (c.isHidden()) continue;
+                    if (c.isHidden()) continue;
 
-                enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
+                    enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
+                }
             }
 
             atLeastOneEnabled |= enable;

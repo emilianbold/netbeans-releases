@@ -71,6 +71,8 @@ import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -121,10 +123,16 @@ final public class ClassCompleter implements Completer, Completer.Factory {
     
     @Override
     public Completer createCompleter(CompletionContext ctx) {
+        FxNode parent = ctx.getElementParent();
+        FxProperty pi = ctx.getEnclosingProperty();
+        if (pi == null && parent.getKind() != FxNode.Kind.Source) {
+            // can complete only in root and in properties
+            return null;
+        }
         if (ctx.getType() == CompletionContext.Type.BEAN ||
             ctx.getType() == CompletionContext.Type.ROOT ||
             ctx.getType() == CompletionContext.Type.CHILD_ELEMENT) {
-            FxProperty pi = ctx.getEnclosingProperty();
+            
             if (pi == null || pi.getKind() == FxDefinitionKind.LIST) {
                 return new ClassCompleter(ctx);
             } 

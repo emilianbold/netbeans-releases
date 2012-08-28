@@ -278,6 +278,11 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     @Override
     public JMenuItem getPopupPresenter() {
+        if (FormLAF.noLafSwitching()) {
+            JMenuItem previewItem = new JMenuItem(getName());
+            previewItem.addActionListener(this);
+            return previewItem;
+        }
         JMenu layoutMenu = new LAFMenu(getName());
         layoutMenu.setEnabled(isEnabled());
         HelpCtx.setHelpIDString(layoutMenu, SelectLayoutAction.class.getName());
