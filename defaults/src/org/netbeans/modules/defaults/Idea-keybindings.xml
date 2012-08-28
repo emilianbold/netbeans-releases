@@ -139,6 +139,7 @@ made subject to such option by the copyright holder.
     <bind actionName="tooltip-show" key="C-P"/>
     <bind actionName="undo" key="D-Z"/>
     <bind actionName="undo" key="UNDO"/>
+    <bind actionName="clipboard-history" key="CS-V"/>
 
     <bind actionName="in-place-refactoring" key="S-F6"/>
     <bind actionName="toggle-comment" key="C-SLASH"/>
