@@ -89,7 +89,7 @@ public class ScriptEmbeddingProvider extends EmbeddingProvider {
     }
 
     @Override
-    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+    public List<Embedding> getEmbeddings(final Snapshot snapshot) {
         if (!JavaFXEditorUtils.FXML_MIME_TYPE.equals(snapshot.getMimeType())) {
             return Collections.emptyList();
         }
@@ -100,14 +100,24 @@ public class ScriptEmbeddingProvider extends EmbeddingProvider {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    FxmlParserResult res = FxmlParserResult.get(resultIterator.getParserResult());
+                    final FxmlParserResult res = FxmlParserResult.get(resultIterator.getParserResult());
                     if (res == null ||
                         res.getSourceModel().getLanguage() == null ||
                         !JAVASCRIPT_LANG.equals(res.getSourceModel().getLanguage().getLanguage())) {
                         return;
                     }
-                    f.setFxResult(res);
-                    res.getSourceModel().accept(f);
+                    Document doc = snapshot.getSource().getDocument(false);
+                    if (doc != null) {
+                        doc.render(new Runnable() {
+                            public void run() {
+                                f.setFxResult(res);
+                                res.getSourceModel().accept(f);
+                            }
+                        });
+                    } else {
+                        f.setFxResult(res);
+                        res.getSourceModel().accept(f);
+                    }
                 }
                 
             });
@@ -185,7 +195,7 @@ public class ScriptEmbeddingProvider extends EmbeddingProvider {
             } else {
                 int skip = ts.move(pos.getContentStart());
                 if (skip != 0) {
-                    throw new IllegalStateException();
+                    System.err.println("");
                 }
                 
                 List<Embedding> content = new LinkedList<Embedding>();
