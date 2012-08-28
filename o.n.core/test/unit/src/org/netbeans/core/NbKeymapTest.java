@@ -276,6 +276,18 @@ public class NbKeymapTest extends NbTestCase {
         // should succeed, nothing 
         assertNull(km.getAction(controlA));
     }
+    
+    public void testMaskForSameKeystrokeWithDifferentText217497() throws Exception {
+        make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
+        make("Keymaps/NetBeans/D-A.instance").setAttribute("instanceCreate", new DummyAction("five"));
+        make("Keymaps/NetBeans/C-A.removed");
+        NbKeymap km = new NbKeymap();
+        KeyStroke controlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
+
+        Action a = km.getAction(controlA);
+        assertNotNull("the D-A action should prevail");
+        assertEquals("D-A should override C-A", "five", a.getValue(Action.NAME));
+    }
 
     public void testMultiKeyShortcuts() throws Exception {
         final AtomicReference<String> ran = new AtomicReference<String>();

@@ -54,6 +54,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -231,6 +232,9 @@ public final class BeanModelBuilder {
     }
     
     private void findBuilder() {
+        if (classElement.getNestingKind() != NestingKind.TOP_LEVEL) {
+            return;
+        }
         StringBuilder sb = new StringBuilder(((PackageElement)classElement.getEnclosingElement()).getQualifiedName().toString());
         if (sb.length() > 0) {
             sb.append(".");
@@ -353,7 +357,6 @@ public final class BeanModelBuilder {
         TypeMirror objectType = m.getParameters().get(0).asType();
         TypeMirror paramType = m.getParameters().get(1).asType();
         
-        TypeElement objectTypeEl = (TypeElement)compilationInfo.getTypes().asElement(objectType);
         boolean simple = FxClassUtils.isSimpleType(paramType, compilationInfo);
         // analysis depends ont he paramType contents:
         addDependency(paramType);
@@ -363,7 +366,7 @@ public final class BeanModelBuilder {
         pi.setAccessor(ElementHandle.create(m));
         
         // setup the discovered object type
-        pi.setObjectType(ElementHandle.create(objectTypeEl));
+        pi.setObjectType(TypeMirrorHandle.create(objectType));
         
         if (staticProperties.isEmpty()) {
             staticProperties = new HashMap<String, FxProperty>();
@@ -624,7 +627,8 @@ public final class BeanModelBuilder {
             List<? extends TypeMirror> tParams = dt.getTypeArguments();
             if (tParams.size() != 1) {
                 // something very wrong, the event handler has just 1 type parameter
-                throw new IllegalStateException();
+                //throw new IllegalStateException();
+                return;
             }
             TypeMirror eventType = tParams.get(0);
             if (eventType.getKind() == TypeKind.WILDCARD) {
