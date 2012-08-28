@@ -53,7 +53,9 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * HTML browser window with developer support tools.
@@ -66,6 +68,19 @@ public class DeveloperHtmlBrowserComponent extends HtmlBrowserComponent {
 
     public DeveloperHtmlBrowserComponent( HtmlBrowser.Factory factory ) {
         super( factory, false, false );
+    }
+
+    @Override
+    public void open() {
+        WindowManager wm = WindowManager.getDefault();
+        Mode mode = wm.findMode( this );
+        if( null == mode && !Boolean.getBoolean("webpreview.document") ) { //NOI18N
+            mode = wm.findMode("webpreview"); //NOI18N
+            if( null != mode ) {
+                mode.dockInto( this );
+            }
+        }
+        super.open();
     }
 
     @Override
