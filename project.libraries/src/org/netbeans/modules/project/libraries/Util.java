@@ -145,7 +145,7 @@ public class Util {
         }
         return false;
     }
-    
+
     public static void registerSource(
         final @NonNull LibraryImplementation impl,
         final @NonNull FileObject descriptorFile) {
