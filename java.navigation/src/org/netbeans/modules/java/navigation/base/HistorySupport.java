@@ -39,13 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.navigation.hierarchy;
+package org.netbeans.modules.java.navigation.base;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URI;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.lang.model.element.TypeElement;
 import javax.swing.ComboBoxModel;
@@ -56,54 +66,127 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.java.navigation.base.Pair;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomas Zezula
  */
-class HierarchyHistoryUI {
+public class HistorySupport {
 
-    private HierarchyHistoryUI() {
-        throw new IllegalStateException();
+
+    public static final String HISTORY = "history"; //NOI18N
+    private static final int HISTORY_LENGTH = 25;
+
+    //@GuardedBy("HistorySupport.class")
+    private static Map<Class<?>,HistorySupport> instances = new HashMap<Class<?>, HistorySupport>();;
+
+    private final PropertyChangeSupport suppot;
+    //@GuardedBy("this")
+    private final Deque<Pair<URI, ElementHandle<TypeElement>>> history;
+
+    private HistorySupport() {
+        this.suppot = new PropertyChangeSupport(this);
+        this.history = new ArrayDeque<Pair<URI, ElementHandle<TypeElement>>>();
     }
 
-    static ComboBoxModel createModel() {
-        return new HierarchyHistoryModel();
+    public void addToHistory(@NonNull final Pair<URI, ElementHandle<TypeElement>> pair) {
+        synchronized (this) {
+            if (history.size() == HISTORY_LENGTH) {
+                history.removeLast();
+            }
+            boolean contains = false;
+            for (Pair<URI,ElementHandle<TypeElement>> p : history) {
+                if (p.equals(pair)) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
+                history.addFirst(pair);
+            }
+        }
+        suppot.firePropertyChange(HISTORY, null, null);
+    }
+
+    @NonNull
+    public synchronized List<? extends Pair<URI, ElementHandle<TypeElement>>> getHistory() {
+        final SortedSet<Pair<URI, ElementHandle<TypeElement>>> sorted = new TreeSet<Pair<URI, ElementHandle<TypeElement>>>(new SimpleNameComparator());
+        for (Pair<URI,ElementHandle<TypeElement>> p : history) {
+            sorted.add(p);
+        }
+        return Collections.unmodifiableList(new ArrayList<Pair<URI, ElementHandle<TypeElement>>>(sorted));
+    }
+
+    public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        assert listener != null;
+        suppot.addPropertyChangeListener(listener);
     }
 
 
-    static ListCellRenderer createRenderer() {
-        return new HierarchyHistoryRenderer();
+    public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        assert listener != null;
+        suppot.removePropertyChangeListener(listener);
+    }
+
+    @NonNull
+    public static synchronized HistorySupport getInstnace(@NonNull final Class<?> forClass) {
+        Parameters.notNull("forClass", forClass);       //NOI18N
+        HistorySupport history = instances.get(forClass);
+        if (history == null) {
+            history = new HistorySupport();
+            instances.put(forClass, history);
+        }
+        return history;
+    }
+
+    public static ComboBoxModel createModel(@NonNull final HistorySupport support) {
+        return new HistoryModel(support);
     }
 
 
-    private static class HierarchyHistoryRenderer extends DefaultListCellRenderer {
+    public static ListCellRenderer createRenderer(@NonNull final HistorySupport support) {
+        return new HistoryRenderer();
+    }
+
+
+    private static String getSimpleName(@NonNull final String fqn) {
+        int sepIndex = fqn.lastIndexOf('$');   //NOI18N
+        if (sepIndex == -1) {
+            sepIndex = fqn.lastIndexOf('.');   //NOI18N
+        }
+        return sepIndex >= 0?
+            fqn.substring(sepIndex+1):
+            fqn;
+    }
+
+    private static class HistoryRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof Pair && ((Pair)value).second instanceof ElementHandle) {
                 final String fqn =  ((ElementHandle)((Pair)value).second).getQualifiedName();
-                value = HierarchyHistory.getSimpleName(fqn);
+                value = getSimpleName(fqn);
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
     }
 
-    private static class HierarchyHistoryModel implements ComboBoxModel, PropertyChangeListener {
+    private static class HistoryModel implements ComboBoxModel, PropertyChangeListener {
 
         private final List<ListDataListener> listeners;
-        private final HierarchyHistory history;
+        private final HistorySupport history;
         //@GuardedBy("this")
         private List<? extends Pair<URI,ElementHandle<TypeElement>>> cache;
         private Object selectedItem;
 
 
-        HierarchyHistoryModel() {
+        HistoryModel(@NonNull final HistorySupport history) {
+            Parameters.notNull("history", history); //NOI18N
             listeners = new CopyOnWriteArrayList<ListDataListener>();
-            history = HierarchyHistory.getInstance();
-            history.addPropertyChangeListener(WeakListeners.propertyChange(this, history));
+            this.history = history;
+            this.history.addPropertyChangeListener(WeakListeners.propertyChange(this, history));
         }
 
         @Override
@@ -141,7 +224,7 @@ class HierarchyHistoryUI {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (HierarchyHistory.HISTORY.equals(evt.getPropertyName())) {
+            if (HISTORY.equals(evt.getPropertyName())) {
                 synchronized (this) {
                     cache = null;
                 }
@@ -172,6 +255,17 @@ class HierarchyHistoryUI {
                 cache = history.getHistory();
             }
             return cache;
+        }
+
+    }
+
+    private static class SimpleNameComparator implements Comparator<Pair<URI,ElementHandle<TypeElement>>> {
+
+        @Override
+        public int compare(Pair<URI, ElementHandle<TypeElement>> o1, Pair<URI, ElementHandle<TypeElement>> o2) {
+            final String simpleName1 = getSimpleName(o1.second.getQualifiedName());
+            final String simpleName2 = getSimpleName(o2.second.getQualifiedName());
+            return simpleName1.compareTo(simpleName2);
         }
 
     }

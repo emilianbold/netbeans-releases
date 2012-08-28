@@ -83,6 +83,7 @@ public class FxIncludeCompleter implements Completer, Completer.Factory {
             case BEAN:
             case ROOT:
             case CHILD_ELEMENT:
+            case PROPERTY_ELEMENT:
                 break;
             default:
                 return null;

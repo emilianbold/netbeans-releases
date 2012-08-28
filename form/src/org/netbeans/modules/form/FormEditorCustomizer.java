@@ -130,6 +130,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         JLabel listenerStyleLabel = new JLabel();
         JLabel autoI18nLabel = new JLabel();
         JLabel gridSizeLabel = new JLabel();
+        JLabel codeGenSettingsHint = new JLabel();
         loc(variableModifierLabel, "Variable_Modifier"); // NOI18N
         loc(layoutStyleLabel, "Layout_Style"); // NOI18N
         loc(componentNamesLabel,"Component_Names"); // NOI18N
@@ -139,6 +140,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         loc(guideLineColLabel, "Guiding_Line_Color"); // NOI18N
         loc(gridSizeLabel, "Grid_Size"); // NOI18N
         loc(cbPaintLayout, "Paint_Layout"); // NOI18N
+        loc(codeGenSettingsHint, "Code_Settings_Hint"); // NOI18N
 
         generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
@@ -213,9 +215,14 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(labelHorizontalGroup)
-                .addGroup(componentHorizontalGroup)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(labelHorizontalGroup)
+                        .addGroup(componentHorizontalGroup)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(codeGenSettingsHint, 0, 0, Short.MAX_VALUE)
+                        .addContainerGap()))
         );
 
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
@@ -243,6 +250,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         addLine(layout, verticalGroup, GroupLayout.Alignment.CENTER,
                 gridSizeLabel, spGridSize);
         addComponent(cbPaintLayout, verticalGroup);
+        verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+        addComponent(codeGenSettingsHint, verticalGroup);
         verticalGroup.addContainerGap();
 
         layout.setVerticalGroup(verticalGroup);
@@ -349,6 +358,9 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         } else {
             cbModifier.setSelectedIndex(1);
         }
+        if (!rbGenerateFields.isSelected()) {
+            cbModifier.setEnabled(false);
+        }
         cbListenerStyle.setSelectedIndex(options.getListenerGenerationStyle());
         cbLayoutStyle.setSelectedIndex(options.getLayoutCodeTarget());
         cbComponentNames.setSelectedIndex(options.getAutoSetComponentName());
@@ -358,7 +370,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         listen = true;
         changed = false;
     }
-    
+
     public void applyChanges () {
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
@@ -372,15 +384,17 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         options.setVariablesLocal (rbGenerateLocals.isSelected ());
         options.setGridX((Integer) spGridSize.getValue());
         options.setGridY((Integer) spGridSize.getValue());
-        switch (cbModifier.getSelectedIndex ()) {
-            case 0: options.setVariablesModifier (Modifier.PUBLIC);
-                    break;
-            case 1: options.setVariablesModifier (0);
-                    break;
-            case 2: options.setVariablesModifier (Modifier.PROTECTED);
-                    break;
-            case 3: options.setVariablesModifier (Modifier.PRIVATE);
-                    break;
+        if (rbGenerateFields.isSelected()) {
+            switch (cbModifier.getSelectedIndex ()) {
+                case 0: options.setVariablesModifier (Modifier.PUBLIC);
+                        break;
+                case 1: options.setVariablesModifier (0);
+                        break;
+                case 2: options.setVariablesModifier (Modifier.PROTECTED);
+                        break;
+                case 3: options.setVariablesModifier (Modifier.PRIVATE);
+                        break;
+            }
         }
         guideLineColorProperty.apply();
         selectionBorderColorProperty.apply();
@@ -402,14 +416,21 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     
     @Override
     public void actionPerformed (ActionEvent e) {
-        if (listen)
+        if (listen) {
             changed = true;
+            if (rbGenerateLocals == e.getSource() && rbGenerateLocals.isSelected()) {
+                cbModifier.setEnabled(false);
+            } else if (rbGenerateFields == e.getSource() && rbGenerateFields.isSelected()) {
+                cbModifier.setEnabled(true);
+            }
+        }
     }
     
     @Override
     public void stateChanged (ChangeEvent e) {
-        if (listen)
+        if (listen) {
             changed = true;
+        }
     }
 
     private static class ColorSettingsProperty extends PropertySupport.Reflection<Color> {

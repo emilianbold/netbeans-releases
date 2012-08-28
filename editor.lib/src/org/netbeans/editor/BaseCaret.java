@@ -355,7 +355,7 @@ AtomicLockListener, FoldHierarchyListener {
 
     void updateType() {
         JTextComponent c = component;
-        if (c != null && prefs != null) {
+        if (c != null && prefs != null && !Boolean.TRUE.equals(c.getClientProperty("AsTextField"))) {
             
             String newType;
             int newWidth = 0;

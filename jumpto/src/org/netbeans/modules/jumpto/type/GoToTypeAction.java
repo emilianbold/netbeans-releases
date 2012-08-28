@@ -30,6 +30,8 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
+ * markiewb@netbeans.org
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -74,6 +76,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -85,9 +88,15 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
@@ -103,6 +112,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -219,8 +229,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     
     @Override
-    public ListCellRenderer getListCellRenderer( JList list ) {
-        return new Renderer( list );        
+    public ListCellRenderer getListCellRenderer(
+            @NonNull final JList list,
+            @NonNull final Document nameFieldDocument,
+            @NonNull final ButtonModel caseSensitive) {
+        Parameters.notNull("list", list);   //NOI18N
+        Parameters.notNull("nameFieldDocument", nameFieldDocument); //NOI18N
+        Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
+        return new Renderer(list, nameFieldDocument, caseSensitive);
     }
     
     
@@ -622,7 +638,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static final class Renderer extends EntitiesListCellRenderer {
+    private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener, ActionListener {
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -638,11 +654,18 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private Color fgSelectionColor;
         
         private JList jList;
+        private String searchText = "";
+        private boolean caseSensitive;
+        private final HighlightingNameFormatter typeNameFormatter;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        public Renderer( JList list ) {
+        public Renderer(
+                @NonNull final JList list,
+                @NonNull final Document nameFieldDocument,
+                @NonNull final ButtonModel caseSensitive) {
             
             jList = list;
+            this.caseSensitive = caseSensitive.isSelected();
             
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
@@ -712,7 +735,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                     Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
                             );
             bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();        
+            fgSelectionColor = list.getSelectionForeground();
+            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            nameFieldDocument.addDocumentListener(this);
+            caseSensitive.addActionListener(this);
         }
         
         public @Override Component getListCellRendererComponent( JList list,
@@ -751,7 +777,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 long time = System.currentTimeMillis();
                 TypeDescriptor td = (TypeDescriptor)value;                
                 jlName.setIcon(td.getIcon());
-                jlName.setText(td.getTypeName());
+                //highlight matching search text patterns in type
+                final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText, caseSensitive);
+                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
@@ -776,6 +804,30 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            try {
+                searchText = e.getDocument().getText(0, e.getDocument().getLength());
+            } catch (BadLocationException ex) {
+                searchText = "";    //NOI18N
+            }
+        }
+
+        @Override
+        public void actionPerformed(@NonNull final ActionEvent e) {
+            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
         }
 
      } // Renderer

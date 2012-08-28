@@ -557,6 +557,11 @@ public final class CompletionContext {
             // instance with a default property, caret is positioned WITHIN the content = in the default property.
             // This specifically activates in empty content, which is reported as ignorable whitespace, but can hold property value.
             if (bean != null && bean.getDefaultProperty() != null) {
+                String pn = bean.getDefaultProperty().getName();
+                if (inst.getProperty(pn) != null) {
+                    // there's already defined a default property in the tree, should have been in the parent list, or we are outside of it.
+                    return null;
+                }
                 if (fxmlParserResult.getTreeUtilities().positions(inst).contentContains(caretOffset, true)) {
                     return bean.getDefaultProperty();
                 }
