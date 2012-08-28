@@ -428,4 +428,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 215605 - Parsing project never finishes
         performTest("bug215605.cpp");
     }
+
+    public void testBug217390() throws Exception {
+        // Bug 217390 - Code model is unstable on unknown specifiers
+        performTest("bug217390.cpp");
+    }
 }

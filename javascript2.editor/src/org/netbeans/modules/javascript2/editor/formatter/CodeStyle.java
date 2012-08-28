@@ -565,6 +565,10 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterDotInChainedMethodCalls() {
+        return preferences.getBoolean(wrapAfterDotInChainedMethodCalls, getDefaultAsBoolean(wrapAfterDotInChainedMethodCalls));
+    }
+
     public WrapStyle wrapArrayInit() {
         String wrap = preferences.get(wrapArrayInit, getDefaultAsString(wrapArrayInit));
         return WrapStyle.valueOf(wrap);

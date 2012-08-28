@@ -363,6 +363,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        BEFORE_CHAIN_CALL_DOT {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         AFTER_CHAIN_CALL_DOT {
             @Override
             public boolean isLineWrapMarker() {

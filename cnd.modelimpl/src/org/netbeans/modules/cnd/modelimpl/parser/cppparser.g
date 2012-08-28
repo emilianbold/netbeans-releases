@@ -1874,6 +1874,9 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
+    // fix for unknown specifiers
+    unknown_pretype_declaration_specifiers
+
     (   ( (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
         (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)*
     |
@@ -1906,6 +1909,10 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             (sc = storage_class_specifier)
         )*
         (options {greedy=true;} :type_attribute_specification)?
+
+        // fix for unknown specifiers
+        unknown_posttype_declaration_specifiers
+
 //  |   LITERAL_typename	{td=true;}	direct_declarator 
     |   literal_typeof LPAREN typeof_param RPAREN
     )
@@ -1913,6 +1920,35 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 )
 {declarationSpecifier(td, fd, sc, tq, ts, ds);}
 ;
+
+unknown_pretype_declaration_specifiers
+    :
+    unknown_pretype_declaration_specifiers_list
+    ((IDENT 
+        (
+            LITERAL_friend | LITERAL_typedef | LITERAL_virtual | LITERAL_explicit | LITERAL_final 
+        |   LITERAL_enum | LITERAL_typename | literal_stdcall | literal_clrcall
+        |   (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* IDENT 
+            (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* IDENT
+        )
+    ) => IDENT!)?
+    ;
+
+unknown_pretype_declaration_specifiers_list
+    :
+    ((IDENT IDENT IDENT) => IDENT! unknown_pretype_declaration_specifiers_list)?
+    ;
+
+unknown_posttype_declaration_specifiers
+    :
+    unknown_posttype_declaration_specifiers_list
+    ;
+
+unknown_posttype_declaration_specifiers_list 
+    :
+    ((IDENT IDENT) => IDENT! unknown_posttype_declaration_specifiers_list)?
+    ;
+
 
 protected
 typeof_param :
@@ -2509,17 +2545,17 @@ direct_declarator[int kind, int level]
                     }
                 |
                     (ELLIPSIS)? id = qualified_id
-                    {
-                         if (_td==true) {
-                            // todo: build tree in this case
-                            declaratorID(id,qiType);
-                         } else {
-                            #direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);
-                            declaratorID(id,qiVar);
-                         }
-                         is_address = false; is_pointer = false;
-                    }
-                )
+                        {
+                             if (_td==true) {
+                                // todo: build tree in this case
+                                declaratorID(id,qiType);
+                             } else {
+                                #direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);
+                                declaratorID(id,qiVar);
+                             }
+                             is_address = false; is_pointer = false;
+                        }
+                    )
                 (options {greedy=true;} :variable_attribute_specification)?
                 (asm_block!)?
                 (options {greedy=true;} :variable_attribute_specification)?
