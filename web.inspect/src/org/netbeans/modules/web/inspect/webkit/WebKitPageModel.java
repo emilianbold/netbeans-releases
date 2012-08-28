@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
@@ -537,24 +538,30 @@ public class WebKitPageModel extends PageModel {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            String propName = evt.getPropertyName();
-            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                if (shouldSynchronizeHighlight()) {
-                    updateHighlight();
+            try {
+                String propName = evt.getPropertyName();
+                if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                    if (shouldSynchronizeHighlight()) {
+                        updateHighlight();
+                    }
+                } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                    if (shouldSynchronizeSelection()) {
+                        updateSelection();
+                    }
+                } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                    updateSelectionMode();
+                    updateSynchronization();
+                } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                    updateSelectionMode();
+                    updateSynchronization();
+                } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                    initializePage();
+                    updateSelectionMode();
                 }
-            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelection();
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
-                initializePage();
-                updateSelectionMode();
+            } catch (TransportStateException tse) {
+                // The underlying transport became invalid. No need to worry
+                // about failed synchronization as this means that the debugging
+                // session has been finished.
             }
         }
 
