@@ -217,7 +217,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
             
             revisionEditorPane.setText(reformatRevisionButton.isSelected() ? revision.getReformattedContent() : revision.getContent());
             revisionEditorPane.setVisible(true);
-            revisionEditorPane.getDocument().putProperty(Change.class, revision.getChanges());
+            revisionEditorPane.getDocument().putProperty(Change.class, reformatRevisionButton.isSelected() ? revision.getReformattedChanges() : revision.getChanges());
             
             revisionEditorPane.scrollRectToVisible(visibleRect);
         } else {
