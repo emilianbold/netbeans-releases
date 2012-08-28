@@ -173,6 +173,9 @@ public class JsConventionRule extends JsAstRule {
                 return;
             }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
+            if (ts == null) {
+                return;
+            }
             ts.move(fileOffset);
             if(ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
