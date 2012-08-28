@@ -162,13 +162,13 @@ public class HtmlBrowser extends JPanel {
     /**
     * Creates new html browser.
      *
-     * @param fact Factory that is used for creation. If null is passed it searches for 
+     * @param fact Factory that is used for creation. If null is passed it searches for
      *             a factory providing displayable component.
      * @param toolbar visibility of toolbar
      * @param statusLine visibility of statusLine
      * @param extraToolbar Additional toolbar to be displayed under the default
      * toolbar with location field and back/forward buttons.
-     * @since 7.47
+     * @since 7.52
     */
     public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine, Component extraToolbar) {
         Impl impl = null;
@@ -773,16 +773,14 @@ public class HtmlBrowser extends JPanel {
 
         public static final String PROP_BROWSER_WAS_CLOSED = "browser.was.closed"; // NOI18N
 
-        public static final String PROP_RUNNING = "running"; // NOI18N
-
         /**
          * Name of boolean property which is fired when the browser is busy loading
          * its content.
          * 
-         * @since 7.46
+         * @since 7.52
          */
         public static final String PROP_LOADING = "loading"; //NOI18N
-        
+
         /**
         * Returns visual component of html browser.
         *
@@ -914,19 +912,14 @@ public class HtmlBrowser extends JPanel {
          */
         public void dispose() {
         }
-        
+
+        /**
+         * The content of this Lookup will be merged into browser's TopComponent Lookup.
+         * @return Browser's Lookup
+         * @since 7.52
+         */
         public Lookup getLookup() {
             return Lookup.EMPTY;
-        }
-        
-        /**
-         * Is browser pane represented by this instance up and running? For example 
-         * can a connection be established to it using Remote Webkit debugging protocol?
-         * @return null if nothing is know about state of browser; TRUE is pane is 
-         *   up and running; FALSE if pane has not opened yet or was closed by user
-         */
-        public Boolean isRunning() {
-            return null;
         }
     }
 
