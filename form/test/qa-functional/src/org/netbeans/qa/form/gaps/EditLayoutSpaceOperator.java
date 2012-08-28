@@ -103,4 +103,19 @@ public class EditLayoutSpaceOperator extends JDialogOperator {
     public void setSizeOfGapBottom(String size){
         cbBottom().enterText(size);        
     }
+    
+    public void verifySmall(){
+        btOk();
+        btCancel();
+        cbDefinedSize();
+    }
+    
+    public void verify(){
+        btOk();
+        btCancel();
+        cbLeft();
+        cbRight();
+        cbTop();
+        cbBottom();
+    }
 }
