@@ -109,14 +109,27 @@ public class PropertyCompleterTest extends FXMLCompletionTestBase {
                 "disable", "addPropertyBeforeBrace2.pass");
     }
     
+    public void testAddFirstChildElementProperty() throws Exception {
+        performTest("PropertyCompleterTest/sample2", 334, "", 
+                "addFirstChildElementProperty.pass", 
+                "snapToPixel", "addFirstChildElementProperty2.pass");
+    }
+    
+    public void testAddElementChildPropertyBrace() throws Exception {
+        performTest("PropertyCompleterTest/sample2", 334, "<", 
+                CompletionProvider.COMPLETION_ALL_QUERY_TYPE,
+                "addElementChildPropertyBrace.pass", 
+                "disable", "addElementChildPropertyBrace2.pass");
+    }
+
     public void testAddFirstElementProperty() throws Exception {
-        performTest("PropertyCompleterTest/sample1", 334, "", 
+        performTest("PropertyCompleterTest/sample1", 329, "", 
                 "addFirstElementProperty.pass", 
                 "snapToPixel", "addFirstElementProperty2.pass");
     }
     
     public void testAddElementPropertyBrace() throws Exception {
-        performTest("PropertyCompleterTest/sample1", 334, "<", 
+        performTest("PropertyCompleterTest/sample1", 329, "<", 
                 CompletionProvider.COMPLETION_ALL_QUERY_TYPE,
                 "elementFollowingBrace.pass", 
                 "disable", "elementPropertyBrace2.pass");

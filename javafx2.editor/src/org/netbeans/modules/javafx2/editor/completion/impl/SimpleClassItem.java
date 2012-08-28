@@ -50,6 +50,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.ImageIcon;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -157,6 +158,7 @@ public class SimpleClassItem extends AbstractCompletionItem {
             if (elem.getQualifiedName().contentEquals("java.lang.String")) { // NOI18N
                 return null;
             }
+            boolean ok = false;
             Collection<? extends ExecutableElement> execs = ElementFilter.constructorsIn(elem.getEnclosedElements());
             for (ExecutableElement e : execs) {
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
@@ -168,16 +170,29 @@ public class SimpleClassItem extends AbstractCompletionItem {
                     continue;
                 }
                 if (e.getParameters().isEmpty()) {
-                    // non-public, no-arg ctor -> provide an item
-                    String fqn = elem.getQualifiedName().toString();
-                    String sn = ctx.getSimpleClassName(fqn);
-                    
-                    return setup(new SimpleClassItem(ctx, 
-                            sn == null ? fqn : sn),
-                            elem, ctx, priorityHint);
+                    ok = true;
                 }
             }
-            return null;
+            
+            // non-public, no-arg ctor -> provide an item
+            String fqn = elem.getQualifiedName().toString();
+
+            if (!ok) {
+                // last chance - try to find a Builder 
+                FxBean bean = ctx.getBeanInfo(fqn);
+                if (bean != null && !bean.isFxInstance() && bean.getBuilder() != null) {
+                    ok = true;
+                }
+            }
+            
+            if (!ok) {
+                return null;
+            }
+
+            String sn = ctx.getSimpleClassName(fqn);
+            return setup(new SimpleClassItem(ctx, 
+                    sn == null ? fqn : sn),
+                    elem, ctx, priorityHint);
         }
     }
 

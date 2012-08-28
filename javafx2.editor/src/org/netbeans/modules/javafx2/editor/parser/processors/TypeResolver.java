@@ -94,20 +94,21 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
         "# {0} - full class name",
         "ERR_unableAnalyzeClass=Unable to analyze class {0} for properties.",
         "# {0} - full class name",
-        "ERR_notFxInstance=Class {0} cannot be created by FXML loader."
+        "ERR_notFxInstance=Instances of {0} cannot be created by FXML loader."
     })
     @Override
     public void visitInstance(FxNewInstance decl) {
         String sourceName = decl.getSourceName();
         // try to resolve the sourceName, may be a full classname
         TypeElement el = env.getCompilationInfo().getElements().getTypeElement(sourceName);
-        FxBean bean = null;
+        FxBean bean;
+        ElementHandle<TypeElement> handle;
         
         if (el == null) {
             int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
-            ElementHandle<TypeElement> handle = resolveClassname(sourceName, decl, start);
+            handle = resolveClassname(sourceName, decl, start);
+
             String fqn;
-            
             if (handle != null) {
                 fqn = handle.getQualifiedName();
             } else {
@@ -115,24 +116,25 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
             }
             env.getAccessor().resolve(decl, handle, null, null, bean = env.getBeanInfo(fqn));
         } else {
-            ElementHandle<TypeElement> handle = ElementHandle.create(el);
+            handle = ElementHandle.create(el);
             env.getAccessor().resolve(decl, handle, null, null, bean = env.getBeanInfo(handle.getQualifiedName()));
         }
-        if (el != null) {
+        // if handle == null, the unresolved err was reported already
+        if (handle != null) {
             int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
             if (bean == null) {
                 env.addError(new ErrorMark(
                     start, sourceName.length(),
                     "unable-analyze-class",
-                    ERR_unableAnalyseClass(el.getQualifiedName().toString()),
-                    ElementHandle.create(el)
+                    ERR_unableAnalyseClass(handle.getQualifiedName().toString()),
+                    handle
                 ));
-            } else if (!bean.isFxInstance()) {
+            } else if (!bean.isFxInstance() && bean.getBuilder() == null) {
                 env.addError(new ErrorMark(
                     start, sourceName.length(),
                     "class-not-fx-instance",
-                    ERR_notFxInstance(el.getQualifiedName().toString()),
-                    ElementHandle.create(el)
+                    ERR_notFxInstance(handle.getQualifiedName().toString()),
+                    handle
                 ));
             }
         }
