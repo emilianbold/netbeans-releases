@@ -76,6 +76,9 @@ public class CssParser extends Parser {
     private CssParserResult result;
 
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
+        if(snapshot == null) {
+            return null;
+        }
         FileObject fo = snapshot.getSource().getFileObject();
         String fileName = fo == null ? "no file" : fo.getPath();
         LOG.log(Level.FINE, "Parsing {0} ", fileName);

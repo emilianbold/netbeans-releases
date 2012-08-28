@@ -60,30 +60,44 @@ import org.openide.util.NbBundle;
  */
 public class MissingCssElement extends Hint {
 
-    public MissingCssElement(Rule rule, String msg, HtmlRuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
+    public MissingCssElement(Rule rule, String msg, HtmlRuleContext context, OffsetRange range, CssClassesVisitor.HintContext hintContext) {
         super(rule,
                 msg,
                 context.getFile(),
                 range,
-                getFixes(foundInFiles, context),
+                createFixes(context, hintContext),
                 10);
     }
-    
-    private static List<HintFix> getFixes(Collection<FileObject> foundInFiles, HtmlRuleContext context) {
-        if (foundInFiles == null) {
-            //no id/class found in the stylesheets
-            return Collections.emptyList();
-        }
-        FileObject sourceFile = context.getFile();
+
+    private static List<HintFix> createFixes(HtmlRuleContext context, CssClassesVisitor.HintContext hintContext) {
         List<HintFix> fixes = new ArrayList<HintFix>();
-        for (FileObject file : foundInFiles) {
-            String path = WebUtils.getRelativePath(sourceFile, file);
-            fixes.add(new AddStylesheetLinkHintFix(
-                    NbBundle.getMessage(MissingCssElement.class, "MSG_AddStyleSheetLink", path),
-                    sourceFile,
-                    file));
+        FileObject sourceFile = context.getFile();
+
+        if (hintContext.getClasses2files().get(hintContext.getClassName()) != null) {
+            //1) if the class is found in one of the stylesheets in the project:
+            //      * add "Import stylesheet" hintfix
+            for (FileObject file : hintContext.getClasses2files().get(hintContext.getClassName())) {
+                fixes.add(new AddStylesheetLinkHintFix(sourceFile, file));
+            }
+        } else {
+            //2) if the class is not found in any stylesheet from the project:
+            //      * add "create in xxx stylesheet" - for all available stylesheets. 
+            //      The fix will add the stylesheet reference and create the rule there
+            //* 3) if there's no stylesheet in the project
+            //      * create in new stylesheet 
+            //      Creates stylesheet 'styles.css' in the same folder, add ref to it and put the rule inside.
+
+            for (FileObject stylesheet : hintContext.getAllStylesheets()) {
+                fixes.add(new CreateRuleInStylesheet(
+                        sourceFile, 
+                        stylesheet, 
+                        hintContext.getClassName(),
+                        !hintContext.getReferredFiles().contains(stylesheet)));
+            }
+
         }
+
+
         return fixes;
     }
-    
 }
