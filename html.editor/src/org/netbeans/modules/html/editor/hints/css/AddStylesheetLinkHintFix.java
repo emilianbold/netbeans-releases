@@ -99,14 +99,6 @@ public class AddStylesheetLinkHintFix implements HintFix {
             }
         });
         
-        //once the modified file is reindexed, refresh all the hints
-        ParserManager.parseWhenScanFinished("text/html", new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                HtmlSourceUtils.rebuildTokenHierarchy(doc);
-            }
-        });
-        
     }
 
     @Override
