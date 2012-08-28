@@ -107,8 +107,9 @@ public class GapsTest extends ExtJellyTestCase {
      public void testOpenCloseGapDialog() {
         opDesigner = new FormDesignerOperator(FILE_NAME);
         opDesigner.clickMouse(400, 70, 2);
-
+         
         EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
+        elso.verifySmall();
         elso.Cancel();
     }
      
@@ -143,6 +144,9 @@ public class GapsTest extends ExtJellyTestCase {
         
         
         EditLayoutSpaceOperator elso = new EditLayoutSpaceOperator();
+        
+        elso.verify();
+        
         assertEquals("default small", (String) elso.cbBottom().getItemAt(0));
         assertEquals("default medium", (String) elso.cbBottom().getItemAt(1));
         assertEquals("default large", (String) elso.cbBottom().getItemAt(2));
