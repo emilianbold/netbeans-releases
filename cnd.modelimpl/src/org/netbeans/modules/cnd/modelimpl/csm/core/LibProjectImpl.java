@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -93,6 +92,9 @@ public final class LibProjectImpl extends ProjectBase {
         }
         if (instance instanceof LibProjectImpl) {
             assert ((LibProjectImpl) instance).includePath != null;
+        } else {
+            // ProjectBase inst = readInstance(model, fs, includePathName, includePathName);
+            assert false : "Wrong instance, should be LibProjectImpl: " + instance; //NOI18N
         }
         CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (LibProjectImpl) instance;

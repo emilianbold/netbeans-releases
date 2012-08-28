@@ -146,7 +146,8 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             // so we are just removing some ocassionally existing in persisntence files
             storageAllocator.deleteUnitFiles(unitName, false);
         }
-        return unitNamesCache.getId(unitName);
+        int unitId = unitNamesCache.getId(unitName);
+        return unitId;
     }
 
     @Override

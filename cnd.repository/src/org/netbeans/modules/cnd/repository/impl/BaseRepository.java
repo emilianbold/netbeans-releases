@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategyImpl;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.UnitCodec;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *

@@ -239,7 +239,9 @@ public final class DelegateRepository implements Repository {
                 cacheToDelegate.put(cacheLocation, repo);
                 delegates.add(repo);
             }
-            return repo.getTranslation().getUnitId(unitName, cacheLocation);
+            int unitId = repo.getTranslation().getUnitId(unitName, cacheLocation);
+            unitId = repo.decodeUnitIdAfterReading(unitId);
+            return unitId;
         }        
     }
     
