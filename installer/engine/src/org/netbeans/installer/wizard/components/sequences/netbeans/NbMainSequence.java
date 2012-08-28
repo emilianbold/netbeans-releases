@@ -113,9 +113,11 @@ public class NbMainSequence extends WizardSequence {
     
     private static class PopulateCacheAction extends WizardAction {
         private final Product nbBase;
+        private final Product nbJavaSE;
         CompositeProgress compositeProgress;
-        public PopulateCacheAction(Product p) {
-            this.nbBase = p;
+        public PopulateCacheAction(Product nbBase, Product nbJavaSE) {
+            this.nbBase = nbBase;
+            this.nbJavaSE = nbJavaSE;
             this.compositeProgress = new CompositeProgress();
         }
 
@@ -149,19 +151,36 @@ public class NbMainSequence extends WizardSequence {
             
             File tmpCacheDir = new File(tmpUserDir, "var" + File.separator + "cache"); // NOI18N
             
-            String[] commands = new String [] {
-                    runIDE,
+            List<String> commands = new ArrayList(Arrays.asList(runIDE,
                     "-J-Dnetbeans.close=true",
                     "--nosplash",
                     "-J-Dorg.netbeans.core.WindowSystem.show=false",
                     "--userdir",
-                    tmpUserDir.getPath()};
-            LogManager.log("    Run " + Arrays.asList(commands));
+                    tmpUserDir.getPath()));
+
+            if (nbJavaSE != null && Boolean.parseBoolean(nbJavaSE.getProperty(NbPreInstallSummaryPanel.JUNIT_ACCEPTED_PROPERTY))) {
+                // install JUnit
+                if (! commands.contains("--modules")) {
+                    commands.add("--modules");
+                }
+                commands.add("--install");
+                commands.add("\".*junit.*\"");
+                LogManager.log("    .... install JUnit");
+            }
+            if (Boolean.getBoolean(NbPreInstallSummaryPanel.CHECK_FOR_UPDATES_CHECKBOX_PROPERTY)) {
+                // check for updates
+                if (! commands.contains("--modules")) {
+                    commands.add("--modules");
+                }
+                commands.add("--update-all");
+                LogManager.log("    .... check for updates");
+            }
+            LogManager.log("    Run " + commands);
             CountdownProgress countdownProgress = new CountdownProgress(compositeProgress, 25*1000, 72,
                     (ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.generate"))); // NOI18N
             countdownProgress.countdown();
             try {
-                SystemUtils.executeCommand(nbInstallLocation, commands);
+                SystemUtils.executeCommand(nbInstallLocation, commands.toArray(new String[commands.size()]));
                 LogManager.log("    .... success ");
             } catch (Exception ioe) {
                 LogManager.log("    .... exception ", ioe);
@@ -406,8 +425,15 @@ public class NbMainSequence extends WizardSequence {
                     break;
                 }
             }
+            Product nbJavaSE = null;
+            for (Product p : toInstall) {
+                if ("nb-javase".equals(p.getUid())) {
+                    nbJavaSE = p;
+                    break;
+                }
+            }
             if (nbBase != null) {
-                PopulateCacheAction pupolateCacheAction = new PopulateCacheAction(nbBase);
+                PopulateCacheAction pupolateCacheAction = new PopulateCacheAction(nbBase, nbJavaSE);
                 addChild(pupolateCacheAction);
                 pupolateCacheAction.setProperty(InstallAction.TITLE_PROPERTY, DEFAULT_IA_TITLE);
                 pupolateCacheAction.setProperty(InstallAction.DESCRIPTION_PROPERTY, DEFAULT_IA_DESCRIPTION);
