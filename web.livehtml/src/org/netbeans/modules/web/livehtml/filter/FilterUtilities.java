@@ -80,8 +80,8 @@ public class FilterUtilities {
                 
                 if (!safeEquals(script1, script2) ||
                         !safeEquals(function1, function2) ||
-                        !safeEquals(lineNumber1, lineNumber2) || 
-                        !safeEquals(columnNumber1, columnNumber2)) {
+                        !safeEquals(lineNumber1, lineNumber2) /*|| 
+                        !safeEquals(columnNumber1, columnNumber2)*/) {
                     return false;
                 }
             }
