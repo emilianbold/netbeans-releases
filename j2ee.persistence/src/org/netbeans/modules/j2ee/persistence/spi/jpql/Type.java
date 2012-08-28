@@ -246,6 +246,8 @@ public class Type implements IType{
                     Element superclassElement = superclassDeclaredType.asElement();  
                     if(superclassElement instanceof TypeElement)tmpEl = (TypeElement) superclassElement;
                     else tmpEl = null;
+                } else {
+                    tmpEl = null;
                 }
             }
         }
