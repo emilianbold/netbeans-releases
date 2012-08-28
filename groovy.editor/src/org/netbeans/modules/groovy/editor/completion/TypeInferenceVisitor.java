@@ -55,7 +55,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.syntax.Types;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.TypeVisitor;
+import org.netbeans.modules.groovy.editor.occurrences.TypeVisitor;
 
 /**
  *

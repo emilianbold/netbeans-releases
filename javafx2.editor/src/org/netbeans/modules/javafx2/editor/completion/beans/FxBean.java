@@ -142,7 +142,14 @@ public final class FxBean extends FxDefinition {
                 if (fqn == null) {
                     return null;
                 }
-                return new BeanModelBuilder(this, info, fqn).getBeanInfo();
+                FxBeanCache cache = FxBeanCache.instance();
+                FxBean bean = cache.getBeanInfo(info.getClasspathInfo(), fqn);
+                if (bean != null) {
+                    return bean;
+                }
+                BeanModelBuilder bmb = new BeanModelBuilder(this, info, fqn);
+                bmb.setBeanCache(cache);
+                return bmb.getBeanInfo();
             }
 
             @Override
@@ -293,9 +300,18 @@ public final class FxBean extends FxDefinition {
     public Map<String, FxProperty> getAttachedProperties() {
         return Collections.unmodifiableMap(attachedProperties);
     }
+    
+    public Set<String> getEventNames() {
+        return Collections.unmodifiableSet(events.keySet());
+    }
 
     public Map<String, FxEvent> getEvents() {
-        return events;
+        return Collections.unmodifiableMap(events);
+    }
+    
+    public FxEvent getEvent(String eventName) {
+        FxEvent ev = events.get(eventName);
+        return ev;
     }
 
     FxBean(String className) {
@@ -431,8 +447,10 @@ public final class FxBean extends FxDefinition {
         } else {
             events.putAll(superBi.getEvents());
         }
+        if (defaultPropertyName == null && superBi.getDefaultProperty() != null) {
+            defaultPropertyName = superBi.getDefaultProperty().getName();
+        }
         
-        defaultPropertyName = superBi.getDefaultProperty() == null ? null : superBi.getDefaultProperty().getName();
     }
     
     /**

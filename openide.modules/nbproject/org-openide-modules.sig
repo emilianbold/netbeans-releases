@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.27
+#Version 7.32.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -85,7 +85,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 meth public static java.util.Set<org.openide.modules.Dependency> create(int,java.lang.String)
 supr java.lang.Object
-hfds FQN,IDENTIFIER,comparison,name,serialVersionUID,type,version
+hfds FQN,comparison,name,serialVersionUID,type,version
 hcls DependencyKey
 
 CLSS public abstract org.openide.modules.InstalledFileLocator
@@ -141,6 +141,16 @@ meth public static org.openide.modules.Modules getDefault()
 supr java.lang.Object
 hcls Trivial
 
+CLSS public abstract interface !annotation org.openide.modules.OnStart
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation org.openide.modules.OnStop
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+
 CLSS public abstract interface !annotation org.openide.modules.PatchedPublic
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[METHOD, CONSTRUCTOR])
@@ -193,4 +203,12 @@ meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr java.lang.Object
 hfds PROP_SUPPORT,addNotifySuper,alreadyWarnedAboutDupes,dataEntry,err,first,firstTrace,inReadExternal,initializeSuper,instancesBeingCreated,lock,prematureSystemOptionMutation,removeNotifySuper,serialVersionUID,systemOption,values,waitingOnSystemOption
 hcls DataEntry,SetAccessibleAction,WriteReplace
+
+CLSS public abstract interface !annotation org.openide.util.lookup.NamedServiceDefinition
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String position()
+meth public abstract java.lang.Class<?>[] serviceType()
+meth public abstract java.lang.String path()
 

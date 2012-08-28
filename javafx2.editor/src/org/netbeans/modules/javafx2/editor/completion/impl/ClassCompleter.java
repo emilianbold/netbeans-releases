@@ -54,11 +54,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -70,11 +68,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
-import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -87,7 +85,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
  * @author sdedic
  */
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
-public class ClassCompleter implements Completer, Completer.Factory {
+final public class ClassCompleter implements Completer, Completer.Factory {
     private static final Logger LOG = Logger.getLogger(ClassCompleter.class.getName());
     
     private static final int IMPORTED_PRIORITY = 50;
@@ -125,10 +123,16 @@ public class ClassCompleter implements Completer, Completer.Factory {
     
     @Override
     public Completer createCompleter(CompletionContext ctx) {
+        FxNode parent = ctx.getElementParent();
+        FxProperty pi = ctx.getEnclosingProperty();
+        if (pi == null && parent.getKind() != FxNode.Kind.Source) {
+            // can complete only in root and in properties
+            return null;
+        }
         if (ctx.getType() == CompletionContext.Type.BEAN ||
             ctx.getType() == CompletionContext.Type.ROOT ||
             ctx.getType() == CompletionContext.Type.CHILD_ELEMENT) {
-            FxProperty pi = ctx.getEnclosingProperty();
+            
             if (pi == null || pi.getKind() == FxDefinitionKind.LIST) {
                 return new ClassCompleter(ctx);
             } 
@@ -164,10 +168,19 @@ public class ClassCompleter implements Completer, Completer.Factory {
             return propertyType;
         }
         FxProperty prop = ctx.getEnclosingProperty();
+        // if we start root tag with prefix longer than "<", it already appears in the parent list;
+        // so minimal depth that does not fall back to j.n.Node is 2 in that case.
+        int minDepth = (ctx.getPrefix().length() > 1) ? 2 : 1;
         if (prop != null) {
             TypeMirrorHandle propTypeH = prop.getType();
             if (propTypeH != null) {
                 propertyType = propTypeH.resolve(ctx.getCompilationInfo());
+            }
+        } else if (ctx.getParents().size() <= minDepth) {
+            // root element should be constrainted to Node subclass
+            TypeElement e = ctx.getCompilationInfo().getElements().getTypeElement(JavaFXEditorUtils.FXML_NODE_CLASS);
+            if (e != null) {
+                propertyType = e.asType();
             }
         }
         propertyTypeResolved = true;
@@ -250,8 +263,9 @@ public class ClassCompleter implements Completer, Completer.Factory {
                 e.getModifiers().contains(Modifier.ABSTRACT) ||
                 !FxClassUtils.isFxmlAccessible(e) ||
                 !ctx.getCompilationInfo().getTypes().isAssignable(e.asType(), nodeType)) {
-                    it.remove();
+                    continue;
             }
+            handles.add(h);
         }
         return handles;
     }
@@ -323,8 +337,11 @@ public class ClassCompleter implements Completer, Completer.Factory {
     
     private Set<ElementHandle<TypeElement>> loadFromAllTypes() {
         ClasspathInfo info = ctx.getClasspathInfo();
-        Set<ElementHandle<TypeElement>> els = info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
-                EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE));
+        Set<ElementHandle<TypeElement>> els = 
+                new HashSet<ElementHandle<TypeElement>>(
+                    info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
+                    EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE)
+                ));
 
         TypeMirror pt = getPropertyType();
         if (pt == null) {

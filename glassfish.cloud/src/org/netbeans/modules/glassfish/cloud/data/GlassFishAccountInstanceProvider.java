@@ -45,6 +45,7 @@ import java.util.*;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 
 /**
  * GlassFish User Account Instances Provider.
@@ -107,10 +108,17 @@ public class GlassFishAccountInstanceProvider
         if (instance != null) {
             return instance;
         }
+        boolean first;
         synchronized (GlassFishAccountInstanceProvider.class) {
             if (instance == null) {
                 instance = new GlassFishAccountInstanceProvider();
+                first = true;
+            } else {
+                first = false;
             }
+        }
+        if (first) {
+            instance.register();
         }
         return instance;
     }
@@ -203,7 +211,8 @@ public class GlassFishAccountInstanceProvider
      * Add new GlassFish user account instance into this provider.
      * <p/>
      * Instance is registered in this provider without being stored into
-     * persistence properties.
+     * persistence properties. Instance is not registered for NetBeans UI server
+     * components.
      * <p/>
      * @param instance GlassFish user account instance to be added.
      */
@@ -216,16 +225,36 @@ public class GlassFishAccountInstanceProvider
     }
 
     /**
+     * Register the instance for NetBeans UI server components.
+     * <p/>
+     * @param instance GlassFish user account instance to be registered.
+     */
+    private void registerInstance(GlassFishAccountInstance instance) {
+        if (instance.getUrl() != null) {
+            try {
+                org.netbeans.modules.j2ee.deployment.plugins.api
+                        .InstanceProperties
+                        .createInstancePropertiesNonPersistent(
+                        instance.getUrl(), null, null,
+                        instance.getDisplayName(), null);
+            } catch (InstanceCreationException ice) {
+            }
+        }        
+    }
+
+    /**
      * Add new GlassFish user account instance into this provider.
      * <p/>
      * Instance is registered in this provider and stored into persistence
-     * properties.
+     * properties. Instance is also registered for NetBeans UI server
+     * components.
      * <p/>
      * @param instance GlassFish user account instance to be added.
      */
     private void addInstance(GlassFishAccountInstance instance) {
         store(instance);
         addInstanceWithoutStoring(instance);
+        registerInstance(instance);
     }
 
     /**
@@ -239,6 +268,11 @@ public class GlassFishAccountInstanceProvider
             serverInstances.remove(instance.getServerInstance());
             accountInstances.remove(instance.getDisplayName());
         }
+         if (instance.getUrl() != null) {
+             org.netbeans.modules.j2ee.deployment.plugins.api
+                        .InstanceProperties
+                        .removeInstance(instance.getUrl());
+         }
         changeListeners.fireChange();
     }
 
@@ -298,6 +332,20 @@ public class GlassFishAccountInstanceProvider
     }
     
     /**
+     * Register all GlassFish user account instances for NetBeans UI server
+     * components.
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    private void register() {
+        synchronized (this) {
+            for (GlassFishAccountInstance instance
+                    : accountInstances.values()) {
+                registerInstance(instance);
+            }
+        }
+    }
+
+    /**
      * Remove given GlassFish user account instance from properties to persist.
      * <p/>
      * @param instance GlassFish Cloud Instance to be removed.
@@ -310,7 +358,7 @@ public class GlassFishAccountInstanceProvider
                     i.hasNext(); ) {
                 InstanceProperties props = i.next();
                 if (instance.equalProps(props)) {
-                    props.remove();
+                    instance.remove(props);
                 }
             }
         }

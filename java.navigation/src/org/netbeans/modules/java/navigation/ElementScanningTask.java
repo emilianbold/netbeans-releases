@@ -237,7 +237,14 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return null;
         
         boolean inherited = isParentInherited || (null != parent && !parent.equals( e.getEnclosingElement() ));
-        Description d = new Description( ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), inherited );
+        final Element encElement = e.getEnclosingElement();
+        Description d = new Description(
+                ui,
+                e.getSimpleName().toString(),
+                ElementHandle.create(e),
+                e.getKind(),
+                inherited,
+                encElement != null && encElement.getKind() == ElementKind.PACKAGE);
         
         if( e instanceof TypeElement ) {
             d.subs = new HashSet<Description>();

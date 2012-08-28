@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.11
+#Version 8.15.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -214,6 +214,14 @@ meth public static org.openide.util.Lookup singleton(java.lang.Object)
 supr java.lang.Object
 hcls LookupItem
 
+CLSS public abstract interface !annotation org.openide.util.lookup.NamedServiceDefinition
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String position()
+meth public abstract java.lang.Class<?>[] serviceType()
+meth public abstract java.lang.String path()
+
 CLSS public org.openide.util.lookup.ProxyLookup
 cons protected init()
 cons public !varargs init(org.openide.util.Lookup[])
@@ -227,7 +235,7 @@ meth public final <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%
 meth public java.lang.String toString()
 supr org.openide.util.Lookup
 hfds data
-hcls EmptyInternalData,ImmutableInternalData,R,RealInternalData,SingleInternalData,WeakRef,WeakResult
+hcls EmptyInternalData,ImmutableInternalData,LazyCollection,LazyList,LazySet,R,RealInternalData,SingleInternalData,WeakRef,WeakResult
 
 CLSS public abstract interface !annotation org.openide.util.lookup.ServiceProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
@@ -246,8 +254,9 @@ meth public abstract org.openide.util.lookup.ServiceProvider[] value()
 
 CLSS public abstract org.openide.util.lookup.implspi.AbstractServiceProviderProcessor
 cons protected init()
+meth protected !varargs final void register(javax.lang.model.element.Element,java.lang.Class<? extends java.lang.annotation.Annotation>,javax.lang.model.type.TypeMirror,java.lang.String,int,java.lang.String[])
 meth protected abstract boolean handleProcess(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
-meth protected final void register(javax.lang.model.element.Element,java.lang.Class<? extends java.lang.annotation.Annotation>,javax.lang.model.type.TypeMirror,java.lang.String,int,java.lang.String[])
+meth protected final void register(javax.lang.model.element.Element,java.lang.String)
 meth protected final void register(javax.lang.model.element.TypeElement,java.lang.Class<? extends java.lang.annotation.Annotation>,javax.lang.model.type.TypeMirror,java.lang.String,int,java.lang.String[])
  anno 0 java.lang.Deprecated()
 meth public final boolean process(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
@@ -257,8 +266,8 @@ hfds originatingElementsByProcessor,outputFilesByProcessor,verifiedClasses
 CLSS public final org.openide.util.lookup.implspi.ActiveQueue
 meth public static java.lang.ref.ReferenceQueue<java.lang.Object> queue()
 supr java.lang.Object
-hfds LOGGER,activeReferenceQueue
-hcls Impl
+hfds ACTIVE,LOGGER,activeReferenceQueue
+hcls Daemon,Impl
 
 CLSS public abstract org.openide.util.lookup.implspi.NamedServicesProvider
 cons protected init()

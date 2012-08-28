@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.problems;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +56,9 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -85,10 +89,19 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.problems.Bundle.*;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -99,7 +112,14 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
-public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport> {
+
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory",category="Project"),
+        position = 3100,
+        path = "Projects/org-netbeans-modules-maven/Actions")
+})
+public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport>, ProjectProblemsProvider {
     private static final String MISSING_J2EE = "MISSINGJ2EE"; //NOI18N
     private static final String MISSING_APISUPPORT = "MISSINGAPISUPPORT"; //NOI18N
     private static final String MISSING_DEPENDENCY = "MISSING_DEPENDENCY";//NOI18N
@@ -107,7 +127,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
     
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
+    public static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
 
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
@@ -174,6 +194,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             reports.add(report);
         }
         fireChange();
+        firePropertyChange();
     }
     
     @Override public void addReports(ProblemReport[] report) {
@@ -185,6 +206,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             }
         }
         fireChange();
+        firePropertyChange();
     }
     
     @Override public void removeReport(ProblemReport report) {
@@ -192,6 +214,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             reports.remove(report);
         }
         fireChange();
+        firePropertyChange();
     }
     
     private void fireChange() {
@@ -282,6 +305,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
         if (hasAny) {
             fireChange();
+            firePropertyChange();
         }
         EmbedderFactory.getProjectEmbedder().lookupComponent(PluginArtifactsCache.class).flush(); // helps with #195440
     }
@@ -519,6 +543,132 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             }
         }
     }
+    
+    public static Action createOpenFileAction(FileObject fo) {
+        return new OpenActions(fo);
+    }
+    
+    private static class OpenActions extends AbstractAction {
 
+        private FileObject fo;
+
+        @Messages({"TXT_OPEN_FILE=Open File",
+            "ACT_OPEN_FILE_START=Affected file was opened."
+        })
+        OpenActions(FileObject file) {
+            putValue(Action.NAME, TXT_OPEN_FILE());
+            putValue(ProblemReporterImpl.ACT_START_MESSAGE, ACT_OPEN_FILE_START());
+            fo = file;
+        }
+
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
+                    edit.edit();
+                } catch (DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+    
+
+    
+    //---------------------------------------
+    //projectproblem provider related methods
+
+    private final PropertyChangeSupport chs = new PropertyChangeSupport(this);
+    //constant for action.getValue() holding the text to show to users..
+    public static final String ACT_START_MESSAGE = "START_MESSAGE";
+    
+    
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        chs.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        chs.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public Collection<? extends ProjectProblem> getProblems() {
+        List<ProjectProblem> toRet = new ArrayList<ProjectProblem>();
+        for (ProblemReport pr : getReports()) {
+            ProjectProblemResolver res = new MavenProblemResolver(pr.getCorrectiveAction(), pr.getId() + "|" + this.nbproject.getPOMFile());
+            ProjectProblem pp = pr.getSeverityLevel() == ProblemReport.SEVERITY_HIGH ? 
+                    ProjectProblem.createError(pr.getShortDescription(), pr.getLongDescription(), res) :
+                    ProjectProblem.createWarning(pr.getShortDescription(), pr.getLongDescription(), res);
+            toRet.add(pp);
+        }
+        return toRet;
+    }
+
+    
+    private void firePropertyChange() {
+        chs.firePropertyChange(ProjectProblemsProvider.PROP_PROBLEMS, null, null);
+    }
+
+    private static class MavenProblemResolver implements ProjectProblemResolver {
+        private final Action action;
+        private final String id;
+
+        public MavenProblemResolver(Action correctiveAction, String id) {
+            this.action = correctiveAction;
+            this.id = id;
+        }
+
+        @Override
+        @Messages("TXT_No_Res=No resolution for the problem")
+        public Future<ProjectProblemsProvider.Result> resolve() {
+            FutureTask<Result> toRet = new FutureTask<ProjectProblemsProvider.Result>(new Callable<ProjectProblemsProvider.Result>() {
+
+                                   @Override
+                                   public ProjectProblemsProvider.Result call() throws Exception {
+                                       if (action != null) {
+                                           action.actionPerformed(null);
+                                           String text = (String) action.getValue(ACT_START_MESSAGE);
+                                           return ProjectProblemsProvider.Result.create(Status.RESOLVED, text);
+                                       } else {
+                                           return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, TXT_No_Res());
+                                       }
+                                       
+                                   }
+                               });
+            RP.post(toRet);
+            return toRet;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 11 * hash + (this.id != null ? this.id.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MavenProblemResolver other = (MavenProblemResolver) obj;
+            if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
+                return false;
+            }
+            return true;
+        }
+        
+        
+    }
+    
+   
     
 }

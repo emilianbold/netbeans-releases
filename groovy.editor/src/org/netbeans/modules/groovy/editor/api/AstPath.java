@@ -237,7 +237,7 @@ public class AstPath implements Iterable<ASTNode> {
             return true;
         }
 
-        List<ASTNode> children = AstUtilities.children(node);
+        List<ASTNode> children = ASTUtils.children(node);
 
         for (ASTNode child : children) {
             boolean found = find(child, target);

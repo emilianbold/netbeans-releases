@@ -47,6 +47,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryDeclarationFinder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -71,12 +72,13 @@ public class DeclarationFinderImpl implements DeclarationFinder{
             JsObject object = occurrence.getDeclarations().iterator().next();
             return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
         }
-        return DeclarationLocation.NONE;
+        JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
+        return jQueryFinder.findDeclaration(info, caretOffset);
     }
 
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        OffsetRange result = OffsetRange.NONE;
+        OffsetRange result = null;
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
         if (ts != null) {
             ts.move(caretOffset);
@@ -84,7 +86,11 @@ public class DeclarationFinderImpl implements DeclarationFinder{
                 result =  new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
         }
-        return result;
+        if(result == null) {
+            JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
+            return jQueryFinder.getReferenceSpan(doc, caretOffset);
+        }
+        return OffsetRange.NONE;
     }
     
 }

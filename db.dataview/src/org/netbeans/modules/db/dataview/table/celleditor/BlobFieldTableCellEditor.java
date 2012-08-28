@@ -50,14 +50,23 @@ import java.io.*;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.EventObject;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedBlob;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 public class BlobFieldTableCellEditor extends AbstractCellEditor
@@ -72,6 +81,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     protected JPopupMenu popup;
     protected JTable table;
     protected JMenuItem saveContentMenuItem;
+    protected JMenuItem miOpenImageMenuItem;
 
     @SuppressWarnings("LeakingThisInConstructor")
     public BlobFieldTableCellEditor() {
@@ -98,6 +108,19 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         });
         saveContentMenuItem = miLobSaveAction;
         popup.add(miLobSaveAction);
+
+        final JMenuItem miOpenImageAction = new JMenuItem("Open as Image");
+        miOpenImageAction.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openAsImage(currentValue);
+                fireEditingCanceled();
+            }
+        });
+        miOpenImageMenuItem = miOpenImageAction;
+        popup.add(miOpenImageAction);
+
         final JMenuItem miLobLoadAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "loadLob.title"));
         miLobLoadAction.addActionListener(new ActionListener() {
 
@@ -136,6 +159,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         currentValue = (java.sql.Blob) value;
         if (currentValue != null) {
             saveContentMenuItem.setEnabled(true);
+            miOpenImageMenuItem.setEnabled(true);
             try {
                 long size = currentValue.length();
                 StringBuilder stringValue = new StringBuilder();
@@ -154,6 +178,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
             }
         } else {
             saveContentMenuItem.setEnabled(false);
+            miOpenImageMenuItem.setEnabled(false);
             button.setText("<NULL>");
         }
         this.table = table;
@@ -283,6 +308,60 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                     f.getAbsolutePath(),
                     ex.getLocalizedMessage());
         }
+
+        NotifyDescriptor nd = new NotifyDescriptor(
+                messageMsg,
+                titleMsg,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.CANCEL_OPTION);
+
+        dd.notifyLater(nd);
+    }
+
+    private void openAsImage(Blob b) {
+        if (b == null) {
+            return;
+        }
+        try {
+            ImageInputStream iis = ImageIO.createImageInputStream(
+                    b.getBinaryStream());
+            Iterator<ImageReader> irs = ImageIO.getImageReaders(iis);
+            if (irs.hasNext()) {
+                FileSystem fs = FileUtil.createMemoryFileSystem();
+                FileObject fob = fs.getRoot().createData(
+                        Long.toString(System.currentTimeMillis()),
+                        irs.next().getFormatName());
+                OutputStream os = fob.getOutputStream();
+                os.write(b.getBytes(1, (int) b.length()));
+                os.close();
+                DataObject data = DataObject.find(fob);
+                OpenCookie cookie = data.getLookup().lookup(OpenCookie.class);
+                if (cookie != null) {
+                    cookie.open();
+                    return;
+                }
+            }
+            displayErrorOpenImage("openImageErrorNotImage.message");    //NOI18N
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO,
+                    "SQLException while opening BLOB as file", ex);     //NOI18N
+            displayErrorOpenImage("openImageErrorDB.message");          //NOI18N
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "IOError while opening BLOB as file", //NOI18N
+                    ex);
+        }
+
+    }
+
+    private void displayErrorOpenImage(String messageProperty) {
+        DialogDisplayer dd = DialogDisplayer.getDefault();
+
+        String messageMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                messageProperty);
+        String titleMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                "openImageError.title");                                //NOI18N
 
         NotifyDescriptor nd = new NotifyDescriptor(
                 messageMsg,

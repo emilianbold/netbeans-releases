@@ -83,6 +83,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 /**
  *
@@ -114,11 +115,12 @@ public class PHPLanguage extends DefaultLanguageConfig {
         mimeType=PHP_MIME_TYPE,
         position=1
     )
+    @NbBundle.Messages("LBL_PHPEditorTab=&Source")
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
     public static final String ACTIONS = "Loaders/"+PHP_MIME_TYPE+"/Actions";
-    public static String LINE_COMMENT_PREFIX = "//"; // NOI18N
+    public static final String LINE_COMMENT_PREFIX = "//"; // NOI18N
 
     @Override
     public String getLineCommentPrefix() {

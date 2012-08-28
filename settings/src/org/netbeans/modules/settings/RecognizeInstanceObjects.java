@@ -50,6 +50,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -92,7 +94,19 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
     public Lookup create(String path) {
         return new OverObjects(path);
     }        
-    
+
+    // XXX: Update dependency
+    @Override
+    protected Lookup lookupFor(Object obj) {
+        if (obj instanceof FileObject) {
+            try {
+                return DataObject.find((FileObject)obj).getLookup();
+            } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.INFO, "Can't find DataObject for " + obj, ex);
+            }
+        }
+        return null;
+    }
     
     private static final class OverObjects extends ProxyLookup 
     implements LookupListener, FileChangeListener {

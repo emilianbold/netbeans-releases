@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29
+#Version 1.31.1
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException

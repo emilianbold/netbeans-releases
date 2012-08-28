@@ -42,13 +42,14 @@
 package org.netbeans.modules.glassfish.cloud.javaee;
 
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
 /**
  * Abstract deployment manager for GlassFish cloud.
  * <p/>
- * contains common functionality for both local server and remote cloud server.
+ * Contains common functionality for both local server and remote cloud server.
  * <p/>
  * Provides the core set of functions a Java EE platform must provide for
  * Java EE application deployment. It provides server related information,
@@ -68,6 +69,17 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
     /** GlassFish cloud URL. */
     final GlassFishUrl url;
 
+    /** GlassFish instance interface. */
+    final GlassFishInstance instance;
+    
+    /** GlassFish cloud local server and remote cloud life cycle services
+      * manager from the IDE.
+      * Life cycle services manager instance is bound to its deployment manager
+      * instance.
+      */
+    final GlassFishStartServer startServer;
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -78,14 +90,37 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
      * This is non public constructor called only in child classes to initialize
      * common deployment manager attributes.
      * <p/>
-     * @param url GlassFish cloud URL.
+     * @param url             GlassFish cloud URL.
+     * @param instance        GlassFish instance interface implementation.
+     * @param startServer     GlassFish cloud local server and remote cloud life
+     *                        cycle services from the IDE.
      */
-    GlassFishDeploymentManager(GlassFishUrl url) {
+    GlassFishDeploymentManager(GlassFishUrl url, GlassFishInstance instance,
+            GlassFishStartServer startServer) {
         this.url = url;
+        this.instance = instance;
+        this.startServer = startServer;
+        if (instance == null) {
+            throw new NullPointerException("There is no account instance named "
+                    + url.getName());
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
+    // getters and setters                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get life cycle services manager instance bound to this manager.
+     * <p/>
+     * @return Life cycle services manager.
+     */
+    public GlassFishStartServer getStartServer() {
+        return startServer;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented interface methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -99,7 +134,7 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
      */
     @Override
     public Target[] getTargets() throws IllegalStateException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Target[] {instance};
     }
 
 }

@@ -44,6 +44,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
+import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
@@ -111,6 +112,16 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return  new JsHintsProvider();
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new JsStructureScanner();
     }
@@ -165,5 +176,10 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsInstantRenamer();
     }
 
-    
+    @Override
+    public boolean isIdentifierChar(char c) {
+        // due to CC filtering of DOC annotations - see GsfCompletionProvider#getCompletableLanguage()
+        return super.isIdentifierChar(c) || c == '@';
+    }
+
 }

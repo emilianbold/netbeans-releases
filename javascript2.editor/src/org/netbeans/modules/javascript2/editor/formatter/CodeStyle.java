@@ -377,6 +377,9 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeFinallyLeftBrace, getDefaultAsBoolean(spaceBeforeFinallyLeftBrace));
     }
 
+    public boolean spaceBeforeWithLeftBrace() {
+        return preferences.getBoolean(spaceBeforeWithLeftBrace, getDefaultAsBoolean(spaceBeforeWithLeftBrace));
+    }
 //
 //    public boolean spaceBeforeSynchronizedLeftBrace() {
 //        return preferences.getBoolean(spaceBeforeSynchronizedLeftBrace, getDefaultAsBoolean(spaceBeforeSynchronizedLeftBrace));
@@ -562,6 +565,10 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterDotInChainedMethodCalls() {
+        return preferences.getBoolean(wrapAfterDotInChainedMethodCalls, getDefaultAsBoolean(wrapAfterDotInChainedMethodCalls));
+    }
+
     public WrapStyle wrapArrayInit() {
         String wrap = preferences.get(wrapArrayInit, getDefaultAsString(wrapArrayInit));
         return WrapStyle.valueOf(wrap);
@@ -592,11 +599,20 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public WrapStyle wrapWithStatement() {
+        String wrap = preferences.get(wrapWithStatement, getDefaultAsString(wrapWithStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapBinaryOps() {
         String wrap = preferences.get(wrapBinaryOps, getDefaultAsString(wrapBinaryOps));
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterBinaryOps() {
+        return preferences.getBoolean(wrapAfterBinaryOps, getDefaultAsBoolean(wrapAfterBinaryOps));
+    }
+    
     public WrapStyle wrapTernaryOps() {
         String wrap = preferences.get(wrapTernaryOps, getDefaultAsString(wrapTernaryOps));
         return WrapStyle.valueOf(wrap);
@@ -607,12 +623,21 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterTernaryOps() {
+        return preferences.getBoolean(wrapAfterTernaryOps, getDefaultAsBoolean(wrapAfterTernaryOps));
+    }
+
     public boolean wrapBlockBrace() {
         return preferences.getBoolean(wrapBlockBraces, getDefaultAsBoolean(wrapBlockBraces));
     }
 
     public boolean wrapStatementsOnTheSameLine() {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
+    }
+
+    public WrapStyle wrapProperties() {
+        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+        return WrapStyle.valueOf(wrap);
     }
 
     // Uses

@@ -297,6 +297,11 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return getInfoFromWorkingCopy(file);
     }
 
+    @Override
+    public String getPostCommitError () {
+        return null;
+    }
+
     private ISVNInfo[] getInfo(File[] files, SVNRevision revision, SVNRevision pegging) throws SVNClientException, SVNClientException {
         if(files == null || files.length == 0) {
             return new ISVNInfo[0];
@@ -1191,7 +1196,12 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public ISVNProperty[] getProperties(SVNUrl url, SVNRevision revision, SVNRevision pegRevision) throws SVNClientException {
-        ListPropertiesCommand cmd = new ListPropertiesCommand(url, revision.toString(), false);
+        return getProperties(url, revision, pegRevision, false);
+    }
+    
+    @Override
+    public ISVNProperty[] getProperties(SVNUrl url, SVNRevision revision, SVNRevision pegRevision, boolean recursive) throws SVNClientException {
+        ListPropertiesCommand cmd = new ListPropertiesCommand(url, revision.toString(), recursive);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());

@@ -108,6 +108,48 @@ public class TplTopLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
     }
 
+    public void testSmartyLiteralTags2() {
+        String text = "{literal} any text here { also some bracket{/literal}{";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " any text here { also some bracket");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "/literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmartyLiteralTags3() {
+        String text = "{literal} any text here {/ also some bracket{/literal}{";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " any text here ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "/ also some bracket");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "/literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmartyLiteralTags4() {
+        String text = "{literal} any text here {/ also some bracket";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " any text here ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "/ also some bracket");
+    }
+
     public void testSmartyCommentsTags() {
         String text = "{*{c*}{if}{*c*}{/if}";
 

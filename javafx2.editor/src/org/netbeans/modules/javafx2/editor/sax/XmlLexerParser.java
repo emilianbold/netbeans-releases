@@ -145,13 +145,17 @@ public class XmlLexerParser implements ContentLocator {
     }
     
     private void addError(String type, String msg, Object... params) {
-        if (errors.isEmpty()) {
-            errors = new LinkedList<ErrorMark>();
-        }
         Token t = seq.token();
         
         ErrorMark mark = new ErrorMark(seq.offset(), t == null ? 1 : t.length(),
                 type, msg, params);
+        addError(mark);
+    }
+    
+    private void addError(ErrorMark mark) {
+        if (errors.isEmpty()) {
+            errors = new ArrayList<ErrorMark>();
+        }
         errors.add(mark);
         errorCount++;
     }
@@ -299,6 +303,8 @@ public class XmlLexerParser implements ContentLocator {
         }
     }
     
+    private int endDocOffset = -1;
+    
     void parse2() throws SAXException {
         boolean whitespacePossible = true;
         
@@ -354,7 +360,8 @@ public class XmlLexerParser implements ContentLocator {
                 case ERROR:
                 case CHARACTER:
                     // character entity - will be reported as usual characters data
-                case TEXT: {
+                case TEXT: 
+                default: {
                     consume();
                     String s = t.text().toString();
                     if (whitespacePossible && s.trim().isEmpty()) {
@@ -367,7 +374,7 @@ public class XmlLexerParser implements ContentLocator {
                 }
             }
         }
-        int saveEndOffset = endOffset;
+        endDocOffset = endOffset;
         
         while (!levelStack.isEmpty() && currentLevel != null) {
             markUnclosedElement(currentLevel.tagQName);
@@ -376,7 +383,7 @@ public class XmlLexerParser implements ContentLocator {
             contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
             terminateLevel();
         }
-        elementOffset = saveEndOffset;
+        elementOffset = endDocOffset;
         contentHandler.endDocument();
         
         // report leftover errors
@@ -542,6 +549,12 @@ public class XmlLexerParser implements ContentLocator {
         }
 
         processTagName(tagName);
+        if (levelStack.isEmpty()) {
+            // raise an error, do not emit 
+            addError(new ErrorMark(this.elementOffset, seq.offset() + token.length() - this.elementOffset, ERR_MissingEndTag, ERR_unexpectedTag(tagName), tagName));
+            terminateLevel();
+            return;
+        }
         if (levelStack.size() <= levelBound || this.qName.equals(currentLevel.tagQName)) {
             contentHandler.endElement(tagUri, this.tagName, qName);
             terminateLevel();
@@ -570,8 +583,17 @@ public class XmlLexerParser implements ContentLocator {
     }
     
     private void resetAndSetErrorOffsets() {
+        resetAndSetErrorOffsets(-1);
+    }
+    
+    private void resetAndSetErrorOffsets(int startError) {
         resetOffsets();
-        elementOffset = (- seq.offset()) - 1;
+        if (endDocOffset != -1) {
+            elementOffset = ( -endDocOffset ) - 1;
+        } else {
+            int o = startError > -1 ? startError : seq.offset();
+            elementOffset = (- o) - 1;
+        }
         endOffset = elementOffset;
     }
     
@@ -604,7 +626,7 @@ public class XmlLexerParser implements ContentLocator {
             // mark error, close this level etc
             markUnclosedElement(currentLevel.tagQName);
             String[] nsName = parseQName(currentLevel.tagQName);
-            resetAndSetErrorOffsets();
+            resetAndSetErrorOffsets(elementOffset);
             contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
             terminateLevel();
             return true;
@@ -857,13 +879,33 @@ public class XmlLexerParser implements ContentLocator {
             markUnexpectedAttrToken();
             return false;
         }
+        consume();
         
         CharSequence s = t.text();
+        StringBuilder sb = null;
+        
         int valStart = seq.offset();
         int valEnd = seq.offset() + t.length();
         char quote = s.charAt(0);
+        int end;
+        
+        t = nextToken();
+        while (t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER) {
+            valEnd = seq.offset() + t.length();
+            if (sb == null) {
+                sb = new StringBuilder();
+                sb.append(s.toString());
+            }
+            sb.append(t.text());
+            consume();
+            t = nextToken();
+        }
+        end = valEnd;
+        if (sb != null) {
+            s = sb;
+        }
         if (quote == '\'' || quote == '"') { // NOI18N
-            if (s.charAt(t.length() - 1) == quote) {
+            if (s.charAt(s.length() - 1) == quote) {
                 s = s.subSequence(1, s.length() - 1);
                 valStart++;
                 valEnd--;
@@ -872,11 +914,10 @@ public class XmlLexerParser implements ContentLocator {
         if (!ignore) {
             attrs.put(argName, s.toString());
             int[] offsets = attrOffsets.get(argName);
-            offsets[OFFSET_END] = seq.offset() + t.length();
+            offsets[OFFSET_END] = end;
             offsets[OFFSET_VALUE_START] = valStart;
             offsets[OFFSET_VALUE_END] = valEnd;
         }
-        consume();
         return true;
     }
     

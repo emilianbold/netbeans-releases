@@ -42,9 +42,12 @@
 package org.netbeans.modules.javascript2.editor.doc;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -53,9 +56,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocumentationFallbackProvider implements JsDocumentationProvider {
-
-    private static final JsDocumentationHolder fallbackHolder = new JsDocumentationFallbackHolder(null);
+public final class JsDocumentationFallbackProvider implements JsDocumentationProvider {
 
     @Override
     public Set getSupportedTags() {
@@ -64,7 +65,17 @@ public class JsDocumentationFallbackProvider implements JsDocumentationProvider 
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return fallbackHolder;
+        return new JsDocumentationFallbackHolder(snapshot);
+    }
+
+    @Override
+    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
+        return Collections.<AnnotationCompletionTagProvider>emptyList();
+    }
+
+    @Override
+    public SyntaxProvider getSyntaxProvider() {
+        return null;
     }
 
 }

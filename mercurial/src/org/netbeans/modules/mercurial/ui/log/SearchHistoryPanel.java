@@ -123,6 +123,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+    private boolean selectFirstRevision;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -213,8 +214,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return bIncomingSearch;
     }
 
-    void setSearchCriteria(boolean b) {
-        criteriaVisible = b;
+    void setSearchCriteria(boolean showCriteria) {
+        criteriaVisible = showCriteria;
         refreshComponents(false);
     }
 
@@ -340,6 +341,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                         diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
+                    if (selectFirstRevision) {
+                        selectFirstRevision();
+                    }
                 }
             }
             resultsPanel.revalidate();
@@ -356,6 +360,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         enableFilters(results != null);
         revalidate();
         repaint();
+    }
+
+    private void selectFirstRevision () {
+        if (diffView != null && results != null && !results.isEmpty()) {
+            diffView.select(results.get(0));
+        }
     }
  
     final void updateActions () {
@@ -508,6 +518,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     String getCurrentBranch () {
         return currentBranch == null ? "" : currentBranch;
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        tbDiff.setSelected(true);
+        this.selectFirstRevision = selectFirstRevision;
+        selectFirstRevision();
     }
     
     /** This method is called from within the constructor to

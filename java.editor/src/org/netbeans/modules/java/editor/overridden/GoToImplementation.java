@@ -107,49 +107,52 @@ public final class GoToImplementation extends BaseAction {
 
     public static void goToImpl(final JTextComponent c, final Document doc, final int caretPos, final AtomicBoolean cancel) {
         try {
-            JavaSource.forDocument(doc).runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    if (cancel != null && cancel.get())
-                        return ;
-                    parameter.toPhase(Phase.RESOLVED);
-                    
-                    Context context = GoToSupport.resolveContext(parameter, doc, caretPos, false);
+            JavaSource js = JavaSource.forDocument(doc);
+            if (js != null) {
+                js.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController parameter) throws Exception {
+                        if (cancel != null && cancel.get())
+                            return ;
+                        parameter.toPhase(Phase.RESOLVED);
 
-                    if (context == null || !SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
-                        return ;
-                    }
+                        Context context = GoToSupport.resolveContext(parameter, doc, caretPos, false);
 
-                    Element el = context.resolved;
-
-                    TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
-                    final ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
-
-                    Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
-
-                    final List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
-
-                    if (overridingMethods == null || overridingMethods.isEmpty()) {
-                        String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";
-
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, key));
-                        return;
-                    }
-                    
-                    final String caption = NbBundle.getMessage(GoToImplementation.class, method != null ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override public void run() {
-                            try {
-                                Point p = new Point(c.modelToView(caretPos).getLocation());
-                                IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, overridingMethods), c, p);
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                        if (context == null || !SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
+                            return ;
                         }
-                    });
-                }
-            }, true);
+
+                        Element el = context.resolved;
+
+                        TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
+                        final ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
+
+                        Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
+
+                        final List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
+
+                        if (overridingMethods == null || overridingMethods.isEmpty()) {
+                            String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";
+
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, key));
+                            return;
+                        }
+
+                        final String caption = NbBundle.getMessage(GoToImplementation.class, method != null ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
+
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override public void run() {
+                                try {
+                                    Point p = new Point(c.modelToView(caretPos).getLocation());
+                                    IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, overridingMethods), c, p);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                    }
+                }, true);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

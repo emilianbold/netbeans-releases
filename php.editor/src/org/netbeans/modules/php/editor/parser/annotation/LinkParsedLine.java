@@ -72,4 +72,9 @@ public class LinkParsedLine implements AnnotationParsedLine {
         return Collections.EMPTY_MAP;
     }
 
+    @Override
+    public boolean startsWithAnnotation() {
+        return true;
+    }
+
 }

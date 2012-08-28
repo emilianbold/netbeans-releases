@@ -66,6 +66,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -74,7 +76,7 @@ import org.openide.util.UserQuestionException;
 *
 * @author Jaroslav Tulach, Petr Hamernik, Ian Formanek
 */
-public abstract class FileObject extends Object implements Serializable {
+public abstract class FileObject extends Object implements Serializable, Lookup.Provider {
     /**
      * Name of default line separator attribute.
      * File object can provide default line separator if it differs from
@@ -90,6 +92,9 @@ public abstract class FileObject extends Object implements Serializable {
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = 85305031923497718L;
+    
+    /** implementation of lookup associated with this file object */
+    private FileObjectLkp lkp;
 
     /** Get the name without extension of this file or folder.
     * Period at first position is not considered as extension-separator
@@ -172,7 +177,7 @@ public abstract class FileObject extends Object implements Serializable {
             // have to do copy
             FileObject dest = copy(target, name, ext);
             delete(lock);
-
+            FileObjectLkp.reassign(this, dest);
             return dest;
         }
     }
@@ -387,6 +392,58 @@ public abstract class FileObject extends Object implements Serializable {
         } finally {
             lock.releaseLock();
         }
+    }
+
+    /** A lookup containing various logical views of the underlying represented file.
+     * The lookup is supposed to contain <code>this</code> {@link FileObject}
+     * (however not necessarily only one, possibly more). The identity of the 
+     * lookup should survive 
+     * {@link #move(org.openide.filesystems.FileLock, org.openide.filesystems.FileObject, java.lang.String, java.lang.String) move operation}
+     * - the resulting {@link FileObject} after successful <em>move</em>
+     * will share the same {@link Lookup} as the original {@link FileObject}.
+     * That is why one can put <code>fileObject.getLookup()</code> into 
+     * {@link java.util.IdentityHashMap}{@code <Lookup,Anything>} and cache 
+     * <code>Anything</code> regardless the actual location of (moved) file.
+     * Or one can obtain a {@link Result} from the {@link Lookup}, keep
+     * its reference, attach a listener to it and be assured that it
+     * will fire events even if the file gets renamed.
+     * 
+     * <p class="nonnormative">
+     * Inside of NetBeans Platform application the content of this lookup is usually
+     * identical to the one provided by the 
+     * <code><a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>.find(this).getLookup()</code>.
+     * This functionality is provided by the <code>org.netbeans.modules.settings</code> 
+     * module. 
+     * <code><a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>.move</code>
+     * operation preserves the object's identity, and to mimic the same behavior 
+     * without reference to 
+     * <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>
+     * the behavior of {@link FileObject#getLookup() FileObject.getLookup()} has 
+     * been modelled.
+     * </p>
+     * 
+     * @return lookup providing logical interfaces additionally describing the 
+     *   content of the underlying file
+     * 
+     * @since 8.0
+     */
+    @Override
+    public Lookup getLookup() {
+        return FileObjectLkp.create(this, true);
+    }
+    
+    final FileObjectLkp lookup() {
+        assert Thread.holdsLock(FileObjectLkp.class);
+        return lkp;
+    }
+    
+    final void assignLookup(FileObjectLkp lkp) {
+        assert Thread.holdsLock(FileObjectLkp.class);
+        if (this.lkp == lkp) {
+            return;
+        }
+        assert this.lkp == null : "Should be null, but was " + this.lkp;
+        this.lkp = lkp;
     }
 
     /** Get the file attribute with the specified name.

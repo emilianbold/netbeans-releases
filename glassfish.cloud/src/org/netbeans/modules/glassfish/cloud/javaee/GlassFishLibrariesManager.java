@@ -56,6 +56,7 @@ package org.netbeans.modules.glassfish.cloud.javaee;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishLibrariesManager {
+
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////

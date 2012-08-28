@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
     private final int hashCode; // cashed hash code
 
     NamespaceKey(CsmNamespace ns) {
-        super(getProjectName(ns));
+        super(((ProjectBase) ns.getProject()).getUnitId());
         this.fqn = ns.getQualifiedName();
         hashCode = _hashCode();
     }
@@ -70,12 +70,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
         super(presentation);
         fqn = presentation.getNamePresentation();
         hashCode = _hashCode();
-    }
-
-    private static CharSequence getProjectName(CsmNamespace ns) {
-        ProjectBase prj = (ProjectBase) ns.getProject();
-        assert (prj != null) : "no project in namespace";
-        return prj == null ? ProjectFileNameBasedKey.NO_PROJECT : prj.getUniqueName();  // NOI18N
     }
 
     @Override

@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="ToolbarWithOverflow">
+      <api name="awt"/>
+      <summary>ToolbarWithOverflow class that adds an overflow button when the toolbar becomes too small to show all the available actions.</summary>
+      <version major="7" minor="51"/>
+      <date day="8" month="8" year="2012"/>
+      <author login="theofanis"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          ToolbarWithOverflow class is added. It can be used to add an overflow button 
+          when the toolbar becomes too small to show all the available actions.
+      </description>
+      <class package="org.openide.awt" name="ToolbarWithOverflow"/>
+      <issue number="216175"/>
+    </change>
     <change id="ColorComboBox">
       <api name="awt"/>
       <summary>ColorComboBox for color selection.</summary>

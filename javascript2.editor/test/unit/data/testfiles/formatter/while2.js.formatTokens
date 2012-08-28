@@ -31,9 +31,10 @@ FormattingToken{kind=EOL, offset=40, text=
 }
 FormattingToken{kind=TEXT, offset=41, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=43, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=44, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -57,9 +58,10 @@ FormattingToken{kind=EOL, offset=57, text=
 }
 FormattingToken{kind=TEXT, offset=58, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=60, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_DO_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=61, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=BEFORE_WHILE_KEYWORD, offset=-1, text=null}

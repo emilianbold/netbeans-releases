@@ -54,11 +54,13 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
 /**
- * Deployment manager for GlassFish local glassFish server registered
+ * Deployment manager for GlassFish local GlassFish server registered
  * with cloud.
  * <p/>
  * Provides the core set of functions a Java EE platform must provide for
@@ -74,6 +76,14 @@ public class GlassFishCloudDeploymentManager
         extends GlassFishDeploymentManager {
 
     ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud and local server instance. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
+    private final GlassFishCloudInstance instance;
+
+    ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +96,10 @@ public class GlassFishCloudDeploymentManager
      * @param url GlassFish cloud URL.
      */
     GlassFishCloudDeploymentManager(GlassFishUrl url) {
-        super(url);
+        super(url, GlassFishCloudInstanceProvider
+                .getCloudInstance(url.getName()),
+                new GlassFishCloudStartServer());
+        this.instance = (GlassFishCloudInstance)super.instance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -427,7 +440,7 @@ public class GlassFishCloudDeploymentManager
      */
     @Override
     public void release() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Do nothing.
     }
 
     /**

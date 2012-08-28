@@ -54,22 +54,22 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * @author Vladimir Voskresensky
  */
 public class IncludedFileStorageKey  extends ProjectNameBasedKey {
-    private final short includedUnitIndex;
+    private final int includedUnitIndex;
 
     public IncludedFileStorageKey(ProjectBase startProject, ProjectBase includedProject) {
-	super(startProject.getUniqueName());
-        includedUnitIndex = (short)KeyUtilities.getUnitId(includedProject.getUniqueName());
+	super(startProject.getUnitId());
+        includedUnitIndex = includedProject.getUnitId();
     }
 
     /*package*/ IncludedFileStorageKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
-        this.includedUnitIndex = aStream.readShort();
+        this.includedUnitIndex = aStream.readUnitId();
     }
 
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
-        aStream.writeShort(includedUnitIndex);
+        aStream.writeUnitId(includedUnitIndex);
     }
 
     IncludedFileStorageKey(KeyDataPresentation presentation) {

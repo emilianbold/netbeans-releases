@@ -98,9 +98,10 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         else if (o instanceof Project) {
             result = new ProjectTreeElement((Project) o);
         } else if (o instanceof RefactoringElement) {
-            ElementGrip grip = ((RefactoringElement) o).getLookup().lookup(ElementGrip.class);
+            RefactoringElement refactoringElement = (RefactoringElement) o;
+            ElementGrip grip = (refactoringElement).getLookup().lookup(ElementGrip.class);
             if (grip!=null) {
-                result = new RefactoringTreeElement((RefactoringElement) o);
+                result = new RefactoringTreeElement(refactoringElement);
             } 
         }
         if (result != null) {

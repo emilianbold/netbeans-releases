@@ -51,6 +51,7 @@ import java.io.File;
 import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import test.pkg.not.in.junit.NbModuleSuiteClusters;
@@ -316,27 +317,6 @@ public class NbModuleSuiteTest extends TestCase {
         assertTrue("Lookup: " + s, s.contains("org.openide.util.lookup"));
         assertTrue("junit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
-    }
-
-    public void testIfOneCanLoadFromToolsJarOneShallDoThatInTheFrameworkAsWell() throws Exception {
-
-        Class<?> vmm;
-        try {
-            vmm = ClassLoader.getSystemClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
-        } catch (ClassNotFoundException ex) {
-            vmm = null;
-            //throw ex;
-        }
-        Class<?> own;
-        try {
-            own = Thread.currentThread().getContextClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
-        } catch (ClassNotFoundException ex) {
-            //own = null;
-            throw ex;
-        }
-
-        //assertEquals(vmm, own);
-
     }
 
     public void testModulesForMe() throws Exception {

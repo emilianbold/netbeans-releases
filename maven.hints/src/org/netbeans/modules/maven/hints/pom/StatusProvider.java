@@ -160,13 +160,18 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
         static List<ErrorDescription> findHints(final @NonNull POMModel model, final Project project, final int selectionStart, final int selectionEnd) {
             final List<ErrorDescription> err = new ArrayList<ErrorDescription>();
+            //before checkModelValid because of #216093
+            runMavenValidation(model, err);
             if (!checkModelValid(model)) {
                 return err;
             }
-            runMavenValidation(model, err);
 
             return ProjectManager.mutex().readAccess(new Mutex.Action<List<ErrorDescription>>() {
                 public @Override List<ErrorDescription> run() {
+                    //Mkleint: this code is very very suspicious
+                    // isIntransaction() only means that some *other* thread has started a transaction.
+                    // with no relation to the current one.. On top of that the current thread should not need
+                    // a transaction since it's just read-only..
                     boolean isInTransaction = model.isIntransaction();
                     if (! isInTransaction) {
                         if (! model.startTransaction()) {
@@ -263,7 +268,12 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                         if (panes != null && panes.length > 0) {
                             final int selectionStart = panes[0].getSelectionStart();
                             final int selectionEnd = panes[0].getSelectionEnd();
-                            refreshLinkAnnotations(document, model, selectionStart, selectionEnd);
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    refreshLinkAnnotations(document, model, selectionStart, selectionEnd);
+                                }
+                            });
                             if (selectionStart != selectionEnd) { //maybe we want to remove the condition?
                                 RP.post(new Runnable() {
                                     @Override public void run() {
@@ -305,6 +315,10 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     }
                 }
                 if (checkModelValid(model)) {
+                    //Mkleint: this code is very very suspicious
+                    // isIntransaction() only means that some *other* thread has started a transaction.
+                    // with no relation to the current one.. On top of that the current thread should not need
+                    // a transaction since it's just read-only..
                     boolean isInTransaction = model.isIntransaction();
                     if (! isInTransaction) {
                         if (! model.startTransaction()) {

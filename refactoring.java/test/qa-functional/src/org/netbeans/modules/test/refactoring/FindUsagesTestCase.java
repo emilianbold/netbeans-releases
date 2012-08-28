@@ -182,6 +182,6 @@ public class FindUsagesTestCase extends RefactoringTestCase {
             return getGoldenFile(this.getName() + "Lin.pass");
         } else {
             return getGoldenFile(this.getName() + ".pass");
-        }
+}
     }
 }

@@ -362,6 +362,10 @@ public final class FxModel extends FxNode {
         public FxNode createElement(String localName) {
             return new XmlNode(localName);
         }
-        
+
+        @Override
+        public void attach(FxNode node, FxModel model) {
+            node.setModel(model);
+        }
     }
 }

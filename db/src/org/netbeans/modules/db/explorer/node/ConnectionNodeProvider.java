@@ -42,17 +42,24 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionListener;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 
 /**
@@ -61,6 +68,18 @@ import org.openide.util.Lookup;
  * @author Rob Englander
  */
 public class ConnectionNodeProvider extends NodeProvider {
+    private PropertyChangeListener PCL = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(final PropertyChangeEvent pce) {
+            if (pce.getPropertyName().equals(BaseNode.PROP_DISPLAY_NAME)) {
+                if (pce.getSource() instanceof DatabaseConnection) {
+                    initialize((DatabaseConnection) pce.getSource());
+                } else {
+                    initialize();
+                }
+            }
+        }
+    };
     
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -68,8 +87,40 @@ public class ConnectionNodeProvider extends NodeProvider {
         return FactoryHolder.FACTORY;
     }
 
+    private void scheduleNodeSelectionAfterUpdate(
+            final DatabaseConnection connToSelect) {
+
+        final NodeListener nl = new NodeAdapter() {
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                select();
+            }
+
+            @Override
+            public void childrenReordered(NodeReorderEvent ev) {
+                select();
+            }
+
+            private void select() {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    connToSelect.selectInExplorer(false);
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            connToSelect.selectInExplorer(false);
+                        }
+                    });
+                }
+                RootNode.instance().removeNodeListener(this);
+            }
+        };
+        RootNode.instance().addNodeListener(nl);
+    }
+
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public ConnectionNodeProvider createInstance(Lookup lookup) {
                 ConnectionNodeProvider provider = new ConnectionNodeProvider(lookup);
                 provider.setup();
@@ -88,6 +139,7 @@ public class ConnectionNodeProvider extends NodeProvider {
     private void setup() {
         connectionList.addConnectionListener(
             new ConnectionListener() {
+                @Override
                 public void connectionsChanged() {
                     initialize();
                 }
@@ -95,11 +147,19 @@ public class ConnectionNodeProvider extends NodeProvider {
         );
     }
 
+    @Override
     protected synchronized void initialize() {
+        initialize(null);
+    }
+
+    protected synchronized void initialize(DatabaseConnection selectedConn) {
         List<Node> newList = new ArrayList<Node>();
         DatabaseConnection newConnection = null;
         DatabaseConnection[] connections = connectionList.getConnections();
         for (DatabaseConnection connection : connections) {
+            // Make sure the PCL is only added once
+            connection.removePropertyChangeListener(PCL);
+            connection.addPropertyChangeListener(PCL);
             Collection<Node> matches = getNodes(connection);
             if (matches.size() > 0) {
                 newList.addAll(matches);
@@ -111,25 +171,17 @@ public class ConnectionNodeProvider extends NodeProvider {
             }
         }
 
-        setNodes(newList);
         // select added connection in explorer
-        final DatabaseConnection newConnectionFinal = newConnection;
-        if (newConnection != null) {
-            if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        newConnectionFinal.selectInExplorer(false);
-                    }
-                });
-            } else {
-                newConnectionFinal.selectInExplorer(false);
-            }
+        final DatabaseConnection connToSelect = newConnection != null
+                ? newConnection : selectedConn; // new or last selected one
+        if (connToSelect != null) {
+            scheduleNodeSelectionAfterUpdate(connToSelect);
         }
+        setNodes(newList);
     }
 
     static class ConnectionComparator implements Comparator<Node> {
-
+        @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }

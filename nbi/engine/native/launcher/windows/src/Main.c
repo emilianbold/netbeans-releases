@@ -106,7 +106,7 @@ void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
         int systemHeight = GetSystemMetrics(SM_CYSCREEN);
         
         int w = 436;
-        int h = 174;
+        int h = 190;
         int x = (systemWidth - w)/2;
         int y = (systemHeight - h)/2;
 

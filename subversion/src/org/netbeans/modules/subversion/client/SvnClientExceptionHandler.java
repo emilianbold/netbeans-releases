@@ -159,7 +159,7 @@ public class SvnClientExceptionHandler {
     public final static int EX_SSL_NEGOTIATION_FAILED = 131072;
           
   
-    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION | EX_SSL_NEGOTIATION_FAILED;
+    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION | EX_SSL_NEGOTIATION_FAILED | EX_HTTP_FORBIDDEN;
     public final static int EX_DEFAULT_HANDLED_EXCEPTIONS = EX_HANDLED_EXCEPTIONS;
     
     private final SVNClientException exception;
@@ -186,6 +186,8 @@ public class SvnClientExceptionHandler {
             } if( (handledExceptions &  exceptionMask & EX_AUTHENTICATION) == exceptionMask) {
                 return handleRepositoryConnectError();
             } if( (handledExceptions &  exceptionMask & EX_SSL_NEGOTIATION_FAILED) == exceptionMask) {
+                return handleRepositoryConnectError();
+            } if( (handledExceptions &  exceptionMask & EX_HTTP_FORBIDDEN) == exceptionMask) {
                 return handleRepositoryConnectError();
             }
         }

@@ -586,7 +586,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             if (pkgElm != null) {
                 addPackageContent(pkgElm,
                         EnumSet.<ElementKind>of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE),
-                        null, prefix, substitutionOffset, jdctx);
+                        null, null, prefix, substitutionOffset, jdctx);
             }
             
             TypeElement typeElm = jdctx.javac.getElements().getTypeElement(fqn);
@@ -594,7 +594,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 // inner classes
                 addInnerClasses(typeElm,
                         EnumSet.<ElementKind>of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE),
-                        null, prefix, substitutionOffset, jdctx);
+                        null, null, prefix, substitutionOffset, jdctx);
             }
         }
         
@@ -605,43 +605,14 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     
     private void completeThrowsOrPkg(String fqn, String prefix, int substitutionOffset, JavadocContext jdctx) {
         final Elements elements = jdctx.javac.getElements();
+        final Set<Element> excludes = new HashSet<Element>();
         String pkgPrefix;
         
-        // add RuntimeExceptions
-        
-        if (fqn == null) {
-            pkgPrefix = prefix;
-            addTypes(EnumSet.<ElementKind>of(CLASS),
-                    findDeclaredType("java.lang.RuntimeException", elements), // NOI18N
-                    null, prefix, substitutionOffset, jdctx);
-            
-        } else {
-            pkgPrefix = fqn + '.' + prefix;
-            
-            PackageElement pkgElm = elements.getPackageElement(fqn);
-            if (pkgElm != null) {
-                addPackageContent(pkgElm,
-                        EnumSet.<ElementKind>of(CLASS),
-                        findDeclaredType("java.lang.RuntimeException", elements), // NOI18N
-                        prefix, substitutionOffset, jdctx);
-            }
-            
-            TypeElement typeElm = elements.getTypeElement(fqn);
-            if (typeElm != null) {
-                // inner classes
-                addInnerClasses(typeElm,
-                        EnumSet.<ElementKind>of(CLASS),
-                        findDeclaredType("java.lang.RuntimeException", elements), // NOI18N
-                        prefix, substitutionOffset, jdctx);
-            }
-        }
-        
-        // add declared Throwables
-        
+        // add declared Throwables        
         ExecutableMemberDoc edoc = (ExecutableMemberDoc) jdctx.jdoc;
         for (Type type : edoc.thrownExceptionTypes()) {
             String typeName = type.typeName();
-            if (typeName.startsWith(prefix)) {
+            if (startsWith(typeName, prefix)) {
                 String qualTypeName = type.qualifiedTypeName();
                 TypeElement typeElement = elements.getTypeElement(qualTypeName);
                 if (typeElement == null) {
@@ -651,9 +622,38 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         jdctx.javac, typeElement, (DeclaredType) typeElement.asType(),
                         substitutionOffset, typeName != qualTypeName ? jdctx.getReferencesCount() : null,
                         elements.isDeprecated(typeElement), false, false, false, true, false, null));
+                excludes.add(typeElement);
             }
         }
 
+        // add other Throwables        
+        if (fqn == null) {
+            pkgPrefix = prefix;
+            addTypes(EnumSet.<ElementKind>of(CLASS),
+                    findDeclaredType("java.lang.Throwable", elements), // NOI18N
+                    excludes, prefix, substitutionOffset, jdctx);
+            
+        } else {
+            pkgPrefix = fqn + '.' + prefix;
+            
+            PackageElement pkgElm = elements.getPackageElement(fqn);
+            if (pkgElm != null) {
+                addPackageContent(pkgElm,
+                        EnumSet.<ElementKind>of(CLASS),
+                        findDeclaredType("java.lang.Throwable", elements), // NOI18N
+                        excludes, prefix, substitutionOffset, jdctx);
+            }
+            
+            TypeElement typeElm = elements.getTypeElement(fqn);
+            if (typeElm != null) {
+                // inner classes
+                addInnerClasses(typeElm,
+                        EnumSet.<ElementKind>of(CLASS),
+                        findDeclaredType("java.lang.Throwable", elements), // NOI18N
+                        excludes, prefix, substitutionOffset, jdctx);
+            }
+        }
+        
         
         // add packages
         
@@ -932,12 +932,12 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         
         if (queryType == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
             if (baseType == null) {
-                addAllTypes(jdctx, kinds, prefix, substitutionOffset);
+                addAllTypes(jdctx, kinds, toExclude, prefix, substitutionOffset);
             } else {
                 Elements elements = jdctx.javac.getElements();
                 for(DeclaredType subtype : getSubtypesOf(baseType, prefix, jdctx)) {
                     TypeElement elem = (TypeElement)subtype.asElement();
-                    if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
+                    if ((toExclude == null || !toExclude.contains(elem)) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
                         items.add(JavaCompletionItem.createTypeItem(jdctx.javac, elem, subtype, substitutionOffset, jdctx.getReferencesCount(), elements.isDeprecated(elem), false, false, false, false, false, null));
                 }
             }
@@ -994,7 +994,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
 
-    private void addAllTypes(JavadocContext env, EnumSet<ElementKind> kinds, String prefix, int substitutionOffset) {
+    private void addAllTypes(JavadocContext env, EnumSet<ElementKind> kinds, Set<? extends Element> toExclude, String prefix, int substitutionOffset) {
 //        String prefix = env.getPrefix();
         CompilationInfo controller = env.javac;
         boolean isCaseSensitive = false;
@@ -1003,14 +1003,21 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //        ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
+        Set<ElementHandle<Element>> excludeHandles = null;
+        if (toExclude != null) {
+            excludeHandles = new HashSet<ElementHandle<Element>>(toExclude.size());
+            for (Element el : toExclude) {
+                excludeHandles.add(ElementHandle.create(el));
+            }
+        }
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
-            if (!isAnnonInner(name)) {
+            if ((excludeHandles == null || !excludeHandles.contains(name)) && !isAnnonInner(name)) {
                 items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), false, false, false, null));
             }
         }
     }
         
-    private void addInnerClasses(TypeElement te, EnumSet<ElementKind> kinds, DeclaredType baseType, String prefix, int substitutionOffset, JavadocContext jdctx) {
+    private void addInnerClasses(TypeElement te, EnumSet<ElementKind> kinds, DeclaredType baseType, Set<? extends Element> toExclude, String prefix, int substitutionOffset, JavadocContext jdctx) {
         CompilationInfo controller = jdctx.javac;
         Element srcEl = jdctx.handle.resolve(controller);
         Elements elements = controller.getElements();
@@ -1018,7 +1025,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         Trees trees = controller.getTrees();
         Scope scope = /*env.getScope()*/ trees.getScope(trees.getPath(srcEl));
         for (Element e : controller.getElementUtilities().getMembers(te.asType(), null)) {
-            if (e.getKind().isClass() || e.getKind().isInterface()) {
+            if ((e.getKind().isClass() || e.getKind().isInterface()) && (toExclude == null || !toExclude.contains(e))) {
                 String name = e.getSimpleName().toString();
                     if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)) {
                         items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, null, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
@@ -1027,7 +1034,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    private void addPackageContent(PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, String prefix, int substitutionOffset, JavadocContext jdctx) {
+    private void addPackageContent(PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, Set<? extends Element> toExclude, String prefix, int substitutionOffset, JavadocContext jdctx) {
         CompilationInfo controller = jdctx.javac;
         Element srcEl = jdctx.handle.resolve(controller);
         Elements elements = controller.getElements();
@@ -1035,7 +1042,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         Trees trees = controller.getTrees();
         Scope scope =  trees.getScope(trees.getPath(srcEl));
         for(Element e : pe.getEnclosedElements()) {
-            if (e.getKind().isClass() || e.getKind().isInterface()) {
+            if ((e.getKind().isClass() || e.getKind().isInterface()) && (toExclude == null || !toExclude.contains(e))) {
                 String name = e.getSimpleName().toString();
                     if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
                         && trees.isAccessible(scope, (TypeElement)e)

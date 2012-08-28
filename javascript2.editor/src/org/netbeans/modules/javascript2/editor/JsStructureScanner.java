@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
@@ -160,9 +161,14 @@ public class JsStructureScanner implements StructureScanner {
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
                 if (tokenId == JsTokenId.DOC_COMMENT) {
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                    // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
+                    int startOffset = ts.offset() + 3;
+                    int endOffset = ts.offset() + ts.token().length() - 2;
+                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(startOffset, endOffset));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                    int startOffset = ts.offset() + 2;
+                    int endOffset = ts.offset() + ts.token().length() - 2;
+                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(startOffset, endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -241,7 +247,7 @@ public class JsStructureScanner implements StructureScanner {
                 JsStructureItem item = (JsStructureItem) obj;
                 if (item.getName() != null && this.getName() != null) {
                     thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange(null) == modelElement.getOffsetRange(null);
+                            && item.modelElement.getOffsetRange() == modelElement.getOffsetRange();
                 }
             }
             return thesame;
@@ -299,7 +305,7 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange(null).getEnd();
+            return modelElement.getOffsetRange().getEnd();
         }
 
         @Override
@@ -312,7 +318,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            if (!types.isEmpty() && !types.contains(Type.UNRESOLVED)) {
+            if (!types.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;

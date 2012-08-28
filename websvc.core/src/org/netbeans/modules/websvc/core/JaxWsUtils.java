@@ -81,6 +81,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ScanDialog;
@@ -483,59 +484,43 @@ public class JaxWsUtils {
 
     }
 
-    private static void generateJaxWsImplClass(Project project, 
-            FileObject targetFolder, String targetName, URL wsdlURL, 
-            final WsdlService service, final WsdlPort port, boolean addService, 
-            String serviceID, final boolean isStatelessSB) throws Exception {
+    private static void generateJaxWsImplClass(final Project project, 
+            final FileObject targetFolder, final String targetName, final URL wsdlURL, 
+            final WsdlService service, final WsdlPort port, final boolean addService, 
+            final String serviceID, final boolean isStatelessSB) throws Exception 
+    {
 
         // Use Progress API to display generator messages.
         //ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JaxWsUtils.class, "TXT_WebServiceGeneration")); //NOI18N
         //handle.start(100);
-        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(
-                project.getProjectDirectory());
-
         final FileObject implClassFo = GenerationUtils.createClass(targetFolder, 
                 targetName, null);
         implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);           // NOI18N
         DataObject.find(implClassFo).setValid(false);
+        DataObject.find(implClassFo);
 
-        ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
-        String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
-        String portJavaName = port.getJavaName();
-        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));// NOI18N
-        if (addService) {
-            boolean jsr109 = true;
-            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-            if (jaxWsModel != null) {
-                jsr109 = isJsr109(jaxWsModel);
-            }
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, 
-                    wsdlURL.toString(), service.getName(), port.getName(), 
-                    artifactsPckg, jsr109, false);
-            if (serviceID == null) {
-                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.WARNING, 
-                        "Failed to add service element to nbproject/jax-ws.xml. " +
-                        "Either problem with downloading wsdl file or problem with " +
-                        "writing into nbproject/jax-ws.xml.");          // NOI18N
-                return;
-            }
-        }
-
-        final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
+        
         final boolean isIncomplete[] = new boolean[1];
+        final String[] sIdContainer = new String[1];
+        
         final CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                if ( !isIncomplete[0] ) {
+                    sIdContainer[0] = addService(project, targetFolder, targetName, 
+                        wsdlURL, service , port , implClassFo , serviceID , addService);
+                }
+                JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(
+                        project.getProjectDirectory());
+                String wsdlLocation = jaxWsSupport.getWsdlLocation(sIdContainer[0]);
+                
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                 if (javaClass != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-
-                    // add implementation clause
-                    //ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, port.getJavaName());
 
                     //add @WebService annotation
                     TypeElement wSAn = workingCopy.getElements().getTypeElement(
@@ -564,7 +549,7 @@ public class JaxWsUtils {
                     AnnotationTree wSAnnotation = make.Annotation(
                             make.QualIdent(wSAn),
                             attrs);
-                    ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, 
+                    ClassTree modifiedClass = genUtils.addAnnotation(javaClass, 
                             wSAnnotation);
 
                     if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
@@ -664,41 +649,7 @@ public class JaxWsUtils {
             public void cancel() {
             }
         };
-        ModificationResult result = targetSource.runModificationTask(task);
-        if ( isIncomplete[0] && 
-                org.netbeans.api.java.source.SourceUtils.isScanInProgress())
-        {
-            final Runnable runnable = new Runnable(){
-                /* (non-Javadoc)
-                 * @see java.lang.Runnable#run()
-                 */
-                @Override
-                public void run() {
-                    try {
-                        targetSource.runModificationTask(task).commit();
-                        //open in editor
-                        openFileInEditor(DataObject.find(implClassFo));
-                    }
-                    catch (IOException e) {
-                        Logger.getLogger(JaxWsUtils.class.getName())
-                                .log(Level.WARNING, null, e);
-                    }
-                }
-            };
-            SwingUtilities.invokeLater( new Runnable(){
-                @Override
-                public void run() {
-                    ScanDialog.runWhenScanFinished( runnable, NbBundle.getMessage(
-                            JaxWsUtils.class, "LBL_GenerateWebserviceClass"));  // NOI18N
-                }
-            });
-        }
-        else { 
-            //open in editor
-            result.commit();
-            //open in editor
-            openFileInEditor(DataObject.find(implClassFo));
-        }
+        commitModificationTask(targetSource, task, implClassFo, !isIncomplete[0]);
     }
 
     public static void openFileInEditor(DataObject dobj) {
@@ -729,6 +680,78 @@ public class JaxWsUtils {
             packageName = fullyQualifiedName.substring(0, index);
         }
         return packageName;
+    }
+    
+    private static String addService(Project project, 
+            FileObject targetFolder, String targetName, URL wsdlURL, 
+            WsdlService service, WsdlPort port,  FileObject implClassFo , 
+            String serviceID , boolean addService ) 
+    {
+        if (addService) {
+            ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+            String portJavaName = port.getJavaName();
+            String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
+            final String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf('.'));
+            JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(
+                    project.getProjectDirectory());
+            boolean jsr109 = true;
+            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                jsr109 = isJsr109(jaxWsModel);
+            }
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, 
+                    wsdlURL.toString(), service.getName(), port.getName(), 
+                    artifactsPckg, jsr109, false);
+            if (serviceID == null) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.WARNING, 
+                        "Failed to add service element to nbproject/jax-ws.xml. " +
+                        "Either problem with downloading wsdl file or problem with " +
+                        "writing into nbproject/jax-ws.xml.");          // NOI18N
+                return serviceID;
+            }
+        }
+        return serviceID;
+    }
+    
+    private static void commitModificationTask(final JavaSource javaSource, 
+            final Task<WorkingCopy> task, final FileObject fileObject , 
+            boolean isComplete ) throws IOException
+    {
+        ModificationResult result = javaSource.runModificationTask(task);
+        if ( !isComplete && 
+                org.netbeans.api.java.source.SourceUtils.isScanInProgress())
+        {
+            final Runnable runnable = new Runnable(){
+                /* (non-Javadoc)
+                 * @see java.lang.Runnable#run()
+                 */
+                @Override
+                public void run() {
+                    try {
+                        javaSource.runModificationTask(task).commit();
+                        //open in editor
+                        openFileInEditor(DataObject.find(fileObject));
+                    }
+                    catch (IOException e) {
+                        Logger.getLogger(JaxWsUtils.class.getName())
+                                .log(Level.WARNING, null, e);
+                    }
+                }
+            };
+            SwingUtilities.invokeLater( new Runnable(){
+                @Override
+                public void run() {
+                    ScanDialog.runWhenScanFinished( runnable, NbBundle.getMessage(
+                            JaxWsUtils.class, "LBL_GenerateWebserviceClass"));  // NOI18N
+                }
+            });
+        }
+        else { 
+            //open in editor
+            result.commit();
+            //open in editor
+            openFileInEditor(DataObject.find(fileObject));
+        }
     }
 
     private static void initProjectInfo(Project project) {

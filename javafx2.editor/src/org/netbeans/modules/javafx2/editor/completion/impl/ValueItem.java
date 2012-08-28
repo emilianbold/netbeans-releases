@@ -50,17 +50,23 @@ import org.openide.util.ImageUtilities;
  *
  * @author sdedic
  */
-public class ValueItem extends AbstractCompletionItem {
+final class ValueItem extends AbstractCompletionItem {
     private String iconResource;
     private ImageIcon icon;
     private boolean attribute;
+    private String valPrefix;
     
     private static final Map<String, ImageIcon> cache = new HashMap<String, ImageIcon>();
     
-    public ValueItem(CompletionContext ctx, String text, String icon) {
+    public ValueItem(CompletionContext ctx, String text, String valPrefix, String icon) {
         super(ctx, text);
         this.iconResource = icon;
-        this.attribute = ctx.getType() == CompletionContext.Type.PROPERTY_VALUE;
+        this.attribute = ctx.isAttribute();
+        this.valPrefix = valPrefix;
+    }
+    
+    public ValueItem(CompletionContext ctx, String text, String icon) {
+        this(ctx, text, "", icon);
     }
     
     public void setAttribute(boolean attribute) {
@@ -70,9 +76,9 @@ public class ValueItem extends AbstractCompletionItem {
     @Override
     protected String getSubstituteText() {
         if (attribute) {
-            return "\"" + super.getSubstituteText() + "\"";
+            return "\"" + valPrefix + super.getSubstituteText() + "\"";
         } else {
-            return super.getSubstituteText();
+            return valPrefix + super.getSubstituteText();
         }
     }
 
@@ -92,5 +98,8 @@ public class ValueItem extends AbstractCompletionItem {
         }
         return icon;
     }
-    
+
+    public String toString() {
+        return "value[" + getSubstituteText() + "]";
+    }
 }

@@ -51,18 +51,11 @@ import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.ImageUtilities;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Completes ?import instructions. Uses classpath to list available packages, and filters them by prefix
@@ -72,9 +65,14 @@ import org.openide.util.lookup.ServiceProvider;
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
 public class ImportCompleter implements Completer, Completer.Factory {
     /** 
-     * The 'import' processing instruction name
+     * The 'import' processing instruction text; must start with &lt;? and end with space
      */
-    private static final String PI_IMPORT = "import"; // NOI18N
+    private static final String PI_IMPORT = "<?import "; // NOI18N
+    
+    /**
+     * Import instruction target
+     */
+    private static final String PI_IMPORT2 = FxXmlSymbols.FX_IMPORT;
     
     private final CompletionContext ctx;
     private List<CompletionItem>    results;
@@ -92,7 +90,7 @@ public class ImportCompleter implements Completer, Completer.Factory {
             // can suggest import pi
             return true;
         } else if (ctx.getType() == CompletionContext.Type.INSTRUCTION_DATA) {
-            return PI_IMPORT.equals(ctx.getPiTarget());
+            return PI_IMPORT2.equals(ctx.getPiTarget());
         } else if (ctx.getType() == CompletionContext.Type.BEAN) {
             return true;
         }
@@ -105,7 +103,8 @@ public class ImportCompleter implements Completer, Completer.Factory {
 
     private CompletionItem completeTarget() {
         String prefix = ctx.getPrefix();
-        if (!("".equals(prefix) || PI_IMPORT.startsWith(prefix))) {
+        if (!("<?".startsWith(prefix) ||
+              PI_IMPORT2.startsWith(prefix))) {
             return null;
         }
         return new ImportInstruction(ctx);
@@ -113,11 +112,9 @@ public class ImportCompleter implements Completer, Completer.Factory {
     
     @Override
     public List<CompletionItem> complete() {
-        if (!accepts(ctx)) {
-            return null;
-        }
-        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET) {
-            return Collections.singletonList(completeTarget());
+        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET || ctx.getType() == CompletionContext.Type.ROOT) {
+            CompletionItem item = completeTarget();
+            return item != null ? Collections.singletonList(completeTarget()) : null;
         }
         results = new ArrayList<CompletionItem>();
         
@@ -133,10 +130,14 @@ public class ImportCompleter implements Completer, Completer.Factory {
 
     @Override
     public Completer createCompleter(CompletionContext ctx) {
-        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET ||
-            (ctx.getType() == CompletionContext.Type.INSTRUCTION_DATA && 
-                PI_IMPORT.equals(ctx.getPiTarget()))) {
-            return new ImportCompleter(ctx);
+        switch (ctx.getType()) {
+            case INSTRUCTION_DATA:
+            case ROOT:
+                return new ImportCompleter(ctx);
+            case INSTRUCTION_TARGET:
+                if (ctx.getPiTarget() == null || PI_IMPORT2.startsWith(ctx.getPiTarget())) {
+                    return new ImportCompleter(ctx);
+                }
         }
         return null;
     }
@@ -148,7 +149,7 @@ public class ImportCompleter implements Completer, Completer.Factory {
         private static ImageIcon  ICON;
         
         public ImportInstruction(CompletionContext ctx) {
-            super(ctx, PI_IMPORT);
+            super(ctx, ctx.getPrefix().isEmpty() || ctx.getPrefix().startsWith("<") ? PI_IMPORT : PI_IMPORT2 + " ");
         }
 
         @Override
@@ -159,7 +160,7 @@ public class ImportCompleter implements Completer, Completer.Factory {
 
         @Override
         protected String getLeftHtmlText() {
-            return MessageFormat.format(FMT_INSTRUCTION, PI_IMPORT);
+            return MessageFormat.format(FMT_INSTRUCTION, PI_IMPORT2);
         }
 
         @Override
@@ -168,6 +169,10 @@ public class ImportCompleter implements Completer, Completer.Factory {
                 ICON = ImageUtilities.loadImageIcon(IMG_INSTRUCTION, false);
             }
             return ICON;
+        }
+        
+        public String toString() {
+            return getSubstituteText();
         }
     }
 }

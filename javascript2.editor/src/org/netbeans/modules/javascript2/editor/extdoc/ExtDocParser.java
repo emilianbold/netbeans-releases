@@ -95,7 +95,7 @@ public class ExtDocParser {
     }
 
     private static boolean isCommentImportantToken(Token<? extends JsDocumentationTokenId> token) {
-        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_START);
+        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_DOC_START);
     }
 
     private static TokenSequence getEmbeddedExtDocTS(TokenSequence ts) {

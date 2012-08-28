@@ -67,7 +67,7 @@ public class QT_QLifeTestCase extends MakeProjectTestBase {
     }
 
     @Test
-    public void testQLife(){
+    public void testQLife() throws Exception {
         List<String> list = new ArrayList<String>();
         //list.add("qmake qlife.pro");
         if (Utilities.isWindows()) {

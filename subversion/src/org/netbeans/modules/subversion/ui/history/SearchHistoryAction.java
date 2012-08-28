@@ -104,7 +104,7 @@ public class SearchHistoryAction extends ContextAction {
                 tc.open();
                 tc.requestActive();
                 if (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files)) {
-                    tc.search();
+                    tc.search(false);
                 }
             }
         });
@@ -126,6 +126,8 @@ public class SearchHistoryAction extends ContextAction {
         tc.setDisplayName(tcTitle);
         tc.open();
         tc.requestActive();
+        tc.search(true);
+        tc.activateDiffView(true);
     }
 
     private static Context getDefaultContext() {
@@ -146,6 +148,6 @@ public class SearchHistoryAction extends ContextAction {
         tc.setDisplayName(tcTitle);
         tc.open();
         tc.requestActive();
-        tc.search();
+        tc.search(false);
     }
 }

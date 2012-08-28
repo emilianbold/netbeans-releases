@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteIdToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteLiteralToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
@@ -186,7 +187,7 @@ public class APTUtils {
             ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
             // no need to set text in const token
-        } else if (_token instanceof APTLiteConstTextToken) {
+        } else if (_token instanceof APTLiteConstTextToken || _token instanceof APTLiteLiteralToken) {
             // no need to set text in const token
         } else {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
@@ -238,10 +239,13 @@ public class APTUtils {
         return (APTDefineNode)nodeBuilder.getNode();
     }
 
-    public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
+    public static APTToken createAPTToken(int type, int startOffset, int endOffset, 
+            int startColumn, int startLine, int endColumn, int endLine, int literalType) {
         // TODO: optimize factory
         if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
+        } else if (APTLiteLiteralToken.isApplicable(type, startOffset, startColumn, startLine, literalType)){
+            return new APTLiteLiteralToken(startOffset, startColumn, startLine, literalType);
         } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteIdToken(startOffset, startColumn, startLine);
         }

@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
-import org.netbeans.modules.javascript2.editor.model.Type;
-
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>

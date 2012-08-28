@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class TemplateLineParserTest extends NbTestCase {
-    private TemplateLineParser parser;
+    private AnnotationLineParser parser;
 
     public TemplateLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class TemplateLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new TemplateLineParser();
+        this.parser = Symfony2ExtraAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class TemplateLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsTemplateParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Template") instanceof TemplateParsedLine);
+        assertTrue(parser.parse("Template") instanceof ParsedLine);
     }
 
     public void testReturnValueIsTemplateParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Template") instanceof TemplateParsedLine);
+        assertTrue(parser.parse("Annotations\\Template") instanceof ParsedLine);
     }
 
     public void testReturnValueIsTemplateParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template") instanceof TemplateParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template") instanceof ParsedLine);
     }
 
     public void testReturnValueIsTemplateParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Template(\"SensioBlogBundle:Post:show\", vars={\"post\"})") instanceof TemplateParsedLine);
+        assertTrue(parser.parse("Annotations\\Template(\"SensioBlogBundle:Post:show\", vars={\"post\"})") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class TemplateLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Template");
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Template", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class TemplateLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Template   ");
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Template", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class TemplateLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Template\t\t  ");
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Template", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class TemplateLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Template(\"SensioBlogBundle:Post:show\", vars={\"post\"})");
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Template", parsedLine.getName());
         assertEquals("(\"SensioBlogBundle:Post:show\", vars={\"post\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class TemplateLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\Template(\"SensioBlogBundle:Post:show\", vars={\"post\"})  \t");
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Template", parsedLine.getName());
         assertEquals("(\"SensioBlogBundle:Post:show\", vars={\"post\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class TemplateLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template(\"SensioBlogBundle:Post:show\", vars={\"post\"})  \t");
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Template", parsedLine.getName());
         assertEquals("(\"SensioBlogBundle:Post:show\", vars={\"post\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

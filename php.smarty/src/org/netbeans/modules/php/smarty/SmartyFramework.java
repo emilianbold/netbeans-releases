@@ -77,6 +77,10 @@ public class SmartyFramework {
      * Version of SMARTY templates.
      */
     private static Version smartyVersion = Version.SMARTY3;
+    /**
+     * Toggle comment option. How to comment inside .tpl files.
+     */
+    private static ToggleCommentOption toggleCommentOption = ToggleCommentOption.SMARTY;
 
     /**
      * @return full IDE options Smarty path
@@ -133,8 +137,17 @@ public class SmartyFramework {
         SmartyFramework.smartyVersion = version;
     }
 
+    public static void setToggleCommentOption(ToggleCommentOption toggleCommentOption) {
+        SmartyFramework.toggleCommentOption = toggleCommentOption;
+    }
+
     public enum Version {
         SMARTY3,
         SMARTY2;
+    }
+
+    public enum ToggleCommentOption {
+        SMARTY,
+        CONTEXT
     }
 }

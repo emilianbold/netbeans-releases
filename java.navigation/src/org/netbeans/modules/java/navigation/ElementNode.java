@@ -386,7 +386,8 @@ public class ElementNode extends AbstractNode {
         Collection<Description> subs; 
         String htmlHeader;
         long pos;
-        boolean isInherited;
+        final boolean isInherited;
+        final boolean isTopLevel;
         ClasspathInfo cpInfo;
         
         Description( ClassMemberPanelUI ui ) {
@@ -395,13 +396,15 @@ public class ElementNode extends AbstractNode {
             this.elementHandle = null;
             this.kind = null;
             this.isInherited = false;
+            this.isTopLevel = false;
         }
          
         Description(@NonNull ClassMemberPanelUI ui,
                     @NonNull String name,
                     @NonNull ElementHandle<? extends Element> elementHandle,
                     @NonNull ElementKind kind,
-                    boolean inherited ) {
+                    boolean inherited,
+                    boolean topLevel) {
             assert ui != null;
             assert name != null;
             assert elementHandle != null;
@@ -411,6 +414,7 @@ public class ElementNode extends AbstractNode {
             this.elementHandle = elementHandle;
             this.kind = kind;
             this.isInherited = inherited;
+            this.isTopLevel = topLevel;
         }
 
         public FileObject getFileObject() {

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,11 +52,13 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
@@ -124,7 +124,7 @@ public final class GroovyElementHandler {
                 if (sb.length() > 0) {
                     sb.append(", ");
                 }
-                sb.append(NbUtilities.stripPackage(string));
+                sb.append(GroovyUtils.stripPackage(string));
             }
 
             // FIXME return type

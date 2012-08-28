@@ -50,7 +50,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.spi.WSDesc;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -82,11 +82,13 @@ public class Hk2WSChildren extends Children.Keys<Object> implements Refreshable 
             
             @Override
             public void run() {
-                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                CommonServerSupport commonSupport = lookup.lookup(
+                        CommonServerSupport.class);
                 if(commonSupport != null) {
                     try {
-                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonSupport.getCommandFactory(),
+                                commonSupport.getInstance());
                         List<WSDesc> wsList = mgr.getWebServices();
                         for(WSDesc ws: wsList) {
                             keys.add(new Hk2WSNode(lookup, ws, Hk2ItemNode.WS_ENDPOINT));

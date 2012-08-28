@@ -46,13 +46,12 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.xml.ws.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.openide.filesystems.FileObject;
@@ -97,7 +96,7 @@ public abstract class GotoBaseAction extends BaseAction {
         FileObject targetFO = findTargetFO();
 
         if (targetFO != null && targetFO.isValid()) {
-            NbUtilities.open(targetFO, 0, "");
+            GsfUtilities.open(targetFO, 0, "");
         }
     }
 

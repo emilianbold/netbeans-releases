@@ -83,6 +83,12 @@ public class PHPDocTag extends ASTNode {
             return Collections.EMPTY_MAP;
         }
 
+        @Override
+        public boolean startsWithAnnotation() {
+            //all default annotations start at the start of the parsed line
+            return true;
+        }
+
     }
 
     final private AnnotationParsedLine type;

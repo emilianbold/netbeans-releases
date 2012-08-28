@@ -48,6 +48,9 @@ import java.util.Collection;
  * resides in project lookup, allows to append problems with the project 
  * that are identified.
  * @author mkleint
+ * @deprecated use <code>ProjectProblemsProvider</code> instead. <code>ProblemReporter</code>'s problems are converted to the new API.
+ * The synchronization is one way only, it's not guaranteed that <code>getReports()</code> contains all problems.
+ * 
  */
 public interface ProblemReporter {
     

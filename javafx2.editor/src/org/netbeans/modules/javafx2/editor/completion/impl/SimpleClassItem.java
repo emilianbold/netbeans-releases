@@ -145,7 +145,7 @@ public class SimpleClassItem extends AbstractCompletionItem {
     @Override
     protected String getSubstituteText() {
         // the opening < is a part of the replacement area
-        return "<" + super.getSubstituteText() + " "; // NOI18N
+        return "<" + super.getSubstituteText() + (ctx.isReplaceExisting() ? "" : " "); // NOI18N
     }
 
     @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=ClassItemFactory.class)
@@ -153,6 +153,10 @@ public class SimpleClassItem extends AbstractCompletionItem {
 
         @Override
         public CompletionItem convert(TypeElement elem, CompletionContext ctx, int priorityHint) {
+            // ignore Strings, they are written as char content
+            if (elem.getQualifiedName().contentEquals("java.lang.String")) { // NOI18N
+                return null;
+            }
             Collection<? extends ExecutableElement> execs = ElementFilter.constructorsIn(elem.getEnclosedElements());
             for (ExecutableElement e : execs) {
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
@@ -188,6 +192,6 @@ public class SimpleClassItem extends AbstractCompletionItem {
     }
     
     public String toString() {
-        return "SCI[" + getFullClassName() + "]";
+        return "simple-class[" + getFullClassName() + "]";
     }
 }

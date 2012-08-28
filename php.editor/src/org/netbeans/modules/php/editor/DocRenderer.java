@@ -76,6 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
+@NbBundle.Messages("PHPDocNotFound=PHPDoc not found")
 class DocRenderer {
 
     private static final String TD_STYLE = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;\" ";  //NOI18N
@@ -135,7 +136,7 @@ class DocRenderer {
         if (phpDoc.length() > 0) {
             description.append(phpDoc);
         } else {
-            description.append(NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound"));
+            description.append(Bundle.PHPDocNotFound());
         }
         return String.format("%s%s%s", locationHeader.getText(), header.getText(), description.toString());
 
@@ -157,10 +158,11 @@ class DocRenderer {
         return phpDoc;
     }
 
+    @NbBundle.Messages("PHPPlatform=PHP Platform")
     private static String getLocation(PhpElement indexedElement) {
         String location = null;
         if (indexedElement.isPlatform()) {
-            location = NbBundle.getMessage(DocRenderer.class, "PHPPlatform");
+            location = Bundle.PHPPlatform();
         } else {
             FileObject fobj = indexedElement.getFileObject();
             if (fobj != null) {
@@ -301,10 +303,10 @@ class DocRenderer {
                     String type = composeType(typeTag.getTypes());
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
                 } else if (kind instanceof LinkParsedLine) {
-                    String line = String.format("<a href=\"%s\">%s</a><br>\n", kind.getDescription(), kind.getDescription()); //NOI18N
+                    String line = String.format("<a href=\"%s\">%s</a><br>%n", kind.getDescription(), kind.getDescription()); //NOI18N
                     links.append(line);
                 } else {
-                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>\n", //NOI18N
+                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
                             processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription()));
                     others.append(oline);
                 }
@@ -321,23 +323,21 @@ class DocRenderer {
             while (index > -1 && text.length() > (index + 1)) {
                 result.append(text.substring(lastIndex, index));
                 lastIndex = index;
-                switch (text.charAt(index + 2)) {
-                    case 'l':
-                    case 's':
-                    case 'u':
-                        int endIndex = text.indexOf(' ', index);
-                        if (endIndex > -1) {
-                            String tag = text.substring(index + 1, endIndex).trim();
-                            if (LINK_TAGS.contains(tag)) {
-                                index = endIndex + 1;
-                                endIndex = text.indexOf('}', index);
-                                if (endIndex > -1) {
-                                    String link = text.substring(index, endIndex).trim();
-                                    result.append(String.format("<a href=\"%s\">%s</a>", link, link));
-                                    lastIndex = endIndex + 1;
-                                }
+                char charAt = text.charAt(index + 2);
+                if (charAt == 'l' || charAt == 's' || charAt == 'u') {
+                    int endIndex = text.indexOf(' ', index);
+                    if (endIndex > -1) {
+                        String tag = text.substring(index + 1, endIndex).trim();
+                        if (LINK_TAGS.contains(tag)) {
+                            index = endIndex + 1;
+                            endIndex = text.indexOf('}', index);
+                            if (endIndex > -1) {
+                                String link = text.substring(index, endIndex).trim();
+                                result.append(String.format("<a href=\"%s\">%s</a>", link, link));
+                                lastIndex = endIndex + 1;
                             }
                         }
+                    }
                 }
 
                 index = text.indexOf('{', index + 1);
@@ -348,6 +348,11 @@ class DocRenderer {
             return result.toString();
         }
 
+        @NbBundle.Messages({
+            "Parameters=Parameters:",
+            "ReturnValue=Returns:",
+            "OnlineDocs=Online Documentation"
+        })
         private String composeFunctionDoc(String description, String parameters, String returnValue, String links, String others) {
             StringBuilder value = new StringBuilder();
 
@@ -356,13 +361,13 @@ class DocRenderer {
 
             if (parameters.length() > 0) {
                 value.append("<h3>"); //NOI18N
-                value.append(NbBundle.getMessage(DocRenderer.class, "Parameters"));
+                value.append(Bundle.Parameters());
                 value.append("</h3>\n<table cellspacing=0 " + TABLE_STYLE + ">\n").append(parameters).append("</table>\n"); //NOI18N
             }
 
             if (returnValue.length() > 0) {
                 value.append("<h3>"); //NOI18N
-                value.append(NbBundle.getMessage(DocRenderer.class, "ReturnValue"));
+                value.append(Bundle.ReturnValue());
                 value.append("</h3>\n<table>\n"); //NOI18N
                 value.append(returnValue);
                 value.append("</table>");
@@ -370,7 +375,7 @@ class DocRenderer {
 
             if (links != null && links.length() > 0) {
                 value.append("<h3>"); //NOI18N
-                value.append(NbBundle.getMessage(DocRenderer.class, "OnlineDocs"));
+                value.append(Bundle.OnlineDocs());
                 value.append("</h3>\n").append(links); //NOI18N
             }
 
@@ -382,21 +387,25 @@ class DocRenderer {
 
         private String composeParameterLine(PHPDocVarTypeTag param) {
             String type = composeType(param.getTypes());
-            String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+            String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>%n", //NOI18N
                     TD_STYLE, type, TD_STYLE, param.getVariable().getValue(), TD_STYLE_MAX_WIDTH, param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
             return pline;
         }
 
+        @NbBundle.Messages({
+            "Type=Type",
+            "Description=Description"
+        })
         private String composeReturnValue(List<PHPDocTypeNode> types, String documentation) {
             StringBuilder returnValue = new StringBuilder();
             if (types != null && types.size() > 0) {
                 returnValue.append(String.format("<tr><td>&nbsp;</td><td><b>%s:</b></td><td>%s</td></tr>", //NOI18N
-                        NbBundle.getMessage(DocRenderer.class, "Type"), composeType(types)));
+                        Bundle.Type(), composeType(types)));
             }
 
             if (documentation != null && documentation.length() > 0) {
                 returnValue.append(String.format("<tr><td>&nbsp;</td><td valign=\"top\"><b>%s:</b></td><td>%s</td></tr>", //NOI18N
-                        NbBundle.getMessage(DocRenderer.class, "Description"), processPhpDoc(documentation)));
+                        Bundle.Description(), processPhpDoc(documentation)));
             }
             return returnValue.toString();
         }
@@ -425,7 +434,7 @@ class DocRenderer {
 
         // because of unit tests
         static String processPhpDoc(String phpDoc) {
-            String result = NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound");
+            String result = Bundle.PHPDocNotFound();
             if (StringUtils.hasText(phpDoc)) {
                 String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
                 notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N

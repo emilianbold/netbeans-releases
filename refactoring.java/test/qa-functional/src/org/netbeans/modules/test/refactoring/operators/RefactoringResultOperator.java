@@ -204,7 +204,9 @@ public class RefactoringResultOperator extends TopComponentOperator{
         ContainerOperator ct = new ContainerOperator(refactoringPanel);
         JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JToolBar toolbar = (JToolBar) leftComponent.getComponent(0);
+        JPanel panelWithToolbars= (JPanel) leftComponent.getComponent(0);
+        JToolBar toolbar = (JToolBar) panelWithToolbars.getComponent(0);
+        
         return toolbar;                        
     }
 
@@ -251,35 +253,35 @@ public class RefactoringResultOperator extends TopComponentOperator{
     
     public JToggleButton getCollapse() {
         if(collapse==null) {
-            collapse = (JToggleButton) getJToolbar().getComponent(5);
+            collapse = (JToggleButton) getJToolbar().getComponent(6);
         }
         return collapse;
     }
 
     public JToggleButton getLogical() {
         if(logical==null) {
-            logical = (JToggleButton) getJToolbar().getComponent(4);
+            logical = (JToggleButton) getJToolbar().getComponent(5);
         }
         return logical;
     }
 
     public JToggleButton getPhysical() {
         if(physical==null) {
-            physical = (JToggleButton) getJToolbar().getComponent(3);
+            physical = (JToggleButton) getJToolbar().getComponent(4);
         }
         return physical;
     }
 
     public JButton getPrev() {
         if(prev==null) {
-            prev = (JButton) getJToolbar().getComponent(1);
+            prev = (JButton) getJToolbar().getComponent(2);
         }
         return prev;
     }
 
     public JButton getNext() {
         if(next==null) {
-            next = (JButton) getJToolbar().getComponent(2);
+            next = (JButton) getJToolbar().getComponent(3);
         }
         return next;
     }

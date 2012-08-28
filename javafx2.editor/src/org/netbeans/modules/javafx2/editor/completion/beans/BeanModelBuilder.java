@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -188,12 +189,15 @@ public final class BeanModelBuilder {
         resultInfo.setDefaultPropertyName(defaultProperty);
 
         FxBean merge = new FxBean(className);
+        merge.setJavaType(resultInfo.getJavaType());
         merge.setValueOf(resultInfo.hasValueOf());
         merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
         
         resultInfo = merge;
-        collectSuperClass(classElement.getSuperclass());
+        if (classElement.getKind() == ElementKind.CLASS) {
+            collectSuperClass(classElement.getSuperclass());
+        }
         resultInfo.setParentBeanInfo(superBi);
         resultInfo.merge(declared);
 
@@ -242,9 +246,9 @@ public final class BeanModelBuilder {
         }
     }
     
-    private static final String LIST_CLASS = "java.util.List";
+    private static final String LIST_CLASS = "java.util.List"; // NOI18N
     
-    private static final String MAP_CLASS = "java.util.Map";
+    private static final String MAP_CLASS = "java.util.Map"; // NOI18N
     
     
     private void processGetters() {
@@ -264,6 +268,31 @@ public final class BeanModelBuilder {
                 addMapProperty(m, n);
             }
         }
+    }
+    
+    private static final String EVENT_TYPE_NAME = "javafx.event.Event"; // NOI18N
+    
+    private ElementHandle<TypeElement>  eventHandle;
+    
+    private ElementHandle<TypeElement> getPropertyChangeHandle() {
+        if (eventHandle == null) {
+            eventHandle = ElementHandle.create(compilationInfo.getElements().getTypeElement(EVENT_TYPE_NAME));
+        }
+        return eventHandle;
+    }
+    
+    private void generatePropertyChanges() {
+        for (FxProperty p : allProperties.values()) {
+            if (p.getObservableAccessor() != null) {
+                String evName = p.getName() + "Change"; // NOI18N
+
+                FxEvent ev = new FxEvent(evName);
+                ev.setPropertyChange(true);
+                ev.setEventClassName(EVENT_TYPE_NAME);
+                ev.setEventType(getPropertyChangeHandle());
+                addEvent(ev);
+            }
+       }
     }
     
     private void addAttachedProperty(ExecutableElement m) {
@@ -345,10 +374,11 @@ public final class BeanModelBuilder {
         ExecutableType getterType = findMapGetMethod(t);
         
         pi.setType(TypeMirrorHandle.create(getterType.getReturnType()));
+        pi.setObservableAccessors(pi.getAccessor());
         
         registerProperty(pi);
     }
-
+    
     private void addListProperty(ExecutableElement m, String propName) {
         FxProperty pi = new FxProperty(propName, FxDefinitionKind.LIST);
         pi.setSimple(false);
@@ -359,8 +389,29 @@ public final class BeanModelBuilder {
         ExecutableType getterType = findListGetMethod(t);
         
         pi.setType(TypeMirrorHandle.create(getterType.getReturnType()));
+        pi.setObservableAccessors(pi.getAccessor());
         
         registerProperty(pi);
+    }
+    
+    private void addObservableAccessor(ExecutableElement m) {
+        if (consumed) {
+            return;
+        }
+        String mName = m.getSimpleName().toString();
+        if (!mName.endsWith("Property")) {
+            return;
+        }
+        mName = mName.substring(0, mName.length() - 8); // Property suffix
+        observableAccessors.put(mName, ElementHandle.create(m));
+    }
+    
+    private void markObservableProperties() {
+        for (FxProperty prop : allProperties.values()) {
+            String n = prop.getName();
+            ElementHandle<ExecutableElement> m = observableAccessors.get(n);
+            prop.setObservableAccessors(m);
+        }
     }
 
     /**
@@ -538,17 +589,23 @@ public final class BeanModelBuilder {
         ei.setEventClassName(eventClassName);
         ei.setEventType(eventHandle);
         
+        addEvent(ei);
+        
+        consumed = true;
+    }
+    
+    private void addEvent(FxEvent ei) {
         if (events.isEmpty()) {
             events = new HashMap<String, FxEvent>();
         }
         events.put(ei.getName(), ei);
-        
-        consumed = true;
     }
     
     private Map<String, FxEvent>    events = Collections.emptyMap();
     
     private FxBeanCache beanCache;
+    
+    private Map<String, ElementHandle<ExecutableElement>> observableAccessors = new HashMap<String, ElementHandle<ExecutableElement>>();
     
     private void inspectMembers() {
         List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
@@ -570,9 +627,16 @@ public final class BeanModelBuilder {
             addAttachedProperty(m);
             
             addCandidateROProperty(m);
+            
+            addObservableAccessor(m);
         }
         // add list and map properties, which have no corresponding setter and are r/o
         processGetters();
+
+        markObservableProperties();
+        
+        // generate property changes from existing properties
+        generatePropertyChanges();
     }
 
    void setBeanCache(FxBeanCache beanCache) {

@@ -255,7 +255,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated) : false;
+                if (aptEnabled) {
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
+                }
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
@@ -300,10 +302,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                 previous.finishedFiles.add(active.indexable);
                 active = null;
                 state  = 0;
-                if (aptGenerated) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    jt = null;
-                }
             } catch (CouplingAbort ca) {
                 //Coupling error
                 TreeLoader.dumpCouplingAbort(ca, null);

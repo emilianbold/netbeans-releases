@@ -48,12 +48,13 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
+import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -69,7 +70,7 @@ public class MemberNode extends LeafNode {
     private JPanel panel;
     private JLabel lbl;
     private LinkButton btn;
-    private Object LOCK = new Object();
+    private final Object LOCK = new Object();
 
     public MemberNode( final MemberHandle user, TreeListNode parent ) {
         super( parent );
@@ -90,13 +91,14 @@ public class MemberNode extends LeafNode {
 
                     @Override
                     public String getToolTipText() {
-                        return NbBundle.getMessage(UserNode.class, user.isOnline() ? "LBL_ONLINE_MEMBER_TOOLTIP" : "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
+                        return NbBundle.getMessage(MemberNode.class, user.isOnline() ? "LBL_ONLINE_MEMBER_TOOLTIP" : "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
                     }
                 };
                 lbl.setIcon(new KenaiUserUI(user.getFQN()).getIcon());
                 panel.add(lbl, BorderLayout.CENTER);
                 btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction()); // NOI18N
                 panel.add(btn, BorderLayout.EAST);
+                
                 panel.validate();
             }
             lbl.setForeground(foreground);
@@ -110,7 +112,7 @@ public class MemberNode extends LeafNode {
 
     @Override
     public Action getDefaultAction() {
-        return MemberAccessor.getDefault().getStartChatAction(user);
+        return MemberAccessorImpl.getDefault().getStartChatAction(user);
     }
 
     @Override

@@ -44,8 +44,6 @@ package org.netbeans.qa.form.gridbagcustomizer;
 import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;

@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -119,7 +118,7 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
         validateBeforeNext();
     }
 
-    public void fillRemoteBranches (final Set<String> branches) {
+    public void fillRemoteBranches (final Map<String, String> branches) {
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
@@ -137,11 +136,11 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
         }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(UpdateBranchReferencesStep.class, "MSG_PushBranchesPanel.loadingLocalBranches")); //NOI18N
     }
 
-    private void fillRemoteBranches (Set<String> branches, Map<String, GitBranch> localBranches) {
+    private void fillRemoteBranches (Map<String, String> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
-        for (String branch : branches) {
-            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch);
-            BranchMapping mapping = new BranchMapping(branch, localBranch == null ? null : localBranch.getName(), remote, true);
+        for (Map.Entry<String, String> branch : branches.entrySet()) {
+            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getKey());
+            BranchMapping mapping = new BranchMapping(branch.getKey(), branch.getValue(), localBranch, remote, true);
             l.add(mapping);
         }
         this.branches.setBranches(l);

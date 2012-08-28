@@ -49,6 +49,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.spi.extexecution.open.OptionOpenHandler;
 import org.openide.windows.InputOutput;
 
 /**
@@ -586,10 +587,9 @@ public final class ExecutionDescriptor {
      * Returns a descriptor with configured options path. If configured
      * value is not <code>null</code> the {@link ExecutionService} will
      * display the button in the output tab displaying the proper options
-     * when pressed.
-     * <p>
-     * Format of the parameter is described in
-     * {@link org.netbeans.api.options.OptionsDisplayer#open(java.lang.String)}.
+     * when pressed. <i>For this to work there has to be
+     * a {@link OptionOpenHandler} in the system. Otherwise the options button
+     * won't be displayed.</i>
      * <p>
      * Note that this property has no meaning when custom io is used
      * (see {@link #inputOutput(org.openide.windows.InputOutput)}).
@@ -601,6 +601,7 @@ public final class ExecutionDescriptor {
      *
      * @param optionsPath options path, <code>null</code> allowed
      * @return this descriptor with configured options path
+     * @see OptionOpenHandler
      */
     @NonNull
     @CheckReturnValue
