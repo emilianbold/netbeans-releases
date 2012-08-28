@@ -471,6 +471,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             Token<? extends JsTokenId> token = ts.token();
             int parenBalancer = 0;
             boolean methodCall = false;
+            boolean wasLastDot = false;
             List<String> exp = new ArrayList();
             
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
@@ -502,6 +503,18 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 exp.add("@mtd");   // NOI18N
                                 methodCall = false;
                             }
+                            wasLastDot = false;
+                        }
+                    } else {
+                        wasLastDot = true;
+                    }
+                } else {
+                    if (!wasLastDot && ts.movePrevious()) {
+                        // check whether it's continuatino of previous line
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (token.id() != JsTokenId.OPERATOR_DOT) {
+                            // the dot was not found => it's not continuation of expression
+                            break;
                         }
                     }
                 }

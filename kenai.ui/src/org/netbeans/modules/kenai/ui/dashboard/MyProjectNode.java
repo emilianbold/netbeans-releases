@@ -353,4 +353,9 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         });
 
     }
+
+    @Override
+    public String toString () {
+        return project.getDisplayName();
+    }
 }

@@ -321,6 +321,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=299, text=(}
 FormattingToken{kind=TEXT, offset=300, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=301, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -333,6 +334,7 @@ FormattingToken{kind=TEXT, offset=308, text=x}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=309, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=310, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}

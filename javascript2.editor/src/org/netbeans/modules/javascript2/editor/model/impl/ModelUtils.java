@@ -196,7 +196,13 @@ public class ModelUtils {
     
     public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
         int lStart = LexUtilities.getLexerOffset(result, start);
+        if (lStart == -1) {
+            lStart = start;
+        }
         int lEnd = LexUtilities.getLexerOffset(result, end);
+        if (lEnd == -1) {
+            lEnd = end;
+        }
         if (lEnd < lStart) {
             // TODO this is a workaround for bug in nashorn, when sometime the start and end are not crorrect
             int length = lStart - lEnd;

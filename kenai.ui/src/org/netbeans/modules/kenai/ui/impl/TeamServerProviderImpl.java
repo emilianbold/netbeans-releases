@@ -143,6 +143,12 @@ public class TeamServerProviderImpl implements TeamServerProvider {
     }
 
     @Override
+    @Messages("LBL_KenaiProviderDescription=Supports team servers built on top of the Kenai infrastructure, such as java.net or netbeans.org")
+    public String getDescription () {
+        return LBL_KenaiProviderDescription();
+    }
+
+    @Override
     public TeamServer createTeamServer (String name, String url) throws MalformedURLException {
         Kenai kenai = KenaiManager.getDefault().createKenai(name, url);
         if (kenai != null) {
