@@ -97,7 +97,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
     
     private AnalysisModel analysisModel = new AnalysisModel();
     
-    private Map<Analysis, Revision> lastSelectedRevisions = new HashMap<Analysis, Revision>();
     private ToolTipSupport toolTipSupport = null;
     
     private AnalysisModelListener analysisModelListener = new PrivateAnalysisModelListener();
@@ -128,9 +127,13 @@ public class AnalysisPanel extends javax.swing.JPanel {
             toolTipSupport = editorUI.getToolTipSupport();
             toolTipSupport.setEnabled(true);
         }
-        
+
     }
 
+    protected void hideComboBox() {
+        analysisComboBox.setVisible(false);
+    }
+    
     protected JPanel getMainPanel() {
         return mainPanel;
     }
@@ -214,36 +217,9 @@ public class AnalysisPanel extends javax.swing.JPanel {
             
             revisionEditorPane.setText(reformatRevisionButton.isSelected() ? revision.getReformattedContent() : revision.getContent());
             revisionEditorPane.setVisible(true);
-            revisionEditorPane.getDocument().putProperty(Change.class, revision.getChanges());
+            revisionEditorPane.getDocument().putProperty(Change.class, reformatRevisionButton.isSelected() ? revision.getReformattedChanges() : revision.getChanges());
             
             revisionEditorPane.scrollRectToVisible(visibleRect);
-            
-            if (revision.resolvePreviewContent(reformatRevisionButton.isSelected()) == null) {
-                final Document document = revisionEditorPane.getDocument();
-                final Map<Integer, Integer> indexesOfJavaScript = ReformatSupport.getIndexesOfJavaScript(document);
-
-                StringBuilder documentText = null;
-                try {
-                    documentText = new StringBuilder(document.getText(0, document.getLength()));
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-                if (documentText != null) {
-                    final StringBuilder replaceBySpaces = ReformatSupport.replaceBySpaces(indexesOfJavaScript, documentText);
-                    
-                    final Analysis analysis = selectedAnalysisItem.resolveAnalysis();
-                    if (reformatRevisionButton.isSelected()) {
-                        analysis.store(Analysis.FORMATTED_NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
-                    } else {
-                        analysis.store(Analysis.NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
-                    }
-                    revision.updatePreviewContent(replaceBySpaces, reformatRevisionButton.isSelected());
-
-                }
-            }
-            
-            
         } else {
             revisionLabel.setText("- / -");
             
@@ -320,21 +296,14 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }
     
     private Revision getSelectedRevision() {
-        final Analysis selectedAnalysis = getSelectedAnalysis();
-        Revision selectedRevision = null;
-        Revision lastSelectedRevision = lastSelectedRevisions.get(selectedAnalysis);
-        if (selectedAnalysis != null && lastSelectedRevision != null && 
-                lastSelectedRevision.getIndex() <= (selectedAnalysis.getRevisionsCount()) &&
-                revisionSlider.getValue() >= 0 && 
-                revisionSlider.getValue() <= selectedAnalysis.getRevisionsCount()) {
-            selectedRevision = selectedAnalysis.getRevision(revisionSlider.getValue());
-            return selectedRevision;
+        Analysis selectedAnalysis = getSelectedAnalysis();
+        if (selectedAnalysis == null) {
+            return null;
         }
-        if (selectedAnalysis != null && selectedAnalysis.getRevisionsCount() > 0) {
-            selectedRevision = selectedAnalysis.getRevision(selectedAnalysis.getRevisionsCount());
+        if (revisionSlider.getValue() >= 0) {
+            return selectedAnalysis.getRevision(revisionSlider.getValue());
         }
-        
-        return selectedRevision;
+        return null;
     }
     
     private AnalysisItem getAnalysisItem(Analysis analysis) {
@@ -375,7 +344,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
             return;
         }
         
-        final StringBuilder documentText = revision.resolvePreviewContent(reformatRevisionButton.isSelected());
+        final StringBuilder documentText = revision.getPreviewContent();
         
         if (documentText == null) {
             return;
@@ -433,6 +402,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
         revisionEditorPane = new MyEditorPane(this);
         revisionLabel = new javax.swing.JLabel();
         revisionSlider = new javax.swing.JSlider();
+        jPreviousButton = new javax.swing.JButton();
+        jNextButton = new javax.swing.JButton();
 
         analysisComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.analysisComboBox.toolTip")); // NOI18N
         analysisComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -494,14 +465,11 @@ public class AnalysisPanel extends javax.swing.JPanel {
         );
         toolBarPanelLayout.setVerticalGroup(
             toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(toolBarPanelLayout.createSequentialGroup()
-                .addGroup(toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(analysisComboBox)
-                    .addComponent(startAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(reformatRevisionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(filterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(previewRevisionToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(analysisComboBox)
+            .addComponent(startAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(reformatRevisionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(filterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(previewRevisionToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
 
         filterButton.setVisible(SHOW_FILTER_BUTTON);
@@ -523,24 +491,45 @@ public class AnalysisPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jPreviousButton, org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.jPreviousButton.text")); // NOI18N
+        jPreviousButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jPreviousButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jNextButton, org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.jNextButton.text")); // NOI18N
+        jNextButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jNextButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addComponent(revisionSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPreviousButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(revisionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(revisionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jNextButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(revisionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(revisionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(revisionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(revisionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(8, 8, 8)
-                .addComponent(revisionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(revisionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(revisionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPreviousButton)
+                    .addComponent(jNextButton))
+                .addGap(7, 7, 7)
+                .addComponent(revisionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -548,28 +537,25 @@ public class AnalysisPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(toolBarPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(mainPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(toolBarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void revisionSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_revisionSliderStateChanged
-        if (revisionSlider.getValueIsAdjusting()) {
             Revision lastSelectedRevision = getSelectedRevision();
-            lastSelectedRevisions.put(getSelectedAnalysis(), lastSelectedRevision);
-            selectRevision(lastSelectedRevision);
-            
-            
-            if (previewRevisionToggleButton.isSelected()) {
-                previewRevision(lastSelectedRevision);
+            if (lastSelectedRevision != null) {
+                selectRevision(lastSelectedRevision);
+                if (previewRevisionToggleButton.isSelected()) {
+                    previewRevision(lastSelectedRevision);
+                }
             }
-        }
     }//GEN-LAST:event_revisionSliderStateChanged
 
     private void startAnalysisButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startAnalysisButtonActionPerformed
@@ -691,9 +677,23 @@ public class AnalysisPanel extends javax.swing.JPanel {
         
     }//GEN-LAST:event_previewRevisionToggleButtonActionPerformed
 
+    private void jNextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jNextButtonActionPerformed
+        if (revisionSlider.isEnabled() && revisionSlider.getModel().getValue() < revisionSlider.getModel().getMaximum()) {
+            revisionSlider.getModel().setValue(revisionSlider.getModel().getValue()+1);
+        }
+    }//GEN-LAST:event_jNextButtonActionPerformed
+
+    private void jPreviousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPreviousButtonActionPerformed
+        if (revisionSlider.isEnabled() && revisionSlider.getModel().getValue() > revisionSlider.getModel().getMinimum()) {
+            revisionSlider.getModel().setValue(revisionSlider.getModel().getValue()-1);
+        }
+    }//GEN-LAST:event_jPreviousButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox analysisComboBox;
     private javax.swing.JButton filterButton;
+    private javax.swing.JButton jNextButton;
+    private javax.swing.JButton jPreviousButton;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JToggleButton previewRevisionToggleButton;
     private javax.swing.JToggleButton reformatRevisionButton;
@@ -742,7 +742,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
                         return;
                     }
                     if (analysis == selectedFilteredAnalysis) {
-                        lastSelectedRevisions.remove(selectedFilteredAnalysis);
                         updateRevisions(selectedFilteredAnalysis);
                     }
                 }
@@ -764,19 +763,10 @@ public class AnalysisPanel extends javax.swing.JPanel {
         private JComponent createToolTip (int revisionIndex) {
             RevisionToolTipPanel panel = new RevisionToolTipPanel(content.projectContext);
             panel.setBorder(BorderFactory.createLineBorder(panel.getForeground()));
-            if (revisionIndex == -2) {
-                revisionIndex = content.getSelectedAnalysis().getTimeStampsCount()-1;
-            }
             Revision revision = content.getSelectedAnalysis().getRevision(revisionIndex);
-            StringBuilder toolTipTitle = new StringBuilder("Change of revision ");
+            StringBuilder toolTipTitle = new StringBuilder("Rev #");
             toolTipTitle.append(revision.getIndex());
-            final String revisionDetailLabel = content.getSelectedAnalysisItem().getRevisionDetailLabel(revision.getIndex());
-            if (revisionDetailLabel != null && !revisionDetailLabel.isEmpty()) {
-                toolTipTitle.append(" (");
-                toolTipTitle.append(revisionDetailLabel);
-                toolTipTitle.append(")");
-            }
-            panel.setRevision(revision, revisionDetailLabel, content.reformatRevisionButton.isSelected());
+            panel.setRevision(revision, toolTipTitle.toString(), content.reformatRevisionButton.isSelected());
             return panel;
         }
         
@@ -795,6 +785,13 @@ public class AnalysisPanel extends javax.swing.JPanel {
                                 ToolTipSupport.FLAGS_LIGHTWEIGHT_TOOLTIP);
                     content.toolTipSupport.setToolTipVisible(true);
                 }
+            }
+        }
+
+        public void showToolTip() {
+            Revision r = content.getSelectedRevision();
+            if (r != null) {
+                showToolTip(r.getIndex());
             }
         }
     }
