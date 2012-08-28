@@ -1,4 +1,3 @@
-instruction[fx:include]
 simple-class[javafx.scene.chart.Axis]
 simple-class[javafx.scene.control.Accordion]
 simple-class[javafx.scene.layout.AnchorPane]

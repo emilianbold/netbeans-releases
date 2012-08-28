@@ -369,13 +369,16 @@ public final class ParserManager {
             this.parser = parser;
         }
 
+        @Override
         public Void run () throws Exception {
             TaskProcessor.callParse(parser, null, userTask, null);
-            Parser.Result result = TaskProcessor.callGetResult(parser, userTask);
+            final Parser.Result result = TaskProcessor.callGetResult(parser, userTask);
             try {
                 TaskProcessor.callUserTask(userTask, new ResultIterator (result));
             } finally {
-                ParserAccessor.getINSTANCE ().invalidate (result);
+                if (result != null) {
+                    ParserAccessor.getINSTANCE ().invalidate (result);
+                }
             }
             return null;
         }

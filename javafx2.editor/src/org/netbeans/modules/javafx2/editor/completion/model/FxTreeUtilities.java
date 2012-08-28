@@ -143,6 +143,11 @@ public final class FxTreeUtilities {
                 visitor.nodeStack.removeFirst();
             }
         }
+        if (visitor.nodeStack.isEmpty()) {
+            // compensate bcs model.contains() does not accept 0th position, but the
+            // model by def contains everything in the source.
+            visitor.nodeStack.add(model);
+        }
         return Collections.unmodifiableList(
                 new ArrayList<FxNode>(visitor.nodeStack)
         );
