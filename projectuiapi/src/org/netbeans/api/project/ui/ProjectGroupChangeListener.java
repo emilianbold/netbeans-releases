@@ -39,36 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.spi;
+package org.netbeans.api.project.ui;
 
-import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.util.Collection;
+import java.util.EventListener;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- *
- * @author Ondrej Vrabec
+ * listeners that get notified when project group is changed.
+ * added and removed from <code>OpenProjects</code>
+ * @author mkleint
+ * @since 1.61
  */
-public interface TeamServerProvider {
+public interface ProjectGroupChangeListener extends EventListener {
     
-    public static final String PROP_INSTANCES = "prop_instances"; //NOI18N
-
-    public Collection<? extends TeamServer> getTeamServers ();
-
-    public TeamServer getTeamServer (String url);
-
-    public void removeTeamServer (TeamServer instance);
-
-    public String getDisplayName ();
-
-    public String getDescription ();
-
-    public TeamServer createTeamServer (String displayName, String url) throws MalformedURLException;
-
-    public void initialize ();
-
-    public void addPropertyListener (PropertyChangeListener list);
+    /**
+     * called when the process of changing from old to new project group has started. Will be called before
+     * the actual projects from old group get closed and the ones from new group get opened.
+     * @param event 
+     */
+    void projectGroupChanging(@NonNull ProjectGroupChangeEvent event);
+        
+    /**
+     * called when the process of changing from old to new project group has been completed. Only projects 
+     * related to current group should be open now, or projects explicitly opened by the user.
+     * @param event 
+     */
+    void projectGroupChanged(@NonNull ProjectGroupChangeEvent event);
     
-    public void removePropertyListener (PropertyChangeListener list);
-
 }

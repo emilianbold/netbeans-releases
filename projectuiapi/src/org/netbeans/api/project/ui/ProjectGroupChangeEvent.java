@@ -39,36 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.spi;
+package org.netbeans.api.project.ui;
 
-import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.util.Collection;
+import java.util.EventObject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+
 
 /**
- *
- * @author Ondrej Vrabec
+ * event describing the change of active project group by the user.
+ * @author mkleint
+ * @since 1.61
  */
-public interface TeamServerProvider {
+public final class ProjectGroupChangeEvent extends EventObject {
+    private final ProjectGroup newGroup;
+    private final ProjectGroup oldGroup;
     
-    public static final String PROP_INSTANCES = "prop_instances"; //NOI18N
+    public ProjectGroupChangeEvent(@NullAllowed ProjectGroup o, @NullAllowed ProjectGroup n) {
+        super(OpenProjects.getDefault());
+        this.oldGroup = o;
+        this.newGroup = n;
+    }
 
-    public Collection<? extends TeamServer> getTeamServers ();
+    /**
+     * the newly current project group, can be null
+     * @return 
+     */
+    public @CheckForNull ProjectGroup getNewGroup() {
+        return newGroup;
+    }
 
-    public TeamServer getTeamServer (String url);
-
-    public void removeTeamServer (TeamServer instance);
-
-    public String getDisplayName ();
-
-    public String getDescription ();
-
-    public TeamServer createTeamServer (String displayName, String url) throws MalformedURLException;
-
-    public void initialize ();
-
-    public void addPropertyListener (PropertyChangeListener list);
-    
-    public void removePropertyListener (PropertyChangeListener list);
-
+    /**
+     * the previous active project group, can be null
+     * @return 
+     */
+    public @CheckForNull ProjectGroup getOldGroup() {
+        return oldGroup;
+    }
 }
+

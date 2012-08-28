@@ -39,36 +39,85 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.spi;
+package org.netbeans.api.project.ui;
 
-import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.util.Collection;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.project.uiapi.Utilities;
+import org.openide.util.NbPreferences;
 
 /**
- *
- * @author Ondrej Vrabec
+ * Object describing a project group, in most cases the currently active project group.
+ * @author mkleint
+ * @since 1.61
  */
-public interface TeamServerProvider {
+public final class ProjectGroup {
+    private final Preferences prefs;
+    private final String name;
+
+    ProjectGroup(String name, Preferences prefs) {
+        this.name = name;
+        this.prefs = prefs;
+    }
     
-    public static final String PROP_INSTANCES = "prop_instances"; //NOI18N
-
-    public Collection<? extends TeamServer> getTeamServers ();
-
-    public TeamServer getTeamServer (String url);
-
-    public void removeTeamServer (TeamServer instance);
-
-    public String getDisplayName ();
-
-    public String getDescription ();
-
-    public TeamServer createTeamServer (String displayName, String url) throws MalformedURLException;
-
-    public void initialize ();
-
-    public void addPropertyListener (PropertyChangeListener list);
+    /**
+     * name of the project group as given by user
+     * @return 
+     */
+    public String getName() {
+        return name;
+    }
     
-    public void removePropertyListener (PropertyChangeListener list);
+    /**
+     * use this method to store and retrieve preferences related to project groups.
+     * @param clazz
+     * @return 
+     */
+    public Preferences preferencesForPackage(Class clazz) {
+        return prefs.node(clazz.getPackage().getName().replace(".", "/"));
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 11 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ProjectGroup other = (ProjectGroup) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
+    }
+    
+    static {
+        AccessorImpl impl = new AccessorImpl();
+        impl.assign();
+    }
+ 
+    
+    static class AccessorImpl extends Utilities.ProjectGroupAccessor {
+        
+        
+         public void assign() {
+             if (Utilities.ACCESSOR == null) {
+                 Utilities.ACCESSOR = this;
+             }
+         }
+    
+        @Override
+        public ProjectGroup createGroup(String name, Preferences prefs) {
+            return new ProjectGroup(name, prefs);
+        }
+    }    
+    
+    
 }
