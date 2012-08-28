@@ -197,7 +197,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         request.parserResult = parserResult;
         request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
         doCompletion(completionProposals, request);
-        return new TwigCompletionResult(completionProposals, false);
+        return new DefaultCompletionResult(completionProposals, false);
     }
 
     private void doCompletion(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
@@ -308,14 +308,6 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-
-    private static class TwigCompletionResult extends DefaultCompletionResult {
-
-        public TwigCompletionResult(List<CompletionProposal> list, boolean truncated) {
-            super(list, truncated);
-        }
-
     }
 
     private static class DocumentationDecorator implements TwigDocumentation {
