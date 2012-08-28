@@ -223,8 +223,11 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     
     private void updateResultCodeSample() {
         FileObject file = (FileObject) styleSheetCB.getSelectedItem();
-        boolean classExistInSS = files2classes.get(file).contains(clzName);
-        boolean idExistInSS = files2ids.get(file).contains(idName);
+        Collection<String> classesInFile = files2classes.get(file);
+        Collection<String> idsInFile = files2ids.get(file);
+        
+        boolean classExistInSS = classesInFile != null && classesInFile.contains(clzName);
+        boolean idExistInSS = idsInFile != null && idsInFile.contains(idName);
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html>");
