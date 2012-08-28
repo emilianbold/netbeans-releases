@@ -1033,7 +1033,7 @@ public class JsFormatter implements Formatter {
                     try {
                         changes.get(i).perform(doc);
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOGGER.log(Level.INFO, null, ex);
                     }
                 }
                 LOGGER.log(Level.INFO, "Indentation changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
