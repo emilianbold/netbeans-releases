@@ -92,6 +92,14 @@ public class TwigParser extends Parser {
         PARSE_ELEMENTS.add("spaceless"); //NOI18N
         PARSE_ELEMENTS.add("endspaceless"); //NOI18N
 
+        PARSE_ELEMENTS.add("embed"); //NOI18N
+        PARSE_ELEMENTS.add("endembed"); //NOI18N
+
+        PARSE_ELEMENTS.add("raw"); //NOI18N
+        PARSE_ELEMENTS.add("endraw"); //NOI18N
+
+        PARSE_ELEMENTS.add("sandbox"); //NOI18N
+        PARSE_ELEMENTS.add("endsandbox"); //NOI18N
     }
 
     @Override
