@@ -74,20 +74,20 @@ NetBeans.nextHighlight = [];
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
     this.nextSelection = [];
-}
+};
 
 // Initializes/clears the next highlight
 NetBeans.initNextHighlight = function() {
     this.nextHighlight = [];
     this.lastHighlighted = null;
-}
+};
 
 // Adds an element into the next selection
 NetBeans.addElementToNextSelection = function(element) {
     if (this.nextSelection.indexOf(element) == -1) {
         this.nextSelection.push(element);
     }
-}
+};
 
 // Adds an element into the next highlight
 NetBeans.addElementToNextHighlight = function(element) {
@@ -95,19 +95,19 @@ NetBeans.addElementToNextHighlight = function(element) {
         this.nextHighlight.push(element);
         this.lastHighlighted = element;
     }
-}
+};
 
 // Finishes the next selection, i.e., switches the next selection to current selection
 NetBeans.finishNextSelection = function() {
     this.selection = this.nextSelection;
     this.repaintGlassPane();
-}
+};
 
 // Finishes the next highlight, i.e., switches the next highlight to current highlight
 NetBeans.finishNextHighlight = function() {
     this.highlight = this.nextHighlight;
     this.repaintGlassPane();
-}
+};
 
 // The last element the mouse was hovering over
 NetBeans.lastHighlighted = null;
@@ -191,14 +191,14 @@ NetBeans.insertGlassPane = function() {
         window.setInterval(this.repaintGlassPane, 500);
     }
     this.repaintGlassPane();
-}
+};
 
 NetBeans.setSelectionMode = function(selectionMode) {
     var value = selectionMode ? 'auto' : 'none';
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
     canvas.style.pointerEvents = value;
     this.lastHighlighted = null;
-}
+};
 
 // Repaints the glass-pane
 NetBeans.repaintGlassPane = function() {
@@ -221,7 +221,7 @@ NetBeans.repaintGlassPane = function() {
     } else {
         console.log('canvas.getContext not supported!');
     }
-}
+};
 
 NetBeans.paintSelectedElements = function(ctx, elements) {
     ctx.lineWidth = 2;
@@ -233,7 +233,7 @@ NetBeans.paintSelectedElements = function(ctx, elements) {
             ctx.moveTo(x+Math.min(2*i*dx,length),y+Math.min(2*i*dy,length));
             ctx.lineTo(x+Math.min(2*i*dx+dx,length),y+Math.min(2*i*dy+dy,length));
         }
-    }
+    };
     for (var i=0; i<elements.length; i++) {
         var selectedElement = elements[i];
         var rects = selectedElement.getClientRects();
@@ -258,7 +258,7 @@ NetBeans.paintSelectedElements = function(ctx, elements) {
             ctx.beginPath();
         }
     }
-}
+};
 
 NetBeans.paintHighlightedElements = function(ctx, elements) {
     for (var i=0; i<elements.length; i++) {
@@ -270,7 +270,7 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             ctx.stroke();
         }
     }
-}
+};
 
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
