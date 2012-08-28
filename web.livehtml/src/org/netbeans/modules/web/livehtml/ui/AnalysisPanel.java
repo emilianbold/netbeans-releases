@@ -300,7 +300,10 @@ public class AnalysisPanel extends javax.swing.JPanel {
         if (selectedAnalysis == null) {
             return null;
         }
-        return selectedAnalysis.getRevision(revisionSlider.getValue());
+        if (revisionSlider.getValue() >= 0) {
+            return selectedAnalysis.getRevision(revisionSlider.getValue());
+        }
+        return null;
     }
     
     private AnalysisItem getAnalysisItem(Analysis analysis) {
@@ -763,10 +766,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
             Revision revision = content.getSelectedAnalysis().getRevision(revisionIndex);
             StringBuilder toolTipTitle = new StringBuilder("Rev #");
             toolTipTitle.append(revision.getIndex());
-            final String revisionDetailLabel = content.getSelectedAnalysisItem().getRevisionDetailLabel(revision.getIndex());
-            if (revisionDetailLabel != null && !revisionDetailLabel.isEmpty()) {
-                toolTipTitle.append(revisionDetailLabel);
-            }
             panel.setRevision(revision, toolTipTitle.toString(), content.reformatRevisionButton.isSelected());
             return panel;
         }

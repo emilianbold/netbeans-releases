@@ -96,16 +96,6 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
         return revisionsLabel.toString();
     }
 
-    public String getRevisionDetailLabel(int selectedRevisionIndex) {
-        StringBuilder revisionsLabel = new StringBuilder();
-        
-        if (filteredAnalysis != null) {
-            revisionsLabel.append(filteredAnalysis.getRevisionDetailLabel(selectedRevisionIndex));
-        }
-        
-        return revisionsLabel.toString();
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -197,6 +197,8 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
                     ((AnalysisPanel.MyEditorPane)comp).showToolTip();
                 }
                 return;
+            } else if (o.isRemove() && offset >= o.getOffset() && offset <= o.getEndOffsetOfRemovedText()) {
+                ((AnalysisPanel.MyEditorPane)comp).showToolTip();
             }
         }
         ((AnalysisPanel.MyEditorPane)comp).showToolTip(-1);
