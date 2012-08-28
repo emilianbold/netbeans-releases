@@ -419,7 +419,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
 
-        File mavenHome = EmbedderFactory.getMavenHome();
+        File mavenHome = EmbedderFactory.getEffectiveMavenHome();
         Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);

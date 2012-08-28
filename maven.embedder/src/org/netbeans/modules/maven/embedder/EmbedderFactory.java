@@ -59,6 +59,10 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -94,6 +98,21 @@ public final class EmbedderFactory {
             }
         });
 
+    static {
+        OpenProjects.getDefault().addProjectGroupChangeListener(new ProjectGroupChangeListener() {
+
+            @Override
+            public void projectGroupChanging(ProjectGroupChangeEvent event) {
+                resetCachedEmbedders();
+            }
+
+            @Override
+            public void projectGroupChanged(ProjectGroupChangeEvent event) {
+                
+            }
+        });
+    }
+    
     private EmbedderFactory() {
     }
 
@@ -118,7 +137,19 @@ public final class EmbedderFactory {
     private static Preferences getPreferences() { // compatibility; used to be in MavenSettings
         return NbPreferences.root().node("org/netbeans/modules/maven");
     }
+    
+    private static Preferences getGroupedPreferences() { 
+        ProjectGroup grp = OpenProjects.getDefault().getActiveProjectGroup();
+        if (grp != null) {
+            return grp.preferencesForPackage(EmbedderFactory.class);
+        }
+        return null;
+    }
 
+    /**
+     * global settings value for maven installation root folder.
+     * @return 
+     */
     public static @NonNull File getMavenHome() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
         if (str != null) {
@@ -127,6 +158,24 @@ public final class EmbedderFactory {
             return getDefaultMavenHome();
         }
     }
+    
+    /**
+     * maven home (installation root) taken from various places (global settings, project group settings ,...)
+     * @return 
+     * @since 2.32
+     */
+    public static @NonNull File getEffectiveMavenHome() {
+        Preferences grPref = getGroupedPreferences();
+        String str =  grPref != null ? grPref.get(PROP_COMMANDLINE_PATH, null) : null;
+        if (str == null) {
+            str = getPreferences().get(PROP_COMMANDLINE_PATH, null);
+        }
+        if (str != null) {
+            return FileUtil.normalizeFile(new File(str));
+        } else {
+            return getDefaultMavenHome();
+        }
+    }    
 
     public static void setMavenHome(File path) {
         File oldValue = getMavenHome();
@@ -172,7 +221,7 @@ public final class EmbedderFactory {
     }
 
     private static File getSettingsXml() {
-        return new File(getMavenHome(), "conf/settings.xml");
+        return new File(getEffectiveMavenHome(), "conf/settings.xml");
     }
 
     /**
