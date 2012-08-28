@@ -660,6 +660,7 @@ final class MIMESupport extends Object {
         private int len = 0;
         private int pos = 0;
         private boolean eof = false;
+        private IOException cantRead;
 
         CachedInputStream(InputStream is) {
             inputStream = is;
@@ -686,10 +687,13 @@ final class MIMESupport extends Object {
        private boolean ensureBufferLength(int newLen) throws IOException {
            int retries = 0;
            if (!eof && newLen > len) {
-                byte[] tmpBuffer = new byte[newLen];
+               if (cantRead != null) {
+                   throw cantRead;
+               }
+               byte[] tmpBuffer = new byte[newLen];
                 if (len > 0) {
-                    System.arraycopy(buffer, 0, tmpBuffer, 0, len);
-                }
+                   System.arraycopy(buffer, 0, tmpBuffer, 0, len);
+               }
                for (;;) {
                    try {
                        int readLen = inputStream.read(tmpBuffer, len, newLen - len);
@@ -706,6 +710,9 @@ final class MIMESupport extends Object {
                            throw ex;
                        }
                        continue;
+                   } catch (IOException ex) {
+                       cantRead = ex;
+                       throw ex;
                    }
                }
            }
