@@ -262,13 +262,15 @@ public class EditorModule extends ModuleInstall {
 
         SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
         EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
-      
-        final ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
-        clipboard.addClipboardListener(ClipboardHistory.getInstance());
             
          if (GraphicsEnvironment.isHeadless()) {
              return;
          }
+         
+        final ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+        if (clipboard != null) {
+            clipboard.addClipboardListener(ClipboardHistory.getInstance());
+        }
 
          if (LOG.isLoggable(Level.FINE)) {
              WindowManager.getDefault().invokeWhenUIReady(new Runnable() {

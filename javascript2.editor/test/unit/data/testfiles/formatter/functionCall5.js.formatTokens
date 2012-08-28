@@ -16,6 +16,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=12, text=(}
 FormattingToken{kind=TEXT, offset=13, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=14, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -37,6 +38,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=32, text=(}
 FormattingToken{kind=TEXT, offset=33, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=34, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -45,6 +47,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=40, text=(}
 FormattingToken{kind=TEXT, offset=41, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=42, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -66,6 +69,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=59, text=(}
 FormattingToken{kind=TEXT, offset=60, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=61, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -74,6 +78,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=67, text=(}
 FormattingToken{kind=TEXT, offset=68, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=69, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -88,6 +93,7 @@ FormattingToken{kind=TEXT, offset=132, text="}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=133, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=134, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -105,6 +111,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=149, text=(}
 FormattingToken{kind=TEXT, offset=150, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=151, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -126,6 +133,7 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=169, text=(}
 FormattingToken{kind=TEXT, offset=170, text=)}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=171, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}
@@ -138,6 +146,7 @@ FormattingToken{kind=TEXT, offset=179, text=)}
 FormattingToken{kind=EOL, offset=180, text=
 }
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
+FormattingToken{kind=BEFORE_CHAIN_CALL_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=181, text=.}
 FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=AFTER_CHAIN_CALL_DOT, offset=-1, text=null}

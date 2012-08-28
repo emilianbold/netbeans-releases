@@ -308,22 +308,43 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall4.js");
     }
 
-    public void testFunctionCall5Always() throws Exception {
+    public void testFunctionCall5WrapAlways() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapAlways.formatted");
     }
 
-    public void testFunctionCall5Never() throws Exception {
+    public void testFunctionCall5WrapNever() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_NEVER);
         reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapNever.formatted");
     }
 
-    public void testFunctionCall5IfLong() throws Exception {
+    public void testFunctionCall5WrapIfLong() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFunctionCall5WrapBeforeAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterDotInChainedMethodCalls, false);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapBeforeAlways.formatted");
+    }
+
+    public void testFunctionCall5WrapBeforeNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterDotInChainedMethodCalls, false);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapBeforeNever.formatted");
+    }
+
+    public void testFunctionCall5WrapBeforeIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterDotInChainedMethodCalls, false);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapBeforeIfLong.formatted");
     }
 
     public void testFunctionCall5Tokens() throws Exception {

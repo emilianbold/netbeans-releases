@@ -39,39 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.api.project.ui;
 
-package org.netbeans.qa.form;
+import java.util.EventListener;
+import org.netbeans.api.annotations.common.NonNull;
 
-import java.io.*;
-
-public class VisualDevelopmentUtil {
-    public static String JAVA_VERSION = System.getProperty("java.version");
+/**
+ * listeners that get notified when project group is changed.
+ * added and removed from <code>OpenProjects</code>
+ * @author mkleint
+ * @since 1.61
+ */
+public interface ProjectGroupChangeListener extends EventListener {
     
-    public static String readFromFile(String filename) throws IOException   {
-        File f = new File(filename); 
-        int size = (int) f.length();        
-        int bytes_read = 0;
-        FileInputStream in = new FileInputStream(f);
-        byte[] data = new byte [size];
-        while(bytes_read < size)
-            bytes_read += in.read(data, bytes_read, size-bytes_read);
-        return new String(data);
-    }
-    
-    public static void copy(File src, File dst) throws IOException {
-            InputStream in = new FileInputStream(src);
-            OutputStream out = new FileOutputStream(dst);
-
-            // Transfer bytes from in to out
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            in.close();
-            out.close();
-        }
-
-    
+    /**
+     * called when the process of changing from old to new project group has started. Will be called before
+     * the actual projects from old group get closed and the ones from new group get opened.
+     * @param event 
+     */
+    void projectGroupChanging(@NonNull ProjectGroupChangeEvent event);
+        
+    /**
+     * called when the process of changing from old to new project group has been completed. Only projects 
+     * related to current group should be open now, or projects explicitly opened by the user.
+     * @param event 
+     */
+    void projectGroupChanged(@NonNull ProjectGroupChangeEvent event);
     
 }

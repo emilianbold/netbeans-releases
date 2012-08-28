@@ -398,16 +398,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 name = new ArrayList<Identifier>(1);
                 int start = functionNode.getIdent().getStart();
                 int end = functionNode.getIdent().getFinish();
-                if(start != 0) {
-                    start = LexUtilities.getLexerOffset(parserResult, start);
-                }
-                if(end != 0) {
-                    end = LexUtilities.getLexerOffset(parserResult, end);
-                } else {
+                if(end == 0) {
                     end = parserResult.getSnapshot().getText().length();
                 }
                 name.add(new IdentifierImpl(functionNode.getIdent().getName(),
-                        new OffsetRange(start, end)));
+                        ModelUtils.documentOffsetRange(parserResult, start, end)));
                 if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
                     isPrivate = true;
                     //isStatic = true;
