@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.OpenResourceAction;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
@@ -177,19 +178,23 @@ public class StyleSheetNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<Rule> toPopulate) {
-            String styleSheetId = header.getStyleSheetId();
-            if (body == null) {
-                body = css.getStyleSheet(styleSheetId);
-            }
-            if (body == null) {
-                Logger.getLogger(StyleSheetNode.class.getName())
-                        .log(Level.INFO, "Null body obtained for style sheet {0}!", styleSheetId); // NOI18N
-            } else {
-                for (Rule rule : body.getRules()) {
-                    if (includeKey(rule)) {
-                        toPopulate.add(rule);
-                    }
+            try {
+                String styleSheetId = header.getStyleSheetId();
+                if (body == null) {
+                    body = css.getStyleSheet(styleSheetId);
                 }
+                if (body == null) {
+                    Logger.getLogger(StyleSheetNode.class.getName())
+                            .log(Level.INFO, "Null body obtained for style sheet {0}!", styleSheetId); // NOI18N
+                } else {
+                    for (Rule rule : body.getRules()) {
+                        if (includeKey(rule)) {
+                            toPopulate.add(rule);
+                        }
+                    }
+                } 
+            } catch (TransportStateException tse) {
+                // Debugging session finished in the mean time
             }
             return true;
         }
