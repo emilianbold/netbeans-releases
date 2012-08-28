@@ -223,6 +223,11 @@ public abstract class GlassFishPlatformImpl
                 : null;
     }
 
+    /**
+     * Return GlassFish cloud libraries.
+     * <p/>
+     * @return  GlassFish cloud libraries.
+     */
     @Override
     public LibraryImplementation[] getLibraries() {
         GlassFishServer server = instance.getLocalServer();

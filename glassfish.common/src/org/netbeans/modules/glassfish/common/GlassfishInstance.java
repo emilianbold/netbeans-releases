@@ -150,16 +150,24 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * instance should be added to the the provider registry if the caller wants
      * it to be persisted for future sessions or searchable.
      * <p/>
-     * @param displayName display name for this server instance.
-     * @param homeFolder install folder where server code is located.
-     * @param httpPort http port for this server instance.
-     * @param adminPort admin port for this server instance.
+     * @param displayName Display name for this server instance.
+     * @param installRoot GlassFish installation root directory.
+     * @param glassfishRoot GlassFish server home directory.
+     * @param domainsDir GlassFish server domains directory.
+     * @param domainName GlassFish server registered domain name.
+     * @param httpPort GlassFish server HTTP port for applications.
+     * @param adminPort GlassFish server HTTP port for administration.
+     * @param userName GlassFish server administrator's user name.
+     * @param password GlassFish server administrator's password.
+     * @param url GlassFish server URL (Java EE SPI unique identifier).
+     * @param gip GlassFish instance provider.
      * @return GlassfishInstance object for this server instance.
      */
     public static GlassfishInstance create(String displayName,
             String installRoot, String glassfishRoot, String domainsDir,
-            String domainName, int httpPort, int adminPort,String url,
-            String uriFragment, GlassfishInstanceProvider gip) {
+            String domainName, int httpPort, int adminPort,
+            String userName, String password, String url,
+            GlassfishInstanceProvider gip) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
@@ -168,6 +176,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        ip.put(GlassfishModule.USERNAME_ATTR,
+                userName != null && userName.length() > 0
+                ? userName : DEFAULT_ADMIN_NAME);
+        ip.put(GlassfishModule.PASSWORD_ATTR,
+                password != null
+                ? password : "");
         ip.put(GlassfishModule.URL_ATTR, url);
         // extract the host from the URL
         String[] bigUrlParts = url.split("]");
@@ -257,14 +271,16 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         properties.put(GlassfishModule.JVM_MODE,
                 isRemote && !deployerUri.contains("deployer:gfv3ee6wc")
                 ? GlassfishModule.DEBUG_MODE : GlassfishModule.NORMAL_MODE);
+        updateString(properties, GlassfishModule.USERNAME_ATTR,
+                DEFAULT_ADMIN_NAME);
+        updateString(properties, GlassfishModule.PASSWORD_ATTR,
+                DEFAULT_ADMIN_PASSWORD);
         Map<String, String> newProperties =  Collections.synchronizedMap(
                 new HashMap<String, String>(properties));
         // Asume a local instance is in NORMAL_MODE
         // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
         // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
         // XXX username/password handling at some point.
-        newProperties.put(GlassfishModule.USERNAME_ATTR, DEFAULT_ADMIN_NAME);
-        newProperties.put(GlassfishModule.PASSWORD_ATTR, DEFAULT_ADMIN_PASSWORD);
         return newProperties;
     }
 
