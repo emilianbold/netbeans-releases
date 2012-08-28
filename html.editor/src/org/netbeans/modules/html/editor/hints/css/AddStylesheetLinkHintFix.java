@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.hints.css;
 
 import java.util.Collections;
+import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -77,6 +78,7 @@ public class AddStylesheetLinkHintFix implements HintFix {
     @Override
     public void implement() throws Exception {
         Source source = Source.create(sourceFile);
+        final Document doc = source.getDocument(false);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override
@@ -89,7 +91,19 @@ public class AddStylesheetLinkHintFix implements HintFix {
                 ModificationResult modification = new ModificationResult();
                 if(HtmlSourceUtils.importStyleSheet(modification, (HtmlParserResult)result, externalStylesheet)) {
                     modification.commit();
+                    if(doc != null) {
+                        //refresh the index for the modified file
+                        HtmlSourceUtils.forceReindex(sourceFile);
+                    }
                 }
+            }
+        });
+        
+        //once the modified file is reindexed, refresh all the hints
+        ParserManager.parseWhenScanFinished("text/html", new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                HtmlSourceUtils.rebuildTokenHierarchy(doc);
             }
         });
         
