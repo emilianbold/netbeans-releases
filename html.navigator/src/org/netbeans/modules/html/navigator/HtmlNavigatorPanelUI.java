@@ -197,6 +197,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     //Set a new PageModel. It will install a new PropertyChangeListener for the PageModel changes
     private void setPageModel(PageModel model) {
+        if (this.pageModel == model) {
+            return;
+        }
         PageModel old = this.pageModel;
         this.pageModel = model;
         
@@ -318,35 +321,40 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private HashMap<org.openide.nodes.Node, org.openide.nodes.Node> domToNb = new HashMap<Node, Node>();
     
     private RequestProcessor.Task task;
-    void refreshDOM() {
-        try {
-            final PageModel page = PageInspectorImpl.getDefault().getPage();
-            if (page==null)
-                return;
-            String inspectedURL = page.getDocumentURL();
+    synchronized void refreshDOM() {
+        if (task != null) {
+            task.cancel();
+        }
 
-            URL url = new URL(inspectedURL);
-            FileObject fromServer = ServerURLMapping.fromServer(getCurrentProject(), url);
+        task = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final PageModel page = PageInspectorImpl.getDefault().getPage();
+                    if (page == null) {
+                        return;
+                    }
+                    String inspectedURL = page.getDocumentURL();
+
+                    URL url = new URL(inspectedURL);
+                    FileObject fromServer = ServerURLMapping.fromServer(getCurrentProject(), url);
 
 
-            if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
-                return;
-            }
-            if (task!=null) {
-                task.cancel();
-            }
-        
-            task = RP.post(new Runnable() {
-                @Override
-                public void run() {
+                    if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
+                        return;
+
+                    }
+
+
+
                     refreshNodeDOMStatus();
                     domToNb.clear();
                     cacheDomToNb(getRootNode());
+                } catch (MalformedURLException ex) {
+                    //ignore unknown urls
                 }
-            });
-        } catch (MalformedURLException ex) {
-            //ignore unknown urls
-        }
+            }
+        });
     }
     
     private void cacheDomToNb(Node root) {
@@ -465,6 +473,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
         }
+        
+        setPageModel(PageInspectorImpl.getDefault().getPage());
 
         Source source = Source.create(fo);
         if (source == null) {
