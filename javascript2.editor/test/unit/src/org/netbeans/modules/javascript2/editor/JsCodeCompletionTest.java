@@ -161,4 +161,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue217123() throws Exception {
         checkCompletion("testfiles/completion/issue217123.html", "$(\"#text\").ani^", false);
     }
+    
+    public void testIssue217450() throws Exception {
+        checkCompletion("testfiles/completion/issue217450.js", "$(\"#text\").^", false);
+    }
 }
