@@ -68,8 +68,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Node representing a source or dom element or both.
@@ -87,6 +90,8 @@ public class HtmlElementNode extends AbstractNode {
     private static final Image SOURCE_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/html_element_bw.png"); //NOI18N
     private static final Image SOURCE_AND_DOM_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/html_element.png"); //NOI18N
     private static final Image DOM_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/extbrowser.gif"); //NOI18N
+    /** Lookup path with context actions. */
+    private static final String DOM_ACTIONS_PATH = "Navigation/DOM/Actions"; // NOI18N
     
     private HtmlNavigatorPanelUI ui;
     private FileObject fileObject;
@@ -101,6 +106,8 @@ public class HtmlElementNode extends AbstractNode {
     private SourceDescription source;
     //dynamic description (of the webkit DOM element)
     private Description dom;
+    private final NodeLookupProvider lookupProvider;
+    
     
     //an openide Node representing the counterpart in the browsers DOM tree.
     //note: we need to hold the openide node itself, not just the webkit node
@@ -120,6 +127,8 @@ public class HtmlElementNode extends AbstractNode {
     public HtmlElementNode(Description domDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
         this(ui, fileObject);
         this.dom = domDescription;
+        updateNodeLookup(domDescription);
+        
         getElementChildren().setDynamicKeys(domDescription.getChildren(), true);
         
         deleteElementAction = new DeleteElementAction(fileObject, null);
@@ -127,12 +136,37 @@ public class HtmlElementNode extends AbstractNode {
     }
     
     private HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject) {
-        super(new ElementChildren(ui, fileObject));
+        this(ui, fileObject, createLookupProvider());
+    }
+    
+    private HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject, NodeLookupProvider lookupProvider) {
+        super(new ElementChildren(ui, fileObject), Lookups.proxy(lookupProvider));
         this.ui = ui;
         this.fileObject = fileObject;
+
+        this.lookupProvider = lookupProvider;
+        updateNodeLookup(null);
+        
         
         openAction = new OpenAction(this);
         highlightInBrowserAction = new HighlightInBrowserAction(this, ui);
+    }
+    
+    private static NodeLookupProvider createLookupProvider() {
+        return new NodeLookupProvider(Lookups.fixed());
+    }
+    
+    private void updateNodeLookup(Description newDescription) {
+        org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode = null;
+        if (newDescription instanceof WebKitNodeDescription) {
+            domNode = ((WebKitNodeDescription) newDescription).getOONNode().getLookup().
+                        lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+        }
+        if (domNode != null) {
+            lookupProvider.setLookup(Lookups.fixed(this, domNode));
+        } else {
+            lookupProvider.setLookup(Lookups.fixed(this));
+        }
     }
     
     public Node getDOMNode() {
@@ -362,10 +396,11 @@ public class HtmlElementNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
+        Collection<Action> actions = new ArrayList<Action>();
+        
         if (context || getDescription().getName() == null) {
-            return ui.getActions();
+            actions.addAll(Arrays.asList(ui.getActions()));
         } else {
-            Collection<Action> actions = new ArrayList<Action>();
             
             actions.add(openAction);
             actions.add(null);
@@ -375,9 +410,15 @@ public class HtmlElementNode extends AbstractNode {
             actions.add(highlightInBrowserAction);
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
-            
-            return actions.toArray(new Action[]{});
         }
+        if (getDOMDescription() != null) {
+            for (Action action : org.openide.util.Utilities.actionsForPath(DOM_ACTIONS_PATH)) {
+                if (action instanceof ContextAwareAction) {
+                    actions.add(((ContextAwareAction)action).createContextAwareInstance(getLookup()));
+                }
+            }
+        }
+        return actions.toArray(new Action[]{});        
     }
 
     @Override
@@ -451,6 +492,7 @@ public class HtmlElementNode extends AbstractNode {
             case Description.DOM:
                 originalDescription = getDOMDescription();
                 this.dom = newDescription;
+                updateNodeLookup(newDescription);
                 break;
                 
             default:
@@ -539,6 +581,25 @@ public class HtmlElementNode extends AbstractNode {
         }
         
     }
+    
+    private static class NodeLookupProvider implements Lookup.Provider {
+        
+        private Lookup lookup;
+        
+        NodeLookupProvider(Lookup lookup) {
+            this.lookup = lookup;
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return lookup;
+        }
+        
+        void setLookup(Lookup lookup) {
+            this.lookup = lookup;
+        }
+        
+    }    
 
     public FileObject getFileObject() {
         return fileObject;
