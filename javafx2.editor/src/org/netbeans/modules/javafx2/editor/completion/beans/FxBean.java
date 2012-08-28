@@ -82,6 +82,11 @@ public final class FxBean extends FxDefinition {
     private ElementHandle<TypeElement>  javaType;
     
     /**
+     * Non-null, if this Bean represents a builder.
+     */
+    private FxBean  createdBean;
+    
+    /**
      * Properties available on this class
      */
     private Map<String, FxProperty>    simpleProperties = Collections.emptyMap();
@@ -117,6 +122,11 @@ public final class FxBean extends FxDefinition {
     private String defaultPropertyName;
     
     private boolean fxInstance;
+    
+    /**
+     * Builder for this bean
+     */
+    private FxBean  builder;
     
     /**
      * Provides the default {@link FxBeanProvider} instance for the given {@link CompilationInfo}.
@@ -183,6 +193,30 @@ public final class FxBean extends FxDefinition {
 
     void setFactoryNames(Set<String> factoryNames) {
         this.factoryNames = factoryNames;
+    }
+    
+    void setBuilder(FxBean builder) {
+        this.builder = builder;
+    }
+    
+    public FxBean getBuilder() {
+        return builder;
+    }
+    
+    public boolean usesBuilder() {
+        return !fxInstance && getBuilder() != null;
+    }
+    
+    void makeBuilder(FxBean created) {
+        this.createdBean = created;
+    }
+    
+    public boolean isBuilder() {
+        return createdBean != null;
+    }
+    
+    public FxBean getCreatedBean() {
+        return createdBean;
     }
     
     /**
@@ -322,6 +356,12 @@ public final class FxBean extends FxDefinition {
         this.fxInstance = bean;
     }
 
+    /**
+     * Determines whether the bean is a JavaFx instantiable bean. If returns false,
+     * the system needs a Builder to create instances of this class.
+     * 
+     * @return 
+     */
     public boolean isFxInstance() {
         return fxInstance;
     }

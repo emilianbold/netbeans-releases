@@ -184,7 +184,7 @@ public class XmlLexerParser implements ContentLocator {
         tokenOffsets = Collections.emptyList();
     }
 
-    public XmlLexerParser(TokenHierarchy hierarchy) {
+    public XmlLexerParser(TokenHierarchy<?> hierarchy) {
         this.hierarchy = hierarchy;
     }
 
