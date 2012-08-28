@@ -206,11 +206,13 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
             return (s <= position) &&
                    (offset(end) > position || (includeEnd && offset(end) == position));
         } else {
-            if (s == offset(contentEnd) && position == s && caret) {
+            int e = offset(contentEnd);
+            
+            if (s == e && position == s && caret) {
                 return true;
             }
             return (s <= position) &&
-                   offset(contentEnd) > position;
+                   (e > position || (caret && e == position));
         }
     }
     
@@ -218,7 +220,7 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
         if (start == end && position == start && caret) {
             return true;
         }
-        if (position <= start) {
+        if (position < start || (position == start && caret)) {
             return false;
         }
         int e = end;

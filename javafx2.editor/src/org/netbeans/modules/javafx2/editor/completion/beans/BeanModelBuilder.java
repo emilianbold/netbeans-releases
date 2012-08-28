@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -188,12 +189,15 @@ public final class BeanModelBuilder {
         resultInfo.setDefaultPropertyName(defaultProperty);
 
         FxBean merge = new FxBean(className);
+        merge.setJavaType(resultInfo.getJavaType());
         merge.setValueOf(resultInfo.hasValueOf());
         merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
         
         resultInfo = merge;
-        collectSuperClass(classElement.getSuperclass());
+        if (classElement.getKind() == ElementKind.CLASS) {
+            collectSuperClass(classElement.getSuperclass());
+        }
         resultInfo.setParentBeanInfo(superBi);
         resultInfo.merge(declared);
 

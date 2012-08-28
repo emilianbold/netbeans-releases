@@ -362,6 +362,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/objects3.js");
     }
 
+    public void testObjects4Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/objects4.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testObjects4Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/objects4.js", options, ".wrapNever.formatted");
+    }
+
+    public void testObjects4IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects4.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testObjects4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/objects4.js");
+    }
+
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
     }
@@ -1071,6 +1093,28 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrays1.js");
+    }
+
+    public void testArrays2Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testArrays2Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapNever.formatted");
+    }
+
+    public void testArrays2IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrays2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrays2.js");
     }
 
     public void testPartialFormat1() throws Exception {

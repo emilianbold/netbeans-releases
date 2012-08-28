@@ -45,8 +45,7 @@ package org.netbeans.modules.extexecution;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
-import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.extexecution.open.OptionOpenHandler;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -56,18 +55,22 @@ import org.openide.util.NbBundle;
  */
 public class OptionsAction extends AbstractAction {
 
+    private final OptionOpenHandler handler;
+
     private final String optionsPath;
 
-    public OptionsAction(String optionsPath) {
+    public OptionsAction(OptionOpenHandler handler, String optionsPath) {
         setEnabled(true); // just to be sure
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/extexecution/resources/options.png", false)); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(OptionsAction.class, "Options"));
 
+        assert handler != null : "Null handler";
+        this.handler = handler;
         this.optionsPath = optionsPath;
     }
 
     public void actionPerformed(ActionEvent e) {
-        OptionsDisplayer.getDefault().open(optionsPath);
+        handler.open(optionsPath);
     }
 
     public String getOptionsPath() {

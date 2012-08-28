@@ -51,8 +51,8 @@ import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.common.event.ProfilingStateAdapter;
 import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
-import org.netbeans.lib.profiler.common.event.ProfilingStateListener;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -66,7 +66,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -103,8 +102,7 @@ import org.openide.DialogDisplayer;
     "J2EEProfilerSPI_StoppingServerFailedMsg=Stopping profiled server failed"
 })
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler.class)
-public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler, ProgressObject,
-                                        ProfilingStateListener {
+public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler, ProgressObject {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private class StopAgentStatus implements DeploymentStatus {
@@ -199,7 +197,32 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         fireShutdownStartedEvent();
 
         if (refreshServerInstance) {
-            Profiler.getDefault().addProfilingStateListener(this);
+            Profiler.getDefault().addProfilingStateListener(new ProfilingStateAdapter() {
+                public void profilingStateChanged(ProfilingStateEvent e) {
+                    // Profiling started
+                    if (e.getNewState() == Profiler.PROFILING_RUNNING) {
+                        if (getState() == ProfilerSupport.STATE_PROFILING) { // Profiler SPI is used for profiling, ServerInstance will be refreshed after profiling ends
+
+                            if (refreshServerInstance && (lastServerInstanceProperties != null)
+                                    && (Profiler.getDefault().getProfilingMode() == Profiler.MODE_ATTACH)) {
+                                lastServerInstanceProperties.refreshServerInstance(); // Attaching to server started from Runtime tab, server state refresh is required
+                            }
+
+                            serverStartedFromIDE = true;
+                        }
+                    }
+
+                    // Profiling finished
+                    if (e.getNewState() == Profiler.PROFILING_INACTIVE) {
+                        if (refreshServerInstance && serverStartedFromIDE && (lastServerInstanceProperties != null)) {
+                            lastServerInstanceProperties.refreshServerInstance();
+                        }
+
+                        lastServerInstanceProperties = null;
+                        serverStartedFromIDE = false;
+                    }
+                }
+            });
         }
     }
 
@@ -408,9 +431,6 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         fireHandleProgressEvent(new StopAgentStatus(Bundle.J2EEProfilerSPI_StoppingServerMsg(), StateType.RUNNING));
     }
 
-    public void instrumentationChanged(int oldInstrType, int currentInstrType) {
-    }
-
     // --- Profiler SPI interface implementation ---------------------------------
 
     /**
@@ -424,33 +444,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         profilerAgentStartingTime = System.currentTimeMillis();
         profilerAgentStarting = true;
     }
-
-    // --- ProfilingStateListener implementation ---------------------------------
-    public void profilingStateChanged(ProfilingStateEvent e) {
-        // Profiling started
-        if (e.getNewState() == Profiler.PROFILING_RUNNING) {
-            if (getState() == ProfilerSupport.STATE_PROFILING) { // Profiler SPI is used for profiling, ServerInstance will be refreshed after profiling ends
-
-                if (refreshServerInstance && (lastServerInstanceProperties != null)
-                        && (Profiler.getDefault().getProfilingMode() == Profiler.MODE_ATTACH)) {
-                    lastServerInstanceProperties.refreshServerInstance(); // Attaching to server started from Runtime tab, server state refresh is required
-                }
-
-                serverStartedFromIDE = true;
-            }
-        }
-
-        // Profiling finished
-        if (e.getNewState() == Profiler.PROFILING_INACTIVE) {
-            if (refreshServerInstance && serverStartedFromIDE && (lastServerInstanceProperties != null)) {
-                lastServerInstanceProperties.refreshServerInstance();
-            }
-
-            lastServerInstanceProperties = null;
-            serverStartedFromIDE = false;
-        }
-    }
-
+    
     public synchronized void removeProgressListener(ProgressListener listener) {
         listeners.remove(listener);
     }
@@ -529,9 +523,6 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     }
 
     public void stop() {
-    }
-
-    public void threadsMonitoringChanged() {
     }
 
     // Agent state as obtained by NetBeansProfiler.getAgentState()

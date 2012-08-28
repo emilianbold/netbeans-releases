@@ -423,14 +423,29 @@ public final class FormatToken {
                 return false;
             }
         },
-
-        // a bit special tokens to detect proper continuation
-        AFTER_PROPERTY {
+        AFTER_ARRAY_LITERAL {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
             @Override
             public boolean isSpaceMarker() {
                 return false;
             }
         },
+
+        // a bit special tokens to detect proper continuation
+        AFTER_PROPERTY {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
         BEFORE_OBJECT {
             @Override
             public boolean isSpaceMarker() {
