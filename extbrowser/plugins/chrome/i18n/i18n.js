@@ -60,14 +60,16 @@ var I18n = {
      */
     element: function(elementId) {
         var element = document.getElementById(elementId);
+        this._checkElement(element, elementId);
         element.innerHTML = this.message(element.innerHTML);
     },
     /**
      * Translate text (content) of the given elements.
      */
     elements: function(elements) {
-        for (var index in elements) {
+        for (var index = 0; index < elements.length; ++index) {
             var element = elements[index];
+            this._checkElement(element, index);
             element.innerHTML = this.message(element.innerHTML);
         }
     },
@@ -76,6 +78,7 @@ var I18n = {
      */
     attribute: function(elementId, attrname) {
         var element = document.getElementById(elementId);
+        this._checkElement(element, elementId);
         element.setAttribute(attrname, this.message(element.getAttribute(attrname)));
     },
     /**
@@ -83,8 +86,18 @@ var I18n = {
      */
     elementAttribute: function(elementId, attrname) {
         var element = document.getElementById(elementId);
+        this._checkElement(element, elementId);
         element.innerHTML = this.message(element.innerHTML);
         element.setAttribute(attrname, this.message(element.getAttribute(attrname)));
+    },
+
+    /**
+     * Check element and warn to console if element does not exist.
+     */
+    _checkElement: function(element, elementId) {
+        if (typeof element === 'undefined') {
+            console.error('Element not found for ID (or index): ' + elementId);
+        }
     }
 
 }

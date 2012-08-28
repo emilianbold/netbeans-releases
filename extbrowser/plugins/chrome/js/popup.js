@@ -107,22 +107,13 @@ NetBeans_PresetMenu._registerEvents = function() {
         that._updateSelectionMode(true);
     }, false);
 }
-// clean and put presets to the menu (first, presets from toolbar)
+// clean and put presets to the menu
 NetBeans_PresetMenu._putPresets = function() {
     var menu = document.getElementById('menuPresets');
     // clean
     menu.innerHTML = '';
-    this._putPresetsInternal(true);
-    this._putPresetsInternal(false);
-}
-// put presets to the menu (internal)
-NetBeans_PresetMenu._putPresetsInternal = function(showInToolbar) {
-    var menu = document.getElementById('menuPresets');
     for (p in this._presets) {
         var preset = this._presets[p];
-        if (preset.showInToolbar != showInToolbar) {
-            continue;
-        }
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');

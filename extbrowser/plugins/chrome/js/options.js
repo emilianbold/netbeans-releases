@@ -41,6 +41,7 @@
  */
 
 // references from bg page
+var INFOBAR = chrome.extension.getBackgroundPage().NetBeans.INFOBAR;
 var NetBeans_Presets = chrome.extension.getBackgroundPage().NetBeans_Presets;
 var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
 
@@ -77,6 +78,9 @@ NetBeans_PresetCustomizer.show = function(presets) {
 NetBeans_PresetCustomizer._init = function() {
     if (this._rowContainer != null) {
         return;
+    }
+    if (!INFOBAR) {
+        document.getElementById('toolbarHeader').style.display = 'none';
     }
     this._rowContainer = document.getElementById('presetCustomizerTable').getElementsByTagName('tbody')[0];
     this._addPresetButton = document.getElementById('addPreset');
@@ -196,18 +200,20 @@ NetBeans_PresetCustomizer._putPresetsInternal = function(presets) {
         height.appendChild(heightInput);
         row.appendChild(height);
         // toolbar
-        var toolbar = document.createElement('td');
-        toolbar.setAttribute('class', 'toolbar');
-        var toolbarCheckbox = document.createElement('input');
-        toolbarCheckbox.setAttribute('type', 'checkbox');
-        if (preset.showInToolbar) {
-            toolbarCheckbox.setAttribute('checked', 'checked');
+        if (INFOBAR) {
+            var toolbar = document.createElement('td');
+            toolbar.setAttribute('class', 'toolbar');
+            var toolbarCheckbox = document.createElement('input');
+            toolbarCheckbox.setAttribute('type', 'checkbox');
+            if (preset.showInToolbar) {
+                toolbarCheckbox.setAttribute('checked', 'checked');
+            }
+            toolbarCheckbox.addEventListener('click', function() {
+                that._toolbarChanged(this);
+            }, false);
+            toolbar.appendChild(toolbarCheckbox);
+            row.appendChild(toolbar);
         }
-        toolbarCheckbox.addEventListener('click', function() {
-            that._toolbarChanged(this);
-        }, false);
-        toolbar.appendChild(toolbarCheckbox);
-        row.appendChild(toolbar);
         // append row
         this._rowContainer.appendChild(row);
         preset['_row'] = row;
