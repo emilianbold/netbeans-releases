@@ -67,6 +67,7 @@ import java.util.logging.Level;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -403,6 +404,9 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
      * That is why one can put <code>fileObject.getLookup()</code> into 
      * {@link java.util.IdentityHashMap}{@code <Lookup,Anything>} and cache 
      * <code>Anything</code> regardless the actual location of (moved) file.
+     * Or one can obtain a {@link Result} from the {@link Lookup}, keep
+     * its reference, attach a listener to it and be assured that it
+     * will fire events even if the file gets renamed.
      * 
      * <p class="nonnormative">
      * Inside of NetBeans Platform application the content of this lookup is usually

@@ -79,6 +79,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 
 /**
  * Utility class for generating a simplified <em>JSP servlet</em> class from a JSP file.
@@ -194,6 +195,12 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
                 } else {
+                    int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, null);
+                    if (caretOffset - blockStart > 0) {
+                        // see issue #213963 - we are trying to cut rest of the tag after the caret position
+                        // the condition shouldn't be fulfilled when the cursor is out of the scriptlet
+                        blockLength = Math.min(blockLength, caretOffset - blockStart);
+                    }
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }

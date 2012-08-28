@@ -59,6 +59,7 @@ import java.util.WeakHashMap;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -86,7 +87,7 @@ import org.openide.util.WeakListeners;
  * @author sdedic
  */
 class FxBeanCache implements ChangeListener {
-    private final Map<ClasspathInfo, Reference<ClasspathCache>>  cache = new WeakHashMap<ClasspathInfo, Reference<ClasspathCache>>();
+    private final Map<String, Reference<ClasspathCache>>  cache = new HashMap<String, Reference<ClasspathCache>>();
     
     private static volatile FxBeanCache INSTANCE;
     
@@ -109,9 +110,27 @@ class FxBeanCache implements ChangeListener {
         }
     }
     
+    private static void addCp(StringBuilder sb, ClassPath cp) {
+        if (cp == null) {
+            return;
+        }
+        sb.append(cp.toString());
+    }
+    
+    private String createKey(ClasspathInfo cp) {
+        StringBuilder sb = new StringBuilder();
+        addCp(sb, cp.getClassPath(ClasspathInfo.PathKind.BOOT));
+        sb.append("/");
+        addCp(sb, cp.getClassPath(ClasspathInfo.PathKind.COMPILE));
+        sb.append("/");
+        addCp(sb, cp.getClassPath(ClasspathInfo.PathKind.SOURCE));
+        
+        return sb.toString();
+    }
+    
     public FxBean getBeanInfo(ClasspathInfo cp, String classname) {
         synchronized (cache) {
-            Reference<ClasspathCache> c = cache.get(cp);
+            Reference<ClasspathCache> c = cache.get(createKey(cp));
             if (c == null) {
                 return null;
             }
@@ -127,33 +146,35 @@ class FxBeanCache implements ChangeListener {
     public void addBeanInfo(ClasspathInfo cp, FxBean instance, Set<String> parents) {
         ClasspathCache cc = null;
         synchronized (cache) {
-            Reference<ClasspathCache> c = cache.get(cp);
+            String key = createKey(cp);
+            Reference<ClasspathCache> c = cache.get(key);
             
             if (c != null) {
                 cc = c.get();
             }
             if (cc == null) {
-                cache.put(cp, new CacheRef(cc = new ClasspathCache(cp), cp));
+                cache.put(key, new CacheRef(cc = new ClasspathCache(cp), key));
             }
         }
         cc.addBeanInfo(instance, parents);
     }
     
-    private static class CacheRef extends SoftReference<ClasspathCache> implements Runnable {
-        private Reference<ClasspathInfo>    refKey;
+    private static class CacheRef extends WeakReference<ClasspathCache> implements Runnable {
+        private String    refKey;
 
-        public CacheRef(ClasspathCache referent, ClasspathInfo key) {
+        public CacheRef(ClasspathCache referent, String key) {
             super(referent, Utilities.activeReferenceQueue());
-            this.refKey = new WeakReference<ClasspathInfo>(key);
+            this.refKey = key;
         }
 
         public void run() {
-            ClasspathInfo i = refKey.get();
-            if (i == null) {
-                // will be collected anyway soon
-                return;
+            synchronized (instance().cache) {
+                Map m = instance().cache;
+                Object o = m.get(refKey);
+                if (o == this) {
+                    m.remove(refKey);
+                }
             }
-            instance().cache.remove(i);
         }
         
     }

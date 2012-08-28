@@ -38,9 +38,15 @@
  */
 package org.netbeans.modules.php.smarty.editor.utlis;
 
+import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.php.smarty.editor.TplKit;
+import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.text.CloneableEditor;
 import org.openide.windows.TopComponent;
@@ -88,4 +94,52 @@ public class LexerUtils {
             }
         });
     }
+
+    public static TokenSequence<? extends TplTopTokenId> getTplTopTokenSequence(Document doc, int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        return getTokenSequence(th, offset, TplTopTokenId.language());
+    }
+
+    public static TokenSequence<? extends TplTopTokenId> getTplTopTokenSequence(Snapshot snapshot, int offset) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        return getTokenSequence(th, offset, TplTopTokenId.language());
+    }
+
+    public static TokenSequence<? extends TplTopTokenId> getTplTopTokenSequence(TokenHierarchy<?> th, int offset) {
+        return getTokenSequence(th, offset, TplTopTokenId.language());
+    }
+
+    public static <K> TokenSequence<? extends K> getTokenSequence(TokenHierarchy<?> th,
+            int offset, Language<? extends K> language) {
+        TokenSequence<? extends K> ts = th.tokenSequence(language);
+
+        if (ts == null) {
+            // Possibly an embedding scenario such as an HTML file
+            // First try with backward bias true
+            List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
+
+            for (TokenSequence t : list) {
+                if (t.language() == language) {
+                    ts = t;
+
+                    break;
+                }
+            }
+
+            if (ts == null) {
+                list = th.embeddedTokenSequences(offset, false);
+
+                for (TokenSequence t : list) {
+                    if (t.language() == language) {
+                        ts = t;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return ts;
+    }
+
 }

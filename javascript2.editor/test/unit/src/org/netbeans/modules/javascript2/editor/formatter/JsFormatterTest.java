@@ -308,22 +308,43 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall4.js");
     }
 
-    public void testFunctionCall5Always() throws Exception {
+    public void testFunctionCall5WrapAlways() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapAlways.formatted");
     }
 
-    public void testFunctionCall5Never() throws Exception {
+    public void testFunctionCall5WrapNever() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_NEVER);
         reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapNever.formatted");
     }
 
-    public void testFunctionCall5IfLong() throws Exception {
+    public void testFunctionCall5WrapIfLong() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFunctionCall5WrapBeforeAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterDotInChainedMethodCalls, false);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapBeforeAlways.formatted");
+    }
+
+    public void testFunctionCall5WrapBeforeNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterDotInChainedMethodCalls, false);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapBeforeNever.formatted");
+    }
+
+    public void testFunctionCall5WrapBeforeIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapChainedMethodCalls, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterDotInChainedMethodCalls, false);
+        reformatFileContents("testfiles/formatter/functionCall5.js", options, ".wrapBeforeIfLong.formatted");
     }
 
     public void testFunctionCall5Tokens() throws Exception {
@@ -360,6 +381,28 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testObjects3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/objects3.js");
+    }
+
+    public void testObjects4Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/objects4.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testObjects4Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/objects4.js", options, ".wrapNever.formatted");
+    }
+
+    public void testObjects4IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects4.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testObjects4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/objects4.js");
     }
 
     public void testSwitch1() throws Exception {
@@ -934,6 +977,48 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapIfLong.formatted");
     }
 
+    public void testOperators2BinaryWrapAfterAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".binary.wrapAfterAlways.formatted");
+    }
+
+    public void testOperators2BinaryWrapAfterNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".binary.wrapAfterNever.formatted");
+    }
+
+    public void testOperators2BinaryWrapAfterIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".binary.wrapAfterIfLong.formatted");
+    }
+
+    public void testOperators2TernaryWrapAfterAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterTernaryOps, true);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapAfterAlways.formatted");
+    }
+
+    public void testOperators2TernaryWrapAfterNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterTernaryOps, true);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapAfterNever.formatted");
+    }
+
+    public void testOperators2TernaryWrapAfterIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterTernaryOps, true);
+        reformatFileContents("testfiles/formatter/operators2.js", options, ".ternary.wrapAfterIfLong.formatted");
+    }
+
     public void testOperators2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/operators2.js");
     }
@@ -1029,6 +1114,28 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrays1.js");
+    }
+
+    public void testArrays2Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testArrays2Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapNever.formatted");
+    }
+
+    public void testArrays2IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrays2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrays2.js");
     }
 
     public void testPartialFormat1() throws Exception {

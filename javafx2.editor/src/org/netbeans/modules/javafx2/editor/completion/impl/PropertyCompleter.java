@@ -55,6 +55,7 @@ import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -82,6 +83,8 @@ public class PropertyCompleter extends InstanceCompleter {
     
     private boolean itemsFiltered;
     
+    private String namePrefix;
+    
     public boolean hasMoreItems() {
         return itemsFiltered;
     }
@@ -107,8 +110,11 @@ public class PropertyCompleter extends InstanceCompleter {
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
 
-            if (existingPropNames.contains(s) && !ctx.isReplaceExisting()) {
-                continue;
+            if (existingPropNames.contains(s)) {
+                // if replacing, leave the property being replaced in the list
+                if (!s.startsWith(namePrefix) || !ctx.isReplaceExisting()) {
+                    continue;
+                }
             }
 
             if (attribute && !pi.isSimple()) {
@@ -158,6 +164,10 @@ public class PropertyCompleter extends InstanceCompleter {
     }
 
     private void init() {
+        namePrefix = ctx.getPrefix();
+        if (namePrefix.startsWith("<")) {
+            namePrefix = namePrefix.substring(1);
+        }
         for (PropertyValue pv : (Collection<PropertyValue>)instance.getProperties()) {
             existingPropNames.add(pv.getPropertyName());
         }
@@ -176,27 +186,34 @@ public class PropertyCompleter extends InstanceCompleter {
             addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
         }
         if (ctx.getType() == CompletionContext.Type.PROPERTY) {
+            String ns = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
             if (instance.getId() == null) {
-                // suggest also fx:id
-                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id",
-                        true);
-                pi.setPrimitive(true);
-                pi.setInherited(false);
-                pi.setSystem(true);
-                pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
-                pi.setPropertyType("String"); // NOI18N
-                resultItems.add(pi);
+                if ("id".startsWith(namePrefix) || // NOI18N
+                    (ns != null && (ns + ":id").startsWith(namePrefix))) {  // NOI18N
+                    // suggest also fx:id
+                    PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id", // NOI18N
+                            true);
+                    pi.setPrimitive(true);
+                    pi.setInherited(false);
+                    pi.setSystem(true);
+                    pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                    pi.setPropertyType("String"); // NOI18N
+                    resultItems.add(pi);
+                }
             }
             if (ctx.isRootElement() && ctx.getModel().getController() == null) {
-                // suggest also fx:id
-                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller",
-                        true);
-                pi.setPrimitive(true);
-                pi.setInherited(false);
-                pi.setSystem(true);
-                pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
-                pi.setPropertyType("Class"); // NOI18N
-                resultItems.add(pi);
+                if ("controller".startsWith(namePrefix) || // NOI18N
+                    (ns != null && (ns + ":controller").startsWith(namePrefix))) {  // NOI18N
+                    // suggest also fx:id
+                    PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller", // NOI18N
+                            true);
+                    pi.setPrimitive(true);
+                    pi.setInherited(false);
+                    pi.setSystem(true);
+                    pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                    pi.setPropertyType("Class"); // NOI18N
+                    resultItems.add(pi);
+                }
             }
         }
         return resultItems;

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extexecution;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -54,6 +55,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.spi.extexecution.open.OptionOpenHandler;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -93,7 +96,7 @@ public final class InputOutputManager {
     public static InputOutputData getInputOutput(String name, boolean actions, String optionsPath) {
         InputOutputData result = null;
 
-        TreeSet<InputOutputData> candidates = new TreeSet<InputOutputData>();
+        TreeSet<InputOutputData> candidates = new TreeSet<InputOutputData>(InputOutputData.DISPLAY_NAME_COMPARATOR);
 
         synchronized (InputOutputManager.class) {
             for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
@@ -171,9 +174,16 @@ public final class InputOutputManager {
                 stopAction = new StopAction();
                 rerunAction = new RerunAction();
                 if (optionsPath != null) {
-                    optionsAction = new OptionsAction(optionsPath);
-                    io = IOProvider.getDefault().getIO(displayName,
-                            new Action[] {rerunAction, stopAction, optionsAction});
+                    OptionOpenHandler handler = Lookup.getDefault().lookup(OptionOpenHandler.class);
+                    if (handler != null) {
+                        optionsAction = new OptionsAction(handler, optionsPath);
+                        io = IOProvider.getDefault().getIO(displayName,
+                                new Action[] {rerunAction, stopAction, optionsAction});
+                    } else {
+                        LOGGER.log(Level.WARNING, "No available OptionsOpenHandler so no Options button");
+                        io = IOProvider.getDefault().getIO(displayName,
+                            new Action[] {rerunAction, stopAction});
+                    }
                 } else {
                     io = IOProvider.getDefault().getIO(displayName,
                             new Action[] {rerunAction, stopAction});
@@ -181,9 +191,15 @@ public final class InputOutputManager {
                 rerunAction.setParent(io);
             } else {
                 if (optionsPath != null) {
-                    optionsAction = new OptionsAction(optionsPath);
-                    io = IOProvider.getDefault().getIO(displayName,
-                            new Action[] {optionsAction});
+                    OptionOpenHandler handler = Lookup.getDefault().lookup(OptionOpenHandler.class);
+                    if (handler != null) {
+                        optionsAction = new OptionsAction(handler, optionsPath);
+                        io = IOProvider.getDefault().getIO(displayName,
+                                new Action[] {optionsAction});
+                    } else {
+                        LOGGER.log(Level.WARNING, "No available OptionsOpenHandler so no Options button");
+                        io = IOProvider.getDefault().getIO(displayName, true);
+                    }
                 } else {
                     io = IOProvider.getDefault().getIO(displayName, true);
                 }
@@ -226,7 +242,15 @@ public final class InputOutputManager {
         return nonActiveDN;
     }
 
-    public static final class InputOutputData implements Comparable<InputOutputData> {
+    public static final class InputOutputData {
+
+        private static final Comparator<InputOutputData> DISPLAY_NAME_COMPARATOR = new Comparator<InputOutputData>() {
+
+            @Override
+            public int compare(InputOutputData o1, InputOutputData o2) {
+                return o1.displayName.compareTo(o2.displayName);
+            }
+        };
 
         private final InputOutput inputOutput;
 
@@ -265,10 +289,6 @@ public final class InputOutputManager {
 
         public OptionsAction getOptionsAction() {
             return optionsAction;
-        }
-
-        public int compareTo(InputOutputData o) {
-            return displayName.compareTo(o.displayName);
         }
     }
 }

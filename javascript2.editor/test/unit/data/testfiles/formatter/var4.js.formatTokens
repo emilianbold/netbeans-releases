@@ -15,11 +15,13 @@ FormattingToken{kind=TEXT, offset=15, text=1}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=16, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=17, text= }
 FormattingToken{kind=TEXT, offset=18, text=2}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=19, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=20, text= }
 FormattingToken{kind=TEXT, offset=21, text=3}
 FormattingToken{kind=WHITESPACE, offset=22, text=      }
@@ -114,6 +116,7 @@ FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=99, text=<}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=100, text= }
 FormattingToken{kind=TEXT, offset=101, text=10}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}

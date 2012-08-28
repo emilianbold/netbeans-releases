@@ -115,6 +115,10 @@ public class JsDocumentationCompleter {
                                 return;
                             }
                             Node nearestNode = getNearestNode(jsParserResult, offset);
+                            if (nearestNode == null) {
+                                // no non-doc node found in the file
+                                return;
+                            }
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
@@ -142,6 +146,9 @@ public class JsDocumentationCompleter {
     
     private static boolean isWrapperObject(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode) {
         List<Identifier> nodeName = jsParserResult.getModel().getNodeName(nearestNode);
+        if (nodeName.isEmpty()) {
+            return false;
+        }
         return jsObject.getProperties().containsKey(nodeName.get(nodeName.size() - 1).getName());
     }
 
