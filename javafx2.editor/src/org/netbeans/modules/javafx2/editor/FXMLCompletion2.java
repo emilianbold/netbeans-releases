@@ -169,9 +169,13 @@ public class FXMLCompletion2 implements CompletionProvider {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 if (fxmlParsing) {
-                    Parser.Result result = resultIterator.getParserResult();
+                    Parser.Result result = resultIterator.getParserResult(caretOffset);
 
                     fxmlResult = FxmlParserResult.get(result);
+                    
+                    if (fxmlResult == null) {
+                        return;
+                    }
 
                     fxmlParsing = false;
                     // next round, with Java parser to get access to java typesystem
@@ -187,8 +191,9 @@ public class FXMLCompletion2 implements CompletionProvider {
                 if (doc instanceof AbstractDocument) {
                     ((AbstractDocument)doc).readLock();
                 }
+                TokenHierarchy<?> th = TokenHierarchy.get(doc);
                 // bug in parsing API: snapshot source not modified just after modification to the source file
-                ctx.init(TokenHierarchy.get(doc), ci, fxmlResult); 
+                ctx.init(th, ci, fxmlResult); 
                 if (doc instanceof AbstractDocument) {
                     ((AbstractDocument)doc).readUnlock();
                 }

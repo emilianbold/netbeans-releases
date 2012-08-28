@@ -158,6 +158,9 @@ public class PropertyCompleter extends InstanceCompleter {
         boolean next = false;
         do {
             addPropertiesFrom(beanInfo.getDeclareadInfo(), names, next);
+            if (beanInfo.getBuilder() != null) {
+                addPropertiesFrom(beanInfo.getBuilder().getDeclareadInfo(), names, next);
+            }
             beanInfo = beanInfo.getSuperclassInfo();
             next = true;
         } while (beanInfo != null && resultItems.size() < IMPORTANT_PROPERTIES_TRESHOLD);
@@ -177,13 +180,16 @@ public class PropertyCompleter extends InstanceCompleter {
     public List<CompletionItem> complete() {
         init();
         
+        Set<String> names = new HashSet<String>();
         if (ctx.getCompletionType() == CompletionProvider.COMPLETION_QUERY_TYPE) {
             addImportantProperties();
             if (resultItems.isEmpty()) {
-                addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
+                addPropertiesFrom(getBeanInfo(), names, false);
+                addPropertiesFrom(getBeanInfo().getBuilder(), names, false);
             }
         } else if (ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
-            addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
+            addPropertiesFrom(getBeanInfo(), names, false);
+            addPropertiesFrom(getBeanInfo().getBuilder(), names, false);
         }
         if (ctx.getType() == CompletionContext.Type.PROPERTY) {
             String ns = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
