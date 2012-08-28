@@ -212,6 +212,7 @@ public class FmtOptions {
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
+    public static final String wrapAfterDotInChainedMethodCalls = "wrapAfterDotInChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
@@ -389,6 +390,7 @@ public class FmtOptions {
             { wrapMethodParams, WRAP_NEVER}, //NOI18N
             { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
+            { wrapAfterDotInChainedMethodCalls, TRUE}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
             { wrapForStatement, WRAP_ALWAYS}, //NOI18N
