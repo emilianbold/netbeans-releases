@@ -39,39 +39,85 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.api.project.ui;
 
-package org.netbeans.qa.form;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.project.uiapi.Utilities;
+import org.openide.util.NbPreferences;
 
-import java.io.*;
+/**
+ * Object describing a project group, in most cases the currently active project group.
+ * @author mkleint
+ * @since 1.61
+ */
+public final class ProjectGroup {
+    private final Preferences prefs;
+    private final String name;
 
-public class VisualDevelopmentUtil {
-    public static String JAVA_VERSION = System.getProperty("java.version");
-    
-    public static String readFromFile(String filename) throws IOException   {
-        File f = new File(filename); 
-        int size = (int) f.length();        
-        int bytes_read = 0;
-        FileInputStream in = new FileInputStream(f);
-        byte[] data = new byte [size];
-        while(bytes_read < size)
-            bytes_read += in.read(data, bytes_read, size-bytes_read);
-        return new String(data);
+    ProjectGroup(String name, Preferences prefs) {
+        this.name = name;
+        this.prefs = prefs;
     }
     
-    public static void copy(File src, File dst) throws IOException {
-            InputStream in = new FileInputStream(src);
-            OutputStream out = new FileOutputStream(dst);
+    /**
+     * name of the project group as given by user
+     * @return 
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * use this method to store and retrieve preferences related to project groups.
+     * @param clazz
+     * @return 
+     */
+    public Preferences preferencesForPackage(Class clazz) {
+        return prefs.node(clazz.getPackage().getName().replace(".", "/"));
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 11 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
 
-            // Transfer bytes from in to out
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            in.close();
-            out.close();
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ProjectGroup other = (ProjectGroup) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
+    }
+    
+    static {
+        AccessorImpl impl = new AccessorImpl();
+        impl.assign();
+    }
+ 
+    
+    static class AccessorImpl extends Utilities.ProjectGroupAccessor {
+        
+        
+         public void assign() {
+             if (Utilities.ACCESSOR == null) {
+                 Utilities.ACCESSOR = this;
+             }
+         }
+    
+        @Override
+        public ProjectGroup createGroup(String name, Preferences prefs) {
+            return new ProjectGroup(name, prefs);
+        }
+    }    
     
     
 }

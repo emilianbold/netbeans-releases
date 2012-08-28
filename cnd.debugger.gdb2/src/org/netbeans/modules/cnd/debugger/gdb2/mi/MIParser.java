@@ -342,12 +342,24 @@ public class MIParser {
 
     private MITList parseResultList(TokenType endToken, boolean topLevel)
 	throws MIParserException {
+        
+        Token t = getToken();
+        if ((t.type == TokenType.SYM) && (t.value.equals("bkpt"))) { // NOI18N
+            t = getToken();
+            if (t.type != TokenType.EQ) {
+                error("result", "=", t); // NOI18N
+            }
+            MITList list = parseBkptList(topLevel);
+            return list;
+        } else {
+            ungetToken(t);
+        }
 
 	MITList list = new MITList(endToken == TokenType.RB, topLevel);
 	while (true) {
 	    MIResult result = parseResult();
 	    list.add(result);
-	    Token t = getToken();
+	    t = getToken();
 	    if (t.type == endToken)
 		break;
 	    else if (t.type == TokenType.COMMA)
@@ -358,6 +370,27 @@ public class MIParser {
 	return list;
     }
 
+    private MITList parseBkptList(boolean topLevel) throws MIParserException {
+        MITList list = new MITList(true, topLevel);
+        
+        Token t;
+        while (true) {
+            MIValue value = parseValue(topLevel);
+	    list.add(new MIResult("bkpt", value)); // NOI18N
+            
+            t = getToken();
+            
+            if (t.type == TokenType.COMMA)
+		continue;
+            else if (t.type == TokenType.SYM) {
+                ungetToken(t);
+                break;
+            } else if (t.type == TokenType.EOL) {
+                break;
+            }
+        }
+        return list;
+    }
 
     private MIValue parseValue(boolean decode) throws MIParserException {
 	Token t = getToken();
@@ -389,7 +422,7 @@ public class MIParser {
 	if (teq.type != TokenType.EQ)
 	    error("result", "=", teq); // NOI18N
 
-	MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value)); //NOI18N
+        MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value)); //NOI18N
 
 	return new MIResult(tsym.value, value);
     }
