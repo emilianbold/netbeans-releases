@@ -760,19 +760,14 @@ public class AnalysisPanel extends javax.swing.JPanel {
         private JComponent createToolTip (int revisionIndex) {
             RevisionToolTipPanel panel = new RevisionToolTipPanel(content.projectContext);
             panel.setBorder(BorderFactory.createLineBorder(panel.getForeground()));
-            if (revisionIndex == -2) {
-                revisionIndex = content.getSelectedAnalysis().getTimeStampsCount()-1;
-            }
             Revision revision = content.getSelectedAnalysis().getRevision(revisionIndex);
-            StringBuilder toolTipTitle = new StringBuilder("Change of revision ");
+            StringBuilder toolTipTitle = new StringBuilder("Rev #");
             toolTipTitle.append(revision.getIndex());
             final String revisionDetailLabel = content.getSelectedAnalysisItem().getRevisionDetailLabel(revision.getIndex());
             if (revisionDetailLabel != null && !revisionDetailLabel.isEmpty()) {
-                toolTipTitle.append(" (");
                 toolTipTitle.append(revisionDetailLabel);
-                toolTipTitle.append(")");
             }
-            panel.setRevision(revision, revisionDetailLabel, content.reformatRevisionButton.isSelected());
+            panel.setRevision(revision, toolTipTitle.toString(), content.reformatRevisionButton.isSelected());
             return panel;
         }
         
@@ -791,6 +786,13 @@ public class AnalysisPanel extends javax.swing.JPanel {
                                 ToolTipSupport.FLAGS_LIGHTWEIGHT_TOOLTIP);
                     content.toolTipSupport.setToolTipVisible(true);
                 }
+            }
+        }
+
+        public void showToolTip() {
+            Revision r = content.getSelectedRevision();
+            if (r != null) {
+                showToolTip(r.getIndex());
             }
         }
     }

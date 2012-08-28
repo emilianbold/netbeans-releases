@@ -184,18 +184,18 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
         }
         for (Change o : changes) {
             if (offset >= o.getOffset() && offset <= o.getOffset()+o.getLength()) {
-                if (o.getRevisionIndex() != -1) {
+                if (o.isOrigin()) {
                     for (Change oo : changes) {
                         if (oo.getRevisionIndex() == o.getRevisionIndex()) {
                             bag2.addHighlight(oo.getOffset(), oo.getOffset()+oo.getLength(), hoverColor);
                         }
                     }
                 }
-                int x = o.getRevisionIndex();
-                if (x == -1) {
-                    x = -2; // XXX refactor this
+                if (o.isOrigin()) {
+                    ((AnalysisPanel.MyEditorPane)comp).showToolTip(o.getRevisionIndex());
+                } else {
+                    ((AnalysisPanel.MyEditorPane)comp).showToolTip();
                 }
-                ((AnalysisPanel.MyEditorPane)comp).showToolTip(x);
                 return;
             }
         }
