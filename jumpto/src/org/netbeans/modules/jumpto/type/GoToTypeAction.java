@@ -736,7 +736,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             );
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
-            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();  //TODO: fix me
+            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
             nameFieldDocument.addDocumentListener(this);
             caseSensitive.addActionListener(this);
         }
