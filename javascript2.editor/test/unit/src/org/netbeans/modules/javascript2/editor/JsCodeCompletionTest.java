@@ -157,4 +157,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testResolvingThis01() throws Exception {
         checkCompletion("testfiles/completion/resolvingThis.js", "me.^fnc1();", false);
     }
+    
+    public void testIssue217123() throws Exception {
+        checkCompletion("testfiles/completion/issue217123.html", "$(\"#text\").ani^", false);
+    }
 }

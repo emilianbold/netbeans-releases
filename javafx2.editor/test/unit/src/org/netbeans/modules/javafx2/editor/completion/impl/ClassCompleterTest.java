@@ -107,9 +107,9 @@ public class ClassCompleterTest extends FXMLCompletionTestBase {
      * Replaces an existing class name with another, preserving attributes
      */
     public void testReplaceClassTagWithAttributes() throws Exception {
-        performTest("ClassCompleterTest/sample1", 206, "", 
+        performTest("ClassCompleterTest/sample1", 431, "", 
                 "replaceClassTag.pass", 
-                "GridPane", "replaceClassTagWithAttributes2.pass");
+                "AnchorPane", "replaceClassTagWithAttributes2.pass");
     }
 
     /**
@@ -176,6 +176,20 @@ public class ClassCompleterTest extends FXMLCompletionTestBase {
                 CompletionProvider.COMPLETION_QUERY_TYPE,
                 "completeSubclassShallow.pass", 
                 "Rotate", "completeSubclassShallow2.pass");
+    }
+    
+    /**
+     * Attempts to add class Element into the EMPTY content of a bean with
+     * @DefaultProperty-annotated property. In that case, CompletionContext should
+     * initialize for CHILD_ELEMENT completion.
+     * 
+     * @throws Exception 
+     */
+    public void testStartInDefaultProperty() throws Exception {
+        performTest("ClassCompleterTest/sample1", 409, 0, -1, "<", 
+                CompletionProvider.COMPLETION_QUERY_TYPE,
+                "startInDefaultProperty.pass", 
+                "TextField", "startInDefaultProperty2.pass");
     }
     
     @Override

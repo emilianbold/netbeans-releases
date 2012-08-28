@@ -114,7 +114,7 @@ public class FormatVisitor extends NodeVisitor {
                 // so we need to remove it to be handled normally later
                 caseNodes.remove(block);
                 handleCaseBlock(block);
-            } else if (isScript(block)){
+            } else if (isScript(block)) {
                 handleBlockContent(block);
             } else {
                 handleStandardBlock(block);
@@ -649,6 +649,12 @@ public class FormatVisitor extends NodeVisitor {
                         if (previous != null) {
                             appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
                         }
+                    }
+                }
+                for (Node item : literalNode.getArray()) {
+                    FormatToken comma = getNextToken(getStart(item), JsTokenId.OPERATOR_COMMA, finish);
+                    if (comma != null) {
+                        appendTokenAfterLastVirtual(comma, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
                     }
                 }
             }

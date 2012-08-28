@@ -43,8 +43,12 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -131,12 +135,23 @@ public class CompletionUtils {
         
         final String prefix = ctx.findPrefixString(JavaFXEditorUtils.FXML_FX_NAMESPACE, 
                 JavaFXEditorUtils.FXML_FX_PREFIX);
-        final int offset = ctx.getRootAttrInsertOffset();
         final Document doc = ctx.getDoc();
+        Position pos;
         
+        try {
+            pos = NbDocument.createPosition(doc, ctx.getRootAttrInsertOffset(), Position.Bias.Forward);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+            pos = null;
+        }
+        
+        final Position finalPos = pos;
         return new Callable<String>() {
             public String call() throws Exception {
-                doc.insertString(offset, "xmlns:" + prefix + "=\"" +
+                if (finalPos == null) {
+                    return prefix;
+                }
+                doc.insertString(finalPos.getOffset(), "xmlns:" + prefix + "=\"" +
                         JavaFXEditorUtils.FXML_FX_NAMESPACE + "\" ", null);
                 return prefix;
             }

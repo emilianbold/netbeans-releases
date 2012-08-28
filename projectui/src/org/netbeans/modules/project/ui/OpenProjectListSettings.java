@@ -53,6 +53,9 @@ import java.util.List;
 import java.io.File;
 import java.util.prefs.Preferences;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -101,8 +104,24 @@ public class OpenProjectListSettings {
         return getPreferences().get(key, null);
     }    
     
-    protected final List<URL> getURLList(String key) {
-        List<String> strs = getStringList(key);
+    private String getGroupedProperty(String key) {
+        return getPreferences(true).get(key, null);
+    }
+    
+    private String putGroupedProperty(String key, String value, boolean notify) {
+        Preferences prefs = getPreferences(true);
+        String retval = prefs.get(key, null);
+        if (value != null) {
+            prefs.put(key, value);
+        } else {
+            prefs.remove(key);
+        }
+        return retval;
+    }
+    
+    
+    protected final List<URL> getURLList(String key, boolean allowGrouped) {
+        List<String> strs = getStringList(key, allowGrouped);
         List<URL> toRet = new ArrayList<URL>();
         for (String val : strs) {
             try {
@@ -114,8 +133,8 @@ public class OpenProjectListSettings {
         return toRet;
     }
     
-    protected final List<String> getStringList(String key) {
-        Preferences pref = getPreferences();
+    protected final List<String> getStringList(String key, boolean allowGrouped) {
+        Preferences pref = getPreferences(allowGrouped);
         int count = 0;
         String val = pref.get(key + "." + count, null);
         List<String> toRet = new ArrayList<String>();
@@ -127,8 +146,8 @@ public class OpenProjectListSettings {
         return toRet;
     }
     
-    protected final List<ExtIcon> getIconList(String key) {
-        Preferences pref = getPreferences();
+    protected final List<ExtIcon> getIconList(String key, boolean allowGrouped) {
+        Preferences pref = getPreferences(allowGrouped);
         int count = 0;
         byte[] val = pref.getByteArray(key + "." + count, null);
         List<ExtIcon> toRet = new ArrayList<ExtIcon>();
@@ -140,9 +159,9 @@ public class OpenProjectListSettings {
         return toRet;
     }
     
-    protected final void setIconList(String basekey, List<ExtIcon> list) throws IOException {
+    protected final void setIconList(String basekey, List<ExtIcon> list, boolean allowGrouped) throws IOException {
         assert list != null;
-        Preferences pref = getPreferences();
+        Preferences pref = getPreferences(allowGrouped);
         int count = 0;
         String key = basekey + "." + count;
         String val = pref.get(key, null);
@@ -164,9 +183,9 @@ public class OpenProjectListSettings {
     }
     
     
-    protected final void setStringList(String basekey, List<String> list) {
+    protected final void setStringList(String basekey, List<String> list, boolean allowGrouped) {
         assert list != null;
-        Preferences pref = getPreferences();
+        Preferences pref = getPreferences(allowGrouped);
         int count = 0;
         String key = basekey + "." + count;
         String val = pref.get(key, null);
@@ -183,44 +202,55 @@ public class OpenProjectListSettings {
         }
     }
     
-    protected final void setURLList(String basekey, List<URL> list) {
+    protected final void setURLList(String basekey, List<URL> list, boolean allowGrouped) {
         assert list != null;
         List<String> strs = new ArrayList<String>(list.size());
         for (URL url : list) {
             strs.add(url.toExternalForm());
         }
-        setStringList(basekey, strs);
+        setStringList(basekey, strs, allowGrouped);
     }
     
     protected final Preferences getPreferences() {
         return NbPreferences.forModule(OpenProjectListSettings.class);
     }
 
+    protected final Preferences getPreferences(boolean allowGrouped) {
+        if (allowGrouped) {
+            Group act = Group.getActiveGroup();
+            if (act != null) {
+                //TODO replace with NbPreferences.forModule()
+                return act.prefs().node(OpenProjectListSettings.class.getPackage().getName().replace(".", "/"));
+            }   
+        }
+        return NbPreferences.forModule(OpenProjectListSettings.class);
+    }
+
     public List<URL> getOpenProjectsURLs() {
-        return getURLList(OPEN_PROJECTS_URLS);
+        return getURLList(OPEN_PROJECTS_URLS, false);
     }
 
     public void setOpenProjectsURLs( List<URL> list ) {
-        setURLList( OPEN_PROJECTS_URLS, list);
+        setURLList( OPEN_PROJECTS_URLS, list, false);
     }
     public void setOpenProjectsURLsAsStrings(List<String> list) {
-        setStringList(OPEN_PROJECTS_URLS, list);
+        setStringList(OPEN_PROJECTS_URLS, list, false);
     }
 
     public List<String> getOpenProjectsDisplayNames() {
-        return getStringList(OPEN_PROJECTS_DISPLAY_NAMES);
+        return getStringList(OPEN_PROJECTS_DISPLAY_NAMES, false);
     }
 
     public void setOpenProjectsDisplayNames( List<String> list ) {
-        setStringList( OPEN_PROJECTS_DISPLAY_NAMES, list);
+        setStringList( OPEN_PROJECTS_DISPLAY_NAMES, list, false);
     }
     public List<ExtIcon> getOpenProjectsIcons() {
-        return getIconList(OPEN_PROJECTS_ICONS);
+        return getIconList(OPEN_PROJECTS_ICONS, false);
     }
 
     public void setOpenProjectsIcons( List<ExtIcon> list ) {
         try {
-            setIconList(OPEN_PROJECTS_ICONS, list);
+            setIconList(OPEN_PROJECTS_ICONS, list, false);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -254,7 +284,7 @@ public class OpenProjectListSettings {
     }
     
     public String getLastOpenProjectDir() {
-        String result = getProperty( LAST_OPEN_PROJECT_DIR );
+        String result = getGroupedProperty( LAST_OPEN_PROJECT_DIR );
         if (result == null) {
             result = getProjectsFolder(/* #89624 */false).getAbsolutePath();
         }
@@ -262,32 +292,32 @@ public class OpenProjectListSettings {
     }
     
     public void setLastOpenProjectDir( String path ) {
-        putProperty( LAST_OPEN_PROJECT_DIR, path, true  );
+        putGroupedProperty( LAST_OPEN_PROJECT_DIR, path, true );
     }
     
     public List<URL> getRecentProjectsURLs() {
-        return getURLList(RECENT_PROJECTS_URLS);
+        return getURLList(RECENT_PROJECTS_URLS, true);
     }
     
     public List<String> getRecentProjectsDisplayNames() {
-        return getStringList(RECENT_PROJECTS_DISPLAY_NAMES);
+        return getStringList(RECENT_PROJECTS_DISPLAY_NAMES, true);
     }
     
     public List<ExtIcon> getRecentProjectsIcons() {
-        return getIconList(RECENT_PROJECTS_DISPLAY_ICONS);
+        return getIconList(RECENT_PROJECTS_DISPLAY_ICONS, true);
     }
     
     public void setRecentProjectsURLs( List<URL> list ) {
-        setURLList(RECENT_PROJECTS_URLS, list);
+        setURLList(RECENT_PROJECTS_URLS, list, true);
     }
     
     public void setRecentProjectsDisplayNames(List<String> list) {
-        setStringList(RECENT_PROJECTS_DISPLAY_NAMES, list);
+        setStringList(RECENT_PROJECTS_DISPLAY_NAMES, list, true);
     }
     
     public void setRecentProjectsIcons(List<ExtIcon> list) {
         try {
-            setIconList(RECENT_PROJECTS_DISPLAY_ICONS, list);
+            setIconList(RECENT_PROJECTS_DISPLAY_ICONS, list, true);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -338,27 +368,27 @@ public class OpenProjectListSettings {
     }
     
     public List<String> getRecentTemplates() {        
-        return getStringList(RECENT_TEMPLATES);
+        return getStringList(RECENT_TEMPLATES, true);
     }
     
     public void setRecentTemplates( List<String> templateNames ) {
-        setStringList( RECENT_TEMPLATES, templateNames );
+        setStringList( RECENT_TEMPLATES, templateNames, true );
     }
     
     public String getLastSelectedProjectCategory () {
-        return getProperty (PROP_PROJECT_CATEGORY);
+        return getGroupedProperty(PROP_PROJECT_CATEGORY);
     }
     
     public void setLastSelectedProjectCategory (String category) {
-        putProperty(PROP_PROJECT_CATEGORY,category,true);
+        putGroupedProperty(PROP_PROJECT_CATEGORY,category,true);
     }
     
     public String getLastSelectedProjectType () {
-        return getProperty (PROP_PROJECT_TYPE);
+        return getGroupedProperty (PROP_PROJECT_TYPE);
     }
     
     public void setLastSelectedProjectType (String type) {
-        putProperty(PROP_PROJECT_TYPE,type,true);
+        putGroupedProperty(PROP_PROJECT_TYPE,type,true);
     }
 
 }

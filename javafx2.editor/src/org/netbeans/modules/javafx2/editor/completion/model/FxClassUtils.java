@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import com.sun.corba.se.impl.oa.toa.TOA;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -66,7 +67,7 @@ public final class FxClassUtils {
      */
     public static final String NAME_VALUE_OF = "valueOf"; // NOI18N
     
-    private static final String DEFAULT_PROPERTY_TYPE_NAME = "javax.beans.DefaultProperty"; // NO18N
+    private static final String DEFAULT_PROPERTY_TYPE_NAME = "javafx.beans.DefaultProperty"; // NO18N
     private static final String DEFAULT_PROPERTY_VALUE_NAME = "value"; // NO18N
     private static final String FXML_ANNOTATION_TYPE = "javafx.fxml.FXML"; // NOI18N
     
@@ -85,7 +86,8 @@ public final class FxClassUtils {
             Map<? extends ExecutableElement, ? extends AnnotationValue> m =  an.getElementValues();
             for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> en : m.entrySet()) {
                 if (en.getKey().getSimpleName().contentEquals(DEFAULT_PROPERTY_VALUE_NAME)) {
-                    return en.getValue().toString();
+                    Object v = en.getValue().getValue();
+                    return v == null ? null : v.toString();
                 }
             }
         }
@@ -106,7 +108,7 @@ public final class FxClassUtils {
     }
 
     public static ExecutableElement findValueOf(TypeElement te, CompilationInfo ci) {
-        TypeElement stringType = ci.getElements().getTypeElement("java.lang.String"); // NOI18N        
+        TypeElement stringType = ci.getElements().getTypeElement("java.lang.String"); // NOI18N      
          List<ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
         for (ExecutableElement e : methods) {
             if (!e.getModifiers().contains(Modifier.STATIC)) {

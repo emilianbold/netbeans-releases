@@ -103,6 +103,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
+import org.netbeans.lib.profiler.common.event.ProfilingStateAdapter;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
@@ -129,8 +130,7 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service=ProfilingPointsProcessor.class)
 public final class ProfilingPointsManager extends ProfilingPointsProcessor 
                                           implements ChangeListener,
-                                                     PropertyChangeListener, 
-                                                     ProfilingStateListener {
+                                                     PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class ProfilingPointsComparator implements Comparator {
@@ -353,11 +353,51 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
 
     public ProfilingPointsManager() {
         refreshProfilingPointFactories();
+        final ProfilingStateListener listener = new ProfilingStateAdapter() {
+            public void profilingStateChanged(final ProfilingStateEvent profilingStateEvent) {
+                processor().post(new Runnable() {
+                    public void run() {
+                        boolean wasProfilingInProgress = profilingInProgress;
+                        boolean wasProfilingSessionInProgres = profilingSessionInProgress;
+
+                        synchronized (ProfilingPointsManager.this) {
+                            switch (profilingStateEvent.getNewState()) {
+                                case Profiler.PROFILING_INACTIVE:
+                                case Profiler.PROFILING_STOPPED:
+                                    profilingInProgress = false;
+                                    profilingSessionInProgress = false;
+
+                                    break;
+                                case Profiler.PROFILING_STARTED:
+                                case Profiler.PROFILING_IN_TRANSITION:
+                                    profilingInProgress = false;
+                                    profilingSessionInProgress = true;
+
+                                    break;
+                                default:
+                                    profilingInProgress = true;
+                                    profilingSessionInProgress = true;
+                            }
+                        }
+
+                        if ((wasProfilingInProgress != profilingInProgress) || (wasProfilingSessionInProgres != profilingSessionInProgress)) {
+                            GlobalProfilingPointsProcessor.getDefault().notifyProfilingStateChanged();
+                            CommonUtils.runInEventDispatchThread(new Runnable() {
+                                public void run() {
+                                    ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
+                                    ProfilingPointReport.refreshOpenReports();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        };
         processor().post(new Runnable() {
                 public void run() {
                     ProjectUtilities.addOpenProjectsListener(ProfilingPointsManager.this);
                     processOpenedProjectsChanged(); // will subsequently invoke projectOpened on all open projects
-                    Profiler.getDefault().addProfilingStateListener(ProfilingPointsManager.this);
+                    Profiler.getDefault().addProfilingStateListener(listener);
                 }
             });
     }
@@ -537,9 +577,6 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
         });
     }
 
-    public void instrumentationChanged(int i, int i0) {
-    }
-
     public void profilingPointHit(RuntimeProfilingPoint.HitEvent hitEvent) {
         RuntimeProfilingPointMapper mapper = activeCodeProfilingPoints.get(hitEvent.getId());
 
@@ -588,45 +625,6 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
     @Override
     public RuntimeProfilingPoint[] getSupportedProfilingPoints() {
         return points != null ? points : new RuntimeProfilingPoint[0];
-    }
-
-    public void profilingStateChanged(final ProfilingStateEvent profilingStateEvent) {
-        processor().post(new Runnable() {
-            public void run() {
-                boolean wasProfilingInProgress = profilingInProgress;
-                boolean wasProfilingSessionInProgres = profilingSessionInProgress;
-
-                synchronized (ProfilingPointsManager.this) {
-                    switch (profilingStateEvent.getNewState()) {
-                        case Profiler.PROFILING_INACTIVE:
-                        case Profiler.PROFILING_STOPPED:
-                            profilingInProgress = false;
-                            profilingSessionInProgress = false;
-
-                            break;
-                        case Profiler.PROFILING_STARTED:
-                        case Profiler.PROFILING_IN_TRANSITION:
-                            profilingInProgress = false;
-                            profilingSessionInProgress = true;
-
-                            break;
-                        default:
-                            profilingInProgress = true;
-                            profilingSessionInProgress = true;
-                    }
-                }
-
-                if ((wasProfilingInProgress != profilingInProgress) || (wasProfilingSessionInProgres != profilingSessionInProgress)) {
-                    GlobalProfilingPointsProcessor.getDefault().notifyProfilingStateChanged();
-                    CommonUtils.runInEventDispatchThread(new Runnable() {
-                            public void run() {
-                                ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
-                                ProfilingPointReport.refreshOpenReports();
-                            }
-                        });
-                }
-            }
-        });
     }
     
     // Required for JDev implementation
@@ -762,9 +760,6 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
         }
 
         profilingPointsToReset.clear();
-    }
-
-    public void threadsMonitoringChanged() {
     }
 
     public void timeAdjust(final int threadId, final long timeDiff0, final long timeDiff1) {
