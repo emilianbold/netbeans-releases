@@ -39,58 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.debugging.spi;
-
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
+package org.netbeans.modules.web.webkit.debugging.api;
 
 /**
- * Transport of {@link Command}s or {@link Response}s between IDE and WebKit browser.
+ * An exception thrown when the underlying transport is in a state
+ * that doesn't allow execution of the requested command.
+ *
+ * @author Jan Stola
  */
-public interface TransportImplementation {
-
-    // requestChildNodes was introduced in 
-    // http://trac.webkit.org/changeset/93396/trunk/Source/WebCore/inspector/Inspector.json
-    public static final String VERSION_UNKNOWN_BEFORE_requestChildNodes = "version without requestChildNodes";
-    public static final String VERSION_1 = "version 1.0";
-    
-    /**
-     * Activate transport.
-     */
-    boolean attach();
-    
-    /**
-     * Deactivate transport.
-     */
-    boolean detach();
+public class TransportStateException extends IllegalStateException {
 
     /**
-     * Send command to WebKit.
+     * Creates a new {@code TransportStateException} without a message.
+     */
+    public TransportStateException() {
+    }
+
+    /**
+     * Creates a new {@code TransportStateException} with the specified message.
      * 
-     * @throws TransportStateException when the transport is not in a state
-     * that allows execution of the given command.
+     * @param message message with the exception details.
      */
-    void sendCommand(Command command) throws TransportStateException;
-    
-    /**
-     * Register callback for receiving responses from WebKit.
-     */
-    void registerResponseCallback(ResponseCallback callback);
+    public TransportStateException(String message) {
+        super(message);
+    }
 
-    /**
-     * Descriptive name of the established transport. For example URL being debugged.
-     */
-    String getConnectionName();
-    
-    /**
-     * URL being debugged.
-     */
-    URL getConnectionURL();
-    
-    /**
-     * Returns version of the protocol supported on browser side. See constants
-     * above.
-     */
-    String getVersion();
-    
 }

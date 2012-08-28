@@ -44,6 +44,7 @@ package org.netbeans.modules.extbrowser.plugins.chrome;
 import java.net.URL;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
@@ -59,7 +60,9 @@ public class WebKitDebuggingTransport implements TransportImplementation {
     
     @Override
     public void sendCommand(Command command) {
-        assert impl.getBrowserTabDescriptor() != null;
+        if (impl.getBrowserTabDescriptor() == null) {
+            throw new TransportStateException();
+        }
         ExternalBrowserPlugin.getInstance().sendWebKitDebuggerCommand(impl.getBrowserTabDescriptor(), command.getCommand());
     }
 
