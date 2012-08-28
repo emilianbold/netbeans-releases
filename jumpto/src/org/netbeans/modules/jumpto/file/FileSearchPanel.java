@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Action;
+import javax.swing.ButtonModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
@@ -67,6 +68,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
@@ -139,7 +142,10 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         hiddenFilesCheckBox.addActionListener(this);
         hiddenFilesCheckBox.setVisible(false);
         
-        resultList.setCellRenderer( contentProvider.getListCellRenderer( resultList ) );
+        resultList.setCellRenderer( contentProvider.getListCellRenderer(
+                resultList,
+                fileNameTextField.getDocument(),
+                caseSensitiveCheckBox.getModel()));
         contentProvider.setListModel( this, null );
                 
         fileNameTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -589,7 +595,10 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
 
     public static interface ContentProvider {
 
-        public ListCellRenderer getListCellRenderer( JList list );
+        public ListCellRenderer getListCellRenderer(
+                @NonNull JList list,
+                @NonNull Document nameDocument,
+                @NonNull ButtonModel caseSensitive);
 
         public void setListModel( FileSearchPanel panel, String text );
 
