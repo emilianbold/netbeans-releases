@@ -59,6 +59,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
@@ -136,7 +137,10 @@ public class GoToPanel extends javax.swing.JPanel {
         
         // matchesList.setBackground( bgColorBrighter );
         // matchesScrollPane1.setBackground( bgColorBrighter );
-        matchesList.setCellRenderer( contentProvider.getListCellRenderer(matchesList,  nameField.getDocument()));
+        matchesList.setCellRenderer( contentProvider.getListCellRenderer(
+                matchesList,
+                nameField.getDocument(),
+                caseSensitive.getModel()));
         contentProvider.setListModel( this, null );
         
         PatternListener pl = new PatternListener( this );
@@ -576,7 +580,10 @@ public class GoToPanel extends javax.swing.JPanel {
     public static interface ContentProvider {
 
         @NonNull
-        public ListCellRenderer getListCellRenderer( @NonNull JList list, @NonNull Document doc );
+        public ListCellRenderer getListCellRenderer(
+                @NonNull JList list,
+                @NonNull Document doc,
+                @NonNull ButtonModel caseSensitive);
         
         public void setListModel( GoToPanel panel, String text );
         

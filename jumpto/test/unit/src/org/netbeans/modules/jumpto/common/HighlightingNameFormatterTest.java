@@ -59,52 +59,51 @@ public class HighlightingNameFormatterTest {
 
     @Before
     public void before() {
-        cut = HighlightingNameFormatter.createCustomFormatter("[%s]", true);    //NOI18N
+        cut = HighlightingNameFormatter.createCustomFormatter("[%s]");    //NOI18N
     }
 
     @Test
     public void testFormatTypeName_CamelCase() {
         String typeName = "AbstractDummyBarTest";
 
-        assertEquals("[AbstractDummyBarTest]", cut.formatName(typeName, "AbstractDummyBarTest"));
-        assertEquals("[Abstra]ct[D]ummy[B]arTest", cut.formatName(typeName, "AbstraDB"));
-        assertEquals("[A]bstract[Dum]my[B]arTest", cut.formatName(typeName, "ADumB"));
-        assertEquals("[A]bstract[D]ummy[Ba]rTest", cut.formatName(typeName, "ADBa"));
-        assertEquals("[A]bstract[D]ummy[B]ar[Test]", cut.formatName(typeName, "ADBTest"));
-        assertEquals("[Ab]stract[Du]mmy[B]ar[Test]", cut.formatName(typeName, "AbDuBTest"));
+        assertEquals("[AbstractDummyBarTest]", cut.formatName(typeName, "AbstractDummyBarTest", true));
+        assertEquals("[Abstra]ct[D]ummy[B]arTest", cut.formatName(typeName, "AbstraDB", true));
+        assertEquals("[A]bstract[Dum]my[B]arTest", cut.formatName(typeName, "ADumB", true));
+        assertEquals("[A]bstract[D]ummy[Ba]rTest", cut.formatName(typeName, "ADBa", true));
+        assertEquals("[A]bstract[D]ummy[B]ar[Test]", cut.formatName(typeName, "ADBTest", true));
+        assertEquals("[Ab]stract[Du]mmy[B]ar[Test]", cut.formatName(typeName, "AbDuBTest", true));
     }
 
     @Test
     public void testFormatTypeName_NullOrEmpty() {
         String typeName = "AbstractDummyBarTest";
-        assertEquals("AbstractDummyBarTest", cut.formatName(typeName, null));
-        assertEquals("AbstractDummyBarTest", cut.formatName(typeName, ""));
+        assertEquals("AbstractDummyBarTest", cut.formatName(typeName, null, true));
+        assertEquals("AbstractDummyBarTest", cut.formatName(typeName, "", true));
     }
 
     @Test
     public void testFormatTypeName_Wildcard_CaseSensitive() {
         String typeName = "AbstractDummyBarTest";
 
-        assertEquals("[A]bstractDummyBar[Test]", cut.formatName(typeName, "A*Test"));
-        assertEquals("[A]bstractDummy[B]ar[Test]", cut.formatName(typeName, "A*B*Test"));
-        assertEquals("[A]bstractDummy[BarTest]", cut.formatName(typeName, "A*Bar*Test"));
+        assertEquals("[A]bstractDummyBar[Test]", cut.formatName(typeName, "A*Test", true));
+        assertEquals("[A]bstractDummy[B]ar[Test]", cut.formatName(typeName, "A*B*Test", true));
+        assertEquals("[A]bstractDummy[BarTest]", cut.formatName(typeName, "A*Bar*Test", true));
     }
 
     @Test
     public void testFormatTypeName_Wildcard_CaseInSensitive() {
-        cut = HighlightingNameFormatter.createCustomFormatter("[%s]", false);   //NOI18N
         String typeName = "AbstractDummyBarTest";
 
-        assertEquals("[A]bstractDummyBar[Test]", cut.formatName(typeName, "A*Test"));
-        assertEquals("[Ab]stractDummyBar[Test]", cut.formatName(typeName, "A*B*Test"));
-        assertEquals("[A]bstractDummy[BarTest]", cut.formatName(typeName, "A*Bar*Test"));
+        assertEquals("[A]bstractDummyBar[Test]", cut.formatName(typeName, "A*Test", false));
+        assertEquals("[Ab]stractDummyBar[Test]", cut.formatName(typeName, "A*B*Test", false));
+        assertEquals("[A]bstractDummy[BarTest]", cut.formatName(typeName, "A*Bar*Test", false));
     }
 
     @Test
     public void testFormatTypeName_FullFormat() {
-        cut = HighlightingNameFormatter.createColorFormatter(fg, bg, false);
+        cut = HighlightingNameFormatter.createColorFormatter(fg, bg);
         String typeName = "AbstractDummyBarTest";
-        assertEquals("<span style=\"background-color:ffffff; font-weight:bold; color:000000\">A</span>bstract<span style=\"background-color:ffffff; font-weight:bold; color:000000\">D</span>ummy<span style=\"background-color:ffffff; font-weight:bold; color:000000\">B</span>ar<span style=\"background-color:ffffff; font-weight:bold; color:000000\">Test</span>", cut.formatName(typeName, "ADBTest"));
+        assertEquals("<span style=\"background-color:ffffff; font-weight:bold; color:000000\">A</span>bstract<span style=\"background-color:ffffff; font-weight:bold; color:000000\">D</span>ummy<span style=\"background-color:ffffff; font-weight:bold; color:000000\">B</span>ar<span style=\"background-color:ffffff; font-weight:bold; color:000000\">Test</span>", cut.formatName(typeName, "ADBTest", false));
     }
 
 }

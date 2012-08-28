@@ -100,21 +100,19 @@ public class HighlightingNameFormatter {
 
     private static final String COLOR_FORMAT_PATTERN = "<span style=\"background-color:%s; font-weight:bold; color:%s\">%s</span>"; //NOI18N
     private static final String BOLD_FORMAT_PATTERN = "<span style=\"font-weight:bold;\">%s</span>";    //NOI18N
-    private final boolean caseSensitive;
     private String formatPattern;
 
     private HighlightingNameFormatter(
-            @NonNull final String pattern,
-            final boolean caseSensitive) {
+            @NonNull final String pattern) {
         Parameters.notNull("pattern", pattern); //NOI18N
         this.formatPattern = pattern;
-        this.caseSensitive = caseSensitive;
     }
 
     @NonNull
     public String formatName(
             @NonNull final String name,
-            @NonNull final String textToFind) {
+            @NonNull final String textToFind,
+            final boolean caseSensitive) {
         if (null == textToFind || "".equals(textToFind)) {
             return name;
         }
@@ -178,27 +176,22 @@ public class HighlightingNameFormatter {
     @NonNull
     public static HighlightingNameFormatter createColorFormatter(
             @NonNull final Color bgColor,
-            @NonNull final Color fgColor,
-            final boolean caseSensitive) {
+            @NonNull final Color fgColor) {
         final String bgColorHighlight = Integer.toHexString(bgColor.getRGB()).substring(2);
         final String fgColorHighlight = Integer.toHexString(fgColor.getRGB()).substring(2);
         return new HighlightingNameFormatter(
-            String.format(COLOR_FORMAT_PATTERN, bgColorHighlight, fgColorHighlight, "%s"),  //NOI18N
-            caseSensitive);
+            String.format(COLOR_FORMAT_PATTERN, bgColorHighlight, fgColorHighlight, "%s"));  //NOI18N
     }
 
     @NonNull
-    public static HighlightingNameFormatter createBoldFormatter(
-            final boolean caseSensitive) {
+    public static HighlightingNameFormatter createBoldFormatter() {
         return new HighlightingNameFormatter(
-            String.format(BOLD_FORMAT_PATTERN, "%s"),  //NOI18N
-            caseSensitive);
+            String.format(BOLD_FORMAT_PATTERN, "%s"));  //NOI18N
     }
 
     @NonNull
     /*test*/ static HighlightingNameFormatter createCustomFormatter(
-            @NonNull final String format,
-            final boolean caseSensitive) {
-        return new HighlightingNameFormatter(format, caseSensitive);
+            @NonNull final String format) {
+        return new HighlightingNameFormatter(format);
     }
 }

@@ -76,6 +76,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -111,6 +112,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -229,11 +231,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     @Override
     public ListCellRenderer getListCellRenderer(
             @NonNull final JList list,
-            @NonNull final Document nameFieldDocument) {
-        Renderer renderer = new Renderer(list);
-        //notify the render of the changed search text
-        nameFieldDocument.addDocumentListener(renderer);
-        return renderer;
+            @NonNull final Document nameFieldDocument,
+            @NonNull final ButtonModel caseSensitive) {
+        Parameters.notNull("list", list);   //NOI18N
+        Parameters.notNull("nameFieldDocument", nameFieldDocument); //NOI18N
+        Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
+        return new Renderer(list, nameFieldDocument, caseSensitive);
     }
     
     
@@ -635,7 +638,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener {
+    private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener, ActionListener {
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -652,12 +655,17 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         private JList jList;
         private String searchText = "";
+        private boolean caseSensitive;
         private final HighlightingNameFormatter typeNameFormatter;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        public Renderer( JList list ) {
+        public Renderer(
+                @NonNull final JList list,
+                @NonNull final Document nameFieldDocument,
+                @NonNull final ButtonModel caseSensitive) {
             
             jList = list;
+            this.caseSensitive = caseSensitive.isSelected();
             
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
@@ -728,7 +736,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             );
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
-            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter(false);  //TODO: fix me
+            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            nameFieldDocument.addDocumentListener(this);
+            caseSensitive.addActionListener(this);
         }
         
         public @Override Component getListCellRendererComponent( JList list,
@@ -768,7 +778,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 TypeDescriptor td = (TypeDescriptor)value;                
                 jlName.setIcon(td.getIcon());
                 //highlight matching search text patterns in type
-                final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText);
+                final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText, caseSensitive);
                 jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());
@@ -813,6 +823,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             } catch (BadLocationException ex) {
                 searchText = "";    //NOI18N
             }
+        }
+
+        @Override
+        public void actionPerformed(@NonNull final ActionEvent e) {
+            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
         }
 
      } // Renderer
