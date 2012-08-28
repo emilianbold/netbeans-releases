@@ -122,7 +122,7 @@ public class WebKitDebuggingTransport implements TransportImplementation {
 
     @Override
     public String getConnectionName() {
-        return browserImpl.getEngine().getLocation();
+        return browserImpl.getURL();
     }
     
     @Override
