@@ -517,4 +517,59 @@ made subject to such option by the copyright holder.
         </folder>
         
     </folder>
+    
+    <folder name="Debugger">
+        <folder name="BreakpointsView">
+            <folder name="Toolbar">
+                <file name="org-netbeans-modules-debugger-ui-models-BreakpointsViewButtons-createNewBreakpointActionButton.instance">
+                    <!--org.netbeans.modules.debugger.jpda.actions.ContinueActionProvider-->
+                    <!--attr name="serviceName" stringvalue="org.netbeans.modules.debugger.jpda.actions.ContinueActionProvider"/-->
+                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
+                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.debugger.ui.models.BreakpointsViewButtons.createNewBreakpointActionButton" name="instanceCreate"/>
+                    <attr intvalue="100" name="position"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-models-BreakpointsViewButtons-createGroupSelectionButton.instance">
+                    <!--org.netbeans.modules.debugger.jpda.actions.ContinueActionProvider-->
+                    <!--attr name="serviceName" stringvalue="org.netbeans.modules.debugger.jpda.actions.ContinueActionProvider"/-->
+                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
+                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.debugger.ui.models.BreakpointsViewButtons.createGroupSelectionButton" name="instanceCreate"/>
+                    <attr intvalue="200" name="position"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="LocalsView">
+            <folder name="Toolbar">
+                <file name="org-netbeans-modules-debugger-ui-views-VariablesViewButtons-createShowResultButton.instance">
+                    <attr name="serviceName" stringvalue="org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createShowResultButton()"/>
+                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
+                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createShowResultButton" name="instanceCreate"/>
+                    <attr intvalue="100" name="position"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-views-VariablesViewButtons-createShowWatchesButton.instance">
+                    <attr name="serviceName" stringvalue="org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createShowWatchesButton()"/>
+                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
+                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createShowWatchesButton" name="instanceCreate"/>
+                    <attr intvalue="200" name="position"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-views-VariablesViewButtons-createNewWatchButton.instance">
+                    <attr name="serviceName" stringvalue="org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createNewWatchButton()"/>
+                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
+                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.debugger.ui.views.VariablesViewButtons.createNewWatchButton" name="instanceCreate"/>
+                    <attr intvalue="300" name="position"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>
