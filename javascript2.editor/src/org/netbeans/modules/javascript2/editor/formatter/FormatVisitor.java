@@ -690,6 +690,10 @@ public class FormatVisitor extends NodeVisitor {
                 if (formatToken != null) {
                     appendTokenAfterLastVirtual(formatToken,
                             FormatToken.forFormat(FormatToken.Kind.AFTER_CHAIN_CALL_DOT));
+                    formatToken = formatToken.previous();
+                    if (formatToken != null) {
+                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_CHAIN_CALL_DOT));
+                    }
                 }
             }
         }
