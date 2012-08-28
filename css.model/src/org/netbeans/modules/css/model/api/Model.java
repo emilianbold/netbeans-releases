@@ -101,90 +101,81 @@ public final class Model {
 
     //property names:
     public static final String CHANGES_APPLIED_TO_DOCUMENT = "changes.applied"; //NOI18N
-    
-    
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
-
     private final Mutex MODEL_MUTEX = new Mutex();
-
     private Lookup MODEL_LOOKUP;
     private ElementFactory ELEMENT_FACTORY;
-    
-    private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE
-            = new WeakHashMap<CssParserResult, Reference<Model>>();
-    
+    private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE = new WeakHashMap<CssParserResult, Reference<Model>>();
+
     /**
      * Gets the Model instance for given CssParserResult.
-     * 
+     *
      * This is the basic way how clients should obtain the Css Source Model.
-     * 
+     *
      * The returned model instance can be cached to the given parsing result.
-     * 
-     * <b>This method should be called under the parsing lock as the parser 
+     *
+     * <b>This method should be called under the parsing lock as the parser
      * result task should not escape the UserTask</b>
-     * 
+     *
      * @param parserResult
-     * 
+     *
      * @return an instance of the Css Source Model
      */
     public static synchronized Model getModel(CssParserResult parserResult) {
         //try cache first
         Reference<Model> cached_ref = PR_MODEL_CACHE.get(parserResult);
-        if(cached_ref != null) {
+        if (cached_ref != null) {
             Model cached = cached_ref.get();
-            if(cached != null) {
+            if (cached != null) {
                 return cached;
             }
         }
-        
+
         //recreate
         Model model = new Model(parserResult);
-        
+
         //cache
         PR_MODEL_CACHE.put(parserResult, new WeakReference<Model>(model));
-        
+
         return model;
     }
-    
-    
+
     /**
      * Creates a new model with empty stylesheet
      */
     public Model() {
         MODEL_LOOKUP = Lookups.fixed(
-                getElementFactory().createStyleSheet()
-                );
+                getElementFactory().createStyleSheet());
     }
 
     public Model(CssParserResult parserResult) {
         Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
-        
+
         Collection<Object> lookupContent = new ArrayList<Object>();
-        if(styleSheetNode == null) {
+        if (styleSheetNode == null) {
             //empty file
             lookupContent.add(getElementFactory().createStyleSheet());
         } else {
             lookupContent.add(styleSheetNode);
             lookupContent.add((StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode));
         }
-        
+
         Snapshot snapshot = parserResult.getSnapshot();
         Source source = snapshot.getSource();
         FileObject file = source.getFileObject();
         Document doc = source.getDocument(true);
-        
+
         lookupContent.add(parserResult);
         lookupContent.add(snapshot);
         lookupContent.add(snapshot.getText());
-        if(file != null) {
+        if (file != null) {
             lookupContent.add(file);
         }
-        if(doc != null) {
+        if (doc != null) {
             lookupContent.add(doc);
         }
-        
+
         MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
     }
 
@@ -196,7 +187,7 @@ public final class Model {
      */
     public Model(CharSequence source, Node styleSheetNode) {
         StyleSheet styleSheet = (StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode);
-        
+
         MODEL_LOOKUP = Lookups.fixed(
                 source,
                 styleSheetNode,
@@ -207,7 +198,7 @@ public final class Model {
     public Lookup getLookup() {
         return MODEL_LOOKUP;
     }
-    
+
     /**
      * Any client wanting to access the model for reading should do it via
      * posting its ModelTask to this method. Any model access outside may cause
@@ -217,7 +208,6 @@ public final class Model {
      */
     public void runReadTask(final ModelTask runnable) {
         MODEL_MUTEX.readAccess(new Runnable() {
-
             @Override
             public void run() {
                 runnable.run(Model.this.getStyleSheet());
@@ -235,15 +225,12 @@ public final class Model {
      */
     public void runWriteTask(final ModelTask runnable) {
         MODEL_MUTEX.writeAccess(new Runnable() {
-
             @Override
             public void run() {
                 runnable.run(Model.this.getStyleSheet());
             }
         });
     }
-
-   
 
     public CharSequence getOriginalSource() {
         return getLookup().lookup(CharSequence.class);
@@ -267,8 +254,6 @@ public final class Model {
         return b;
     }
 
-    
-
     public Difference[] getModelSourceDiff() throws IOException {
         DiffProvider diffProvider = Lookup.getDefault().lookup(DiffProvider.class);
 
@@ -281,12 +266,12 @@ public final class Model {
 
     /**
      * Applies the changes done to the model to the original code source.
-     * 
+     *
      * This method will throw an exception if the model instance is not created
      * from a CssParserResult based on a document.
      *
-     * Basically it applies all the changes obtained from {@link #getModelSourceDiff()}
-     * to to given document.
+     * Basically it applies all the changes obtained from
+     * {@link #getModelSourceDiff()} to to given document.
      *
      * <b> It is up to the client to ensure: 1) it is the document upon which
      * source the model was build 2) the document has not changed since the
@@ -295,111 +280,85 @@ public final class Model {
      */
     public void applyChanges() throws IOException, BadLocationException {
         Document doc = getLookup().lookup(Document.class);
-        if(doc == null) {
+        if (doc == null) {
             throw new IOException("Not document based model instance!"); //NOI18N
         }
-        
+
         Snapshot snapshot = getLookup().lookup(Snapshot.class);
-        applyChanges(doc, new SnapshotOffsetConvertor(snapshot));
-        
+        applyChanges_AtomicLock(doc, new SnapshotOffsetConvertor(snapshot));
+
         support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
     }
-    
-    
-    /**
-     * Applies the changes done to the model to a document instance.
-     *
-     * Basically it applies all the changes obtained from {@link #getModelSourceDiff()}
-     * to to given document.
-     *
-     * <b> It is up to the client to ensure: 1) it is the document upon which
-     * source the model was build 2) the document has not changed since the
-     * model creation. 3) the method is called under document atomic lock </b>
-     *
-     */
-    public void applyChanges(final Document document) throws IOException, BadLocationException {
-        //workaround:
-        if(document instanceof BaseDocument) {
-            
-            BaseDocument bdoc = (BaseDocument)document;
-            if(!bdoc.isAtomicLock()) {
-                LOGGER.log(Level.FINE, "Called w/o document atomic lock!", new IllegalStateException());
-            }
-            
-            final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
-            final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
-            
-            bdoc.runAtomicAsUser(new Runnable() {
 
-                @Override
-                public void run() {
-                    try {
-                        applyChanges(document, DIRECT_OFFSET_CONVERTOR);
-                    } catch (IOException ex) {
-                        io_exc_ref.set(ex);
-                    } catch (BadLocationException ex) {
-                        ble_exc_ref.set(ex);
-                    }
-                }
-                
-            });
-            if(io_exc_ref.get() != null) {
-                throw io_exc_ref.get();
-            }
-            if(ble_exc_ref.get() != null) {
-                throw ble_exc_ref.get();
-            }
-            
-        } else {
+    private void applyChanges_AtomicLock(final Document document, final OffsetConvertor convertor) throws IOException, BadLocationException {
+        BaseDocument bdoc = (BaseDocument) document;
+        if (!bdoc.isAtomicLock()) {
+            LOGGER.log(Level.FINE, "Called w/o document atomic lock!", new IllegalStateException());
         }
+
+        final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
+        final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
+
+        bdoc.runAtomicAsUser(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    applyChanges(document, convertor);
+                } catch (IOException ex) {
+                    io_exc_ref.set(ex);
+                } catch (BadLocationException ex) {
+                    ble_exc_ref.set(ex);
+                }
+            }
+        });
+        if (io_exc_ref.get() != null) {
+            throw io_exc_ref.get();
+        }
+        if (ble_exc_ref.get() != null) {
+            throw ble_exc_ref.get();
+        }
+
     }
-    
-    
 
     /**
      * Returns an instance of {@link ElementFactory}.
      */
     public synchronized ElementFactory getElementFactory() {
-        if(ELEMENT_FACTORY == null) {
+        if (ELEMENT_FACTORY == null) {
             ELEMENT_FACTORY = getElementFactoryImpl(this);
         }
         return ELEMENT_FACTORY;
     }
 
-    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
-    
+
     /**
      * Allows clients to read/write access the css source model
      */
     public static interface ModelTask {
 
         /**
-         * This method is called within the model lock when one 
-         * calls Model.runRead/WriteTask
-         * 
-         * @param styleSheet the stylesheet object representing
-         * the model source. May be used for reading or modifying 
-         * the source.
+         * This method is called within the model lock when one calls
+         * Model.runRead/WriteTask
+         *
+         * @param styleSheet the stylesheet object representing the model
+         * source. May be used for reading or modifying the source.
          */
         public void run(StyleSheet styleSheet);
-        
     }
-    
+
     // ---------------------- private -------------------------
-    
-    //for tests only
     StyleSheet getStyleSheet() {
         checkModelAccess();
         return getLookup().lookup(StyleSheet.class);
     }
-    
+
     private void getElementSource(Element e, StringBuilder b) {
         if (e instanceof PlainElement) {
             b.append(((PlainElement) e).getContent());
@@ -411,7 +370,7 @@ public final class Model {
             }
         }
     }
-    
+
     private void checkModelAccess() {
         if (ModelAccess.checkModelAccess) {
             if (!(MODEL_MUTEX.isReadAccess() || MODEL_MUTEX.isWriteAccess())) {
@@ -420,7 +379,6 @@ public final class Model {
         }
     }
 
-    
     private void applyChanges(Document document, OffsetConvertor convertor) throws IOException, BadLocationException {
         int sourceDelta = 0;
         for (Difference d : getModelSourceDiff()) {
@@ -436,15 +394,15 @@ public final class Model {
                     //at the text end which doesn't exist.
                     //
                     //caused by a bug at HuntDiff:284-298
-                    
+
                     String first = d.getFirstText();
                     String second = d.getSecondText();
-                    
-                    if(first.endsWith("\n") && second.endsWith("\n")) {
+
+                    if (first.endsWith("\n") && second.endsWith("\n")) {
                         first = first.substring(0, first.length() - 1);
                         second = second.substring(0, second.length() - 1);
                     }
-                    
+
                     int len = first.length();
 
                     document.remove(sourceDelta + from, len);
@@ -469,44 +427,57 @@ public final class Model {
             }
 
         }
-        
+
         FileObject file = getLookup().lookup(FileObject.class);
         String filename = file == null ? "???" : file.getNameExt();
         LOGGER.log(Level.INFO, "Changes applied to document for {0}", filename);
-        
+
         saveIfNotOpenInEditor(document);
     }
 
     //>>> TEMPORARY HACK - TO BE REMOVED FROM THE MODULE !!! 
-    private void saveIfNotOpenInEditor(Document document) throws IOException {
+    private void saveIfNotOpenInEditor(final Document document) throws IOException {
         DataObject dataObject = getDataObject(document);
         if (dataObject == null) {
-            LOGGER.log(Level.FINE, "Cannot find DataObject for document " + document );
+            LOGGER.log(Level.FINE, "Cannot find DataObject for document " + document);
             return;
         }
-        LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
         FileObject file = getLookup().lookup(FileObject.class);
-        String filename = file == null ? "???" : file.getNameExt();
-        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-        if (ec!=null && ec.getOpenedPanes() == null) {
-            //file not open in any editor
-            SaveCookie save = dataObject.getLookup().lookup(SaveCookie.class);
-            if (save!=null) {
-                LOGGER.log(Level.INFO, "Changes saved to file {0}", filename);
-                save.save();
+        final String filename = file == null ? "???" : file.getNameExt();
+        final EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+        final SaveCookie save = dataObject.getLookup().lookup(SaveCookie.class);
+        
+        Mutex.EVENT.readAccess(new Runnable() {
+
+            @Override
+            public void run() {
+                //XXX I/O in EDT, but this will be removed anyway...
+                LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+                if (ec != null && ec.getOpenedPanes() == null) {
+                    //file not open in any editor
+                    if (save != null) {
+                        LOGGER.log(Level.INFO, "Changes saved to file {0}", filename);
+                        try {
+                            save.save();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    liveUpdater.update(document);
+                } else {
+                    if (!ec.getOpenedPanes()[0].equals(EditorRegistry.lastFocusedComponent())) {
+                        liveUpdater.update(document);
+                    }
+                }
             }
-            liveUpdater.update(document);
-        } else {
-            if (!ec.getOpenedPanes()[0].equals(EditorRegistry.lastFocusedComponent())) {
-                liveUpdater.update(document);
-            }
-        }
+            
+        });
     }
-    
+
     private static DataObject getDataObject(Document doc) {
         Object sdp = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
         if (sdp instanceof DataObject) {
-            return (DataObject)sdp;
+            return (DataObject) sdp;
         }
         return null;
     }
@@ -519,26 +490,22 @@ public final class Model {
                 .append(getLookup().lookup(FileObject.class))
                 .toString();
     }
-    
+
     private static ElementFactoryImpl getElementFactoryImpl(Model model) {
         return new ElementFactoryImpl(model);
     }
 
     private static interface OffsetConvertor {
-        
-        public int getOriginalOffset(int documentOffset);
-        
-    }
-    
-    private static final OffsetConvertor DIRECT_OFFSET_CONVERTOR = new OffsetConvertor() {
 
+        public int getOriginalOffset(int documentOffset);
+    }
+    private static final OffsetConvertor DIRECT_OFFSET_CONVERTOR = new OffsetConvertor() {
         @Override
         public int getOriginalOffset(int documentOffset) {
             return documentOffset;
         }
-        
     };
-    
+
     private static class SnapshotOffsetConvertor implements OffsetConvertor {
 
         private Snapshot snapshot;
@@ -546,12 +513,10 @@ public final class Model {
         public SnapshotOffsetConvertor(Snapshot snapshot) {
             this.snapshot = snapshot;
         }
-        
+
         @Override
         public int getOriginalOffset(int embeddedOffset) {
             return snapshot.getOriginalOffset(embeddedOffset);
         }
-        
     }
-    
 }

@@ -66,6 +66,7 @@ public class CssClassesVisitor implements ElementVisitor {
     private static final String CLASS_ATTR_NAME = "class"; //NOI18N
     private final HtmlRuleContext context;
     private final Collection<FileObject> referredFiles;
+    private final Collection<FileObject> allStylesheets;
     private final Map<FileObject, Collection<String>> classes;
     private final Map<String, Collection<FileObject>> classes2files;
     private final Rule rule;
@@ -79,6 +80,7 @@ public class CssClassesVisitor implements ElementVisitor {
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
         classes = context.getCssIndex().findAllClassDeclarations();
         classes2files = createReversedMap(classes);
+        allStylesheets = context.getCssIndex().getAllIndexedFiles();
     }
 
     private static Map<String, Collection<FileObject>> createReversedMap(Map<FileObject, Collection<String>> file2elements) {
@@ -105,11 +107,11 @@ public class CssClassesVisitor implements ElementVisitor {
                 return LexerUtils.equals(CLASS_ATTR_NAME, attribute.name(), true, true);
             }
         })) {
-            processElements(id, CssElementType.CLASS, classes2files);
+            processElements(id, CssElementType.CLASS);
         }
     }
 
-    private void processElements(Attribute attribute, CssElementType elementType, Map<String, Collection<FileObject>> elements2files) {
+    private void processElements(Attribute attribute, CssElementType elementType) {
         CharSequence value = attribute.unquotedValue();
         if (value == null) {
             return;
@@ -127,12 +129,12 @@ public class CssClassesVisitor implements ElementVisitor {
             }
 
             //all files containing the id declaration
-            Collection<FileObject> filesWithTheId = elements2files.get(token);
+            Collection<FileObject> filesWithTheClass = classes2files.get(token);
 
             //all referred files with the id declaration
             Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
-            if (filesWithTheId != null) {
-                referredFilesWithTheId.addAll(filesWithTheId);
+            if (filesWithTheClass != null) {
+                referredFilesWithTheId.addAll(filesWithTheClass);
                 referredFilesWithTheId.retainAll(referredFiles);
             }
 
@@ -142,7 +144,7 @@ public class CssClassesVisitor implements ElementVisitor {
                         NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssClass", token),
                         context,
                         getAttributeValueOffsetRange(attribute, context),
-                        filesWithTheId));
+                        new HintContext(token)));
             }
         }
 
@@ -153,5 +155,35 @@ public class CssClassesVisitor implements ElementVisitor {
         int from = attr.valueOffset() + (quoted ? 1 : 0);
         int to = from + attr.unquotedValue().length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.getSnapshot());
+    }
+    
+    public class HintContext {
+        
+        private final String className;
+
+        public HintContext(String className) {
+            this.className = className;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public Collection<FileObject> getAllStylesheets() {
+            return allStylesheets;
+        }
+        
+        public Collection<FileObject> getReferredFiles() {
+            return referredFiles;
+        }
+
+        public Map<FileObject, Collection<String>> getClasses() {
+            return classes;
+        }
+
+        public Map<String, Collection<FileObject>> getClasses2files() {
+            return classes2files;
+        }
+        
     }
 }

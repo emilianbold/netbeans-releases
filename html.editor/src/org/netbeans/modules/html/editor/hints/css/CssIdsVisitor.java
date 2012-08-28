@@ -134,11 +134,11 @@ public class CssIdsVisitor implements ElementVisitor {
 
         if (referredFilesWithTheId.isEmpty()) {
             //unknown id
-            hints.add(new MissingCssElement(rule,
-                    NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssId"),
-                    context,
-                    getAttributeValueOffsetRange(attribute, context),
-                    filesWithTheId));
+//            hints.add(new MissingCssElement(rule,
+//                    NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssId"),
+//                    context,
+//                    getAttributeValueOffsetRange(attribute, context),
+//                    filesWithTheId));
         }
     }
 

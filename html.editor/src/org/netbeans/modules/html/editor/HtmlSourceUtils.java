@@ -85,16 +85,16 @@ public class HtmlSourceUtils {
      * @param file 
      */
     public static void forceReindex(FileObject file) {
-        FileObject parent = file.getParent();
-        
-        URL fileURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
-        URL parentURL = URLMapper.findURL(parent, URLMapper.EXTERNAL);
-        
-        IndexingManager.getDefault().refreshIndex(
-                parentURL,
-                Collections.<URL>singleton(fileURL),
-                true,
-                true);
+//        FileObject parent = file.getParent();
+//        
+//        URL fileURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
+//        URL parentURL = URLMapper.findURL(parent, URLMapper.EXTERNAL);
+//        
+//        IndexingManager.getDefault().refreshIndex(
+//                parentURL,
+//                Collections.<URL>singleton(fileURL),
+//                true,
+//                true);
     }
     
     /**
