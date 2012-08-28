@@ -187,6 +187,10 @@ public final class CoreBridgeImpl extends CoreBridge {
         // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
         PropertyEditorManager.registerEditor (Integer.TYPE, org.netbeans.beaninfo.editors.IntEditor.class);
         PropertyEditorManager.registerEditor (Boolean.TYPE, org.netbeans.beaninfo.editors.BoolEditor.class);
+        
+        // install java.net.ProxySelector
+        NbProxySelector.register();
+        
         editorsRegistered = true;
     }
 
