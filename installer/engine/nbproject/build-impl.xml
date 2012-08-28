@@ -399,6 +399,8 @@ is divided into following sections:
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="**" name="testincludes"/>
             <attribute default="" name="testmethods"/>
+            <attribute default="&lt;nothing&gt;" name="binaryincludes"/>
+            <attribute default="" name="binarytestincludes"/>
             <element name="customize" optional="true"/>
             <sequential>
                 <property name="junit.forkmode" value="perTest"/>
@@ -406,6 +408,9 @@ is divided into following sections:
                     <batchtest todir="${build.test.results.dir}">
                         <fileset dir="${test.src.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
+                        </fileset>
+                        <fileset dir="${build.test.classes.dir}" excludes="@{excludes},${excludes}" includes="@{binaryincludes}">
+                            <filename name="@{binarytestincludes}"/>
                         </fileset>
                     </batchtest>
                     <syspropertyset>
