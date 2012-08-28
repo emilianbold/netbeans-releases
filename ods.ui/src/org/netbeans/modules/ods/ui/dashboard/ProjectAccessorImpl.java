@@ -65,6 +65,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.ods.ui.dashboard.Bundle.*;
+import org.netbeans.modules.ods.ui.utils.Utils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.Exceptions;
@@ -88,9 +89,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
         try {
              return Utilities.getMyProjects(uiServer, force);
         } catch (ODSException ex) {
-            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(
-                    ex instanceof ODSException.ODSCanceledException ? Level.FINE : Level.WARNING,
-                    uiServer.getUrl().toString(), ex);
+            Utils.logException(ex, false);
             return null;
         }
     }
@@ -258,9 +257,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
                     try {
                         uiServer.getServer().refresh(projectHandle.getTeamProject());
                     } catch (ODSException ex) {
-                        Logger.getLogger(ProjectAccessorImpl.class.getName()).log(
-                                ex instanceof ODSException.ODSCanceledException ? Level.FINE : Level.WARNING,
-                                projectHandle.getId(), ex);
+                        Utils.logException(ex, false);
                     }
                 }
             });

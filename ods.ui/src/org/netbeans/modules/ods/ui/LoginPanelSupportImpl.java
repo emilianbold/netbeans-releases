@@ -52,6 +52,7 @@ import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.ods.ui.Bundle.*;
+import org.netbeans.modules.ods.ui.utils.Utils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -86,16 +87,15 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
                             : null);
                     loginPanelCallback.successful();
                 } catch (final ODSException ex) {
-                    Logger.getLogger(LoginPanelSupportImpl.class.getName()).log(Level.INFO, null, ex);
+                    Utils.logException(ex, false);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            String errorMessage = ex.getMessage();
-                            if (errorMessage==null || "".equals(errorMessage.trim())) {
-                                Logger.getLogger(LoginPanelSupportImpl.class.getName()).log(Level.INFO, errorMessage, ex);
+                            String errorMessage = Utils.parseKnownMessage(ex);
+                            if (errorMessage == null) {
                                 errorMessage = LBL_AuthenticationFailed();
                             }
-                            loginPanelCallback.showError(LBL_AuthenticationFailed(), errorMessage);
+                            loginPanelCallback.showError(errorMessage, ex.getMessage());
                         }
                     });
                 } finally {

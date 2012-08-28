@@ -46,17 +46,23 @@ import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
-import org.netbeans.modules.ods.ui.project.activity.TaskActivityDisplayer;
+import org.netbeans.modules.ods.client.api.ODSException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import static org.netbeans.modules.ods.ui.utils.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -127,6 +133,59 @@ public class Utils {
                 openBrowser(url);
             }
         };
+    }
+
+    @NbBundle.Messages({
+        "MSG_NoRouteToHost=No route to host",
+        "MSG_UnreachableNetwork=Network is unreachable",
+        "MSG_BadCredentials=Wrong username or password"
+    })
+    public static String parseKnownMessage (ODSException ex) {
+        String knownMessage = null;
+        String msg = ex.getMessage();
+        if (msg != null) {
+            msg = msg.toLowerCase();
+            if (msg.contains("no route to host")) { //NOI18N
+                knownMessage = Bundle.MSG_NoRouteToHost();
+            } else if (msg.contains("bad credentials")) { //NOI18N
+                knownMessage = Bundle.MSG_BadCredentials();
+            } else if (msg.contains("network is unreachable")) { //NOI18N
+                knownMessage = Bundle.MSG_UnreachableNetwork();
+            }
+        }
+        return knownMessage;
+    }
+
+    public static void logException (ODSException ex, boolean notifyInUI) {
+        if (ex instanceof ODSException.ODSCanceledException) {
+            LOG.log(Level.FINE, null, ex);
+        } else {
+            LOG.log(Level.INFO, null, ex);
+            if (notifyInUI) {
+                String msg = parseKnownMessage(ex);
+                msg = msg == null ? "" : msg + "\n\n";
+                msg += ex.getLocalizedMessage();
+                annotate(msg);
+            }
+        }
+    }
+
+    @Messages({
+        "MSG_Error=Following error occurred:",
+        "CTL_CommandReport_OK=OK",
+        "MSG_CommandFailed_Title=ODS Command Failed"
+    })
+    private static void annotate (String msg) {
+        ErrorReport report = new ErrorReport(MSG_Error(), msg);
+        JButton ok = new JButton(CTL_CommandReport_OK());
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                report, 
+                MSG_CommandFailed_Title(), 
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object [] { ok },
+                ok);
+        DialogDisplayer.getDefault().notify(descriptor);        
     }
 
     public static class Settings {
