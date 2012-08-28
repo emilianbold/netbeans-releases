@@ -67,6 +67,7 @@ public class LiveHTMLMultiViewElement extends AnalysisPanel implements MultiView
         if (fileObject != null) {
             setSourceUrl(fileObject.toURL(), p);
         }
+        hideComboBox();
     }
 
     @Override
