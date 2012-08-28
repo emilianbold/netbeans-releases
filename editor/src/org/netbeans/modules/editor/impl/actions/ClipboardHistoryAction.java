@@ -48,7 +48,9 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.modules.editor.impl.actions.clipboardhistory.CompletionLayoutPopup;
 
 @EditorActionRegistration(
-        name = "clipboard-history")
+        name = "clipboard-history",
+        menuPath = "Edit",
+        menuPosition = 1350)
 public final class ClipboardHistoryAction extends AbstractEditorAction {
 
     private static final long serialVersionUID = 1L;

@@ -49,6 +49,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,6 +60,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -68,7 +71,13 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
@@ -78,6 +87,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -112,8 +122,14 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
 
     @Override
-    public ListCellRenderer getListCellRenderer(JList list) {
-        return new Renderer( list );        
+    public ListCellRenderer getListCellRenderer(
+            @NonNull final JList list,
+            @NonNull final Document nameDocument,
+            @NonNull final ButtonModel caseSensitive) {
+        Parameters.notNull("list", list);   //NOI18N
+        Parameters.notNull("nameDocument", nameDocument);   //NOI18N
+        Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
+        return new Renderer(list, nameDocument, caseSensitive);
     }
 
     @Override
@@ -263,7 +279,9 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 	}
     }
     
-    private static class Renderer extends EntitiesListCellRenderer {
+    private static class Renderer extends EntitiesListCellRenderer implements ActionListener, DocumentListener {
+
+        private final HighlightingNameFormatter symbolNameFormatter;
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -279,10 +297,16 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private Color fgSelectionColor;
         
         private JList jList;
+        private String textToFind = "";
+        private boolean caseSensitive;
         
-        public Renderer( JList list ) {
+        public Renderer(
+                @NonNull final JList list,
+                @NonNull final Document nameDocument,
+                @NonNull final ButtonModel caseSensitive) {
             
             jList = list;
+            this.caseSensitive = caseSensitive.isSelected();
             
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
@@ -350,7 +374,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                                     Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
                             );
             bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();        
+            fgSelectionColor = list.getSelectionForeground();
+            symbolNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            nameDocument.addDocumentListener(this);
+            caseSensitive.addActionListener(this);
         }
         
         public Component getListCellRendererComponent( JList list,
@@ -388,8 +415,12 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             if ( value instanceof SymbolDescriptor ) {
                 long time = System.currentTimeMillis();
                 SymbolDescriptor td = (SymbolDescriptor)value;                
-                jlName.setIcon(td.getIcon());                
-                jlName.setText(td.getSymbolName());
+                jlName.setIcon(td.getIcon());
+                final String formattedTypeName = symbolNameFormatter.formatName(
+                        td.getSymbolName(),
+                        textToFind,
+                        caseSensitive);
+                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
                 jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
@@ -417,6 +448,30 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            try {
+                textToFind = e.getDocument().getText(0, e.getDocument().getLength());
+            } catch (BadLocationException ex) {
+                textToFind = "";    //NOI18N
+            }
         }
 
      }

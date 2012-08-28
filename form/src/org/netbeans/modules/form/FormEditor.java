@@ -815,7 +815,7 @@ public class FormEditor {
                     }
                 }
 
-                if (modifying && (!justAfterLoading || formModel.isCompoundEditInProgress())) {
+                if (modifying && (!justAfterLoading || needPostCreationUpdate() || formModel.isCompoundEditInProgress())) {
                     // mark the form document modified explicitly, but not if modified
                     // as a result of correction during form loading (not to open as modified)
                     getEditorSupport().markModified();

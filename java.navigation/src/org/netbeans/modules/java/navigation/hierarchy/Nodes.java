@@ -364,7 +364,7 @@ class Nodes {
         private void updateDisplayName() {
             String name = description.handle.getQualifiedName();
             if (!filters.isFqn()) {
-                name = HierarchyHistory.getSimpleName(name);
+                name = getSimpleName(name);
             }
             setDisplayName(name);
         }
@@ -576,6 +576,16 @@ class Nodes {
         final ClassPath cp = file != null ? ClassPath.getClassPath(file, ClassPath.SOURCE) : null;
         //Null is a valid value for files which have no source path (default filesystem).
         return cp != null ? cp.findOwnerRoot(file) : null;
+    }
+
+    private static String getSimpleName(@NonNull final String fqn) {
+        int sepIndex = fqn.lastIndexOf('$');   //NOI18N
+        if (sepIndex == -1) {
+            sepIndex = fqn.lastIndexOf('.');   //NOI18N
+        }
+        return sepIndex >= 0?
+            fqn.substring(sepIndex+1):
+            fqn;
     }
 
     static final class ComputeSubClasses {

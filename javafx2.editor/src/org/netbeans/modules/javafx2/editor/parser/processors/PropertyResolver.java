@@ -276,6 +276,9 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         // handle default property:
         
         FxProperty pi = beanInfo.getProperty(propName);
+        if (pi == null && beanInfo.getBuilder() != null) {
+            pi = beanInfo.getBuilder().getProperty(propName);
+        }
         int offs = env.getTreeUtilities().positions(p).getStart();
 
         if (pi == null) {
