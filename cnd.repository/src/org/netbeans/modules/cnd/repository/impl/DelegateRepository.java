@@ -46,12 +46,10 @@ package org.netbeans.modules.cnd.repository.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -61,7 +59,6 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.modules.Places;
 
 /**
  *
@@ -74,7 +71,7 @@ public final class DelegateRepository implements Repository {
     private final Object delegatesLock = new Object();    
 
     /** read access - without lock, write access guarded by delegatesLock */
-    private final ArrayList<BaseRepository> delegates = new ArrayList<BaseRepository>();
+    private final ArrayList<BaseRepository> delegates;
     
     /** guarded by delegatesLock */
     private final Map<File, BaseRepository> cacheToDelegate = new HashMap<File, BaseRepository>();
@@ -82,6 +79,8 @@ public final class DelegateRepository implements Repository {
     private int persistMechanismVersion = -1;
 
     public DelegateRepository() {
+        delegates = new ArrayList<BaseRepository>();
+        delegates.add(new DummyRepository(0, null));
     }
 
     @Override
@@ -245,5 +244,88 @@ public final class DelegateRepository implements Repository {
         }        
     }
     
-    
+    private static class DummyRepository extends BaseRepository {
+
+        private static final String exceptionText = "DummyRepository should never be accessed"; //NOI18N
+
+        public DummyRepository(int id, File cacheLocation) {
+            super(id, cacheLocation);
+        }
+                
+        @Override
+        public void hang(Key key, Persistent obj) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void put(Key key, Persistent obj) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public Persistent get(Key key) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public Persistent tryGet(Key key) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void remove(Key key) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void debugClear() {
+        }
+
+        @Override
+        public void debugDistribution() {
+        }
+
+        @Override
+        public void startup(int persistMechanismVersion) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void shutdown() {
+        }
+
+        @Override
+        public void openUnit(int unitId, CharSequence unitName) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void removeUnit(int unitId) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void cleanCaches() {
+        }
+
+        @Override
+        public void registerRepositoryListener(RepositoryListener aListener) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void unregisterRepositoryListener(RepositoryListener aListener) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
+            throw new IllegalArgumentException(exceptionText);
+        }        
+    }    
 }

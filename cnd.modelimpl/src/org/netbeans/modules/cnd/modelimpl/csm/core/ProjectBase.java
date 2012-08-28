@@ -3475,7 +3475,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        
-        unitId = aStream.readInt();
+        unitId = aStream.readUnitId();
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();

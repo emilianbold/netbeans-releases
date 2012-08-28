@@ -373,7 +373,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     public static FilesAccessStrategyImpl testGetStrategy(File cacheLocation) {
         DelegateRepository repository = (DelegateRepository) RepositoryAccessor.getRepository();
         for (BaseRepository delegate : repository.testGetDelegates()) {
-            if (delegate.getCacheLocation().equals(cacheLocation)) {
+            if (cacheLocation.equals(delegate.getCacheLocation())) {
                 return (FilesAccessStrategyImpl) delegate.getFilesAccessStrategy();
             }
         }
