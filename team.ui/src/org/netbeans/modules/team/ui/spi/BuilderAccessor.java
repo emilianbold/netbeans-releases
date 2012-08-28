@@ -19,7 +19,7 @@ import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
  *
  * @author S. Aubrecht
  */
-public abstract class BuildAccessor<P> {
+public abstract class BuilderAccessor<P> {
 
     public abstract Class<P> type();
     
@@ -32,13 +32,13 @@ public abstract class BuildAccessor<P> {
      * Retrieve the list of builds in given project.
      * @return a list of builds (never null)
      */
-    public abstract List<BuildHandle> getBuilds( ProjectHandle<P> project );
+    public abstract List<JobHandle> getJobs( ProjectHandle<P> project );
     
     /**
      * Retrieve the handle to a job identified by its name
      * @return a job handle or <code>null</code> if no such job found
      */
-    public abstract BuildHandle getBuildHandle ( ProjectHandle<P> project, String jobName );
+    public abstract JobHandle getJob ( ProjectHandle<P> project, String jobName );
 
     /**
      * @return Action to invoke when user clicks 'New Build...' button, or null to disable
@@ -51,15 +51,15 @@ public abstract class BuildAccessor<P> {
      * If all builds are successful or unknown, null is returned.
      *
      * Note that default action of the returned build handle (see
-     * {@link BuildHandle#getDefaultAction()}) should have an icon.
+     * {@link JobHandle#getDefaultAction()}) should have an icon.
      *
      * @return Build handle that deserves user's attention the most, or null if
      * there is no interresting build.
      */
-    public BuildHandle chooseMostInterrestingBuild(
-            Collection<? extends BuildHandle> builds) {
-        BuildHandle worst = null;
-        for (BuildHandle bh : builds) {
+    public JobHandle chooseMostInterrestingJob(
+            Collection<? extends JobHandle> builds) {
+        JobHandle worst = null;
+        for (JobHandle bh : builds) {
             Status status = bh.getStatus();
             if ((status == Status.FAILED || status == Status.UNSTABLE)
                     && (worst == null

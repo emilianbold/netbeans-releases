@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.modules.hudson.impl.HudsonJobBuildImpl;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
@@ -160,7 +161,17 @@ public class UI {
      * Return icon for a Hudson job.
      */
     public static Icon getIcon(HudsonJob job) {
-        String iconBase = job.getColor().iconBase();
+        return makeIcon(job.getColor().iconBase());
+    }
+
+    /**
+     * Return icon for a Hudson Job build.
+     */
+    public static Icon getIcon(HudsonJobBuild build) {
+        return makeIcon(HudsonJobBuildImpl.getColorForBuild(build).iconBase());
+    }
+
+    private static Icon makeIcon(String iconBase) {
         return ImageUtilities.image2Icon(
                 ImageUtilities.loadImageIcon(iconBase, false).getImage());
     }

@@ -148,6 +148,19 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         return HudsonJobBuildImpl_display_name(job.getDisplayName(), getNumber());
     }
 
+    public static Color getColorForBuild(HudsonJobBuild build) {
+        switch (build.getResult()) {
+            case SUCCESS:
+                return Color.blue;
+            case UNSTABLE:
+                return Color.yellow;
+            case FAILURE:
+                return Color.red;
+            default:
+                return Color.grey;
+        }
+    }
+
     private final class HudsonMavenModuleBuildImpl implements HudsonMavenModuleBuild, OpenableInBrowser {
 
         private final HudsonJobImpl.HudsonMavenModule module;
