@@ -72,6 +72,7 @@ import org.openide.util.RequestProcessor;
 public final class Debugger {
     
     public static final String PROP_CURRENT_FRAME = "currentFrame";     // NOI18N
+    public static final String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive"; // NOI18N
     
     private static final Logger LOG = Logger.getLogger(Debugger.class.getName());
 
@@ -86,6 +87,8 @@ public final class Debugger {
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private CallFrame currentCallFrame = null;
+    private boolean breakpointsActive = true;
+    private final Object breakpointsActiveLock = new Object();
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
 
@@ -411,6 +414,26 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeEventListenerBreakpoint", params));
+    }
+    
+    public boolean areBreakpointsActive() {
+        return breakpointsActive;
+    }
+    
+    public void setBreakpointsActive(boolean active) {
+        boolean oldActive;
+        synchronized (breakpointsActiveLock) {
+            oldActive = breakpointsActive;
+            if (oldActive != active) {
+                JSONObject params = new JSONObject();
+                params.put("active", active);
+                Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointsActive", params));
+                breakpointsActive = active;
+            }
+        }
+        if (oldActive != active) {
+            pchs.firePropertyChange(PROP_BREAKPOINTS_ACTIVE, oldActive, active);
+        }
     }
     
     private void recordDocumentChange(long timeStamp, JSONArray callStack, boolean attachDOMListeners, boolean realChange) {

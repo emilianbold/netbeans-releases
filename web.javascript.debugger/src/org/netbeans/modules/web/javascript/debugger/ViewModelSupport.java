@@ -62,31 +62,31 @@ public abstract class ViewModelSupport {
         myListeners = new CopyOnWriteArrayList<ModelListener>();
     }
 
-    public void addModelListener(ModelListener l) {
+    public final void addModelListener(ModelListener l) {
         myListeners.add(l);
     }
 
-    public void removeModelListener(ModelListener l) {
+    public final void removeModelListener(ModelListener l) {
         myListeners.remove(l);
     }
 
-    protected void refresh() {
+    protected final void refresh() {
         fireChangeEvent(new TreeChanged(this));
     }
 
-    protected void fireChangeEvent(ModelEvent modelEvent) {
+    protected final void fireChangeEvent(ModelEvent modelEvent) {
         for ( ModelListener listener : myListeners ) {
             listener.modelChanged(modelEvent);
         }
     }
 
-    protected void fireChangeEvents(ModelEvent[] events) {
+    protected final void fireChangeEvents(ModelEvent[] events) {
         for( ModelEvent event : events ){
             fireChangeEvent( event );
         }
     }
 
-    protected void fireChangeEvents(Collection<ModelEvent> events) {
+    protected final void fireChangeEvents(Collection<ModelEvent> events) {
         for( ModelEvent event : events ){
             fireChangeEvent( event );
         }
