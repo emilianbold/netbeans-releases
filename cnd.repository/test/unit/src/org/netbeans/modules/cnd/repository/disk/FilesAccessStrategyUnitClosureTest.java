@@ -81,8 +81,8 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
         projectRoot1.waitParse();
         
-        final FilesAccessStrategyImpl strategy = FilesAccessStrategyImpl.testGetStrategy(
-                StorageAllocator.getDefaultCacheLocation());
+        final FilesAccessStrategyImpl strategy = FilesAccessStrategyImpl.testGetStrategy(                
+                ProjectBase.getCacheBaseDirectory(projectRoot1.getPlatformProject()));
         
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override

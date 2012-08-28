@@ -69,17 +69,17 @@ public abstract class BaseRepository implements Repository, UnitCodec {
         this.cacheLocation = cacheLocation;
         this.storageAllocator = new StorageAllocator(cacheLocation);
         this.filesAccessStrategy = new FilesAccessStrategyImpl(storageAllocator, this);
-        this.translator = new RepositoryTranslatorImpl(storageAllocator);
+        this.translator = new RepositoryTranslatorImpl(storageAllocator, this);
     }
 
     @Override
-    public int codeUnitIdBeforeWriting(int unitId) {
-        return unitId / REPO_DENOM; // write it *without* repository ID
+    public int removeRepositoryID(int unitId) {
+        return unitId % REPO_DENOM; // write it *without* repository ID
     }
 
     @Override
-    public int decodeUnitIdAfterReading(int unitId) {
-        return id * REPO_DENOM + unitId / REPO_DENOM; // add repository ID
+    public int addRepositoryID(int unitId) {
+        return id * REPO_DENOM + (unitId % REPO_DENOM); // add repository ID
     }
 
     public final RepositoryTranslatorImpl getTranslation() {

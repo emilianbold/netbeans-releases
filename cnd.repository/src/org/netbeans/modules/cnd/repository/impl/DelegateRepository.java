@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.modules.Places;
@@ -222,7 +223,7 @@ public final class DelegateRepository implements Repository {
         }
     }
 
-    public RepositoryTranslation getTranslator(int unitId) {
+    public RepositoryTranslatorImpl getTranslatorImpl(int unitId) {
         return getDelegate(unitId).getTranslation();
     }
 
@@ -239,8 +240,7 @@ public final class DelegateRepository implements Repository {
                 cacheToDelegate.put(cacheLocation, repo);
                 delegates.add(repo);
             }
-            int unitId = repo.getTranslation().getUnitId(unitName, cacheLocation);
-            unitId = repo.decodeUnitIdAfterReading(unitId);
+            int unitId = repo.getTranslation().getUnitId(unitName);
             return unitId;
         }        
     }

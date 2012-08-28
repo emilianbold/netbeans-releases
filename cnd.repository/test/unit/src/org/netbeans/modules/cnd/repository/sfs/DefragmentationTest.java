@@ -83,12 +83,12 @@ public class DefragmentationTest extends NbTestCase {
         File file = new File(getWorkDir(), "double_file_storage.dat");
         DoubleFileStorage dfs = new DoubleFileStorage(file, true, new UnitCodec() {
             @Override
-            public int codeUnitIdBeforeWriting(int unitId) {
+            public int removeRepositoryID(int unitId) {
                 return unitId;
             }
 
             @Override
-            public int decodeUnitIdAfterReading(int unitId) {
+            public int addRepositoryID(int unitId) {
                 return unitId;
             }
         });

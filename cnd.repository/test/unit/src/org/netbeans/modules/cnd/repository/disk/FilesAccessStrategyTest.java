@@ -74,12 +74,12 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
             new StorageAllocator(StorageAllocator.getDefaultCacheLocation()),
             new UnitCodec() {
                 @Override
-                public int codeUnitIdBeforeWriting(int unitId) {
+                public int removeRepositoryID(int unitId) {
                     return unitId;
                 }
 
                 @Override
-                public int decodeUnitIdAfterReading(int unitId) {
+                public int addRepositoryID(int unitId) {
                     return unitId;
                 }
             });

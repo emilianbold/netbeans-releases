@@ -407,7 +407,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static CharSequence getUniqueName(NativeProject platformProject) {
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
-    
+
     public static File getCacheBaseDirectory(Object platfProj) {
         if (platfProj instanceof NativeProject) {
             return getCacheBaseDirectory((NativeProject) platfProj);

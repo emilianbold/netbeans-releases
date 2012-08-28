@@ -721,12 +721,12 @@ import org.openide.util.NbBundle;
 
         public RequiredUnit(DataInput stream, UnitCodec unitCodec) throws IOException {
             this.unitCodec = unitCodec;
-            unitId = unitCodec.decodeUnitIdAfterReading(stream.readInt());
+            unitId = unitCodec.addRepositoryID(stream.readInt());
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeInt(unitCodec.codeUnitIdBeforeWriting(unitId));
+            stream.writeInt(unitCodec.removeRepositoryID(unitId));
             stream.writeLong(timestamp);
         }
 

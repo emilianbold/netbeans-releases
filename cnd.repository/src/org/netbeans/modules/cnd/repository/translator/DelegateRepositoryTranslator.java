@@ -64,17 +64,17 @@ public class DelegateRepositoryTranslator implements RepositoryTranslation {
     
     @Override
     public int getFileIdByName(int unitId, CharSequence fileName) {
-        return repositoryImpl.getTranslator(unitId).getFileIdByName(unitId, fileName);
+        return repositoryImpl.getTranslatorImpl(unitId).getFileIdByName(unitId, fileName);
     }
 
     @Override
     public CharSequence getFileNameById(int unitId, int fileId) {
-        return repositoryImpl.getTranslator(unitId).getFileNameById(unitId, fileId);
+        return repositoryImpl.getTranslatorImpl(unitId).getFileNameById(unitId, fileId);
     }
 
     @Override
     public CharSequence getFileNameByIdSafe(int unitId, int fileId) {
-        return repositoryImpl.getTranslator(unitId).getFileNameByIdSafe(unitId, fileId);
+        return repositoryImpl.getTranslatorImpl(unitId).getFileNameByIdSafe(unitId, fileId);
     }
 
     @Override
@@ -84,11 +84,11 @@ public class DelegateRepositoryTranslator implements RepositoryTranslation {
 
     @Override
     public CharSequence getUnitName(int unitId) {
-        return repositoryImpl.getTranslator(unitId).getUnitName(unitId);
+        return repositoryImpl.getTranslatorImpl(unitId).getUnitName(unitId);
     }
 
     @Override
     public CharSequence getUnitNameSafe(int unitId) {
-        return repositoryImpl.getTranslator(unitId).getUnitNameSafe(unitId);
+        return repositoryImpl.getTranslatorImpl(unitId).getUnitNameSafe(unitId);
     }
 }
