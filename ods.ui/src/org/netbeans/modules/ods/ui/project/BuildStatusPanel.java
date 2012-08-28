@@ -70,7 +70,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(BuildStatusPanel.class);
     private final ProjectHandle<ODSProject> projectHandle;
-    private final BuildPropertyListener buildPropertyListener;
+    private final JobPropertyListener buildPropertyListener;
     private List<JobHandle> builds;
 
     /**
@@ -78,14 +78,14 @@ public class BuildStatusPanel extends javax.swing.JPanel {
      */
     public BuildStatusPanel(ProjectHandle<ODSProject> projectHandle) {
         this.projectHandle = projectHandle;
-        this.buildPropertyListener = new BuildPropertyListener();
+        this.buildPropertyListener = new JobPropertyListener();
         initComponents();
         loadBuildStatuses();
     }
 
     void removeBuildListeners() {
-        for (JobHandle buildHandle : builds) {
-            buildHandle.removePropertyChangeListener(buildPropertyListener);
+        for (JobHandle jobHandle : builds) {
+            jobHandle.removePropertyChangeListener(buildPropertyListener);
         }
     }
 
@@ -178,13 +178,13 @@ public class BuildStatusPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 BuilderAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
-                final List<JobHandle> builds = buildAccessor.getJobs(projectHandle);
+                final List<JobHandle> jobs = buildAccessor.getJobs(projectHandle);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (builds != null && !builds.isEmpty()) {
-                            showBuildStatuses(builds);
-                        } else if (builds == null) {
+                        if (jobs != null && !jobs.isEmpty()) {
+                            showBuildStatuses(jobs);
+                        } else if (jobs == null) {
                             showError();
                         } else {
                             showEmptyContent();
@@ -195,12 +195,12 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         });
     }
 
-    private void showBuildStatuses(List<JobHandle> builds) {
-        this.builds = builds;
+    private void showBuildStatuses(List<JobHandle> jobs) {
+        this.builds = jobs;
         pnlStatuses.removeAll();
-        for (JobHandle buildHandle : builds) {
-            buildHandle.addPropertyChangeListener(buildPropertyListener);
-            JPanel panel = createPanel(buildHandle);
+        for (JobHandle jobHandle : jobs) {
+            jobHandle.addPropertyChangeListener(buildPropertyListener);
+            JPanel panel = createPanel(jobHandle);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(0, 0, 5, 0);
             gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -217,18 +217,18 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private JPanel createPanel(final JobHandle buildHandle) {
+    private JPanel createPanel(final JobHandle jobHandle) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
 
-        LinkLabel lblName = new LinkLabel(buildHandle.getDisplayName()) {
+        LinkLabel lblName = new LinkLabel(jobHandle.getDisplayName()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                buildHandle.getDefaultAction().actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
+                jobHandle.getDefaultAction().actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
         };
-        lblName.setIcon(getJobIcon(buildHandle.getStatus().toString()));
+        lblName.setIcon(getJobIcon(jobHandle.getStatus().name().toLowerCase()));
         panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 6, 0, 0), 0, 0));
         panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
 
@@ -255,7 +255,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private class BuildPropertyListener implements PropertyChangeListener {
+    private class JobPropertyListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {

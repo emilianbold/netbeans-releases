@@ -49,16 +49,19 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
-import org.netbeans.modules.ods.ui.utils.Utils;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
@@ -68,12 +71,17 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     private final BuildActivity activity;
     private final ProjectHandle<ODSProject> projectHandle;
-    private Action openIDEAction;
+    private Action openJobIDEAction;
+    private Action openBuildIDEAction;
+    private LinkLabel linkBuildNumber;
+    private LinkLabel linkJobName;
+    private ProjectPropertyListener projectPropertyListener;
 
     public BuildActivityDisplayer(BuildActivity activity, ProjectHandle<ODSProject> projectHandle, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
         this.activity = activity;
         this.projectHandle = projectHandle;
+        projectPropertyListener = new ProjectPropertyListener();
     }
 
     @Override
@@ -81,10 +89,14 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
         BuildDetails buildDetails = activity.getBuildDetails();
         JPanel panel = new JPanel(new GridBagLayout());
 
-        LinkLabel linkBuildNumber = new LinkLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Build") + " " + buildDetails.getNumber()) { //NOI18N
+        linkBuildNumber = new LinkLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Build") + " " + buildDetails.getNumber()) { //NOI18N
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(activity.getBuildDetails().getUrl());
+                Action openAction = getOpenBuildIDEAction(false);
+                if (openAction == null || !openAction.isEnabled()) {
+                    openAction = getOpenBrowserAction(getBuildUrl());
+                }
+                openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
         GridBagConstraints gbc = new GridBagConstraints();
@@ -95,17 +107,17 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
         panel.add(new JLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Of")), gbc); //NOI18N
 
-        LinkLabel linkJobName = new LinkLabel(activity.getJobSummary().getName()) {
+        linkJobName = new LinkLabel(activity.getJobSummary().getName()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Action openAction = getOpenIDEAction();
+                Action openAction = getOpenJobIDEAction(false);
                 if (openAction == null || !openAction.isEnabled()) {
-                    openAction = getOpenBrowserAction(getBuildUrl());
+                    openAction = getOpenBrowserAction(getJobUrl());
                 }
                 openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
-        linkJobName.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getBuildUrl()));
+        setPopupAction();
         panel.add(linkJobName, gbc);
         panel.add(new JLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Resulted", getResultText())), gbc); //NOI18N
 
@@ -171,13 +183,13 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
         BuildResult result = activity.getBuildDetails().getResult();
         String resultName = "unknown";
         if (result != null) {
-            resultName = result.getFriendlyName().toLowerCase();
+            resultName = result.name().toLowerCase();
         }
         return resultName;
     }
 
-    private Action getOpenIDEAction() {
-        if (openIDEAction == null) {
+    private Action getOpenJobIDEAction(boolean force) {
+        if (openJobIDEAction == null || force) {
             BuilderAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
             final Action action;
             if (buildAccessor != null) {
@@ -185,7 +197,7 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
             } else {
                 action = null;
             }
-            openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
+            openJobIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (isEnabled()) {
@@ -199,10 +211,80 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
                 }
             };
         }
-        return openIDEAction;
+        return openJobIDEAction;
+    }
+
+    private Action getOpenBuildIDEAction(boolean force) {
+        if (openBuildIDEAction == null || force) {
+            BuilderAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
+            final Action action;
+            if (buildAccessor != null) {
+                String buildId = Integer.toString(activity.getBuildDetails().getNumber());
+                BuildHandle build = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName()).getBuild(buildId);
+                action = build != null ? build.getDefaultAction() : null;
+            } else {
+                action = null;
+            }
+            openBuildIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (isEnabled()) {
+                        action.actionPerformed(e);
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return action != null;
+                }
+            };
+        }
+        return openBuildIDEAction;
+    }
+
+    private String getJobUrl() {
+        return activity.getJobSummary().getUrl();
     }
 
     private String getBuildUrl() {
-        return activity.getJobSummary().getUrl();
+        return activity.getBuildDetails().getUrl();
+    }
+
+    private void setPopupAction() {
+        Action jobIDEAction = getOpenJobIDEAction(true);
+        linkJobName.setPopupActions(jobIDEAction, getOpenBrowserAction(getJobUrl()));
+        Action buildIDEAction = getOpenBuildIDEAction(true);
+        linkBuildNumber.setPopupActions(buildIDEAction, getOpenBrowserAction(getBuildUrl()));
+        if (!jobIDEAction.isEnabled() || !buildIDEAction.isEnabled()) {
+            projectHandle.addPropertyChangeListener(projectPropertyListener);
+        }
+    }
+
+    private void removeProjectListener() {
+        projectHandle.removePropertyChangeListener(projectPropertyListener);
+    }
+
+    private class ProjectPropertyListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(ProjectHandle.PROP_BUILD_LIST)) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    actionsAvailable();
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            actionsAvailable();
+                        }
+                    });
+                }
+            }
+        }
+
+        private void actionsAvailable(){
+            removeProjectListener();
+            setPopupAction();
+        }
     }
 }
