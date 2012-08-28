@@ -723,7 +723,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         private final JComboBox historyCombo;
 
         @NbBundle.Messages({
-        "TXT_OpenJDoc=Open Javadoc Window",
+        "TXT_OpenJDoc=Open Javadoc Window"
         })
         Toolbar() {
             setLayout(new GridBagLayout());
