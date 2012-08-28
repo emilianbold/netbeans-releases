@@ -56,8 +56,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
-import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
@@ -71,7 +71,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor(BuildStatusPanel.class);
     private final ProjectHandle<ODSProject> projectHandle;
     private final BuildPropertyListener buildPropertyListener;
-    private List<BuildHandle> builds;
+    private List<JobHandle> builds;
 
     /**
      * Creates new form BuildStatusPanel
@@ -84,7 +84,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     }
 
     void removeBuildListeners() {
-        for (BuildHandle buildHandle : builds) {
+        for (JobHandle buildHandle : builds) {
             buildHandle.removePropertyChangeListener(buildPropertyListener);
         }
     }
@@ -177,8 +177,8 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                BuildAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
-                final List<BuildHandle> builds = buildAccessor.getBuilds(projectHandle);
+                BuilderAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
+                final List<JobHandle> builds = buildAccessor.getJobs(projectHandle);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -195,10 +195,10 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         });
     }
 
-    private void showBuildStatuses(List<BuildHandle> builds) {
+    private void showBuildStatuses(List<JobHandle> builds) {
         this.builds = builds;
         pnlStatuses.removeAll();
-        for (BuildHandle buildHandle : builds) {
+        for (JobHandle buildHandle : builds) {
             buildHandle.addPropertyChangeListener(buildPropertyListener);
             JPanel panel = createPanel(buildHandle);
             GridBagConstraints gbc = new GridBagConstraints();
@@ -217,7 +217,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private JPanel createPanel(final BuildHandle buildHandle) {
+    private JPanel createPanel(final JobHandle buildHandle) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
@@ -259,7 +259,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(BuildHandle.PROP_STATUS)) {
+            if (evt.getPropertyName().equals(JobHandle.PROP_STATUS)) {
                 removeBuildListeners();
                 loadBuildStatuses();
             }

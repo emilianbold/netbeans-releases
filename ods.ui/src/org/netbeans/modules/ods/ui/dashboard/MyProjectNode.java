@@ -52,9 +52,9 @@ import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
-import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
@@ -79,7 +79,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private final ProjectHandle<ODSProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
-    private final BuildAccessor<ODSProject> buildAccessor;
+    private final BuilderAccessor<ODSProject> buildAccessor;
     private PropertyChangeListener buildHandleStatusListener;
     private QueryHandle allIssuesQuery;
     private PropertyChangeListener notificationListener = new PropertyChangeListener() {
@@ -305,15 +305,15 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         if (buildHandleStatusListener == null) {
                             initBuildHandleStatusListener();
                         }
-                        List<BuildHandle> builds =
-                                buildAccessor.getBuilds(project);
-                        for (BuildHandle buildHandle : builds) {
+                        List<JobHandle> builds =
+                                buildAccessor.getJobs(project);
+                        for (JobHandle buildHandle : builds) {
                             buildHandle.addPropertyChangeListener(
                                     WeakListeners.propertyChange(
                                     buildHandleStatusListener, buildHandle));
                         }
-                        BuildHandle bh = buildAccessor
-                                .chooseMostInterrestingBuild(builds);
+                        JobHandle bh = buildAccessor
+                                .chooseMostInterrestingJob(builds);
                         setBuildsLater(bh, prepareTooltipText(bh, builds));
                     }
                 }
@@ -325,7 +325,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                     public void propertyChange(
                             PropertyChangeEvent evt) {
                         if (evt.getPropertyName().equals(
-                                BuildHandle.PROP_STATUS)) {
+                                JobHandle.PROP_STATUS)) {
                             scheduleUpdateBuilds();
                         }
                     }
@@ -344,16 +344,16 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         "# {0} - number of unstable builds",
         "MSG_unstable_multiple={0} builds are unstable"
     })
-    private String prepareTooltipText(BuildHandle interrestingBuild,
-            List<BuildHandle> allBuilds) {
+    private String prepareTooltipText(JobHandle interrestingBuild,
+            List<JobHandle> allBuilds) {
         if (interrestingBuild == null) {
             return null;
         }
-        BuildHandle unstable = null;
-        BuildHandle failed = null;
+        JobHandle unstable = null;
+        JobHandle failed = null;
         int countUnstable = 0;
         int countFailed = 0;
-        for (BuildHandle bh : allBuilds) {
+        for (JobHandle bh : allBuilds) {
             if (bh.getStatus().equals(Status.UNSTABLE)) {
                 countUnstable++;
                 unstable = bh;
@@ -388,7 +388,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
      *
      * @param buildHandle Handle of the interresting build.
      */
-    private void setBuildsLater(final BuildHandle buildHandle,
+    private void setBuildsLater(final JobHandle buildHandle,
             final String tooltipText) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

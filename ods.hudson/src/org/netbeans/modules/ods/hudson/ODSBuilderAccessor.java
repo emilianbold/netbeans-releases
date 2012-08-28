@@ -74,9 +74,10 @@ import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.ods.api.CloudServer;
 import org.netbeans.modules.ods.api.ODSProject;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
@@ -88,11 +89,11 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author jhavlin
  */
-@ServiceProvider(service = BuildAccessor.class)
-public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
+@ServiceProvider(service = BuilderAccessor.class)
+public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
 
     private static final Logger LOG = Logger.getLogger(
-            ODSBuildAccessor.class.getName());
+            ODSBuilderAccessor.class.getName());
 
     private static RequestProcessor rp = new RequestProcessor(
             "ODS Build Services", 10);                                 // NOI18N
@@ -110,7 +111,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             {"MSG_from_cloud_project=(from cloud project)"}
     )
     @Override
-    public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
+    public List<JobHandle> getJobs(ProjectHandle<ODSProject> projectHandle) {
         ODSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
                 projectHandle);
         HudsonInstance hi = HudsonManager.addInstance(
@@ -120,28 +121,28 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         if (hi == null) {
             return Collections.emptyList();
         }
-        List<BuildHandle> cachedHandles = findBuildHandlesInCache(
+        List<JobHandle> cachedHandles = findBuildHandlesInCache(
                 projectHandle);
         if (cachedHandles != null) {
             return cachedHandles;
         }
-        List<HudsonBuildHandle> buildHandles =
-                new LinkedList<HudsonBuildHandle>();
+        List<HudsonJobHandle> buildHandles =
+                new LinkedList<HudsonJobHandle>();
         BuildsListener bl = BuildsListener.create(hi, projectHandle);
         Collection<HudsonJob> jobs = waitForJobs(hi);
         for (HudsonJob job : jobs) {
-            buildHandles.add(new HudsonBuildHandle(hi, job.getName(), job));
+            buildHandles.add(new HudsonJobHandle(hi, job.getName(), job));
         }
         bl.setBuildHandles(buildHandles);
         CACHE.put(bl, new Object());
-        return new LinkedList<BuildHandle>(buildHandles);
+        return new LinkedList<JobHandle>(buildHandles);
     }
 
     @Override
-    public BuildHandle getBuildHandle (ProjectHandle<ODSProject> project, String jobName) {
-        BuildHandle buildHandle = null;
-        for (BuildHandle bh : getBuilds(project)) {
-            if (bh instanceof HudsonBuildHandle && jobName.equals(((HudsonBuildHandle) bh).getJob().getName())) {
+    public JobHandle getJob (ProjectHandle<ODSProject> project, String jobName) {
+        JobHandle buildHandle = null;
+        for (JobHandle bh : getJobs(project)) {
+            if (bh instanceof HudsonJobHandle && jobName.equals(((HudsonJobHandle) bh).getJob().getName())) {
                 buildHandle = bh;
                 break;
             }
@@ -153,7 +154,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
      * Check cache of listeners at first. Listeners already contain all required
      * information.
      */
-    private List<BuildHandle> findBuildHandlesInCache(
+    private List<JobHandle> findBuildHandlesInCache(
             ProjectHandle<ODSProject> projectHandle) {
 
         for (final BuildsListener listener : CACHE.keySet()) {
@@ -162,7 +163,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                     listener.instance.getUrl())) {
                 synchronized (listener) {
                     listener.checkJobList(); //update job list
-                    return new LinkedList<BuildHandle>(listener.buildHandles);
+                    return new LinkedList<JobHandle>(listener.buildHandles);
                 }
             }
         }
@@ -228,7 +229,28 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         return jobs;
     }
 
-    private static class HudsonBuildHandle extends BuildHandle {
+    private static Status hudsonJobBuildResultToStatus(HudsonJobBuild build) {
+        if (build.isBuilding()) {
+            return Status.RUNNING;
+        } else {
+            switch (build.getResult()) {
+                case ABORTED:
+                    return Status.UNKNOWN;
+                case FAILURE:
+                    return Status.FAILED;
+                case NOT_BUILT:
+                    return Status.UNKNOWN;
+                case SUCCESS:
+                    return Status.STABLE;
+                case UNSTABLE:
+                    return Status.UNSTABLE;
+                default:
+                    return Status.UNKNOWN;
+            }
+        }
+    }
+
+    private static class HudsonJobHandle extends JobHandle {
 
         private HudsonInstance hudsonInstance;
         private String jobName;
@@ -239,7 +261,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         private volatile Status currentStatus = null;
         private volatile boolean updateStatusScheduled = false;
 
-        public HudsonBuildHandle(HudsonInstance hudsonInstance,
+        public HudsonJobHandle(HudsonInstance hudsonInstance,
                 String jobName, HudsonJob initialJob) {
 
             this.hudsonInstance = hudsonInstance;
@@ -292,24 +314,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             int lastBuildNumber = hudsonJob.getLastBuild();
             for (HudsonJobBuild build : hudsonJob.getBuilds()) {
                 if (build.getNumber() == lastBuildNumber) {
-                    if (build.isBuilding()) {
-                        return Status.RUNNING;
-                    } else {
-                        switch (build.getResult()) {
-                            case ABORTED:
-                                return Status.UNKNOWN;
-                            case FAILURE:
-                                return Status.FAILED;
-                            case NOT_BUILT:
-                                return Status.UNKNOWN;
-                            case SUCCESS:
-                                return Status.STABLE;
-                            case UNSTABLE:
-                                return Status.UNSTABLE;
-                            default:
-                                return Status.UNKNOWN;
-                        }
-                    }
+                    return hudsonJobBuildResultToStatus(build);
                 }
             }
             return Status.UNKNOWN;
@@ -382,6 +387,62 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         public void cleanup() {
             hudsonInstance.removeHudsonChangeListener(hudsonChangeListener);
         }
+
+        @Override
+        public BuildHandle getBuild(String buildId) {
+            if (this.hudsonJob != null) {
+                for (HudsonJobBuild hudsonJobBuild : hudsonJob.getBuilds()) {
+                    if (Integer.toString(hudsonJobBuild.getNumber()).
+                            equals(buildId)) {
+                        return new HudsonBuildHandle(hudsonJobBuild);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public List<BuildHandle> getBuilds() {
+            List<BuildHandle> handles = new LinkedList<BuildHandle>();
+            if (this.hudsonJob != null) {
+                for (HudsonJobBuild hudsonJobBuild : hudsonJob.getBuilds()) {
+                    handles.add(new HudsonBuildHandle(hudsonJobBuild));
+                }
+            }
+            return handles;
+        }
+    }
+
+    private static class HudsonBuildHandle extends BuildHandle {
+
+        private HudsonJobBuild build;
+
+        public HudsonBuildHandle(HudsonJobBuild build) {
+            this.build = build;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return build.getDisplayName();
+        }
+
+        @Override
+        public Status getStatus() {
+            return hudsonJobBuildResultToStatus(build);
+        }
+
+        @Override
+        public Action getDefaultAction() {
+            Icon icon = ODSHudsonUtils.centerIcon(UI.getIcon(build));
+            return new AbstractAction(build.getDisplayName(), icon) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    HudsonJob job = build.getJob();
+                    UI.selectNode(job.getInstance().getUrl(),
+                            job.getName(), Integer.toString(build.getNumber()));
+                }
+            };
+        }
     }
 
     /**
@@ -399,7 +460,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         private HudsonInstance instance;
         private Reference<ProjectHandle<ODSProject>> projectHandle;
         private Reference<CloudServer> server;
-        private final List<HudsonBuildHandle> buildHandles;
+        private final List<HudsonJobHandle> buildHandles;
 
         public BuildsListener(HudsonInstance instance,
                 ProjectHandle<ODSProject> projectHandle) {
@@ -408,12 +469,12 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                     projectHandle);
             this.server = new WeakReference<CloudServer>(
                     projectHandle.getTeamProject().getServer());
-            this.buildHandles = new LinkedList<HudsonBuildHandle>();
+            this.buildHandles = new LinkedList<HudsonJobHandle>();
         }
 
         /**
          * Set list of build handles, after it was initialized in accessor
-         * method {@link #getBuilds(ProjectHandle)}, and start handling Hudson
+         * method {@link #getJobs(ProjectHandle)}, and start handling Hudson
          * events.
          *
          * This listener is currently registered in project handle and team
@@ -421,7 +482,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          * close or server logout), but is is not registered in Hudson - in
          * order not to fire changes after initial getting of jobs.
          */
-        public void setBuildHandles(List<HudsonBuildHandle> buildHandles) {
+        public void setBuildHandles(List<HudsonJobHandle> buildHandles) {
             this.buildHandles.addAll(buildHandles);
             instance.addHudsonChangeListener(this);
         }
@@ -470,7 +531,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             }
             instance.removeHudsonChangeListener(this);
             synchronized (this) {
-                for (HudsonBuildHandle handle: buildHandles) {
+                for (HudsonJobHandle handle: buildHandles) {
                     handle.cleanup();
                 }
                 buildHandles.clear();
@@ -520,7 +581,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             boolean allFound = true; // jobs for all hanles have been found
             for (HudsonJob job : jobs) {
                 boolean found = false;
-                for (HudsonBuildHandle handle : buildHandles) {
+                for (HudsonJobHandle handle : buildHandles) {
                     if (handle.getJob().getUrl().equals(job.getUrl())) {
                         found = true;
                         break;
@@ -534,12 +595,12 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             if (jobs.size() == buildHandles.size() && allFound) {
                 return null; // no change
             } else {
-                List<BuildHandle> origList =
-                        new LinkedList<BuildHandle>(buildHandles);
+                List<JobHandle> origList =
+                        new LinkedList<JobHandle>(buildHandles);
                 removeOrphanedHandles(jobs);
                 addHandlesForAddedJobs(added);
                 return new PairOfDifferentLists(origList,
-                        new LinkedList<BuildHandle>(buildHandles));
+                        new LinkedList<JobHandle>(buildHandles));
             }
         }
 
@@ -548,9 +609,9 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          * server.
          */
         private void removeOrphanedHandles(Collection<HudsonJob> jobs) {
-            for (Iterator<HudsonBuildHandle> it = buildHandles.iterator();
+            for (Iterator<HudsonJobHandle> it = buildHandles.iterator();
                     it.hasNext();) {
-                HudsonBuildHandle handle = it.next();
+                HudsonJobHandle handle = it.next();
                 boolean found = false;
                 for (HudsonJob job : jobs) {
                     if (job.getUrl().equals(handle.getJob().getUrl())) {
@@ -571,7 +632,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          */
         private void addHandlesForAddedJobs(List<HudsonJob> added) {
             for (HudsonJob job : added) {
-                buildHandles.add(new HudsonBuildHandle(instance,
+                buildHandles.add(new HudsonJobHandle(instance,
                         job.getName(), job));
             }
         }
@@ -599,20 +660,20 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          */
         private static class PairOfDifferentLists {
 
-            List<BuildHandle> original;
-            List<BuildHandle> updated;
+            List<JobHandle> original;
+            List<JobHandle> updated;
 
-            public PairOfDifferentLists(List<BuildHandle> original,
-                    List<BuildHandle> updated) {
+            public PairOfDifferentLists(List<JobHandle> original,
+                    List<JobHandle> updated) {
                 this.original = original;
                 this.updated = updated;
             }
 
-            public List<BuildHandle> getOriginal() {
+            public List<JobHandle> getOriginal() {
                 return original;
             }
 
-            public List<BuildHandle> getUpdated() {
+            public List<JobHandle> getUpdated() {
                 return updated;
             }
         }

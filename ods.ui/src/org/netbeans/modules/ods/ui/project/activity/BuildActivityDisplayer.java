@@ -59,7 +59,7 @@ import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
 import org.netbeans.modules.ods.ui.utils.Utils;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -178,10 +178,10 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     private Action getOpenIDEAction() {
         if (openIDEAction == null) {
-            BuildAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
+            BuilderAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
             final Action action;
             if (buildAccessor != null) {
-                action = buildAccessor.getBuildHandle(projectHandle, activity.getJobSummary().getName()).getDefaultAction();
+                action = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName()).getDefaultAction();
             } else {
                 action = null;
             }
