@@ -197,6 +197,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     //Set a new PageModel. It will install a new PropertyChangeListener for the PageModel changes
     private void setPageModel(PageModel model) {
+        if (this.pageModel == model) {
+            return;
+        }
         PageModel old = this.pageModel;
         this.pageModel = model;
         
@@ -308,6 +311,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             
             URL url = new URL(inspectedURL);
             Project owner = getCurrentProject();
+            if (owner == null) {
+                return null;
+            }
             return ServerURLMapping.fromServer(owner, url);
         } catch (MalformedURLException ex) {
             //unknown url -> unknown fileObject
@@ -318,35 +324,43 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private HashMap<org.openide.nodes.Node, org.openide.nodes.Node> domToNb = new HashMap<Node, Node>();
     
     private RequestProcessor.Task task;
-    void refreshDOM() {
-        try {
-            final PageModel page = PageInspectorImpl.getDefault().getPage();
-            if (page==null)
-                return;
-            String inspectedURL = page.getDocumentURL();
+    synchronized void refreshDOM() {
+        if (task != null) {
+            task.cancel();
+        }
 
-            URL url = new URL(inspectedURL);
-            FileObject fromServer = ServerURLMapping.fromServer(getCurrentProject(), url);
+        task = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final PageModel page = PageInspectorImpl.getDefault().getPage();
+                    if (page == null) {
+                        return;
+                    }
+                    String inspectedURL = page.getDocumentURL();
 
+                    URL url = new URL(inspectedURL);
+                    final Project currentProject = getCurrentProject();
+                    
+                    if (currentProject == null) {
+                        return;
+                    }
+                    
+                    FileObject fromServer = ServerURLMapping.fromServer(currentProject, url);
 
-            if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
-                return;
-            }
-            if (task!=null) {
-                task.cancel();
-            }
-        
-            task = RP.post(new Runnable() {
-                @Override
-                public void run() {
+                    if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
+                        return;
+
+                    }
+
                     refreshNodeDOMStatus();
                     domToNb.clear();
                     cacheDomToNb(getRootNode());
+                } catch (MalformedURLException ex) {
+                    //ignore unknown urls
                 }
-            });
-        } catch (MalformedURLException ex) {
-            //ignore unknown urls
-        }
+            }
+        });
     }
     
     private void cacheDomToNb(Node root) {
@@ -465,6 +479,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
         }
+        
+        setPageModel(PageInspectorImpl.getDefault().getPage());
 
         Source source = Source.create(fo);
         if (source == null) {
@@ -693,6 +709,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             fo = ((HtmlElementNode) rootContext).getFileObject();
         } else {
             LOGGER.log(Level.WARNING, "Root context is not HtmlElementNode");
+        }
+        if (fo == null) {
+            LOGGER.log(Level.WARNING, "Cannot find current project");
+            return null;
         }
         Project owner = FileOwnerQuery.getOwner(fo);
         return owner;
