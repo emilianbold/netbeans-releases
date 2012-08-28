@@ -183,18 +183,15 @@ public class FilteredAnalysis extends Analysis {
         
         final Set<Integer> scriptGroupRevisions1 = getScriptGroupedRevisions(selectedRevisionIndex);
         if (scriptGroupRevisions1 != null) {
-            //label.append(" + Grouped by script");
             label.append(scriptGroupRevisions1);
         }
         final Set<Integer> stackTraceGroupRevisions1 = getStackTraceGroupedRevisions(selectedRevisionIndex);
         if (stackTraceGroupRevisions1 != null) {
-            //label.append(" + Grouped by Stack Trace");
             label.append(stackTraceGroupRevisions1);
         }
         
         final Set<Integer> whiteSpaceGroupedRevisions1 = getWhiteSpaceGroupedRevisions(selectedRevisionIndex);
         if (whiteSpaceGroupedRevisions1 != null) {
-            //label.append(" + Grouped by White spaces");
             label.append(whiteSpaceGroupedRevisions1);
         }
         
