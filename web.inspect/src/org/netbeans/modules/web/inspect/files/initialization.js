@@ -84,14 +84,14 @@ NetBeans.initNextHighlight = function() {
 
 // Adds an element into the next selection
 NetBeans.addElementToNextSelection = function(element) {
-    if (this.nextSelection.indexOf(element) == -1) {
+    if (this.nextSelection.indexOf(element) === -1) {
         this.nextSelection.push(element);
     }
 };
 
 // Adds an element into the next highlight
 NetBeans.addElementToNextHighlight = function(element) {
-    if (this.nextHighlight.indexOf(element) == -1) {
+    if (this.nextHighlight.indexOf(element) === -1) {
         this.nextHighlight.push(element);
         this.lastHighlighted = element;
     }
