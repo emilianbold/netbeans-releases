@@ -289,9 +289,13 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             
             final int[] span = getCurrentVisibleSpan();
 
-            if (span == null || span[0] == (-1)) {
+            if (span == null) {
                 //not initialized yet:
                 doUpdateCurrentVisibleSpan();
+                return ;
+            }
+            
+            if (span[0] == (-1)) {
                 return ;
             }
 
