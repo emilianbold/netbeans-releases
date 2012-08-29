@@ -81,6 +81,10 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
     public void stopDebuggingSession(Session session) {
         DebuggerEngine engine = session.lookupFirst(null, DebuggerEngine.class);
         assert engine != null;
+        Debugger debugger = engine.lookupFirst(null, Debugger.class);
+        if (debugger != null) {
+            debugger.disable();
+        }
         session.kill();
         engine.lookupFirst(null, EngineDestructorProvider.class).getDestructor().killEngine();
     }
