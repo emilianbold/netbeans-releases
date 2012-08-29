@@ -155,9 +155,9 @@ NetBeans._resizePage = function(width, height, callback) {
     chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
         // resize
         chrome.windows.getLastFocused(function(win) {
-            var borderWidth = win.width - NetBeans_ViewPort.width;
-            // XXX we should also add height of the 'debugging infobar'
-            var borderHeight = win.height - NetBeans_ViewPort.height;
+            // borders must be tweaked a bit (e.g. height of the 'debugging infobar' etc.)
+            var borderWidth = win.width - NetBeans_ViewPort.width + 4;
+            var borderHeight = win.height - NetBeans_ViewPort.height + 26;
             var opt = {};
             opt.state = 'normal';
             opt.width = parseInt(width) + borderWidth;
