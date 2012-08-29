@@ -74,6 +74,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -492,7 +493,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         regExpCheckBox.setFocusable(false);
         return regExpCheckBox;
     }
-
+    
     JCheckBox createCheckBox(String resName, final String findConstant) {
         final JCheckBox checkBox = new JCheckBox();
         checkBox.setOpaque(false);
@@ -745,6 +746,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 // text found - reset incremental search text field's foreground
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
+                changeHighlightCheckboxName(getCountFindMatches(findSupport));
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
@@ -753,6 +755,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         SearchBar.class, "incremental-search-not-found", incrementalSearchText),
                         StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
                 Toolkit.getDefaultToolkit().beep();
+                changeHighlightCheckboxName(0);
             }
         }
     }
@@ -763,6 +766,32 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
     void findPrevious() {
         find(false);
+    }
+
+
+    private int getCountFindMatches(EditorFindSupport findSupport) {
+            int num = 0;
+            try {
+                int[] blocks = findSupport.getBlocks(new int [] {-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
+                for (int i : blocks) {
+                    if (i > 0) {
+                        num++;
+                    }
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return num == 0 ? 0 : (num + 1) / 2;
+    }
+
+    private void changeHighlightCheckboxName(int num) {
+        if (num == 0) {
+            Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight"));
+        } else if (num == 1) {
+            Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight_1_results"));
+        } else {
+            Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight_n_results", num));
+        }
     }
 
     private void find(boolean next) {
@@ -778,9 +807,11 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         if (findSupport.find(actualfindProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
             incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
+            changeHighlightCheckboxName(getCountFindMatches(findSupport));
         } else {
             // text not found - indicate error in incremental search text field with red foreground
             incSearchTextField.setForeground(NOT_FOUND);
+            changeHighlightCheckboxName(0);
             Toolkit.getDefaultToolkit().beep();
         }
     }
