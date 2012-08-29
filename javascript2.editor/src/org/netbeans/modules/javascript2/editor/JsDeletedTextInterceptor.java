@@ -81,7 +81,7 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         switch (ch) {
         case ' ': {
             // Backspacing over "// " ? Delete the "//" too!
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
             if (ts != null && ts.token().id() == JsTokenId.LINE_COMMENT) {
                 if (ts.offset() == dotPos-2) {
                     doc.remove(dotPos-2, 2);
@@ -111,7 +111,7 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
 
         case '/': {
             // Backspacing over "//" ? Delete the whole "//"
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
             if (ts != null && ts.token().id() == JsTokenId.REGEXP_BEGIN) {
                 if (ts.offset() == dotPos-1) {
                     doc.remove(dotPos-1, 1);
