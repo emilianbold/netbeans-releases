@@ -989,6 +989,9 @@ public class JsFormatter implements Formatter {
 
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         TokenHierarchy.get(doc), context.startOffset(), language);
+                if (ts == null) {
+                    return;
+                }
                 ts.move(0);
 
                 int indentationLevel = 0;
