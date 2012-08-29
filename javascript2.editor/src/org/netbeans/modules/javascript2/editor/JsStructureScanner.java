@@ -107,7 +107,9 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    if (function.isDeclared()) {
+                        collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    }
                 }
             } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && child.isDeclared()) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
