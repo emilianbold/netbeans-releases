@@ -65,6 +65,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer.Location;
 import org.netbeans.modules.maven.hyperlinks.HyperlinkProviderImpl;
 import static org.netbeans.modules.maven.grammar.effpom.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * strongly inspired by git's implementation
@@ -516,6 +517,13 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
      * Presents commit message as tooltips.
      */
     @Override
+    @Messages({
+        "AnnBar.Line=Line:{0}", 
+        "AnnBar.File=File:{0}", 
+        "AnnBar.Model=Model: <b>{0}</b>",
+        "AnnBar.Value=Value originating from",
+        "AnnBar.NonDetermined=Line's origin cannot be determined.<br/>Either it's coming from the superpom, or Maven doesn't provide the location information for the element."
+    })
     public String getToolTipText (MouseEvent e) {
         if (editorUI == null) {
             return null;
@@ -527,14 +535,15 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
             Location al = getAnnotateLine(line);
 
             if (al != null && al.loc.getSource() != null) {
-                annotation.append("<html>Value originating from<br/>Model: <b>").append(al.loc.getSource().getModelId());
-                annotation.append("</b><br/>Line:").append(al.loc.getLineNumber());
+                annotation.append("<html>").append(AnnBar_Value()).append("<br/>");
+                annotation.append(AnnBar_Model(al.loc.getSource().getModelId())).append("<br/>");
+                annotation.append(AnnBar_Line(al.loc.getLineNumber())).append("<br/>");
                 if (al.loc.getSource().getLocation() != null) {
-                    annotation.append("<br/>File:").append(al.loc.getSource().getLocation());
+                    annotation.append(AnnBar_File(al.loc.getSource().getLocation()));
                 }
                 annotation.append("</html>");
             } else {
-                annotation.append("<html>Line's origin cannot be determined.<br/>Either it's coming from the superpom, or Maven doesn't provide the location information for the element.</html>");
+                annotation.append("<html>").append(AnnBar_NonDetermined()).append("</html>");
             }
         } 
         return annotation.toString();
