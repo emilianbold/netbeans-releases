@@ -155,13 +155,10 @@ NetBeans._resizePage = function(width, height, callback) {
     chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
         // resize
         chrome.windows.getLastFocused(function(win) {
-            // borders must be tweaked a bit (e.g. height of the 'debugging infobar' etc.)
-            var borderWidth = win.width - NetBeans_ViewPort.width + 4;
-            var borderHeight = win.height - NetBeans_ViewPort.height + 26;
             var opt = {};
             opt.state = 'normal';
-            opt.width = parseInt(width) + borderWidth;
-            opt.height = parseInt(height) + borderHeight;
+            opt.width = parseInt(width) + NetBeans_ViewPort.marginWidth;
+            opt.height = parseInt(height) + NetBeans_ViewPort.marginHeight;
             chrome.windows.update(win.id, opt);
             if (callback) {
                 callback();
@@ -242,9 +239,9 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
     if (message.type == 'VIEWPORT') {
-        console.log('Setting new viewport dimensions (' + message.width + ' x ' + message.height + ')');
-        NetBeans_ViewPort.width = message.width;
-        NetBeans_ViewPort.height = message.height;
+        console.log('Setting new viewport dimensions (' + message.marginWidth + ' x ' + message.marginHeight + ')');
+        NetBeans_ViewPort.marginWidth = message.marginWidth;
+        NetBeans_ViewPort.marginHeight = message.marginHeight;
         sendResponse();
     }
 });
