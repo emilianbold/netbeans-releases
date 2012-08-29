@@ -77,6 +77,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -85,6 +87,7 @@ import org.openide.util.NbPreferences;
 public class LocalDownloadSupport {
 
     private static final FileFilter NBM_FILE_FILTER = new NbmFileFilter ();
+    private static final FileFilter OSGI_BUNDLE_FILTER = new OsgiBundleFilter ();
     private static String LOCAL_DOWNLOAD_DIRECTORY_KEY = "local-download-directory"; // NOI18N
     private static String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
     private static String LOCAL_DOWNLOAD_CHECKED_FILES = "local-download-checked-files"; // NOI18N    
@@ -100,6 +103,7 @@ public class LocalDownloadSupport {
         JFileChooser chooser = new JFileChooser ();
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter (NBM_FILE_FILTER);
+        chooser.addChoosableFileFilter (OSGI_BUNDLE_FILTER);
         chooser.setFileFilter (NBM_FILE_FILTER);
         chooser.setMultiSelectionEnabled (true);
         chooser.setFileHidingEnabled (false);
@@ -150,7 +154,7 @@ public class LocalDownloadSupport {
         Collection<UpdateUnit> alreadyInstalled = new HashSet<UpdateUnit> ();
         for (File nbm : newFiles) {
             UpdateUnit u = null;
-            if(NBM_FILE_FILTER.accept(nbm)) {
+            if(NBM_FILE_FILTER.accept(nbm) || OSGI_BUNDLE_FILTER.accept(nbm)) {
                 u = createUpdateUnitFromNBM (nbm, false);
             }
             if (u != null) {
@@ -322,13 +326,26 @@ public class LocalDownloadSupport {
 
         @Override
         public boolean accept (File f) {
-            return f.isDirectory () || f.getName ().toLowerCase ().endsWith (".nbm") // NOI18N
-                    || (f.getName().toLowerCase().endsWith(".jar") && isOSGiBundle(f)); // NOI18N
+            return f.isDirectory () || f.getName ().toLowerCase ().endsWith (".nbm"); // NOI18N
         }
 
         @Override
         public String getDescription () {
             return NbBundle.getMessage(LocalDownloadSupport.class, "CTL_FileFilterDescription"); // NOI18N
+        }
+    }
+
+    private static class OsgiBundleFilter extends FileFilter {
+
+        @Override
+        public boolean accept(File f) {
+            return f.isDirectory() || (f.getName().toLowerCase().endsWith(".jar") && isOSGiBundle(f)); // NOI18N
+        }
+
+        @Override
+        @Messages("CTL_OsgiBundleFilterDescription=OSGi Bundle files (*.jar)")
+        public String getDescription() {
+            return CTL_OsgiBundleFilterDescription(); // NOI18N
         }
     }
 

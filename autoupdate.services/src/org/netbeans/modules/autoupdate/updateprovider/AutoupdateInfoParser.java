@@ -178,12 +178,12 @@ public class AutoupdateInfoParser extends DefaultHandler {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
         try {
             SAXParser saxParser = SAXParserFactory.newInstance ().newSAXParser ();
-            if (isOSGiBundle(nbmFile)) {
-                // OSGi
-                saxParser.parse (getAutoupdateInfoInputStream (nbmFile), new AutoupdateInfoParser (items, nbmFile));
-            } else {
+            if (!isOSGiBundle(nbmFile)) {
                 // standard NBM
-                saxParser.parse (getAutoupdateInfoInputSource (nbmFile), new AutoupdateInfoParser (items, nbmFile));
+                saxParser.parse(getAutoupdateInfoInputSource(nbmFile), new AutoupdateInfoParser(items, nbmFile));
+            } else {
+                // OSGi
+                saxParser.parse(getAutoupdateInfoInputStream(nbmFile), new AutoupdateInfoParser(items, nbmFile));
             }
         } catch (SAXException ex) {
             ERR.log (Level.INFO, ex.getMessage (), ex);
@@ -510,7 +510,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
         module.setAttribute("targetcluster", whereFrom.getParentFile().getName()); // #207075 comment #3
         Element manifest = doc.createElement("manifest");
         module.appendChild(manifest);
-        manifest.setAttribute("AutoUpdate-Show-In-Client", "false");
+        manifest.setAttribute("AutoUpdate-Show-In-Client", "true"); // show me in UI
         manifest.setAttribute("OpenIDE-Module", cnb);
         String bundleName = loc(localized, attr, "Bundle-Name");
         manifest.setAttribute("OpenIDE-Module-Name", bundleName != null ? bundleName : cnb);
