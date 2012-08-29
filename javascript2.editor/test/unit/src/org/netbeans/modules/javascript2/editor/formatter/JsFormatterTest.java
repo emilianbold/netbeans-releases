@@ -82,8 +82,8 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
     }
 
-    public void testSimpleIndent() throws Exception {
-        reindentFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
+    public void testSimpleIndented() throws Exception {
+        reindentFileContents("testfiles/simple.js", null);
     }
 
     public void testTrailingSpaces1() throws Exception {
@@ -475,6 +475,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/switch6.js");
     }
 
+    public void testSwitch189745() throws Exception {
+        reformatFileContents("testfiles/formatter/switch189745.js",new IndentPrefs(4, 4));
+    }
+
+    public void testSwitch189745Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch189745.js", null);
+    }
+
     public void testIf1() throws Exception {
         reformatFileContents("testfiles/formatter/if1.js",new IndentPrefs(4, 4));
     }
@@ -829,12 +837,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/formatting1.js");
     }
 
+    public void testFormatting1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/formatting1.js", null);
+    }
+
     public void testFormatting2() throws Exception {
         reformatFileContents("testfiles/formatter/formatting2.js",new IndentPrefs(4, 4));
     }
 
     public void testFormatting2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/formatting2.js");
+    }
+
+    public void testFormatting2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/formatting2.js", null);
     }
 
     public void testCommas1() throws Exception {
@@ -1122,6 +1138,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/arrays1.js");
     }
 
+    public void testArrays1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/arrays1.js", null);
+    }
+
     public void testArrays2Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -1142,6 +1162,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrays2.js");
+    }
+
+    public void testArrays2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/arrays2.js", null);
     }
 
     public void testPartialFormat1() throws Exception {

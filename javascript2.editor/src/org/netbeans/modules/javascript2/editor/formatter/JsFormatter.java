@@ -1545,38 +1545,38 @@ public class JsFormatter implements Formatter {
             } else if (id == JsTokenId.EOL) {
 
 //                if (!indentOnly) {
-//                    TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
-//                    // skip whitespaces and newlines
-//                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(inner);
-//                    TokenId tokenId = nextToken == null ? null : nextToken.id();
-//                    if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
-//                        // if it is end of 'switch'
-//                        OffsetRange offsetRange = LexUtilities.findBwd(doc, inner, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
-//                        if (offsetRange != OffsetRange.NONE) {
-//                            inner.movePrevious();
-//                            if (LexUtilities.skipParenthesis(inner, true)) {
-//                                Token<? extends JsTokenId> token = inner.token();
-//                                token = LexUtilities.findPreviousNonWsNonComment(inner);
-//                                if (token.id() == JsTokenId.KEYWORD_SWITCH) {
-//                                    return -1;
-//                                }
-//                            }
-//                        }
-//                    } else if (tokenId == JsTokenId.KEYWORD_CASE || tokenId == JsTokenId.KEYWORD_DEFAULT) {
-//                        inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
-//                        Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(inner);
-//                        if (prevToken.id() != JsTokenId.BRACKET_LEFT_CURLY) {
-//                            // it must be case or default
-//                            inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
-//                            prevToken = LexUtilities.findPreviousIncluding(inner,
-//                                    Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT));
-//                            int beginLine = Utilities.getLineOffset(doc, inner.offset());
-//                            int eolLine = Utilities.getLineOffset(doc, ts.offset());
-//                            if (beginLine != eolLine) {
-//                                return -1;
-//                            }
-//                        }
-//                    }
+                    TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                    // skip whitespaces and newlines
+                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(inner);
+                    TokenId tokenId = nextToken == null ? null : nextToken.id();
+                    if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                        // if it is end of 'switch'
+                        OffsetRange offsetRange = LexUtilities.findBwd(doc, inner, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+                        if (offsetRange != OffsetRange.NONE) {
+                            inner.movePrevious();
+                            if (LexUtilities.skipParenthesis(inner, true)) {
+                                Token<? extends JsTokenId> token = inner.token();
+                                token = LexUtilities.findPreviousNonWsNonComment(inner);
+                                if (token.id() == JsTokenId.KEYWORD_SWITCH) {
+                                    return -1;
+                                }
+                            }
+                        }
+                    } else if (tokenId == JsTokenId.KEYWORD_CASE || tokenId == JsTokenId.KEYWORD_DEFAULT) {
+                        inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                        Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(inner);
+                        if (prevToken.id() != JsTokenId.BRACKET_LEFT_CURLY) {
+                            // it must be case or default
+                            inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                            prevToken = LexUtilities.findPreviousIncluding(inner,
+                                    Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT));
+                            int beginLine = Utilities.getLineOffset(doc, inner.offset());
+                            int eolLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (beginLine != eolLine) {
+                                return -1;
+                            }
+                        }
+                    }
 //                }
 
                 // other
