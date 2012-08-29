@@ -239,7 +239,7 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
     if (message.type == 'VIEWPORT') {
-        console.log('Setting new viewport dimensions (' + message.marginWidth + ' x ' + message.marginHeight + ')');
+        console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
         sendResponse();
