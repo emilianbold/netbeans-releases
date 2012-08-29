@@ -533,6 +533,8 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
                     annotation.append("<br/>File:").append(al.loc.getSource().getLocation());
                 }
                 annotation.append("</html>");
+            } else {
+                annotation.append("<html>Line's origin cannot be determined.<br/>Either it's coming from the superpom, or Maven doesn't provide the location information for the element.</html>");
             }
         } 
         return annotation.toString();
