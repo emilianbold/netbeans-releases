@@ -366,7 +366,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                     } else {
                         rb.setEnabled(false);
                     }
-                    if (rb.isSelected()) {
+                    if (rb.isSelected() && rb.isEnabled()) {
                         reset = false; //fix for 157499, we need to reset if profile is non sense to default
                     } 
                 }
