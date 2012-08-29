@@ -128,7 +128,42 @@ public final class LexUtilities {
 
         return ts;
     }
-    
+
+    /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<? extends JsTokenId> getNextJsTokenSequence(Document doc, int fromOffset, int max, Language<JsTokenId> language) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = th.tokenSequence();
+        ts.move(fromOffset);
+
+        return findNextJsTokenSequence(ts, fromOffset, max, language);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static TokenSequence<? extends JsTokenId> findNextJsTokenSequence(TokenSequence<?> ts, int fromOffset, int max, Language<JsTokenId> language) {
+        if (ts.language() == language) {
+            if (!ts.moveNext()) {
+                return null;
+            }
+            return (TokenSequence<? extends JsTokenId>) ts;
+        }
+
+        while (ts.moveNext() && ts.offset() <= max) {
+            int offset = ts.offset();
+
+            TokenSequence<?> ets = ts.embedded();
+            if (ets != null) {
+                ets.move(offset);
+                TokenSequence<? extends JsTokenId> result = findNextJsTokenSequence(ets, fromOffset, max, language);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
     public static OffsetRange findFwd(Document doc, TokenSequence<? extends JsTokenId> ts, TokenId up,
         TokenId down) {
@@ -309,7 +344,7 @@ public final class LexUtilities {
         return getPositionedSequence(snapshot, offset, true, JsTokenId.javascriptLanguage());
     }
 
-    private static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc,
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc,
             int offset, boolean lookBack, Language<JsTokenId> language) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         return _getPosSeq(getTokenSequence(th, offset, language), offset, lookBack);
@@ -422,5 +457,114 @@ public final class LexUtilities {
 
     public static Token<?extends JsTokenId> findPreviousNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
         return findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+    }
+
+    public static OffsetRange getMultilineRange(Document doc, TokenSequence<? extends JsTokenId> ts) {
+        int index = ts.index();
+        OffsetRange offsetRange = findMultilineRange(ts);
+        ts.moveIndex(index);
+        ts.moveNext();
+        return offsetRange;
+    }
+
+    private static OffsetRange findMultilineRange(TokenSequence<? extends JsTokenId> ts) {
+        int startOffset = ts.offset();
+        JsTokenId id = ts.token().id();
+        switch (id) {
+            case KEYWORD_ELSE:
+                ts.moveNext();
+                id = ts.token().id();
+                break;
+            case KEYWORD_IF:
+            case KEYWORD_FOR:
+            case KEYWORD_WHILE:
+                ts.moveNext();
+                if (!skipParenthesis(ts, false)) {
+                    return OffsetRange.NONE;
+                }
+                id = ts.token().id();
+                break;
+            default:
+                return OffsetRange.NONE;
+        }
+
+        boolean eolFound = false;
+        int lastEolOffset = ts.offset();
+
+        // skip whitespaces and comments
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT || id == JsTokenId.EOL) {
+            if (ts.token().id() == JsTokenId.EOL) {
+                lastEolOffset = ts.offset();
+                eolFound = true;
+            }
+            while (ts.moveNext() && (
+                    ts.token().id() == JsTokenId.WHITESPACE ||
+                    ts.token().id() == JsTokenId.LINE_COMMENT ||
+                    ts.token().id() == JsTokenId.EOL ||
+                    ts.token().id() == JsTokenId.BLOCK_COMMENT ||
+                    ts.token().id() == JsTokenId.DOC_COMMENT)) {
+                if (ts.token().id() == JsTokenId.EOL) {
+                    lastEolOffset = ts.offset();
+                    eolFound = true;
+                }
+            }
+        }
+        // if we found end of sequence or end of line
+        if (ts.token() == null || (ts.token().id() != JsTokenId.BRACKET_LEFT_CURLY && eolFound)) {
+            return new OffsetRange(startOffset, lastEolOffset);
+        }
+        return  OffsetRange.NONE;
+    }
+
+    /**
+     * Tries to skip parenthesis
+     */
+    public static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts, boolean back) {
+        int balance = 0;
+
+        Token<?extends JsTokenId> token = ts.token();
+        if (token == null) {
+            return false;
+        }
+
+        TokenId id = token.id();
+
+//        // skip whitespaces
+//        if (id == JsTokenId.WHITESPACE) {
+//            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
+//        }
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.EOL) {
+            while ((back ? ts.movePrevious() : ts.moveNext()) && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
+        }
+
+        // if current token is not left parenthesis
+        if (ts.token().id() != (back ? JsTokenId.BRACKET_RIGHT_PAREN : JsTokenId.BRACKET_LEFT_PAREN)) {
+            return false;
+        }
+
+        do {
+            token = ts.token();
+            id = token.id();
+
+            if (id == (back ? JsTokenId.BRACKET_RIGHT_PAREN : JsTokenId.BRACKET_LEFT_PAREN)) {
+                balance++;
+            } else if (id == (back ? JsTokenId.BRACKET_LEFT_PAREN : JsTokenId.BRACKET_RIGHT_PAREN)) {
+                if (balance == 0) {
+                    return false;
+                } else if (balance == 1) {
+                    //int length = ts.offset() + token.length();
+                    if (back) {
+                        ts.movePrevious();
+                    } else {
+                        ts.moveNext();
+                    }
+                    return true;
+                }
+
+                balance--;
+            }
+        } while (back ? ts.movePrevious() : ts.moveNext());
+
+        return false;
     }
 }

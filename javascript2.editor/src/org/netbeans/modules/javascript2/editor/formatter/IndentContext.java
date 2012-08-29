@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import java.util.Stack;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
@@ -55,6 +57,26 @@ public final class IndentContext {
 
     private final boolean embedded;
 
+    /**
+     * <p>
+     * Stack describing indentation of blocks defined by '{', '[' and blocks
+     * with missing optional curly braces '{'. See also getBracketBalanceDelta()
+     * </p>
+     * For example:
+     * <pre>
+     * if (true)        // [ StackItem[block=true] ]
+     *   if (true) {    // [ StackItem[block=true], StackItem[block=false] ]
+     *     if (true)    // [ StackItem[block=true], StackItem[block=false], StackItem[block=true] ]
+     *       foo();     // [ StackItem[block=true], StackItem[block=false] ]
+     *     bar();       // [ StackItem[block=true], StackItem[block=false] ]
+     *   }              // [ StackItem[block=true] ]
+     * fooBar();        // [ ]
+     * </pre>
+     */
+    private final Stack<BlockDescription> blocks = new Stack<BlockDescription>();
+
+    private int embeddedIndent;
+
     public IndentContext(Context context) {
         this.context = context;
 
@@ -66,7 +88,53 @@ public final class IndentContext {
         return (BaseDocument) context.document();
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     public boolean isEmbedded() {
         return embedded;
+    }
+
+    public int getEmbeddedIndent() {
+        return embeddedIndent;
+    }
+
+    public void setEmbeddedIndent(int embeddedIndent) {
+        this.embeddedIndent = embeddedIndent;
+    }
+
+    public Stack<BlockDescription> getBlocks() {
+        return blocks;
+    }
+
+    public static final class BlockDescription {
+
+        /**
+         * Marks block without optional curly braces.
+         */
+        private final boolean braceless;
+
+        /**
+         * For braceless blocks it is range from statement beginning (e.g. |if...)
+         * to end of line where curly brace would be (e.g. if(...) |\n )<br>
+         * For braces and brackets blocks it is offset of beginning of token for
+         * both - beginning and end of range (e.g. OffsetRange[ts.token(), ts.token()])
+         */
+        private final OffsetRange range;
+
+        public BlockDescription(boolean braceless, OffsetRange range) {
+            this.braceless = braceless;
+            this.range = range;
+        }
+
+        public boolean isBraceless() {
+            return braceless;
+        }
+
+        public OffsetRange getRange() {
+            return range;
+        }
+
     }
 }
