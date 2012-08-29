@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>com.tasktop.commons.core</code-name-base>
+            <module-dependencies>
+            </module-dependencies>
+            <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>com-tasktop-commons-core.jar</runtime-relative-path>
+                <binary-origin>external/com.tasktop.commons.core-1.2.0.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

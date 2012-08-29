@@ -51,6 +51,7 @@ import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.UI;
+import org.netbeans.modules.hudson.impl.HudsonJobBuildImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.nodes.AbstractNode;
@@ -74,19 +75,7 @@ class HudsonJobBuildNode extends AbstractNode {
         if (build.isBuilding()) {
             effectiveColor = build.getJob().getColor();
         } else {
-            switch (build.getResult()) {
-            case SUCCESS:
-                effectiveColor = Color.blue;
-                break;
-            case UNSTABLE:
-                effectiveColor = Color.yellow;
-                break;
-            case FAILURE:
-                effectiveColor = Color.red;
-                break;
-            default:
-                effectiveColor = Color.grey;
-            }
+            effectiveColor = HudsonJobBuildImpl.getColorForBuild(build);
         }
         try {
             htmlDisplayName = effectiveColor.colorizeDisplayName(XMLUtil.toElementContent(getDisplayName()));
@@ -122,7 +111,9 @@ class HudsonJobBuildNode extends AbstractNode {
                 Collection<? extends HudsonMavenModuleBuild> modules = build.getMavenModules();
                 if (modules.isEmpty()) {
                     // XXX is it possible to cheaply check in advance if the build has any artifacts?
-                    toPopulate.add(ARTIFACTS);
+                    if (build.getArtifacts() != null) {
+                        toPopulate.add(ARTIFACTS);
+                    }
                 } else {
                     toPopulate.addAll(modules);
                 }
