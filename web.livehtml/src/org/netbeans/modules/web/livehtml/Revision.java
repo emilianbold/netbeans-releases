@@ -63,32 +63,15 @@ public final class Revision {
     private List<Change> changes;
     private List<Change> reformattedChanges;
     
-    private StringBuilder previewContent;
-    private StringBuilder reformattedPreviewContent;
+    final private StringBuilder previewContent;
         
     private JSONArray stacktrace;
     private StringBuilder data;
     
-    @Deprecated
-    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp, int index) {
-        this.content = content;
-        
-        if (stacktrace != null) {
-            final Object object = JSONValue.parse(stacktrace.toString());
-            if (object instanceof JSONArray) {
-                this.stacktrace = (JSONArray) object;
-            }
-        }
-        
-        this.changes = changes;
-        this.data = data;
-        this.timeStamp = timeStamp;
-        this.index = index;
-        
-        addRemovedContent();
-    }
-
-    public Revision(int index, String timeStamp, StringBuilder content, StringBuilder reformattedContent, List<Change> changes, List<Change> reformattedChanges, StringBuilder stacktrace, StringBuilder data) {
+    public Revision(int index, String timeStamp, StringBuilder content, 
+                StringBuilder reformattedContent, List<Change> changes, 
+                List<Change> reformattedChanges, StringBuilder stacktrace, 
+                StringBuilder data, StringBuilder previewContent) {
         this.index = index;
         this.timeStamp = timeStamp;
         this.content = content;
@@ -99,6 +82,7 @@ public final class Revision {
             this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
         }
         this.data = data;
+        this.previewContent = previewContent;
         
         addRemovedContent();
     }
@@ -184,30 +168,6 @@ public final class Revision {
 
     public StringBuilder getPreviewContent() {
         return previewContent;
-    }
-
-    public void setPreviewContent(StringBuilder previewContent) {
-        this.previewContent = previewContent;
-    }
-
-    public StringBuilder getReformattedPreviewContent() {
-        return reformattedPreviewContent;
-    }
-
-    public void setReformattedPreviewContent(StringBuilder reformattedPreviewContent) {
-        this.reformattedPreviewContent = reformattedPreviewContent;
-    }
-    
-    public StringBuilder resolvePreviewContent(boolean reformat) {
-        return reformat ? getReformattedPreviewContent() : getPreviewContent();
-    }
-
-    public void updatePreviewContent(StringBuilder previewContent, boolean reformat) {
-        if (reformat) {
-            setReformattedPreviewContent(reformattedPreviewContent);
-        } else {
-            setPreviewContent(previewContent);
-        }
     }
 
     @Override

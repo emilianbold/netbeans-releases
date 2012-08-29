@@ -43,6 +43,9 @@ package org.netbeans.modules.web.livehtml;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,29 +71,12 @@ public class IgnoreWhiteSpacesTest extends NbTestCase {
     public void test() {
         assertEquals(11, analysis.getTimeStampsCount());
 
-        assertEquals(4, filteredAnalysis.getTimeStampsCount());
+        assertEquals(5, filteredAnalysis.getTimeStampsCount());
 
-        assertNull(filteredAnalysis.getWhiteSpaceGroupedRevisions(0));
-
-        final Set<Integer> whiteSpaceGroupedRevisions1 = filteredAnalysis.getWhiteSpaceGroupedRevisions(1);
-        assertNotNull(whiteSpaceGroupedRevisions1);
-        assertEquals(4, whiteSpaceGroupedRevisions1.size());
-        assertTrue(whiteSpaceGroupedRevisions1.contains(2));
-        assertTrue(whiteSpaceGroupedRevisions1.contains(3));
-        assertTrue(whiteSpaceGroupedRevisions1.contains(4));
-        assertTrue(whiteSpaceGroupedRevisions1.contains(5));
-
-        final Set<Integer> whiteSpaceGroupedRevisions2 = filteredAnalysis.getWhiteSpaceGroupedRevisions(2);
-        assertNotNull(whiteSpaceGroupedRevisions2);
-        assertEquals(1, whiteSpaceGroupedRevisions2.size());
-        assertTrue(whiteSpaceGroupedRevisions2.contains(7));
-
-        final Set<Integer> whiteSpaceGroupedRevisions3 = filteredAnalysis.getWhiteSpaceGroupedRevisions(3);
-        assertNotNull(whiteSpaceGroupedRevisions3);
-        assertEquals(2, whiteSpaceGroupedRevisions3.size());
-        assertTrue(whiteSpaceGroupedRevisions3.contains(9));
-        assertTrue(whiteSpaceGroupedRevisions3.contains(10));
-
+        List<Integer> result = new ArrayList<Integer>();
+        filteredAnalysis.getWhiteSpaceGroupedRevisions(result);
+        List<Integer> expected = Arrays.asList(new Integer[]{2,3,4,5,7,9});
+        assertEquals(expected, result);
     }
 
     @Before

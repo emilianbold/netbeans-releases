@@ -43,6 +43,10 @@ package org.netbeans.modules.web.livehtml;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,19 +74,10 @@ public class StackTraceRevisionFilterTest extends NbTestCase {
 
         assertEquals(4, filteredAnalysis.getTimeStampsCount());
 
-        assertNull(filteredAnalysis.getStackTraceGroupedRevisions(0));
-
-        assertNull(filteredAnalysis.getStackTraceGroupedRevisions(1));
-
-        assertNull(filteredAnalysis.getStackTraceGroupedRevisions(2));
-
-        final Set<Integer> stackTraceGroupedRevisions3 = filteredAnalysis.getStackTraceGroupedRevisions(3);
-        assertNotNull(stackTraceGroupedRevisions3);
-        assertEquals(4, stackTraceGroupedRevisions3.size());
-        assertTrue(stackTraceGroupedRevisions3.contains(4));
-        assertTrue(stackTraceGroupedRevisions3.contains(5));
-        assertTrue(stackTraceGroupedRevisions3.contains(6));
-        assertTrue(stackTraceGroupedRevisions3.contains(7));
+        List<Integer> result = new ArrayList<Integer>();
+        filteredAnalysis.getGroupByStackTraceRevisions(result, Collections.<String>emptyList());
+        List<Integer> expected = Arrays.asList(new Integer[]{3,4,5,6});
+        assertEquals(expected, result);
     }
 
     @Before

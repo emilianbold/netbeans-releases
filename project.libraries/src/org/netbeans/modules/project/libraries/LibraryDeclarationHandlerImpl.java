@@ -174,9 +174,6 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         }
         Util.setDisplayName(this.library,displayName);
         Util.setProperties(this.library, properties);
-        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
-            Util.setProperties(this.library, properties);
-        }
         for (Map.Entry<String,List<URL>> entry : contentTypes.entrySet()) {
             String contentType = entry.getKey();
             List<URL> cp = entry.getValue();

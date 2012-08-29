@@ -505,7 +505,7 @@ public class Diff {
             sb.append(prefix).append(""+e.from()+" ").append(e.image()).append(" "+de.getChange()).append("\n");
         }
     }
-    
+
     private static class WhiteSpaceFilter implements ElementFilter {
 
         @Override
@@ -762,13 +762,18 @@ public class Diff {
     }
     
     private boolean compareTwoOpenTagsByImage(OpenTag openTag1, OpenTag openTag2, int minimumNumberOfAttrs) {
-        CharSequence image1 = s1.getSourceCode().subSequence(openTag1.from(), openTag1.to());
-        CharSequence image2 = s2.getSourceCode().subSequence(openTag2.from(), openTag2.to());
-        if (image1.equals(image2) && openTag1.attributes().size() >= minimumNumberOfAttrs) {
-            // whole tag was matched:
-            return true;
+        try {
+            CharSequence image1 = s1.getSourceCode().subSequence(openTag1.from(), openTag1.to());
+            CharSequence image2 = s2.getSourceCode().subSequence(openTag2.from(), openTag2.to());
+            if (image1.equals(image2) && openTag1.attributes().size() >= minimumNumberOfAttrs) {
+                // whole tag was matched:
+                return true;
+            }
+            return false;
+        } catch (StringIndexOutOfBoundsException se) {
+            // ignore:
+            return false;
         }
-        return false;
     }
     
     private boolean compareTwoOpenTagsById(OpenTag v1, OpenTag v2) {
@@ -843,13 +848,13 @@ public class Diff {
         if ((diff.getChange() == DiffElement.ChangeType.NONE || 
                 diff.getChange() == DiffElement.ChangeType.ADDED ||
                 diff.getChange() == DiffElement.ChangeType.ADDED_BY_MOVE) && 
-                diff.getCurrentElement().from() != -1) {
+                diff.getCurrentElement().from() != -1 && diff.getCurrentElement().to() != -1) {
             // record position after any real node - that's were deleted nodes should
             // be inserted
             offsetForRemovedElements = diff.getCurrentElement().to();
         }
         
-        if (diff.getChange() == DiffElement.ChangeType.ADDED && diff.getCurrentElement().from() != -1) {
+        if (diff.getChange() == DiffElement.ChangeType.ADDED && diff.getCurrentElement().from() != -1 && diff.getCurrentElement().to() != -1) {
             int end = diff.getCurrentElement().to();
             if (diff.getCurrentElement().matchingCloseTag() != null) {
                 end = diff.getCurrentElement().matchingCloseTag().to();
@@ -862,7 +867,7 @@ public class Diff {
             } else {
                 changes.add(ch);
             }
-        } else if (diff.getChange() == DiffElement.ChangeType.REMOVED && diff.getPreviousElement().from() != -1) {
+        } else if (diff.getChange() == DiffElement.ChangeType.REMOVED && diff.getPreviousElement().from() != -1 && diff.getPreviousElement().to() != -1) {
             assert offsetForRemovedElements != -1;
             int end = diff.getPreviousElement().to();
 //            if (diff.getPreviousElement().matchingCloseTag() != null) {

@@ -45,6 +45,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigur
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 
@@ -85,6 +86,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        LifecycleManager.getDefault().saveAll();
         // XXX sorry no idea how to do this correctly
         if (COMMAND_RENAME.equals(command)) {
             renameProject();

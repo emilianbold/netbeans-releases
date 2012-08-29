@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.livehtml.filter;
 
 import java.io.File;
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,10 +69,6 @@ public class FilteredAnalysis extends Analysis {
     
     private final Analysis parentAnalysis;
     
-    private final GroupedRevisions whiteSpaceGroupedRevisions = new GroupedRevisions();
-    private final GroupedRevisions stackTraceGroupedRevisions = new GroupedRevisions();
-    private final GroupedRevisions scriptLocationGroupedRevisions = new GroupedRevisions();
-
     private AnalysisListener analysisListener = new FilteredAnalysis.PrivateAnalystListener();
     
     private final boolean groupWhiteSpaces;
@@ -115,6 +112,7 @@ public class FilteredAnalysis extends Analysis {
         // This code is specific for this class.
         StringBuilder stackTrace = read(STACKTRACE, timeStamp);
         StringBuilder data = read(DATA, timeStamp);
+        StringBuilder previewContent = read(NO_JS_CONTENT, timeStamp);
         
         Revision revision = new Revision(
                 changeIndex,
@@ -124,83 +122,38 @@ public class FilteredAnalysis extends Analysis {
                 Change.decodeFromJSON(diff == null ? null : diff.toString()), 
                 Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString()), 
                 stackTrace,
-                data);
-        revision.setPreviewContent(read(NO_JS_CONTENT, timeStamp));
-        revision.setReformattedPreviewContent(read(FORMATTED_NO_JS_CONTENT, timeStamp));
+                data,
+                previewContent);
         
         return revision;
     }
 
     private void applyFilter() {
         getTimeStamps().clear();
-        
         final List<Integer> revisionIndexes = new ArrayList<Integer>();
-        for (int i = 1; i < getParentAnalysis().getTimeStampsCount(); i++) {
-            revisionIndexes.add(i);
+
+        if (isGroupWhiteSpaces()) {
+            getWhiteSpaceGroupedRevisions(revisionIndexes);
+        }
+        if (isGroupIdenticalStackTraces()) {
+            getGroupByStackTraceRevisions(revisionIndexes, Collections.<String>emptyList());
+        }
+        if (getGroupScriptLocations() != null && getGroupScriptLocations().size() > 0) {
+            getGroupByStackTraceRevisions(revisionIndexes, groupScriptLocations);
         }
         
-        List<GroupedRevisions> groupedRevisionsList = new ArrayList<GroupedRevisions>();
-        
-        // Update this instance GroupedRevisions
-        groupedRevisionsList.add(getWhiteSpaceGroupedRevisions(revisionIndexes));
-        groupedRevisionsList.add(getIdenticalStackTraceGroupedRevisions(revisionIndexes));
-        groupedRevisionsList.add(getStackTraceGroupedRevisions(revisionIndexes));
-        
-        // GroupedRevisions can contain key values removed later during process - this will 
-        FilteredAnalysis.fixRemovedRevisions(revisionIndexes, groupedRevisionsList);
-        
-        // revision with index 0 must be added from parent Analysis
-        Revision revision0 = getParentAnalysis().getRevision(0);
-        storeDocumentVersion(revision0, true);
-        
-        for (Integer revisionIndex : revisionIndexes) {
-            final int timeStampsCount = getTimeStampsCount();
-            int maxRevisionIndex = revisionIndex;
-            for (GroupedRevisions groupedRevisions : groupedRevisionsList) {
-                final Set<Integer> revisions = groupedRevisions.get(revisionIndex);
-                
-                // remove original indexes
-                groupedRevisions.remove(revisionIndex);
-                groupedRevisions.putRevisionIndexes(timeStampsCount, revisions);
-                
-                maxRevisionIndex = Math.max(maxRevisionIndex, FilterUtilities.safeMax(revisions));
+        Analysis a = getParentAnalysis();
+        for (int i=0; i < a.getTimeStampsCount(); i++) {
+            if (revisionIndexes.contains(i) && i+1 != a.getTimeStampsCount()) {
+                assert i != 0 : "first revision should never be removed";
+                continue;
             }
-            
-            Revision revision = getParentAnalysis().getRevision(maxRevisionIndex);
+            Revision revision = getParentAnalysis().getRevision(i);
             storeDocumentVersion(revision, true);
         }
-        
         makeFinished();
     }
     
-    /**
-     * Gets detail information about specified revision for UI.
-     * @param revisionIndex index of revision to process.
-     * @return Specified revision detail information.
-     */
-    public String getRevisionDetailLabel(int selectedRevisionIndex) {
-        StringBuilder label = new StringBuilder();
-        
-        final Set<Integer> scriptGroupRevisions1 = getScriptGroupedRevisions(selectedRevisionIndex);
-        if (scriptGroupRevisions1 != null) {
-            label.append(" + Grouped by script");
-            label.append(scriptGroupRevisions1);
-        }
-        final Set<Integer> stackTraceGroupRevisions1 = getStackTraceGroupedRevisions(selectedRevisionIndex);
-        if (stackTraceGroupRevisions1 != null) {
-            label.append(" + Grouped by Stack Trace");
-            label.append(stackTraceGroupRevisions1);
-        }
-        
-        final Set<Integer> whiteSpaceGroupedRevisions1 = getWhiteSpaceGroupedRevisions(selectedRevisionIndex);
-        if (whiteSpaceGroupedRevisions1 != null) {
-            label.append(" + Grouped by White spaces");
-            label.append(whiteSpaceGroupedRevisions1);
-        }
-        
-        return label.toString();
-    }
-
     private void storeDocumentVersion(Revision revision, boolean realChange) {
         if (revision == null) {
             return;
@@ -223,39 +176,6 @@ public class FilteredAnalysis extends Analysis {
                 realChange);
     }
 
-    public Set<Integer> getWhiteSpaceGroupedRevisions(Integer revisionIndex) {
-        if (!hasWhiteSpaceGroupedRevisions()) {
-            return null;
-        }
-        return whiteSpaceGroupedRevisions.get(revisionIndex);
-    }
-
-    public Set<Integer> getStackTraceGroupedRevisions(Integer revisionIndex) {
-        if (!hasStackTraceGroupedRevisions()) {
-            return null;
-        }
-        return stackTraceGroupedRevisions.get(revisionIndex);
-    }
-
-    public Set<Integer> getScriptGroupedRevisions(Integer revisionIndex) {
-        if (!hasScriptGroupedRevisions()) {
-            return null;
-        }
-        return scriptLocationGroupedRevisions.get(revisionIndex);
-    }
-
-    private boolean hasWhiteSpaceGroupedRevisions() {
-        return whiteSpaceGroupedRevisions != null && !whiteSpaceGroupedRevisions.isEmpty();
-    }
-
-    private boolean hasStackTraceGroupedRevisions() {
-        return stackTraceGroupedRevisions != null && !stackTraceGroupedRevisions.isEmpty();
-    }
-
-    private boolean hasScriptGroupedRevisions() {
-        return scriptLocationGroupedRevisions != null && !scriptLocationGroupedRevisions.isEmpty();
-    }
-
     public boolean isGroupWhiteSpaces() {
         return groupWhiteSpaces;
     }
@@ -268,41 +188,20 @@ public class FilteredAnalysis extends Analysis {
         return groupScriptLocations;
     }
 
-    /**
-     * Gets {@link #whiteSpaceGroupedRevisions} grouped by White Spaces when value of {@link #isGroupWhiteSpaces()} property is <b>true</b>. 
-     * Cleared {@link #whiteSpaceGroupedRevisions} is returned when value of {@link #isGroupWhiteSpaces()} property is <b>false</b>
-     * @param revisionIndexes revision indexes of parent {@link Analysis} to process.
-     * @return {@link #whiteSpaceGroupedRevisions}
-     */
-    private GroupedRevisions getWhiteSpaceGroupedRevisions(List<Integer> revisionIndexes) {
-        whiteSpaceGroupedRevisions.clear();
-        if (revisionIndexes == null || revisionIndexes.isEmpty() || !isGroupWhiteSpaces()) {
-            return whiteSpaceGroupedRevisions;
-        }
-        
-        Integer lastWhiteSpaceRevisionIndex = null;
-        for (Iterator<Integer> it = revisionIndexes.iterator(); it.hasNext();) {
-            Integer revisionIndex = it.next();
-            final String timeStamp = getParentAnalysis().getTimeStamps().get(revisionIndex);
-            final StringBuilder diffStr = getParentAnalysis().read(Analysis.DIFF, timeStamp);
-            final List<Change> diff = Change.decodeFromJSON(diffStr == null ? null : diffStr.toString());
-            
-            if (isEmptyChanges(diff)) {
-                if (lastWhiteSpaceRevisionIndex == null) {
-                    lastWhiteSpaceRevisionIndex = revisionIndex;
-                } else {
-                    whiteSpaceGroupedRevisions.putRevisionIndex(lastWhiteSpaceRevisionIndex, revisionIndex);
-                    it.remove();
-                }
-            } else {
-                if (lastWhiteSpaceRevisionIndex != null) {
-                    lastWhiteSpaceRevisionIndex = revisionIndex;
-                }
+    public void getWhiteSpaceGroupedRevisions(List<Integer> revisionIndexes) {
+        Analysis a = getParentAnalysis();
+        // first and second revision will never have any diff:
+        for (int i=2; i < a.getRevisionsCount(); i++) {
+            if (revisionIndexes.contains(i)) {
+                continue;
             }
-
+            String timeStamp = a.getTimeStamps().get(i);
+            StringBuilder diffStr = getParentAnalysis().read(Analysis.DIFF, timeStamp);
+            List<Change> diff = Change.decodeFromJSON(diffStr == null ? null : diffStr.toString());
+            if (isEmptyChanges(diff)) {
+                revisionIndexes.add(i);
+            }
         }
-        
-        return whiteSpaceGroupedRevisions;
     }
     
     private static boolean isEmptyChanges(List<Change> changes) {
@@ -317,74 +216,26 @@ public class FilteredAnalysis extends Analysis {
         return true;
     }
     
-    /**
-     * Gets {@link #stackTraceGroupedRevisions} grouped by identical JavaScript Stack Trace when value of {@link #isGroupIdenticalStackTraces()} property is <b>true</b>. 
-     * Cleared {@link #stackTraceGroupedRevisions} is returned when value of {@link #isGroupIdenticalStackTraces()} property is <b>false</b>
-     * @param revisionIndexes revision indexes of parent {@link Analysis} to process.
-     * @return {@link #stackTraceGroupedRevisions}
-     */
-    private GroupedRevisions getIdenticalStackTraceGroupedRevisions(List<Integer> revisionIndexes) {
-        stackTraceGroupedRevisions.clear();
-        if (revisionIndexes == null || revisionIndexes.isEmpty() || !isGroupIdenticalStackTraces()) {
-            return stackTraceGroupedRevisions;
-        }
-        return filterAndGroupByStackTrace(revisionIndexes, null, stackTraceGroupedRevisions);
-    }
-
-    /**
-     * Gets {@link #scriptLocationGroupedRevisions} filtered by script location and grouped by identical JavaScript Stack Trace when value of {@link #getGroupScriptLocations()} is not null or empty. 
-     * Gets cleared {@link #scriptLocationGroupedRevisions} when value of {@link #getGroupScriptLocations()} is null or empty. 
-     * @param revisionIndexes revision indexes of parent {@link Analysis} to process.
-     * @return {@link #scriptLocationGroupedRevisions}
-     */
-    private GroupedRevisions getStackTraceGroupedRevisions(List<Integer> revisionIndexes) {
-        scriptLocationGroupedRevisions.clear();
-        if (revisionIndexes == null || revisionIndexes.isEmpty() || getGroupScriptLocations() == null || getGroupScriptLocations().isEmpty()) {
-            return scriptLocationGroupedRevisions;
-        }
-        return filterAndGroupByStackTrace(revisionIndexes, groupScriptLocations, scriptLocationGroupedRevisions);
-    }
-
-    /**
-     * Gets groupedRevisions parameter filtered by script location and grouped by identical JavaScript Stack Trace when value of {@link #getGroupScriptLocations()} is not null or empty. 
-     * Gets cleared {@link #scriptLocationGroupedRevisions} when value of {@link #getGroupScriptLocations()} is null or empty. 
-     * @param revisionIndexes revision indexes of parent {@link Analysis} to process.
-     * @param ignoreScriptLocations list of JavaScript locations to be ignored. 
-     * @param groupedRevisions groupedRevisions to process.
-     * @return 
-     */
-    private GroupedRevisions filterAndGroupByStackTrace(List<Integer> revisionIndexes, List<String> ignoreScriptLocations, GroupedRevisions groupedRevisions) {
-        if (revisionIndexes == null || revisionIndexes.isEmpty()) {
-            return groupedRevisions;
-        }
-        Integer lastGroupIndex = null;
-        JSONArray lastStackTrace = null;
-        for (Iterator<Integer> it = revisionIndexes.iterator(); it.hasNext();) {
-            Integer revisionIndex = it.next();
-            
-            // previous revison Time Stamp from must be taken from Analysis class.
-            final String timeStamp = getParentAnalysis().getTimeStamps().get(revisionIndex - 1); 
-            final StringBuilder stackTraceStr = getParentAnalysis().read(Analysis.STACKTRACE, timeStamp);
-            if (stackTraceStr == null) {
+    public void getGroupByStackTraceRevisions(List<Integer> revisionIndexes, List<String> ignoreScriptLocations) {
+        Analysis a = getParentAnalysis();
+        JSONArray previousStacktrace = null;
+        for (int i=1; i < a.getRevisionsCount(); i++) {
+            if (revisionIndexes.contains(i)) {
                 continue;
             }
-            
+            String timeStamp = a.getTimeStamps().get(i);
+            StringBuilder stackTraceStr = a.read(Analysis.STACKTRACE, timeStamp);
             JSONArray stacktrace = (JSONArray) JSONValue.parse(stackTraceStr.toString());
-            JSONArray filteredStacktrace = stacktrace;
-            if (ignoreScriptLocations != null) {
-                filteredStacktrace = filterStackTrace(ignoreScriptLocations, stacktrace);
+            stacktrace = filterStackTrace(ignoreScriptLocations, stacktrace);
+            if (previousStacktrace == null) {
+                previousStacktrace = stacktrace;
+                continue;
             }
-            
-            if (FilterUtilities.match(lastStackTrace, filteredStacktrace)) {
-                groupedRevisions.putRevisionIndex(lastGroupIndex, revisionIndex);
-                it.remove();
-            } else {
-                lastGroupIndex = revisionIndex;
-                lastStackTrace = filteredStacktrace;
+            if (FilterUtilities.match(previousStacktrace, stacktrace)) {
+                revisionIndexes.add(i);
             }
-
+            previousStacktrace = stacktrace;
         }
-        return groupedRevisions;
     }
 
     private JSONArray filterStackTrace(List<String> ignoreScriptLocations, JSONArray jsonArray) {
@@ -415,91 +266,11 @@ public class FilteredAnalysis extends Analysis {
         
         @Override
         public void revisionAdded(Analysis analysis, String timeStamp) {
-
             clearLastChangeWasNotReal();
             clearLastDiff();
             clearTimeStamps();
             cleatDataToStore();
-
-//            Runnable r = new Runnable() {
-//                @Override
-//                public void run() {
-                    applyFilter();
-//                }
-//            };
-//
-//            if (AnalysisStorage.isUnitTesting) {
-//                r.run();
-//            } else {
-//                getRequestProcessor().post(r);
-//            }
-        }
-
-    }
-
-    private static void fixRemovedRevisions(List<Integer> indexes, Collection<GroupedRevisions> sources) {
-        for (GroupedRevisions map : sources) {
-            for (GroupedRevisions map1 : sources) {
-                if (map != map1) {
-                    map.fixRemovedRevisions(indexes, map1);
-                }
-            }
-        }
-    }
-
-    /**
-     * Map of grouped revisions where key is revision index and value is Set of revision index.
-     */
-    private class GroupedRevisions extends HashMap<Integer, Set<Integer>> {
-
-        protected void putRevisionIndex(Integer groupIndex, Integer revisionIndex) {
-            final Set<Integer> indexes = safeGetRevisionIndexes(groupIndex);
-            indexes.add(revisionIndex);
-        }
-
-        protected void putRevisionIndexes(Integer groupIndex, Set<Integer> revisionIndexes) {
-            if (revisionIndexes != null) {
-                final Set<Integer> indexes = safeGetRevisionIndexes(groupIndex);
-                indexes.addAll(revisionIndexes);
-            }
-        }
-
-        private Set<Integer> safeGetRevisionIndexes(Integer groupIndex) {
-            Set<Integer> indexes = get(groupIndex);
-            if (indexes == null) {
-                indexes = new HashSet<Integer>();
-                put(groupIndex, indexes);
-            }
-            return indexes;
-        }
-
-        protected void fixRemovedRevisions(List<Integer> indexes, GroupedRevisions source) {
-            Set<Integer> indexesToRemove = new HashSet<Integer>();
-            for (Map.Entry<Integer, Set<Integer>> entry : entrySet()) {
-                final Integer key = entry.getKey();
-                if (!indexes.contains(key)) {
-                    final Set<Integer> values = entry.getValue();
-                    final Integer indexReplacement = source.getIndexReplacement(indexes, key);
-                    if (indexReplacement != null) {
-                        for (Integer value : values) {
-                            putRevisionIndex(indexReplacement, value);
-                        }
-                        indexesToRemove.add(key);
-                    }
-                }
-            }
-            keySet().removeAll(indexesToRemove);
-        }
-
-        protected Integer getIndexReplacement(List<Integer> indexes, Integer index) {
-            for (Map.Entry<Integer, Set<Integer>> entry : entrySet()) {
-                final Integer key = entry.getKey();
-                final Set<Integer> values = entry.getValue();
-                if (values.contains(index) && indexes.contains(key)) {
-                    return key;
-                }
-            }
-            return null;
+            applyFilter();
         }
 
     }

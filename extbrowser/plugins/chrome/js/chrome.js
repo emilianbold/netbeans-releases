@@ -151,15 +151,22 @@ NetBeans.resizePage = function(preset, callback) {
 }
 // resize actual page
 NetBeans._resizePage = function(width, height, callback) {
-    chrome.windows.getLastFocused(function(win) {
-        var opt = {};
-        opt.state = 'normal';
-        opt.width = parseInt(width);
-        opt.height = parseInt(height);
-        chrome.windows.update(win.id, opt);
-        if (callback) {
-            callback();
-        }
+    // detect viewport
+    chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
+        // resize
+        chrome.windows.getLastFocused(function(win) {
+            // borders must be tweaked a bit (e.g. height of the 'debugging infobar' etc.)
+            var borderWidth = win.width - NetBeans_ViewPort.width + 4;
+            var borderHeight = win.height - NetBeans_ViewPort.height + 26;
+            var opt = {};
+            opt.state = 'normal';
+            opt.width = parseInt(width) + borderWidth;
+            opt.height = parseInt(height) + borderHeight;
+            chrome.windows.update(win.id, opt);
+            if (callback) {
+                callback();
+            }
+        });
     });
 }
 // show preset customizer
@@ -230,6 +237,16 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 });
 chrome.tabs.onRemoved.addListener(function(tabId) {
     NetBeans.tabRemoved(tabId);
+});
+
+// register content script listener
+chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
+    if (message.type == 'VIEWPORT') {
+        console.log('Setting new viewport dimensions (' + message.width + ' x ' + message.height + ')');
+        NetBeans_ViewPort.width = message.width;
+        NetBeans_ViewPort.height = message.height;
+        sendResponse();
+    }
 });
 
 // onCreated event is not delivered for the first tab;

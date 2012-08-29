@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -169,12 +170,12 @@ public class ReformatSupport {
      * @param document Document instance to process. Can be null.
      * @return content of Document without JavaScript. Returns null when input parameter is null or any error occurs.
      */
-    public static Map<Integer, Integer> getIndexesOfJavaScript(Document document) {
+    public static Map<Integer, Integer> getIndexesOfJavaScript(CharSequence document) {
         if (document == null) {
             return null;
         }
         
-        final TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
+        final TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(document, HTMLTokenId.language());
         final TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
         Map<Integer, Integer> indexesToReplace = new HashMap<Integer, Integer>();
