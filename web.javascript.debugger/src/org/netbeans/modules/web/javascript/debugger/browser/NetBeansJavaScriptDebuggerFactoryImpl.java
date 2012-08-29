@@ -80,7 +80,9 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
     @Override
     public void stopDebuggingSession(Session session) {
         DebuggerEngine engine = session.lookupFirst(null, DebuggerEngine.class);
-        assert engine != null;
+        if (engine == null) {
+            return ; // No engine, nothing to stop.
+        }
         Debugger debugger = engine.lookupFirst(null, Debugger.class);
         if (debugger != null) {
             debugger.disable();
