@@ -323,6 +323,16 @@ public class HtmlElementNode extends AbstractNode {
     }
 
     @Override
+    public boolean canRename() {
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return getDisplayName();
+    }
+
+    @Override
     public String getHtmlDisplayName() {
         Description dd = getDOMDescription();
         Description sd = getSourceDescription();
@@ -411,11 +421,9 @@ public class HtmlElementNode extends AbstractNode {
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
         }
-        if (getDOMDescription() != null) {
-            for (Action action : org.openide.util.Utilities.actionsForPath(DOM_ACTIONS_PATH)) {
-                if (action instanceof ContextAwareAction) {
-                    actions.add(((ContextAwareAction)action).createContextAwareInstance(getLookup()));
-                }
+        for (Action action : org.openide.util.Utilities.actionsForPath(DOM_ACTIONS_PATH)) {
+            if (action instanceof ContextAwareAction) {
+                actions.add(((ContextAwareAction) action).createContextAwareInstance(getLookup()));
             }
         }
         return actions.toArray(new Action[]{});        
