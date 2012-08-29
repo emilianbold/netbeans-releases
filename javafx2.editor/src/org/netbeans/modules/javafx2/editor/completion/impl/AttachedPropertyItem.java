@@ -113,7 +113,7 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
                 return super.getSubstituteText() + "=\"\" "; // NOI18N
             } 
         } else {
-            if (replaceExisting) {
+            if (replaceExisting || type == null) {
                 return "<" + super.getSubstituteText();
             } else {
                 return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";

@@ -149,7 +149,7 @@ final public class ClassCompleter implements Completer, Completer.Factory {
     
     private boolean acceptsQName(CharSequence fullName, CharSequence name) {
         if (packagePrefix != null && fullName.length() > name.length()) {
-            if (CompletionUtils.startsWith(fullName.subSequence(0, fullName.length() - name.length() - 1), packagePrefix)) {
+            if (!CompletionUtils.startsWith(fullName.subSequence(0, fullName.length() - name.length() - 1), packagePrefix)) {
                 return false;
             }
         }
@@ -350,6 +350,12 @@ final public class ClassCompleter implements Completer, Completer.Factory {
         }
         for (Iterator<ElementHandle<TypeElement>> it = els.iterator(); it.hasNext(); ) {
             ElementHandle<TypeElement> teh = it.next();
+            String qn = teh.getQualifiedName();
+            int lastDot = qn.lastIndexOf('.');
+            String sn = lastDot == -1 ? qn : qn.substring(lastDot + 1);
+            if (!acceptsQName(qn, sn)) {
+                continue;
+            }
             TypeElement t = teh.resolve(ctx.getCompilationInfo());
             if (t == null || 
                 !acceptsType(t)) {
@@ -439,7 +445,7 @@ final public class ClassCompleter implements Completer, Completer.Factory {
         items.addAll(createItems(nodeCandidates, NODE_PRIORITY));
 
         // offer all classes for some prefixes
-        if (!isPrefixEmpty()) {
+        if (!namePrefix.isEmpty()) {
             Set<ElementHandle<TypeElement>> allCandidates = new HashSet<ElementHandle<TypeElement>>(loadFromAllTypes());
             allCandidates.removeAll(nodeCandidates);
             items.addAll(createItems(allCandidates, OTHER_PRIORITY));

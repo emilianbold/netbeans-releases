@@ -213,17 +213,17 @@ public class StaticPropertyCompleter extends InstanceCompleter {
             }
         }
         
-        ElementHandle<TypeElement> h = info.getObjectType();
+        TypeMirrorHandle h = info.getObjectType();
         if (h == null) {
             return false;
         }
-        TypeElement type = h.resolve(ctx.getCompilationInfo());
+        TypeMirror type = h.resolve(ctx.getCompilationInfo());
         if (type == null) {
             return false;
         }
         
         if (!ctx.getCompilationInfo().getTypes().isAssignable(
-                instanceType.asType(), type.asType())) {
+                instanceType.asType(), type)) {
             return false;
         }
         
@@ -260,6 +260,11 @@ public class StaticPropertyCompleter extends InstanceCompleter {
             if (beanInfo == null) {
                 continue;
             }
+            String cn = ctx.getSimpleClassName(classFullName);
+            if (cn == null) {
+                // FIXME - this should add an import, according to the settings / policy
+                cn = classFullName;
+            }
             Collection<String> props = findProperties(beanInfo);
             if (props != null) {
                 if (directClasses.size() == 1 || props.size() == 1 || ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
@@ -272,11 +277,6 @@ public class StaticPropertyCompleter extends InstanceCompleter {
                         String type = ctx.getCompilationInfo().getTypeUtilities().getTypeName(
                                 pType).toString();
                         
-                        String cn = ctx.getSimpleClassName(classFullName);
-                        if (cn == null) {
-                            // FIXME - this should add an import, according to the settings / policy
-                            cn = classFullName;
-                        }
                         String replacementText = cn + "." + pi.getName(); // NOI18N
                         
                         String propName;
@@ -311,11 +311,6 @@ public class StaticPropertyCompleter extends InstanceCompleter {
                         sb.append(pn);
                     }
                     
-                    String cn = ctx.getSimpleClassName(classFullName);
-                    if (cn == null) {
-                        // FIXME - this should add an import, according to the settings / policy
-                        cn = classFullName;
-                    }
                     int dot = classFullName.lastIndexOf('.');
                     String sn = dot == -1 ? classFullName : classFullName.substring(dot + 1);
                     String replacementText = cn + "."; // NOI18N
