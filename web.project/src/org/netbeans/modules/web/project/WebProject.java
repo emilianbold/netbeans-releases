@@ -49,8 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -69,15 +68,10 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
@@ -161,7 +155,6 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
@@ -238,7 +231,7 @@ public final class WebProject implements Project {
     private WhiteListUpdater whiteListUpdater;
     
     private AntBuildExtender buildExtender;
-    
+
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
     
@@ -408,10 +401,6 @@ public final class WebProject implements Project {
         whiteListUpdater = WhiteListUpdater.createWhiteListUpdater(this, evaluator());
     }
 
-    public BrowserSupport getBrowserSupport() {
-        return BrowserSupport.getDefault();
-    }
-    
     public void setProjectPropertiesSave(boolean value) {
         this.projectPropertiesSave.set(value);
     }
@@ -611,8 +600,7 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-            new ProjectWebRootProviderImpl(),
-            getBrowserSupport(),
+            new ProjectWebRootProviderImpl()
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1508,7 +1496,7 @@ public final class WebProject implements Project {
         }
         
     }
-    
+
     /**
      * This class handle copying of web resources to appropriate place in build
      * dir. User is not forced to perform redeploy on JSP change. This
@@ -1517,12 +1505,7 @@ public final class WebProject implements Project {
      * Class should not request project lock from FS listener methods
      * (deadlock prone).
      */
-    private class CopyOnSaveSupport extends FileChangeAdapter 
-        implements PropertyChangeListener,  DeployOnSaveListener {
-
-        private static final String META_INF = "META-INF";      // NOI18N
-
-        private static final String WEB_INF = "WEB-INF";        // NOI18N
+    private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
 
         private FileObject docBase = null;
 
@@ -1535,24 +1518,24 @@ public final class WebProject implements Project {
         private File resources = null;
 
         private String buildWeb = null;
-        
+
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
-        
+
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
             super();
         }
-        
-        private boolean isCopyOnSaveEnabled() {
-            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE));
-        }
-        
+
         public void addArtifactListener(ArtifactListener listener) {
             listeners.add(listener);
         }
 
         public void removeArtifactListener(ArtifactListener listener) {
             listeners.remove(listener);
+        }
+
+        private boolean isCopyOnSaveEnabled() {
+            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE));
         }
         
         public void initialize() throws FileStateInvalidException {
@@ -1561,9 +1544,6 @@ public final class WebProject implements Project {
             if (!isCopyOnSaveEnabled()) {
                 return;
             }
-            
-            // Add deployed resources notification listener 
-            webModule.getConfigSupport().addDeployOnSaveListener( this);
             
             docBase = getWebModule().getDocumentBase();
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
@@ -1575,20 +1555,22 @@ public final class WebProject implements Project {
             resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
 
+            FileSystem docBaseFileSystem = null;
             if (docBase != null) {
-                docBase.addRecursiveListener(this);
+                docBaseFileSystem = docBase.getFileSystem();
+                docBaseFileSystem.addFileChangeListener(this);
             }
 
             if (webInf != null) {
-                if (!FileUtil.isParentOf(docBase, webInf)) {
-                    webInf.addRecursiveListener(this);
+                if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
+                    webInf.getFileSystem().addFileChangeListener(this);
                 }
             }
 
             if (resources != null) {
                 FileUtil.addFileChangeListener(this, resources);
             }
-            
+
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
         }
@@ -1610,7 +1592,6 @@ public final class WebProject implements Project {
             }
 
             WebProject.this.evaluator().removePropertyChangeListener(this);
-            webModule.getConfigSupport().removeDeployOnSaveListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -1633,10 +1614,6 @@ public final class WebProject implements Project {
 
         @Override
         public void fileChanged(FileEvent fe) {
-            URL u = getBrowserSupport().getBrowserURL(fe.getFile(), true);
-            if (u != null) {
-                getBrowserSupport().reload(u);
-            }
             try {
                 if (!handleResource(fe)) {
                     handleCopyFileToDestDir(fe.getFile());
@@ -1660,7 +1637,6 @@ public final class WebProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
-            // XXX: notify BrowserReload about filename change
                 if (handleResource(fe)) {
                     return;
                 }
@@ -1671,8 +1647,7 @@ public final class WebProject implements Project {
                 FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
                 if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
                         && "persistence.xml".equals(fe.getName() + "." + fe.getExt())) { // NOI18N
-                    String path = WEB_INF+"/classes/"+META_INF+
-                        "/" + FileUtil.getRelativePath(persistenceXmlDir, fo.getParent())
+                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo.getParent())
                             + "/" + fe.getName() + "." + fe.getExt(); // NOI18N
                     if (!isSynchronizationAppropriate(path)) {
                         return;
@@ -1695,7 +1670,7 @@ public final class WebProject implements Project {
                     } else {
                         path = fe.getName() + "." + fe.getExt(); // NOI18N
                     }
-                    path = WEB_INF+"/" + path;
+                    path = "WEB-INF/" + path;
 
                     if (!isSynchronizationAppropriate(path))  {
                         return;
@@ -1726,10 +1701,6 @@ public final class WebProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             try {
-                URL u = getBrowserSupport().getBrowserURL(fe.getFile(), false);
-                if (u != null) {
-                    // XXX: close browser's tab ???
-                }
                 if (handleResource(fe)) {
                     return;
                 }
@@ -1739,8 +1710,7 @@ public final class WebProject implements Project {
                 FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
                 if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
                         && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
-                    String path = WEB_INF+"/classes/"+META_INF+"/" + 
-                        FileUtil.getRelativePath(persistenceXmlDir, fo); // NOI18N
+                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo); // NOI18N
                     if (!isSynchronizationAppropriate(path)) {
                         return;
                     }
@@ -1754,7 +1724,7 @@ public final class WebProject implements Project {
                 if (webInf != null && FileUtil.isParentOf(webInf, fo)
                         && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
                     // inside webInf
-                    String path = WEB_INF+"/" + FileUtil.getRelativePath(webInf, fo); // NOI18N
+                    String path = "WEB-INF/" + FileUtil.getRelativePath(webInf, fo); // NOI18N
                     if (!isSynchronizationAppropriate(path)) {
                         return;
                     }
@@ -1772,129 +1742,15 @@ public final class WebProject implements Project {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
-        public void deployed( Iterable<Artifact> artifacts ) {
-            for (Artifact artifact : artifacts) {
-                FileObject fileObject = getReloadFileObject(artifact);
-                if (fileObject != null) {
-                    URL u = getBrowserSupport().getBrowserURL(
-                            fileObject, true);
-                    if (u != null) {
-                        getBrowserSupport().reload(u);
-                    }
-                }
-            }
-        }
-        
-        private FileObject getReloadFileObject( Artifact artifact ) {
-            File file = artifact.getFile();
-            FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
-            if (fileObject == null) {
-                return null;
-            }
-            if ( fileObject.getExt().equals("class")){               //  NOI18N
-                return getJavaSourceFileObject(fileObject);
-            }
-            else {
-                return getWebDocFileObject(fileObject);
-            }
-        }
-        
-        private FileObject getWebDocFileObject( FileObject artifact ){
-            String path = artifact.getPath();
-            if ( path.contains( CopyOnSaveSupport.WEB_INF)){
-                if( path.contains(CopyOnSaveSupport.META_INF)){
-                    FileObject persistenceXmlDir = getWebModule().
-                        getPersistenceXmlDir();
-                    if ( persistenceXmlDir == null ){
-                        return null;
-                    }
-                    String meta = CopyOnSaveSupport.WEB_INF+"/classes/"+
-                        CopyOnSaveSupport.META_INF+"/";     // NOI18N
-                    int index = path.indexOf( meta );
-                    if ( index == -1){
-                        return null;
-                    }
-                    path = path.substring(index+meta.length());
-                    return persistenceXmlDir.getFileObject(path);
-                }
-                else {
-                    int index = path.indexOf( CopyOnSaveSupport.WEB_INF+'/' );
-                    if ( index == -1){
-                        return null;
-                    }
-                    path = path.substring(index+CopyOnSaveSupport.WEB_INF.length()+1);
-                    FileObject webInf = getWebModule().resolveWebInf(docBaseValue, 
-                            webInfValue, true, true);
-                    if ( webInf != null ){
-                        return webInf.getFileObject(path);
-                    }
-                    else {
-                        return null;
-                    }
-                }
-            }
-            else {
-                FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, 
-                        false);
-                FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
-                if ( docBase != null && webBuildBase!= null){
-                    if ( !FileUtil.isParentOf(webBuildBase, artifact) ){
-                        return null;
-                    }
-                    else {
-                        path = FileUtil.getRelativePath(webBuildBase, artifact);
-                        return docBase.getFileObject(path);
-                    }
-                }
-                else {
-                    return null;
-                }
-            }
-        }
-        
-        private FileObject getJavaSourceFileObject( FileObject classFile ){
-            JavaSource js = JavaSource.forFileObject(classFile);
-            final List<ElementHandle<TypeElement>> handle = 
-                    new ArrayList<ElementHandle<TypeElement>>(1);
-            if (js != null) {
-                try {
-                    js.runUserActionTask(
-                            new org.netbeans.api.java.source.Task<CompilationController>()
-                            {
-                                @Override
-                                public void run( CompilationController controller )
-                                        throws Exception
-                                {
-                                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                    List<? extends TypeElement> elements = controller
-                                            .getTopLevelElements();
-                                    if ( !elements.isEmpty() ){
-                                        handle.add(ElementHandle.create(
-                                                elements.get(0)));
-                                    }
-                                }
-                            }, true);
-                }
-                catch (IOException e) {
-                    Logger.getLogger(getClass().getCanonicalName()).log(
-                            Level.INFO, null, e);
-                }
-            }
-            if ( handle.get(0)== null){
-                return null;
-            }
-            return SourceUtils.getFile(handle.get(0),js.getClasspathInfo());
-        }
 
         private boolean isSynchronizationAppropriate(String filePath) {
-            if (filePath.startsWith(WEB_INF+"/classes") && !filePath.startsWith(WEB_INF+"/classes/"+META_INF)) { // NOI18N
+            if (filePath.startsWith("WEB-INF/classes") && !filePath.startsWith("WEB-INF/classes/META-INF")) { // NOI18N
                 return false;
             }
-            if (filePath.startsWith(WEB_INF+"/src")) { // NOI18N
+            if (filePath.startsWith("WEB-INF/src")) { // NOI18N
                 return false;
             }
-            if (filePath.startsWith(WEB_INF+"/lib")) { // NOI18N
+            if (filePath.startsWith("WEB-INF/lib")) { // NOI18N
                 return false;
             }
             return true;
@@ -1905,8 +1761,8 @@ public final class WebProject implements Project {
                 listener.artifactsUpdated(artifacts);
             }
         }
-        
-        private boolean handleResource(FileEvent fe ) {
+
+        private boolean handleResource(FileEvent fe) {
             // this may happen in broken project - see issue #191516
             // in any case it can't be resource event when resources is null            
             if (resources == null) {
@@ -1916,9 +1772,8 @@ public final class WebProject implements Project {
             if (resourceFo != null
                     && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {
 
-                Set<Artifact> set = Collections.singleton(
-                        Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource());
-                fireArtifactChange(set);
+                fireArtifactChange(Collections.singleton(
+                        Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource()));
                 return true;
             }
             return false;
@@ -1939,7 +1794,7 @@ public final class WebProject implements Project {
                 }
             }
         }
-        
+
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
             if (fo.isVirtual()) {
                 return;
@@ -1948,8 +1803,8 @@ public final class WebProject implements Project {
             FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
             if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
                     && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
-                handleCopyFileToDestDir(WEB_INF+"/classes/"+META_INF, 
-                        persistenceXmlDir, fo ); // NOI18N
+                handleCopyFileToDestDir("WEB-INF/classes/META-INF", persistenceXmlDir, fo); // NOI18N
+                return;
             }
 
             FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
@@ -1957,19 +1812,18 @@ public final class WebProject implements Project {
 
             if (webInf != null && FileUtil.isParentOf(webInf, fo)
                     && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
-                handleCopyFileToDestDir(WEB_INF, webInf, fo); // NOI18N
+                handleCopyFileToDestDir("WEB-INF", webInf, fo); // NOI18N
+                return;
             }
             if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                 handleCopyFileToDestDir(null, docBase, fo);
+                return;
             }
-            
         }
-        
-        private void handleCopyFileToDestDir(String prefix, FileObject baseDir, 
-                FileObject fo) throws IOException 
-        {
+
+        private void handleCopyFileToDestDir(String prefix, FileObject baseDir, FileObject fo) throws IOException {
             if (fo.isVirtual()) {
-                return ;
+                return;
             }
 
             if (baseDir != null && FileUtil.isParentOf(baseDir, fo)) {
@@ -1979,7 +1833,7 @@ public final class WebProject implements Project {
                     path = prefix + "/" + path;
                 }
                 if (!isSynchronizationAppropriate(path)) {
-                    return ;
+                    return;
                 }
 
                 FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
@@ -1987,7 +1841,7 @@ public final class WebProject implements Project {
                     // project was built
                     if (FileUtil.isParentOf(baseDir, webBuildBase) || FileUtil.isParentOf(webBuildBase, baseDir)) {
                         //cannot copy into self
-                        return ;
+                        return;
                     }
                     FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
                     assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
@@ -2012,8 +1866,7 @@ public final class WebProject implements Project {
                             }
                             File file = FileUtil.toFile(destFile);
                             if (file != null) {
-                                fireArtifactChange( Collections.singleton(
-                                        ArtifactListener.Artifact.forFile(file)));
+                                fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
                             }
                         }
                     }

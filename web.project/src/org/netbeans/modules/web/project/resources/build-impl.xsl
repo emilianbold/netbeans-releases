@@ -2118,7 +2118,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="-display-browser-nb" if="do.display.browser.nb">
-                <nbbrowse2 url="${{client.url}}" filePath="${{browser.file}}"/>
+                <nbbrowse url="${{client.url}}"/>
             </target>
             
             <target name="-get-browser" if="do.display.browser.cl" unless="browser">
