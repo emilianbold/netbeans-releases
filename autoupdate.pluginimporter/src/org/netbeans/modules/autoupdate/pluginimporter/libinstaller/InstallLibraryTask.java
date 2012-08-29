@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * #195123: prompt to load JUnit during startup.
  */
-@ServiceProvider(service = Runnable.class, path = "WarmUp")
+//@ServiceProvider(service = Runnable.class, path = "WarmUp")
 public class InstallLibraryTask implements Runnable {
 
     private static final String KEY = "tried.to.download.junit"; // NOI18N
