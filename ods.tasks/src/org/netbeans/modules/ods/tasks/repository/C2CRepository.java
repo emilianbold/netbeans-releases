@@ -78,7 +78,6 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
-import org.netbeans.modules.ods.tasks.DummyUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -343,7 +342,7 @@ public class C2CRepository {
     
     protected void getRemoteSavedQueries () {
         List<C2CQuery> queries = new ArrayList<C2CQuery>();
-        RepositoryConfiguration conf = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
+        RepositoryConfiguration conf = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {

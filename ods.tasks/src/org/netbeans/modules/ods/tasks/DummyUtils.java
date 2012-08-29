@@ -52,13 +52,14 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author tomas
  */
-public class DummyUtils {
+class DummyUtils {
     /********************************************************************************
      * Dummies
      ********************************************************************************/
@@ -79,13 +80,9 @@ public class DummyUtils {
     }
     
     public static synchronized C2CData getClientData(TaskRepository taskRepository) {
-        return C2CExtender.getData(rc, repository);
+        return C2CUtil.getClientData(rc, repository);
     }
     
-    public static synchronized C2CData getClientData (AbstractRepositoryConnector rc, TaskRepository taskRepository) {
-        return C2CExtender.getData(rc, taskRepository);
-    }
-
     public static TaskRepository getRepository() {
         return repository;
     }

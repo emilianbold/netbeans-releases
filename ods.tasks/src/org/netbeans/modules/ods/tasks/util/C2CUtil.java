@@ -67,13 +67,13 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
-import org.netbeans.modules.ods.tasks.DummyUtils;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
+import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,7 +92,7 @@ public class C2CUtil {
         
         // XXX is this all we need and how we need it?
 
-        C2CData clientData = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository);
+        C2CData clientData = getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository);
         
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
@@ -231,7 +231,7 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
+            C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
             if(cd == null /* XXX */) {
                 return tagsString;
             }
@@ -259,7 +259,7 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = DummyUtils.getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
+            C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
             if(cd == null /* XXX */) {
                 return usersString;
             }
@@ -297,5 +297,9 @@ public class C2CUtil {
             C2C.LOG.log(Level.WARNING, "Cannot parse date: {0}", text);
         }
         return date;
+    }
+
+    public static C2CData getClientData (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
+        return C2CExtender.getData(repositoryConnector, taskRepository);
     }
 }
