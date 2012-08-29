@@ -287,7 +287,7 @@ public class KenaiUtil {
         for (KenaiAccessor ka : getKenaiAccessors()) {
             KenaiProject kp = ka.getKenaiProjectForRepository(repositoryUrl);
             if (kp != null) {
-                return null;
+                return kp;
             }
         }
         return null;
@@ -300,7 +300,7 @@ public class KenaiUtil {
         for (KenaiAccessor ka : getKenaiAccessors()) {
             KenaiProject kp = ka.getKenaiProject(url, projectName);
             if (kp != null) {
-                return null;
+                return kp;
             }
         }
         return null;
