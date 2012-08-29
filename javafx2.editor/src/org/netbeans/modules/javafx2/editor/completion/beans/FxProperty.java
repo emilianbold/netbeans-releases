@@ -68,7 +68,7 @@ public final class FxProperty extends FxDefinition {
     /**
      * Object type that the attached property accepts.
      */
-    private ElementHandle<TypeElement> objectType;
+    private TypeMirrorHandle objectType;
     
     /**
      * Property getter method, which returns 
@@ -107,7 +107,7 @@ public final class FxProperty extends FxDefinition {
      * @return 
      */
     @CheckForNull
-    public ElementHandle<TypeElement> getObjectType() {
+    public TypeMirrorHandle getObjectType() {
         return objectType;
     }
 
@@ -139,7 +139,7 @@ public final class FxProperty extends FxDefinition {
         return kind;
     }
     
-    void setObjectType(ElementHandle<TypeElement> objectType) {
+    void setObjectType(TypeMirrorHandle objectType) {
         this.objectType = objectType;
     }
 
