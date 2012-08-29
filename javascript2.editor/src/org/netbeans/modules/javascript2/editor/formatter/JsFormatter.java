@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,9 +52,12 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
@@ -265,6 +269,81 @@ public class JsFormatter implements Formatter {
                     }
                 }
                 LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
+            }
+        });
+    }
+
+    @Override
+    public void reindent(final Context context) {
+        final BaseDocument doc = (BaseDocument) context.document();
+        doc.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                long startTime = System.nanoTime();
+
+                IndentContext indentContext = new IndentContext(context);
+
+                int indentationSize = IndentUtils.indentLevelSize(doc);
+                int initialIndent = CodeStyle.get(indentContext).getInitialIndent();
+                if (context.startOffset() > 0 || indentContext.isEmbedded()) {
+                    try {
+                        initialIndent = context.lineIndent(
+                                getFormatStableStart(doc, language, context.startOffset(), indentContext.isEmbedded()));
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        TokenHierarchy.get(doc), context.startOffset(), language);
+                ts.move(context.startOffset());
+                List<IndenterChange> changes = new ArrayList<IndenterChange>();
+                int indentation = initialIndent;
+
+                while (ts.moveNext() && ts.offset() < context.endOffset()) {
+                    JsTokenId id = ts.token().id();
+                    switch (id) {
+                        case BRACKET_LEFT_CURLY:
+                            indentation += indentationSize;
+                            break;
+                        case BRACKET_RIGHT_CURLY:
+                            indentation -= indentationSize;
+                            break;
+                        case EOL:
+                            if (ts.offset() < context.startOffset() || ts.offset() > context.endOffset()) {
+                                break;
+                            }
+
+                            // remove trailing spaces and do the indentation
+                            int index = ts.index();
+                            int eolOffset = ts.offset();
+                            boolean found = false;
+                            while (ts.movePrevious()) {
+                                if (ts.token().id() != JsTokenId.WHITESPACE) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found && ts.moveNext()) {
+                                if (ts.index() != index) {
+                                    changes.add(new RemoveChange(ts.offset(), eolOffset - ts.offset()));
+                                }
+                            }
+                            ts.moveIndex(index);
+                            ts.moveNext();
+                            break;
+                    }
+                }
+
+                for (int i = changes.size() - 1; i >= 0; i--) {
+                    try {
+                        changes.get(i).perform(doc);
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+                LOGGER.log(Level.INFO, "Indentation changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
         });
     }
@@ -929,6 +1008,131 @@ public class JsFormatter implements Formatter {
         }
     }
 
+    private int getFormatStableStart(BaseDocument doc, Language<JsTokenId> language,
+            int offset, boolean embedded) {
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                TokenHierarchy.get(doc), offset, language);
+        if (ts == null) {
+            return 0;
+        }
+
+        ts.move(offset);
+        if (!ts.movePrevious()) {
+            return 0;
+        }
+
+        // Look backwards to find a suitable context
+        // which we will assume is properly indented and balanced
+        do {
+            Token<?extends JsTokenId> token = ts.token();
+            TokenId id = token.id();
+
+            // FIXME should we check for more tokens like {, if, else ...
+            if (id == JsTokenId.KEYWORD_FUNCTION) {
+                return ts.offset();
+            }
+        } while (ts.movePrevious());
+
+        if (embedded && !ts.movePrevious()) {
+            // I may have moved to the front of an embedded JavaScript area, e.g. in
+            // an attribute or in a <script> tag. If this is the end of the line,
+            // go to the next line instead since the reindent code will go to the beginning
+            // of the stable formatting start.
+            int sequenceBegin = ts.offset();
+            try {
+                int lineTextEnd = Utilities.getRowLastNonWhite(doc, sequenceBegin);
+                if (lineTextEnd == -1 || sequenceBegin > lineTextEnd) {
+                    return Math.min(doc.getLength(), Utilities.getRowEnd(doc, sequenceBegin) + 1);
+                }
+
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+
+        return ts.offset();
+    }
+
+    private static boolean isLineContinued(BaseDocument doc, Language<JsTokenId> language,
+            int offset, int bracketBalance) throws BadLocationException {
+
+        offset = Utilities.getRowLastNonWhite(doc, offset);
+        if (offset == -1) {
+            return false;
+        }
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, offset, language);
+        Token<? extends JsTokenId> token = (ts != null ? ts.token() : null);
+
+        if (ts != null && token != null) {
+            int index = ts.index();
+            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+            JsTokenId previousId = previous != null ? previous.id() : null;
+
+            ts.moveIndex(index);
+            ts.moveNext();
+
+            JsTokenId id = token.id();
+
+            // http://www.netbeans.org/issues/show_bug.cgi?id=115279
+            boolean isContinuationOperator = !isUnaryOperator(id, previousId)
+                    || id == JsTokenId.OPERATOR_DOT;
+
+            if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
+                // Continued lines have different token types
+                isContinuationOperator = true;
+            }
+
+            if (id == JsTokenId.OPERATOR_COMMA) {
+                // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses
+                // parameter lists we should not treat it as such since we'd "double indent" the items, and
+                // NOT the first item (where there's no comma, e.g. you'd have
+                //  foo(
+                //    firstarg,
+                //      secondarg,  # indented both by ( and hanging indent ,
+                //      thirdarg)
+                isContinuationOperator = (bracketBalance == 0);
+            }
+
+            if (id == JsTokenId.OPERATOR_COLON) {
+                TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                Token<? extends JsTokenId> foundToken = LexUtilities.findPreviousIncluding(inner,
+                        Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT, JsTokenId.OPERATOR_COLON));
+                if (foundToken != null && (foundToken.id() == JsTokenId.KEYWORD_CASE
+                        || foundToken.id() == JsTokenId.KEYWORD_DEFAULT)) {
+                    isContinuationOperator = false;
+                } else {
+                    isContinuationOperator = true;
+                }
+            }
+            return isContinuationOperator;
+        }
+
+        return false;
+    }
+
+    private static boolean isUnaryOperator(JsTokenId id, JsTokenId previous) {
+        switch (id) {
+                case OPERATOR_NOT:
+                case OPERATOR_BITWISE_NOT:
+                case OPERATOR_INCREMENT:
+                case OPERATOR_DECREMENT:
+                    return true;
+                case OPERATOR_PLUS:
+                case OPERATOR_MINUS:
+                    if (previous != null && (previous == JsTokenId.IDENTIFIER || previous == JsTokenId.NUMBER
+                            || previous == JsTokenId.REGEXP_END || previous == JsTokenId.STRING_END
+                            || previous == JsTokenId.BRACKET_RIGHT_BRACKET || previous == JsTokenId.BRACKET_RIGHT_CURLY
+                            || previous == JsTokenId.BRACKET_RIGHT_PAREN)) {
+                        return false;
+                    }
+                    return true;
+                default:
+                    return false;
+        }
+    }
+
     /**
      * Iterates tokens from token to limit while properly updating indentation
      * level. Returns the new index in token sequence.
@@ -976,72 +1180,6 @@ public class JsFormatter implements Formatter {
             }
         }
         return true;
-    }
-
-    @Override
-    public void reindent(final Context context) {
-        final BaseDocument doc = (BaseDocument) context.document();
-        doc.runAtomic(new Runnable() {
-
-            @Override
-            public void run() {
-                long startTime = System.nanoTime();
-
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
-                        TokenHierarchy.get(doc), context.startOffset(), language);
-                if (ts == null) {
-                    return;
-                }
-                ts.move(0);
-
-                int indentationLevel = 0;
-                List<IndenterChange> changes = new ArrayList<IndenterChange>();
-
-                while (ts.moveNext() && ts.offset() < context.endOffset()) {
-                    JsTokenId id = ts.token().id();
-                    switch (id) {
-                        case BRACKET_LEFT_CURLY:
-                            indentationLevel++;
-                            break;
-                        case BRACKET_RIGHT_CURLY:
-                            indentationLevel--;
-                            break;
-                        case EOL:
-                            if (ts.offset() < context.startOffset() || ts.offset() > context.endOffset()) {
-                                break;
-                            }
-
-                            // remove trailing spaces and do the indentation
-                            int index = ts.index();
-                            int eolOffset = ts.offset();
-                            boolean found = false;
-                            while (ts.movePrevious()) {
-                                if (ts.token().id() != JsTokenId.WHITESPACE) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (found && ts.moveNext()) {
-                                if (ts.index() != index) {
-                                    changes.add(new RemoveChange(ts.offset(), eolOffset - ts.offset()));
-                                }
-                            }
-                            ts.moveIndex(index);
-                            ts.moveNext();
-                            break;
-                    }
-                }
-
-                for (int i = changes.size() - 1; i >= 0; i--) {
-                    try {
-                        changes.get(i).perform(doc);
-                    } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, null, ex);
-                    }
-                }
-                LOGGER.log(Level.INFO, "Indentation changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
-            }
-        });
     }
 
     static class Indentation {
