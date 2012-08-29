@@ -147,53 +147,60 @@ public class GoToPropertySourceAction extends NodeAction {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
-            final Model sourceModel = result.getModel();
-            sourceModel.runReadTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
-                    if (modelRule != null) {
-                        String propertyName = property.getName().trim();
-                        org.netbeans.modules.css.model.api.Property modelProperty =
-                                findProperty(modelRule, propertyName);
-                        if (modelProperty == null) {
-                            String shorthandName = property.getShorthandName();
-                            if (shorthandName != null) {
-                                modelProperty = findProperty(modelRule, shorthandName);
+            final boolean[] found = new boolean[1];
+            for (final CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
+                final Model sourceModel = result.getModel();
+                sourceModel.runReadTask(new Model.ModelTask() {
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
+                        if (modelRule != null) {
+                            found[0] = true;
+                            String propertyName = property.getName().trim();
+                            org.netbeans.modules.css.model.api.Property modelProperty =
+                                    findProperty(modelRule, propertyName);
+                            if (modelProperty == null) {
+                                String shorthandName = property.getShorthandName();
+                                if (shorthandName != null) {
+                                    modelProperty = findProperty(modelRule, shorthandName);
+                                }
                             }
-                        }
 
-                        final int offset = (modelProperty == null) ?
-                                modelRule.getStartOffset() : modelProperty.getStartOffset();
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                CSSUtils.open(fob, offset);
-                            }
-                        });
-                    }
-                }
-
-                /**
-                 * Returns a property of the given name in the specified rule.
-                 *
-                 * @param rule rule where to search for the property.
-                 * @param propertyName name of the property to find.
-                 * @return property of the given name in the specified rule
-                 * or {@code null} if such property cannot be found.
-                 */
-                private org.netbeans.modules.css.model.api.Property findProperty(Rule rule, String propertyName) {
-                    for (Declaration declaration : rule.getDeclarations().getDeclarations()) {
-                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
-                        String modelPropertyName = modelProperty.getContent().toString().trim();
-                        if (propertyName.equals(modelPropertyName)) {
-                            return modelProperty;
+                            int snapshotOffset = (modelProperty == null) ?
+                                    modelRule.getStartOffset() : modelProperty.getStartOffset();
+                            final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CSSUtils.open(fob, offset);
+                                }
+                            });
                         }
                     }
-                    return null;
+
+                    /**
+                     * Returns a property of the given name in the specified rule.
+                     *
+                     * @param rule rule where to search for the property.
+                     * @param propertyName name of the property to find.
+                     * @return property of the given name in the specified rule
+                     * or {@code null} if such property cannot be found.
+                     */
+                    private org.netbeans.modules.css.model.api.Property findProperty(Rule rule, String propertyName) {
+                        for (Declaration declaration : rule.getDeclarations().getDeclarations()) {
+                            org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                            String modelPropertyName = modelProperty.getContent().toString().trim();
+                            if (propertyName.equals(modelPropertyName)) {
+                                return modelProperty;
+                            }
+                        }
+                        return null;
+                    }
+                });
+                if (found[0]) {
+                    break;
                 }
-            });
+            }
         }
 
     }
