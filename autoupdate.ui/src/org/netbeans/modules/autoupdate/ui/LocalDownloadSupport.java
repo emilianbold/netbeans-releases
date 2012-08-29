@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,6 +46,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -67,13 +70,15 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -82,11 +87,12 @@ import org.openide.util.NbPreferences;
 public class LocalDownloadSupport {
 
     private static final FileFilter NBM_FILE_FILTER = new NbmFileFilter ();
+    private static final FileFilter OSGI_BUNDLE_FILTER = new OsgiBundleFilter ();
     private static String LOCAL_DOWNLOAD_DIRECTORY_KEY = "local-download-directory"; // NOI18N
     private static String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
     private static String LOCAL_DOWNLOAD_CHECKED_FILES = "local-download-checked-files"; // NOI18N    
     private FileList fileList = new FileList ();
-    private Logger err = Logger.getLogger (LocalDownloadSupport.class.getName ());
+    private static final Logger err = Logger.getLogger (LocalDownloadSupport.class.getName ());
     private Map<File, String> nbm2unitCodeName = null;
     private Map<String, UpdateUnit> codeName2unit = null;
 
@@ -97,10 +103,11 @@ public class LocalDownloadSupport {
         JFileChooser chooser = new JFileChooser ();
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter (NBM_FILE_FILTER);
+        chooser.addChoosableFileFilter (OSGI_BUNDLE_FILTER);
         chooser.setFileFilter (NBM_FILE_FILTER);
         chooser.setMultiSelectionEnabled (true);
         chooser.setFileHidingEnabled (false);
-        chooser.setDialogTitle (getBundle ("CTL_FileChooser_Title"));
+        chooser.setDialogTitle (NbBundle.getMessage(LocalDownloadSupport.class, "CTL_FileChooser_Title"));
 
         File dir = getDefaultDir ();
         if (dir != null && dir.exists ()) {
@@ -120,7 +127,7 @@ public class LocalDownloadSupport {
     }
 
     public Collection<UpdateUnit> getUpdateUnits () {
-        Collection<UpdateUnit> res = null;
+        Collection<UpdateUnit> res;
         synchronized (LocalDownloadSupport.class) {
             res = new LinkedList<UpdateUnit> (getCodeName2Unit ().values ());
         }
@@ -147,7 +154,7 @@ public class LocalDownloadSupport {
         Collection<UpdateUnit> alreadyInstalled = new HashSet<UpdateUnit> ();
         for (File nbm : newFiles) {
             UpdateUnit u = null;
-            if(NBM_FILE_FILTER.accept(nbm)) {
+            if(NBM_FILE_FILTER.accept(nbm) || OSGI_BUNDLE_FILTER.accept(nbm)) {
                 u = createUpdateUnitFromNBM (nbm, false);
             }
             if (u != null) {
@@ -157,17 +164,17 @@ public class LocalDownloadSupport {
                 } else if (getCodeName2Unit ().containsKey (u.getCodeName ())) {
                     UpdateElement uE1 = u.getAvailableUpdates ().get (0);
                     UpdateElement uE2 = getCodeName2Unit ().get (u.getCodeName ()).getAvailableUpdates ().get (0);
-                    UpdateUnit winnerUnit = null;
-                    File winnerFile = null;
-                    UpdateUnit looserUnit = null;
-                    File looserFile = null;
+                    UpdateUnit winnerUnit;
+                    File winnerFile;
+                    UpdateUnit looserUnit;
+                    File looserFile;
                     // both are valid, an user have to choose
-                    String name1 = getBundle ("NotificationPlugin", uE1.getDisplayName (), uE1.getSpecificationVersion ()); // NOI18N
-                    String name2 = getBundle ("NotificationPlugin", uE2.getDisplayName (), uE2.getSpecificationVersion ()); // NOI18N
+                    String name1 = NbBundle.getMessage(LocalDownloadSupport.class, "NotificationPlugin", uE1.getDisplayName (), uE1.getSpecificationVersion ()); // NOI18N
+                    String name2 = NbBundle.getMessage(LocalDownloadSupport.class, "NotificationPlugin", uE2.getDisplayName (), uE2.getSpecificationVersion ()); // NOI18N
                     Object res = DialogDisplayer.getDefault ().notify (
                             new NotifyDescriptor.Confirmation (
-                            getBundle ("NotificationAlreadyPresent", name2, name1), // NOI18N
-                            getBundle ("NotificationAlreadyPresentTitle"))); // NOI18N
+                            NbBundle.getMessage(LocalDownloadSupport.class, "NotificationAlreadyPresent", name2, name1), // NOI18N
+                            NbBundle.getMessage(LocalDownloadSupport.class, "NotificationAlreadyPresentTitle"))); // NOI18N
                     if (NotifyDescriptor.YES_OPTION.equals (res)) {
                         winnerUnit = uE1.getUpdateUnit ();
                         winnerFile = nbm;
@@ -198,11 +205,11 @@ public class LocalDownloadSupport {
             }
         }
             if (!alreadyInstalled.isEmpty ()) {
-                String msg = null;
+                String msg;
                 if (alreadyInstalled.size () == 1) {
-                    msg = getBundle ("NotificationOneAlreadyInstalled", getDisplayNames (alreadyInstalled)); //NOI18N
+                    msg = NbBundle.getMessage(LocalDownloadSupport.class, "NotificationOneAlreadyInstalled", getDisplayNames (alreadyInstalled)); //NOI18N
                 } else {
-                    msg = getBundle ("NotificationMoreAlreadyInstalled", getDisplayNames (alreadyInstalled)); //NOI18N
+                    msg = NbBundle.getMessage(LocalDownloadSupport.class, "NotificationMoreAlreadyInstalled", getDisplayNames (alreadyInstalled)); //NOI18N
                 }
                 DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (
                         msg,
@@ -275,13 +282,13 @@ public class LocalDownloadSupport {
             if (!quiet) {
                 err.log (Level.INFO, re.getMessage (), re);
                 DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Exception (re,
-                        getBundle ("LocalDownloadSupport_BrokenNBM_Exception",
+                        NbBundle.getMessage(LocalDownloadSupport.class, "LocalDownloadSupport_BrokenNBM_Exception",
                         nbm.getName (),
                         re.getLocalizedMessage ())));
                 fileList.removeFile (nbm);
             }
         }
-        if (units == null || units.size () == 0) {
+        if (units == null || units.isEmpty()) {
             // skip to another one
             return null;
         }
@@ -317,22 +324,34 @@ public class LocalDownloadSupport {
 
     private static class NbmFileFilter extends FileFilter {
 
+        @Override
         public boolean accept (File f) {
             return f.isDirectory () || f.getName ().toLowerCase ().endsWith (".nbm"); // NOI18N
         }
 
+        @Override
         public String getDescription () {
-            return getBundle ("CTL_FileFilterDescription"); // NOI18N
+            return NbBundle.getMessage(LocalDownloadSupport.class, "CTL_FileFilterDescription"); // NOI18N
+        }
+    }
+
+    private static class OsgiBundleFilter extends FileFilter {
+
+        @Override
+        public boolean accept(File f) {
+            return f.isDirectory() || (f.getName().toLowerCase().endsWith(".jar") && isOSGiBundle(f)); // NOI18N
+        }
+
+        @Override
+        @Messages("CTL_OsgiBundleFilterDescription=OSGi Bundle files (*.jar)")
+        public String getDescription() {
+            return CTL_OsgiBundleFilterDescription(); // NOI18N
         }
     }
 
     private static File getDefaultDir () {
         File retval = new File (getPreferences ().get (LOCAL_DOWNLOAD_DIRECTORY_KEY, System.getProperty ("netbeans.user")));// NOI18N
         return (retval.exists ()) ? retval : new File (System.getProperty ("netbeans.user")); // NOI18N
-    }
-
-    public static String getBundle (String key, String... params) {
-        return NbBundle.getMessage (LocalDownloadSupport.class, key, params);
     }
 
     private static Preferences getPreferences () {
@@ -507,5 +526,16 @@ public class LocalDownloadSupport {
             res += res.length () == 0 ? dn : ", " + dn; // NOI18N
         }
         return res;
+    }
+    
+    private static boolean isOSGiBundle(File jarFile) {
+        try {
+            JarFile jar = new JarFile(jarFile);
+            Manifest mf = jar.getManifest();
+            return mf != null && mf.getMainAttributes().getValue("Bundle-SymbolicName") != null; // NOI18N
+        } catch (IOException ioe) {
+            err.log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+        }
+        return false;
     }
 }
