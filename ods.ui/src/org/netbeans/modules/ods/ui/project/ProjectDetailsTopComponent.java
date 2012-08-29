@@ -197,7 +197,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
 
         pnlProjectName.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, borderColor));
 
-        lblProjectName.setFont(new java.awt.Font("Tahoma", 0, 20)); // NOI18N
+        lblProjectName.setFont(lblProjectName.getFont().deriveFont(lblProjectName.getFont().getSize()+9f));
         org.openide.awt.Mnemonics.setLocalizedText(lblProjectName, project.getName() + " - " +  NbBundle.getMessage(ProjectDetailsTopComponent.class, "LBL_Dashboard"));
 
         lblExpandIcon.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -271,7 +271,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         pnlLinksMaven.setOpaque(false);
         pnlLinksMaven.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD, jLabel2.getFont().getSize()+2));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -280,7 +280,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         pnlLinksMaven.add(jLabel2, gridBagConstraints);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD, jLabel1.getFont().getSize()+2));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -294,7 +294,6 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.ipady = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 18, 0, 0);
         pnlLinksMaven.add(linkProject, gridBagConstraints);
@@ -305,13 +304,13 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(15, 18, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 18, 0, 0);
         pnlLinksMaven.add(linkWiki, gridBagConstraints);
 
         pnlMaven.setOpaque(false);
         pnlMaven.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel4.setFont(jLabel4.getFont().deriveFont(jLabel4.getFont().getStyle() | java.awt.Font.BOLD, jLabel4.getFont().getSize()+2));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel4.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -389,7 +388,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         pnlSources.setOpaque(false);
         pnlSources.setLayout(new java.awt.GridBagLayout());
 
-        lblSources.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lblSources.setFont(lblSources.getFont().deriveFont(lblSources.getFont().getStyle() | java.awt.Font.BOLD, lblSources.getFont().getSize()+2));
         org.openide.awt.Mnemonics.setLocalizedText(lblSources, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.lblSources.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

@@ -96,6 +96,8 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         };
         linkCommit.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getCommitUrl()));
         titlePanel.add(linkCommit, gbc);
+        JLabel lblRepository = new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_Repository", activity.getCommit().getRepository()));
+        titlePanel.add(lblRepository, gbc);
         return titlePanel;
     }
 
