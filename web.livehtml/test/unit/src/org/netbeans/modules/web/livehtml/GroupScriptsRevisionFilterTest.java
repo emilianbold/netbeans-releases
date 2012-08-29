@@ -44,7 +44,9 @@ package org.netbeans.modules.web.livehtml;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -71,30 +73,10 @@ public class GroupScriptsRevisionFilterTest extends NbTestCase {
 
         assertEquals(5, filteredAnalysis.getTimeStampsCount());
 
-        assertNull(filteredAnalysis.getScriptGroupedRevisions(0));
-        assertNull(filteredAnalysis.getScriptGroupedRevisions(1));
-
-        final Set<Integer> scriptGroupedRevisions2 = filteredAnalysis.getScriptGroupedRevisions(2);
-        assertNull(scriptGroupedRevisions2);
-
-        final Set<Integer> whiteSpaceGroupedRevisions2 = filteredAnalysis.getWhiteSpaceGroupedRevisions(2);
-        assertNull(whiteSpaceGroupedRevisions2);
-        
-        final Set<Integer> scriptGroupedRevisions3 = filteredAnalysis.getScriptGroupedRevisions(3);
-        final Set<Integer> whiteSpaceGroupedRevisions3 = filteredAnalysis.getWhiteSpaceGroupedRevisions(3);
-        assertNotNull(scriptGroupedRevisions3);
-        
-        assertEquals(4, scriptGroupedRevisions3.size());
-        assertTrue(scriptGroupedRevisions3.contains(4));
-        assertTrue(scriptGroupedRevisions3.contains(5));
-        assertTrue(scriptGroupedRevisions3.contains(6));
-        assertTrue(scriptGroupedRevisions3.contains(7));
-
-        assertNotNull(whiteSpaceGroupedRevisions3);
-        assertEquals(2, whiteSpaceGroupedRevisions3.size());
-        assertFalse(whiteSpaceGroupedRevisions3.contains(7));
-        assertTrue(whiteSpaceGroupedRevisions3.contains(8));
-        assertTrue(whiteSpaceGroupedRevisions3.contains(9));
+        List<Integer> result = new ArrayList<Integer>();
+        filteredAnalysis.getGroupByStackTraceRevisions(result, filteredAnalysis.getGroupScriptLocations());
+        List<Integer> expected = Arrays.asList(new Integer[]{3,4,5,6,8});
+        assertEquals(expected, result);
     }
     
     @Before

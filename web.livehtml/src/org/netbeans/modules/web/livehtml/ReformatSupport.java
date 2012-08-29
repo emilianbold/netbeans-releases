@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -174,7 +175,7 @@ public class ReformatSupport {
             return null;
         }
         
-        final TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(document, Language.find("text/html"));
+        final TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(document, HTMLTokenId.language());
         final TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
         Map<Integer, Integer> indexesToReplace = new HashMap<Integer, Integer>();

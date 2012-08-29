@@ -188,7 +188,7 @@ public class FilteredAnalysis extends Analysis {
         return groupScriptLocations;
     }
 
-    private void getWhiteSpaceGroupedRevisions(List<Integer> revisionIndexes) {
+    public void getWhiteSpaceGroupedRevisions(List<Integer> revisionIndexes) {
         Analysis a = getParentAnalysis();
         // first and second revision will never have any diff:
         for (int i=2; i < a.getRevisionsCount(); i++) {
@@ -216,7 +216,7 @@ public class FilteredAnalysis extends Analysis {
         return true;
     }
     
-    private void getGroupByStackTraceRevisions(List<Integer> revisionIndexes, List<String> ignoreScriptLocations) {
+    public void getGroupByStackTraceRevisions(List<Integer> revisionIndexes, List<String> ignoreScriptLocations) {
         Analysis a = getParentAnalysis();
         JSONArray previousStacktrace = null;
         for (int i=1; i < a.getRevisionsCount(); i++) {
