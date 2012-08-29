@@ -85,7 +85,7 @@ public final class OdsUIUtil {
         if (loggedParams.add(paramStr)) {
             // not logged in this session yet
             if (metricsLogger == null) {
-                metricsLogger = Logger.getLogger("org.netbeans.ui.metrics.kenai"); // NOI18N
+                metricsLogger = Logger.getLogger("org.netbeans.ui.metrics.ods"); //NOI18N
             }
             LogRecord rec = new LogRecord(Level.INFO, USG_ODS);
             rec.setParameters(parameters);

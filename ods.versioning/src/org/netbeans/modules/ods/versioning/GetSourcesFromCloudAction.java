@@ -48,6 +48,7 @@ import java.io.File;
 import java.net.PasswordAuthentication;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.ods.ui.api.OdsUIUtil;
 import org.netbeans.modules.ods.versioning.GetSourcesFromCloudPanel.GetSourcesInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -117,6 +118,7 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
+                    OdsUIUtil.logODSUsage("CLONE" + prov.getName()); //NOI18N
                     NbPreferences.forModule(GetSourcesFromCloudAction.class).put("repository.scm.provider." + url, prov.getClass().getName()); //NOI18N
                     File cloneDest = prov.getSources(url, passwdAuth);
                     if (cloneDest != null && srcHandle != null) {

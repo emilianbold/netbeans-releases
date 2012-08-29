@@ -52,6 +52,7 @@ import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.ods.ui.Bundle.*;
+import org.netbeans.modules.ods.ui.api.OdsUIUtil;
 import org.netbeans.modules.ods.ui.utils.Utils;
 import org.openide.util.RequestProcessor;
 
@@ -77,6 +78,7 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
             @Override
             public void run() {
                 try {
+                    OdsUIUtil.logODSUsage("LOGIN"); //NOI18N
                     PasswordAuthentication current = server.getPasswordAuthentication();
                     if (current !=null && !(loginPanel.getUsername().equals(current.getUserName()) && Arrays.equals(loginPanel.getPassword(), current.getPassword()))) {
                         server.logout();
