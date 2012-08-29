@@ -5,6 +5,20 @@
     <!-- Editor registrations -->
     <folder name="Editors">
         <folder name="text">
+            <folder name="x-tpl-inner">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.smarty.resources.Bundle#Editors/text/x-tpl-inner"/>
+                <!-- code templates -->
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-php-smarty-codetemplates-tpl.xml" url="codetemplates-tpl.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                </folder>
+            </folder>
             <folder name="x-tpl">
                 <folder name="RefactoringActions">
                     <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
@@ -116,18 +130,37 @@
                 </folder>
 
                 <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
-
+                
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance"/>
                 </folder>
-
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"/>
+                </folder>
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-php-smarty-codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="text">
+                    <folder name="html">
+                        <!-- code templates -->
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/text/x-tpl"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
                 </folder>
 
                 <file name="org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance">
                     <attr methodvalue="org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create" name="instanceCreate"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/></file>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
+                </file>
 
                 <!-- associating platte with the mime type -->
                 <file name="PaletteFactory.instance">
@@ -184,7 +217,7 @@
         </folder>
     </folder>
 
-     <folder name="Actions">
+    <folder name="Actions">
         <folder name="Refactoring">
             <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.refactoring.actions.HtmlRefactoringActionsFactory.extractInlinedStyleAction"/>

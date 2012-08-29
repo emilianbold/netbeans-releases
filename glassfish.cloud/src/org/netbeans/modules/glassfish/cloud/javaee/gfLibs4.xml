@@ -41,7 +41,7 @@ Contributor(s):
 Portions Copyrighted 2012 Sun Microsystems, Inc.
 -->
 <server>
-    <library id="javaee">
+    <library id="JavaEE">
         <classpath>
             <fileset dir="modules">
                 <include name="javax\..+\.jar"/>
@@ -61,6 +61,22 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             </fileset>
         </classpath>
         <javadocs>
+        </javadocs>
+        <sources>
+        </sources>
+    </library>
+    <library id="Jersey 2">
+        <classpath>
+            <fileset dir="modules">
+                <include name="guava.+\.jar"/>
+                <include name="jackson.+\.jar"/>
+                <!-- include name="javax.ws.+\.jar"/ -->
+                <include name="jersey.+\.jar"/>
+                <include name="jettison.+\.jar"/>
+            </fileset>
+        </classpath>
+        <javadocs> 
+            <link url="http://search.maven.org/remotecontent?filepath=org/glassfish/jersey/jersey-documentation/2.0-m05-2/jersey-documentation-2.0-m05-2-docbook.zip"/>
         </javadocs>
         <sources>
         </sources>

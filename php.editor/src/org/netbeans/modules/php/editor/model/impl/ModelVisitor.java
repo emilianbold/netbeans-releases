@@ -865,7 +865,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 varNameImpl.addElement(varAssignment);
             }
         }
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        Expression className = node.getClassName();
+        if (className instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) className, scope);
+        } else {
+            occurencesBuilder.prepare(Kind.CLASS, className, scope);
+        }
         occurencesBuilder.prepare(variable, scope);
 
 

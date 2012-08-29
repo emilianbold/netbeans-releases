@@ -112,6 +112,7 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
         switch (ctx.getType()) {
             case BEAN:
             case CHILD_ELEMENT:
+            case PROPERTY_ELEMENT:
                 break;
             default:
                 return null;

@@ -196,7 +196,13 @@ public class ModelUtils {
     
     public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
         int lStart = LexUtilities.getLexerOffset(result, start);
+        if (lStart == -1) {
+            lStart = start;
+        }
         int lEnd = LexUtilities.getLexerOffset(result, end);
+        if (lEnd == -1) {
+            lEnd = end;
+        }
         if (lEnd < lStart) {
             // TODO this is a workaround for bug in nashorn, when sometime the start and end are not crorrect
             int length = lStart - lEnd;
@@ -683,7 +689,8 @@ public class ModelUtils {
                         || value instanceof Double) {
                     result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
                 } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                    result.add(new TypeUsageImpl("Array", lNode.getStart(), true));
+                    // offset is set to -1, to prevent coloring, etc 
+                    result.add(new TypeUsageImpl("Array", -1, true));
                 }
                 return null;
             }

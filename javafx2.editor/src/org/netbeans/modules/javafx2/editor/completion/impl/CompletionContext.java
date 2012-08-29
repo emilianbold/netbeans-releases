@@ -68,6 +68,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
+import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 
@@ -112,10 +113,20 @@ public final class CompletionContext {
      */
     private String piData;
     
+    /**
+     * Tag name of the tag with the caret. Null if caret is outside of all tags or
+     * in the tag content.
+     */
     private String tagName;
     
+    /**
+     * Start of the tag or PI where the position is located. 
+     */
     private int tagStartOffset = -1;
     
+    /**
+     * Start of the root tag, or -1 if does not exist yet
+     */
     private int rootTagStartOffset = -1;
     
     private Type type;
@@ -212,23 +223,42 @@ public final class CompletionContext {
         /**
          * Reference to resources inside property values
          */
-        RESOURCE_REF;
+        RESOURCE_REF,
+        
+        /**
+         * Event handler name
+         */
+        HANDLER;
     }
     
-    private int completionType;
+    /**
+     * Completion query type
+     */
+    private int queryType;
     
+    /**
+     * Result of FXML parsing
+     */
     private FxmlParserResult    fxmlParserResult;
     
-    private TokenHierarchy hierarchy;
+    private TokenHierarchy<?> hierarchy;
     
+    /**
+     * Parent FxNodes of the current position.
+     */
     private List<? extends FxNode>  parents;
     
+    /**
+     * Parent for newly inserted elements. Not necessarily immediate position's parent: if the
+     * caret is positioned within an attribute, the element parent is the FxNode corresponding
+     * to the attribute's element
+     */
     private FxNode  elementParent;
     
-    public CompletionContext(CompletionResultSet set, Document doc, int offset, int completionType) {
+    public CompletionContext(Document doc, int offset, int completionType) {
         this.doc = doc;
         this.caretOffset = offset;
-        this.completionType = completionType;
+        this.queryType = completionType;
     }
 
     @SuppressWarnings("unchecked")
@@ -236,12 +266,12 @@ public final class CompletionContext {
         this.fxmlParserResult = result;
         this.hierarchy = result.getTokenHierarchy();
         this.caretOffset = offset;
-        this.completionType = completionType;
+        this.queryType = completionType;
         processTokens(hierarchy);
     }
 
     public int getCompletionType() {
-        return completionType;
+        return queryType;
     }
     
     public void init(TokenHierarchy h, CompilationInfo info, FxmlParserResult fxmlResult) {
@@ -271,8 +301,6 @@ public final class CompletionContext {
         return getBeanInfo(inst.getResolvedName());
     }
     
-    private ImportProcessor importProcessor;
-    
     public String getSimpleClassName(String fqn) {
         int lastDot = fqn.lastIndexOf('.');
         String sn = fqn.substring(lastDot + 1);
@@ -283,32 +311,51 @@ public final class CompletionContext {
         }
     }
     
+    /**
+     * Resolves name using import rules
+     * 
+     * @param name
+     * @return resolved name or null if not known or ambiguous.
+     */
     public String resolveClassName(String name) {
-        if (importProcessor == null) {
-            importProcessor = new ImportProcessor(
-                    hierarchy, 
-                    null, fxmlParserResult.getTreeUtilities());
-            importProcessor.load(compilationInfo, getModel());
-        }
-        Collection<String> names = importProcessor.resolveName(name);
+        Collection<String> names = fxmlParserResult.resolveClassName(compilationInfo, name);
         if (names == null || names.size() > 1) {
             return null;
         }
         return names.iterator().next();
     }
 
+    /**
+     * Main method for initializing the context.
+     * @param h 
+     */
     @SuppressWarnings("unchecked")
     private void processTokens(TokenHierarchy h) {
         TokenSequence<XMLTokenId> ts = (TokenSequence<XMLTokenId>)h.tokenSequence();
+        
+        readRootElement(ts);
+
+        // no completion after root end:
+        FxModel m = fxmlParserResult.getSourceModel();
+        FxNode n = m.getRootComponent();
+        if (n != null) {
+            TextPositions pos = fxmlParserResult.getTreeUtilities().positions(n);
+            int end = pos.getEnd();
+            // if root is not defined, offer.
+            if (caretOffset >= end && pos.isDefined(TextPositions.Position.End)) {
+                type = Type.UNKNOWN;
+            }
+        }
+
         processType(ts);
         processValueType();
         
-        readRootElement(ts);
         
         // do not allow real content before root tag
-        if (caretOffset < rootTagStartOffset) {
+        if (rootTagStartOffset != -1 && caretOffset < rootTagStartOffset) {
             switch (type) {
                 case BEAN:
+                case PROPERTY_VALUE:
                 case PROPERTY_ELEMENT:
                 case CHILD_ELEMENT:
                 case ROOT:
@@ -323,10 +370,23 @@ public final class CompletionContext {
         
         processPath();
         
+        // no parents above
+        if (parents.size() == 1) {
+            switch (type) {
+                case PROPERTY_VALUE:
+                    type = Type.UNKNOWN;
+                    break;
+                    
+                case PROPERTY_ELEMENT:
+                case CHILD_ELEMENT:
+                    type = Type.BEAN;
+            }
+        }
+        
         // try to narrow the CHILD_ELEMENT if possible:
         if (getType() == Type.CHILD_ELEMENT && !getParents().isEmpty()) {
             List<? extends FxNode> parents = getParents();
-            FxNode n = parents.get(0);
+            n = parents.get(0);
             if (n.getKind() == FxNode.Kind.Property) {
                 type = Type.BEAN;
             } else if (n.getKind() == FxNode.Kind.Instance) {
@@ -345,9 +405,126 @@ public final class CompletionContext {
                         }
                     }
                 }
+            } else if (n.getKind() == FxNode.Kind.Property) {
+                type = Type.PROPERTY_VALUE_CONTENT;
+            } else if (n.getKind() == FxNode.Kind.Event) {
+                type = Type.HANDLER;
             }
         }
+        findNextCaretPos(ts);
     }
+    
+    private boolean replaceExisting;
+
+    public boolean isReplaceExisting() {
+        return replaceExisting;
+    }
+    
+    /**
+     * Given the caret pos, the method finds a suitable next position for the caret,
+     * after the text at caret pos is completed or replaced.
+     * <p/>
+     * Also initializes the 'replaceExisting' property - if the caret is positioned
+     * within a token, and the completion should overwrite it. This property controls
+     * whether whitespace separators should be added after inserted text. If replacement
+     * is made, no whitespace is inserted - it's already present.
+     * 
+     * @param ts 
+     */
+    private void findNextCaretPos(TokenSequence ts) {
+        int off = ts.move(caretOffset);
+        Token<XMLTokenId>  t;
+        if (off == 0 && caretOffset == startOffset) {
+            return;
+        }
+        
+        switch (type) {
+            case PROPERTY: {
+                // the next position is within the value, if it is present
+                boolean wsFound = false;
+                
+                while (ts.moveNext()) {
+                    t = ts.token();
+                    switch (t.id()) {
+                        case WS:
+                            wsFound = true;
+                            break;
+                            
+                        case ARGUMENT:
+                            if (wsFound) {
+                                // ws before next attribute name, bail out
+                                return;
+                            }
+                            
+                        case OPERATOR: 
+                        case VALUE:
+                            replaceExisting = true;
+                            nextCaretPos = ts.offset() + 1;
+                            return;
+
+                        default:
+                            return;
+                    }
+                }
+                break;
+            }
+            case ROOT:
+            case BEAN:
+            case CHILD_ELEMENT:
+            case PROPERTY_ELEMENT:
+                // do not search, if the prefix is just "<" and nothing important follows
+                if (prefix.length() == 1 && this.tokenTail == 0) {
+                    return;
+                }
+                // after the > sign, or the 1st attribute start
+                while (ts.moveNext()) {
+                    t = ts.token();
+                    switch (t.id()) {
+                        case WS:
+                            nextCaretPos = ts.offset() + 1;
+                            break;
+
+                        case TAG:
+                            if (ts.offset() == startOffset) {
+                                // completion at the <, it's insertion not a replacement.
+                                break;
+                            }
+                            replaceExisting = true;
+                            if (t.text().charAt(0) != '>' || nextCaretPos > -1) {
+                                // do not set caret pos, caret will be right after insertion
+                                return;
+                            }
+                            if (type == Type.PROPERTY_ELEMENT) {
+                                // properties do not have attributes, position after
+                                // the closing >
+                                nextCaretPos = ts.offset() + 1;
+                                return;
+                            } else {
+                                nextCaretPos = ts.offset();
+                            }
+                            return;
+
+                        case ARGUMENT:
+                            replaceExisting = true;
+                            return;
+
+                        default:
+                            return;
+                    }
+                }
+        }
+    }
+
+    public int getNextCaretPos() {
+        return nextCaretPos;
+    }
+    
+    /**
+     * Caret offset after completion into the original text. -1, 
+     * if the caret should be positioned elsewhere than right after the inserted
+     * text.
+     */
+    private int nextCaretPos = -1;
 
     public List<? extends FxNode> getParents() {
         return Collections.unmodifiableList(parents);
@@ -363,35 +540,66 @@ public final class CompletionContext {
         return elementParent;
     }
     
+    /**
+     * Provides enclosing property. If the caret is not positioned within
+     * @return 
+     */
     public FxProperty getEnclosingProperty() {
         if (parents.isEmpty()) {
             return null;
         }
         FxNode parent = parents.get(0);
-        if (parent.getKind() == FxNode.Kind.Property) {
+        if (parent instanceof PropertySetter) {
             return ((PropertySetter)parent).getPropertyInfo();
         } else if (parent.getKind() == FxNode.Kind.Instance) {
             FxInstance inst = (FxInstance)parent;
             FxBean bean = inst.getDefinition();
-            return bean == null ? null : bean.getDefaultProperty();
-        } else {
-            return null;
+            // instance with a default property, caret is positioned WITHIN the content = in the default property.
+            // This specifically activates in empty content, which is reported as ignorable whitespace, but can hold property value.
+            if (bean != null && bean.getDefaultProperty() != null) {
+                String pn = bean.getDefaultProperty().getName();
+                if (inst.getProperty(pn) != null) {
+                    // there's already defined a default property in the tree, should have been in the parent list, or we are outside of it.
+                    return null;
+                }
+                if (fxmlParserResult.getTreeUtilities().positions(inst).contentContains(caretOffset, true)) {
+                    return bean.getDefaultProperty();
+                }
+            }
         }
+        return null;
     }
     
     public FxInstance getInstanceElement() {
         return instanceElement;
     }
     
+    /**
+     * Initialized by processPath
+     */
     private FxInstance instanceElement;
     
+    /**
+     * Processes path obtained from the parser, attempts to find context and initializes
+     * parents, elementParent and instanceElement properties. Must be called after processType.
+     */
     private void processPath() {
+        // in tag completion (resolved already by processType), ignores the currently opened tag as a parent,
+        // as it is THAT tag, which is going to be replaced or changed.
         parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
-                getCaretOffset(), getType() == CompletionContext.Type.PROPERTY_ELEMENT, true);
+                getCaretOffset(), isTag(), true);
         if (parents.isEmpty()) {
             return;
         }
+        int index = 1;
+        
         FxNode parent = parents.get(0);
+        // go up from attribute, the parent must be an element; the attribute cannot accept elements, but its parent can
+        if (fxmlParserResult.getTreeUtilities().isAttribute(parent)) {
+            if (parents.size() > index) {
+                parent = parents.get(index++);
+            }
+        }
         
         if (parent instanceof PropertySetter) {
             PropertySetter ps = (PropertySetter)parent;
@@ -400,8 +608,8 @@ public final class CompletionContext {
             if (ps.isImplicit()) {
                 // the caret is inside some char content. It's legal to suggest 
                 // a property element here
-                if (parents.size() > 1) {
-                    FxNode superParent = parents.get(1);
+                if (parents.size() > index) {
+                    FxNode superParent = parents.get(index++);
                     if (superParent.getKind() != FxNode.Kind.Instance) {
                         throw new IllegalStateException();
                     }
@@ -410,25 +618,8 @@ public final class CompletionContext {
             }
         } 
         this.elementParent = parent;
-        
-        FxNode candidate;
-        switch (parent.getKind()) {
-            case Property:
-            case Event:
-            case Attribute:
-            case Element:
-            case Namespace:
-            case Error:
-                candidate = parents.size() > 1 ? parents.get(1) : null;
-                break;
-            case Instance:
-                candidate = parent;
-                break;
-            default:
-                candidate = null;
-        }
-        if (candidate != null && candidate.getKind() == FxNode.Kind.Instance) {
-            this.instanceElement = (FxInstance)candidate;
+        if (parent != null && parent.getKind() == FxNode.Kind.Instance) {
+            this.instanceElement = (FxInstance)parent;
         }
     }
  
@@ -516,10 +707,20 @@ public final class CompletionContext {
         return getEndOffset() - getStartOffset();
     }
     
+    /** 
+     * End offset of the tag with caret
+     */
     private int tagEndOffset = -1;
     
-    private boolean tagClosed;
+    /**
+     * True, if the tag is finished (note: this does not mean the corresponding close
+     * tag is present ! just that the tag property finishes with >)
+     */
+    private boolean finished;
     
+    /**
+     * True, if the tag is self-closed
+     */
     private boolean selfClosed;
 
     public Document getDoc() {
@@ -530,8 +731,8 @@ public final class CompletionContext {
         return tagEndOffset;
     }
 
-    public boolean isTagClosed() {
-        return tagClosed;
+    public boolean isTagFinished() {
+        return finished;
     }
 
     public boolean isSelfClosed() {
@@ -539,7 +740,7 @@ public final class CompletionContext {
     }
     
     private void markUnclosed(int offendingContent) {
-        this.tagClosed = false;
+        this.finished = false;
         this.selfClosed = false;
         this.tagEndOffset = offendingContent;
     }
@@ -567,7 +768,7 @@ public final class CompletionContext {
             case BEAN:
             case CHILD_ELEMENT:
             case PROPERTY_ELEMENT:
-//            case ROOT:
+            case ROOT:
                 return true;
         }
         return false;
@@ -615,7 +816,7 @@ public final class CompletionContext {
 
                 case PI_END:
                     selfClosed = true;
-                    tagClosed = true;
+                    finished = true;
                     tagEndOffset = seq.offset() + t.length();
                     return;
                     
@@ -700,7 +901,7 @@ public final class CompletionContext {
         
         tagStartOffset = -1;
         attributes = Collections.emptyMap();
-        tagClosed = false;
+        finished = false;
         selfClosed = false;
     }
     
@@ -821,7 +1022,6 @@ public final class CompletionContext {
         if (diff > 0) {
             throw new IllegalStateException();
         }
-        boolean cont = true;
         
         if (!seq.moveNext()) {
             return;
@@ -831,7 +1031,7 @@ public final class CompletionContext {
         if (t.id() == XMLTokenId.TAG) {
             // the tag can be self-closed, without any arguments:
             if (t.text().toString().endsWith("/>")) {
-                tagClosed = true;
+                finished = true;
                 tagEndOffset = seq.offset() + t.length();
                 selfClosed = true;
                 return;
@@ -898,7 +1098,7 @@ public final class CompletionContext {
                         return;
                     } else if (s.charAt(s.length() - 1) == '>') {
                         // end tag marker
-                        tagClosed = true;
+                        finished = true;
                         tagEndOffset = seq.offset() + s.length();
                         selfClosed = s.length() >= 2 && s.charAt(s.length() - 2) == '/';
                         return;
@@ -970,6 +1170,8 @@ public final class CompletionContext {
             type = Type.BINDING;
         } else if (prefix.startsWith("$")) {
             type = Type.VARIABLE;
+        } else if (prefix.startsWith("#")) {
+            type = Type.HANDLER;
         }
     }
     
@@ -1002,12 +1204,18 @@ public final class CompletionContext {
         this.tokenTail = end - caretOffset;
     }
     
+    /**
+     * Name of the property, if property name or value is being completed. Does
+     * NOT work for Type.CHILD_ELEMENT.
+     */
     private String propertyName;
     
     public String getPropertyName() {
         if (type == Type.PROPERTY_VALUE) {
             return propertyName;
         } else if (type == Type.PROPERTY) {
+            return tagName;
+        } else if (type == Type.PROPERTY_ELEMENT) {
             return tagName;
         } else {
             return null;
@@ -1051,6 +1259,8 @@ public final class CompletionContext {
                 case PI_TARGET:
                     type = Type.INSTRUCTION_TARGET;
                     piTarget = t.text().toString();
+                    tagStartOffset = ts.offset();
+                    dontAdvance = caretOffset == ts.offset() + t.length();
                     break;
 
                 case PI_START:
@@ -1064,7 +1274,9 @@ public final class CompletionContext {
 
                 case OPERATOR:
                     type = Type.PROPERTY_VALUE;
-                    startOffset = caretOffset;
+                    if (startOffset == -1) {
+                        startOffset = caretOffset;
+                    }
                     prefix = ""; // NOI18N
                     dontAdvance = true;
                     break;
@@ -1080,7 +1292,9 @@ public final class CompletionContext {
                         if (nonWh.startsWith("<")) {
                             // correct start & end offset:
                             int nonWhPos = t.text().toString().indexOf(nonWh);
-                            startOffset = ts.offset() + nonWhPos;
+                            if (startOffset == -1) {
+                                startOffset = ts.offset() + nonWhPos;
+                            }
                             if (caretOffset > startOffset + nonWh.length()) {
                                 type = Type.UNKNOWN;
                             } else {
@@ -1091,8 +1305,13 @@ public final class CompletionContext {
                             tagStartOffset = ts.offset();
                             break;
                         }
-                        // some content; assume it is a property value
-                        type = Type.PROPERTY_VALUE;
+
+                        if (rootTagStartOffset == -1 || rootTagStartOffset <= startOffset) {
+                            type = Type.ROOT;
+                        } else {
+                            // some content; assume it is a property value
+                            type = Type.PROPERTY_VALUE;
+                        }
                         
                         // traverse back to the 1st nonWhite character, record start position and length of the token
                         setTextContentBoundaries(ts);
@@ -1114,8 +1333,10 @@ public final class CompletionContext {
                     if (s.length() == 1 && s.charAt(0) == '>') {
                         // after the ending > of a tag
                         type = Type.CHILD_ELEMENT;
-                        startOffset = ts.offset() + 1;
-                        prefix = "";
+                        if (startOffset == -1) {
+                            startOffset = ts.offset() + 1;
+                            prefix = "";
+                        }
                         break;
                     }
                     if (s.length() < 2) {
@@ -1163,8 +1384,11 @@ public final class CompletionContext {
             }
         }
 
+        // compute prefix and replacement offset, if was not set from the iteration
         if (!wsFound && prefix == null) {
-            if (diff > 0) {
+            if (t == null) {
+                prefix = "";
+            } else if (diff > 0) {
                 prefix = t.text().subSequence(0, diff).toString();
             } else if (ts.offset() < caretOffset) {
                 // assume preceding token
@@ -1173,9 +1397,15 @@ public final class CompletionContext {
             }
         }
         if (startOffset == -1) {
-            startOffset = ts.offset();
+            if (hasToken) {
+                startOffset = ts.offset();
+            } else {
+                startOffset = caretOffset;
+            }
         }
-        if (!dontAdvance && (wsFound || !middle)) {
+        
+        // advance to the next state, as caret is positioned AFTER the token
+        if (!dontAdvance && (wsFound || !middle) && type != null) {
             // in between tokens, so shift the type
             Type oldType = this.type;
             switch (oldType) {
@@ -1254,16 +1484,12 @@ public final class CompletionContext {
             }
         }
         
-        // CHILD_ELEMENT in a clearly non-instance content means that instance should be present,
-        // if anything.
-        if (type == Type.CHILD_ELEMENT && 
-            tagName != null && !tagName.equals("") && !isClassTagName(tagName)) {
-            // assume bean
-            type = Type.BEAN;
+        if (cont && type == null) {
+            type = Type.ROOT;
         }
         
+        // root tag cannot be placed between processing instructions, iterate forward
         if (type == Type.ROOT) {
-            // try to traverse forward through all the whitespace, to find whether there's an processing instruction.
             ts.move(caretOffset);
             
             cont = true;

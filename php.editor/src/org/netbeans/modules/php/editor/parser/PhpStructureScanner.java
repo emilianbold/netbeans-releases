@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
@@ -67,14 +68,13 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -107,6 +107,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
 
+    @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         PHPParseResult result = (PHPParseResult) info;
@@ -125,7 +126,9 @@ public class PhpStructureScanner implements StructureScanner {
 
             Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
             for (FunctionScope fnc : declaredFunctions) {
-                if (fnc.isAnonymous()) continue;
+                if (fnc.isAnonymous()) {
+                    continue;
+                }
                 List<StructureItem> variables = new ArrayList<StructureItem>();
                 namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
                 //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
@@ -195,6 +198,7 @@ public class PhpStructureScanner implements StructureScanner {
         return items;
     }
 
+    @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         Program program = Utils.getRoot(info);
@@ -232,7 +236,9 @@ public class PhpStructureScanner implements StructureScanner {
             List<Scope> scopes = getEmbededScopes(fileScope, null);
             for (Scope scope : scopes) {
                 OffsetRange offsetRange = scope.getBlockRange();
-                if (offsetRange == null) continue;
+                if (offsetRange == null) {
+                    continue;
+                }
                 if (scope instanceof TypeScope) {
                     getRanges(folds, FOLD_CLASS).add(offsetRange);
                 } else {
@@ -268,6 +274,7 @@ public class PhpStructureScanner implements StructureScanner {
         return ranges;
     }
 
+    @Override
     public Configuration getConfiguration() {
         return new Configuration(true, true);
     }
@@ -435,14 +442,17 @@ public class PhpStructureScanner implements StructureScanner {
             return hashCode;
         }
 
+        @Override
         public String getName() {
             return modelElement.getName();
         }
 
+        @Override
         public String getSortText() {
             return sortPrefix + modelElement.getName();
         }
 
+        @Override
         public ElementHandle getElementHandle() {
             return modelElement.getPHPElement();
         }
@@ -451,26 +461,32 @@ public class PhpStructureScanner implements StructureScanner {
             return modelElement;
         }
 
+        @Override
         public ElementKind getKind() {
             return modelElement.getPHPElement().getKind();
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return modelElement.getPHPElement().getModifiers();
         }
 
+        @Override
         public boolean isLeaf() {
-            return (children.size() == 0);
+            return (children.isEmpty());
         }
 
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             return children;
         }
 
+        @Override
         public long getPosition() {
             return modelElement.getOffset();
         }
 
+        @Override
         public long getEndPosition() {
             if (modelElement instanceof Scope) {
                 final OffsetRange blockRange = ((Scope) modelElement).getBlockRange();
@@ -481,6 +497,7 @@ public class PhpStructureScanner implements StructureScanner {
             return modelElement.getNameRange().getEnd();
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             return null;
         }
@@ -621,6 +638,7 @@ public class PhpStructureScanner implements StructureScanner {
             this.simpleText = elementHandle.getName();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(simpleText);
             return formatter.getText();
@@ -633,6 +651,7 @@ public class PhpStructureScanner implements StructureScanner {
             super(elementHandle, children, "namespace"); //NOI18N
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getName());
@@ -650,6 +669,7 @@ public class PhpStructureScanner implements StructureScanner {
             super(elementHandle, null, "aaaa_use"); //NOI18N
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getName());
@@ -678,6 +698,7 @@ public class PhpStructureScanner implements StructureScanner {
             return (ClassScope) getModelElement();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getName());
@@ -740,6 +761,7 @@ public class PhpStructureScanner implements StructureScanner {
             return (FunctionScope) getModelElement();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
                 formatter.reset();
                 appendFunctionDescription(getFunctionScope(), formatter);
@@ -758,6 +780,7 @@ public class PhpStructureScanner implements StructureScanner {
             return (MethodScope) getModelElement();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
                 formatter.reset();
                 appendFunctionDescription(getMethodScope(), formatter);
@@ -787,6 +810,7 @@ public class PhpStructureScanner implements StructureScanner {
             return (InterfaceScope) getModelElement();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
@@ -844,11 +868,12 @@ public class PhpStructureScanner implements StructureScanner {
         public ElementKind getKind() {
             return ElementKind.CONSTRUCTOR;
         }
-
+ 
         public MethodScope getMethodScope() {
             return (MethodScope) getModelElement();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
                 formatter.reset();
                 appendFunctionDescription(getMethodScope(), formatter);

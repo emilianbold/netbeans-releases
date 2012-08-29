@@ -363,6 +363,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        BEFORE_CHAIN_CALL_DOT {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         AFTER_CHAIN_CALL_DOT {
             @Override
             public boolean isLineWrapMarker() {
@@ -374,6 +384,16 @@ public final class FormatToken {
             }
         },
         BEFORE_BINARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_BINARY_OPERATOR_WRAP {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
@@ -403,14 +423,39 @@ public final class FormatToken {
                 return false;
             }
         },
-
-        // a bit special tokens to detect proper continuation
-        AFTER_PROPERTY {
+        AFTER_TERNARY_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
             @Override
             public boolean isSpaceMarker() {
                 return false;
             }
         },
+        AFTER_ARRAY_LITERAL {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // a bit special tokens to detect proper continuation
+        AFTER_PROPERTY {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
         BEFORE_OBJECT {
             @Override
             public boolean isSpaceMarker() {

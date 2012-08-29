@@ -137,11 +137,16 @@ public final class FxTreeUtilities {
         } catch (Error e) {
             // expected
         }
-        if (!visitor.nodeStack.isEmpty() && ignoreTag) {
+        if (visitor.nodeStack.size() > 1 && ignoreTag) {
             FxNode n = visitor.nodeStack.peekFirst();
             if (!accessor.i(n).contentContains(position, caret)) {
                 visitor.nodeStack.removeFirst();
             }
+        }
+        if (visitor.nodeStack.isEmpty()) {
+            // compensate bcs model.contains() does not accept 0th position, but the
+            // model by def contains everything in the source.
+            visitor.nodeStack.add(model);
         }
         return Collections.unmodifiableList(
                 new ArrayList<FxNode>(visitor.nodeStack)
@@ -211,5 +216,13 @@ public final class FxTreeUtilities {
 
     public TextPositions positions(FxNode node) {
         return accessor.i(node);
+    }
+
+    public boolean isElement(FxNode node) {
+        return accessor.i(node).isElement();
+    }
+    
+    public boolean isAttribute(FxNode node) {
+        return accessor.i(node).isAttribute();
     }
 }

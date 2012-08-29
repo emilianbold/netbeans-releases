@@ -248,19 +248,32 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * not available for activation.
      */
     public void activatePanel (NavigatorPanel panel) {
-        if (currentPanels == null || !currentPanels.contains(panel)) {
+        NavigatorPanel toActivate = null;
+        boolean contains = false;
+        for (NavigatorPanel navigatorPanel : currentPanels) {
+            if (navigatorPanel instanceof LazyPanel) {
+                contains = ((LazyPanel) navigatorPanel).panelMatch(panel);
+            } else {
+                contains = navigatorPanel.equals(panel);
+            }
+            if (contains) {
+                toActivate = navigatorPanel;
+                break;
+            }
+        }
+        if (currentPanels == null || !contains) {
             throw new IllegalArgumentException("Panel is not available for activation: " + panel); //NOI18N
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
-        if (!panel.equals(oldPanel)) {
+        if (!toActivate.equals(oldPanel)) {
             if (oldPanel != null) {
                 oldPanel.panelDeactivated();
             }
-            panel.panelActivated(clientsLookup);
-            navigatorTC.setSelectedPanel(panel);
+            toActivate.panelActivated(clientsLookup);
+            navigatorTC.setSelectedPanel(toActivate);
             // selected panel changed, update selPanelLookup to listen correctly
             panelLookup.lookup(Object.class);
-            cacheLastSelPanel(panel);
+            cacheLastSelPanel(toActivate);
         }
     }
 

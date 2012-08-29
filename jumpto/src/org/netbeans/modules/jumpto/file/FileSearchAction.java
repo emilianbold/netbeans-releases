@@ -73,6 +73,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -87,6 +88,11 @@ import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -96,6 +102,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -119,6 +126,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -166,8 +174,14 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
 
     @Override
-    public ListCellRenderer getListCellRenderer( JList list ) {
-        return new Renderer( list );
+    public ListCellRenderer getListCellRenderer(
+            @NonNull final JList list,
+            @NonNull final Document nameDocument,
+            @NonNull final ButtonModel caseSensitive) {
+        Parameters.notNull("list", list);   //NOI18N
+        Parameters.notNull("nameDocument", nameDocument);   //NOI18N
+        Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
+        return new Renderer(list, nameDocument, caseSensitive);
     }
 
 
@@ -702,9 +716,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 	}
     }
 
-    public static class Renderer extends EntitiesListCellRenderer {
+    public static class Renderer extends EntitiesListCellRenderer implements ActionListener, DocumentListener {
 
         public  static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
+
+        private final HighlightingNameFormatter fileNameFormatter;
 
         private RendererComponent rendererComponent;
         private JLabel jlName = new JLabel();
@@ -721,14 +737,18 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         private Color bgColorGreener;
         private Color bgColorDarkerGreener;
 
+        private String textToFind = "";   //NOI18N
+        private boolean caseSensitive;
         private JList jList;
 
         private boolean colorPrefered;
 
-        public Renderer( JList list ) {
-
+        public Renderer(
+                @NonNull final JList list,
+                @NonNull final Document nameDocument,
+                @NonNull final ButtonModel caseSensitive) {
             jList = list;
-
+            this.caseSensitive = caseSensitive.isSelected();
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
                 ((JViewport)container).addChangeListener(this);
@@ -782,6 +802,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                                     Math.abs(bgColorDarker.getRed() - 35),
                                     Math.min(255, bgColorDarker.getGreen() + 5 ),
                                     Math.abs(bgColorDarker.getBlue() - 35) );
+            fileNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            nameDocument.addDocumentListener(this);
+            caseSensitive.addActionListener(this);
         }
 
         public @Override Component getListCellRendererComponent( JList list,
@@ -819,7 +842,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             if ( value instanceof FileDescriptor ) {
                 FileDescriptor fd = (FileDescriptor)value;
                 jlName.setIcon(fd.getIcon());
-                jlName.setText(fd.getFileName());
+                final String formattedTypeName = fileNameFormatter.formatName(
+                    fd.getFileName(),
+                    textToFind,
+                    caseSensitive);
+                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
                 jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
@@ -859,6 +886,30 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         public void setColorPrefered( boolean colorPrefered ) {
             this.colorPrefered = colorPrefered;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            try {
+                textToFind = e.getDocument().getText(0, e.getDocument().getLength());
+            } catch (BadLocationException ex) {
+                textToFind = "";    //NOI18N
+            }
         }
 
      }

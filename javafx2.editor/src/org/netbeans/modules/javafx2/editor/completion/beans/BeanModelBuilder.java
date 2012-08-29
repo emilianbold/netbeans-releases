@@ -51,8 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -63,6 +66,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.AbstractTypeVisitor7;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -114,6 +118,11 @@ public final class BeanModelBuilder {
     private TypeElement classElement;
     
     private FxBeanProvider  provider;
+    
+    /**
+     * True, if analyzing a Builder. Naming patterns are different.
+     */
+    private boolean builder;
 
     public BeanModelBuilder(FxBeanProvider provider, CompilationInfo compilationInfo, String className) {
         this.compilationInfo = compilationInfo;
@@ -147,8 +156,16 @@ public final class BeanModelBuilder {
     
     FxBean process() {
         classElement = compilationInfo.getElements().getTypeElement(className);
+        TypeElement builderEl = compilationInfo.getElements().getTypeElement("javafx.util.Builder"); // NOI18N
+        
         if (classElement == null) {
             return resultInfo = null;
+        }
+        if (builderEl != null) {
+            Types t = compilationInfo.getTypes();
+            builder = t.isAssignable(
+                    t.erasure(classElement.asType()), t.erasure(builderEl.asType())
+            );
         }
         boolean fxInstance = true;
         boolean valueOf = FxClassUtils.findValueOf(classElement, compilationInfo) != null;
@@ -159,8 +176,8 @@ public final class BeanModelBuilder {
             boolean found = false;
             
             for (ExecutableElement c : ElementFilter.constructorsIn(classElement.getEnclosedElements())) {
-                if (c.getParameters().size() == 0 &&
-                    (c.getModifiers().contains(Modifier.PUBLIC) || FxClassUtils.isFxmlAnnotated(c)) ) {
+                if (c.getParameters().isEmpty() &&
+                    (FxClassUtils.isFxmlAccessible(c)) ) {
                     found = true;
                     break;
                 }
@@ -177,7 +194,9 @@ public final class BeanModelBuilder {
         resultInfo.setJavaType(ElementHandle.create(classElement));
         resultInfo.setFxInstance(fxInstance);
         resultInfo.setValueOf(valueOf);
+
         inspectMembers();
+        
         // try to find default property
         resultInfo.setProperties(allProperties);
         resultInfo.setSimpleProperties(simpleProperties);
@@ -186,14 +205,21 @@ public final class BeanModelBuilder {
         resultInfo.setFactoryNames(factoryMethods);
         String defaultProperty = FxClassUtils.getDefaultProperty(classElement);
         resultInfo.setDefaultPropertyName(defaultProperty);
-
+        
         FxBean merge = new FxBean(className);
+        merge.setJavaType(resultInfo.getJavaType());
         merge.setValueOf(resultInfo.hasValueOf());
         merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
         
         resultInfo = merge;
-        collectSuperClass(classElement.getSuperclass());
+
+        // try to find the builder
+        findBuilder();
+
+        if (classElement.getKind() == ElementKind.CLASS) {
+            collectSuperClass(classElement.getSuperclass());
+        }
         resultInfo.setParentBeanInfo(superBi);
         resultInfo.merge(declared);
 
@@ -203,6 +229,26 @@ public final class BeanModelBuilder {
             beanCache.addBeanInfo(compilationInfo.getClasspathInfo(), resultInfo, dependencies);
         }
         return resultInfo;
+    }
+    
+    private void findBuilder() {
+        if (classElement.getNestingKind() != NestingKind.TOP_LEVEL) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder(((PackageElement)classElement.getEnclosingElement()).getQualifiedName().toString());
+        if (sb.length() > 0) {
+            sb.append(".");
+        }
+        sb.append(classElement.getSimpleName().toString()).append("Builder");
+        
+        String s = sb.toString();
+        
+        FxBean builderBean = provider.getBeanInfo(s);
+        if (builderBean == null) {
+            return;
+        }
+        resultInfo.setBuilder(builderBean);
+        builderBean.makeBuilder(resultInfo);
     }
     
     public FxBean getBeanInfo() {
@@ -311,7 +357,6 @@ public final class BeanModelBuilder {
         TypeMirror objectType = m.getParameters().get(0).asType();
         TypeMirror paramType = m.getParameters().get(1).asType();
         
-        TypeElement objectTypeEl = (TypeElement)compilationInfo.getTypes().asElement(objectType);
         boolean simple = FxClassUtils.isSimpleType(paramType, compilationInfo);
         // analysis depends ont he paramType contents:
         addDependency(paramType);
@@ -321,7 +366,7 @@ public final class BeanModelBuilder {
         pi.setAccessor(ElementHandle.create(m));
         
         // setup the discovered object type
-        pi.setObjectType(ElementHandle.create(objectTypeEl));
+        pi.setObjectType(TypeMirrorHandle.create(objectType));
         
         if (staticProperties.isEmpty()) {
             staticProperties = new HashMap<String, FxProperty>();
@@ -409,6 +454,30 @@ public final class BeanModelBuilder {
             prop.setObservableAccessors(m);
         }
     }
+    
+    protected String findPropertyName(ExecutableElement m) {
+        String name = m.getSimpleName().toString();
+        if (!builder) {
+            if (!name.startsWith(SET_NAME_PREFIX) || name.length() == SET_NAME_PREFIX_LEN ||
+                 !Character.isUpperCase(name.charAt(SET_NAME_PREFIX_LEN))) {
+                return null;
+            }
+        }
+
+        // check number of parameters:
+        if (m.getParameters().size() != 1) {
+            return null;
+        }
+        
+        if (builder) {
+            return compilationInfo.getTypes().isAssignable(m.getReturnType(), m.getEnclosingElement().asType()) ?
+                    name : null;
+        } else {
+            return  m.getReturnType().getKind() == TypeKind.VOID ?
+                    getPropertyName(name.toString()) : null;
+            
+        }
+    }
 
     /**
      * Checks if the method represents a simple setter property. If so, it creates
@@ -419,21 +488,18 @@ public final class BeanModelBuilder {
         if (consumed) {
             return;
         }
-        String name = m.getSimpleName().toString();
-        if (!name.startsWith(SET_NAME_PREFIX) || name.length() == SET_NAME_PREFIX_LEN ||
-             !Character.isUpperCase(name.charAt(SET_NAME_PREFIX_LEN))) {
+        String name = findPropertyName(m);
+        if (name == null) {
             return;
         }
-
-        // check number of parameters:
-        if (m.getParameters().size() != 1) {
-            return;
-        }
-
+        registerProperty(m, name);
+    }
+    
+   private void registerProperty(ExecutableElement m, String name) {
         TypeMirror paramType = m.getParameters().get(0).asType();
         boolean simple = FxClassUtils.isSimpleType(paramType, compilationInfo);
         addDependency(paramType);
-        FxProperty pi = new FxProperty(getPropertyName(name), FxDefinitionKind.SETTER);
+        FxProperty pi = new FxProperty(name, FxDefinitionKind.SETTER);
         pi.setSimple(simple);
         pi.setType(TypeMirrorHandle.create(paramType));
         pi.setAccessor(ElementHandle.create(m));
@@ -561,7 +627,8 @@ public final class BeanModelBuilder {
             List<? extends TypeMirror> tParams = dt.getTypeArguments();
             if (tParams.size() != 1) {
                 // something very wrong, the event handler has just 1 type parameter
-                throw new IllegalStateException();
+                //throw new IllegalStateException();
+                return;
             }
             TypeMirror eventType = tParams.get(0);
             if (eventType.getKind() == TypeKind.WILDCARD) {

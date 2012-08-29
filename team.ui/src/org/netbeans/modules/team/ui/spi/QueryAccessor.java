@@ -61,6 +61,13 @@ public abstract class QueryAccessor<P> {
 
     /**
      *
+     * @param project
+     * @return Action to open a task from a given project and with a given id
+     */
+    public abstract Action getOpenTaskAction ( ProjectHandle<P> project, String taskId );
+
+    /**
+     *
      * @param result
      * @return Action to invoke when user clicks given query result link.
      */

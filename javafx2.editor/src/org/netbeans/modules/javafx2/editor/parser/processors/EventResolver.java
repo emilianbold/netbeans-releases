@@ -131,6 +131,10 @@ public class EventResolver extends FxNodeVisitor.ModelTreeTraversal implements M
         }
         String eventName = eh.getEvent();
         FxEvent ev = bean.getEvent(eventName);
+        
+        if (ev == null && bean.getBuilder() != null) {
+            ev = bean.getBuilder().getEvent(eventName);
+        }
 
         int offs = env.getTreeUtilities().positions(eh).getStart();
         if (ev == null) {

@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.java.source.matching;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
@@ -69,6 +70,7 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -79,6 +81,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,6 +95,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -1081,11 +1085,91 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return super.visitModifiers(node, p);
 
         ModifiersTree t = (ModifiersTree) p.getLeaf();
+        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(t.getAnnotations());
+        IdentifierTree ident = !annotations.isEmpty() && annotations.get(0).getAnnotationType().getKind() == Kind.IDENTIFIER ? (IdentifierTree) annotations.get(0).getAnnotationType() : null;
 
+        if (ident != null && options.contains(Options.ALLOW_VARIABLES_IN_PATTERN)) {
+            annotations.remove(0);
+            
+            List<AnnotationTree> real = new ArrayList<AnnotationTree>(node.getAnnotations());
+            final Set<Modifier> flags = EnumSet.noneOf(Modifier.class);
+            
+            flags.addAll(node.getFlags());
+            
+            if (!flags.containsAll(t.getFlags())) return false;
+            
+            flags.removeAll(t.getFlags());
+            
+            for (Iterator<AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                AnnotationTree at = it.next();
+                boolean found = false;
+                
+                for (Iterator<AnnotationTree> it2 = real.iterator(); it2.hasNext();) {
+                    AnnotationTree r = it2.next();
+                    State orig = State.copyOf(bindState);
+                    
+                    if (doSuperScan(r, new TreePath(p, at)) == Boolean.TRUE) {
+                        it2.remove();
+                        it.remove();
+                        found = true;
+                        break;
+                    }
+                    
+                    bindState = orig;
+                }
+                
+                if (!found) return false;
+            }
+            
+            final boolean[] actualAnnotationsMask = new boolean[node.getAnnotations().size()];
+            int ai = 0;
+            
+            for (AnnotationTree at : node.getAnnotations()) {
+                actualAnnotationsMask[ai++] = real.contains(at);
+            }
+            
+            class CallableTreePath extends TreePath implements Callable<Object[]> {
+                public CallableTreePath(TreePath tp) {
+                    super(tp.getParentPath(), tp.getLeaf());
+                }
+                @Override public Object[] call() throws Exception {
+                    return new Object[] {
+                        flags,
+                        actualAnnotationsMask
+                    };
+                }
+            }
+            
+            String name = ident.getName().toString();
+            TreePath currentPath = new CallableTreePath(getCurrentPath());
+            TreePath original = bindState.variables.get(name);
+
+            if (original == null) {
+                bindState.variables.put(name, currentPath);
+                return true;
+            } else {
+                //XXX: not implemented yet...
+                return false;
+            }
+        }
+        
         if (!checkLists(node.getAnnotations(), t.getAnnotations(), p))
             return false;
 
         return node.getFlags().equals(t.getFlags());
+    }
+
+    @Override
+    public Boolean visitAnnotation(AnnotationTree node, TreePath p) {
+        if (p == null)
+            return super.visitAnnotation(node, p);
+
+        AnnotationTree t = (AnnotationTree) p.getLeaf();
+        
+        if (!checkLists(node.getArguments(), t.getArguments(), p))
+            return false;
+
+        return scan(node.getAnnotationType(), t.getAnnotationType(), p);
     }
 
     public Boolean visitNewArray(NewArrayTree node, TreePath p) {

@@ -68,6 +68,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
@@ -78,7 +79,6 @@ import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.building.ModelProblem;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -101,7 +101,6 @@ import org.netbeans.modules.maven.grammar.effpom.AnnotationBarManager;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer.Location;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,7 +112,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 public class EffectivePomMD implements MultiViewDescription, Serializable {
@@ -308,9 +306,10 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                     final String message = errorMessage;
                     EventQueue.invokeLater(new Runnable() {
                         @Override public void run() {
-                            panel.removeAll();
-                            panel.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
-                            panel.revalidate();
+                            JComponent pnl = getVisualRepresentation();
+                            pnl.removeAll();
+                            pnl.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
+                            pnl.revalidate();
                         }
                     });
                     return;
@@ -338,12 +337,13 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
-                        NbEditorKit kit = mime.lookup(NbEditorKit.class);
+                        EditorKit kit = mime.lookup(EditorKit.class);
                         NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
                         JEditorPane pane = new JEditorPane("text/xml", null);
                         pane.setDocument(doc);
-                        panel.removeAll();
-                        panel.add(doc.createEditor(pane), BorderLayout.CENTER);
+                        JComponent pnl = getVisualRepresentation(); 
+                        pnl.removeAll();
+                        pnl.add(doc.createEditor(pane), BorderLayout.CENTER);
                         pane.setEditable(false);
 
                         try {
@@ -377,16 +377,17 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                                 }
                             });
                         }
-                        panel.revalidate();
+                        pnl.revalidate();
                         AnnotationBarManager.showAnnotationBar(pane, loc);
                     }
                 });
             } catch (final Exception x) {
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
-                        panel.removeAll();
-                        panel.add(new JLabel(LBL_failed_to_load(x.getLocalizedMessage()), SwingConstants.CENTER), BorderLayout.CENTER);
-                        panel.revalidate();
+                        JComponent pnl = getVisualRepresentation();
+                        pnl.removeAll();
+                        pnl.add(new JLabel(LBL_failed_to_load(x.getLocalizedMessage()), SwingConstants.CENTER), BorderLayout.CENTER);
+                        pnl.revalidate();
                         LOG.log(Level.FINE, "Exception thrown while loading effective POM", x);
                         Exceptions.printStackTrace(x);
                         firstTimeShown = true;

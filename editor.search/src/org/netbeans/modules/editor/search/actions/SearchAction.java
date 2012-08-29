@@ -55,10 +55,10 @@ import org.netbeans.spi.editor.AbstractEditorAction;
 
 public class SearchAction extends AbstractEditorAction {
 
-        public SearchAction(Map<String,?> attrs) {
+        public SearchAction(Map<String, ?> attrs) {
             super(attrs);
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
@@ -68,7 +68,7 @@ public class SearchAction extends AbstractEditorAction {
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
             if (eui != null) {
                 //need to find if it has extended editor firsfaft, otherwise getExtComponent() will create all sidebars
-                //and other parts of full editor if action is assigned to just editor pane and broke later action logic.                
+                //and other parts of full editor if action is assigned to just editor pane and broke later action logic.
                 JPanel jp = null;
                 Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
                 if (clientProperty instanceof JPanel) {

@@ -43,6 +43,8 @@
 package org.netbeans.modules.team.ui.nodes;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -66,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements java.beans.Customizer, DocumentListener {
+public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements java.beans.Customizer, DocumentListener, ActionListener {
 
     private Object bean;
     private NotificationLineSupport ns;
@@ -78,7 +80,9 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         this.addButton = addButton;
         initComponents();
         progress.setVisible(false);
+        cmbProvider.addActionListener(this);
         cmbProvider.setModel(new DefaultComboBoxModel(providers.toArray(new TeamServerProvider[providers.size()])));
+        updateSelection();
         cmbProvider.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -107,6 +111,13 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
 
     public TeamServerProvider getProvider () {
         return (TeamServerProvider) cmbProvider.getSelectedItem();
+    }
+
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (e.getSource() == cmbProvider) {
+            updateSelection();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -150,51 +161,62 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         lblProvider.setLabelFor(cmbProvider);
         org.openide.awt.Mnemonics.setLocalizedText(lblProvider, org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProvider.text")); // NOI18N
 
+        lblProviderDescription.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ui/resources/info.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblProviderDescription, org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProviderDescription.text")); // NOI18N
+        lblProviderDescription.setFocusable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblName)
-                            .addComponent(lblUrl))
-                        .addGap(31, 31, 31)
+                            .addComponent(lblUrl)
+                            .addComponent(lblProvider))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtDisplayName, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblProviderDescription)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(txtDisplayName)
                             .addComponent(txtUrl)))
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
                         .addComponent(proxy)
                         .addGap(18, 18, 18)
-                        .addComponent(progress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblProvider)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(progress, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblProvider))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblName)
-                    .addComponent(txtDisplayName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblUrl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(proxy)
-                    .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(lblProviderDescription)
+                            .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblName)
+                            .addComponent(txtDisplayName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblUrl))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(proxy)
+                            .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addComponent(lblProvider)))
                 .addGap(2, 2, 2))
         );
 
@@ -203,6 +225,8 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         txtUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.txtUrl.AccessibleContext.accessibleName")); // NOI18N
         txtUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.txtUrl.AccessibleContext.accessibleDescription")); // NOI18N
         proxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.proxy.AccessibleContext.accessibleDescription")); // NOI18N
+        lblProviderDescription.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProviderDescription.AccessibleContext.accessibleName")); // NOI18N
+        lblProviderDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProviderDescription.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
@@ -214,6 +238,7 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     private javax.swing.JComboBox cmbProvider;
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblProvider;
+    final javax.swing.JLabel lblProviderDescription = new javax.swing.JLabel();
     private javax.swing.JLabel lblUrl;
     private javax.swing.JProgressBar progress;
     private javax.swing.JButton proxy;
@@ -314,5 +339,13 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         this.dd = dd;
     }
 
+    private void updateSelection () {
+        Object sel = cmbProvider.getSelectedItem();
+        if (sel instanceof TeamServerProvider) {
+            lblProviderDescription.setToolTipText(((TeamServerProvider) sel).getDescription());
+        } else {
+            lblProviderDescription.setToolTipText(null);
+        }
+    }
 
 }

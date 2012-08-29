@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 public class BetterConditionHint extends JsConventionHint {
     
     @Override
-    @NbBundle.Messages("BetterConditionDisplayName=Assignment in a codintion")
+    @NbBundle.Messages("BetterConditionDisplayName=Using === or !== instead == or !=")
     public String getDisplayName() {
         return Bundle.BetterConditionDisplayName();
     }

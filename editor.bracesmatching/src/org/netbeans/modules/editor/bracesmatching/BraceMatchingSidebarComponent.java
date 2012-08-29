@@ -82,6 +82,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.PopupManager;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
@@ -353,6 +354,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     public void matchHighlighted(final MatchEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
+            if (!isEditorValid()) {
+                return;
+            }
             origin = evt.getOrigin();
             matches = evt.getMatches();
             repaint();
@@ -460,8 +464,11 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         }
     }
     
+    private boolean isEditorValid() {
+        return editor.isVisible() && Utilities.getEditorUI(editor) != null;
+    }
+    
     public JComponent createToolTipView(int start, int end) {
-        JEditorPane editorPane = (JEditorPane)editor.getUI().getRootView(editor).getContainer();
         JEditorPane tooltipPane = new JEditorPane();
         EditorKit kit = editorPane.getEditorKit();
         Document doc = editor.getDocument();
@@ -487,6 +494,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
                 tooltipPane.setEditable(false);
                 tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
                 tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
                 
                 if (matches != null && origin != null) {
                     tooltipPane.putClientProperty(MATCHED_BRACES, origin);

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.ui.views;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -66,7 +67,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
 import javax.swing.JMenuItem;
-import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -128,6 +128,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private static final String VIEW_TREE_DISPLAY_FORMAT = "view_tree_display_format"; // NOI18N
     private static final String VIEW_TYPE_TABLE = "table";                  // NOI18N
     private static final String VIEW_TYPE_TREE = "tree";                    // NOI18N
+    private static final String TOOLBAR_FOLDER = "Toolbar";                 // NOI18N
 
     private String          viewType;
     private JComponent      view;
@@ -154,7 +155,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List tableRendererFilters;
     //private RequestProcessor rp;
 
-    private List<AbstractButton> buttons;
+    private List<? extends Component> buttons;
     private javax.swing.JTabbedPane tabbedPane;
     private Image viewIcon;
     private SessionProvider providerToDisplay;
@@ -465,18 +466,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             hyperModels = null;
         }
 
-        List<? extends AbstractButton> bList = cp.lookup(viewPath, AbstractButton.class);
-        List<AbstractButton> theButtons = new ArrayList<AbstractButton>();
-        List tempList = new ArrayList<AbstractButton>();
-        for (AbstractButton b : bList) {
-            if (b instanceof JToggleButton) { // [TODO]
-                theButtons.add(b);
-            } else {
-                tempList.add(b);
-            }
-        }
-        theButtons.addAll(tempList);
-        buttons = theButtons;
+        List<? extends Component> toolbarComponents = getToolbarComponents(cp, viewPath);
+        buttons = toolbarComponents; //theButtons;
         tabbedPane = cp.lookupFirst(viewPath, javax.swing.JTabbedPane.class);
 
         ModelsChangeRefresher mcr = new ModelsChangeRefresher(e);
@@ -641,7 +632,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             public void run() {
                 final JComponent buttonsSubPane;
                 synchronized (destroyLock) {
-                    List<AbstractButton> theButtons = buttons;
+                    List<? extends Component> theButtons = buttons;
                     if (theButtons == null) {    // Destroyed in between
                         return ;
                     }
@@ -669,7 +660,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                             i++;
                         } else {
                             buttonsSubPane = null;
-                            for (javax.swing.AbstractButton b : buttons) {
+                            for (Component b : buttons) {
                                 GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(3, 3, 0, 3), 0, 0);
                                 buttonsPane.add(b, c);
                                 i++;
@@ -898,6 +889,37 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
         }
         return Collections.emptyList();
+    }
+
+    private static List<? extends Component> getToolbarComponents(final ContextProvider cp, final String viewPath) {
+        ContextProvider cpStandard = new ContextProvider() {
+
+            @Override
+            public <T> List<? extends T> lookup(String folder, Class<T> service) {
+                return (List<? extends T>) cp.lookup(folder, AbstractButton.class);
+            }
+
+            @Override
+            public <T> T lookupFirst(String folder, Class<T> service) {
+                return cp.lookupFirst(folder, service);
+            }
+        };
+        ContextProvider cpToolbar = new ContextProvider() {
+
+            @Override
+            public <T> List<? extends T> lookup(String folder, Class<T> service) {
+                return cp.lookup(folder+"/"+TOOLBAR_FOLDER, service);
+            }
+
+            @Override
+            public <T> T lookupFirst(String folder, Class<T> service) {
+                return cp.lookupFirst(folder+"/"+TOOLBAR_FOLDER, service);
+            }
+        };
+        // TODO: Might also want to add org.openide.util.actions.Presenter.Toolbar,
+        //       but need to keep the order with respect to others.
+        ContextProvider cpj = DebuggerManager.join(cpStandard, cpToolbar);
+        return cpj.lookup(viewPath, Component.class);
     }
 
     // innerclasses .............................................................

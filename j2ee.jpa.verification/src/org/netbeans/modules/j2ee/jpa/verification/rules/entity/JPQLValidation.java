@@ -102,19 +102,21 @@ public class JPQLValidation extends JPAClassRule implements CancelListener {
         mtp = new ManagedTypeProvider(project, jpaCtx.getMetaData(), jpaCtx.getCompilationInfo().getElements());
         if (entity != null) {
             for (NamedQuery nq : entity.getNamedQuery()) {
-                helper.setQuery(new Query(nq, nq.getQuery(), mtp));
-                List<JPQLQueryProblem> tmp = null;
-                try {
-                    tmp = helper.validate();
-                } catch (UnsupportedOperationException ex) {
-                    JPAProblemFinder.LOG.log(Level.INFO, "Unsupported jpql validation case: " + ex.getMessage(), ex);
-                } catch (NullPointerException ex) {
-                    JPAProblemFinder.LOG.log(Level.INFO, "NPE in jpql validation: " + ex.getMessage(), ex);
+                if(nq!=null && nq.getQuery()!=null){
+                    helper.setQuery(new Query(nq, nq.getQuery(), mtp));
+                    List<JPQLQueryProblem> tmp = null;
+                    try {
+                        tmp = helper.validate();
+                    } catch (UnsupportedOperationException ex) {
+                        JPAProblemFinder.LOG.log(Level.INFO, "Unsupported jpql validation case: " + ex.getMessage(), ex);
+                    } catch (NullPointerException ex) {
+                        JPAProblemFinder.LOG.log(Level.INFO, "NPE in jpql validation: " + ex.getMessage(), ex);
+                    }
+                    if (tmp != null && tmp.size() > 0) {
+                        problems.addAll(tmp);
+                    }
+                    helper.dispose();
                 }
-                if (tmp != null && tmp.size() > 0) {
-                    problems.addAll(tmp);
-                }
-                helper.dispose();
             }
         }
         ErrorDescription[] ret = null;

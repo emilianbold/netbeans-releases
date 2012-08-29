@@ -56,8 +56,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.html.editor.lib.api.HtmlParser;
-import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
@@ -87,22 +85,9 @@ public class JQueryCodeCompletion {
             case GLOBAL:
             case EXPRESSION:
                 if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
-//                    String functionName = findFunctionName(parserResult, lastTsOffset);
-//                    if (functionName != null) {
-//                        int paramIndex = findParamIndex(parserResult, lastTsOffset);
-//                        if (paramIndex > -1) {
-//                            System.out.println("paramIndex: " + paramIndex);
-//                            
-//                        }
-//                    }
-//                    System.out.println("functionName: " + functionName);
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
-            case OBJECT_PROPERTY:
-                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
-                    
-                }
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));

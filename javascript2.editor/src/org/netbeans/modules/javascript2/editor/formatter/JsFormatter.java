@@ -292,6 +292,10 @@ public class JsFormatter implements Formatter {
             int initialIndent, int continuationIndent) {
 
         FormatToken token = tokens.get(index);
+        CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
+        if (style == null) {
+            return;
+        }
 
         // search for token which will be present after eol
         FormatToken tokenAfterEol = token.next();
@@ -316,7 +320,6 @@ public class JsFormatter implements Formatter {
         assert tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE
                 && tokenBeforeEol.getKind() != FormatToken.Kind.EOL;
 
-        CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
         if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
             int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
                     - formatContext.getCurrentLineStart() + lastOffsetDiff;
@@ -736,14 +739,42 @@ public class JsFormatter implements Formatter {
             case BEFORE_FOR_TEST:
             case BEFORE_FOR_MODIFY:
                 return CodeStyle.get(context).wrapFor();
-            case AFTER_CHAIN_CALL_DOT:
+            case BEFORE_CHAIN_CALL_DOT:
+                if (CodeStyle.get(context).wrapAfterDotInChainedMethodCalls()) {
+                    return null;
+                }
                 return CodeStyle.get(context).wrapChainedMethodCalls();
+            case AFTER_CHAIN_CALL_DOT:
+                if (CodeStyle.get(context).wrapAfterDotInChainedMethodCalls()) {
+                    return CodeStyle.get(context).wrapChainedMethodCalls();
+                }
+                return null;
+            case AFTER_BINARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterBinaryOps()) {
+                    return CodeStyle.get(context).wrapBinaryOps();
+                }
+                return null;
             case BEFORE_BINARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterBinaryOps()) {
+                    return null;
+                }
                 return CodeStyle.get(context).wrapBinaryOps();
             case AFTER_ASSIGNMENT_OPERATOR_WRAP:
                 return CodeStyle.get(context).wrapAssignOps();
+            case AFTER_TERNARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterTernaryOps()) {
+                    return CodeStyle.get(context).wrapTernaryOps();
+                }
+                return null;
             case BEFORE_TERNARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterTernaryOps()) {
+                    return null;
+                }
                 return CodeStyle.get(context).wrapTernaryOps();
+            case AFTER_PROPERTY:
+                return CodeStyle.get(context).wrapProperties();
+            case AFTER_ARRAY_LITERAL:
+                return CodeStyle.get(context).wrapArrayInit();
             default:
                 return null;
         }

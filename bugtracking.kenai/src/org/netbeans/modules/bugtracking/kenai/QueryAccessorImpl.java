@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
@@ -161,6 +161,18 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
             return null;
         }
         return Support.getInstance().getKenaiHandler(projectHandle, this).getCreateIssueAction(repo);
+    }
+
+    @Override
+    public Action getOpenTaskAction (final ProjectHandle<KenaiProject> project, final String taskId) {
+        final KenaiIssueAccessor impl = KenaiIssueAccessor.getDefault();
+        return new AbstractAction() {
+
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                impl.open(project.getTeamProject(), taskId);
+            }
+        };
     }
 
     @Override

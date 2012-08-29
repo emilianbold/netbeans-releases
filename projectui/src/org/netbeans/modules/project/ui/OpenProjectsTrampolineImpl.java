@@ -50,6 +50,9 @@ import java.beans.PropertyChangeSupport;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
 /**
@@ -138,5 +141,24 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     public Future<Project[]> openProjectsAPI() {
         return OpenProjectList.getDefault().openProjectsAPI();
 }
+    
+    @Override
+    public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+        OpenProjectList.getDefault().addProjectGroupChangeListener(listener);
+}
+
+    @Override
+    public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+        OpenProjectList.getDefault().removeProjectGroupChangeListener(listener);
+    }
+
+    @Override
+    public ProjectGroup getActiveProjectGroupAPI() {
+        Group gr = Group.getActiveGroup();
+        if (gr != null) {
+            return org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(gr.getName(), gr.prefs());
+        }
+        return null;
+    }
     
 }

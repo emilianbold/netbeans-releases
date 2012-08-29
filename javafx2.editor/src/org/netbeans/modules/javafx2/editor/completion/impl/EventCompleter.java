@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -95,16 +96,25 @@ public class EventCompleter implements Completer, Completer.Factory {
     private void completeShallow(List<CompletionItem> result) {
         String prefix = ctx.getPrefix();
         
-        Set<String> eventNames;
+        Set<String> eventNames = new HashSet<String>();
         
         if (prefix.contains("on")) {
-            eventNames = fxBean.getEventNames();
+            eventNames.addAll(fxBean.getEventNames());
+            if (fxBean.usesBuilder()) {
+                eventNames.addAll(fxBean.getBuilder().getEventNames());
+            }
         } else {
-            eventNames = fxBean.getDeclareadInfo().getEventNames();
+            eventNames.addAll(fxBean.getDeclareadInfo().getEventNames());
+            if (fxBean.usesBuilder()) {
+                eventNames.addAll(fxBean.getBuilder().getDeclareadInfo().getEventNames());
+            }
             moreItems = true;
         }
         for (String s : eventNames) {
             FxEvent e = fxBean.getEvent(s);
+            if (e == null && fxBean.usesBuilder()) {
+                e = fxBean.getBuilder().getEvent(s);
+            }
             if (e.isPropertyChange()) {
                 moreItems = true;
                 continue;
@@ -117,6 +127,15 @@ public class EventCompleter implements Completer, Completer.Factory {
         for (String s : fxBean.getEventNames()) {
             FxEvent e = fxBean.getEvent(s);
             result.add(createItem(e, true));
+        }
+        if (fxBean.usesBuilder()) {
+            for (String s : fxBean.getBuilder().getEventNames()) {
+                if (fxBean.getEventNames().contains(s)) {
+                    continue;
+                }
+                FxEvent e = fxBean.getBuilder().getEvent(s);
+                result.add(createItem(e, true));
+            }
         }
     }
 
@@ -146,11 +165,15 @@ public class EventCompleter implements Completer, Completer.Factory {
             default:
                 return null;
         }
-        FxNode n = ctx.getInstanceElement();
+        FxNode n = ctx.getElementParent();
         if (n == null || n.getKind() != FxNode.Kind.Instance) {
             return null;
         }
-        return new EventCompleter(ctx, (FxInstance)n);
+        FxInstance inst = (FxInstance)n;
+        if (inst.getDefinition() == null) {
+            return null;
+        }
+        return new EventCompleter(ctx, inst);
     }
    
 }

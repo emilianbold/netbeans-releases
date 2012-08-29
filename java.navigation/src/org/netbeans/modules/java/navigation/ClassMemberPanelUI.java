@@ -8,6 +8,9 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -15,48 +18,72 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
+import org.netbeans.modules.java.navigation.base.HistorySupport;
+import org.netbeans.modules.java.navigation.base.Pair;
+import org.netbeans.modules.java.navigation.base.Resolvers;
+import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.java.navigation.base.TapPanel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -64,17 +91,23 @@ import org.openide.util.lookup.InstanceContent;
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
 public class ClassMemberPanelUI extends javax.swing.JPanel
-        implements ExplorerManager.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
+        implements ExplorerManager.Provider, Lookup.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
 
-    private ExplorerManager manager = new ExplorerManager();
-    private MyBeanTreeView elementView;
-    private TapPanel filtersPanel;
-    private InstanceContent selectedNodes = new InstanceContent();
-    private Lookup lookup = new AbstractLookup(selectedNodes);
+    private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
+    private static final String CMD_JDOC = "jdoc";  //NOI18N
+    private static final String CMD_HISTORY = "history";    //NOI18N
+    private static final int MIN_HISTORY_WIDTH = 50;
+
+    private final ExplorerManager manager = new ExplorerManager();
+    private final MyBeanTreeView elementView;
+    private final TapPanel filtersPanel;
+    private final InstanceContent selectedNodes = new InstanceContent();
+    private final Lookup lookup = new AbstractLookup(selectedNodes);
     private final ClassMemberFilters filters;
     private final AtomicReference<State> state = new AtomicReference<State>();    
-    private Action[] actions; // General actions for the panel
-    private RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
+    private final Action[] actions; // General actions for the panel
+    private final SelectJavadocTask jdocFinder;
+    private final RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
         @Override
         public void run() {
             final State current = state.get();
@@ -89,8 +122,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             }
         }
     });
-
+    private final RequestProcessor.Task jdocTask;
+    private final HistorySupport history;
     private long lastShowWaitNodeTime = -1;
+    //@GuardedBy this
+    private Toolbar toolbar;
+
+    private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(ClassMemberPanelUI.class.getName()); //NOI18N
     private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class.getName(), 1);
@@ -100,7 +138,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
-                      
+        history = HistorySupport.getInstnace(this.getClass());
+        jdocFinder = SelectJavadocTask.create(this);
+        jdocTask = RP.create(jdocFinder);
         initComponents();
         manager.addPropertyChangeListener(this);
         
@@ -152,6 +192,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         elementView.requestFocus();
     }
 
+    @Override
     public org.openide.util.Lookup getLookup() {
         // XXX Check for chenge of FileObject
         return lookup;
@@ -220,6 +261,25 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             Exceptions.printStackTrace(propertyVetoException);
         }
     }
+    
+    public void setContext(
+            @NonNull final JavaSource js,
+            @NullAllowed JTextComponent target) {
+        final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver =
+                target == null ?
+                Resolvers.createFileResolver(js) :
+                Resolvers.createEditorResolver(
+                    js,
+                    target.getCaret().getDot());
+        schedule(resolver);
+    }
+
+    synchronized JComponent getToolbar() {
+        if (toolbar == null) {
+            toolbar = new Toolbar();
+        }
+        return toolbar;
+    }
 
     void refresh( final Description description ) {
         
@@ -228,6 +288,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
             // update
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
+            jdocTask.cancel();
+            jdocFinder.cancel();
             RP.post(new Runnable() {
                 public void run() {
                     rootNode.updateRecursively( description );
@@ -327,7 +389,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     // End of variables declaration//GEN-END:variables
     
     // Private methods ---------------------------------------------------------
-    
+   
     private ElementNode getRootNode() {
         
         Node n = manager.getRootContext();
@@ -342,7 +404,18 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private MyBeanTreeView createBeanTreeView() {
         return new MyBeanTreeView();
     }
-    
+
+    private void scheduleJavadocRefresh(final int time) {
+        jdocFinder.cancel();
+        jdocTask.schedule(time);
+    }
+
+    private void schedule(@NonNull final Callable<Pair<URI, ElementHandle<TypeElement>>> resolver) {
+        showWaitNode();
+        final Future<Pair<URI, ElementHandle<TypeElement>>> becomesHandle = RP.submit(resolver);
+        final RefreshTask refresh = new RefreshTask(becomesHandle);
+        RP.execute(refresh);
+    }
     
     // ExplorerManager.Provider imlementation ----------------------------------
     
@@ -556,13 +629,19 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            for (Node n:(Node[])evt.getOldValue()) {
+            final Node[] oldNodes = (Node[]) evt.getOldValue();
+            final Node[] newNodes = (Node[]) evt.getNewValue();
+            for (Node n : oldNodes) {
                 selectedNodes.remove(n);
             }
-            for (Node n:(Node[])evt.getNewValue()) {
+            for (Node n : newNodes) {
                 selectedNodes.add(n);
+            }
+            if (newNodes.length > 0 && JavadocTopComponent.shouldUpdate()) {
+                scheduleJavadocRefresh(JDOC_TIME);
             }
         } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
             NbPreferences.forModule(ClassMemberPanelUI.class)
@@ -574,5 +653,156 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         SCHEDULED,
         INVOKED,
         DONE
+    }
+
+    private class RefreshTask implements Runnable, Task<CompilationController> {
+
+        private final Future<Pair<URI,ElementHandle<TypeElement>>> becomesHandle;
+
+        RefreshTask(@NonNull final Future<Pair<URI,ElementHandle<TypeElement>>> becomesHandle) {
+            assert becomesHandle != null;
+            this.becomesHandle = becomesHandle;
+        }
+
+        @Override
+        @NbBundle.Messages({
+        "ERR_Cannot_Resolve_File=Cannot resolve type: {0}.",
+        "ERR_Not_Declared_Type=Not a declared type."})
+        public void run() {
+            try {
+                final Pair<URI,ElementHandle<TypeElement>> handlePair = becomesHandle.get();
+                if (handlePair != null) {
+                    final FileObject fo = URLMapper.findFileObject(handlePair.first.toURL());
+                    if (fo != null) {
+                        final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
+                        final FileObject target = SourceUtils.getFile(handlePair.second, cpInfo);
+                        if (target != null) {
+                            final JavaSource targetJs = JavaSource.forFileObject(target);
+                            if (targetJs != null) {
+                                history.addToHistory(handlePair);
+                                targetJs.runUserActionTask(this, true);
+                                ((Toolbar)getToolbar()).select(handlePair);
+                            } else {
+                                clearNodes();
+                                StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
+                                    handlePair.second.getQualifiedName()));
+                            }
+                        } else {
+                            clearNodes();
+                            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
+                                    handlePair.second.getQualifiedName()));
+                        }
+                    } else {
+                        clearNodes();
+                        StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
+                                    handlePair.second.getQualifiedName()));
+                    }
+                } else {
+                    clearNodes();
+                    StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Not_Declared_Type());
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public void run(@NonNull final CompilationController cc) throws Exception {
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            getTask().run(cc);
+        }
+
+    }
+
+    private class Toolbar extends JPanel implements ActionListener {
+
+        private final JComboBox historyCombo;
+
+        @NbBundle.Messages({
+        "TXT_OpenJDoc=Open Javadoc Window"
+        })
+        Toolbar() {
+            setLayout(new GridBagLayout());
+            final Box box = new Box(BoxLayout.X_AXIS);
+            box.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
+            final JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorderPainted(false);
+            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setOpaque(false);
+            toolbar.setFocusable(false);
+            historyCombo = new JComboBox(HistorySupport.createModel(history)){
+                @Override
+                public Dimension getMinimumSize() {
+                    Dimension res = super.getMinimumSize();
+                    if (res.width > MIN_HISTORY_WIDTH) {
+                        res = new Dimension(MIN_HISTORY_WIDTH, res.height);
+                    }
+                    return res;
+                }
+            };
+            historyCombo.setRenderer(HistorySupport.createRenderer(history));
+            historyCombo.setActionCommand(CMD_HISTORY);
+            historyCombo.addActionListener(this);
+            toolbar.add(historyCombo);
+            final JButton jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
+            jdocButton.setActionCommand(CMD_JDOC);
+            jdocButton.addActionListener(this);
+            jdocButton.setFocusable(false);
+            jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
+            toolbar.add(jdocButton);
+            box.add (toolbar);
+            final GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            c.weighty = 0;
+            add(box,c);
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (CMD_JDOC.equals(e.getActionCommand())) {
+                final TopComponent win = JavadocTopComponent.findInstance();
+                if (win != null && !win.isShowing()) {
+                    win.open();
+                    win.requestVisible();
+                    scheduleJavadocRefresh(0);
+                }
+            } else if (CMD_HISTORY.equals(e.getActionCommand())) {
+                final Object selItem = historyCombo.getSelectedItem();
+                if (selItem instanceof Pair) {
+                    final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
+                    schedule(new Callable<Pair<URI, ElementHandle<TypeElement>>>() {
+                        @Override
+                        public Pair<URI, ElementHandle<TypeElement>> call() throws Exception {
+                            return pair;
+                        }
+                    });
+                }
+            }
+        }
+
+        void select(@NonNull final Pair<URI,ElementHandle<TypeElement>> pair) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    historyCombo.getModel().setSelectedItem(pair);
+                }
+            });
+        }
     }
 }
