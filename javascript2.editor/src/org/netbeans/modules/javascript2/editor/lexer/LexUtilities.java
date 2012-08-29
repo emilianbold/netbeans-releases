@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.javascript2.editor.lexer;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.text.BadLocationException;
@@ -174,7 +175,7 @@ public final class LexUtilities {
     }
 
     public static Token<? extends JsTokenId> getToken(Document doc, int offset) {
-        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
+        TokenSequence<? extends JsTokenId> ts = getJsPositionedSequence(doc, offset);
 
         if (ts != null) {
             return ts.token();
@@ -293,23 +294,34 @@ public final class LexUtilities {
         }
     }
 
-    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc, int offset) {
-        return getPositionedSequence(doc, offset, true);
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(
+            Document doc, int offset, Language<JsTokenId> language) {
+        return getPositionedSequence(doc, offset, true, language);
     }
 
-    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset) {
-        return getPositionedSequence(snapshot, offset, true);
+    public static TokenSequence<? extends JsTokenId> getJsPositionedSequence(
+            Document doc, int offset) {
+        return getPositionedSequence(doc, offset, true, JsTokenId.javascriptLanguage());
     }
 
-    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc, int offset, boolean lookBack) {
-        return _getPosSeq(getJsTokenSequence(doc, offset), offset, lookBack);
+    public static TokenSequence<? extends JsTokenId> getJsPositionedSequence(
+            Snapshot snapshot, int offset) {
+        return getPositionedSequence(snapshot, offset, true, JsTokenId.javascriptLanguage());
     }
 
-    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset, boolean lookBack) {
-        return _getPosSeq(getJsTokenSequence(snapshot, offset), offset, lookBack);
+    private static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc,
+            int offset, boolean lookBack, Language<JsTokenId> language) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        return _getPosSeq(getTokenSequence(th, offset, language), offset, lookBack);
     }
 
-    private static TokenSequence<? extends JsTokenId> _getPosSeq(TokenSequence<? extends JsTokenId> ts, int offset, boolean lookBack) {
+    private static TokenSequence<? extends JsTokenId> getPositionedSequence(Snapshot snapshot,
+            int offset, boolean lookBack, Language<JsTokenId> language) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        return _getPosSeq(getTokenSequence(th, offset, language), offset, lookBack);
+    }
+
+    private static <K> TokenSequence<? extends K> _getPosSeq(TokenSequence<? extends K> ts, int offset, boolean lookBack) {
         if (ts != null) {
             ts.move(offset);
 
@@ -394,4 +406,21 @@ public final class LexUtilities {
         return ts.token();
     }
 
+    public static Token<?extends JsTokenId> findNextIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+        while (ts.moveNext() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+
+    public static Token<?extends JsTokenId> findPreviousIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+            while (ts.movePrevious() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+
+    public static Token<?extends JsTokenId> findNextNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
+        return findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+    }
+
+    public static Token<?extends JsTokenId> findPreviousNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
+        return findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+    }
 }
