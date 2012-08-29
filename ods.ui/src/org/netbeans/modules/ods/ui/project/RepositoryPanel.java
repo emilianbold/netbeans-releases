@@ -78,7 +78,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
-        lblName.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        lblName.setFont(lblName.getFont().deriveFont(lblName.getFont().getStyle() | java.awt.Font.BOLD));
         org.openide.awt.Mnemonics.setLocalizedText(lblName, repositoryName);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
