@@ -53,11 +53,13 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -86,6 +88,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
                         ActionsManager.ACTION_STEP_OVER,
                         ActionsManager.ACTION_STEP_OUT,
 //                        ActionsManager.ACTION_RUN_TO_CURSOR,
+                        ActionsManager.ACTION_KILL
                     })));
 
     private Debugger debugger;
@@ -93,7 +96,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     private void updateDebuggerState() {
         if (!debugger.isEnabled()) {
 //            setEnabled(ActionsManager.ACTION_START, false);
-            //setEnabled(ActionsManager.ACTION_KILL, false);
+            setEnabled(ActionsManager.ACTION_KILL, false);
             setEnabled(ActionsManager.ACTION_CONTINUE, false);
 //            setEnabled(ActionsManager.ACTION_PAUSE, false);
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
@@ -101,7 +104,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_STEP_OUT, false);
         } else if (debugger.isSuspended()) {
 //            setEnabled(ActionsManager.ACTION_START, false);
-            //setEnabled(ActionsManager.ACTION_KILL, true);
+            setEnabled(ActionsManager.ACTION_KILL, true);
             setEnabled(ActionsManager.ACTION_CONTINUE, true);
 //            setEnabled(ActionsManager.ACTION_PAUSE, false);
             setEnabled(ActionsManager.ACTION_STEP_INTO, true);
@@ -109,7 +112,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_STEP_OUT, true);
         } else {
 //            setEnabled(ActionsManager.ACTION_START, false);
-            //setEnabled(ActionsManager.ACTION_KILL, true);
+            setEnabled(ActionsManager.ACTION_KILL, true);
             setEnabled(ActionsManager.ACTION_CONTINUE, false);
 //            setEnabled(ActionsManager.ACTION_PAUSE, true);
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
@@ -150,9 +153,13 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
         if (action == ActionsManager.ACTION_START) {
             //debugger.startJSDebugging();
         } else if (action == ActionsManager.ACTION_KILL) {
-            //DebuggerEngineProviderImpl provider = contextProviderWrapper.getNbJSDebuggerEngineProvider();
-            //assert provider != null;
-            //debugger.stopDebugger();
+            if (debugger.isEnabled()) {
+                NetBeansJavaScriptDebuggerFactory factory =
+                        Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+                if (factory != null) {
+                    factory.stopDebuggingSession(DebuggerManager.getDebuggerManager().getCurrentSession());
+                }
+            }
         } else if (action == ActionsManager.ACTION_CONTINUE) {
             debugger.resume();
         } else if (action == ActionsManager.ACTION_PAUSE) {
