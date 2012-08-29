@@ -211,7 +211,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
             stateLabel.setEnabled(false);
             stateLabel.setText(NOT_CONNECTED);
-            setStatusText("Disconnected");
+            //setStatusText("Disconnected");
 
             //we need to explicitly call pageModelDocumentChanged() since
             //no change event from PageModel will come and we need to refresh
@@ -230,7 +230,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
             stateLabel.setEnabled(true);
             stateLabel.setText(CONNECTED);
-            setStatusText("Connected");
+            //setStatusText("Connected");
 
             //no need to explicitly call pageModelDocumentChanged() as the
             //PageModel fill fire change event
@@ -292,12 +292,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void updateInspectedFileUI() {
         if (inspectedFileObject == null) {
             LOGGER.log(Level.FINE, "inspectedFileObject set to null");
-            setStatusText("No Inspected File");
-            stateLabel.setText("No Inspected File");
+            //setStatusText("No Inspected File");
+            //stateLabel.setText("No Inspected File");
         } else {
             LOGGER.log(Level.FINE, "inspectedFileObject set to {0}", inspectedFileObject.getPath());
-            setStatusText("Inspecting " + inspectedFileObject.getNameExt());
-            stateLabel.setText(String.format("Inspecting %s", inspectedFileObject.getNameExt()));
+            //setStatusText("Inspecting " + inspectedFileObject.getNameExt());
+            //stateLabel.setText(String.format("Inspecting %s", inspectedFileObject.getNameExt()));
         }
     }
 
@@ -580,9 +580,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     
     private void setSynchronizationState(boolean insynch) {
         if(!insynch) {
-            setStatusText("Source changed");
+            //setStatusText("Source changed");
             stateLabel.setForeground(Color.red.darker());
-            stateLabel.setText("Unsynchronized");
+            //stateLabel.setText("Unsynchronized");
         } else {
             stateLabel.setForeground(Color.black); //todo fix the hardcoded color
             updateInspectedFileUI();
