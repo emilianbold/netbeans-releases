@@ -51,6 +51,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -106,6 +107,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -245,7 +247,33 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                populateGroupId();
+                Result<String> res = populateGroupId();
+                if (res.isPartial()) {
+                    //we will ignore any rare occurances of repository being added after the groupId result is 
+                    // processed.. this is the only way of ensuring that the completion gets refreshed.
+                    res.waitForSkipped();
+                    populateGroupId();
+                    final String[] vals = new String[2];
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                vals[0] = txtGroupId.getText().trim();
+                                vals[1] = txtArtifactId.getText().trim();
+                            }
+                        });
+                        if (vals[0] != null && vals[0].length() > 0) {
+                            populateArtifact(vals[0]);
+                            if (vals[1] != null && vals[1].length() > 0) {
+                                populateVersion(vals[0], vals[1]);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         });
 
@@ -712,7 +740,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
 
-    private void populateGroupId() {
+    private Result<String> populateGroupId() {
         assert !SwingUtilities.isEventDispatchThread();
         final Result<String> result = RepositoryQueries.getGroupsResult(RepositoryPreferences.getInstance().getRepositoryInfos());
         final List<String> lst = new ArrayList<String>(result.getResults());
@@ -722,10 +750,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 groupCompleter.setValueList(lst, result.isPartial());
             }
         });
-
+        return result;
     }
 
-    private void populateArtifact(String groupId) {
+    private Result<String> populateArtifact(String groupId) {
         assert !SwingUtilities.isEventDispatchThread();
         final Result<String> result = RepositoryQueries.getArtifactsResult(groupId, RepositoryPreferences.getInstance().getRepositoryInfos());
         final List<String> lst = new ArrayList<String>(result.getResults());
@@ -735,10 +763,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 artifactCompleter.setValueList(lst, result.isPartial());
             }
         });
-
+        return result;
     }
 
-    private void populateVersion(String groupId, String artifactId) {
+    private Result<NBVersionInfo> populateVersion(String groupId, String artifactId) {
         assert !SwingUtilities.isEventDispatchThread();
         final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
         List<NBVersionInfo> lst = result.getResults();
@@ -766,7 +794,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 versionCompleter.setValueList(vers, result.isPartial());
             }
         });
-
+        return result;
     }
 
     private static List<Dependency> getDependenciesFromDM(MavenProject project, Project nbprj) {

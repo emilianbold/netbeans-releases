@@ -106,6 +106,9 @@ public class PropertyCompleter extends InstanceCompleter {
         FxBean parentInfo = beanInfo.getSuperclassInfo();
 
         for (String s : propNames) {
+            if (alreadyAdded.contains(s)) {
+                continue;
+            }
             FxProperty pi = beanInfo.getProperty(s);
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
