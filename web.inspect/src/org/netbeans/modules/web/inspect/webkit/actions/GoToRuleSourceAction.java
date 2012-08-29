@@ -139,23 +139,30 @@ public class GoToRuleSourceAction extends NodeAction {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
-            final Model sourceModel = result.getModel();
-            sourceModel.runReadTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
-                    if (modelRule != null) {
-                        final int offset = modelRule.getStartOffset();
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                CSSUtils.open(fob, offset);
-                            }
-                        });
+            final boolean[] found = new boolean[1];
+            for (final CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
+                final Model sourceModel = result.getModel();
+                sourceModel.runReadTask(new Model.ModelTask() {
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
+                        if (modelRule != null) {
+                            found[0] = true;
+                            int snapshotOffset = modelRule.getStartOffset();
+                            final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CSSUtils.open(fob, offset);
+                                }
+                            });
+                        }
                     }
+                });
+                if (found[0]) {
+                    break;
                 }
-            });
+            }
         }
 
     }
