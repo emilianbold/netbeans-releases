@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 

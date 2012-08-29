@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.wizard;
+package org.netbeans.modules.web.clientproject.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -438,7 +438,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
     }
 
-    void updateDefaults(Collection<String> defaultLibs) {
+    public void updateDefaults(Collection<String> defaultLibs) {
         assert EventQueue.isDispatchThread();
         // remove default libraries
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
