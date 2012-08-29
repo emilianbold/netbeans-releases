@@ -172,6 +172,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
     }    
 
     private static class EffPOMView implements MultiViewElement, Runnable, PropertyChangeListener {
+        private static final String EFF_MIME_TYPE = "text/x-maven-pom+xml";
 
         private final Lookup lookup;
         private final RequestProcessor.Task task = RP.create(this);
@@ -182,7 +183,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         EffPOMView(Lookup lookup) {
             this.lookup = lookup;
-            mime = MimeLookup.getLookup("text/xml");
+            mime = MimeLookup.getLookup(EFF_MIME_TYPE);
         }
         
         @Override
@@ -339,7 +340,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                     @Override public void run() {
                         EditorKit kit = mime.lookup(EditorKit.class);
                         NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
-                        JEditorPane pane = new JEditorPane("text/xml", null);
+                        JEditorPane pane = new JEditorPane(EFF_MIME_TYPE, null);
                         pane.setDocument(doc);
                         JComponent pnl = getVisualRepresentation(); 
                         pnl.removeAll();

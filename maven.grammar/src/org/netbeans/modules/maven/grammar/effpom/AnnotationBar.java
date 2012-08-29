@@ -342,13 +342,12 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
             return;
         }
 
-        // handle locally modified lines
         Location al = getAnnotateLine(line);
         if (al == null) {
-//            AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
-//            if (amp != null) {
-//                amp.setMarks(Collections.<AnnotationMark>emptyList());
-//            }
+            AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+            if (amp != null) {
+                amp.setMarks(Collections.<AnnotationMark>emptyList());
+            }
             if (recentLocationName != null) {
                 recentLocationName = null;
                 repaint();
@@ -362,38 +361,18 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
             recentLocationName = locat;
             repaint();
         }
-//
-//            AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
-//            if (amp != null) {
-//            
-//                List<AnnotationMark> marks = new ArrayList<AnnotationMark>(elementAnnotations.size());
-//                // I cannot affort to lock elementAnnotations for long time
-//                // it's accessed from editor thread too
-//                Iterator<Map.Entry<Element, AnnotateLine>> it2;
-//                synchronized(elementAnnotations) {
-//                    it2 = new HashSet<Map.Entry<Element, AnnotateLine>>(elementAnnotations.entrySet()).iterator();
-//                }
-//                while (it2.hasNext()) {
-//                    Map.Entry<Element, AnnotateLine> next = it2.next();                        
-//                    AnnotateLine annotateLine = next.getValue();
-//                    if (annotateLine.getRevisionInfo() != null && revision.equals(annotateLine.getRevisionInfo().getRevision())) {
-//                        Element element = next.getKey();
-//                        if (elementAnnotations.containsKey(element) == false) {
-//                            continue;
-//                        }
-//                        int elementOffset = element.getStartOffset();
-//                        int lineNumber = NbDocument.findLineNumber((StyledDocument)doc, elementOffset);
-//                        AnnotationMark mark = new AnnotationMark(lineNumber, revision);
-//                        marks.add(mark);
-//                    }
-//
-//                    if (Thread.interrupted()) {
-//                        clearRecentFeedback();
-//                        return;
-//                    }
-//                }
-//                amp.setMarks(marks);
-//            }
+            AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+            if (amp != null) {
+            
+                List<AnnotationMark> marks = new ArrayList<AnnotationMark>(elementAnnotations.size());
+                for (Map.Entry<Integer, Location> loca : elementAnnotations.entrySet()) {
+                    Location loc = loca.getValue();
+                    if (loc.loc.getSource().equals(al.loc.getSource())) {
+                        marks.add(new AnnotationMark(loca.getKey(), loc.loc.getSource().getModelId()));
+                    }
+                }
+                amp.setMarks(marks);
+            }
 //        }
 //
 //        if (al.getRevisionInfo() != null) {
@@ -432,14 +411,12 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
             return 0;
         }
         String longestString = "";  // NOI18N
-        synchronized(elementAnnotations) {
-            Iterator<Location> it = elementAnnotations.values().iterator();
-            while (it.hasNext()) {
-                Location line = it.next();
-                String displayName = getDisplayName(line); // NOI18N
-                if (displayName.length() > longestString.length()) {
-                    longestString = displayName;
-                }
+        Iterator<Location> it = elementAnnotations.values().iterator();
+        while (it.hasNext()) {
+            Location line = it.next();
+            String displayName = getDisplayName(line); // NOI18N
+            if (displayName.length() > longestString.length()) {
+                longestString = displayName;
             }
         }
         char[] data = longestString.toCharArray();
