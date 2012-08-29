@@ -50,10 +50,13 @@ import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
@@ -178,9 +181,8 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public KenaiProject getKenaiProjectForRepository(String url) throws IOException {
-        return null;
-//        ODSProject odsp = ODSProject.forRepository(url);
-//        return odsp != null ? KenaiProjectImpl.getInstance(odsp) : null;
+        ODSProject odsp = findProjectForRepository(url);
+        return odsp != null ? KenaiProjectImpl.getInstance(odsp) : null;
     }
 
     @Override
@@ -240,14 +242,14 @@ public class KenaiAccessorImpl extends KenaiAccessor {
             return serverCandidate;
         }
         // 2nd - VCS repository url match
-//        try {
-//            ODSProject kp = ODSProject.forRepository(url);
-//            if (kp != null) {
-//                return kp.getServer();
-//            }
-//        } catch (ODSException ex) {
-//            Support.LOG.log(Level.FINE, url, ex);
-//        }
+        try {
+            ODSProject kp = findProjectForRepository(url);
+            if (kp != null) {
+                return kp.getServer();
+            }
+        } catch (ODSException ex) {
+            Support.LOG.log(Level.FINE, url, ex);
+        }
         // 3rd - bugtracking issue url match
         for (CloudServer server : CloudServerManager.getDefault().getServers()) {
             String serverUrl = server.getUrl().toString();
@@ -290,6 +292,31 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     void removePropertyChangeListener(PropertyChangeListener listener, CloudServer server) {
         getKenaiListener(server).remove(listener);
+    }
+
+    private ODSProject findProjectForRepository (String uri) throws ODSException {
+        if (uri == null) {
+            return null;
+        }
+        for (CloudServer k : CloudServerManager.getDefault().getServers()) {
+            for (Map.Entry<Pattern, Integer> e : getRepositoryPatterns(k).entrySet()) {
+                Matcher m = e.getKey().matcher(uri);
+                if (m.matches()) {
+                    return k.getProject(m.group(e.getValue()), false);
+                }
+            }
+            // what about external repositories??
+        }
+        return null;
+    }
+    
+    private static Map<Pattern, Integer> getRepositoryPatterns (CloudServer server) {
+        Map<Pattern, Integer> patterns = new LinkedHashMap<Pattern, Integer>(2);
+        patterns.put(Pattern.compile("https://" + server.getUrl().getHost().replace(".", "\\.") + "/alm/s/(\\S*)/scm/.*"), //NOI18N
+                1);
+        patterns.put(Pattern.compile("ssh://" + server.getUrl().getHost().replace(".", "\\.") + "(:[0-9]+)?/(\\S*)/.*"), //NOI18N
+                2);
+        return patterns;
     }
 
     private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo {

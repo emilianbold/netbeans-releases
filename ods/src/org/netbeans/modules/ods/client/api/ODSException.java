@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.ods.client.api;
 
+import java.io.IOException;
+
 /**
  *
  * @author ondra
  */
-public class ODSException extends Exception {
+public class ODSException extends IOException {
     
     public ODSException (String message) {
         super(message);
