@@ -43,6 +43,7 @@ package org.netbeans.modules.web.javascript.debugger.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,10 +56,14 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.NodeId;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -99,7 +104,10 @@ public class AddDOMBreakpointAction extends NodeAction {
             org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode =
                     n.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
             if (domNode == null) {
-                return false;
+                FileObject fo = n.getLookup().lookup(FileObject.class);
+                if (fo == null) {
+                    return false;
+                }
             }
         }
         return true;
@@ -131,13 +139,11 @@ public class AddDOMBreakpointAction extends NodeAction {
                 }
             } else {
                 DOMBreakpoint[] domBreakpoints = findDOMBreakpoints();
-                org.netbeans.modules.web.webkit.debugging.api.dom.Node[] activatedDomNodes =
-                        new org.netbeans.modules.web.webkit.debugging.api.dom.Node[activatedNodes.length];
                 for (int i = 0; i < activatedNodes.length; i++) {
-                    activatedDomNodes[i] = activatedNodes[i].getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
-                    bind(items[0], activatedDomNodes[i], DOMBreakpoint.Type.SUBTREE_MODIFIED, domBreakpoints);
-                    bind(items[1], activatedDomNodes[i], DOMBreakpoint.Type.ATTRIBUTE_MODIFIED, domBreakpoints);
-                    bind(items[2], activatedDomNodes[i], DOMBreakpoint.Type.NODE_REMOVED, domBreakpoints);
+                    Node node = activatedNodes[i];
+                    bind(items[0], node, DOMBreakpoint.Type.SUBTREE_MODIFIED, domBreakpoints);
+                    bind(items[1], node, DOMBreakpoint.Type.ATTRIBUTE_MODIFIED, domBreakpoints);
+                    bind(items[2], node, DOMBreakpoint.Type.NODE_REMOVED, domBreakpoints);
                 }
             }
         }
@@ -154,9 +160,11 @@ public class AddDOMBreakpointAction extends NodeAction {
         
     }
     
-    private static void bind(final JCheckBoxMenuItem cmi, final org.netbeans.modules.web.webkit.debugging.api.dom.Node node,
+    private static void bind(final JCheckBoxMenuItem cmi, final Node node,
                              final DOMBreakpoint.Type type, DOMBreakpoint[] domBreakpoints) {
-        DOMBreakpoint db = findBreakpointOn(node, domBreakpoints);
+        final org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode;
+        domNode = node.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+        DOMBreakpoint db = findBreakpointOn(domNode, node, domBreakpoints);
         if (db != null) {
             cmi.setSelected(db.getTypes().contains(type));
         }
@@ -166,7 +174,23 @@ public class AddDOMBreakpointAction extends NodeAction {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (dbPtr[0] == null) {
-                    dbPtr[0] = new DOMBreakpoint(DOMNode.findURL(node), DOMNode.create(node));
+                    URL url;
+                    DOMNode dom;
+                    if (domNode != null) {
+                        url = DOMNode.findURL(domNode);
+                        dom = DOMNode.create(domNode);
+                    } else {
+                        FileObject fo = node.getLookup().lookup(FileObject.class);
+                        if (fo == null) {
+                            return;
+                        }
+                        url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                        if (url == null) {
+                            return ;
+                        }
+                        dom = DOMNode.create(node);
+                    }
+                    dbPtr[0] = new DOMBreakpoint(url, dom);
                     DebuggerManager.getDebuggerManager().addBreakpoint(dbPtr[0]);
                 }
                 if (cmi.isSelected()) {
@@ -182,16 +206,52 @@ public class AddDOMBreakpointAction extends NodeAction {
         });
     }
     
-    private static DOMBreakpoint findBreakpointOn(org.netbeans.modules.web.webkit.debugging.api.dom.Node node,
+    private static DOMBreakpoint findBreakpointOn(org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode,
+                                                  Node node,
                                                   DOMBreakpoint[] domBreakpoints) {
-        for (DOMBreakpoint db : domBreakpoints) {
-            if (node.equals(db.getNode().getNode())) {
-                return db;
+        if (domNode != null) {
+            for (DOMBreakpoint db : domBreakpoints) {
+                DOMNode dom = db.getNode();
+                if (domNode.equals(dom.getNode())) {
+                    return db;
+                }
+            }
+        } else {
+            //List<DOMNode.NodeId> path = createNodePath(node);
+            DOMNode nodeDom = DOMNode.create(node);
+            List<? extends NodeId> nodePath = nodeDom.getPath();
+            String name = node.getName();
+            for (DOMBreakpoint db : domBreakpoints) {
+                DOMNode dom = db.getNode();
+                if (name.equals(dom.getNodeName()) && listEquals(nodePath, dom.getPath())) {
+                    return db;
+                }
             }
         }
         return null;
     }
     
+    private static boolean listEquals(List<?> l1, List<?> l2) {
+        int n = l1.size();
+        if (l2.size() == n) {
+            for (int i = 0; i < n; i++) {
+                Object o1 = l1.get(i);
+                Object o2 = l2.get(i);
+                if (o1 == null) {
+                    if (o2 != null) {
+                        return false;
+                    }
+                } else {
+                    if (!o1.equals(o2)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
     private static DOMBreakpoint[] findDOMBreakpoints() {
         List<DOMBreakpoint> domBreakpoints = new ArrayList<DOMBreakpoint>();
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();

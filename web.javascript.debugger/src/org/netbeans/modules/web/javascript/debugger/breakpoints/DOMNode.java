@@ -46,6 +46,8 @@ import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -85,13 +87,67 @@ public final class DOMNode {
         Node origNode = node;
         while (parent != null) {
             List<Node> children = parent.getChildren();
-            int childNumber = children.indexOf(node);
+            int childNumber = acceptedIndexOf(children, node);
             String localName = node.getLocalName();
             path.add(0, new NodeId(localName, childNumber));
             node = parent;
             parent = node.getParent();
         }
         path.add(0, new NodeId(node.getLocalName(), -1));
+        DOMNode dn = new DOMNode(path);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("new DOMNode("+dn.getNodePathNames()+") created from "+origNode);
+        }
+        return dn;
+    }
+    
+    private static boolean acceptNode(Node node) {
+        boolean isElement = (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
+        return isElement && !node.isInjectedByNetBeans();
+    }
+    
+    private static int acceptedIndexOf(List<Node> list, Node node) {
+        int i = 0;
+        for (Node n : list) {
+            if (acceptNode(n)) {
+                if (node.equals(n)) {
+                    return i;
+                }
+                i++;
+            }
+        }
+        return -1;
+    }
+    
+    private static Node getAcceptedAt(List<Node> list, int i) {
+        for (Node n : list) {
+            if (acceptNode(n)) {
+                if (i == 0) {
+                    return n;
+                }
+                i--;
+            }
+        }
+        return null;
+    }
+    
+    public static DOMNode create(org.openide.nodes.Node node) {
+        List<NodeId> path = new LinkedList<NodeId>();
+        org.openide.nodes.Node parent = node.getParentNode();
+        org.openide.nodes.Node origNode = node;
+        while (parent != null) {
+            List<org.openide.nodes.Node> children = Arrays.asList(parent.getChildren().getNodes(true));
+            int childNumber = children.indexOf(node);
+            String localName = node.getName();
+            path.add(0, new NodeId(localName, childNumber));
+            node = parent;
+            if ("html".equalsIgnoreCase(localName)) {       // NOI18N
+                parent = null;
+            } else {
+                parent = node.getParentNode();
+            }
+        }
+        path.add(0, new NodeId(""/*node.getName()*/, -1));
         DOMNode dn = new DOMNode(path);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("new DOMNode("+dn.getNodePathNames()+") created from "+origNode);
@@ -183,6 +239,14 @@ public final class DOMNode {
         return sb.toString();
     }
     
+    public List<? extends NodeId> getPath() {
+        List<NodeId> thePath;
+        synchronized (path) {
+            thePath = new ArrayList<NodeId>(path);
+        }
+        return Collections.unmodifiableList(thePath);
+    }
+    
     /**
      * Bind to the DOM document and update the node as the document changes.
      * @param dom The DOM document
@@ -235,8 +299,8 @@ public final class DOMNode {
                 int c = ni.childNumber;
                 int nc = children.size();
                 if (0 <= c && c < nc) {
-                    chn = children.get(c);
-                    if (!ni.name.equals(chn.getLocalName())) {
+                    chn = getAcceptedAt(children, c);
+                    if (chn != null && !ni.name.equals(chn.getLocalName())) {
                         chn = null;
                     }
                 }
@@ -461,14 +525,37 @@ public final class DOMNode {
         
     }
     
-    private static class NodeId {
+    public static final class NodeId {
         private String name;
         private int childNumber;
         
-        public NodeId(String name, int childNumber) {
+        private NodeId(String name, int childNumber) {
             this.name = name;
             this.childNumber = childNumber;
         }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public int getChildNumber() {
+            return childNumber;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof NodeId) {
+                NodeId other = (NodeId) obj;
+                return name.equals(other.name) && childNumber == other.childNumber;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return childNumber + (name.hashCode() >> 4);
+        }
+        
     }
     
     public static class PathNotFoundException extends Exception {
