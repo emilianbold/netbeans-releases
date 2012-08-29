@@ -116,6 +116,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         public void setGlobal() {
             global = true;
         }
+
+        public List<CharSequence> getNameParts() {
+            return nameParts;
+        }
         
         public CharSequence getName() {
             StringBuilder sb = new StringBuilder();

@@ -55,10 +55,10 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -249,6 +249,25 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean typeSpecifier = false;
         private boolean inDeclSpecifiers = false;
         private DeclaratorBuilder declaratorBuilder;
+        private TypeBuilder typeBuilder;
+        private int startOffset;
+        private int endOffset;
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
         
         
         public void setTypedefSpecifier() {
@@ -279,10 +298,19 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             return inDeclSpecifiers;
         }
 
-        public void setDeclarator(DeclaratorBuilder declaratorBuilder) {
+        public void setDeclaratorBuilder(DeclaratorBuilder declaratorBuilder) {
             this.declaratorBuilder = declaratorBuilder;
         }
 
+        public void setTypeBuilder(TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
+        public TypeBuilder getTypeBuilder() {
+            return typeBuilder;
+        }
+        
+        
         public DeclaratorBuilder getDeclaratorBuilder() {
             return declaratorBuilder;
         }
