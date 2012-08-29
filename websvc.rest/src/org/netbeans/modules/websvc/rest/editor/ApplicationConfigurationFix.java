@@ -42,21 +42,7 @@
  */
 package org.netbeans.modules.websvc.rest.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -65,24 +51,14 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class RestConfigHint extends BaseRestConfigurationFix  {
+class ApplicationConfigurationFix extends BaseRestConfigurationFix {
     
-    private RestConfigHint(Project project , FileObject fileObject , 
+    ApplicationConfigurationFix(Project project, FileObject fileObject, 
             RestConfigurationEditorAwareTaskFactory factory, String[] packs, 
-            boolean jersey)
+            String fqn)
     {
-        super(project, fileObject, factory, packs);
-        isJersey = jersey;
-        packages = packs;
-    }
-    
-    public static List<Fix> getConfigHints(Project project , FileObject fileObject , 
-            RestConfigurationEditorAwareTaskFactory factory, String[] packs)
-    {
-        List<Fix> result = new ArrayList<Fix>(2);
-        result.add( new RestConfigHint(project, fileObject, factory, packs, false));
-        result.add( new RestConfigHint(project, fileObject, factory, packs, true));
-        return result;
+        super(project, fileObject, factory, packs );
+        this.fqn = fqn;
     }
 
     /* (non-Javadoc)
@@ -90,43 +66,9 @@ class RestConfigHint extends BaseRestConfigurationFix  {
      */
     @Override
     public String getText() {
-        if ( isJersey ){
-            return NbBundle.getMessage( RestConfigHint.class, "MSG_HintJerseyServlet");    // NOI18N
-        }
-        else {
-            return NbBundle.getMessage( RestConfigHint.class, "MSG_HintApplicationClass");    // NOI18N
-        }
+        return NbBundle.getMessage( RestConfigHint.class, 
+                "MSG_HintAddResourceClass", fqn );    // NOI18N
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.editor.hints.Fix#implement()
-     */
-    @Override
-    public ChangeInfo implement() throws Exception {
-        if ( isJersey ){
-            getSupport().enableRestSupport(RestConfig.DD);
-            getSupport().ensureRestDevelopmentReady();
-        }
-        else {
-            getSupport().enableRestSupport(RestConfig.IDE);
-            getSupport().ensureRestDevelopmentReady();
-            // XXX : package and Application class is subject to configure via UI
-            SourceGroup[] groups = ProjectUtils.getSources(getProject()).getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if ( groups.length == 0){
-                return null;
-            }
-            FileObject folder = SourceGroupSupport.getFolderForPackage(groups[0], 
-                    "org.netbeans.rest.application.config", true);
-            RestUtils.createApplicationConfigClass( folder, "ApplicationConfig");   // NOI18N
-        }
-        
-        super.implement();
-        return null;
-    }
-
-    
-    private boolean isJersey;
-    private String[] packages;
-
+    private String fqn;
 }
