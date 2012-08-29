@@ -158,8 +158,16 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private final LookupListener ll = new LookupListener() {
 
         @Override
-        public void resultChanged(LookupEvent ev) {
-            refresh((Lookup.Result<Object>) ev.getSource());
+        public void resultChanged(final LookupEvent ev) {
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    refresh((Lookup.Result<Object>) ev.getSource());
+                }
+                
+            });
+                    
         }
     };
     
