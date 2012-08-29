@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint.Type;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -80,12 +81,14 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     
     private final Debugger d;
     private final WebKitDebugging wd;
+    private final Project project;
     private final Map<AbstractBreakpoint, WebKitBreakpointManager> breakpointImpls =
             new HashMap<AbstractBreakpoint, WebKitBreakpointManager>();
     
     public BreakpointRuntimeSetter(ContextProvider lookupProvider) {
         d = lookupProvider.lookupFirst(null, Debugger.class);
         wd = lookupProvider.lookupFirst(null, WebKitDebugging.class);
+        project = lookupProvider.lookupFirst(null, Project.class);
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         createBreakpointImpls();
     }
@@ -113,7 +116,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             return WebKitBreakpointManager.create(d, (LineBreakpoint) ab);
         }
         if (ab instanceof DOMBreakpoint) {
-            return WebKitBreakpointManager.create(wd, (DOMBreakpoint) ab);
+            return WebKitBreakpointManager.create(wd, project, (DOMBreakpoint) ab);
         }
         if (ab instanceof EventsBreakpoint) {
             return WebKitBreakpointManager.create(d, (EventsBreakpoint) ab);

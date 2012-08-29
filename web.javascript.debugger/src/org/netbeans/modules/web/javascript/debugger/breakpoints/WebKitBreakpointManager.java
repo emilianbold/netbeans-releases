@@ -54,11 +54,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
 
@@ -83,8 +87,8 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         return new WebKitLineBreakpointManager(d, lb);
     }
     
-    public static WebKitBreakpointManager create(WebKitDebugging wd, DOMBreakpoint db) {
-        return new WebKitDOMBreakpointManager(wd, db);
+    public static WebKitBreakpointManager create(WebKitDebugging wd, Project project, DOMBreakpoint db) {
+        return new WebKitDOMBreakpointManager(wd, project, db);
     }
 
     public static WebKitBreakpointManager create(Debugger d, EventsBreakpoint eb) {
@@ -209,13 +213,15 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager {
         
         private final WebKitDebugging wd;
+        private final Project project;
         private final DOMBreakpoint db;
         private Node node;
         private Set<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
         
-        public WebKitDOMBreakpointManager(WebKitDebugging wd, DOMBreakpoint db) {
+        public WebKitDOMBreakpointManager(WebKitDebugging wd, Project project, DOMBreakpoint db) {
             super(wd.getDebugger(), db);
             this.wd = wd;
+            this.project = project;
             this.db = db;
         }
 
@@ -224,13 +230,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (bps != null) {
                 return ;
             }
-            URL url = wd.getDebugger().getConnectionURL();
-            URL urlBP = db.getURL();
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("WebKitDOMBreakpointManager.add(): connection URL = '"+url+"', breakpoint URL = '"+urlBP+"', adding = "+(!(urlBP != null && !urlBP.equals(url))));
+            if (project != null) {
+                URL urlBP = db.getURL();
+                FileObject fo = URLMapper.findFileObject(urlBP);
+                if (fo != null) {
+                    FileObject projectDirectory = project.getProjectDirectory();
+                    if (!FileUtil.isParentOf(projectDirectory, fo)) {
+                        // Belongs somewhere else
+                        return;
+                    }
+                }
             }
-            if (urlBP != null && !urlBP.equals(url)) {
-                return;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("WebKitDOMBreakpointManager.add(): breakpoint URL = '"+db.getURL()+"'");
             }
             DOMNode dn = db.getNode();
             dn.addPropertyChangeListener(this);
