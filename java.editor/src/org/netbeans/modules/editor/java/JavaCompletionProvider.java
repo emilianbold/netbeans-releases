@@ -1056,15 +1056,23 @@ public class JavaCompletionProvider implements CompletionProvider {
                 last = param;
                 startPos = parPos;
             }
-            String headerText = controller.getText().substring(startPos, offset);
-            int parStart = headerText.indexOf('('); //NOI18N
-            if (parStart < 0 && last != null)
-                parStart = 0;
-            if (parStart >= 0) {
-                int parEnd = headerText.indexOf(')', parStart); //NOI18N
-                if (parEnd >= parStart) {
-                    headerText = headerText.substring(parEnd + 1).trim();
-                    if (THROWS_KEYWORD.equals(headerText)) {
+            TokenSequence<JavaTokenId> lastToken = findLastNonWhitespaceToken(env, startPos, offset);
+            if (lastToken != null) {
+                switch (lastToken.token().id()) {
+                    case LPAREN:
+                    case COMMA:
+                        addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                        break;
+                    case RPAREN:
+                        Tree mthParent = path.getParentPath().getLeaf();
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(mthParent.getKind()) && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
+                            addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
+                        } else {
+                            addKeyword(env, THROWS_KEYWORD, SPACE, false);
+                        }
+                        break;
+                    case THROWS:
                         if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
                             controller.toPhase(Phase.RESOLVED);
                             Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
@@ -1076,24 +1084,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
                         if (te != null)
                             addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
-                    } else if (DEFAULT_KEYWORD.equals(headerText)) {
+                        break;
+                    case DEFAULT:
                         addLocalConstantsAndTypes(env);
-                    } else {
-                        Tree mthParent = path.getParentPath().getLeaf();
-                        if (TreeUtilities.CLASS_TREE_KINDS.contains(mthParent.getKind()) && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
-                            addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
-                        } else {
-                            addKeyword(env, THROWS_KEYWORD, SPACE, false);
-                        }
-                    }
-                } else {
-                    headerText = headerText.substring(parStart).trim();
-                    if ("(".equals(headerText) || ",".equals(headerText)) { //NOI18N
-                        addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                    }
+                        break;
                 }
-            } else if (retType != null && headerText.trim().length() == 0) {
+            } else if (retType != null) {
                 insideExpression(env, new TreePath(path, retType));
             }
         }

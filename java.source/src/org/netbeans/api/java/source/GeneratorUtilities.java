@@ -1392,7 +1392,7 @@ public final class GeneratorUtilities {
     private static final String GENERATED_METHOD_BODY = "Templates/Classes/Code/GeneratedMethodBody"; //NOI18N
     private static final String OVERRIDEN_METHOD_BODY = "Templates/Classes/Code/OverridenMethodBody"; //NOI18N
     private static final String METHOD_RETURN_TYPE = "method_return_type"; //NOI18N
-    private static final String DEFAULT_RETURN_TYPE_VALUE = "default_return_type_value"; //NOI18N
+    private static final String DEFAULT_RETURN_TYPE_VALUE = "default_return_value"; //NOI18N
     private static final String SUPER_METHOD_CALL = "super_method_call"; //NOI18N
     private static final String METHOD_NAME = "method_name"; //NOI18N
     private static final String CLASS_NAME = "class_name"; //NOI18N
