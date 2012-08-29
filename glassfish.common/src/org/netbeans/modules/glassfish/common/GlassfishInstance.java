@@ -177,7 +177,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         ip.put(GlassfishModule.USERNAME_ATTR,
-                userName != null && userName.length() > 0
+                userName != null
                 ? userName : DEFAULT_ADMIN_NAME);
         ip.put(GlassfishModule.PASSWORD_ATTR,
                 password != null

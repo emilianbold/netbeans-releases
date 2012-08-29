@@ -178,6 +178,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             targetValueField.setEnabled(true);
         }
         targetValueField.addKeyListener(kl);
+        userNameField.addKeyListener(kl);
+        passwordField.addKeyListener(kl);
     }
     
     String getDomainField() {
@@ -233,7 +235,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
      * @return Default administrator's user name value.
      */
     private String initUserNameValue() {
-        return GlassfishInstance.DEFAULT_ADMIN_NAME;
+        //return GlassfishInstance.DEFAULT_ADMIN_NAME;
+        return "";
     }
 
     /**
@@ -242,7 +245,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
      * @return Default administrator's password value.
      */
     private String initPasswordValue() {
-        return GlassfishInstance.DEFAULT_ADMIN_PASSWORD;
+        //return GlassfishInstance.DEFAULT_ADMIN_PASSWORD;
+        return "";
     }
 
     /**
