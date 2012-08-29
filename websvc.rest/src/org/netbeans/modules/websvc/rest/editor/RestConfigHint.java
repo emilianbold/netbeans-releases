@@ -108,8 +108,11 @@ class RestConfigHint implements Fix {
         WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
         if ( isJersey ){
             support.enableRestSupport(RestConfig.DD);
+            support.ensureRestDevelopmentReady();
         }
         else {
+            support.enableRestSupport(RestConfig.IDE);
+            support.ensureRestDevelopmentReady();
             // XXX : package and Application class is subject to configure via UI
             SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -119,8 +122,8 @@ class RestConfigHint implements Fix {
             FileObject folder = SourceGroupSupport.getFolderForPackage(groups[0], 
                     "org.netbeans.rest.application.config", true);
             RestUtils.createApplicationConfigClass( folder, "ApplicationConfig");   // NOI18N
-            support.enableRestSupport(RestConfig.IDE);
         }
+        
         support.configure(packages);
         factory.restart(fileObject);
         return null;
