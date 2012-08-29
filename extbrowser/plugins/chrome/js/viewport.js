@@ -43,6 +43,6 @@
 console.log('Sending actual viewport dimensions');
 chrome.extension.sendMessage({
     type: 'VIEWPORT',
-    width: window.innerWidth,
-    height: window.innerHeight
+    marginWidth: window.outerWidth - window.innerWidth,
+    marginHeight: window.outerHeight - window.innerHeight
 });
