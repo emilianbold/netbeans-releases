@@ -230,6 +230,10 @@ public final class ElementOpen {
                     if (el == null) {
                         if (!SourceUtils.isScanInProgress()) {
                             log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        } else {
+                            Level l = Level.FINE;
+                            assert (l = Level.INFO) != null;
+                            log.log(l, "Cannot resolve {0} ({1})", new Object[]{handle, info.getClasspathInfo()});
                         }
                         return;
                     }
