@@ -509,6 +509,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         StringUtils.format(
                         panel.getProperty(CHECK_FOR_UPDATES_TEXT_PROPERTY)
                         ));
+            } else {
+                checkForUpdatesCheckbox.setVisible(false);
+                checkForUpdatesPane.setVisible(false);
             }
 
             foldersToRemove.setText(ADDITIONAL_FOLDERS_TO_DELETE);
