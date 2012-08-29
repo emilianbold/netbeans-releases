@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.twig.editor.completion;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
@@ -56,8 +58,14 @@ public class TwigCompletionContextFinder {
     public static enum CompletionContext {
         VARIABLE,
         INSTRUCTION,
+        FILTER,
         NONE;
     }
+
+    private static final List<Object[]> FILTER_TOKEN_CHAINS = Arrays.asList(
+            new Object[]{TwigTokenId.T_TWIG_PUNCTUATION},
+            new Object[]{TwigTokenId.T_TWIG_PUNCTUATION, TwigTokenId.T_TWIG_NAME}
+    );
 
     public static CompletionContext find(final TwigParserResult parserResult, final int offset) {
         assert parserResult != null;
@@ -72,6 +80,11 @@ public class TwigCompletionContextFinder {
         return result;
     }
 
+    private static boolean canComplete(final TokenSequence<? extends TwigTokenId> tokenSequence, final int caretOffset) {
+        return tokenSequence.moveNext() && tokenSequence.token() != null
+                && (!TwigLexerUtils.isDelimiter(tokenSequence.token().id()) || tokenSequence.offset() == caretOffset);
+    }
+
     private static CompletionContext findContext(TokenSequence<? extends TwigTokenId> tokenSequence) {
         CompletionContext result = CompletionContext.NONE;
         do {
@@ -80,7 +93,10 @@ public class TwigCompletionContextFinder {
                 break;
             }
             TwigTokenId tokenId = token.id();
-            if (TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId)) {
+            if (acceptTokenChains(tokenSequence, FILTER_TOKEN_CHAINS, true)) {
+                result = CompletionContext.FILTER;
+                break;
+            } else if (TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId)) {
                 result = CompletionContext.INSTRUCTION;
                 break;
             } else if (TwigTokenId.T_TWIG_VARIABLE.equals(tokenId)) {
@@ -91,9 +107,41 @@ public class TwigCompletionContextFinder {
         return result;
     }
 
-    private static boolean canComplete(final TokenSequence<? extends TwigTokenId> tokenSequence, final int caretOffset) {
-        return tokenSequence.moveNext() && tokenSequence.token() != null
-                && (!TwigLexerUtils.isDelimiter(tokenSequence.token().id()) || tokenSequence.offset() == caretOffset);
+    private static boolean acceptTokenChains(final TokenSequence tokenSequence, final List<Object[]> tokenIdChains, final boolean movePrevious) {
+        boolean result = false;
+        for (Object[] tokenIDChain : tokenIdChains) {
+            if (acceptTokenChain(tokenSequence, tokenIDChain, movePrevious)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private static boolean acceptTokenChain(final TokenSequence tokenSequence, final Object[] tokenIdChain, final boolean movePrevious) {
+        int originalPosition = tokenSequence.offset();
+        boolean accept = true;
+        boolean moreTokens = movePrevious ? tokenSequence.movePrevious() : true;
+        for (int i = tokenIdChain.length - 1; i >= 0; i--) {
+            Object tokenId = tokenIdChain[i];
+            if (!moreTokens) {
+                accept = false;
+                break;
+            }
+            if (tokenId instanceof TwigTokenId) {
+                if (tokenSequence.token().id() == tokenId) {
+                    moreTokens = tokenSequence.movePrevious();
+                } else {
+                    accept = false;
+                    break;
+                }
+            } else {
+                assert false : "Unsupported token type: " + tokenId.getClass().getName();
+            }
+        }
+        tokenSequence.move(originalPosition);
+        tokenSequence.moveNext();
+        return accept;
     }
 
 }

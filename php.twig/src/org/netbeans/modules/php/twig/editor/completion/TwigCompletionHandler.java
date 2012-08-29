@@ -202,6 +202,9 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     private void doCompletion(final List<CompletionProposal> completionProposals, final CompletionRequest request) {
         switch (request.context) {
+            case FILTER:
+                completeFilters(completionProposals, request);
+                break;
             case INSTRUCTION:
                 completeAll(completionProposals, request);
                 break;
