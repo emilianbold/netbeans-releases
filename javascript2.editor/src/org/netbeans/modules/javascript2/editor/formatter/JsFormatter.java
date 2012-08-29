@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
@@ -59,6 +61,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -976,8 +979,69 @@ public class JsFormatter implements Formatter {
     }
 
     @Override
-    public void reindent(Context context) {
-        // TODO
+    public void reindent(final Context context) {
+        final BaseDocument doc = (BaseDocument) context.document();
+        doc.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                long startTime = System.nanoTime();
+
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        TokenHierarchy.get(doc), context.startOffset(), language);
+                if (ts == null) {
+                    return;
+                }
+                ts.move(0);
+
+                int indentationLevel = 0;
+                List<IndenterChange> changes = new ArrayList<IndenterChange>();
+
+                while (ts.moveNext() && ts.offset() < context.endOffset()) {
+                    JsTokenId id = ts.token().id();
+                    switch (id) {
+                        case BRACKET_LEFT_CURLY:
+                            indentationLevel++;
+                            break;
+                        case BRACKET_RIGHT_CURLY:
+                            indentationLevel--;
+                            break;
+                        case EOL:
+                            if (ts.offset() < context.startOffset() || ts.offset() > context.endOffset()) {
+                                break;
+                            }
+
+                            // remove trailing spaces and do the indentation
+                            int index = ts.index();
+                            int eolOffset = ts.offset();
+                            boolean found = false;
+                            while (ts.movePrevious()) {
+                                if (ts.token().id() != JsTokenId.WHITESPACE) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found && ts.moveNext()) {
+                                if (ts.index() != index) {
+                                    changes.add(new RemoveChange(ts.offset(), eolOffset - ts.offset()));
+                                }
+                            }
+                            ts.moveIndex(index);
+                            ts.moveNext();
+                            break;
+                    }
+                }
+
+                for (int i = changes.size() - 1; i >= 0; i--) {
+                    try {
+                        changes.get(i).perform(doc);
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+                LOGGER.log(Level.INFO, "Indentation changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
+            }
+        });
     }
 
     static class Indentation {
@@ -1001,6 +1065,54 @@ public class JsFormatter implements Formatter {
 
         public boolean isExceedLimits() {
             return exceedLimits;
+        }
+    }
+
+    private static abstract class IndenterChange {
+
+        private final int offset;
+
+        public IndenterChange(int offset) {
+            this.offset = offset;
+        }
+
+        public final int getOffset() {
+            return offset;
+        }
+
+        public abstract void perform(BaseDocument doc) throws BadLocationException;
+    }
+
+    private static class RemoveChange extends IndenterChange {
+
+        private final int length;
+
+        public RemoveChange(int offset, int length) {
+            super(offset);
+            this.length = length;
+        }
+
+        @Override
+        public void perform(BaseDocument doc) throws BadLocationException {
+            doc.remove(getOffset(), length);
+        }
+    }
+
+    private static class IndentationChange extends IndenterChange {
+
+        private final Context context;
+
+        private final int size;
+
+        public IndentationChange(int offset, Context context, int size) {
+            super(offset);
+            this.context = context;
+            this.size = size;
+        }
+
+        @Override
+        public void perform(BaseDocument doc) throws BadLocationException {
+            context.modifyIndent(getOffset(), size);
         }
     }
 }

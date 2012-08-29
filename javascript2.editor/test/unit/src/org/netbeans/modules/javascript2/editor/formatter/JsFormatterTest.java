@@ -48,11 +48,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -78,6 +80,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSimple() throws Exception {
         reformatFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
+    }
+
+    public void testSimpleIndent() throws Exception {
+        reindentFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
     }
 
     public void testTrailingSpaces1() throws Exception {
@@ -1244,6 +1250,95 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/var4.js");
     }
 
+    // test from original formatter
+
+    public void testSemi01() throws Exception {
+        format(
+                "var p; p = 'hello';",
+                "var p;\n" +
+                "p = 'hello';", null
+                );
+    }
+
+    public void testSemi02() throws Exception {
+        format(
+                "var p;                           p = 'hello';",
+                "var p;\n" +
+                "p = 'hello';", null
+                );
+    }
+
+    public void testSemi03() throws Exception {
+        format(
+                "var p;p = 'hello';",
+                "var p;\n" +
+                "p = 'hello';", null
+                );
+    }
+
+    public void testSemi04() throws Exception {
+        format(
+                "var p; p = getName(); p = stripName(p);",
+                "var p;\n" +
+                "p = getName();\n" +
+                "p = stripName(p);", null
+                );
+    }
+
+    public void testSemi05() throws Exception {
+        format(
+                "var p; for(var i = 0, l = o.length; i < l; i++) {             createDom(o[i], el);   p = true;} p = stripName(p);",
+                "var p;\n" +
+                "for (var i = 0, l = o.length; i < l; i++) {\n" +
+                "    createDom(o[i], el);\n" +
+                "    p = true;\n" +
+                "}\n" +
+                "p = stripName(p);", null
+                );
+    }
+
+    public void testSemi06() throws Exception {
+        format(
+                "if (a == b) { a=c;\n" +
+                "    } else if (c == b) { v=d;}",
+
+                "if (a == b) {\n" +
+                "    a = c;\n" +
+                "} else if (c == b) {\n" +
+                "    v = d;\n" +
+                "}", null);
+    }
+
+    public void testSemi07() throws Exception {
+        format(
+                "var test = function() { a = b; };",
+
+                "var test = function() {\n" +
+                "    a = b;\n" +
+                "};", null);
+    }
+
+    public void testSemi08() throws Exception {
+        format(
+                "Spry.forwards = 1; // const\n" +
+                "Spry.backwards = 2; // const\n",
+
+                "Spry.forwards = 1; // const\n" +
+                "Spry.backwards = 2; // const\n", null);
+    }
+
+    public void testCommentAtTheEdnOfLine() throws Exception {
+        format (
+                "for(var i = 0, l = o.length; i < l; i++) { // some comment \ncreateDom(o[i], el);  p = true;       } //comment2\n p = stripName(p);",
+                "for (var i = 0, l = o.length; i < l; i++) { // some comment \n" +
+                "    createDom(o[i], el);\n" +
+                "    p = true;\n" +
+                "} //comment2\n" +
+                "p = stripName(p);", null);
+    }
+    
+    // helper methods
+    
     protected void dumpFormatTokens(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
@@ -1346,5 +1441,50 @@ public class JsFormatterTest extends JsTestBase {
         }
  
         assertDescriptionMatches(file, after, false, realSuffix);
+    }
+
+    protected void reindentFileContents(String file, IndentPrefs preferences) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+
+        String text = read(fo);
+
+        int formatStart = 0;
+        int formatEnd = text.length();
+
+        BaseDocument doc = getDocument(text);
+        assertNotNull(doc);
+
+        Formatter formatter = getFormatter(preferences);
+        //assertNotNull("getFormatter must be implemented", formatter);
+
+        setupDocumentIndentation(doc, preferences);
+
+        indent(doc, formatter, formatStart, formatEnd);
+
+        String after = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, after, false, ".indented");
+    }
+
+    private void indent(Document document, Formatter formatter, int startPos, int endPos) throws BadLocationException {
+        //assertTrue(SwingUtilities.isEventDispatchThread());
+        configureIndenters(document, formatter, true);
+
+        final Indent i = Indent.get(document);
+        i.lock();
+        try {
+            if (document instanceof BaseDocument) {
+                ((BaseDocument) document).atomicLock();
+            }
+            try {
+                i.reindent(Math.min(document.getLength(), startPos), Math.min(document.getLength(), endPos));
+            } finally {
+                if (document instanceof BaseDocument) {
+                    ((BaseDocument) document).atomicUnlock();
+                }
+            }
+        } finally {
+            i.unlock();
+        }
     }
 }

@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.Comment.Style;
@@ -67,6 +68,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -329,6 +334,24 @@ public abstract class WebRestSupport extends RestSupport {
     
     public JaxRsStackSupport getJaxRsStackSupport(){
         return JaxRsStackSupport.getInstance(project);
+    }
+    
+    public boolean supportsTargetProfile(Profile profile){
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
+                lookup(J2eeModuleProvider.class);
+        String serverInstanceID = provider.getServerInstanceID();
+        if ( serverInstanceID == null ){
+            return false;
+        }
+        ServerInstance serverInstance = Deployment.getDefault().
+                 getServerInstance(serverInstanceID);
+        try {
+            Set<Profile> profiles = serverInstance.getJ2eePlatform().getSupportedProfiles();
+            return profiles.contains( profile);
+        }
+        catch( InstanceRemovedException e ){
+            return false;
+        }
     }
 
     protected Servlet getRestServletAdaptor(WebApp webApp) {

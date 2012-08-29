@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import org.netbeans.modules.groovy.editor.utils.ASTChildrenVisitor;
-import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import groovyjarjarasm.asm.Opcodes;
 import java.util.*;
 import java.util.logging.Level;
@@ -71,6 +69,8 @@ import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.utils.ASTChildrenVisitor;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -360,9 +360,7 @@ public class ASTUtils {
         } else if (root instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) root;
             children.add(methodNode.getCode());
-            for (Parameter parameter : methodNode.getParameters()) {
-                children.add(parameter);
-            }
+            children.addAll(Arrays.asList(methodNode.getParameters()));
         } else if (root instanceof Parameter) {
         } else if (root instanceof FieldNode) {
             FieldNode fieldNode = (FieldNode) root;
@@ -490,6 +488,7 @@ public class ASTUtils {
         // find first token that is identifier and that matches given name
         final OffsetRange[] result = new OffsetRange[] { OffsetRange.NONE };
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
                 if (ts != null) {

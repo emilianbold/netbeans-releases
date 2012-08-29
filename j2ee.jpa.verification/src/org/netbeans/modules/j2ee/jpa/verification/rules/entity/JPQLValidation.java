@@ -156,8 +156,5 @@ public class JPQLValidation extends JPAClassRule implements CancelListener {
         if (mtp != null) {
             mtp.invalidate();
         }
-        if (helper != null) {
-            helper.dispose();
-        }
     }
 }
