@@ -522,11 +522,11 @@ public class FormDesigner {
     // designer content
 
     public Object getComponent(RADComponent metacomp) {
-        return replicator.getClonedComponent(metacomp.getId());
+        return replicator != null ? replicator.getClonedComponent(metacomp.getId()) : null;
     }
 
     public Object getComponent(String componentId) {
-        return replicator.getClonedComponent(componentId);
+        return replicator != null ? replicator.getClonedComponent(componentId) : null;
     }
 
     public RADComponent getMetaComponent(Object comp) {
