@@ -198,7 +198,7 @@ TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"ex
     {TAG} {
         popState();
         pushState(ST_BLOCK);
-        return TwigTokenId.T_TWIG_FUNCTION;
+        return TwigTokenId.T_TWIG_TAG;
     }
     {NAME} {
         popState();

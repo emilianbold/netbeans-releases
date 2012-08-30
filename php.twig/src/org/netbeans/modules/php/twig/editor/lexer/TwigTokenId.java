@@ -64,7 +64,7 @@ public enum TwigTokenId implements TokenId {
     T_TWIG_OPERATOR("twig_operator"),
     T_TWIG_PUNCTUATION("twig_punctuation"),
     T_TWIG_WHITESPACE("twig_whitespace"),
-    T_TWIG_FUNCTION("twig_function"),
+    T_TWIG_TAG("twig_tag"),
     T_TWIG_BLOCK_START("twig_block"),
     T_TWIG_BLOCK_END("twig_block"),
     T_TWIG_VAR_START("twig_var"),

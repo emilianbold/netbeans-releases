@@ -413,7 +413,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         }
 
         private static boolean isValidTokenId(TwigTokenId id) {
-            return TwigTokenId.T_TWIG_FUNCTION.equals(id) || TwigTokenId.T_TWIG_NAME.equals(id);
+            return TwigTokenId.T_TWIG_TAG.equals(id) || TwigTokenId.T_TWIG_NAME.equals(id);
         }
 
     }

@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="twig_name" default="identifier" />
     <fontcolor name="twig_number" default="number" />
     <fontcolor name="twig_string" foreColor="ffb4b427" default="string" />
-    <fontcolor name="twig_function" foreColor="ff00a0a0" default="keyword" />
+    <fontcolor name="twig_tag" foreColor="ff00a0a0" default="keyword" />
     <fontcolor name="twig_punctuation" foreColor="ff00a0a0" default="keyword" />
 
     <fontcolor name="twig_other" default="error" />

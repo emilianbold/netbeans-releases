@@ -155,7 +155,7 @@ public class TwigParser extends Parser {
                             while (sequence.moveNext()) {
 
                                 token = (Token<TwigTokenId>) sequence.token();
-                                if (token.id() == TwigTokenId.T_TWIG_FUNCTION) {
+                                if (token.id() == TwigTokenId.T_TWIG_TAG) {
 
                                     block.function = token.text();
                                     block.functionTokenIndex = sequence.index();
