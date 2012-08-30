@@ -39,19 +39,65 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.ui.customizer;
 
-import java.awt.event.ActionListener;
-import java.util.Collections;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-class ClientSideProjectProperties {
+public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-    Iterable<ActionListener> getOptionListeners() {
-        return Collections.EMPTY_LIST;
+    private enum Mode { Sources, Run};
+    private Mode mode;
+
+    private ClientSideProjectPanelProvider(Mode mode) {
+        this.mode = mode;
+    }
+    
+    @Override
+    public Category createCategory(Lookup context) {
+        if (mode == Mode.Run) {
+            return ProjectCustomizer.Category.create(
+                    "buildConfig",
+                    "Run",
+                    null);
+        } else {
+            return ProjectCustomizer.Category.create(
+                    "sources",
+                    "Sources",
+                    null);
+        }
+    }
+
+    @Override
+    public JComponent createComponent(Category category, Lookup context) {
+        if (mode == Mode.Run) {
+            return new RunPanel(category, (ClientSideProject)context.lookup(Project.class));
+        } else {
+            return new SourcesPanel(category, (ClientSideProject)context.lookup(Project.class));
+        }
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 100)
+    public static ClientSideProjectPanelProvider createRunConfigs() {
+        return new ClientSideProjectPanelProvider(Mode.Run);
+    }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 77)
+    public static ClientSideProjectPanelProvider createSources() {
+        return new ClientSideProjectPanelProvider(Mode.Sources);
     }
     
 }

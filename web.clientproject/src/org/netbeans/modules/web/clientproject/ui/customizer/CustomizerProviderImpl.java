@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.Component;
 import java.awt.Cursor;
@@ -55,6 +55,8 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -89,7 +91,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     public void showCustomizer ( String preselectedCategory ) {
         showCustomizer ( preselectedCategory, null );
     }
-    
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "CustomizerProviderImpl.title=Project Properties - {0}"
+    })
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         
         Dialog dialog = project2Dialog.get(project);
@@ -111,9 +117,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             StoreListener storeListener = new StoreListener( project, uiProperties );
             dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
             dialog.addWindowListener( listener );
-            dialog.setTitle( MessageFormat.format(                 
-                    NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
+            dialog.setTitle(Bundle.CustomizerProviderImpl_title(ProjectUtils.getInformation(project).getDisplayName()));
 
             project2Dialog.put(project, dialog);
             } finally {
