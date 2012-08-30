@@ -87,12 +87,12 @@ public class TwigLexer implements Lexer<TwigTokenId> {
     @Override
     public void release() {
     }
-    static protected String INSTRUCTION_START = "{%"; //NOI18N
+    static protected String BLOCK_START = "{%"; //NOI18N
     static protected String COMMENT_START = "{#"; //NOI18N
-    static protected String VARIABLE_START = "{{"; //NOI18N
-    static protected String INSTRUCTION_END = "{%"; //NOI18N
+    static protected String VAR_START = "{{"; //NOI18N
+    static protected String BLOCK_END = "{%"; //NOI18N
     static protected String COMMENT_END = "{#"; //NOI18N
-    static protected String VARIABLE_END = "{{"; //NOI18N
+    static protected String VAR_END = "{{"; //NOI18N
     static protected String PUNCTUATION = "|()[]{}?:.,"; //NOI18N
     static protected Pattern REGEX_ALPHANUM_END = Pattern.compile("[A-Za-z0-9]$"); //NOI18N
     static protected Pattern REGEX_WHITESPACE_END = Pattern.compile("[\\s]+$"); //NOI18N
@@ -188,19 +188,19 @@ public class TwigLexer implements Lexer<TwigTokenId> {
                 case INIT:
                     if (CharSequenceUtilities.startsWith(text, COMMENT_START)) {
                         state.main = TwigLexerState.Main.COMMENT;
-                    } else if (CharSequenceUtilities.startsWith(text, INSTRUCTION_START)) {
-                        state.main = TwigLexerState.Main.INSTRUCTION;
+                    } else if (CharSequenceUtilities.startsWith(text, BLOCK_START)) {
+                        state.main = TwigLexerState.Main.BLOCK;
                         state.sub = TwigLexerState.Sub.INIT;
                         return TwigTokenId.T_TWIG_BLOCK_START;
-                    } else if (CharSequenceUtilities.startsWith(text, VARIABLE_START)) {
-                        state.main = TwigLexerState.Main.VARIABLE;
+                    } else if (CharSequenceUtilities.startsWith(text, VAR_START)) {
+                        state.main = TwigLexerState.Main.VAR;
                         state.sub = TwigLexerState.Sub.INIT;
                         return TwigTokenId.T_TWIG_VAR_START;
                     }
                     break;
 
-                case VARIABLE:
-                case INSTRUCTION:
+                case VAR:
+                case BLOCK:
 
                     /* Whitespaces */
 
@@ -231,11 +231,11 @@ public class TwigLexer implements Lexer<TwigTokenId> {
 
                         if (d == '}' && e == LexerInput.EOF) {
 
-                            if (state.main == TwigLexerState.Main.INSTRUCTION && c == '%') {
+                            if (state.main == TwigLexerState.Main.BLOCK && c == '%') {
                                 return TwigTokenId.T_TWIG_BLOCK_END;
                             }
 
-                            if (state.main == TwigLexerState.Main.VARIABLE && c == '}') {
+                            if (state.main == TwigLexerState.Main.VAR && c == '}') {
                                 return TwigTokenId.T_TWIG_VAR_END;
                             }
 
@@ -247,7 +247,7 @@ public class TwigLexer implements Lexer<TwigTokenId> {
 
                     /* Operators */
 
-                    if (!(state.main == TwigLexerState.Main.INSTRUCTION && state.sub == TwigLexerState.Sub.INIT)) {
+                    if (!(state.main == TwigLexerState.Main.BLOCK && state.sub == TwigLexerState.Sub.INIT)) {
 
                         d = c;
 
@@ -296,7 +296,7 @@ public class TwigLexer implements Lexer<TwigTokenId> {
                             input.backup(1);
                         }
 
-                        if (state.main == TwigLexerState.Main.INSTRUCTION && state.sub == TwigLexerState.Sub.INIT) {
+                        if (state.main == TwigLexerState.Main.BLOCK && state.sub == TwigLexerState.Sub.INIT) {
                             state.sub = TwigLexerState.Sub.NONE;
                             return TwigTokenId.T_TWIG_FUNCTION;
                         } else {

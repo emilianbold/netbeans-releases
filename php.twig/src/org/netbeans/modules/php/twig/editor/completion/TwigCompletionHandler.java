@@ -205,7 +205,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
             case FILTER:
                 completeFilters(completionProposals, request);
                 break;
-            case INSTRUCTION:
+            case BLOCK:
                 completeAll(completionProposals, request);
                 break;
             case VARIABLE:

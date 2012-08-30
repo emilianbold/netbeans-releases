@@ -57,7 +57,7 @@ public class TwigCompletionContextFinder {
 
     public static enum CompletionContext {
         VARIABLE,
-        INSTRUCTION,
+        BLOCK,
         FILTER,
         NONE;
     }
@@ -97,7 +97,7 @@ public class TwigCompletionContextFinder {
                 result = CompletionContext.FILTER;
                 break;
             } else if (TwigTokenId.T_TWIG_BLOCK_START.equals(tokenId) || TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId)) {
-                result = CompletionContext.INSTRUCTION;
+                result = CompletionContext.BLOCK;
                 break;
             } else if (TwigTokenId.T_TWIG_VAR_START.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId)) {
                 result = CompletionContext.VARIABLE;

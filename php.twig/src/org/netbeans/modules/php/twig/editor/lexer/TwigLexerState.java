@@ -46,14 +46,14 @@ public class TwigLexerState {
     public enum Main {
         INIT,
         COMMENT,
-        VARIABLE,
-        INSTRUCTION
+        VAR,
+        BLOCK
     };
 
     public enum Sub {
         NONE, INIT
     };
-    
+
     Main main;
     Sub sub;
 
