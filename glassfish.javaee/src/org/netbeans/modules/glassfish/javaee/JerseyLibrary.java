@@ -47,11 +47,8 @@ import org.glassfish.tools.ide.data.GlassFishLibrary;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.LibraryBuilder;
 import org.glassfish.tools.ide.server.config.LibraryConfig;
-import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 /**
  * GlassFish bundled Jersey library provider.
@@ -124,9 +121,11 @@ public class JerseyLibrary {
     public LibraryImplementation getLibrary() {
         LibraryBuilder lb = getBuilder();
         List<GlassFishLibrary> libs = lb.getLibraries(GlassFishVersion.GF_3);
-        LibraryImplementation lis = CommonProjectUtils
+//        TODO: Create LibraryImplementation3 instance
+//        LibraryImplementation lis = CommonProjectUtils
 //                = LibrariesSupport.createLibraryImplementation(type, volumeIds);
-        return lis;
+//        return lis;
+        return null;
     }
 
     /**
