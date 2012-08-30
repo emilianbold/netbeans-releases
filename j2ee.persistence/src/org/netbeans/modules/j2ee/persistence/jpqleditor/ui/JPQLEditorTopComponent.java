@@ -358,7 +358,6 @@ public final class JPQLEditorTopComponent extends TopComponent {
                             public boolean isLoggable(LogRecord record) {
                                 if(record.getLevel().intValue()>Level.INFO.intValue()){//workaround to avoid exception dialog from nb for logged exception
                                     record.setLevel(Level.INFO);
-                                    return true;
                                 }
                                 return true;
                             }
