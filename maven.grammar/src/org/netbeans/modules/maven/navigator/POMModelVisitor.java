@@ -287,6 +287,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(Organization target) {
         Organization t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
         checkChildString(names.URL, URL(), t != null ? t.getUrl() : null);
@@ -298,6 +299,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"SNAPSHOT_REPOSITORY=Snapshot Repository", "SITE=Site", "DOWNLOAD_URL=Download Url"})
     public void visit(DistributionManagement target) {
         DistributionManagement t = target;
+        assert t != null ? t.isInDocumentModel() : true;        
         POMQNames names = parent.getPOMQNames();
         checkChildObject(names.DIST_REPOSITORY, DeploymentRepository.class, REPOSITORY(), t != null ? t.getRepository() : null);
         checkChildObject(names.DIST_SNAPSHOTREPOSITORY, DeploymentRepository.class, SNAPSHOT_REPOSITORY(), t != null ? t.getSnapshotRepository() : null);
@@ -311,6 +313,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages("ID=Id")
     public void visit(Site target) {
         Site t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
@@ -323,6 +326,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages("LAYOUT=Layout")
     public void visit(DeploymentRepository target) {
         DeploymentRepository t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
@@ -336,7 +340,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages("MAVEN=Maven")
     public void visit(Prerequisites target) {
         Prerequisites t = target;
-        POMQNames names = parent.getPOMQNames();
+         assert t != null ? t.isInDocumentModel() : true;
+       POMQNames names = parent.getPOMQNames();
         checkChildString(names.MAVEN, MAVEN(), t != null ? t.getMaven() : null);
 
         count++;
@@ -346,6 +351,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"EMAIL=Email", "ORGANIZATION_URL=Organization Url", "TIMEZONE=Timezone"})
     public void visit(Contributor target) {
         Contributor t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
         checkChildString(names.EMAIL, EMAIL(), t != null ? t.getEmail() : null);
@@ -361,6 +367,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"CONNECTION=Connection", "DEVELOPER_CONNECTION=Developer Connection", "TAG=Tag"})
     public void visit(Scm target) {
         Scm t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.CONNECTION, CONNECTION(), t != null ? t.getConnection() : null);
         checkChildString(names.DEVELOPERCONNECTION, DEVELOPER_CONNECTION(), t != null ? t.getDeveloperConnection() : null);
@@ -374,6 +381,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages("SYSTEM=System")
     public void visit(IssueManagement target) {
         IssueManagement t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.SYSTEM, SYSTEM(), t != null ? t.getSystem() : null);
         checkChildString(names.URL, URL(), t != null ? t.getUrl() : null);
@@ -384,6 +392,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(CiManagement target) {
         CiManagement t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.SYSTEM, SYSTEM(), t != null ? t.getSystem() : null);
         checkChildString(names.URL, URL(), t != null ? t.getUrl() : null);
@@ -400,6 +409,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"RELEASES=Releases", "SNAPSHOTS=Snapshots"})
     public void visit(Repository target) {
         Repository t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
@@ -415,6 +425,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"ENABLED=Enabled", "UPDATE_POLICY=Update Policy", "CHECKSUM_POLICY=Checksum Policy"})
     public void visit(RepositoryPolicy target) {
         RepositoryPolicy t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ENABLED, ENABLED(), t != null ? (t.isEnabled() != null ? t.isEnabled().toString() : null) : null);
         checkChildString(names.UPDATEPOLICY, UPDATE_POLICY(), t != null ? t.getUpdatePolicy() : null);
@@ -427,6 +438,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages("ACTIVATION=Activation")
     public void visit(Profile target) {
         Profile t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildObject(names.ACTIVATION, Activation.class, ACTIVATION(), t != null ? t.getActivation() : null);
@@ -469,6 +481,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(BuildBase target) {
         BuildBase t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.DEFAULTGOAL, DEFAULT_GOAL(), t != null ? t.getDefaultGoal() : null);
         this.<Resource>checkListObject(names.RESOURCES, names.RESOURCE,
@@ -518,6 +531,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"EXECUTIONS=Executions", "EXECUTION=Execution", "GOALS=Goals", "INHERITED=Inherited", "CONFIGURATION=Configuration", "GOAL=Goal"})
     public void visit(Plugin target) {
         Plugin t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, GROUPID(), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, ARTIFACTID(), t != null ? t.getArtifactId() : null);
@@ -548,6 +562,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"TYPE=Type", "CLASSIFIER=Classifier", "SCOPE=Scope", "EXCLUSIONS=Exclusions", "EXCLUSION=Exclusion"})
     public void visit(Dependency target) {
         Dependency t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, GROUPID(), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, ARTIFACTID(), t != null ? t.getArtifactId() : null);
@@ -572,6 +587,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(Exclusion target) {
         Exclusion t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, GROUPID(), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, ARTIFACTID(), t != null ? t.getArtifactId() : null);
@@ -583,6 +599,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages("PHASE=Phase")
     public void visit(PluginExecution target) {
         PluginExecution t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildString(names.PHASE, PHASE(), t != null ? t.getPhase() : null);
@@ -596,6 +613,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"TARGET_PATH=Target Path", "INCLUDES=Includes", "INCLUDE=Include", "EXCLUDES=Excludes", "EXCLUDE=Exclude"})
     public void visit(Resource target) {
         Resource t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.TARGETPATH, TARGET_PATH(), t != null ? t.getTargetPath() : null);
         //TODO filtering
@@ -609,6 +627,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(PluginManagement target) {
         PluginManagement t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
                 Plugin.class, PLUGINS(),
@@ -635,6 +654,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"EXCLUDE_DEFAULTS=Exclude Defaults", "OUTPUT_DIRECTORY=Output Directory", "REPORT_PLUGINS=Report Plugins", "REPORT_PLUGIN=Report Plugin"})
     public void visit(Reporting target) {
         Reporting t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.EXCLUDEDEFAULTS, EXCLUDE_DEFAULTS(), t != null ? (t.isExcludeDefaults() != null ? t.isExcludeDefaults().toString() : null) : null);
         checkChildString(names.OUTPUTDIRECTORY, OUTPUT_DIRECTORY(), t != null ? t.getOutputDirectory() : null);
@@ -659,6 +679,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"REPORTSETS=ReportSets", "REPORTSET=ReportSet"})
     public void visit(ReportPlugin target) {
         ReportPlugin t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, GROUPID(), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, ARTIFACTID(), t != null ? t.getArtifactId() : null);
@@ -686,6 +707,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"REPORTS=Reports", "REPORT=Report"})
     public void visit(ReportSet target) {
         ReportSet t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, CONFIGURATION(), t != null ? t.getConfiguration() : null);
@@ -699,6 +721,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"OPERATING_SYSTEM=Operating System", "PROPERTY=Property", "FILE=File", "CUSTOM=Custom"})
     public void visit(Activation target) {
         Activation t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildObject(names.ACTIVATIONOS, ActivationOS.class, OPERATING_SYSTEM(), t != null ? t.getActivationOS() : null);
         checkChildObject(names.ACTIVATIONPROPERTY, ActivationProperty.class, PROPERTY(), t != null ? t.getActivationProperty() : null);
@@ -727,6 +750,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(DependencyManagement target) {
         DependencyManagement t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         checkDependencies(t);
 
         count++;
@@ -736,6 +760,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"EXTENSIONS=Extensions", "DEFAULT_GOAL=Default Goal", "RESOURCES=Resources", "RESOURCE=Resource", "TEST_RESOURCES=Test Resources", "TEST_RESOURCE=Test Resource", "DIRECTORY=Directory", "FINAL_NAME=Final Name", "PLUGIN_MANAGEMENT=Plugin Management", "PLUGINS=Plugins", "PLUGIN=Plugin", "SOURCE_DIRECTORY=Source Directory", "TEST_SOURCE_DIRECTORY=Test Source Directory", "TEST_OUTPUT_DIRECTORY=Test Output Directory", "EXTENSION=Extension"})
     public void visit(Build target) {
         Build t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.SOURCEDIRECTORY, SOURCE_DIRECTORY(), t != null ? t.getSourceDirectory() : null);
         //just ignore script directory
@@ -803,6 +828,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(Extension target) {
         Extension t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, GROUPID(), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, ARTIFACTID(), t != null ? t.getArtifactId() : null);
@@ -812,6 +838,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(License target) {
         License t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
         checkChildString(names.URL, URL(), t != null ? t.getUrl() : null);
@@ -822,6 +849,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Messages({"SUBSCRIBE=Subscribe", "UNSUBSCRIBE=Unsubscribe", "POST=Post", "ARCHIVE=Archive"})
     public void visit(MailingList target) {
         MailingList t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
         checkChildString(names.SUBSCRIBE, SUBSCRIBE(), t != null ? t.getSubscribe() : null);
@@ -834,6 +862,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(Developer target) {
         Developer t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, ID(), t != null ? t.getId() : null);
         checkChildString(names.NAME, NAME(), t != null ? t.getName() : null);
@@ -849,6 +878,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(POMExtensibilityElement target) {
         POMExtensibilityElement t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         if (t != null) {
             doVisit(t.getAnyElements());
         }
@@ -867,6 +897,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(Configuration target) {
         Configuration t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         if (t != null) {
             doVisit(t.getConfigurationElements());
         }
@@ -918,6 +949,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     @Override
     public void visit(Properties target) {
         Properties t = target;
+        assert t != null ? t.isInDocumentModel() : true;
         if (t != null) {
             Map<String, String> props = t.getProperties();
             for (Map.Entry<String, String> ent : props.entrySet()) {
