@@ -651,10 +651,21 @@ public class FormatVisitor extends NodeVisitor {
                         }
                     }
                 }
-                for (Node item : literalNode.getArray()) {
-                    FormatToken comma = getNextToken(getStart(item), JsTokenId.OPERATOR_COMMA, finish);
-                    if (comma != null) {
-                        appendTokenAfterLastVirtual(comma, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
+
+                Node[] items = literalNode.getArray();
+                if (items != null && items.length > 0) {
+                    int prevItemFinish = start;
+                    for (int i = 1; i < items.length; i++) {
+                        Node prevItem = items[i - 1];
+                        if (prevItem != null) {
+                            prevItemFinish = getFinish(prevItem);
+                        }
+                        FormatToken comma = getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
+                        if (comma != null) {
+                            prevItemFinish = comma.getOffset();
+                            appendTokenAfterLastVirtual(comma,
+                                    FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
+                        }
                     }
                 }
             }

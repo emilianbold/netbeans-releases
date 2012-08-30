@@ -81,6 +81,11 @@ public abstract class GlassFishPlatformImpl
     private static final URL LIBRARY_BUILDER_CONFIG_DEFAULT
             = GlassFishPlatformImpl.class.getResource("gfLibsDefault.xml");
 
+    /** Library builder configuration since GlassFish 3. */
+    private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_3
+            = new LibraryConfig.Next(GlassFishVersion.GF_3,
+            GlassFishPlatformImpl.class.getResource("gfLibs3.xml"));
+
     /** Library builder configuration since GlassFish 4. */
     private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_4
             = new LibraryConfig.Next(GlassFishVersion.GF_4,
@@ -112,7 +117,8 @@ public abstract class GlassFishPlatformImpl
 
     /** Library builder configuration for GlassFish cloud. */
     private static final LibraryConfig libraryConfig = new LibraryConfig(
-            LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_4);
+            LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_3,
+            LIBRARY_BUILDER_CONFIG_4);
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -217,6 +223,11 @@ public abstract class GlassFishPlatformImpl
                 : null;
     }
 
+    /**
+     * Return GlassFish cloud libraries.
+     * <p/>
+     * @return  GlassFish cloud libraries.
+     */
     @Override
     public LibraryImplementation[] getLibraries() {
         GlassFishServer server = instance.getLocalServer();

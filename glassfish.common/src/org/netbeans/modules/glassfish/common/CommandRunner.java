@@ -60,6 +60,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.net.ssl.*;
 import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
@@ -623,15 +624,17 @@ public class CommandRunner extends BasicTask<OperationState> {
                                 hconn.setRequestProperty("Accept-Encoding", "gzip");
                             }
 
-//                        // Set up an authorization header with our credentials
-//                        Hk2Properties tp = tm.getHk2Properties();
-//                        String input = tp.getUsername () + ":" + tp.getPassword ();
-//                        String auth = new String(Base64.encode(input.getBytes()));
-//                        hconn.setRequestProperty("Authorization", // NOI18N
-//                                                 "Basic " + auth); // NOI18N
+                            // Authorization shall be the same as in Tooling SDK Runner.
+                            String adminUser = instance.getAdminUser();
+                            String adminPassword = instance.getAdminPassword();
+                            if (adminPassword != null && adminPassword.length() > 0) {
+                                String auth = ServerUtils.basicAuthCredentials(
+                                        adminUser, adminPassword);
+                                conn.setRequestProperty("Authorization", "Basic " + auth);
+                            }
 
                             // Establish the connection with the server
-                            Authenticator.setDefault(AUTH);
+                            //Authenticator.setDefault(AUTH);
                             hconn.connect();
                             // Send data to server if necessary
                             handleSend(hconn);
