@@ -41,17 +41,14 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
-import java.awt.event.ActionListener;
-import java.util.Collections;
-
 /**
  *
  * @author Jan Becicka
  */
-class ClientSideProjectProperties {
+final class ClientSideProjectProperties {
 
-    Iterable<ActionListener> getOptionListeners() {
-        return Collections.EMPTY_LIST;
+    void save() {
+        // noop
     }
-    
+
 }

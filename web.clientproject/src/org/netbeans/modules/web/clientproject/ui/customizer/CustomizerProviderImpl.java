@@ -44,15 +44,16 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
@@ -60,171 +61,175 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 
-/** 
+/**
  * @author Jan Becicka
  */
 public class CustomizerProviderImpl implements CustomizerProvider {
-    
-    private final ClientSideProject project;
 
-    private static final String CUSTOMIZER_FOLDER_PATH = "Projects/org.netbeans.modules.web.clientproject/Customizer"; //NO18N
-    
-    private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>();
-    
+    static final Logger LOGGER = Logger.getLogger(CustomizerProviderImpl.class.getName());
+
+    static final String CUSTOMIZER_FOLDER_PATH = "Projects/org.netbeans.modules.web.clientproject/Customizer"; // NO18N
+    // @GuardedBy("EDT")
+    static final Map<Project, Dialog> PROJECT_2_DIALOG = new HashMap<Project, Dialog>();
+
+    final ClientSideProject project;
+
+
     public CustomizerProviderImpl(ClientSideProject project) {
         this.project = project;
     }
-            
+
     @Override
     public void showCustomizer() {
-        showCustomizer( null );
+        showCustomizer(null);
     }
-    
-    
-    public void showCustomizer ( String preselectedCategory ) {
-        showCustomizer ( preselectedCategory, null );
+
+
+    public void showCustomizer(String preselectedCategory) {
+        showCustomizer(preselectedCategory, null);
     }
 
     @NbBundle.Messages({
         "# {0} - project name",
         "CustomizerProviderImpl.title=Project Properties - {0}"
     })
-    public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
-        
-        Dialog dialog = project2Dialog.get(project);
-        if ( dialog != null ) {            
-            dialog.setVisible(true);
-            return;
-        }
-        else {
-            try {
-            WaitCursor.show();
-            ClientSideProjectProperties uiProperties = createClientSideProjectProperties();
-            Lookup context = Lookups.fixed(new Object[] {
-                project,
-                uiProperties,
-                new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
-            });
+    public void showCustomizer(final String preselectedCategory, final String preselectedSubCategory) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                Dialog dialog = PROJECT_2_DIALOG.get(project);
+                if (dialog != null) {
+                    dialog.setVisible(true);
+                    return;
+                }
+                try {
+                    WaitCursor.show();
+                    ClientSideProjectProperties uiProperties = createClientSideProjectProperties();
+                    Lookup context = Lookups.fixed(new Object[] {
+                        project,
+                        uiProperties,
+                        new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
+                    });
 
-            OptionListener listener = new OptionListener( project, uiProperties );
-            StoreListener storeListener = new StoreListener( project, uiProperties );
-            dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
-            dialog.addWindowListener( listener );
-            dialog.setTitle(Bundle.CustomizerProviderImpl_title(ProjectUtils.getInformation(project).getDisplayName()));
+                    OptionListener listener = new OptionListener(project);
+                    StoreListener storeListener = new StoreListener(project, uiProperties);
+                    dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
+                    dialog.addWindowListener(listener);
+                    dialog.setTitle(Bundle.CustomizerProviderImpl_title(ProjectUtils.getInformation(project).getDisplayName()));
 
-            project2Dialog.put(project, dialog);
-            } finally {
-                WaitCursor.hide();
+                    PROJECT_2_DIALOG.put(project, dialog);
+                } finally {
+                    WaitCursor.hide();
+                }
+                if (dialog != null) {
+                    dialog.setVisible(true);
+                }
             }
-            if (dialog != null) {
-                dialog.setVisible(true);
-            }
-        }
+        });
     }
 
     private ClientSideProjectProperties createClientSideProjectProperties() {
         return new ClientSideProjectProperties();
     }
 
-    private class StoreListener implements ActionListener {
-    
-        private Project project;
-        private ClientSideProjectProperties uiProperties;
-        
-        StoreListener(Project project, ClientSideProjectProperties uiProperties ) {
+    private static final class StoreListener implements ActionListener {
+
+        private final Project project;
+        private final ClientSideProjectProperties uiProperties;
+
+
+        StoreListener(Project project, ClientSideProjectProperties uiProperties) {
             this.project = project;
             this.uiProperties = uiProperties;
         }
-        
-        public void actionPerformed(ActionEvent e) {
-            for (ClientProjectConfigurationImplementation config: project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
-                config.save();
-            }   
-            //            uiProperties.save();
-            //            for (J2SECustomPropertySaver saver : project.getLookup().lookupAll(J2SECustomPropertySaver.class)) {
-            //                saver.save(project);
-            //            }
-        }
-    }
-    
-    /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener extends WindowAdapter implements ActionListener {
-    
-        private Project project;
-        private ClientSideProjectProperties uiProperties;
-        
-        OptionListener( Project project, ClientSideProjectProperties uiProperties ) {
-            this.project = project;
-            this.uiProperties = uiProperties;            
-        }
-        
-        // Listening to OK button ----------------------------------------------
-        
-        public void actionPerformed( ActionEvent e ) {
-            for (ActionListener al : uiProperties.getOptionListeners()) {
-                al.actionPerformed(e);
-            }
 
-//#95952 some users experience this assertion on a fairly random set of changes in 
-// the customizer, that leads me to assume that a project can be already marked
-// as modified before the project customizer is shown. 
-//            assert !ProjectManager.getDefault().isModified(project) : 
-//                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
-            // Close & dispose the the dialog
-            Dialog dialog = project2Dialog.get(project);
-            if ( dialog != null ) {
-                dialog.setVisible(false);
-                dialog.dispose();
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            assert !EventQueue.isDispatchThread();
+            for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
+                config.save();
             }
-        }        
-        
-        // Listening to window events ------------------------------------------
-                
-        public @Override void windowClosed(WindowEvent e) {
-            project2Dialog.remove( project );
-        }    
-        
-        public @Override void windowClosing(WindowEvent e) {
-            //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
-            //may not be called
-            Dialog dialog = project2Dialog.get(project);
-            if ( dialog != null ) {
+            uiProperties.save();
+            // do additional actions
+        }
+
+    }
+
+    private static class OptionListener extends WindowAdapter implements ActionListener {
+
+        private final Project project;
+
+
+        OptionListener(Project project) {
+            this.project = project;
+        }
+
+        // listening to OK button
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // close & dispose the the dialog
+            Dialog dialog = PROJECT_2_DIALOG.get(project);
+            if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
             }
         }
+
+        // listening to window events
+        @Override
+        public void windowClosed(WindowEvent e) {
+            PROJECT_2_DIALOG.remove(project);
+        }
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+            // dispose the dialog otherwise {@link WindowAdapter#windowClosed} may not be called
+            Dialog dialog = PROJECT_2_DIALOG.get(project);
+            if (dialog != null) {
+                dialog.setVisible(false);
+                dialog.dispose();
+            }
+        }
+
     }
-    
+
     static final class SubCategoryProvider {
 
-        private String subcategory;
+        private final String subcategory;
+        private final String category;
 
-        private String category;
 
         SubCategoryProvider(String category, String subcategory) {
             this.category = category;
             this.subcategory = subcategory;
         }
+
         public String getCategory() {
             return category;
         }
+
         public String getSubcategory() {
             return subcategory;
         }
+
     }
 
-    public static class WaitCursor implements Runnable {
+    private static final class WaitCursor implements Runnable {
 
+        // @GuardedBy("EDT")
         private boolean show;
 
+
         private WaitCursor(boolean show) {
+            assert EventQueue.isDispatchThread();
             this.show = show;
         }
 
@@ -237,24 +242,22 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
 
         private static void invoke(WaitCursor wc) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                wc.run();
-            } else {
-                SwingUtilities.invokeLater(wc);
-            }
+            Mutex.EVENT.readAccess(wc);
         }
 
+        @Override
         public void run() {
+            assert EventQueue.isDispatchThread();
             try {
-                JFrame f = (JFrame) WindowManager.getDefault().getMainWindow();
-                Component c = f.getGlassPane();
-                c.setVisible(show);
-                c.setCursor(show ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);
+                JFrame frame = (JFrame) WindowManager.getDefault().getMainWindow();
+                Component component = frame.getGlassPane();
+                component.setVisible(show);
+                component.setCursor(show ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);
             } catch (NullPointerException npe) {
-                Exceptions.printStackTrace(npe);
+                LOGGER.log(Level.WARNING, null, npe);
             }
         }
 
     }
-                            
+
 }
