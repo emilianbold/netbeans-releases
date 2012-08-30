@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.openide.util.Parameters;
 
 /**
@@ -111,7 +112,7 @@ public class TplSyntax {
      * @param tag examined tag
      * @return {@code true} when the given tag is "else-like" tag, {@code false} otherwise
      */
-    public static boolean isElseCommand(String tag) {
+    public static boolean isElseSmartyCommand(String tag) {
         Parameters.notNull("tag", tag); //NOI18N
         String tokenText = tag.toLowerCase();
         return ELSE_TAGS.contains(tokenText);
@@ -129,5 +130,43 @@ public class TplSyntax {
         Parameters.notNull("relatedToTag", relatedToTag); //NOI18N
         return actualTag.substring(1).equals(relatedToTag)
                 || (RELATED_TAGS.get(relatedToTag) != null && RELATED_TAGS.get(relatedToTag).contains(actualTag));
+    }
+
+    /**
+     * Gets related tag to given else-like or ending tag.
+     *
+     * @param tag examined else-like or ending tag
+     * @return related tag to the given one, {@code null} when no such tag exists
+     */
+    public static String getRelatedCommand(String tag) {
+        Parameters.notNull("tag", tag); //NOI18N
+        if (isEndingSmartyCommand(tag)) {
+            String startTag = tag.substring(1);
+            if (BLOCK_TAGS.contains(startTag)) {
+                return startTag;
+            }
+        } else {
+            for (Map.Entry<String, ArrayList<String>> entry : RELATED_TAGS.entrySet()) {
+                if (entry.getValue().contains(tag)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Says whether the given tag is ending tag or not.
+     *
+     * @param tag examined tag
+     * @return {@code true} when the given tag is ending tag, {@code false} otherwise
+     */
+    public static boolean isEndingSmartyCommand(String tag) {
+        Parameters.notNull("tag", tag); //NOI18N
+        if (!tag.isEmpty() && tag.startsWith("/")) { //NOI18N
+            String startTag = tag.substring(1);
+            return BLOCK_TAGS.contains(startTag);
+        }
+        return false;
     }
 }

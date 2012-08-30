@@ -215,7 +215,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                         isSmartyBodyCommand = TplSyntax.isBlockCommand(tplToken);
                         if (isSmartyBodyCommand) {
                             lastTplCommand = tplToken;
-                            isSmartyElseCommand = TplSyntax.isElseCommand(tplToken);
+                            isSmartyElseCommand = TplSyntax.isElseSmartyCommand(tplToken);
                         }
                     } else {
                         isSmartyBodyCommand = false;
