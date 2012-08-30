@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.php.smarty.editor.TplSyntax;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.openide.util.NbBundle;
 
@@ -69,23 +70,6 @@ import org.openide.util.NbBundle;
 public class TplParser extends Parser {
 
     private TplParserResult result;
-
-    private static final List<String> PAIRED_FUNCTIONS = new ArrayList<String>();
-
-    static {
-        PAIRED_FUNCTIONS.add("block"); //NOI18N
-        PAIRED_FUNCTIONS.add("capture"); //NOI18N
-        PAIRED_FUNCTIONS.add("for"); //NOI18N
-        PAIRED_FUNCTIONS.add("foreach"); //NOI18N
-        PAIRED_FUNCTIONS.add("function"); //NOI18N
-        PAIRED_FUNCTIONS.add("if"); //NOI18N
-        PAIRED_FUNCTIONS.add("nocache"); //NOI18N
-        PAIRED_FUNCTIONS.add("php"); //NOI18N
-        PAIRED_FUNCTIONS.add("section"); //NOI18N
-        PAIRED_FUNCTIONS.add("setfilter"); //NOI18N
-        PAIRED_FUNCTIONS.add("strip"); //NOI18N
-        PAIRED_FUNCTIONS.add("while"); //NOI18N
-    }
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
@@ -122,13 +106,11 @@ public class TplParser extends Parser {
                             textBuilder.append(token.text());
                         }
                         int endOffset = startOffset + ((startOffset == ts.offset()) ?  token.length() : ts.offset() - startOffset + token.length());
-                        function.name = functionName;
+                        function.name = CharSequenceUtilities.toString(functionName);
                         function.offsetRange = new OffsetRange(startOffset, endOffset);
                         function.text = textBuilder.toString();
 
                         String name = functionName.toString().startsWith("/") ? functionName.toString().substring(1) : functionName.toString();
-                        function.paired = PAIRED_FUNCTIONS.contains(name);
-
                         functionList.add(function);
                     }
                 }
@@ -137,16 +119,17 @@ public class TplParser extends Parser {
             /* Analyse functionList structure */
             Stack<Function> tagStack = new Stack<Function>();
             for (Function tag : functionList) {
-                if (CharSequenceUtilities.startsWith(tag.name, "/") && tag.paired) { //NOI18N
+                if (TplSyntax.isEndingSmartyCommand(tag.name) || TplSyntax.isElseSmartyCommand(tag.name)) { //NOI18N
                     if (tagStack.empty()) { // End tag, but no more tokens on stack!
                         result.addError(
-                                NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", tag.name), //NOI18N
+                                NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedCommand(tag.name)), //NOI18N
                                 tag.offsetRange.getStart(),
                                 tag.offsetRange.getLength());
-                    } else if (CharSequenceUtilities.endsWith(tag.name, tagStack.peek().name)) {
-                        // end[sth] found a [sth] on the stack!
-                        Function beggining = tagStack.pop();
-                        result.addBlock(beggining.name, beggining.offsetRange.getStart(), beggining.offsetRange.getLength(), beggining.text);
+                    } else if (TplSyntax.isInRelatedCommand(tag.name, tagStack.peek().name)) {
+                        if (!TplSyntax.isElseSmartyCommand(tag.name)) {
+                            Function beggining = tagStack.pop();
+                            result.addTag(beggining.name, beggining.offsetRange.getStart(), beggining.offsetRange.getLength(), beggining.text);
+                        }
                     } else {
                         // something wrong lies on the stack!
                         // assume that current token is invalid and let it stay on the stack
@@ -156,7 +139,7 @@ public class TplParser extends Parser {
                                 tag.offsetRange.getLength());
                     }
 
-                } else if (tag.paired) {
+                } else if (TplSyntax.isBlockCommand(tag.name)) {
                     tagStack.push(tag);
                 }
 
@@ -203,9 +186,8 @@ public class TplParser extends Parser {
 
     private class Function {
 
-        private CharSequence name = null;
+        private String name = null;
         private OffsetRange offsetRange = new OffsetRange(0, 0);
-        private boolean paired = false;
         private String text;
 
     }
