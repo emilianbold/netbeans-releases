@@ -122,7 +122,7 @@ public class TplParser extends Parser {
                 if (TplSyntax.isEndingSmartyCommand(tag.name) || TplSyntax.isElseSmartyCommand(tag.name)) { //NOI18N
                     if (tagStack.empty()) { // End tag, but no more tokens on stack!
                         result.addError(
-                                NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedCommand(tag.name)), //NOI18N
+                                NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedBaseCommand(tag.name)), //NOI18N
                                 tag.offsetRange.getStart(),
                                 tag.offsetRange.getLength());
                     } else if (TplSyntax.isInRelatedCommand(tag.name, tagStack.peek().name)) {
@@ -134,7 +134,7 @@ public class TplParser extends Parser {
                         // something wrong lies on the stack!
                         // assume that current token is invalid and let it stay on the stack
                         result.addError(
-                                NbBundle.getMessage(TplParser.class, "ERR_Unexpected_Tag", new Object[]{tag.name, tagStack.peek().name}), //NOI18N
+                                NbBundle.getMessage(TplParser.class, "ERR_Unexpected_Tag", new Object[]{tag.name, TplSyntax.getEndingCommand(tagStack.peek().name)}), //NOI18N
                                 tag.offsetRange.getStart(),
                                 tag.offsetRange.getLength());
                     }

@@ -138,18 +138,22 @@ public class TplSyntax {
      * @param tag examined else-like or ending tag
      * @return related tag to the given one, {@code null} when no such tag exists
      */
-    public static String getRelatedCommand(String tag) {
+    public static String getRelatedBaseCommand(String tag) {
         Parameters.notNull("tag", tag); //NOI18N
         if (isEndingSmartyCommand(tag)) {
             String startTag = tag.substring(1);
             if (BLOCK_TAGS.contains(startTag)) {
                 return startTag;
             }
-        } else {
+        } else if (isElseSmartyCommand(tag)) {
             for (Map.Entry<String, ArrayList<String>> entry : RELATED_TAGS.entrySet()) {
                 if (entry.getValue().contains(tag)) {
                     return entry.getKey();
                 }
+            }
+        } else {
+            if (BLOCK_TAGS.contains(tag)) {
+                return tag;
             }
         }
         return null;
@@ -168,5 +172,17 @@ public class TplSyntax {
             return BLOCK_TAGS.contains(startTag);
         }
         return false;
+    }
+
+    /**
+     * Return ending tag to given tag.
+     *
+     * @param tag tag
+     * @return ending tag
+     */
+    public static String getEndingCommand(String tag) {
+        Parameters.notNull("tag", tag); //NOI18N
+        String command = getRelatedBaseCommand(tag);
+        return "/" + command; //NOI18N
     }
 }
