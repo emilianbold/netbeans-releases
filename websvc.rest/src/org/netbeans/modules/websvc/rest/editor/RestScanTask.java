@@ -53,8 +53,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -64,7 +66,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
@@ -72,6 +76,7 @@ import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -105,6 +110,9 @@ class RestScanTask {
 
     void run(){
        Project project = FileOwnerQuery.getOwner(fileObject);
+       if ( project == null ){
+           return;
+       }
        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
        if( webModule == null ){
            return;
@@ -121,8 +129,6 @@ class RestScanTask {
            return;
        }
        
-       List<? extends TypeElement> types = info.getTopLevelElements();
-
        boolean needConfiguration = true;
        try {
             if (support.isRestSupportOn()) {
@@ -133,64 +139,10 @@ class RestScanTask {
                 }
             }
             if (needConfiguration) {
-                RestServicesModel servicesModel = support
-                        .getRestServicesModel();
-                if ( isCancelled()){
-                    return;
-                }
-                Future<Set<String>> future = servicesModel
-                        .runReadActionWhenReady(
-                                new MetadataModelAction<RestServicesMetadata, Set<String>>()
-                        {
-
-                            @Override
-                            public Set<String> run(
-                                    RestServicesMetadata metadata )
-                                    throws Exception
-                            {
-                                if ( isCancelled()){
-                                    return Collections.emptySet();
-                                }
-                                Set<String> fqns = new HashSet<String>();
-                                RestServices services = metadata.getRoot();
-                                RestServiceDescription[] descriptions = services
-                                        .getRestServiceDescription();
-                                for (RestServiceDescription description : descriptions)
-                                {
-                                    fqns.add(description.getClassName());
-                                }
-                                return fqns;
-                            }
-
-                        });
-                if ( isCancelled()){
-                    return;
-                }
-                Set<String> fqns = future.get();
-                List<TypeElement> rest = new ArrayList<TypeElement>(
-                        types.size());
-                for (TypeElement typeElement : types) {
-                    if (fqns.contains(typeElement.getQualifiedName().toString()))
-                    {
-                        rest.add(typeElement);
-                    }
-                }
-                if (rest.isEmpty()) {
-                    return;
-                }
-                ClassTree tree = info.getTrees().getTree(rest.get(0));
-                List<Integer> position = getElementPosition(info, tree);
-                
-                ErrorDescription description = ErrorDescriptionFactory
-                        .createErrorDescription(Severity.WARNING,
-                                NbBundle.getMessage(RestScanTask.class,
-                                        "TXT_NoRestConfiguration"), // NOI18N
-                                RestConfigHint.getConfigHints(project,
-                                        fileObject, factory, getPackages(fqns)), 
-                                        info.getFileObject(), position.get(0),
-                                        position.get(1));
-                hints.add(description);
-
+                configureRest(project, support);
+            }
+            else {
+                checkApplicationConfiguration(project, support);
             }
        }
        catch(IOException e ){
@@ -210,6 +162,107 @@ class RestScanTask {
 
     Collection<? extends ErrorDescription> getHints() {
         return hints;
+    }
+    
+    private void checkApplicationConfiguration( Project project,
+            WebRestSupport support ) throws MetadataModelException,IOException, 
+            InterruptedException, ExecutionException
+    {
+        List<RestApplication> applications = support.getRestApplications();
+        if ( applications.isEmpty() ){
+            return;
+        }
+        Set<String> set = new HashSet<String>();
+        List<TypeElement> restResources = getRestResources(support, set);
+        for (TypeElement typeElement : restResources) {
+            String fqn = typeElement.getQualifiedName().toString();
+            if ( !support.hasApplicationResourceClass(fqn ) ){
+                ClassTree tree = info.getTrees().getTree(typeElement);
+                List<Integer> position = getElementPosition(info, tree);
+                
+                Fix fix = new ApplicationConfigurationFix(project,
+                                fileObject, factory, getPackages(set), fqn);
+                List<Fix> fixes = Collections.singletonList(fix);
+                ErrorDescription description = ErrorDescriptionFactory
+                        .createErrorDescription(Severity.HINT,
+                                NbBundle.getMessage(RestScanTask.class,
+                                        "TXT_NoApplicationResource",    // NOI18N
+                                        fqn ), fixes , 
+                                        info.getFileObject(), position.get(0),
+                                        position.get(1));
+                hints.add(description);
+            }
+        }
+    }
+    
+    private void configureRest( Project project, WebRestSupport support ) 
+            throws MetadataModelException,IOException, 
+            InterruptedException, ExecutionException
+    {
+        Set<String> restFqns = new HashSet<String>();
+        List<TypeElement> rest = getRestResources(support, restFqns);
+        if ( rest.isEmpty() ){
+            return;
+        }
+        ClassTree tree = info.getTrees().getTree(rest.get(0));
+        List<Integer> position = getElementPosition(info, tree);
+        
+        ErrorDescription description = ErrorDescriptionFactory
+                .createErrorDescription(Severity.WARNING,
+                        NbBundle.getMessage(RestScanTask.class,
+                                "TXT_NoRestConfiguration"), // NOI18N
+                        RestConfigHint.getConfigHints(project,
+                                fileObject, factory, getPackages(restFqns)), 
+                                info.getFileObject(), position.get(0),
+                                position.get(1));
+        hints.add(description);
+    }
+    
+    private List<TypeElement> getRestResources(WebRestSupport support, 
+            final Set<String> restFqns) throws MetadataModelException,IOException, 
+            InterruptedException, ExecutionException
+    {
+        List<? extends TypeElement> types = info.getTopLevelElements();
+        RestServicesModel servicesModel = support.getRestServicesModel();
+        if ( isCancelled()){
+            return Collections.emptyList();
+        }
+        Future<Set<String>> future = servicesModel
+                .runReadActionWhenReady(
+                        new MetadataModelAction<RestServicesMetadata, Set<String>>()
+                {
+
+                    @Override
+                    public Set<String> run(
+                            RestServicesMetadata metadata )
+                            throws Exception
+                    {
+                        if ( isCancelled()){
+                            return Collections.emptySet();
+                        }
+                        RestServices services = metadata.getRoot();
+                        RestServiceDescription[] descriptions = services
+                                .getRestServiceDescription();
+                        for (RestServiceDescription description : descriptions)
+                        {
+                            restFqns.add(description.getClassName());
+                        }
+                        return restFqns;
+                    }
+
+                });
+        if ( isCancelled()){
+            return Collections.emptyList();
+        }
+        Set<String> fqns = future.get();
+        List<TypeElement> rest = new ArrayList<TypeElement>(
+                types.size());
+        for (TypeElement typeElement : types) {
+            if (fqns.contains(typeElement.getQualifiedName().toString())){
+                rest.add(typeElement);
+            }
+        }
+        return rest;
     }
     
     private boolean isCancelled(){
