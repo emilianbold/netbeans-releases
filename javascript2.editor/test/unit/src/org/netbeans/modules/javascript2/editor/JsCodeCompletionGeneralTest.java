@@ -54,15 +54,21 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionGeneral extends JsTestBase {
+public class JsCodeCompletionGeneralTest extends JsTestBase {
     
-    public JsCodeCompletionGeneral(String testName) {
+    public JsCodeCompletionGeneralTest(String testName) {
         super(testName);
     }
     
     public void testIssue215353() throws Exception {
         checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
     }
+    
+    
+    public void testIssue217029_01() throws Exception {
+        checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
+    }
+    
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
