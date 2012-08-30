@@ -45,39 +45,18 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
 		    "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
-
 <MIME-resolver >
     <file>
-        <ext name="exe"/>
-        <resolver mime="application/x-exe"/>
-    </file>
-    <file>
-        <ext name="dll"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>
-    <file>
-        <ext name="o"/>
-        <resolver mime="application/x-object+elf"/>
-    </file>
-    <file>
-        <ext name="so"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>    
-    <file>
-        <ext name="dylib"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>
-    <file>
-        <ext name="a"/>
-        <resolver mime="application/x-stobj+elf"/>
-    </file>
-    <file>
-        <ext name=""/>
-        <name name="core" substring="false"/>
-        <resolver mime="application/x-core+elf"/>
-    </file>
-    <file>
-        <ext name="cmake"/>
-        <resolver mime="text/x-cmake-include"/>
+        <ext name="f"/>
+        <ext name="F"/>
+        <ext name="f90"/>
+        <ext name="F90"/>
+        <ext name="f95"/>
+        <ext name="F95"/>
+        <ext name="f03"/>
+        <ext name="F03"/>
+        <ext name="for"/>
+        <ext name="mod"/>
+        <resolver mime="text/x-fortran"/>
     </file>
 </MIME-resolver>

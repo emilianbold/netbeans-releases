@@ -48,6 +48,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -57,7 +58,8 @@ import org.openide.windows.TopComponent;
 /** Represents a Fortran object in the Repository.
  *
  */
-
+@MIMEResolver.Registration(displayName="#ExtResolver", position=219, resource="resources/mime-resolver-ext-based-fortran.xml",
+        showInFileChooser={"#FILECHOOSER_FORTRAN_SOURCES_FILEFILTER"})
 public class FortranDataObject extends SourceDataObject {
 
     /** Serial version number */

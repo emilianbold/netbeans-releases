@@ -101,7 +101,8 @@ import org.xml.sax.InputSource;
 @MIMEResolver.Registration(
     displayName="#HTMLResolver",
     position=300,
-    resource="resolver.xml"
+    resource="resolver.xml",
+    showInFileChooser="#ResourceFiles"
 )
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
     public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N

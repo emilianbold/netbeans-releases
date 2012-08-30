@@ -76,8 +76,9 @@ import org.openide.windows.TopComponent;
     position=100,
     displayName="#JavaResolver",
     extension="java",
-    mimeType="text/x-java"
-)    
+    mimeType="text/x-java",
+    showInFileChooser={"#JavaResolver"}
+)
 public final class JavaDataObject extends MultiDataObject {
     
     public JavaDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {

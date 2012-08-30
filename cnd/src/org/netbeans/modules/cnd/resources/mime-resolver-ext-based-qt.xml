@@ -48,36 +48,19 @@ made subject to such option by the copyright holder.
 
 <MIME-resolver >
     <file>
-        <ext name="exe"/>
-        <resolver mime="application/x-exe"/>
+        <ext name="ui"/>
+        <resolver mime="text/qtui+xml"/>
     </file>
     <file>
-        <ext name="dll"/>
-        <resolver mime="application/x-shobj+elf"/>
+        <ext name="qrc"/>
+        <resolver mime="text/qtresource+xml"/>
     </file>
     <file>
-        <ext name="o"/>
-        <resolver mime="application/x-object+elf"/>
+        <ext name="ts"/>
+        <resolver mime="text/qttranslation+xml"/>
     </file>
     <file>
-        <ext name="so"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>    
-    <file>
-        <ext name="dylib"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>
-    <file>
-        <ext name="a"/>
-        <resolver mime="application/x-stobj+elf"/>
-    </file>
-    <file>
-        <ext name=""/>
-        <name name="core" substring="false"/>
-        <resolver mime="application/x-core+elf"/>
-    </file>
-    <file>
-        <ext name="cmake"/>
-        <resolver mime="text/x-cmake-include"/>
+        <ext name="pro"/>
+        <resolver mime="text/x-qtproject"/>
     </file>
 </MIME-resolver>

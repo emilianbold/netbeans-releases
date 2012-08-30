@@ -63,12 +63,13 @@ import org.openide.util.lookup.ServiceProvider;
  * processor for {@link ServiceTabNodeRegistration} annotation.
  * @author Jaroslav Tulach
  */
-@NbBundle.Messages("PlainResolver=Text Files")
+@NbBundle.Messages({"PlainResolver=Text Files", "ResourceFiles=Resource Files"})
 @MIMEResolver.ExtensionRegistration(
     mimeType="text/plain",
-    position=140,
+    position=141,
     displayName="#PlainResolver",
-    extension={ "TXT", "txt" }
+    extension={ "TXT", "txt" },
+    showInFileChooser={"#PlainResolver", "#ResourceFiles"}
 )
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
