@@ -208,6 +208,7 @@ public class RestServicesNodeFactory implements NodeFactory {
         public void addNotify() {
             RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
             if (restSupport != null) {
+                getModel();
                 restSupport.addModelListener(this);
             }
         }
