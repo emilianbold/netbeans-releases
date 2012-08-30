@@ -69,7 +69,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
     public boolean canRename(Lookup lookup) {
-        return isValid(lookup);
+        return false;
+//        return isValid(lookup);
     }
 
     @Override
@@ -78,7 +79,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
 
     private boolean isValid(Lookup lookup) {
-        /*
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         if (nodes.size() != 1) {
             return false;
@@ -93,7 +93,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         if (GroovyProjectUtil.isGroovyFile(dataObject.getPrimaryFile())) {
             return true;
         }
-        */
         return false;
     }
 }

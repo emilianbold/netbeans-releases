@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,67 +39,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s): Sebastian Hörl
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.lexer;
+package org.netbeans.modules.websvc.rest.editor;
 
-public class TwigLexerState {
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
 
-    public enum Main {
-        INIT,
-        COMMENT,
-        VARIABLE,
-        INSTRUCTION
-    };
 
-    public enum Sub {
-        NONE, INIT
-    };
+/**
+ * @author ads
+ *
+ */
+abstract class BaseRestConfigurationFix implements Fix {
     
-    Main main;
-    Sub sub;
-
-    public TwigLexerState() {
-        main = Main.INIT;
-        sub = Sub.NONE;
+    BaseRestConfigurationFix(Project project, FileObject fileObject, 
+            RestConfigurationEditorAwareTaskFactory factory,String[] packs)
+    {
+        this.project = project;
+        this.fileObject = fileObject;
+        this.factory = factory;
     }
 
-    public TwigLexerState(TwigLexerState copy) {
-        main = copy.main;
-        sub = copy.sub;
-    }
-
-    public TwigLexerState(Main main, Sub sub) {
-        this.main = main;
-        this.sub = sub;
-    }
-
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.editor.hints.Fix#implement()
+     */
     @Override
-    public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (getClass() != object.getClass()) {
-            return false;
-        }
-        TwigLexerState compare = (TwigLexerState) object;
-        if (main != compare.main) {
-            return false;
-        }
-        if (sub != compare.sub) {
-            return false;
-        }
-        return true;
+    public ChangeInfo implement() throws Exception {
+        getSupport().configure(packages);
+        factory.restart(fileObject);
+        return null;
+    }
+    
+    protected WebRestSupport getSupport(){
+        return project.getLookup().lookup(WebRestSupport.class);
+    }
+    
+    protected Project getProject(){
+        return project;
+    }
+    
+    protected RestConfigurationEditorAwareTaskFactory getFactory(){
+        return factory;
+    }
+    
+    protected FileObject getFileObject(){
+        return fileObject;
+    }
+    
+    protected String[] getPackages(){
+        return packages;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.main != null ? this.main.hashCode() : 0);
-        hash = 97 * hash + (this.sub != null ? this.sub.hashCode() : 0);
-        return hash;
-    }
+    private Project project;
+    private RestConfigurationEditorAwareTaskFactory factory;
+    private FileObject fileObject;
+    private String[] packages;
 }

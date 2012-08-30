@@ -65,15 +65,13 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class RestConfigHint implements Fix {
+class RestConfigHint extends BaseRestConfigurationFix  {
     
     private RestConfigHint(Project project , FileObject fileObject , 
             RestConfigurationEditorAwareTaskFactory factory, String[] packs, 
             boolean jersey)
     {
-        this.fileObject = fileObject;
-        this.project = project;
-        this.factory = factory;
+        super(project, fileObject, factory, packs);
         isJersey = jersey;
         packages = packs;
     }
@@ -105,16 +103,15 @@ class RestConfigHint implements Fix {
      */
     @Override
     public ChangeInfo implement() throws Exception {
-        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
         if ( isJersey ){
-            support.enableRestSupport(RestConfig.DD);
-            support.ensureRestDevelopmentReady();
+            getSupport().enableRestSupport(RestConfig.DD);
+            getSupport().ensureRestDevelopmentReady();
         }
         else {
-            support.enableRestSupport(RestConfig.IDE);
-            support.ensureRestDevelopmentReady();
+            getSupport().enableRestSupport(RestConfig.IDE);
+            getSupport().ensureRestDevelopmentReady();
             // XXX : package and Application class is subject to configure via UI
-            SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(
+            SourceGroup[] groups = ProjectUtils.getSources(getProject()).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
             if ( groups.length == 0){
                 return null;
@@ -124,15 +121,11 @@ class RestConfigHint implements Fix {
             RestUtils.createApplicationConfigClass( folder, "ApplicationConfig");   // NOI18N
         }
         
-        support.configure(packages);
-        factory.restart(fileObject);
+        super.implement();
         return null;
     }
 
     
-    private Project project;
-    private RestConfigurationEditorAwareTaskFactory factory;
-    private FileObject fileObject;
     private boolean isJersey;
     private String[] packages;
 

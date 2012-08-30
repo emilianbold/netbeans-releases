@@ -58,33 +58,33 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 public enum TwigTokenId implements TokenId {
 
-    T_TWIG_NAME(null, "twig_name"),
-    T_TWIG_STRING(null, "twig_string"),
-    T_TWIG_NUMBER(null, "twig_number"),
-    T_TWIG_OPERATOR(null, "twig_operator"),
-    T_TWIG_PUNCTUATION(null, "twig_punctuation"),
-    T_TWIG_WHITESPACE(null, "twig_whitespace"),
-    T_TWIG_FUNCTION(null, "twig_function"),
-    T_TWIG_INSTRUCTION(null, "twig_instruction"),
-    T_TWIG_VARIABLE(null, "twig_variable"),
-    T_TWIG_COMMENT(null, "twig_comment"),
-    T_TWIG_OTHER(null, "twig_other");
-    private final String fixedText;
+    T_TWIG_NAME("twig_name"),
+    T_TWIG_STRING("twig_string"),
+    T_TWIG_NUMBER("twig_number"),
+    T_TWIG_OPERATOR("twig_operator"),
+    T_TWIG_PUNCTUATION("twig_punctuation"),
+    T_TWIG_WHITESPACE("twig_whitespace"),
+    T_TWIG_TAG("twig_tag"),
+    T_TWIG_BLOCK_START("twig_block"),
+    T_TWIG_BLOCK_END("twig_block"),
+    T_TWIG_VAR_START("twig_var"),
+    T_TWIG_VAR_END("twig_var"),
+    T_TWIG_COMMENT("twig_comment"),
+    T_TWIG_OTHER("twig_other"),
+    T_TWIG_INTERPOLATION_START("twig_interpolation"),
+    T_TWIG_INTERPOLATION_END("twig_interpolation");
+
     private final String primaryCategory;
 
-    TwigTokenId(String fixedText, String primaryCategory) {
-        this.fixedText = fixedText;
+    TwigTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
-    }
-
-    public String fixedText() {
-        return fixedText;
     }
 
     @Override
     public String primaryCategory() {
         return primaryCategory;
     }
+
     private static final Language<TwigTokenId> language =
             new LanguageHierarchy<TwigTokenId>() {
                 @Override
@@ -100,7 +100,7 @@ public enum TwigTokenId implements TokenId {
 
                 @Override
                 protected Lexer<TwigTokenId> createLexer(LexerRestartInfo<TwigTokenId> info) {
-                    return TwigLexer.create(info);
+                    return new TwigLexer(info);
                 }
 
                 @Override

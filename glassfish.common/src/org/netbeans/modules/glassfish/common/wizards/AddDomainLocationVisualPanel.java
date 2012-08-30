@@ -178,6 +178,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             targetValueField.setEnabled(true);
         }
         targetValueField.addKeyListener(kl);
+        userNameField.addKeyListener(kl);
+        passwordField.addKeyListener(kl);
     }
     
     String getDomainField() {
@@ -185,19 +187,66 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     }
 
     String getHostName() {
-        return hostNameField.getText();
+        return hostNameField.getText().trim();
     }
 
     String getPortValue() {
-        return portValueField.getText();
+        return portValueField.getText().trim();
     }
     
     String getTargetValue() {
         return targetValueField.getText().trim();
     }
 
+    /**
+     * Return administrator's user name value from text field.
+     * <p/>
+     * @return Administrator's user name value from text field.
+     */
+    String getUserNameValue() {
+        return userNameField.getText().trim();
+    }
+
+    /**
+     * Return administrator's password value from text field.
+     * <p/>
+     * @return Administrator's password value from text field.
+     */
+    String getPasswordValue() {
+        return new String(passwordField.getPassword());
+    }
+
     boolean getUseDefaultPorts() {
         return useDefaultPortsCB.isEnabled() && useDefaultPortsCB.isSelected();
+    }
+
+    /**
+     * Initialize server port with default value.
+     * <p/>
+     * @return Default administrator's user name value.
+     */
+    private String initPortValue() {
+        return Integer.toString(GlassfishInstance.DEFAULT_ADMIN_PORT);
+    }
+
+    /**
+     * Initialize administrator's user name with default value.
+     * <p/>
+     * @return Default administrator's user name value.
+     */
+    private String initUserNameValue() {
+        //return GlassfishInstance.DEFAULT_ADMIN_NAME;
+        return "";
+    }
+
+    /**
+     * Initialize administrator's password with default value.
+     * <p/>
+     * @return Default administrator's password value.
+     */
+    private String initPasswordValue() {
+        //return GlassfishInstance.DEFAULT_ADMIN_PASSWORD;
+        return "";
     }
 
     /**
@@ -251,6 +300,10 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         portValueField = new javax.swing.JTextField();
         targetValueLabel = new javax.swing.JLabel();
         targetValueField = new javax.swing.JTextField();
+        userNameLabel = new javax.swing.JLabel();
+        userNameField = new javax.swing.JTextField();
+        passwordLabel = new javax.swing.JLabel();
+        passwordField = new javax.swing.JPasswordField();
 
         buttonGroup1.add(registerLocalRB);
         org.openide.awt.Mnemonics.setLocalizedText(registerLocalRB, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerLocalRB.text")); // NOI18N
@@ -276,8 +329,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(domainFieldLabel)
                         .addGap(4, 4, 4)
-                        .addComponent(domainField, 0, 565, Short.MAX_VALUE))
-                    .addComponent(explanationLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
+                        .addComponent(domainField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(explanationLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(useDefaultPortsCB))
                 .addContainerGap())
         );
@@ -314,21 +367,23 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         portValueLabel.setLabelFor(portValueField);
         org.openide.awt.Mnemonics.setLocalizedText(portValueLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.portValueLabel.text")); // NOI18N
 
-        portValueField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.portValueField.text")); // NOI18N
+        portValueField.setText(initPortValue());
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(hostNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(portValueLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hostNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 553, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(portValueField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(portValueField, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addComponent(hostNameField)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -350,35 +405,48 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
 
         targetValueField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.targetValueField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.userNameLabel.text")); // NOI18N
+
+        userNameField.setText(initUserNameValue());
+
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.passwordLabel.text")); // NOI18N
+
+        passwordField.setText(initPasswordValue());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(registerLocalRB)
-                .addContainerGap(510, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(registerRemoteRB)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addComponent(targetValueLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(550, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(42, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 641, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(registerLocalRB)
+                            .addComponent(registerRemoteRB)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(userNameLabel)
+                                    .addComponent(passwordLabel)
+                                    .addComponent(targetValueLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(passwordField)
+                                    .addComponent(targetValueField)
+                                    .addComponent(userNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))))
+                        .addGap(340, 340, 340))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(registerLocalRB)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(registerRemoteRB)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -386,7 +454,16 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(targetValueLabel)
-                    .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(userNameLabel)
+                    .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(passwordLabel)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         registerLocalRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerLocalRB.AccessibleContext.accessibleDescription")); // NOI18N
@@ -407,6 +484,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     private javax.swing.JLabel hostNameLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField portValueField;
     private javax.swing.JLabel portValueLabel;
     private javax.swing.JRadioButton registerLocalRB;
@@ -414,6 +493,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     private javax.swing.JTextField targetValueField;
     private javax.swing.JLabel targetValueLabel;
     private javax.swing.JCheckBox useDefaultPortsCB;
+    private javax.swing.JTextField userNameField;
+    private javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables
 
     class MyKeyListener implements KeyListener {

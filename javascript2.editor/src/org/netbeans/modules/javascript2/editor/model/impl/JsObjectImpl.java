@@ -215,7 +215,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         for(Integer position : assignments.keySet()) {
             if (closeOffset < position && position <= offset) {
                 closeOffset = position;
-                result = assignments.get(position);
+                result = new ArrayList(assignments.get(position));
             }
         }
         if (result.isEmpty()) {

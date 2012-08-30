@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.rest.spi;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -56,8 +57,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -82,8 +89,10 @@ import org.netbeans.modules.websvc.rest.model.api.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -317,6 +326,102 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return null;
+    }
+    
+    public boolean hasApplicationResourceClass(final String fqn){
+        List<RestApplication> applications = getRestApplications();
+        if ( applications.isEmpty() ){
+            return false;
+        }
+        final String clazz = applications.get(0).getApplicationClass();
+        final boolean[] has = new boolean[1];
+        try {
+            JavaSource javaSource = getJavaSourceFromClassName(clazz);
+
+            if (javaSource == null ){
+                return false;
+            }
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run( final CompilationController controller )
+                        throws Exception
+                {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+
+                    TypeElement typeElement = controller.getElements()
+                            .getTypeElement(clazz);
+                    if (typeElement == null) {
+                        return;
+                    }
+                    TypeElement restResource = controller.getElements()
+                            .getTypeElement(fqn);
+                    if (restResource == null) {
+                        return;
+                    }
+                    List<ExecutableElement> methods = ElementFilter
+                            .methodsIn(typeElement.getEnclosedElements());
+                    ExecutableElement getClasses = null;
+                    for (ExecutableElement method : methods) {
+                        if (method.getSimpleName().contentEquals(
+                                GET_REST_RESOURCE_CLASSES)
+                                && method.getParameters().isEmpty())
+                        {
+                            getClasses = method;
+                            break;
+                        }
+                    }
+                    if (getClasses == null) {
+                        return;
+                    }
+
+                    final String className = restResource.getQualifiedName()
+                            .toString() + ".class"; // NOI18N
+                    final MethodTree tree = controller.getTrees().getTree(
+                            getClasses);
+                    final Document doc = controller.getDocument();
+                    if ( doc ==null){
+                        return;
+                    }
+                    doc.render(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            SourcePositions srcPos = controller.getTrees()
+                                    .getSourcePositions();
+                            int start = (int) srcPos.getStartPosition(
+                                    controller.getCompilationUnit(), tree);
+                            int end = (int) srcPos.getEndPosition(
+                                    controller.getCompilationUnit(), tree);
+
+                            try {
+                                String text = doc.getText(start, end - start + 1);
+                                if (text.contains(className)) {
+                                    has[0] = true;
+                                }
+                            }
+                            catch(BadLocationException e ){
+                                // should not happen inside document lock
+                                assert false;
+                            }
+                        }
+                    });
+
+                    /*
+                     * List<? extends ImportTree> imports =
+                     * controller.getCompilationUnit().getImports(); for
+                     * (ImportTree importTree : imports) { importTree. }
+                     */
+                }
+
+            }, true);
+        }
+        catch(IOException e ){
+            Logger.getLogger(WebRestSupport.class.getName()).log(
+                    Level.INFO, e.getLocalizedMessage(), e);
+        }
+        
+        return has[0];
     }
 
     protected boolean hasRestServletAdaptor() {
@@ -831,6 +936,18 @@ public abstract class WebRestSupport extends RestSupport {
             }
 
         }).commit();
+        Collection<FileObject> files = javaSource.getFileObjects();
+        if ( files.isEmpty() ){
+            return;
+        }
+        FileObject fileObject = files.iterator().next();
+        DataObject dataObject = DataObject.find(fileObject);
+        if ( dataObject!= null){
+            SaveCookie cookie = dataObject.getLookup().lookup(SaveCookie.class);
+            if ( cookie!= null ){
+                cookie.save();
+            }
+        }
     }
 
     protected FileObject getFileObjectFromClassName(String qualifiedClassName) 
