@@ -52,7 +52,7 @@ public class TplParserResult extends ParserResult {
 
     private boolean valid = true;
     private List<Error> errorList = new ArrayList<Error>();
-    private List<Block> blockList = new ArrayList<Block>();
+    private List<Block> tagList = new ArrayList<Block>();
 
     protected TplParserResult(Snapshot snapshot) {
         super(snapshot);
@@ -67,11 +67,11 @@ public class TplParserResult extends ParserResult {
     }
 
     public List<Block> getBlocks() {
-        return blockList;
+        return tagList;
     }
 
-    public void addBlock(CharSequence function, int offset, int length, CharSequence extra) {
-        blockList.add(new Block(function, offset, length, extra));
+    public void addTag(CharSequence function, int offset, int length, CharSequence extra) {
+        tagList.add(new Block(function, offset, length, extra));
     }
 
     @Override
