@@ -316,8 +316,7 @@ public class TwigParser extends Parser {
         }
     }
 
-    class Block {
-
+    private static class Block {
         CharSequence function = null;
         CharSequence extra = null;
         int startTokenIndex = 0;
