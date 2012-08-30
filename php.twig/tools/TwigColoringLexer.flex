@@ -47,7 +47,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %%
 
 %public
-%class TwigLexer
+%class TwigColoringLexer
 %type TwigTokenId
 %function findNextToken
 %unicode
@@ -68,10 +68,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %{
 
     private TwigStateStack stack = new TwigStateStack();
-
     private LexerInput input;
 
-    public TwigLexer(LexerRestartInfo info) {
+    public TwigColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
         if(info.state() != null) {
             //reset state
@@ -161,10 +160,14 @@ NUMBER=[0-9]+(\.[0-9]+)?
 NAME=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
 S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
-COMMENT="{#"(^"#}")"#}"
+COMMENT_START="{#"
+COMMENT_END=([^"#}"])*"#}"
+TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"extends"|"filter"|"endfilter"|"flush"|"for"|"endfor"|"from"|"if"|"else"|"elseif"|"endif"|"import"|"include"|"macro"|"endmacro"|"raw"|"endraw"|"sandbox"|"endsandbox"|"set"|"endset"|"spaceless"|"endspaceless"|"use")
 
 %state ST_BLOCK
+%state ST_BLOCK_START
 %state ST_VAR
+%state ST_COMMENT
 %state ST_STRING
 %state ST_INTERPOLATION
 %state ST_HIGHLIGHTING_ERROR
@@ -172,22 +175,48 @@ COMMENT="{#"(^"#}")"#}"
 %%
 <YYINITIAL> {
     {BLOCK_START} {
-        pushState(ST_BLOCK);
+        pushState(ST_BLOCK_START);
         return TwigTokenId.T_TWIG_BLOCK_START;
     }
     {VAR_START} {
         pushState(ST_VAR);
         return TwigTokenId.T_TWIG_VAR_START;
     }
-    {COMMENT} {
+    {COMMENT_START} {
+        pushState(ST_COMMENT);
+    }
+}
+
+<ST_COMMENT> {
+    {COMMENT_END} {
+        popState();
         return TwigTokenId.T_TWIG_COMMENT;
     }
 }
 
-<ST_BLOCK, ST_VAR> {
+<ST_BLOCK_START> {
+    {TAG} {
+        popState();
+        pushState(ST_BLOCK);
+        return TwigTokenId.T_TWIG_FUNCTION;
+    }
+    {NAME} {
+        popState();
+        pushState(ST_BLOCK);
+        return TwigTokenId.T_TWIG_NAME;
+    }
     {OPERATOR} {
         return TwigTokenId.T_TWIG_OPERATOR;
     }
+}
+
+<ST_BLOCK, ST_BLOCK_START, ST_VAR> {
+    {OPERATOR} {
+        return TwigTokenId.T_TWIG_OPERATOR;
+    }
+}
+
+<ST_BLOCK, ST_VAR> {
     {PUNCTATION} {
         return TwigTokenId.T_TWIG_PUNCTUATION;
     }
@@ -197,15 +226,15 @@ COMMENT="{#"(^"#}")"#}"
     {D_STRING} | {S_STRING} {
         return TwigTokenId.T_TWIG_STRING;
     }
+    {NAME} {
+        return TwigTokenId.T_TWIG_NAME;
+    }
 }
 
 <ST_BLOCK> {
     {BLOCK_END} {
         popState();
         return TwigTokenId.T_TWIG_BLOCK_END;
-    }
-    {NAME} {
-        return TwigTokenId.T_TWIG_FUNCTION;
     }
 }
 
@@ -214,12 +243,9 @@ COMMENT="{#"(^"#}")"#}"
         popState();
         return TwigTokenId.T_TWIG_VAR_END;
     }
-    {NAME} {
-        return TwigTokenId.T_TWIG_NAME;
-    }
 }
 
-<ST_BLOCK, ST_VAR, ST_STRING, ST_INTERPOLATION>{WHITESPACE}+ {
+<ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_COMMENT, ST_STRING, ST_INTERPOLATION>{WHITESPACE}+ {
     return TwigTokenId.T_TWIG_WHITESPACE;
 }
 
@@ -243,7 +269,7 @@ COMMENT="{#"(^"#}")"#}"
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_BLOCK, ST_VAR, ST_STRING, ST_INTERPOLATION> {
+<YYINITIAL, ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_COMMENT, ST_STRING, ST_INTERPOLATION> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);

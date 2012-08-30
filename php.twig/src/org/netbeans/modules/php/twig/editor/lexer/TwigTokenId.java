@@ -100,7 +100,7 @@ public enum TwigTokenId implements TokenId {
 
                 @Override
                 protected Lexer<TwigTokenId> createLexer(LexerRestartInfo<TwigTokenId> info) {
-                    return TwigLexer.create(info);
+                    return new TwigLexer(info);
                 }
 
                 @Override
