@@ -85,25 +85,27 @@ public class C2CQuery {
     private boolean saved;
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-    private final IRepositoryQuery serverQuery;
+    private final IRepositoryQuery predefinedQuery;
     private OwnerInfo info;
+    private final String queryString;
         
     public C2CQuery(C2CRepository repository) {
-        this(null, repository, null, false);
+        this(null, repository, null, null, false);
     }
     
     public C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery) {
-        this(name, repository, savedQuery, true);
+        this(name, repository, savedQuery, null, true);
     }
     
     public C2CQuery(SavedTaskQuery savedQuery, C2CRepository repository) {
-        this(savedQuery.getName(), repository, null, true);
+        this(savedQuery.getName(), repository, null, savedQuery.getQueryString(), true);
     }
         
-    private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, boolean saved) {
+    private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, String queryString, boolean saved) {
         this.name = name;
         this.repository = repository;
-        this.serverQuery = savedQuery;
+        this.predefinedQuery = savedQuery;
+        this.queryString = queryString;
         this.saved = saved;
         if (saved) {
             getController();
@@ -236,12 +238,12 @@ public class C2CQuery {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    public final C2CQueryController getController() {
+    public final C2CQueryController getController () {
         if(controller == null) {
-            if (serverQuery == null) {
+            if (predefinedQuery == null) {
                 controller = new C2CQueryController(repository, this);
             } else {
-                controller = new C2CQueryController(repository, this, "", false);
+                controller = new C2CQueryController(repository, this, queryString, false);
             }
         }
         return controller;
@@ -269,7 +271,7 @@ public class C2CQuery {
 
     void refresh(List<QueryParameter> parameters, boolean autoRefresh) {
         assert parameters != null;
-        if (serverQuery == null) {
+        if (predefinedQuery == null) {
             this.parameters = parameters;
         }
         refreshIntern(autoRefresh);
@@ -284,15 +286,15 @@ public class C2CQuery {
     private List<QueryParameter> parameters = null;
     public void refreshIntern(final boolean autoRefresh) {
         
-        assert parameters != null || serverQuery != null;
+        assert parameters != null || predefinedQuery != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
           
         executeQuery(new Runnable() {
             @Override
             public void run() {
-                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, serverQuery == null
+                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, predefinedQuery == null
                         ? parameters
-                        : serverQuery.getAttributes()}); // NOI18N
+                        : predefinedQuery.getAttributes()}); // NOI18N
                 try {
                     
                     // keeps all issues we will retrieve from the server
@@ -319,7 +321,7 @@ public class C2CQuery {
                     
                     // IssuesIdCollector will populate the issues set
                     IRepositoryQuery query;
-                    if (serverQuery == null) {
+                    if (predefinedQuery == null) {
                         query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
                         for (QueryParameter p : parameters) {
                             String values = p.getValues();
@@ -329,10 +331,10 @@ public class C2CQuery {
                         }
                         if (query.getAttributes().isEmpty()) {
                             //TODO remove when query full implemented
-                            query = repository.getPredefinedQuery(PredefinedTaskQuery.ALL).serverQuery;
+                            query = repository.getPredefinedQuery(PredefinedTaskQuery.ALL).predefinedQuery;
                         }
                     } else {
-                        query = serverQuery;
+                        query = predefinedQuery;
                     }
                     
                     PerformQueryCommand queryCmd = 
@@ -362,9 +364,9 @@ public class C2CQuery {
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
                     if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, serverQuery == null
+                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, predefinedQuery == null
                         ? parameters
-                        : serverQuery.getAttributes()}); // NOI18N
+                        : predefinedQuery.getAttributes()}); // NOI18N
                     }
                 }
             }
