@@ -64,6 +64,12 @@ public class JsCodeCompletionGeneral extends JsTestBase {
         checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
     }
     
+    
+    public void testIssue217029_01() throws Exception {
+        checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
+    }
+    
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
