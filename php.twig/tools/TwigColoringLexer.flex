@@ -161,7 +161,7 @@ NAME=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
 S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
 COMMENT_START="{#"
-COMMENT_END=([^"#}"])*"#}"
+COMMENT_END=([^"#""}"]|"#"|"}")*"#}"
 TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"extends"|"filter"|"endfilter"|"flush"|"for"|"endfor"|"from"|"if"|"else"|"elseif"|"endif"|"import"|"include"|"macro"|"endmacro"|"raw"|"endraw"|"sandbox"|"endsandbox"|"set"|"endset"|"spaceless"|"endspaceless"|"use")
 
 %state ST_BLOCK
