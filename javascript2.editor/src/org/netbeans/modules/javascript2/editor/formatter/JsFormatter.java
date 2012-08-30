@@ -175,9 +175,9 @@ public class JsFormatter implements Formatter {
                     }
 
                     if (token.getKind().isSpaceMarker()) {
-                        handleSpace(tokens, i, formatContext);
+                        formatSpace(tokens, i, formatContext);
                     } else if (token.getKind().isLineWrapMarker()) {
-                        handleLineWrap(tokens, i, formatContext, initialIndent,
+                        formatLineWrap(tokens, i, formatContext, initialIndent,
                                 continuationIndent);
                     } else if (token.getKind().isIndentationMarker()) {
                         updateIndentationLevel(token, formatContext);
@@ -298,7 +298,7 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private void handleLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
+    private void formatLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
             int initialIndent, int continuationIndent) {
 
         FormatToken token = tokens.get(index);
@@ -487,7 +487,7 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private void handleSpace(List<FormatToken> tokens, int index, FormatContext formatContext) {
+    private void formatSpace(List<FormatToken> tokens, int index, FormatContext formatContext) {
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
 
