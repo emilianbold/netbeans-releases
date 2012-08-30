@@ -70,7 +70,9 @@ public enum TwigTokenId implements TokenId {
     T_TWIG_VAR_START("twig_var"),
     T_TWIG_VAR_END("twig_var"),
     T_TWIG_COMMENT("twig_comment"),
-    T_TWIG_OTHER("twig_other");
+    T_TWIG_OTHER("twig_other"),
+    T_TWIG_INTERPOLATION_START("twig_interpolation"),
+    T_TWIG_INTERPOLATION_END("twig_interpolation");
 
     private final String primaryCategory;
 
