@@ -96,10 +96,10 @@ public class TwigCompletionContextFinder {
             if (acceptTokenChains(tokenSequence, FILTER_TOKEN_CHAINS, true)) {
                 result = CompletionContext.FILTER;
                 break;
-            } else if (TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId)) {
+            } else if (TwigTokenId.T_TWIG_INSTRUCTION_START.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION_END.equals(tokenId)) {
                 result = CompletionContext.INSTRUCTION;
                 break;
-            } else if (TwigTokenId.T_TWIG_VARIABLE.equals(tokenId)) {
+            } else if (TwigTokenId.T_TWIG_VARIABLE_START.equals(tokenId) || TwigTokenId.T_TWIG_VARIABLE_END.equals(tokenId)) {
                 result = CompletionContext.VARIABLE;
                 break;
             }

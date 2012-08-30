@@ -128,7 +128,7 @@ public class TwigParser extends Parser {
 
                     /* Parse instruction */
 
-                    if (token.id() == TwigTokenId.T_TWIG_INSTRUCTION) {
+                    if (token.id() == TwigTokenId.T_TWIG_INSTRUCTION_START) {
 
                         Instruction instruction = new Instruction();
                         instruction.function = "";
@@ -142,7 +142,7 @@ public class TwigParser extends Parser {
                             if (token.id() == TwigTokenId.T_TWIG_NAME) {
                                 instruction.extra = token.text();
                             }
-                            if (token.id() == TwigTokenId.T_TWIG_INSTRUCTION) {
+                            if (token.id() == TwigTokenId.T_TWIG_INSTRUCTION_END) {
                                 instruction.endTokenIndex = sequence.index();
                                 instruction.length = token.offset(tokenHierarchy) - instruction.from + token.length();
                                 break;

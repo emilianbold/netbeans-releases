@@ -84,7 +84,8 @@ public final class TwigLexerUtils {
     }
 
     public static boolean isDelimiter(final TwigTokenId tokenId) {
-        return TwigTokenId.T_TWIG_VARIABLE.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION.equals(tokenId);
+        return TwigTokenId.T_TWIG_VARIABLE_START.equals(tokenId) || TwigTokenId.T_TWIG_VARIABLE_END.equals(tokenId)
+                || TwigTokenId.T_TWIG_INSTRUCTION_START.equals(tokenId) || TwigTokenId.T_TWIG_INSTRUCTION_END.equals(tokenId);
     }
 
 }
