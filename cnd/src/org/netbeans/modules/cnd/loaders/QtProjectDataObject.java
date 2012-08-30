@@ -63,10 +63,10 @@ import org.openide.windows.TopComponent;
  * @author Alexey Vladykin
  */
 @MIMEResolver.Registration(
-    displayName = "#QtNameExtResolver", // NOI18N
+    displayName = "#QtNameExtResolver.Name", // NOI18N
     position = 218,
     resource = "../resources/mime-resolver-ext-based-qt.xml", // NOI18N
-    showInFileChooser={"#QtNameExtResolver"}
+    showInFileChooser={"#QtNameExtResolver.FileChooserName"}
 )
 public class QtProjectDataObject extends MultiDataObject {
 

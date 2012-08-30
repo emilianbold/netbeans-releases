@@ -65,10 +65,10 @@ import org.openide.windows.TopComponent;
  *  Represents a Makefile object in the Repository.
  */
 @MIMEResolver.Registration(
-        displayName="#MakeResolver",
+        displayName="#MakeResolver.Name",
         position=140,
         resource="../../script/resources/mime-resolver-make.xml",
-        showInFileChooser="#MakeResolver")
+        showInFileChooser="#MakeResolver.FileChooserName")
 public class MakefileDataObject extends MultiDataObject {
 
     /** Serial version number */

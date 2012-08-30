@@ -70,14 +70,15 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 @NbBundle.Messages({
-    "JavaResolver=Java Files"
+    "JavaResolver.Name=Java Files",
+    "JavaResolver.FileChooserName=Java Files",
 })
 @MIMEResolver.ExtensionRegistration(
     position=100,
-    displayName="#JavaResolver",
+    displayName="#JavaResolver.Name",
     extension="java",
     mimeType="text/x-java",
-    showInFileChooser={"#JavaResolver"}
+    showInFileChooser={"#JavaResolver.FileChooserName"}
 )
 public final class JavaDataObject extends MultiDataObject {
     

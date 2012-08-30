@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /** Represents a C++ object in the Repository */
-@MIMEResolver.Registration(displayName="#ExtResolver", position=216, resource="resources/mime-resolver-ext-based-cpp.xml",
+@MIMEResolver.Registration(displayName="#CCExtResolver", position=216, resource="resources/mime-resolver-ext-based-cpp.xml",
         showInFileChooser={"#FILECHOOSER_CC_SOURCES_FILEFILTER"})
 public class CCDataObject extends SourceDataObject {
 
