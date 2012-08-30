@@ -871,6 +871,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/prototype.js",new IndentPrefs(4, 4));
     }
 
+    public void testDashboard() throws Exception {
+        reformatFileContents("testfiles/formatter/dashboard.js",new IndentPrefs(4, 4));
+    }
+
     public void testTabsIndents1Normal() throws Exception {
         reformatFileContents("testfiles/formatter/tabsIndents1.js",
                 Collections.<String, Object>emptyMap(), ".normal.formatted");
