@@ -276,6 +276,9 @@
 <!--CSH for properties text editor-->
 <mapID target="text.x-properties" url="propfiles/editinglocale.html" />
 
+<!--CSH for JPQL text editor-->
+<mapID target="text.x-sql" url="persistence/csh/jpqleditor.html" />
+
 <!--CSH for java source editor-->
 <mapID target="text.x-java" url="editing/csh/about_source_editor.html" />
 
