@@ -90,9 +90,6 @@ public class TwigLexer implements Lexer<TwigTokenId> {
     static protected String BLOCK_START = "{%"; //NOI18N
     static protected String COMMENT_START = "{#"; //NOI18N
     static protected String VAR_START = "{{"; //NOI18N
-    static protected String BLOCK_END = "{%"; //NOI18N
-    static protected String COMMENT_END = "{#"; //NOI18N
-    static protected String VAR_END = "{{"; //NOI18N
     static protected String PUNCTUATION = "|()[]{}?:.,"; //NOI18N
     static protected Pattern REGEX_ALPHANUM_END = Pattern.compile("[A-Za-z0-9]$"); //NOI18N
     static protected Pattern REGEX_WHITESPACE_END = Pattern.compile("[\\s]+$"); //NOI18N
