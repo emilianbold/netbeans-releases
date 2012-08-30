@@ -199,7 +199,7 @@ public class Installer extends ModuleInstall {
     // XXX: copy from o.n.upgrader
     private static File checkPrevious (final List<String> versionsToCheck) {
         String userHome = System.getProperty ("user.home"); // NOI18N
-        File sourceFolder = null;
+        File sourceFolder;
         if (userHome != null) {
             File userHomeFile = new File (userHome);
             for (String ver : versionsToCheck) {
@@ -215,7 +215,7 @@ public class Installer extends ModuleInstall {
     private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
         String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
         LOG.log (Level.FINER, "netbeans.default_userdir_root: " + defaultUserdirRoot);
-        File sourceFolder = null;
+        File sourceFolder;
         if (defaultUserdirRoot != null) {
             File userHomeFile = new File (defaultUserdirRoot);
             for (String ver : versionsToCheck) {
