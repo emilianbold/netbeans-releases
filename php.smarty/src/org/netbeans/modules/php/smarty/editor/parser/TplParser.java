@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.php.smarty.editor.TplSyntax;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.openide.util.NbBundle;
 
@@ -69,23 +70,6 @@ import org.openide.util.NbBundle;
 public class TplParser extends Parser {
 
     private TplParserResult result;
-
-    private static final List<String> PAIRED_FUNCTIONS = new ArrayList<String>();
-
-    static {
-        PAIRED_FUNCTIONS.add("block"); //NOI18N
-        PAIRED_FUNCTIONS.add("capture"); //NOI18N
-        PAIRED_FUNCTIONS.add("for"); //NOI18N
-        PAIRED_FUNCTIONS.add("foreach"); //NOI18N
-        PAIRED_FUNCTIONS.add("function"); //NOI18N
-        PAIRED_FUNCTIONS.add("if"); //NOI18N
-        PAIRED_FUNCTIONS.add("nocache"); //NOI18N
-        PAIRED_FUNCTIONS.add("php"); //NOI18N
-        PAIRED_FUNCTIONS.add("section"); //NOI18N
-        PAIRED_FUNCTIONS.add("setfilter"); //NOI18N
-        PAIRED_FUNCTIONS.add("strip"); //NOI18N
-        PAIRED_FUNCTIONS.add("while"); //NOI18N
-    }
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
@@ -127,7 +111,7 @@ public class TplParser extends Parser {
                         function.text = textBuilder.toString();
 
                         String name = functionName.toString().startsWith("/") ? functionName.toString().substring(1) : functionName.toString();
-                        function.paired = PAIRED_FUNCTIONS.contains(name);
+                        function.paired = TplSyntax.BLOCK_TAGS.contains(name);
 
                         functionList.add(function);
                     }
