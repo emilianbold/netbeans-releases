@@ -276,82 +276,6 @@ public class JsFormatter implements Formatter {
         });
     }
 
-//    @Override
-//    public void reindent(final Context context) {
-//        final BaseDocument doc = (BaseDocument) context.document();
-//        doc.runAtomic(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                long startTime = System.nanoTime();
-//
-//                IndentContext indentContext = new IndentContext(context);
-//
-//                int indentationSize = IndentUtils.indentLevelSize(doc);
-//                int initialIndent = CodeStyle.get(indentContext).getInitialIndent();
-//
-//                if (context.startOffset() > 0 || indentContext.isEmbedded()) {
-//                    try {
-//                        initialIndent = context.lineIndent(
-//                                getFormatStableStart(doc, language, context.startOffset(), indentContext.isEmbedded()));
-//                    } catch (BadLocationException ex) {
-//                        LOGGER.log(Level.INFO, null, ex);
-//                    }
-//                }
-//
-//                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
-//                        TokenHierarchy.get(doc), context.startOffset(), language);
-//                ts.move(context.startOffset());
-//                List<IndenterChange> changes = new ArrayList<IndenterChange>();
-//                int indentation = initialIndent;
-//
-//                while (ts.moveNext() && ts.offset() < context.endOffset()) {
-//                    JsTokenId id = ts.token().id();
-//                    switch (id) {
-//                        case BRACKET_LEFT_CURLY:
-//                            indentation += indentationSize;
-//                            break;
-//                        case BRACKET_RIGHT_CURLY:
-//                            indentation -= indentationSize;
-//                            break;
-//                        case EOL:
-//                            if (ts.offset() < context.startOffset() || ts.offset() > context.endOffset()) {
-//                                break;
-//                            }
-//
-//                            // remove trailing spaces and do the indentation
-//                            int index = ts.index();
-//                            int eolOffset = ts.offset();
-//                            boolean found = false;
-//                            while (ts.movePrevious()) {
-//                                if (ts.token().id() != JsTokenId.WHITESPACE) {
-//                                    found = true;
-//                                    break;
-//                                }
-//                            }
-//                            if (found && ts.moveNext()) {
-//                                if (ts.index() != index) {
-//                                    changes.add(new RemoveChange(ts.offset(), eolOffset - ts.offset()));
-//                                }
-//                            }
-//                            ts.moveIndex(index);
-//                            ts.moveNext();
-//                            break;
-//                    }
-//                }
-//
-//                for (int i = changes.size() - 1; i >= 0; i--) {
-//                    try {
-//                        changes.get(i).perform(doc);
-//                    } catch (BadLocationException ex) {
-//                        LOGGER.log(Level.INFO, null, ex);
-//                    }
-//                }
-//                LOGGER.log(Level.INFO, "Indentation changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
-//            }
-//        });
-//    }
-
     private void removeTrailingSpaces(List<FormatToken> tokens, int index,
             FormatContext formatContext, FormatToken limit) {
 
@@ -1808,54 +1732,6 @@ public class JsFormatter implements Formatter {
 
         public boolean isExceedLimits() {
             return exceedLimits;
-        }
-    }
-
-    private static abstract class IndenterChange {
-
-        private final int offset;
-
-        public IndenterChange(int offset) {
-            this.offset = offset;
-        }
-
-        public final int getOffset() {
-            return offset;
-        }
-
-        public abstract void perform(BaseDocument doc) throws BadLocationException;
-    }
-
-    private static class RemoveChange extends IndenterChange {
-
-        private final int length;
-
-        public RemoveChange(int offset, int length) {
-            super(offset);
-            this.length = length;
-        }
-
-        @Override
-        public void perform(BaseDocument doc) throws BadLocationException {
-            doc.remove(getOffset(), length);
-        }
-    }
-
-    private static class IndentationChange extends IndenterChange {
-
-        private final Context context;
-
-        private final int size;
-
-        public IndentationChange(int offset, Context context, int size) {
-            super(offset);
-            this.context = context;
-            this.size = size;
-        }
-
-        @Override
-        public void perform(BaseDocument doc) throws BadLocationException {
-            context.modifyIndent(getOffset(), size);
         }
     }
 }
