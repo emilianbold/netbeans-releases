@@ -155,7 +155,7 @@ BLOCK_END="%}"
 VAR_START="{{"
 VAR_END="}}"
 OPERATOR=("as"|"="|"not"|"+"|"-"|"or"|"b-or"|"b-xor"|"and"|"b-and"|"=="|"!="|">"|"<"|">="|"<="|"in"|"~"|"*"|"/"|"//"|"%"|"is"|".."|"**")
-PUNCTATION=("|"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"."|",")
+PUNCTUATION=("|"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"."|",")
 NUMBER=[0-9]+(\.[0-9]+)?
 NAME=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
@@ -217,7 +217,7 @@ TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"ex
 }
 
 <ST_BLOCK, ST_VAR> {
-    {PUNCTATION} {
+    {PUNCTUATION} {
         return TwigTokenId.T_TWIG_PUNCTUATION;
     }
     {NUMBER} {
