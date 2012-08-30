@@ -91,7 +91,8 @@ public final class ODSProject {
     }
 
     public String getDescription() {
-        return project.getDescription();
+        String description = project.getDescription();
+        return description == null ? "" : description; //NOI18N
     }
     
     public synchronized String getId() {

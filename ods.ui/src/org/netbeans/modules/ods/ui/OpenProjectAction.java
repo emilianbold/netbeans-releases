@@ -43,16 +43,24 @@ package org.netbeans.modules.ods.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import javax.swing.JButton;
 import org.netbeans.modules.ods.api.CloudServer;
 import org.netbeans.modules.ods.api.CloudServerManager;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.dashboard.ProjectHandleImpl;
+import org.netbeans.modules.ods.ui.project.ODSSearchPanel;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(
@@ -64,41 +72,78 @@ id = "org.netbeans.modules.ods.ui.OpenProjectAction")
 @Messages("CTL_OpenProjectAction=&Open Project...")
 public final class OpenProjectAction implements ActionListener {
 
-    private CloudUiServer server;
+    private CloudServer server;
 
-    public OpenProjectAction (CloudUiServer server) {
-        this.server = server;
+    public OpenProjectAction(CloudUiServer server) {
+        this.server = server.getServer();
     }
 
-    public OpenProjectAction () {
+    public OpenProjectAction() {
     }
-    
+
     @Override
-    public void actionPerformed (ActionEvent e) {
-        
+    public void actionPerformed(ActionEvent e) {
+
         org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
-        
+
         if (server == null) {
-            Collection<CloudServer> servers = CloudServerManager.getDefault().getServers();
-            if (!servers.isEmpty()) {
-                server = CloudUiServer.forServer(servers.iterator().next());
+            TeamServer selectedServer = TeamUIUtils.getSelectedServer();
+            if (selectedServer instanceof CloudUiServer) {
+                server = ((CloudUiServer) selectedServer).getServer();
+            } else {
+                Collection<CloudServer> servers = CloudServerManager.getDefault().getServers();
+                for (CloudServer s : servers) {
+                    if (server == null) {
+                        server = s;
+                    }
+                    if (s.isLoggedIn()) {
+                        server = s;
+                        break;
+                    }
+                }
             }
         }
         if (server == null) {
             return;
         }
-        if (!server.getServer().isLoggedIn()) {
-            TeamUIUtils.showLogin(server);
-            return;
+        if (!server.isLoggedIn()) {
+            if (TeamUIUtils.showLogin(CloudUiServer.forServer(server), false) == null) {
+                return;
+            }
         }
-        
-        OpenProject openProject = new OpenProject(server);
-        if (openProject.showDialog()) {
-            ODSProject selProjects[] = openProject.getSelectedProjects();
+
+        final JButton open = new JButton(NbBundle.getMessage(OpenProjectAction.class, "OpenODSProjectAction.OpenFromODS"));
+        open.setDefaultCapable(true);
+        open.setEnabled(false);
+        open.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OpenProjectAction.class, "OpenODSProjectAction.OpenFromODS"));
+
+        JButton cancel = new JButton(NbBundle.getMessage(OpenProjectAction.class, "OpenODSProjectAction.Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OpenProjectAction.class, "OpenODSProjectAction.Cancel"));
+
+        ODSSearchPanel openPanel = new ODSSearchPanel(true, server);
+        openPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ODSDialogDescriptor.PROP_SELECTION_VALID.equals(evt.getPropertyName())) {
+                    open.setEnabled((Boolean) evt.getNewValue());
+                }
+            }
+        });
+
+        String dialogTitle = NbBundle.getMessage(OpenProjectAction.class, "OpenODSProjectWindowTitle");
+        DialogDescriptor dialogDesc = new ODSDialogDescriptor(openPanel, dialogTitle, true, null);
+        dialogDesc.setOptions(new Object[]{open, cancel});
+        dialogDesc.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
+
+        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
+
+        if (open.equals(option)) {
+            ODSProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
+                CloudUiServer uiServer = CloudUiServer.forServer(selProjects[0].getServer());
                 for (ODSProject prj : selProjects) {
-                    ProjectHandleImpl pHandle = new ProjectHandleImpl(server, prj);
-                    server.getDashboard().addProject(pHandle, false, true);
+                    ProjectHandleImpl pHandle = new ProjectHandleImpl(uiServer, prj);
+                    uiServer.getDashboard().addProject(pHandle, false, true);
                 }
                 TeamUIUtils.activateTeamDashboard();
             }
