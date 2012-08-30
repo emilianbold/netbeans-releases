@@ -245,7 +245,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
             if (ts != null) {
                 Token token = ts.token();
                 TokenId id = token.id();
@@ -315,7 +315,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, start);
                         if (ts != null && ts.token().id() != JsTokenId.STRING) { // Not inside strings!
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
