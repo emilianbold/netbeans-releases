@@ -42,6 +42,10 @@
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
 import java.lang.reflect.Method;
+import java.util.logging.Filter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -87,6 +91,15 @@ public class JPQLExecutor {
 
             EntityManager em = emf.createEntityManager();
 
+            Logger.getLogger("org.hibernate.hql.internal.ast.ErrorCounter").setFilter(new Filter() {//NOI18N
+                @Override
+                public boolean isLoggable(LogRecord record) {
+                    if(record.getLevel().intValue()>Level.INFO.intValue()){//workaround to avoid exception dialog from nb for logged exception
+                        record.setLevel(Level.INFO);
+                    }
+                    return true;
+                }
+            });
             Query query = em.createQuery(jpql);
             //
             Provider provider = ProviderUtil.getProvider(pu);
