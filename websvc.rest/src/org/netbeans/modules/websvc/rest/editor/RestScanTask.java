@@ -110,6 +110,9 @@ class RestScanTask {
 
     void run(){
        Project project = FileOwnerQuery.getOwner(fileObject);
+       if ( project == null ){
+           return;
+       }
        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
        if( webModule == null ){
            return;
