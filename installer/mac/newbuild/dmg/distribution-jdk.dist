@@ -74,6 +74,52 @@ function checkChoiceUpgradeAction() {
 /* js:pkmk:end */
 </script>
 
+<script>var bundle = system.files.bundleAtPath("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin");
+
+function isDowngrade() {
+// No files present
+if(!system.files.plistAtPath("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Info.plist"))
+{
+	return false;
+}
+
+// check if Oracle JRE is installed
+if (bundle &amp;&amp; (bundle.CFBundleIdentifier != "com.oracle.java.JavaAppletPlugin"))
+{
+	// means JRE/Plugin is never installed or is Apple's plugin and which means this is a fresh install
+	return false;
+}
+else
+{
+	// check if it is a downgrade
+	
+	tVersionResult = system.compareVersions(bundle.CFBundleVersion, "1.7.07.10");
+	if (tVersionResult == 1) 
+	{
+		// Means installed version > current payload
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+} 
+
+
+function pm_choice1_selected() {
+  result = true;
+  result = result &amp;&amp; (isDowngrade() == false);
+  return result;
+}
+
+
+function pm_choice1_enabled() {
+  result = true;
+  result = result &amp;&amp; (isDowngrade() == false);
+  return result;
+}</script>
+
     <choices-outline>
         <line choice="netbeans">
             <line choice="choice0"/>
@@ -85,9 +131,9 @@ function checkChoiceUpgradeAction() {
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="choice0" title="JDK_VERSION">
-        <pkg-ref id="com.oracle.jdk"/>
+        <pkg-ref id="com.oracle.jdk7u7"/>
     </choice>
-    <choice id="choice1" title="plugin">
+    <choice id="choice1" title="plugin" selected="pm_choice1_selected()" enabled="pm_choice1_enabled()">
         <pkg-ref id="com.oracle.jre"/>
     </choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
@@ -96,8 +142,8 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice> 
-    <pkg-ref id="com.oracle.jdk" installKBytes="234332" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#jdk17006.pkg</pkg-ref>
-    <pkg-ref id="com.oracle.jre" installKBytes="145312" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk7u7" installKBytes="237832" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2007.pkg#jdk17007.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="145364" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2007.pkg#javaappletplugin.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre">
         <relocate search-id="pkmktoken18">
             <bundle id="com.oracle.java.Java-Updater"/>
