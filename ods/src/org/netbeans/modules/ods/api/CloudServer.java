@@ -215,6 +215,20 @@ public final class CloudServer {
         return odsProj;
     }
 
+    public List<ODSProject> findProjects (String pattern) throws ODSException {
+        if (!isLoggedIn()) {
+            return Collections.emptyList();
+        }
+
+        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        List<Project> projs = client.searchProjects(pattern);
+        List<ODSProject> odsProjects = new ArrayList<ODSProject>(projs.size());
+        for (Project p : projs) {
+            odsProjects.add(setOdsProjectData(p.getIdentifier(), p));
+        }
+        return odsProjects;
+    }
+
     public void watch (ODSProject prj) throws ODSException {
         ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication()).watchProject(prj.getId());
     }

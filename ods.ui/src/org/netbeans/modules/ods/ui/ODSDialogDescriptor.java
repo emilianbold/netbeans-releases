@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ods.ui;
 
-import org.netbeans.modules.ods.api.ODSProject;
-import org.netbeans.modules.ods.client.api.ODSException;
-import org.netbeans.modules.ods.ui.api.CloudUiServer;
-import org.openide.util.Exceptions;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JPanel;
+import org.openide.DialogDescriptor;
 
 /**
+ * DialogDescriptor used for Kenai search window to allow to enable/disable OK
+ * button
  *
- * @author Ondrej Vrabec
+ * @author Milan Kubec
  */
-class OpenProject {
-    private final CloudUiServer server;
+public class ODSDialogDescriptor extends DialogDescriptor implements PropertyChangeListener {
 
-    public OpenProject (CloudUiServer server) {
-        this.server = server;
+    public static final String PROP_SELECTION_VALID = "selectionValid"; // NOI18N
+
+    public ODSDialogDescriptor(JPanel p, String s, boolean b, ActionListener l) {
+        super(p, s, b, l);
+        p.addPropertyChangeListener(this);
     }
 
-    boolean showDialog () {
-        return true;
-    }
-
-    ODSProject[] getSelectedProjects () {
-        try {
-            ODSProject p = server.getServer().getProject("qatestingproject", true);
-            return new ODSProject[] { p };
-        } catch (ODSException ex) {
-            Exceptions.printStackTrace(ex);
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        Boolean valid = null;
+        if (PROP_SELECTION_VALID.equals(evt.getPropertyName())) {
+            valid = (Boolean) evt.getNewValue();
         }
-        return new ODSProject[0];
+        setValid(valid != null ? valid.booleanValue() : false);
     }
-    
 }
