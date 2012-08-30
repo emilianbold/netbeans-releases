@@ -41,14 +41,27 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+
 /**
  *
  * @author Jan Becicka
  */
 final class ClientSideProjectProperties {
 
+    private final ClientSideProject project;
+
+
+    public ClientSideProjectProperties(ClientSideProject project) {
+        this.project = project;
+    }
+
     void save() {
-        // noop
+        for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
+            config.save();
+        }
     }
 
 }

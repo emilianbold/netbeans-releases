@@ -112,7 +112,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 }
                 try {
                     WaitCursor.show();
-                    ClientSideProjectProperties uiProperties = createClientSideProjectProperties();
+                    ClientSideProjectProperties uiProperties = new ClientSideProjectProperties(project);
                     Lookup context = Lookups.fixed(new Object[] {
                         project,
                         uiProperties,
@@ -120,7 +120,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     });
 
                     OptionListener listener = new OptionListener(project);
-                    StoreListener storeListener = new StoreListener(project, uiProperties);
+                    StoreListener storeListener = new StoreListener(uiProperties);
                     dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
                     dialog.addWindowListener(listener);
                     dialog.setTitle(Bundle.CustomizerProviderImpl_title(ProjectUtils.getInformation(project).getDisplayName()));
@@ -136,29 +136,21 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         });
     }
 
-    private ClientSideProjectProperties createClientSideProjectProperties() {
-        return new ClientSideProjectProperties();
-    }
+    //~ Inner classes
 
     private static final class StoreListener implements ActionListener {
 
-        private final Project project;
         private final ClientSideProjectProperties uiProperties;
 
 
-        StoreListener(Project project, ClientSideProjectProperties uiProperties) {
-            this.project = project;
+        StoreListener(ClientSideProjectProperties uiProperties) {
             this.uiProperties = uiProperties;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             assert !EventQueue.isDispatchThread();
-            for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
-                config.save();
-            }
             uiProperties.save();
-            // do additional actions
         }
 
     }
