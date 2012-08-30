@@ -96,6 +96,22 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int FUNCTION_SPECIFIER__INLINE = 45;
     public static int FUNCTION_SPECIFIER__VIRTUAL = 46;
     public static int FUNCTION_SPECIFIER__EXPLICIT = 47;
+    public static int SIMPLE_TYPE_SPECIFIER__CHAR = 1;
+    public static int SIMPLE_TYPE_SPECIFIER__WCHAR_T = 2;
+    public static int SIMPLE_TYPE_SPECIFIER__CHAR16_T = 3;
+    public static int SIMPLE_TYPE_SPECIFIER__CHAR32_T = 4;
+    public static int SIMPLE_TYPE_SPECIFIER__BOOL = 5;
+    public static int SIMPLE_TYPE_SPECIFIER__SHORT = 6;
+    public static int SIMPLE_TYPE_SPECIFIER__INT = 7;
+    public static int SIMPLE_TYPE_SPECIFIER__LONG = 8;
+    public static int SIMPLE_TYPE_SPECIFIER__SIGNED = 9;
+    public static int SIMPLE_TYPE_SPECIFIER__UNSIGNED = 10;
+    public static int SIMPLE_TYPE_SPECIFIER__FLOAT = 11;
+    public static int SIMPLE_TYPE_SPECIFIER__DOUBLE = 12;
+    public static int SIMPLE_TYPE_SPECIFIER__VOID = 13;
+    public static int SIMPLE_TYPE_SPECIFIER__AUTO = 14;
+    public static int SIMPLE_TYPE_SPECIFIER__ID = 15;
+    public static int SIMPLE_TYPE_SPECIFIER__SCOPE = 16;    
     public static int DECLTYPE_SPECIFIER__LPAREN = 48;
     public static int DECLTYPE_SPECIFIER__RPAREN = 49;
     public static int QUALIFIED_NAMESPACE_SPECIFIER__SCOPE = 50;
@@ -148,6 +164,8 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int CLASS_VIRTUAL_SPECIFIER__FINAL = 99;
     public static int CLASS_VIRTUAL_SPECIFIER__EXPLICIT = 100;
     public static int MEMBER_SPECIFICATION__COLON = 101;
+    public static int MEMBER_DECLARATION__COMMA2 = 101;
+    public static int MEMBER_DECLARATION__SEMICOLON = 102;
     public static int VIRT_SPECIFIER__OVERRIDE = 102;
     public static int VIRT_SPECIFIER__FINAL = 103;
     public static int VIRT_SPECIFIER__NEW = 104;
@@ -223,6 +241,8 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void decl_specifier(int kind, Token token);
     
     void simple_type_specifier(Token token);
+    void simple_type_specifier(int kind, Token token);
+    void end_simple_type_specifier(Token token);
     void nested_name_specifier(Token token);
     
     void id(Token token);
@@ -253,8 +273,8 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void parameter_declaration_list();
     void end_parameter_declaration_list();
 
-    void decl_specifiers();
-    void end_decl_specifiers();
+    void decl_specifiers(Token token);
+    void end_decl_specifiers(Token token);
     
     
     void using_directive(Token usingToken, Token namespaceToken);
@@ -401,6 +421,9 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void member_specification(Token token);
     void member_specification(int kind, Token token);
     void end_member_specification(Token token);
+    void member_declaration(Token token);
+    void member_declaration(int kind, Token token);
+    void end_member_declaration(Token token);    
     void member_declarator(Token token);
     void end_member_declarator(Token token);
     void pure_specifier(Token token);

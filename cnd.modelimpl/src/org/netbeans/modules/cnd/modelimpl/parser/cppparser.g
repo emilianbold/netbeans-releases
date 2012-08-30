@@ -1825,9 +1825,9 @@ declaration[int kind]
         
         // LL 31/1/97: added (COMMA) ? below. This allows variables to
         // typedef'ed more than once. DW 18/08/03 ?
-        {action.decl_specifiers();}
+        {action.decl_specifiers(LT(1));}
         declaration_specifiers[true, false] 
-        {action.end_decl_specifiers();}
+        {action.end_decl_specifiers(LT(0));}
 
         ((COMMA!)? init_declarator_list[kind])?
         (trailing_type)?

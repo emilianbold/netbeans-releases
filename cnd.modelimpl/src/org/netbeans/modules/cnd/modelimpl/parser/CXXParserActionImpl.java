@@ -218,6 +218,16 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override
+    public void simple_type_specifier(int kind, Token token) {
+        orig.simple_type_specifier(kind, convertToken(token));
+    }
+
+    @Override
+    public void end_simple_type_specifier(Token token) {
+        orig.end_simple_type_specifier(convertToken(token));
+    }
+
+    @Override
     public void nested_name_specifier(Token token) {
         orig.nested_name_specifier(convertToken(token));
     }
@@ -293,13 +303,13 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
     
     @Override
-    public void decl_specifiers() {
-        orig.decl_specifiers();
+    public void decl_specifiers(Token token) {
+        orig.decl_specifiers(convertToken(token));
     }
 
     @Override
-    public void end_decl_specifiers() {
-        orig.end_decl_specifiers();
+    public void end_decl_specifiers(Token token) {
+        orig.end_decl_specifiers(convertToken(token));
     }
     
     @Override
@@ -497,6 +507,9 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void member_specification(Token token) {orig.member_specification(convertToken(token));}
     @Override public void member_specification(int kind, Token token) {orig.member_specification(kind, convertToken(token));}
     @Override public void end_member_specification(Token token) {orig.end_member_specification(convertToken(token));}
+    @Override public void member_declaration(Token token){orig.member_declaration(convertToken(token));}
+    @Override public void member_declaration(int kind, Token token){orig.member_declaration(kind, convertToken(token));}
+    @Override public void end_member_declaration(Token token){orig.end_member_declaration(convertToken(token));}    
     @Override public void member_declarator(Token token) {orig.member_declarator(convertToken(token));}
     @Override public void end_member_declarator(Token token) {orig.end_member_declarator(convertToken(token));}
     @Override public void pure_specifier(Token token) {orig.pure_specifier(convertToken(token));}

@@ -173,6 +173,14 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     }
 
     @Override
+    public void simple_type_specifier(int kind, Token token) {
+    }
+
+    @Override
+    public void end_simple_type_specifier(Token token) {
+    }
+    
+    @Override
     public void nested_name_specifier(Token token) {
     }
 
@@ -233,11 +241,11 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     }
 
     @Override
-    public void decl_specifiers() {
+    public void decl_specifiers(Token token) {
     }
 
     @Override
-    public void end_decl_specifiers() {
+    public void end_decl_specifiers(Token token) {
     }
 
     @Override
@@ -436,6 +444,9 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override public void member_specification(Token token) {}
     @Override public void member_specification(int kind, Token token) {}
     @Override public void end_member_specification(Token token) {}
+    @Override public void member_declaration(Token token){}
+    @Override public void member_declaration(int kind, Token token){}
+    @Override public void end_member_declaration(Token token){}
     @Override public void member_declarator(Token token) {}
     @Override public void end_member_declarator(Token token) {}
     @Override public void pure_specifier(Token token) {}

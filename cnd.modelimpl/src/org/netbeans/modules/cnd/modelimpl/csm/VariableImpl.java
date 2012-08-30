@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -479,6 +480,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         private int endOffset;
         private CsmObjectBuilder parent;
 
+        private TypeBuilder typeBuilder;
+        
         private CsmScope scope;
         private VariableImpl instance;
 
@@ -529,6 +532,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             this.parent = parent;
         }
 
+        public void setTypeBuilder(TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
         private VariableImpl getVariableInstance() {
             if(instance != null) {
                 return instance;
@@ -573,8 +580,14 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             VariableImpl var = getVariableInstance();
             CsmScope s = getScope();
             if (var == null && s != null && name != null && getScope() != null) {
-                
-                CsmType type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
+                CsmType type = null;
+                if(typeBuilder != null) {
+                    typeBuilder.setScope(s);
+                    type = typeBuilder.create();
+                }
+                if(type == null) {
+                    type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
+                }
                 
                 var = new VariableImpl(type, name, scope, _static, _extern, null, file, startOffset, endOffset);
                 
