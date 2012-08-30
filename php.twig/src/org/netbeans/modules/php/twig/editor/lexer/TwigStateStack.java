@@ -41,51 +41,123 @@
  */
 package org.netbeans.modules.php.twig.editor.lexer;
 
-import java.util.List;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.parsing.api.Snapshot;
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class TwigLexerUtils {
+public class TwigStateStack {
 
-    private TwigLexerUtils() {
-    }
+    public byte[] stack;
+	private int lastIn = -1;
 
-    public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Snapshot snapshot, final int offset) {
-        return getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigTokenId.language());
-    }
+	public TwigStateStack() {
+		this(5);
+	}
 
-    public static <L> TokenSequence<? extends L> getTokenSequence(final TokenHierarchy<?> th, final int offset, final Language<? extends L> language) {
-        TokenSequence<? extends L> ts = th.tokenSequence(language);
-        if (ts == null) {
-            List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
-            for (TokenSequence t : list) {
-                if (t.language() == language) {
-                    ts = t;
-                    break;
-                }
-            }
-            if (ts == null) {
-                list = th.embeddedTokenSequences(offset, false);
-                for (TokenSequence t : list) {
-                    if (t.language() == language) {
-                        ts = t;
-                        break;
-                    }
-                }
-            }
+	public TwigStateStack(int stackSize) {
+		stack = new byte[stackSize];
+		lastIn = -1;
+	}
+
+	public boolean isEmpty() {
+		return lastIn == -1;
+	}
+
+	public int popStack() {
+		int result = stack[lastIn];
+		lastIn--;
+		return result;
+	}
+
+	public void pushStack(int state) {
+		lastIn++;
+		if (lastIn == stack.length) {
+			multiplySize();
         }
-        return ts;
+		stack[lastIn] = (byte) state;
+	}
+
+	private void multiplySize() {
+		int length = stack.length;
+		byte[] temp = new byte[length * 2];
+		System.arraycopy(stack, 0, temp, 0, length);
+		stack = temp;
+	}
+
+	public int clear() {
+		return lastIn = -1;
+	}
+
+	public int size() {
+		return lastIn + 1;
+	}
+
+	public TwigStateStack createClone() {
+		TwigStateStack rv = new TwigStateStack(this.size());
+		rv.copyFrom(this);
+		return rv;
+	}
+
+    @Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || !(obj instanceof TwigStateStack)) {
+			return false;
+		}
+		TwigStateStack s2 = (TwigStateStack) obj;
+		if (this.lastIn != s2.lastIn) {
+			return false;
+		}
+		for (int i = lastIn; i >= 0; i--) {
+			if (this.stack[i] != s2.stack[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + lastIn;
+        for (int i = lastIn; i >= 0; i--) {
+            hash = 31 * hash + this.stack[i];
+        }
+        return hash;
     }
 
-    public static boolean isDelimiter(final TwigTokenId tokenId) {
-        return TwigTokenId.T_TWIG_VAR_START.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId)
-                || TwigTokenId.T_TWIG_BLOCK_START.equals(tokenId) || TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId);
-    }
+	public void copyFrom(TwigStateStack s) {
+		while (s.lastIn >= this.stack.length) {
+			this.multiplySize();
+		}
+		this.lastIn = s.lastIn;
+		for (int i = 0; i <= s.lastIn; i++) {
+			this.stack[i] = s.stack[i];
+		}
+	}
+
+	public boolean contains(int state) {
+		for (int i = 0; i <= lastIn; i++) {
+			if (stack[i] == state) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public int get(int index) {
+		return stack[index];
+	}
+
+    @Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(50);
+		for (int i = 0; i <= lastIn; i++) {
+			sb.append(" stack[").append(i).append("]= ").append(stack[i]); //NOI18N
+		}
+		return sb.toString();
+	}
 
 }

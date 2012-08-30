@@ -55,11 +55,11 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
     protected TwigTopLexerState state;
     protected final TokenFactory<TwigTopTokenId> tokenFactory;
     protected final LexerInput input;
-    static String OPEN_INSTRUCTION = "{%"; //NOI18N
-    static String OPEN_VARIABLE = "{{"; //NOI18N
+    static String OPEN_BLOCK = "{%"; //NOI18N
+    static String OPEN_VAR = "{{"; //NOI18N
     static String OPEN_COMMENT = "{#"; //NOI18N
-    static String CLOSE_INSTRUCTION = "%}"; //NOI18N
-    static String CLOSE_VARIABLE = "}}"; //NOI18N
+    static String CLOSE_BLOCK = "%}"; //NOI18N
+    static String CLOSE_VAR = "}}"; //NOI18N
     static String CLOSE_COMMENT = "#}"; //NOI18N
     static Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw"); //NOI18N
     static Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$"); //NOI18N
@@ -91,18 +91,18 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
 
     TwigTopLexerState.Type findTag(CharSequence text, boolean open) {
 
-        if (open && CharSequenceUtilities.endsWith(text, OPEN_INSTRUCTION)) {
-            return TwigTopLexerState.Type.INSTRUCTION;
+        if (open && CharSequenceUtilities.endsWith(text, OPEN_BLOCK)) {
+            return TwigTopLexerState.Type.BLOCK;
         }
-        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_INSTRUCTION)) {
-            return TwigTopLexerState.Type.INSTRUCTION;
+        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_BLOCK)) {
+            return TwigTopLexerState.Type.BLOCK;
         }
 
-        if (open && CharSequenceUtilities.endsWith(text, OPEN_VARIABLE)) {
-            return TwigTopLexerState.Type.VARIABLE;
+        if (open && CharSequenceUtilities.endsWith(text, OPEN_VAR)) {
+            return TwigTopLexerState.Type.VAR;
         }
-        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_VARIABLE)) {
-            return TwigTopLexerState.Type.VARIABLE;
+        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_VAR)) {
+            return TwigTopLexerState.Type.VAR;
         }
 
         if (open && CharSequenceUtilities.endsWith(text, OPEN_COMMENT)) {
@@ -135,7 +135,7 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
                         if (matcher.find()) {
                             String captured = matcher.group();
                             state.main = TwigTopLexerState.Main.OPEN;
-                            state.type = TwigTopLexerState.Type.INSTRUCTION;
+                            state.type = TwigTopLexerState.Type.BLOCK;
                             if (text.length() - captured.length() > 0) {
                                 input.backup(captured.length());
                                 return TwigTopTokenId.T_TWIG_RAW;
@@ -193,7 +193,7 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
                                 break;
                             }
 
-                            if (result == TwigTopLexerState.Type.INSTRUCTION && START_RAW.matcher(text).find()) {
+                            if (result == TwigTopLexerState.Type.BLOCK && START_RAW.matcher(text).find()) {
                                 state.main = TwigTopLexerState.Main.CLOSE_RAW;
                             } else {
                                 state.main = TwigTopLexerState.Main.CLOSE;
@@ -208,8 +208,8 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
                     break;
                 case CLOSE_RAW:
                 case CLOSE:
-                    if ((state.type == TwigTopLexerState.Type.INSTRUCTION && CharSequenceUtilities.endsWith(text, CLOSE_INSTRUCTION))
-                            || (state.type == TwigTopLexerState.Type.VARIABLE && CharSequenceUtilities.endsWith(text, CLOSE_VARIABLE))
+                    if ((state.type == TwigTopLexerState.Type.BLOCK && CharSequenceUtilities.endsWith(text, CLOSE_BLOCK))
+                            || (state.type == TwigTopLexerState.Type.VAR && CharSequenceUtilities.endsWith(text, CLOSE_VAR))
                             || (state.type == TwigTopLexerState.Type.COMMENT && CharSequenceUtilities.endsWith(text, CLOSE_COMMENT))) {
                         state.main = (state.main == TwigTopLexerState.Main.CLOSE) ? TwigTopLexerState.Main.HTML : TwigTopLexerState.Main.RAW;
                         return TwigTopTokenId.T_TWIG;

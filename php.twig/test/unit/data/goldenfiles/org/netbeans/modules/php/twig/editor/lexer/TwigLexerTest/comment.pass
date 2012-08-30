@@ -1,0 +1,5 @@
+token #0 T_TWIG_COMMENT [{# fo # o #}]
+TOP token #1 T_HTML [\n]
+token #0 T_TWIG_COMMENT [{# fo } o #}]
+TOP token #3 T_HTML [\n]
+token #0 T_TWIG_COMMENT [{# fo # } o #}]
