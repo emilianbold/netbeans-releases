@@ -175,7 +175,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
             final TemplateWizard wiz = (TemplateWizard)settings;
             reqCfg = (String)wiz.getProperty(REQUIRED_CONFIGURATION);
             reqProf = (String)wiz.getProperty(REQUIRED_PROFILE);
-            embedded = (Boolean)wiz.getProperty(IS_EMBEDDED);
+            embedded = wiz.getProperty(IS_EMBEDDED) == null ? false : (Boolean)wiz.getProperty(IS_EMBEDDED);
             final ArrayList<Profile> l = new ArrayList<Profile>();
             final Profile cfg = parseProfile(reqCfg);
             if (cfg != null) l.add(cfg);
