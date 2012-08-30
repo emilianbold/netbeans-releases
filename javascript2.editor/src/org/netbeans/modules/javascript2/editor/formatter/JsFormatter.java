@@ -982,7 +982,7 @@ public class JsFormatter implements Formatter {
         return ts.offset();
     }
 
-    private static boolean isLineContinued(BaseDocument doc, Language<JsTokenId> language,
+    private static boolean isContinuation(BaseDocument doc, Language<JsTokenId> language,
             int offset, int bracketBalance) throws BadLocationException {
 
         offset = Utilities.getRowLastNonWhite(doc, offset);
@@ -1330,7 +1330,7 @@ public class JsFormatter implements Formatter {
                     balance += getTokenBalance(context, ts, lineBegin, endOfLine, true);
                     int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false);
                     bracketBalance += bracketDelta;
-                    continued = isLineContinued(doc, language, offset, bracketBalance);
+                    continued = isContinuation(doc, language, offset, bracketBalance);
                 }
 
                 offset = endOfLine;
