@@ -335,29 +335,28 @@ final class CppFoldManager extends CppFoldManagerBase
     public void run() {
         try {
             // see bug 217627
-            if (foldingEnabled()) {
+            assert foldingEnabled();
+            if (log.isLoggable(Level.FINE)){
+                log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
+                        new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+            }
+            if (!listeningOnParsing) {
                 if (log.isLoggable(Level.FINE)){
                     log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
-                            new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+                            new Object[]{getShortName(), Thread.currentThread().getName()});
                 }
-                if (!listeningOnParsing) {
-                    if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
-                                new Object[]{getShortName(), Thread.currentThread().getName()});
-                    }
-                    listeningOnParsing = true;
-                    if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.run: Starting WeakParsingListener [{0}]",
-                                Thread.currentThread().getName()); // NOI18N
-                    }
-                    new WeakParsingListener(this).startListening();
-                }
+                listeningOnParsing = true;
                 if (log.isLoggable(Level.FINE)){
-                    log.log(Level.FINE, "CFM.run: Calling updateFolds [{0}]",
+                    log.log(Level.FINE, "CFM.run: Starting WeakParsingListener [{0}]",
                             Thread.currentThread().getName()); // NOI18N
                 }
-                updateFolds();
+                new WeakParsingListener(this).startListening();
             }
+            if (log.isLoggable(Level.FINE)){
+                log.log(Level.FINE, "CFM.run: Calling updateFolds [{0}]",
+                        Thread.currentThread().getName()); // NOI18N
+            }
+            updateFolds();
         } catch (ThreadDeath e) {
             throw e;
         } catch (Throwable t) {
@@ -388,7 +387,7 @@ final class CppFoldManager extends CppFoldManagerBase
 
     @Override
     public void initFolds(FoldHierarchyTransaction transaction) {
-        if (getFilename() != null && getFilename().length() > 0) {
+        if (foldingEnabled()) {
             if (log.isLoggable(Level.FINE)){
                 log.log(Level.FINE, "CFM.initFolds: Posting for {0} on Cpp Folds RP [{1}]",// NOI18N
                         new Object[]{getShortName(), Thread.currentThread().getName()});
