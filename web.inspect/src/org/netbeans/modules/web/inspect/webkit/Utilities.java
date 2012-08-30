@@ -89,7 +89,7 @@ public class Utilities {
         for (org.netbeans.modules.web.webkit.debugging.api.css.Media media : rule.getMedia()) {
             if (media.getSource() == org.netbeans.modules.web.webkit.debugging.api.css.Media.Source.MEDIA_RULE) {
                 mediaQuery = media.getText();
-                mediaQuery = CSSUtils.normalizeSelector(mediaQuery);
+                mediaQuery = CSSUtils.normalizeMediaQuery(mediaQuery);
             }
         }
         Set<String> properties = new HashSet<String>();
@@ -186,7 +186,7 @@ public class Utilities {
                     Media media = (Media)parent;
                     MediaQueryList queryList = media.getMediaQueryList();
                     queryListText = sourceModel.getElementSource(queryList).toString();
-                    queryListText = CSSUtils.normalizeSelector(queryListText);
+                    queryListText = CSSUtils.normalizeMediaQuery(queryListText);
                 }
                 String selectorInFile = CSSUtils.normalizeSelector(image.toString());
                 if (selector.equals(selectorInFile) &&
