@@ -107,18 +107,28 @@ final class CppFoldManager extends CppFoldManagerBase
         }
         return cppFoldsRP;
     }
+    
+    private FileObject getFileObject() {
+        FoldHierarchy h = (operation != null) ? operation.getHierarchy() : null;
+        javax.swing.text.JTextComponent comp = (h != null) ? h.getComponent() : null;
+        Document doc = (comp != null) ? comp.getDocument() : null;
+        DataObject dob = (doc != null) ? NbEditorUtilities.getDataObject(doc) : null;
+        if (dob != null) {
+            return dob.getPrimaryFile();
+        }
+        return null;
+    }
 
     /**
      *  Get the filename associated with this FileManager. Used (currently) only for debugging.
      *  @returns A String representing the absolute path of file
      */
     private String getFilename() {
-        FoldHierarchy h = (operation != null) ? operation.getHierarchy() : null;
-        javax.swing.text.JTextComponent comp = (h != null) ? h.getComponent() : null;
-        Document doc = (comp != null) ? comp.getDocument() : null;
-        DataObject dob = (doc != null) ? NbEditorUtilities.getDataObject(doc) : null;
-        String path = (dob != null) ? FileUtil.getFileDisplayName(dob.getPrimaryFile()) : null;
-        return path;
+        FileObject fileObject = getFileObject();
+        if (fileObject != null) {
+            return FileUtil.getFileDisplayName(fileObject);
+        }
+        return null;
     }
 
     private String getShortName() {
@@ -311,12 +321,21 @@ final class CppFoldManager extends CppFoldManagerBase
         Document doc = getDocument();
         return (doc != null) ? NbEditorUtilities.getDataObject(doc) : null;
     }
+    
+    private boolean foldingEnabled() {
+        FileObject fileObject = getFileObject();
+        if (fileObject != null) {
+            return !fileObject.isVirtual();
+        }
+        return false;
+    }
 
     // Implement Runnable
     @Override
     public void run() {
         try {
-            if ((new File(getFilename())).exists()) {
+            // see bug 217627
+            if (foldingEnabled()) {
                 if (log.isLoggable(Level.FINE)){
                     log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
                             new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
