@@ -891,7 +891,11 @@ class WebActionProvider extends BaseActionProvider {
     }
 
     private boolean isSelectedServer() {
-        String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        final PropertyEvaluator eval = getAntProjectHelper().getStandardPropertyEvaluator();
+        if ("false".equals(eval.getProperty(WebProjectProperties.J2EE_SERVER_CHECK))) { // NOI18N
+            return true;
+        }
+        String instance = eval.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
             J2eeModuleProvider jmp = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
@@ -905,7 +909,7 @@ class WebActionProvider extends BaseActionProvider {
 
 // if there is some server instance of the type which was used
 // previously do not ask and use it
-        String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
+        String serverType = eval.getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
             String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, J2eeModule.Type.WAR, ((WebProject) getProject()).getAPIWebModule().getJ2eeProfile());
             if (instanceID != null) {
