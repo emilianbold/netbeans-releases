@@ -137,6 +137,10 @@ public class TplParserErrorsTest extends TplTestBase {
         assertParserErrors();
     }
 
+    public void testParserErrors11() throws Exception {
+        assertParserErrors();
+    }
+
     private String getTestFileRelPath() {
         return "testfiles/parserErrors/" + getName() + ".tpl";
     }
