@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1048,7 +1047,7 @@ public class JsFormatter implements Formatter {
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
 
-        IndentContext indentContext = new IndentContext(context);
+        final IndentContext indentContext = new IndentContext(context);
         int indentationSize = IndentUtils.indentLevelSize(document);
         int continuationIndent = CodeStyle.get(indentContext).getContinuationIndentSize();
 
@@ -1085,8 +1084,6 @@ public class JsFormatter implements Formatter {
             // a lot of things will work better: breakpoints and other line annotations
             // will be left in place, semantic coloring info will not be temporarily
             // damaged, and the caret will stay roughly where it belongs.
-            final List<Integer> offsets = new ArrayList<Integer>();
-            final List<Integer> indents = new ArrayList<Integer>();
 
             // When we're formatting sections, include whitespace on empty lines; this
             // is used during live code template insertions for example. However, when
@@ -1097,16 +1094,17 @@ public class JsFormatter implements Formatter {
 
             // TODO - remove initialbalance etc.
             computeIndents(indentContext, initialIndent, indentationSize, continuationIndent, initialOffset, endOffset,
-                    offsets, indents, indentEmptyLines, includeEnd);
+                    indentEmptyLines, includeEnd);
 
             doc.runAtomic(new Runnable() {
                 public void run() {
                     try {
+                        List<IndentContext.Indentation> indents = indentContext.getIndentations();
                         // Iterate in reverse order such that offsets are not affected by our edits
-                        assert indents.size() == offsets.size();
                         for (int i = indents.size() - 1; i >= 0; i--) {
-                            int indent = indents.get(i);
-                            int lineBegin = offsets.get(i);
+                            IndentContext.Indentation indentation = indents.get(i);
+                            int indent = indentation.getSize();
+                            int lineBegin = indentation.getOffset();
 
                             if (lineBegin < lineStart) {
                                 // We're now outside the region that the user wanted reformatting;
@@ -1124,8 +1122,9 @@ public class JsFormatter implements Formatter {
                                 // in the middle of "incorrectly" indented code (e.g. different
                                 // size than the IDE is using) and the newline position ending
                                 // up "out of sync"
-                                int prevOffset = offsets.get(i-1);
-                                int prevIndent = indents.get(i-1);
+                                IndentContext.Indentation prevIndentation = indents.get(i - 1);
+                                int prevOffset = prevIndentation.getOffset();
+                                int prevIndent = prevIndentation.getSize();
                                 int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 // NOTE: in embedding this is usually true as we have some nonzero initial indent,
                                 // I am just not sure if it is better to add indentOnly check (as I did) or
@@ -1153,12 +1152,12 @@ public class JsFormatter implements Formatter {
                 }
             });
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            LOGGER.log(Level.FINE, null, ble);
         }
     }
 
     private void computeIndents(IndentContext context, int initialIndent, int indentSize, int continuationIndent,
-            int startOffset, int endOffset, List<Integer> offsets, List<Integer> indents, boolean indentEmptyLines, boolean includeEnd) {
+            int startOffset, int endOffset, boolean indentEmptyLines, boolean includeEnd) {
 
         BaseDocument doc = context.getDocument();
         // PENDING:
@@ -1219,6 +1218,7 @@ public class JsFormatter implements Formatter {
             final int IN_BLOCK_COMMENT_START = 2;
             final int IN_BLOCK_COMMENT_MIDDLE = 3;
 
+            // this cycle is written in offset but in fact it iretates over lines
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
 
@@ -1320,8 +1320,7 @@ public class JsFormatter implements Formatter {
                 if (lineBegin != -1 || indentEmptyLines) {
                     // Don't do a hanging indent if we're already indenting beyond the parent level?
 
-                    indents.add(Integer.valueOf(indent));
-                    offsets.add(Integer.valueOf(offset));
+                    context.addIndentation(new IndentContext.Indentation(offset, indent, continued));
                 }
 
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;

@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -75,6 +78,8 @@ public final class IndentContext {
      */
     private final Stack<BlockDescription> blocks = new Stack<BlockDescription>();
 
+    private final List<Indentation> indentations = new ArrayList<Indentation>();
+
     private int embeddedIndent;
 
     public IndentContext(Context context) {
@@ -106,6 +111,41 @@ public final class IndentContext {
 
     public Stack<BlockDescription> getBlocks() {
         return blocks;
+    }
+
+    public void addIndentation(Indentation indentation) {
+        indentations.add(indentation);
+    }
+
+    public List<Indentation> getIndentations() {
+        return Collections.unmodifiableList(indentations);
+    }
+
+    public static final class Indentation {
+
+        private final int offset;
+
+        private final int size;
+
+        private final boolean continuation;
+
+        public Indentation(int offset, int size, boolean continuation) {
+            this.offset = offset;
+            this.size = size;
+            this.continuation = continuation;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public boolean isContinuation() {
+            return continuation;
+        }
     }
 
     public static final class BlockDescription {
