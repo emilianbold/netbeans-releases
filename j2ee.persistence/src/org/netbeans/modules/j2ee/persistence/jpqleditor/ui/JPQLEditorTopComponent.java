@@ -380,10 +380,14 @@ public final class JPQLEditorTopComponent extends TopComponent {
                             }
                         } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0) || provider.equals(ProviderUtil.HIBERNATE_PROVIDER)) {//NOI18N
                             Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.HIBERNATE_QUERY);
-                            if (qClass != null) {
-                                Method method = qClass.getMethod(JPQLExecutor.HIBERNATE_QUERY_SQL);
-                                if (method != null) {
-                                    queryStr = (String) method.invoke(query);
+                            if(qClass !=null) {
+                                Method method = qClass.getMethod(JPQLExecutor.HIBERNATE_QUERY_SQL0);
+                                if(method != null){
+                                    Object dqOject = method.invoke(query);
+                                    Method method2 = (dqOject!= null ? dqOject.getClass().getMethod(JPQLExecutor.HIBERNATE_QUERY_SQL1) : null);
+                                    if(method2!=null) {
+                                        queryStr = (String) method2.invoke(dqOject);
+                                    }
                                 }
                             }
                         } else if (provider.getProviderClass().contains("openjpa")) {//NOI18N
@@ -455,7 +459,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
             if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
                 hqlParserTask.cancel();
             } else if (!requestProcessor.isShutdown()) {
-                hqlParserTask = requestProcessor.post(new ParseJPQL(), 3000);
+                hqlParserTask = requestProcessor.post(new ParseJPQL(), 2000);
                 isSqlTranslationProcessDone = false;
             }
         }

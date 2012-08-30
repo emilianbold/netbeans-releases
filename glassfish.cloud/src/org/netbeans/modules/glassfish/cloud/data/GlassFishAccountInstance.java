@@ -104,16 +104,30 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     /**
      * Build key ring identifier for password related to given user name.
      * <p/>
+     * @param serverName Name of server to add into password key.
      * @param userName User name of account user who's password will be stored.
      * @return Key ring identifier for password related to given user name
      */
-    private static String passwordKey(String userName) {
-        StringBuilder pwKey = new StringBuilder();
+    private static String passwordKey(String serverName, String userName) {
+        StringBuilder pwKey = new StringBuilder(
+                GlassFishAccountInstanceProvider
+                .KEYRING_NAME_SPACE.length()
+                + GlassFishAccountInstanceProvider
+                .KEYRING_NAME_SEPARATOR.length()
+                + PROPERTY_USER_PASSWORD.length()
+                + GlassFishAccountInstanceProvider
+                .KEYRING_IDENT_SEPARATOR.length()
+                + (serverName != null ? serverName.length() : 0)
+                + GlassFishAccountInstanceProvider
+                .KEYRING_IDENT_SEPARATOR.length()
+                + (userName != null ? userName.length() : 0));
         pwKey.append(GlassFishAccountInstanceProvider.KEYRING_NAME_SPACE);
         pwKey.append(GlassFishAccountInstanceProvider.KEYRING_NAME_SEPARATOR);
         pwKey.append(PROPERTY_USER_PASSWORD);
         pwKey.append(GlassFishAccountInstanceProvider.KEYRING_IDENT_SEPARATOR);
-        pwKey.append(userName);
+        pwKey.append(serverName != null ? serverName : "");
+        pwKey.append(GlassFishAccountInstanceProvider.KEYRING_IDENT_SEPARATOR);
+        pwKey.append(userName != null ? userName : "");
         return pwKey.toString();
     }
 
@@ -497,7 +511,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         props.putString(PROPERTY_USER_NAME, userName);
         props.putString(PROPERTY_CLOUD_NAME,
                 cloudEntity != null ? cloudEntity.getName() : null);
-        Keyring.save(passwordKey(userName), userPassword.toCharArray(),
+        Keyring.save(passwordKey(name, userName), userPassword.toCharArray(),
                 "GlassFish cloud account user password");
         LOG.log(Level.FINER,
                 "Stored GlassFishCloudInstance({0}, {1}, {2}, <password>, {4})",
@@ -521,7 +535,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
             String cloudName = props.getString(PROPERTY_CLOUD_NAME, null);
             String userPassword;
             if (userName != null) {
-                char[] password = Keyring.read(passwordKey(userName));
+                char[] password = Keyring.read(passwordKey(name, userName));
                 userPassword = password != null ? new String(password) : null;
             } else {
                 userPassword = null;

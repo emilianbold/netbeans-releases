@@ -548,6 +548,10 @@ public class TwigLexerTest extends TwigTestBase {
         performTest("tests-odd");
     }
 
+    public void testComment() throws Exception {
+        performTest("comment");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/twig/" + filename + ".twig"));

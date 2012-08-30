@@ -117,7 +117,6 @@ FormattingToken{kind=TEXT, offset=131, text="}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=132, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
-FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=133, text= }
 FormattingToken{kind=TEXT, offset=134, text="}
@@ -134,6 +133,7 @@ FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=162, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=163, text=
 }
 FormattingToken{kind=WHITESPACE, offset=164, text=      }
@@ -151,7 +151,6 @@ FormattingToken{kind=TEXT, offset=185, text="}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=186, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
-FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=187, text= }
 FormattingToken{kind=TEXT, offset=188, text="}
@@ -168,6 +167,7 @@ FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=211, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=212, text=
 }
 FormattingToken{kind=WHITESPACE, offset=213, text=      }
@@ -185,7 +185,6 @@ FormattingToken{kind=TEXT, offset=235, text="}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=236, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
-FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=237, text= }
 FormattingToken{kind=TEXT, offset=238, text="}

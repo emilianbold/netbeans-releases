@@ -55,8 +55,8 @@ public class TwigTopLexerState {
 
     public enum Type {
         NONE,
-        INSTRUCTION,
-        VARIABLE,
+        BLOCK,
+        VAR,
         COMMENT
     };
 
