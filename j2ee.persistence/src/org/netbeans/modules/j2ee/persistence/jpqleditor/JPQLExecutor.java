@@ -63,8 +63,9 @@ public class JPQLExecutor {
     static public final String ECLIPSELINK_QUERY = "org.eclipse.persistence.jpa.JpaQuery";//NOI18N
     static   public final String ECLIPSELINK_QUERY_SQL0 = "getDatabaseQuery";//NOI18N
     static public final String ECLIPSELINK_QUERY_SQL1 = "getSQLString";//NOI18N
-    static public final String HIBERNATE_QUERY = "org.hibernate.Query";//NOI18N
-    static public final String HIBERNATE_QUERY_SQL = "getQueryString";//NOI18N
+    static public final String HIBERNATE_QUERY = "org.hibernate.ejb.HibernateQuery";//NOI18N
+    static public final String HIBERNATE_QUERY_SQL0 = "getHibernateQuery";//NOI18N
+    static public final String HIBERNATE_QUERY_SQL1 = "getQueryString";//NOI18N
     static public final String OPENJPA_QUERY = "org.apache.openjpa.persistence.QueryImpl";//NOI18N
     static public final String OPENJPA_QUERY_SQL = "getQueryString";//NOI18N
 
@@ -117,15 +118,19 @@ public class JPQLExecutor {
                     }
                 }
             } 
-//            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
-//                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
-//                if(qClass !=null) {
-//                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL);
-//                    if(method != null){
-//                        queryStr = (String) method.invoke(query);
-//                    }
-//                }
-//            } else if (provider.getProviderClass().contains("openjpa")){//NOI18N
+            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
+                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(HIBERNATE_QUERY);
+                if(qClass !=null) {
+                    Method method = qClass.getMethod(HIBERNATE_QUERY_SQL0);
+                    if(method != null){
+                        Object dqOject = method.invoke(query);
+                        Method method2 = (dqOject!= null ? dqOject.getClass().getMethod(HIBERNATE_QUERY_SQL1) : null);
+                        if(method2!=null) {
+                            queryStr = (String) method2.invoke(dqOject);
+                        }
+                    }
+                }
+            }// else if (provider.getProviderClass().contains("openjpa")){//NOI18N
 //                Class qClass = Thread.currentThread().getContextClassLoader().loadClass(OPENJPA_QUERY);
 //                if(qClass !=null) {
 //                    Method method = qClass.getMethod(OPENJPA_QUERY_SQL);
