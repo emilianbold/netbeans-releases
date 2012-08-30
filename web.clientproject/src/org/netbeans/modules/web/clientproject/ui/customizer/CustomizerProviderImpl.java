@@ -117,10 +117,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                         new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
                     });
 
-                    OptionListener listener = new OptionListener(project);
+                    OptionListener optionListener = new OptionListener(project);
                     StoreListener storeListener = new StoreListener(uiProperties);
-                    dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
-                    dialog.addWindowListener(listener);
+                    dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, optionListener, storeListener, null);
+                    dialog.addWindowListener(optionListener);
                     dialog.setTitle(Bundle.CustomizerProviderImpl_title(ProjectUtils.getInformation(project).getDisplayName()));
 
                     PROJECT_2_DIALOG.put(project, dialog);
