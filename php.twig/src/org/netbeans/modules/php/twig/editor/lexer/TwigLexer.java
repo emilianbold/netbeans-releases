@@ -56,9 +56,9 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 public class TwigLexer implements Lexer<TwigTokenId> {
 
-    protected TwigLexerState state;
-    protected final TokenFactory<TwigTokenId> tokenFactory;
-    protected final LexerInput input;
+    private TwigLexerState state;
+    private final TokenFactory<TwigTokenId> tokenFactory;
+    private final LexerInput input;
 
     private TwigLexer(LexerRestartInfo<TwigTokenId> info) {
         tokenFactory = info.tokenFactory();
@@ -87,15 +87,16 @@ public class TwigLexer implements Lexer<TwigTokenId> {
     @Override
     public void release() {
     }
-    static protected String BLOCK_START = "{%"; //NOI18N
-    static protected String COMMENT_START = "{#"; //NOI18N
-    static protected String VAR_START = "{{"; //NOI18N
-    static protected String PUNCTUATION = "|()[]{}?:.,"; //NOI18N
-    static protected Pattern REGEX_ALPHANUM_END = Pattern.compile("[A-Za-z0-9]$"); //NOI18N
-    static protected Pattern REGEX_WHITESPACE_END = Pattern.compile("[\\s]+$"); //NOI18N
-    protected Pattern REGEX_OPERATOR = null;
+
+    private static String BLOCK_START = "{%"; //NOI18N
+    private static String COMMENT_START = "{#"; //NOI18N
+    private static String VAR_START = "{{"; //NOI18N
+    private static String PUNCTUATION = "|()[]{}?:.,"; //NOI18N
+    private static Pattern REGEX_ALPHANUM_END = Pattern.compile("[A-Za-z0-9]$"); //NOI18N
+    private static Pattern REGEX_WHITESPACE_END = Pattern.compile("[\\s]+$"); //NOI18N
+    private Pattern REGEX_OPERATOR = null;
     int OPERATOR_LENGTH = 0;
-    final static List<String> OPERATORS = new ArrayList<String>();
+    private static final List<String> OPERATORS = new ArrayList<String>();
     static {
         OPERATORS.add("as"); //NOI18N
         OPERATORS.add("="); //NOI18N
@@ -124,7 +125,7 @@ public class TwigLexer implements Lexer<TwigTokenId> {
         OPERATORS.add("**"); //NOI18N
     }
 
-    protected class SortOperators implements Comparator<String> {
+    private static class SortOperators implements Comparator<String> {
 
         @Override
         public int compare(String a, String b) {
@@ -132,7 +133,7 @@ public class TwigLexer implements Lexer<TwigTokenId> {
         }
     }
 
-    protected String implode(List<String> list, String delimeter) {
+    private String implode(List<String> list, String delimeter) {
         String s = "";
         boolean first = true;
         for (String item : list) {

@@ -61,9 +61,8 @@ import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 
 public class TwigParser extends Parser {
 
-    Snapshot snapshot;
-    TwigParserResult result;
-    final static List<String> PARSE_ELEMENTS = new ArrayList<String>();
+    private TwigParserResult result;
+    private static final List<String> PARSE_ELEMENTS = new ArrayList<String>();
 
     static {
         PARSE_ELEMENTS.add("for"); //NOI18N
@@ -104,7 +103,6 @@ public class TwigParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
-        this.snapshot = snapshot;
         result = new TwigParserResult(snapshot);
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
         LanguagePath twigPath = null;
@@ -308,7 +306,7 @@ public class TwigParser extends Parser {
     public void removeChangeListener(ChangeListener cl) {
     }
 
-    static public class Factory extends ParserFactory {
+    public static class Factory extends ParserFactory {
 
         @Override
         public Parser createParser(Collection<Snapshot> clctn) {
