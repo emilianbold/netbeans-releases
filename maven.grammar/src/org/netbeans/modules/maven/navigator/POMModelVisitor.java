@@ -128,7 +128,6 @@ import org.openide.util.lookup.Lookups;
 public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POMComponentVisitor {
 
     private static final Logger LOG = Logger.getLogger(POMModelVisitor.class.getName());
-    private static RequestProcessor RP = new RequestProcessor(POMModelVisitor.class);
     private Map<String, POMCutHolder> childs = new LinkedHashMap<String, POMCutHolder>();
     private int count = 0;
     private POMModelPanel.Configuration configuration;
@@ -1541,19 +1540,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         @Override
         protected void addNotify() {
             super.addNotify();
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final List<POMCutHolder> newKeys =
-                            rescan(new POMModelVisitor(parentHolder, configuration));
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setKeys(newKeys);
-                        }
-                    });
-                }
-            });
+            final List<POMCutHolder> newKeys =
+                    rescan(new POMModelVisitor(parentHolder, configuration));
+            setKeys(newKeys);                        
             configuration.addPropertyChangeListener(this);
         }
 
