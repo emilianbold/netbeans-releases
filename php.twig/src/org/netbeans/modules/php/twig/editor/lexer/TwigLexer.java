@@ -191,11 +191,11 @@ public class TwigLexer implements Lexer<TwigTokenId> {
                     } else if (CharSequenceUtilities.startsWith(text, INSTRUCTION_START)) {
                         state.main = TwigLexerState.Main.INSTRUCTION;
                         state.sub = TwigLexerState.Sub.INIT;
-                        return TwigTokenId.T_TWIG_INSTRUCTION_START;
+                        return TwigTokenId.T_TWIG_BLOCK_START;
                     } else if (CharSequenceUtilities.startsWith(text, VARIABLE_START)) {
                         state.main = TwigLexerState.Main.VARIABLE;
                         state.sub = TwigLexerState.Sub.INIT;
-                        return TwigTokenId.T_TWIG_VARIABLE_START;
+                        return TwigTokenId.T_TWIG_VAR_START;
                     }
                     break;
 
@@ -232,11 +232,11 @@ public class TwigLexer implements Lexer<TwigTokenId> {
                         if (d == '}' && e == LexerInput.EOF) {
 
                             if (state.main == TwigLexerState.Main.INSTRUCTION && c == '%') {
-                                return TwigTokenId.T_TWIG_INSTRUCTION_END;
+                                return TwigTokenId.T_TWIG_BLOCK_END;
                             }
 
                             if (state.main == TwigLexerState.Main.VARIABLE && c == '}') {
-                                return TwigTokenId.T_TWIG_VARIABLE_END;
+                                return TwigTokenId.T_TWIG_VAR_END;
                             }
 
                         }

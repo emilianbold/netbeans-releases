@@ -65,10 +65,10 @@ public enum TwigTokenId implements TokenId {
     T_TWIG_PUNCTUATION(null, "twig_punctuation"),
     T_TWIG_WHITESPACE(null, "twig_whitespace"),
     T_TWIG_FUNCTION(null, "twig_function"),
-    T_TWIG_INSTRUCTION_START(null, "twig_instruction"),
-    T_TWIG_INSTRUCTION_END(null, "twig_instruction"),
-    T_TWIG_VARIABLE_START(null, "twig_variable"),
-    T_TWIG_VARIABLE_END(null, "twig_variable"),
+    T_TWIG_BLOCK_START(null, "twig_block"),
+    T_TWIG_BLOCK_END(null, "twig_block"),
+    T_TWIG_VAR_START(null, "twig_var"),
+    T_TWIG_VAR_END(null, "twig_var"),
     T_TWIG_COMMENT(null, "twig_comment"),
     T_TWIG_OTHER(null, "twig_other");
     private final String fixedText;
