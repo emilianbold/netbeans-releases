@@ -129,6 +129,7 @@ class MICommandManager {
      * Executed only once when all commands are sent and all answers dispatched
      */
     void setIdleHandler(Runnable handler) {
+        assert !pendingCommands.isEmpty();
         this.idleHandler = handler;
     }
     

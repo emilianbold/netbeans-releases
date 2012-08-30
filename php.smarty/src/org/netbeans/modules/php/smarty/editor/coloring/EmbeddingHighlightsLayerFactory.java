@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.smarty.editor.coloring;
 
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
@@ -46,17 +45,17 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 
 /**
+ * Inspired by HTML EmbeddingHighlightsLayerFactory.
  *
- * @author Martin Fousek
- * created according to EmbeddingHighlightsLayerFactory
+ * @author Martin Fousek <marfous@netbeans.org>
  */
 public class EmbeddingHighlightsLayerFactory implements HighlightsLayerFactory {
 
+    @Override
     public HighlightsLayer[] createLayers(Context context) {
-        return new HighlightsLayer[]{HighlightsLayer.create("tpl-embedding-highlight-layer",
-                ZOrder.BOTTOM_RACK.forPosition(100),  //we need to have lower priority than the default syntax from options - 0
-                true, 
-                new EmbeddingHighlightsContainer(context.getDocument()))}; //NOI18N
+        return new HighlightsLayer[]{HighlightsLayer.create("tpl-embedding-highlight-layer", //NOI18N
+                    ZOrder.BOTTOM_RACK.forPosition(100), // we need to have lower priority than the default syntax from options - 0
+                    true,
+                    new EmbeddingHighlightsContainer(context.getDocument()))}; //NOI18N
     }
-
 }

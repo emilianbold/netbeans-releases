@@ -560,8 +560,8 @@ scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
                                                                                 {action.simple_declaration(input.LT(1));}
-                                                                                {action.decl_specifiers();}
-        decl_specifier*                                                         {action.end_decl_specifiers();}
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
             SEMICOLON
         |
@@ -599,8 +599,8 @@ simple_declaration_or_function_definition [decl_kind kind]
 @init { init_declaration(CTX, kind); }
     :
                                                                                 {action.simple_declaration(input.LT(1));}
-                                                                                {action.decl_specifiers();}
-        decl_specifier*                                                         {action.end_decl_specifiers();}
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
             SEMICOLON
         |
@@ -700,9 +700,9 @@ type_specifier:
  */
 
 type_specifier returns [type_specifier_t ts]
+@init {action.type_specifier(input.LT(1));}
+@after {action.end_type_specifier(input.LT(0));}
     :
-//                                                                           {action.type_specifier(input.LT(1));}
-//    (
         // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
         (LITERAL_class SCOPE)=>
             trailing_type_specifier
@@ -716,13 +716,12 @@ type_specifier returns [type_specifier_t ts]
             enum_specifier
     |
         trailing_type_specifier
-//    )                                                                           {action.end_type_specifier(input.LT(0));}
     ;
 
 trailing_type_specifier
+@init {action.trailing_type_specifier(input.LT(1));}
+@after {action.end_trailing_type_specifier(input.LT(0));}
     :   
-//                                                                        {action.trailing_type_specifier(input.LT(1));}
-//    (
         simple_type_specifier
     |
         elaborated_type_specifier
@@ -730,58 +729,61 @@ trailing_type_specifier
         typename_specifier
     |
         cv_qualifier
-//    )                                                                           {action.end_trailing_type_specifier(input.LT(0));}
     ;
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
-@init { qual_setup(); }
+@init {action.simple_type_specifier(input.LT(1));}
+@after {action.end_simple_type_specifier(input.LT(0));}
     :
-        LITERAL_char                                                            {action.simple_type_specifier(input.LT(0));}
+        LITERAL_char                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR, input.LT(0));}
     |
-        LITERAL_wchar_t                                                         {action.simple_type_specifier(input.LT(0));}
+        LITERAL_wchar_t                                                         {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__WCHAR_T, input.LT(0));}
     |
-        LITERAL_char16_t                                                        {action.simple_type_specifier(input.LT(0));}
+        LITERAL_char16_t                                                        {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR16_T, input.LT(0));}
     |
-        LITERAL_char32_t                                                        {action.simple_type_specifier(input.LT(0));}
+        LITERAL_char32_t                                                        {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR32_T, input.LT(0));}
     |
-        LITERAL_bool                                                            {action.simple_type_specifier(input.LT(0));}
+        LITERAL_bool                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__BOOL, input.LT(0));}
     |
-        LITERAL_short                                                           {action.simple_type_specifier(input.LT(0));}
+        LITERAL_short                                                           {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__SHORT, input.LT(0));}
     |
-        LITERAL_int                                                             {action.simple_type_specifier(input.LT(0));}
+        LITERAL_int                                                             {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__INT, input.LT(0));}
     |
-        LITERAL_long                                                            {action.simple_type_specifier(input.LT(0));}
+        LITERAL_long                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__LONG, input.LT(0));}
     |
-        LITERAL_signed                                                          {action.simple_type_specifier(input.LT(0));}
+        LITERAL_signed                                                          {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__SIGNED, input.LT(0));}
     |
-        LITERAL_unsigned                                                        {action.simple_type_specifier(input.LT(0));}
+        LITERAL_unsigned                                                        {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__UNSIGNED, input.LT(0));}
     |
-        LITERAL_float                                                           {action.simple_type_specifier(input.LT(0));}
+        LITERAL_float                                                           {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__FLOAT, input.LT(0));}
     |
-        LITERAL_double                                                          {action.simple_type_specifier(input.LT(0));}
+        LITERAL_double                                                          {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__DOUBLE, input.LT(0));}
     |
-        LITERAL_void                                                            {action.simple_type_specifier(input.LT(0));}
+        LITERAL_void                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__VOID, input.LT(0));}
     |
-        LITERAL_auto                                                            {action.simple_type_specifier(input.LT(0));}
+        LITERAL_auto                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__AUTO, input.LT(0));}
     |
-        decltype_specifier                                                      {action.simple_type_specifier(input.LT(0));}
+        decltype_specifier
     |
         /*
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
         { action.type_specifier_already_present(input) }? =>
+                                                                                {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__ID, input.LT(0));}
 //        { !type_specifier_already_present(CTX) }? =>
-            (SCOPE {{ qual_add_colon2(); }} )?
+            (
+                SCOPE {{ qual_add_colon2(); }}                                  {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__SCOPE, input.LT(0));}
+            )?
             /* note that original rule does not allow empty nested_name_specifier for the LITERAL_template alternative */
             (
                 (lookup_nested_name_specifier)=>
                     nested_name_specifier 
-                    (simple_template_id_or_IDENT                                {action.simple_type_specifier(input.LT(0));}
+                    (simple_template_id_or_IDENT                                //{action.simple_type_specifier(input.LT(0));}
                     | LITERAL_template simple_template_id)
             |
-                simple_template_id_or_IDENT                                     {action.simple_type_specifier(input.LT(0));}
+                simple_template_id_or_IDENT                                     //{action.simple_type_specifier(input.LT(0));}
             )
     ;
 
@@ -1364,7 +1366,8 @@ parameter_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :                                                                           {action.parameter_declaration(input.LT(1));}
-        decl_specifier+ 
+        decl_specifier
+        decl_specifier*
         universal_declarator? 
         (
             ASSIGNEQUAL                                                         {action.parameter_declaration(action.PARAMETER_DECLARATION__ASSIGNEQUAL, input.LT(0));}
@@ -1579,10 +1582,10 @@ member_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-                                                                                {action.simple_declaration(input.LT(1));}
+                                                                                {action.member_declaration(input.LT(1));}
     (
-                                                                                {action.decl_specifiers();}
-        decl_specifier*                                                         {action.end_decl_specifiers();}
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
             (IDENT? COLON)=>
                 member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
@@ -1602,7 +1605,12 @@ scope Declaration;
                     function_definition_after_declarator
             |
                 // this was member_declarator_list
-                constant_initializer? ( COMMA member_declarator )* SEMICOLON
+                constant_initializer? 
+                ( 
+                    COMMA                                                       {action.member_declaration(action.MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                    member_declarator 
+                )* 
+                SEMICOLON                                                       {action.member_declaration(action.MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
             )
         |
             SEMICOLON
@@ -1621,7 +1629,7 @@ scope Declaration;
     |
         alias_declaration
     )
-                                                                                {action.end_simple_declaration(input.LT(0));}
+                                                                                {action.end_member_declaration(input.LT(0));}
     ;
 
 member_bitfield_declarator

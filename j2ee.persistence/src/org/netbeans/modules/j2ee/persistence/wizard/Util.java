@@ -770,7 +770,7 @@ public class Util {
      *@return an initial name for a persistence unit, i.e. a name that
      * is unique.
      */
-    static private final String getCandidateName(Project project) {
+    public static String getCandidateName(Project project) {
         String candidateNameBase = ProjectUtils.getInformation(project).getName() + "PU"; //NOI18N
         try {
             if (!ProviderUtil.persistenceExists(project)) {
