@@ -177,6 +177,19 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
     public void storeSettings(Object settings) {
     }
 
+    /**
+     * Sets GlassFish server target, administrator's user name and password into
+     * wizard iterator.
+     * <p/>
+     * @param wizardIterator Target wizard iterator object.
+     * @param panel Source wizard panel component.
+     */
+    private static void setGlobalValues(ServerWizardIterator wizardIterator, AddDomainLocationVisualPanel panel) {
+        wizardIterator.setTargetValue(panel.getTargetValue());
+        wizardIterator.setUserName(panel.getUserNameValue());
+        wizardIterator.setPassword(panel.getPasswordValue());
+    }
+
     private boolean validateForLocalDomain(AddDomainLocationVisualPanel panel) throws MissingResourceException {
         String domainField = panel.getDomainField().trim();
         File domainDirCandidate = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER + File.separator + domainField); // NOI18N
@@ -211,7 +224,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             // the entry resolves to a domain name that we can register
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
-            wizardIterator.setTargetValue(panel.getTargetValue());
+            setGlobalValues(wizardIterator, panel);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded", domainField)); // NOI18N
             return true;
         }
@@ -221,7 +234,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
             wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
-            wizardIterator.setTargetValue(panel.getTargetValue());
+            setGlobalValues(wizardIterator, panel);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N
             return true;
         }
@@ -232,7 +245,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             //String domainLoc = domainDirCandidate.getAbsolutePath();
             wizardIterator.setDomainLocation(domainLoc);
             wizardIterator.setHostName("localhost");
-            wizardIterator.setTargetValue(panel.getTargetValue());
+            setGlobalValues(wizardIterator, panel);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
             org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
             return true;
@@ -242,7 +255,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateDomain", domainField)); // NOI18N
             wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
             wizardIterator.setHostName("localhost");
-            wizardIterator.setTargetValue(panel.getTargetValue());
+            setGlobalValues(wizardIterator, panel);
             return true;
         }
         if (new File(domainsDir, domainField).exists()) {
@@ -263,7 +276,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setAdminPort(portval);
             wizardIterator.setHostName(hn);
             wizardIterator.setDomainLocation(null);
-            wizardIterator.setTargetValue(panel.getTargetValue());
+            setGlobalValues(wizardIterator, panel);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterRemote", hn,port)); // NOI18N
             return true;
         } catch (NumberFormatException nfe) {
