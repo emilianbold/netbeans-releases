@@ -352,7 +352,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             FileObject librariesRoot = null;
             boolean someFilesAreMissing = false;
             for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
-                if (selectedLibrary.isFromTemplate()) {
+                if (selectedLibrary.isDefault()) {
                     // ignore files from site template (they are already applied)
                     continue;
                 }

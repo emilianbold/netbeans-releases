@@ -337,7 +337,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 // apparently happens when deselecting more libraries
                 continue;
             }
-            if (!selectedLibraries.get(index).isFromTemplate()) {
+            if (!selectedLibraries.get(index).isDefault()) {
                 return true;
             }
         }
@@ -349,7 +349,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             return false;
         }
         for (SelectedLibrary library : selectedLibraries) {
-            if (!library.isFromTemplate()) {
+            if (!library.isDefault()) {
                 return true;
             }
         }
@@ -382,7 +382,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert EventQueue.isDispatchThread();
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
         while (iterator.hasNext()) {
-            if (!iterator.next().isFromTemplate()) {
+            if (!iterator.next().isDefault()) {
                 iterator.remove();
             }
         }
@@ -396,7 +396,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         List<SelectedLibrary> selected = new ArrayList<SelectedLibrary>(selectedIndices.length);
         for (int index : selectedIndices) {
             SelectedLibrary library = selectedLibraries.get(index);
-            if (!library.isFromTemplate()) {
+            if (!library.isDefault()) {
                 selected.add(library);
             }
         }
@@ -456,7 +456,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
         while (iterator.hasNext()) {
             SelectedLibrary library = iterator.next();
-            if (library.isFromTemplate()) {
+            if (library.isDefault()) {
                 iterator.remove();
             }
         }
@@ -771,10 +771,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         private static final Comparator<SelectedLibrary> SELECTED_LIBRARIES_COMPARATOR = new Comparator<SelectedLibrary>() {
             @Override
             public int compare(SelectedLibrary library1, SelectedLibrary library2) {
-                if (library1.isFromTemplate() && !library2.isFromTemplate()) {
+                if (library1.isDefault() && !library2.isDefault()) {
                     return -1;
                 }
-                if (!library1.isFromTemplate() && library2.isFromTemplate()) {
+                if (!library1.isDefault() && library2.isDefault()) {
                     return 1;
                 }
                 return library1.getFilename().compareToIgnoreCase(library2.getFilename());
@@ -828,7 +828,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             SelectedLibrary selectedLibrary = (SelectedLibrary) value;
             Component component = defaultRenderer.getListCellRendererComponent(list, selectedLibrary.getFilename(), index, isSelected, cellHasFocus);
-            if (selectedLibrary.isFromTemplate()) {
+            if (selectedLibrary.isDefault()) {
                 component.setEnabled(false);
             }
             return component;
@@ -1022,7 +1022,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             return libraryVersion;
         }
 
-        public boolean isFromTemplate() {
+        public boolean isDefault() {
             return libraryVersion == null;
         }
 
