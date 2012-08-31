@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.apache.maven.project.MavenProject;
@@ -75,6 +77,7 @@ import static org.netbeans.modules.maven.hints.pom.props.Bundle.*;
  * @author mkleint
  */
 public class TurnToPropertyHint implements SelectionPOMFixProvider {
+    private static final Logger LOG = Logger.getLogger(TurnToPropertyHint.class.getName());
 
     private Configuration configuration;
     @NbBundle.Messages({
@@ -118,12 +121,17 @@ public class TurnToPropertyHint implements SelectionPOMFixProvider {
                         }
                     }
                     fixes.add(new PropFix(text, offset, endOffset, el, model));
-                    Line line = NbEditorUtilities.getLine(model.getBaseDocument(), selectionEnd, false);
-                    err.add(ErrorDescriptionFactory.createErrorDescription(
-                        Severity.HINT,
-                        TIT_TurnToPropertyHint(),
-                        fixes,
-                        model.getBaseDocument(), line.getLineNumber() + 1));
+                    try {
+                        Line line = NbEditorUtilities.getLine(model.getBaseDocument(), selectionEnd, false);
+                        err.add(ErrorDescriptionFactory.createErrorDescription(
+                                Severity.HINT,
+                                TIT_TurnToPropertyHint(),
+                                fixes,
+                                model.getBaseDocument(), line.getLineNumber() + 1));
+                    } catch (IndexOutOfBoundsException iiob) {
+                        //#214527
+                        LOG.log(Level.FINE, "document changed", iiob);
+                    }
                     
                 }
             }
