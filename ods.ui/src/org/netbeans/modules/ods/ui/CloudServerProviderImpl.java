@@ -129,13 +129,13 @@ public class CloudServerProviderImpl implements TeamServerProvider {
     }
 
     @Override
-    @Messages("LBL_ProviderName=Oracle Developer Services")
+    @Messages("LBL_ProviderName=Oracle Developer Cloud Service")
     public String getDisplayName () {
         return LBL_ProviderName();
     }
 
     @Override
-    @Messages("LBL_ProviderDescription=Supports team servers built on top of the Oracle Developer Services.")
+    @Messages("LBL_ProviderDescription=Supports team servers built on top of the Oracle Developer Cloud Service technology.")
     public String getDescription () {
         return LBL_ProviderDescription();
     }
@@ -175,6 +175,24 @@ public class CloudServerProviderImpl implements TeamServerProvider {
     @Override
     public void removePropertyListener (PropertyChangeListener list) {
         propertyChangeSupport.removePropertyChangeListener(list);
+    }
+    
+    @Override
+    @Messages({"ERR_UrlNotValid=This url does not seem to be valid",
+        "ERR_NotHttp=Only http and https are supported protocols"})
+    public String validate (String s) {
+        if(Boolean.getBoolean("team.c2c.mockClient")) {
+            // for mock accept whatever is provided
+            return null;
+        }
+        if (!(s.startsWith("https://") || s.startsWith("http://"))) { //NOI18N
+            return Bundle.ERR_NotHttp();
+        }
+
+        if (s.equals("http://") || s.equals("https://")) { //NOI18N
+            return Bundle.ERR_UrlNotValid();
+        }
+        return null;
     }
     
 }

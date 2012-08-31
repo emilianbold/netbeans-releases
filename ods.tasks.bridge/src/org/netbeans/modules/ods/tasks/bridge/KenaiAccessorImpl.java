@@ -312,8 +312,8 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     
     private static Map<Pattern, Integer> getRepositoryPatterns (CloudServer server) {
         Map<Pattern, Integer> patterns = new LinkedHashMap<Pattern, Integer>(2);
-        patterns.put(Pattern.compile("https://" + server.getUrl().getHost().replace(".", "\\.") + "/alm/s/(\\S*)/scm/.*"), //NOI18N
-                1);
+        patterns.put(Pattern.compile("(http|https)://" + (server.getUrl().getHost() + server.getUrl().getPath()).replace(".", "\\.") + "/s/(\\S*)/scm/.*"), //NOI18N
+                2);
         patterns.put(Pattern.compile("ssh://" + server.getUrl().getHost().replace(".", "\\.") + "(:[0-9]+)?/(\\S*)/.*"), //NOI18N
                 2);
         return patterns;

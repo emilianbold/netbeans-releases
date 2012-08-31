@@ -342,6 +342,7 @@ public class C2CRepository {
     
     protected void getRemoteSavedQueries () {
         List<C2CQuery> queries = new ArrayList<C2CQuery>();
+        ensureCredentials();
         RepositoryConfiguration conf = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();

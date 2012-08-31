@@ -91,9 +91,9 @@ import org.springframework.web.client.RestTemplate;
  */
 public final class ODSClientImpl implements ODSClient {
     private ProfileWebServiceClient profileClient;
-    private static final String PROFILE_SERVICE = "/alm/api"; //NOI18N
-    private static final String HUDSON_SERVICE = "/alm/s/%s/hudson"; //NOI18N
-    private static final String SCM_SERVICE = "/alm/s/%s/scm/api"; //NOI18N
+    private static final String PROFILE_SERVICE = "api"; //NOI18N
+    private static final String HUDSON_SERVICE = "s/%s/hudson"; //NOI18N
+    private static final String SCM_SERVICE = "s/%s/scm/api"; //NOI18N
     private AbstractWebLocation location;
     private ActivityServiceClient activityClient;
     private HudsonServiceClient hudsonClient;
