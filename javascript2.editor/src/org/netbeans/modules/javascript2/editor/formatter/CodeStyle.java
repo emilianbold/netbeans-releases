@@ -82,10 +82,18 @@ public final class CodeStyle {
     }
     
     public static CodeStyle get(FormatContext context) {
-        if (context.isEmbedded()) {
-            return new CodeStyle(CodeStylePreferences.get(context.getDocument(), JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
+        return get(context.getDocument(), context.isEmbedded());
+    }
+
+    public static CodeStyle get(IndentContext context) {
+        return get(context.getDocument(), context.isEmbedded());
+    }
+
+    private static CodeStyle get(Document doc, boolean embedded) {
+        if (embedded) {
+            return new CodeStyle(CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
         }
-        return new CodeStyle(CodeStylePreferences.get(context.getDocument()).getPreferences());
+        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
 
     // General tabs and indents ------------------------------------------------
