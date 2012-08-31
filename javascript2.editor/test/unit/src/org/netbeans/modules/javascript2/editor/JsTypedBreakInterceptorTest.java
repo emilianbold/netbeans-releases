@@ -68,9 +68,10 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         return null;
     }
 
+    // FIXME this is wrong because it is computed form diff of previous
     public void testInsertBrace4() throws Exception {
         insertBreak("function test(){\n    if(true &&\n        true){^\n    }\n}",
-                "function test(){\n    if(true &&\n        true){\n        ^\n    }\n}");
+                "function test(){\n    if(true &&\n        true){\n    ^\n    }\n}");
     }
 
     public void testInsertBrace1() throws Exception {
