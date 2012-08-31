@@ -46,6 +46,7 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
@@ -57,11 +58,13 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     private volatile WizardDescriptor wizardDescriptor;
 
 
+    @NbBundle.Messages("JavaScriptLibrarySelectionPanel.jsLibs.info=Libraries added by your template are already selected.")
     @Override
     public JavaScriptLibrarySelection getComponent() {
         synchronized (javaScriptLibrarySelectionLock) {
             if (javaScriptLibrarySelection == null) {
                 javaScriptLibrarySelection = new JavaScriptLibrarySelection();
+                javaScriptLibrarySelection.setAdditionalInfo(Bundle.JavaScriptLibrarySelectionPanel_jsLibs_info());
             }
             return javaScriptLibrarySelection;
         }

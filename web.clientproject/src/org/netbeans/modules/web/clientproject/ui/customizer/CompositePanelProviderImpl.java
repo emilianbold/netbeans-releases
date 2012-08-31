@@ -39,65 +39,96 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.ui.RunPanel;
-import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
+import javax.swing.JPanel;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private enum Mode { Sources, Run};
-    private Mode mode;
+    public static final String SOURCES = "SOURCES"; // NOI18N
+    public static final String RUN = "RUN"; // NOI18N
+    public static final String JS_FILES = "JS_FILES"; // NOI18N
 
-    private ClientSideProjectPanelProvider(Mode mode) {
-        this.mode = mode;
+    private final String name;
+
+    public CompositePanelProviderImpl(String name) {
+        this.name = name;
     }
-    
+
+    @NbBundle.Messages({
+        "CompositePanelProviderImpl.sources.title=Sources",
+        "CompositePanelProviderImpl.run.title=Run",
+        "CompositePanelProviderImpl.jsFiles.title=JavaScript Files"
+    })
     @Override
     public Category createCategory(Lookup context) {
-        if (mode == Mode.Run) {
-            return ProjectCustomizer.Category.create(
-                    "buildConfig",
-                    "Run",
+        ProjectCustomizer.Category category = null;
+        if (SOURCES.equals(name)) {
+            category = ProjectCustomizer.Category.create(
+                    SOURCES,
+                    Bundle.CompositePanelProviderImpl_sources_title(),
                     null);
-        } else {
-            return ProjectCustomizer.Category.create(
-                    "sources",
-                    "Sources",
+        } else if (RUN.equals(name)) {
+            category = ProjectCustomizer.Category.create(
+                    RUN,
+                    Bundle.CompositePanelProviderImpl_run_title(),
+                    null);
+        } else if (JS_FILES.equals(name)) {
+            category = ProjectCustomizer.Category.create(
+                    JS_FILES,
+                    Bundle.CompositePanelProviderImpl_jsFiles_title(),
                     null);
         }
+        assert category != null : "No category for name: " + name;
+        return category;
     }
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        if (mode == Mode.Run) {
-            return new RunPanel(category, (ClientSideProject)context.lookup(Project.class));
-        } else {
-            return new SourcesPanel(category, (ClientSideProject)context.lookup(Project.class));
+        String categoryName = category.getName();
+        ClientSideProject project = context.lookup(ClientSideProject.class);
+        ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
+        if (SOURCES.equals(categoryName)) {
+            return new SourcesPanel(category, project);
+        } else if (RUN.equals(categoryName)) {
+            return new RunPanel(category, project);
+        } else if (JS_FILES.equals(categoryName)) {
+            return new JavaScriptFilesPanel(category, uiProperties);
         }
+        assert false : "No component found for " + category.getDisplayName();
+        return new JPanel();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
             position = 100)
-    public static ClientSideProjectPanelProvider createRunConfigs() {
-        return new ClientSideProjectPanelProvider(Mode.Run);
+    public static CompositePanelProviderImpl createSources() {
+        return new CompositePanelProviderImpl(SOURCES);
     }
-    
+
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
-            position = 77)
-    public static ClientSideProjectPanelProvider createSources() {
-        return new ClientSideProjectPanelProvider(Mode.Sources);
+            position = 200)
+    public static CompositePanelProviderImpl createRunConfigs() {
+        return new CompositePanelProviderImpl(RUN);
     }
-    
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 300)
+    public static CompositePanelProviderImpl createJavaScriptFiles() {
+        return new CompositePanelProviderImpl(JS_FILES);
+    }
+
 }
