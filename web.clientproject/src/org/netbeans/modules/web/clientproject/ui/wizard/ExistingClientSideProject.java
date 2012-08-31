@@ -80,6 +80,8 @@ public class ExistingClientSideProject extends JPanel {
     String lastSiteRoot = ""; // NOI18N
     // @GuardedBy("EDT")
     String lastProjectName = ""; // NOI18N
+    volatile String configDir = null;
+    volatile String testDir = null;
 
 
     public ExistingClientSideProject() {
@@ -98,6 +100,7 @@ public class ExistingClientSideProject extends JPanel {
                 updateProjectName();
                 updateProjectDirectory();
                 lastSiteRoot = getSiteRoot();
+                detectClientSideProject(lastSiteRoot);
                 fireChanges = true;
             }
         }));
@@ -130,6 +133,14 @@ public class ExistingClientSideProject extends JPanel {
 
     public String getProjectDirectory() {
         return projectDirectoryTextField.getText().trim();
+    }
+
+    public String getConfigDir() {
+        return configDir;
+    }
+
+    public String getTestDir() {
+        return testDir;
     }
 
     public final void addChangeListener(ChangeListener listener) {
@@ -267,6 +278,23 @@ public class ExistingClientSideProject extends JPanel {
             String newProjDir = projectDirectory.substring(0, projectDirectory.length() - lastProjectName.length()) + getProjectName();
             projectDirectoryTextField.setText(newProjDir);
         }
+    }
+
+    void detectClientSideProject(String siteRoot) {
+        ClientSideProjectDetector detector = new ClientSideProjectDetector(new File(siteRoot));
+        if (detector.detected()) {
+            projectNameTextField.setText(detector.getName());
+            projectDirectoryTextField.setText(detector.getProjectDirPath());
+            configDir = detector.getConfigDirPath();
+            testDir = detector.getTestDirPath();
+        } else {
+            resetDetectedValues();
+        }
+    }
+
+    void resetDetectedValues() {
+        configDir = null;
+        testDir = null;
     }
 
     /**

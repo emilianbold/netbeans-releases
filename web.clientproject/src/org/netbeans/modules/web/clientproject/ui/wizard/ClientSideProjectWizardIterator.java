@@ -63,6 +63,7 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -353,6 +354,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public static final class ExistingProjectWizard implements Wizard {
 
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
+        public static final String CONFIG_ROOT = "CONFIG_ROOT"; // NOI18N
+        public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
@@ -374,16 +377,28 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
+            ReferenceHelper referenceHelper = project.getReferenceHelper();
             ClientSideProjectUtilities.initializeProject(project.getProjectHelper(),
-                    project.getReferenceHelper().createForeignFileReference(siteRoot, PROJECT_DIRECTORY),
-                    ClientSideProjectConstants.DEFAULT_TEST_FOLDER,
-                    ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, false);
+                    referenceHelper.createForeignFileReference(siteRoot, null),
+                    getDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER, referenceHelper),
+                    getDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, referenceHelper),
+                    false);
             return FileUtil.toFileObject(siteRoot);
         }
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty(SITE_ROOT, null);
+            wizardDescriptor.putProperty(CONFIG_ROOT, null);
+            wizardDescriptor.putProperty(TEST_ROOT, null);
+        }
+
+        private String getDir(WizardDescriptor wizardDescriptor, String property, String defaultDir, ReferenceHelper referenceHelper) {
+            File dir = (File) wizardDescriptor.getProperty(property);
+            if (dir != null) {
+                return referenceHelper.createForeignFileReference(dir, null);
+            }
+            return defaultDir;
         }
 
     }
