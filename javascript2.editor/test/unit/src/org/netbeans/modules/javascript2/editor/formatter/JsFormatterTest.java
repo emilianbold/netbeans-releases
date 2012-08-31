@@ -255,6 +255,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall1.js");
     }
 
+    public void testFunctionCall1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall1.js", null);
+    }
+
     public void testFunctionCall2Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall2.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -268,6 +272,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionCall2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionCall2.js");
+    }
+
+    public void testFunctionCall2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall2.js", null);
     }
 
     public void testFunctionCall3Always() throws Exception {
@@ -292,6 +300,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall3.js");
     }
 
+    public void testFunctionCall3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall3.js", null);
+    }
+
     public void testFunctionCall4Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -312,6 +324,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionCall4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionCall4.js");
+    }
+
+    public void testFunctionCall4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall4.js", null);
     }
 
     public void testFunctionCall5WrapAlways() throws Exception {
@@ -355,6 +371,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionCall5Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionCall5.js");
+    }
+
+    public void testFunctionCall5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall5.js", null);
     }
 
     public void testComments1() throws Exception {

@@ -981,8 +981,7 @@ public class JsFormatter implements Formatter {
         return ts.offset();
     }
 
-    private static boolean isContinuation(BaseDocument doc, Language<JsTokenId> language,
-            int offset, int bracketBalance) throws BadLocationException {
+    private boolean isContinuation(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
 
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
@@ -1258,7 +1257,7 @@ public class JsFormatter implements Formatter {
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }
-                        } else if (isBinaryOperator(id, previousId)) {
+                        } else if (isBinaryOperator(id, previousId) || id == JsTokenId.OPERATOR_DOT) {
                             // If a line starts with a non unary operator we can
                             // assume it's a continuation from a previous line
                             continued = true;
@@ -1332,7 +1331,7 @@ public class JsFormatter implements Formatter {
                     balance += getTokenBalance(context, ts, lineBegin, endOfLine, true, indentOnly);
                     int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
-                    continued = isContinuation(doc, language, offset, bracketBalance);
+                    continued = isContinuation(doc, offset, bracketBalance);
                 }
 
                 offset = endOfLine;
