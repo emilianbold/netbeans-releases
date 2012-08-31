@@ -223,7 +223,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         org.openide.awt.Mnemonics.setLocalizedText(profileAppRadio, Bundle.MemorySettingsBasicPanel_LivenessRadioText());
         profileAppRadio.setToolTipText(Bundle.StpLivenessTooltip());
         profileAppRadio.setOpaque(false);
-        profileAppRadio.setSelected(true);
+        profileAppRadio.setSelected(false);
         memoryModeRadios.add(profileAppRadio);
         profileAppRadio.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
