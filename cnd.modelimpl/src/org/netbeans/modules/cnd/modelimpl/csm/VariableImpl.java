@@ -113,7 +113,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         _setScope(scope);
     }
 
-    private VariableImpl(CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
+    protected VariableImpl(CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.initExpr = initExpr;
         this._static = _static;

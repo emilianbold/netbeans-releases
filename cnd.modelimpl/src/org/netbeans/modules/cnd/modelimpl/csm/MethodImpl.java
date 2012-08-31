@@ -47,20 +47,24 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * CsmFunction + CsmMember implementation
@@ -175,6 +179,158 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         return super.isConst();
     }
 
+    
+    public static class MethodBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;// = CharSequences.empty();
+        private boolean _static = false;
+        private boolean _extern = false;
+        private boolean _const = false;
+        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+        CsmVisibility visibility = CsmVisibility.PUBLIC;
+        private CsmFile file;
+        private final FileContent fileContent;
+        private int startOffset;
+        private int endOffset;
+        private CsmObjectBuilder parent;
+
+        private TypeFactory.TypeBuilder typeBuilder;
+        private CsmObjectBuilder parametersListBuilder;
+        
+        private CsmScope scope;
+        private MethodImpl instance;
+
+        public MethodBuilder(FileContent fileContent) {
+            assert fileContent != null;
+            this.fileContent = fileContent;
+        }
+        
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+        
+        public void setName(CharSequence name) {
+            if(this.name == null) {
+                this.name = name;
+            }
+        }
+        
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public CharSequence getRawName() {
+            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
+        }
+        
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setStatic() {
+            this._static = true;
+        }
+
+        public void setExtern() {
+            this._extern = true;
+        }
+
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }
+
+        public void setTypeBuilder(TypeFactory.TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
+        public void setParametersListBuilder(CsmObjectBuilder parametersListBuilder) {
+            this.parametersListBuilder = parametersListBuilder;
+        }
+
+        private MethodImpl getInstance() {
+            return instance;
+        }
+        
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if (parent == null) {
+                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                }
+            }
+            return scope;
+        }
+        
+        public MethodImpl create() {
+            MethodImpl method = getInstance();
+            CsmScope s = getScope();
+            if (method == null && s != null && name != null && getScope() != null) {
+                NameHolder nameHolder = NameHolder.createName(name);
+                CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+                CharSequence rawName = getRawName();
+
+                CsmClass cls = (CsmClass) scope;
+                boolean _virtual = false;
+                boolean _explicit = false;
+
+                method = new MethodImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, true);
+                temporaryRepositoryRegistration(true, method);
+
+                StringBuilder clsTemplateSuffix = new StringBuilder();
+                //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
+                //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+
+                //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+
+                CsmType returnType = null;
+                if (typeBuilder != null) {
+                    typeBuilder.setScope(s);
+                    returnType = typeBuilder.create();
+                }
+                if (returnType == null) {
+                    returnType = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
+                }
+                method.setReturnType(returnType);
+                ((FunctionParameterListBuilder)parametersListBuilder).setScope(method);
+                method.setParameters(((FunctionParameterListBuilder)parametersListBuilder).create(),
+                        true);
+
+                postObjectCreateRegistration(true, method);
+                nameHolder.addReference(fileContent, method);
+                
+                if(parent != null) {
+                    if(parent instanceof ClassImpl.ClassBuilder) {
+                        ((ClassImpl.ClassBuilder)parent).getClassDefinitionInstance().addMember(method, true);
+                    }
+                } else {
+                    fileContent.addDeclaration(method);
+                }
+            }
+            if(getScope() instanceof CsmNamespace) {
+                ((NamespaceImpl)getScope()).addDeclaration(method);
+            }
+            return method;
+        }
+    }          
+    
+    
 ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 
