@@ -628,12 +628,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for1.js");
     }
 
+    public void testFor1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for1.js", null);
+    }
+
     public void testFor2() throws Exception {
         reformatFileContents("testfiles/formatter/for2.js",new IndentPrefs(4, 4));
     }
 
     public void testFor2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for2.js");
+    }
+
+    public void testFor2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for2.js", null);
     }
 
     public void testFor3Default() throws Exception {
@@ -652,6 +660,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for3.js");
     }
 
+    public void testFor3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for3.js", null);
+    }
+
     public void testFor4Default() throws Exception {
         reformatFileContents("testfiles/formatter/for4.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -666,6 +678,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFor4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for4.js");
+    }
+
+    public void testFor4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for4.js", null);
     }
 
     public void testFor5Always() throws Exception {
@@ -697,6 +713,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for5.js");
     }
 
+    public void testFor5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for5.js", null);
+    }
+
     public void testFor6Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapFor, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -717,6 +737,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFor6Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for6.js");
+    }
+
+    public void testFor6Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for6.js", null);
     }
 
     public void testWhile1() throws Exception {
