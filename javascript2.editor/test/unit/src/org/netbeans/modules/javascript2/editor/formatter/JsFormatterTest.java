@@ -365,6 +365,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/comments1.js");
     }
 
+    public void testComments1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/comments1.js", null);
+    }
+
     public void testObjects1() throws Exception {
         reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
     }
@@ -861,6 +865,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/commas1.js");
     }
 
+    public void testCommas1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/commas1.js", null);
+    }
+
     public void testCommas2() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.spaceAfterComma, false);
@@ -872,6 +880,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/commas2.js");
     }
 
+    public void testCommas2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/commas2.js", null);
+    }
+
     public void testCommas3() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.spaceAfterComma, false);
@@ -881,6 +893,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testCommas3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/commas3.js");
+    }
+
+    public void testCommas3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/commas3.js", null);
     }
 
     public void testPrototype() throws Exception {
