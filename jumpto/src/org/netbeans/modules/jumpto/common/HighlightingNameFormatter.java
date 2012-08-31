@@ -98,8 +98,8 @@ import org.openide.util.Parameters;
  */
 public class HighlightingNameFormatter {
 
-    private static final String COLOR_FORMAT_PATTERN = "<span style=\"background-color:%s; font-weight:bold; color:%s\">%s</span>"; //NOI18N
-    private static final String BOLD_FORMAT_PATTERN = "<span style=\"font-weight:bold;\">%s</span>";    //NOI18N
+    private static final String COLOR_FORMAT_PATTERN = "<font style=\"background-color:%s; font-weight:bold; color:%s; white-space:nowrap\">%s</font>"; //NOI18N
+    private static final String BOLD_FORMAT_PATTERN = "<font style=\"font-weight:bold; white-space:nowrap\">%s</font>";    //NOI18N
     private String formatPattern;
 
     private HighlightingNameFormatter(

@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
@@ -250,6 +251,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean inDeclSpecifiers = false;
         private DeclaratorBuilder declaratorBuilder;
         private TypeBuilder typeBuilder;
+        private CsmObjectBuilder parametersListBuilder;
         private int startOffset;
         private int endOffset;
 
@@ -313,6 +315,18 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         public DeclaratorBuilder getDeclaratorBuilder() {
             return declaratorBuilder;
+        }
+
+        public void setParametersListBuilder(CsmObjectBuilder parametersListBuilder) {
+            this.parametersListBuilder = parametersListBuilder;
+        }
+
+        public CsmObjectBuilder getParametersListBuilder() {
+            return parametersListBuilder;
+        }
+        
+        public boolean isFunction() {
+            return parametersListBuilder != null;
         }
         
     }

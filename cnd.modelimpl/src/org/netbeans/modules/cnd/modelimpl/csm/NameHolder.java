@@ -106,6 +106,14 @@ public class NameHolder {
         nameHolder.end = endOffset;
         return nameHolder;
     }
+
+    public static NameHolder createName(CharSequence name, int startOffset, int endOffset, boolean isMacroExpanded) {        
+        NameHolder nameHolder = new NameHolder(name);
+        nameHolder.start = startOffset;
+        nameHolder.end = endOffset;
+        nameHolder.isMacroExpanded = isMacroExpanded;
+        return nameHolder;
+    }
     
     public static NameHolder createFunctionName(AST ast) {
         return new NameHolder(ast, FUNCTION);
