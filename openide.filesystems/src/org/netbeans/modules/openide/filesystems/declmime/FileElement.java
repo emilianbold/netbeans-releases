@@ -75,6 +75,10 @@ final class FileElement {
         return fileCheck.exts;
     }
 
+    List<Type.FileName> getNames() {
+        return fileCheck.names;
+    }
+
     String getMimeType() {
         return mime;
     }
