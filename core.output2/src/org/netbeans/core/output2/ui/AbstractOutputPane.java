@@ -55,7 +55,6 @@ import java.awt.*;
 import java.awt.event.*;
 import org.netbeans.core.output2.Controller;
 import org.netbeans.core.output2.OutputDocument;
-import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
 
 /**
@@ -597,12 +596,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     public void mouseClicked(MouseEvent e) {
-        if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown()
-                && SwingUtilities.isMiddleMouseButton(e)) {
-            int currentSize = getViewFont().getSize();
-            int defaultSize = OutputOptions.getDefault().getFont().getSize();
-            changeFontSizeBy(defaultSize - currentSize);
-        }
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -742,7 +735,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     protected abstract void changeFontSizeBy(int change);
 
     public final void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown()) {
+        if (e.isControlDown()) {
             int change = -e.getWheelRotation();
             changeFontSizeBy(change);
             e.consume();
