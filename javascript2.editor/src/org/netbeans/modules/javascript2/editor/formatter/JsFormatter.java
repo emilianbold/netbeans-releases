@@ -1051,10 +1051,13 @@ public class JsFormatter implements Formatter {
         int indentationSize = IndentUtils.indentLevelSize(document);
         int continuationIndent = CodeStyle.get(indentContext).getContinuationIndentSize();
 
-        final boolean indentOnly = true;
         try {
             final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
+            startOffset = Utilities.getRowStart(doc, startOffset);
+            int endLineOffset = Utilities.getRowStart(doc, endOffset);
+            final boolean indentOnly = (startOffset == endLineOffset)
+                    && (Utilities.isRowEmpty(doc, startOffset) || Utilities.isRowWhite(doc, startOffset));
             if (indentOnly && indentContext.isEmbedded()) {
                 // Make sure we're not messing with indentation in HTML
                 Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset);
@@ -1067,7 +1070,7 @@ public class JsFormatter implements Formatter {
                 endOffset = doc.getLength();
             }
 
-            startOffset = Utilities.getRowStart(doc, startOffset);
+            
             final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
             int initialIndent = 0;
@@ -1094,7 +1097,7 @@ public class JsFormatter implements Formatter {
 
             // TODO - remove initialbalance etc.
             computeIndents(indentContext, initialIndent, indentationSize, continuationIndent, initialOffset, endOffset,
-                    indentEmptyLines, includeEnd);
+                    indentEmptyLines, includeEnd, indentOnly);
 
             doc.runAtomic(new Runnable() {
                 public void run() {
@@ -1157,7 +1160,7 @@ public class JsFormatter implements Formatter {
     }
 
     private void computeIndents(IndentContext context, int initialIndent, int indentSize, int continuationIndent,
-            int startOffset, int endOffset, boolean indentEmptyLines, boolean includeEnd) {
+            int startOffset, int endOffset, boolean indentEmptyLines, boolean includeEnd, boolean indentOnly) {
 
         BaseDocument doc = context.getDocument();
         // PENDING:
@@ -1326,8 +1329,8 @@ public class JsFormatter implements Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(context, ts, lineBegin, endOfLine, true);
-                    int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false);
+                    balance += getTokenBalance(context, ts, lineBegin, endOfLine, true, indentOnly);
+                    int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
                     continued = isContinuation(doc, language, offset, bracketBalance);
                 }
@@ -1339,7 +1342,7 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private int getTokenBalance(IndentContext context, TokenSequence<? extends JsTokenId> ts, int begin, int end, boolean includeKeywords) {
+    private int getTokenBalance(IndentContext context, TokenSequence<? extends JsTokenId> ts, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
         BaseDocument doc = context.getDocument();
 
@@ -1368,7 +1371,7 @@ public class JsFormatter implements Formatter {
             JsTokenId id = token.id();
 
             if (includeKeywords) {
-                int delta = getTokenBalanceDelta(context, id, ts);
+                int delta = getTokenBalanceDelta(context, id, ts, indentOnly);
                 balance += delta;
             } else {
                 balance += getBracketBalanceDelta(id);
@@ -1380,7 +1383,7 @@ public class JsFormatter implements Formatter {
             // We're not done yet... find the next section...
             TokenSequence<? extends JsTokenId> ets = LexUtilities.getNextJsTokenSequence(doc, last+1, end, language);
             if (ets != null && ets.offset() > begin) {
-                return balance + getTokenBalance(context, ets, ets.offset(), end, includeKeywords);
+                return balance + getTokenBalance(context, ets, ets.offset(), end, includeKeywords, indentOnly);
             }
         }
 
@@ -1396,7 +1399,7 @@ public class JsFormatter implements Formatter {
         return 0;
     }
 
-    private int getTokenBalanceDelta(IndentContext context, JsTokenId id, TokenSequence<? extends JsTokenId> ts) {
+    private int getTokenBalanceDelta(IndentContext context, JsTokenId id, TokenSequence<? extends JsTokenId> ts, boolean indentOnly) {
         try {
             BaseDocument doc = context.getDocument();
             OffsetRange range = OffsetRange.NONE;
@@ -1467,7 +1470,7 @@ public class JsFormatter implements Formatter {
                 context.getBlocks().push(new IndentContext.BlockDescription(true, range));
             } else if (id == JsTokenId.EOL) {
 
-//                if (!indentOnly) {
+                if (!indentOnly) {
                     TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
                     // skip whitespaces and newlines
                     Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(inner);
@@ -1500,7 +1503,7 @@ public class JsFormatter implements Formatter {
                             }
                         }
                     }
-//                }
+                }
 
                 // other
                 if (!context.getBlocks().empty()) {
@@ -1508,18 +1511,18 @@ public class JsFormatter implements Formatter {
                         // end of line after braceless block start
                         OffsetRange stackOffset = context.getBlocks().peek().getRange();
                         if (stackOffset.containsInclusive(ts.offset())) {
-//                            if (indentOnly) {
+                            if (indentOnly) {
                                 // enter pressed in braceless block
                                 return 1;
-//                            }
-//                            // we are in the braceless block statement
-//                            int stackEndLine = Utilities.getLineOffset(doc, stackOffset.getEnd());
-//                            int offsetLine = Utilities.getLineOffset(doc, ts.offset());
-//                            if (stackEndLine == offsetLine) {
-//                                // if we are at the last line of braceless block statement
-//                                // increse indent by 1
-//                                return 1;
-//                            }
+                            }
+                            // we are in the braceless block statement
+                            int stackEndLine = Utilities.getLineOffset(doc, stackOffset.getEnd());
+                            int offsetLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (stackEndLine == offsetLine) {
+                                // if we are at the last line of braceless block statement
+                                // increse indent by 1
+                                return 1;
+                            }
                         } else {
                             // we are not in braceless block statement,
                             // let's decrease indent for all braceless blocks in top of stack (if any)
