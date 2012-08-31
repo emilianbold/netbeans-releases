@@ -94,7 +94,8 @@ public final class HighlightInBrowserAction extends AbstractAction {
     
     @Override
     public boolean isEnabled() {
-        return getDesDescription() != null;
+        final Description desDescription = getDesDescription();
+        return desDescription != null && desDescription != Description.empty(Description.DOM);
     }
     
     

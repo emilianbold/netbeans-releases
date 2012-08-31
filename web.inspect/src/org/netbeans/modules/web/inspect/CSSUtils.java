@@ -277,4 +277,44 @@ public class CSSUtils {
         return main.substring(0, main.length()-1).trim();
     }
 
+    /**
+     * Returns an unspecified "normalized" version of the media query suitable
+     * for {@code String} comparison with other normalized media queries.
+     *
+     * @param mediaQueryList media query list to normalize.
+     * @return "normalized" version of the media query.
+     */
+    public static String normalizeMediaQuery(String mediaQueryList) {
+        mediaQueryList = mediaQueryList.trim().toLowerCase();
+        StringBuilder result = new StringBuilder();
+        StringTokenizer st = new StringTokenizer(mediaQueryList, ","); // NOI18N
+        while (st.hasMoreTokens()) {
+            String mediaQuery = st.nextToken();
+            int index;
+            List<String> parts = new ArrayList<String>();
+            while ((index = mediaQuery.indexOf("and")) != -1) { // NOI18N
+                String part = mediaQuery.substring(0,index);
+                mediaQuery = mediaQuery.substring(index+3);
+                parts.add(part);
+            }
+            parts.add(mediaQuery);
+            Collections.sort(parts);
+            Collections.reverse(parts); // Make sure that media type is before expressions
+            for (int i=0; i<parts.size(); i++) {
+                if (i != 0) {
+                    result.append(" and "); // NOI18N
+                }
+                String part = parts.get(i);
+                // 'part' is not a selector, but the same normalization
+                // works well here as well.
+                part = normalizeSelector(part);
+                result.append(part);
+            }
+            if (st.hasMoreTokens()) {
+                result.append(", "); // NOI18N
+            }
+        }
+        return result.toString();
+    }
+
 }
