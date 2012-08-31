@@ -748,8 +748,8 @@ public final class BreakpointManager {
 		// A change which results in an overloaded menu will result
 		// in one replaceHandler and many newHandlers.
 
-		if (msg == BreakpointMsg.NEW) {
-		    assert bj.isOverload();
+		if (msg == BreakpointMsg.NEW && bj.isOverload()) {
+		    // assert bj.isOverload(); not valid for gdb syscall breakpoints
 		    bp = new BreakpointPlan(BreakpointOp.NEW, bj);
 		} else {
 		    bp = new BreakpointPlan(BreakpointOp.MODIFY, bj);

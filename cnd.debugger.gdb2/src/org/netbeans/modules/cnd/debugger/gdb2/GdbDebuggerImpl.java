@@ -3986,28 +3986,36 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (rt == null) {
             rt = 0;
         }
-        newHandlers(rt, null, record);
+        BreakpointPlan bp = bm().getBreakpointPlan(rt, BreakpointMsg.NEW);
+        if (bp.op() == BreakpointOp.NEW) {
+            newHandlers(rt, record, bp);
+        } else {
+            MIResult result = (MIResult) record.results().get(0);
+            replaceHandler(rt, result, bp);
+        }
     }
 
-    private void newHandlers(int rt, MIBreakCommand cmd, MIRecord record) {
+    private void newHandlers(int rt, MIRecord record, BreakpointPlan bp) {
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
             if (result.matches(MI_BKPT) || result.matches(MI_WPT)) {
-                newHandler(rt, cmd, result);
+                newHandler(rt, result, bp);
             }
 	}
     }
 
-    private void newHandler(int rt, MIBreakCommand cmd, MIResult result) {
+    private void newHandler(int rt, MIResult result, BreakpointPlan bp) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Bpt.pathway) {
 	    System.out.printf("GdbDebuggerImpl.newHandler(%s)\n", result); // NOI18N
 	}
 
         Handler handler = null;
 	try {
-	    BreakpointPlan bp = bm().getBreakpointPlan(rt, BreakpointMsg.NEW);
-
+            if (bp == null) {
+                bp = bm().getBreakpointPlan(rt, BreakpointMsg.NEW);
+            }
+            
 	    /* LATER
 	     See LATER below
 	    // remember enable state before we process incoming bpt data
@@ -4106,10 +4114,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
 
-    private void replaceHandler(MIChangeBreakCommand cmd,
-				int rt,
-				MIResult result) {
-	BreakpointPlan bp = bm().getBreakpointPlan(rt, BreakpointMsg.REPLACE);
+    private void replaceHandler(int rt, MIResult result, BreakpointPlan bp) {
+        if (bp == null) {
+            bp = bm().getBreakpointPlan(rt, BreakpointMsg.REPLACE);
+        }
         assert bp.op() == BreakpointOp.MODIFY :
                 "replaceHandler(): bpt plan not CHANGE for rt " + rt; // NOI18N
 
@@ -4278,13 +4286,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         @Override
         protected void onDone(MIRecord record) {
-	    if (record.isEmpty()) {
-		if (!isConsoleCommand()) {
-                    // See comment for isEmpty
-                    onError(record);
-                }
+	    if (record.isEmpty() && !isConsoleCommand()) {
+                // See comment for isEmpty
+                onError(record);
 	    } else {
-		newHandlers(routingToken(), this, record);
+		newHandlers(routingToken(), record, null);
 	    }
 	    finish();
         }
@@ -4331,13 +4337,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         @Override
         protected void onDone(MIRecord record) {
-	    if (record.isEmpty()) {
-                if (!isConsoleCommand()) {
-                    // See comment for isEmpty
-                    onError(record);
-                }
+	    if (record.isEmpty() && !isConsoleCommand()) {
+                // See comment for isEmpty
+                onError(record);
 	    } else {
-		newHandlers(newRT == 0? routingToken(): newRT, this, record);
+		newHandlers(newRT == 0? routingToken(): newRT, record, null);
 		manager().bringDownDialog();
 	    }
             finish();
@@ -4389,14 +4393,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         @Override
         protected void onDone(MIRecord record) {
-	    if (record.isEmpty()) {
+	    if (record.isEmpty() && !isConsoleCommand()) {
 		// See comment for isEmpty
 		onError(record);
 	    } else {
 		MITList results = record.results();
 //		MIValue bkptValue = results.valueOf("bkpt"); // NOI18N
-		MIResult result = (MIResult) results.get(0);
-		replaceHandler(this, routingToken(), result);
+                if (!results.isEmpty()) {
+                    MIResult result = (MIResult) results.get(0);
+                    replaceHandler(routingToken(), result, null);
+                }
 		manager().bringDownDialog();
 	    }
             finish();
@@ -4414,11 +4420,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         @Override
         protected void onDone(MIRecord record) {
-	    if (record.isEmpty()) {
+	    if (record.isEmpty() && !isConsoleCommand()) {
 		// See comment for isEmpty
 		onError(record);
 	    } else {
-		newHandlers(routingToken(), this, record);
+		newHandlers(routingToken(), record, null);
 		manager().bringDownDialog();
 	    }
 	    finish();
