@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.TreeSet;
@@ -135,7 +136,7 @@ public final class JavaScriptFilesPanel extends JPanel {
 
     @NbBundle.Messages("JavaScriptFilesPanel.progress.detectingJsFiles=Detecting JavaScript files...")
     private Collection<String> findProjectJsFiles() {
-        final Set<String> jsFiles = new TreeSet<String>();
+        final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
