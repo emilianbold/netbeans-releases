@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.web.javascript.debugger.eval.ui.CodeEvaluator;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
@@ -88,6 +89,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
                         ActionsManager.ACTION_STEP_OVER,
                         ActionsManager.ACTION_STEP_OUT,
 //                        ActionsManager.ACTION_RUN_TO_CURSOR,
+                        ActionsManager.ACTION_EVALUATE,
                         ActionsManager.ACTION_KILL
                     })));
 
@@ -102,6 +104,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
             setEnabled(ActionsManager.ACTION_STEP_OVER, false);
             setEnabled(ActionsManager.ACTION_STEP_OUT, false);
+            setEnabled(ActionsManager.ACTION_EVALUATE, false);
         } else if (debugger.isSuspended()) {
 //            setEnabled(ActionsManager.ACTION_START, false);
             setEnabled(ActionsManager.ACTION_KILL, true);
@@ -110,6 +113,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_STEP_INTO, true);
             setEnabled(ActionsManager.ACTION_STEP_OVER, true);
             setEnabled(ActionsManager.ACTION_STEP_OUT, true);
+            setEnabled(ActionsManager.ACTION_EVALUATE, true);
         } else {
 //            setEnabled(ActionsManager.ACTION_START, false);
             setEnabled(ActionsManager.ACTION_KILL, true);
@@ -118,6 +122,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
             setEnabled(ActionsManager.ACTION_STEP_OVER, false);
             setEnabled(ActionsManager.ACTION_STEP_OUT, false);
+            setEnabled(ActionsManager.ACTION_EVALUATE, false);
         }
     }
 
@@ -148,6 +153,16 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
         return ACTIONS;
     }
 
+    @Override
+    public void postAction(Object action, Runnable actionPerformedNotifier) {
+        if (action == ActionsManager.ACTION_EVALUATE) {
+            CodeEvaluator.openEvaluator();
+            actionPerformedNotifier.run();
+        } else {
+            super.postAction(action, actionPerformedNotifier);
+        }
+    }
+    
     @Override
     public void doAction(final Object action) {
         if (action == ActionsManager.ACTION_START) {

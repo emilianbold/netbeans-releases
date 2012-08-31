@@ -45,16 +45,28 @@
 package org.netbeans.modules.web.javascript.debugger;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -63,11 +75,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class MiscEditorUtil {
@@ -85,6 +99,8 @@ public final class MiscEditorUtil {
     public static final String PROP_LINE_NUMBER = "lineNumber"; //NOI18N
     
     private static final Logger LOG = Logger.getLogger(MiscEditorUtil.class.getName());
+    
+    private static final RequestProcessor RP = new RequestProcessor(MiscEditorUtil.class.getName());
     
     public static String getAnnotationTooltip(String annotationType) {
         return getMessage("TOOLTIP_"+ annotationType);
@@ -292,4 +308,169 @@ public final class MiscEditorUtil {
                 actionPerform, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
     }
     
+    public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
+        //EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
+        //editorPane.setEditorKit(kit); - Do not set it, setupContext() will do the job.
+        DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
+        if (EventQueue.isDispatchThread() && en != null) {
+            final DebuggerEngine den = en;
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final Context c = retrieveContext(den);
+                    if (c != null) {
+                        setupContext(editorPane, c.url, c.line, c.debugger);
+                        if (contextSetUp != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    contextSetUp.actionPerformed(null);
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            Context c = retrieveContext(null);
+            if (c != null) {
+                setupContext(editorPane, c.url, c.line, c.debugger);
+            } else {
+                setupUI(editorPane);
+            }
+            return ;
+        }
+        Context c = retrieveContext(en);
+        if (c != null) {
+            setupContext(editorPane, c.url, c.line, c.debugger);
+        } else {
+            setupUI(editorPane);
+        }
+        if (contextSetUp != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    contextSetUp.actionPerformed(null);
+                }
+            });
+        }
+    }
+
+    private static Context retrieveContext(DebuggerEngine en) {
+        CallFrame cf = null;
+        Debugger d = null;
+        if (en != null) {
+            d = en.lookupFirst(null, Debugger.class);
+            if (d != null) {
+                cf = d.getCurrentCallFrame();
+            }
+        }
+        boolean adjustContext = true;
+        Context c;
+        if (cf != null) {
+            Session session = en.lookupFirst(null, Session.class);
+            String language = session.getCurrentLanguage();
+            c = new Context();
+            c.url = cf.getScript().getURL();
+            c.line = cf.getLineNumber();
+            c.debugger = d;
+            if (c.line > 0) {
+                adjustContext = false;
+                c.line--;
+            }
+        } else {
+            EditorContextDispatcher context = EditorContextDispatcher.getDefault();
+            String url = context.getMostRecentURLAsString();
+            if (url != null && url.length() > 0) {
+                c = new Context();
+                c.url = url;
+                c.line = context.getMostRecentLineNumber();
+                c.debugger = d;
+            } else {
+                return null;
+            }
+        }
+        if (adjustContext && !EventQueue.isDispatchThread()) {
+            // Do the adjustment only outside of AWT.
+            // When in AWT, the context update in RP is spawned.
+            //adjustLine(c);
+        }
+        return c;
+    }
+
+    public static void setupContext(final JEditorPane editorPane, String url, int line) {
+        setupContext(editorPane, url, line, null);
+    }
+
+    public static void setupContext(final JEditorPane editorPane, String url, final int line, final Debugger debugger) {
+        final FileObject file;
+        try {
+            file = URLMapper.findFileObject (new URL (url));
+            if (file == null) {
+                return;
+            }
+        } catch (MalformedURLException e) {
+            // null dobj
+            return;
+        }
+        //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
+        // Do the binding for text files only:
+        if (file.getMIMEType().startsWith("text/")) { // NOI18N
+            Runnable bindComponentToDocument = new Runnable() {
+                @Override
+                public void run() {
+                    String origText = editorPane.getText();
+                    DialogBinding.bindComponentToFile(file, (line >= 0) ? line : 0, 0, 0, editorPane);
+                    Document editPaneDoc = editorPane.getDocument();
+                    //editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
+                    editorPane.setText(origText);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                bindComponentToDocument.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(bindComponentToDocument);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        setupUI(editorPane);
+    }
+    
+    private static void setupUI(final JEditorPane editorPane) {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
+                if (eui == null) {
+                    return ;
+                }
+                editorPane.putClientProperty(
+                    "HighlightsLayerExcludes", //NOI18N
+                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+                );
+                // Do not draw text limit line
+                try {
+                    java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
+                    textLimitLineField.setAccessible(true);
+                    textLimitLineField.set(eui, false);
+                } catch (Exception ex) {}
+                editorPane.repaint();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
+    }
+
+    private static final class Context {
+        public String url;
+        public int line;
+        public Debugger debugger;
+    }
+
 }
