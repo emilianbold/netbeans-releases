@@ -94,25 +94,21 @@ public final class ClientSideProjectUtilities {
 
     public static void initializeProject(AntProjectHelper projectHelper) throws IOException {
         initializeProject(projectHelper, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER,
-                ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+                ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, true);
     }
 
-    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot, String test, String config) throws IOException {
-        // create dirs
-        projectHelper.getProjectDirectory().createFolder(siteRoot);
-        projectHelper.getProjectDirectory().createFolder(test);
-        projectHelper.getProjectDirectory().createFolder(config);
+    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot, String test, String config, boolean createFolders) throws IOException {
+        if (createFolders) {
+            // create dirs
+            projectHelper.getProjectDirectory().createFolder(siteRoot);
+            projectHelper.getProjectDirectory().createFolder(test);
+            projectHelper.getProjectDirectory().createFolder(config);
+        }
         // save project
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
         properties.put(ClientSideProjectConstants.PROJECT_TEST_FOLDER, test);
         properties.put(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, config);
-        saveProjectProperties(projectHelper, properties);
-    }
-
-    // XXX "merge" with the method above
-    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot) throws IOException {
-        Map<String, String> properties = Collections.singletonMap(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
         saveProjectProperties(projectHelper, properties);
     }
 

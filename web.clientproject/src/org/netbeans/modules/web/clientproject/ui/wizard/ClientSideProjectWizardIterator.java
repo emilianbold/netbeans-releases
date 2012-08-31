@@ -58,6 +58,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -373,7 +374,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
-            ClientSideProjectUtilities.initializeProject(project.getProjectHelper(), project.getReferenceHelper().createForeignFileReference(siteRoot, PROJECT_DIRECTORY));
+            ClientSideProjectUtilities.initializeProject(project.getProjectHelper(),
+                    project.getReferenceHelper().createForeignFileReference(siteRoot, PROJECT_DIRECTORY),
+                    ClientSideProjectConstants.DEFAULT_TEST_FOLDER,
+                    ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, false);
             return FileUtil.toFileObject(siteRoot);
         }
 

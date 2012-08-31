@@ -217,7 +217,8 @@ public final class SiteHelper {
                         ClientSideProjectUtilities.initializeProject(helper, 
                                 ep.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER), 
                                 ep.getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER),
-                                ep.getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+                                ep.getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
+                                true);
                         // and also unzip it directly into the root of project:
                         projectRoot = helper.getProjectDirectory();
                         firstItem = false;
