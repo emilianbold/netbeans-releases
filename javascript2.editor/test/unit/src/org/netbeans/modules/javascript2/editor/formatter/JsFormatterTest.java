@@ -1095,6 +1095,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/catch1.js");
     }
 
+    public void testCatch1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/catch1.js", null);
+    }
+
     public void testCatch2Default() throws Exception {
         reformatFileContents("testfiles/formatter/catch2.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -1110,6 +1114,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testCatch2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/catch2.js");
+    }
+
+    public void testCatch2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/catch2.js", null);
     }
 
     public void testParentheses1Default() throws Exception {
