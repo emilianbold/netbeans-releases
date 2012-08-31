@@ -117,15 +117,8 @@ class RestScanTask {
        if( webModule == null ){
            return;
        }
-       Profile profile = webModule.getJ2eeProfile();
-       if ( !Profile.JAVA_EE_6_FULL.equals(profile) && 
-               !Profile.JAVA_EE_6_WEB.equals(profile))
-       {
-           return;
-       }        
-       
        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
-       if ( support ==null || !support.supportsTargetProfile(Profile.JAVA_EE_6_FULL) ){
+       if ( support ==null || !support.hasJaxRsApi() ){
            return;
        }
        
