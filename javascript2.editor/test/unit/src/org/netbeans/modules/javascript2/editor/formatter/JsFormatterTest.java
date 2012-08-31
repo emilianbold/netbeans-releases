@@ -180,6 +180,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionDeclaration1.js");
     }
 
+    public void testFunctionDeclaration1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration1.js", null);
+    }
+
     public void testFunctionDeclaration2Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionDeclaration2.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -193,6 +197,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionDeclaration2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionDeclaration2.js");
+    }
+
+    public void testFunctionDeclaration2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration2.js", null);
     }
 
     public void testFunctionDeclaration3Default() throws Exception {
@@ -210,12 +218,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionDeclaration3.js");
     }
 
+    public void testFunctionDeclaration3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration3.js", null);
+    }
+
     public void testFunctionDeclaration4() throws Exception {
         reformatFileContents("testfiles/formatter/functionDeclaration4.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctionDeclaration4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionDeclaration4.js");
+    }
+
+    public void testFunctionDeclaration4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration4.js", null);
     }
 
     public void testFunctionDeclaration5Always() throws Exception {
@@ -238,6 +254,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionDeclaration5Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionDeclaration5.js");
+    }
+
+    public void testFunctionDeclaration5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration5.js", null);
     }
 
     public void testFunctionCall1Default() throws Exception {
