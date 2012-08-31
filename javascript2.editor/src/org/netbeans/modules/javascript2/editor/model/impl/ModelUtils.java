@@ -589,7 +589,9 @@ public class ModelUtils {
                     if (iNode.getName().equals("this")) {
                         List<? extends Node> path = getPath();
                         if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
-                            result.add(new TypeUsageImpl("@this." + aNode.getProperty().getName(), iNode.getStart(), false));                //NOI18N
+                            sb.append("@this."); //NOI18N
+                            sb.append(aNode.getProperty().getName());
+                            result.add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));                //NOI18N
                             // plus five due to this.
                         }
                     } else {
@@ -653,6 +655,9 @@ public class ModelUtils {
                     } else {
                         sb.insert(6, "@call;"); //NOI18N
                     }
+                    // don't visit arguments, just name the name of function.
+                    callNode.getFunction().accept(this);
+                    return null;
                 }
             }
             return super.visit(callNode, onset);

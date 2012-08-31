@@ -1165,7 +1165,7 @@ public class J2MEProjectGenerator {
                     }
                     final DataFolder helloFolder = DataFolder.findFolder(hello);
                     FileObject foTemplate = FileUtil.getConfigFile("Templates/MIDP/HelloMIDlet.java"); //NOI18N
-                    if (foTemplate == null) {
+                    if (foTemplate == null || platform.profile.startsWith(IMLET_PROFILE_PREFIX)) {
                         foTemplate = FileUtil.getConfigFile("Templates/MIDP/Midlet.java"); //NOI18N
                     }
                     if (foTemplate != null) {

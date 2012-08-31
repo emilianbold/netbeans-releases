@@ -244,7 +244,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                                             Exceptions.printStackTrace(e);
                                         }
                                     }
-                                } else {
+                                } else if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
                                     GeneratorUtils.generateAllAbstractMethodImplementations(copy, pathToModify);
                                 }
                             }

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.smarty.editor.parser;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.event.ChangeListener;
@@ -87,7 +88,7 @@ public class TplParser extends Parser {
         if (tplMimePath != null) {
 
             List<TokenSequence<?>> tsList = tokenHierarchy.tokenSequenceList(tplMimePath, 0, Integer.MAX_VALUE);
-            List<Function> functionList = new ArrayList<Function>();
+            List<Section> sectionList = new ArrayList<Section>();
 
             for (TokenSequence<?> ts : tsList) {
                 while (ts.moveNext()) {
@@ -95,7 +96,7 @@ public class TplParser extends Parser {
 
                     /* Parse Smarty Functions */
                     if (token.id() == TplTokenId.FUNCTION) {
-                        Function function = new Function();
+                        Section section = new Section();
                         CharSequence functionName = token.text();
 
                         int startOffset = ts.offset();
@@ -105,55 +106,69 @@ public class TplParser extends Parser {
                             token = (Token<TplTokenId>) ts.token();
                             textBuilder.append(token.text());
                         }
-                        int endOffset = startOffset + ((startOffset == ts.offset()) ?  token.length() : ts.offset() - startOffset + token.length());
-                        function.name = CharSequenceUtilities.toString(functionName);
-                        function.offsetRange = new OffsetRange(startOffset, endOffset);
-                        function.text = textBuilder.toString();
+                        int endOffset = startOffset + ((startOffset == ts.offset()) ? token.length() : ts.offset() - startOffset + token.length());
+                        section.function = CharSequenceUtilities.toString(functionName);
+                        section.offsetRange = new OffsetRange(startOffset, endOffset);
+                        section.text = textBuilder.toString();
 
                         String name = functionName.toString().startsWith("/") ? functionName.toString().substring(1) : functionName.toString();
-                        functionList.add(function);
+                        sectionList.add(section);
                     }
                 }
             }
 
             /* Analyse functionList structure */
-            Stack<Function> tagStack = new Stack<Function>();
-            for (Function tag : functionList) {
-                if (TplSyntax.isEndingSmartyCommand(tag.name) || TplSyntax.isElseSmartyCommand(tag.name)) { //NOI18N
-                    if (tagStack.empty()) { // End tag, but no more tokens on stack!
+            Stack<Block> blockStack = new Stack<Block>();
+            for (Section section : sectionList) {
+                if (TplSyntax.isEndingSmartyCommand(section.function) || TplSyntax.isElseSmartyCommand(section.function)) { //NOI18N
+                    if (blockStack.empty()) {
                         result.addError(
-                                NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedCommand(tag.name)), //NOI18N
-                                tag.offsetRange.getStart(),
-                                tag.offsetRange.getLength());
-                    } else if (TplSyntax.isInRelatedCommand(tag.name, tagStack.peek().name)) {
-                        if (!TplSyntax.isElseSmartyCommand(tag.name)) {
-                            Function beggining = tagStack.pop();
-                            result.addTag(beggining.name, beggining.offsetRange.getStart(), beggining.offsetRange.getLength(), beggining.text);
+                                NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedBaseCommand(section.function)), //NOI18N
+                                section.offsetRange.getStart(),
+                                section.offsetRange.getLength());
+                    } else if (TplSyntax.isInRelatedCommand(section.function, blockStack.peek().getControlTag().function)) {
+                        if (!TplSyntax.isElseSmartyCommand(section.function)) {
+                            // ending command to the parent one, create it in parserResult
+                            Block block = blockStack.pop();
+                            block.sections.add(section);
+                            result.addBlock(block.toParserResultBlock());
+                        } else {
+                            // in else-like commend, store the section into the parent block
+                            Block controlTag = blockStack.peek();
+                            controlTag.sections.add(section);
                         }
                     } else {
                         // something wrong lies on the stack!
                         // assume that current token is invalid and let it stay on the stack
                         result.addError(
-                                NbBundle.getMessage(TplParser.class, "ERR_Unexpected_Tag", new Object[]{tag.name, tagStack.peek().name}), //NOI18N
-                                tag.offsetRange.getStart(),
-                                tag.offsetRange.getLength());
+                                NbBundle.getMessage(TplParser.class, "ERR_Unexpected_Tag", new Object[]{section.function, TplSyntax.getEndingCommand(blockStack.peek().getControlTag().function)}), //NOI18N
+                                section.offsetRange.getStart(),
+                                section.offsetRange.getLength());
                     }
 
-                } else if (TplSyntax.isBlockCommand(tag.name)) {
-                    tagStack.push(tag);
+                } else if (TplSyntax.isBlockCommand(section.function)) {
+                    // start of the block command, store block to stack
+                    Block block = new Block(section);
+                    blockStack.push(block);
+
+                } else {
+                    // simple, not-paired tags - just store them into result
+                    TplParserResult.Block block = new TplParserResult.Block(section.toParserResultSection());
+                    result.addBlock(block);
                 }
 
             }
 
             // All instructions were parsed. Are there any left on the stack?
-            if (!tagStack.empty()) {
+            if (!blockStack.empty()) {
                 // they were never closed!
-                while (!tagStack.empty()) {
-                    Function function = tagStack.pop();
-                    result.addError(
-                            NbBundle.getMessage(TplParser.class, "ERR_Unclosed_Tag", function.name), //NOI18N
-                            function.offsetRange.getStart(),
-                            function.offsetRange.getLength());
+                while (!blockStack.empty()) {
+                    for (Section section : blockStack.pop().sections) {
+                        result.addError(
+                                NbBundle.getMessage(TplParser.class, "ERR_Unclosed_Tag", TplSyntax.getRelatedBaseCommand(section.function)), //NOI18N
+                                section.offsetRange.getStart(),
+                                section.offsetRange.getLength());
+                    }
                 }
             }
         }
@@ -184,11 +199,36 @@ public class TplParser extends Parser {
         }
     }
 
-    private class Function {
+    // We are using another data structures than TplParserResult's one to be able to use help/temp values
+    private static class Block {
 
-        private String name = null;
+        private final List<Section> sections = new LinkedList<Section>();
+
+        public Block(Section section) {
+            sections.add(section);
+        }
+
+        private TplParserResult.Block toParserResultBlock() {
+            TplParserResult.Block block = new TplParserResult.Block();
+            for (Section section : sections) {
+                block.addSection(section.toParserResultSection());
+            }
+            return block;
+        }
+
+        private Section getControlTag() {
+            return sections.get(0);
+        }
+    }
+
+    private static class Section {
+
+        private String function = null;
         private OffsetRange offsetRange = new OffsetRange(0, 0);
         private String text;
 
+        private TplParserResult.Section toParserResultSection() {
+            return new TplParserResult.Section(function, offsetRange, text);
+        }
     }
 }

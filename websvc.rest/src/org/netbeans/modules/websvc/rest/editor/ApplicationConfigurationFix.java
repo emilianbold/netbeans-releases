@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,45 +39,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.websvc.rest.editor;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+
 
 /**
+ * @author ads
  *
- * @author Petr Pisl
  */
-public class JsCodeCompletionGeneral extends JsTestBase {
+class ApplicationConfigurationFix extends BaseRestConfigurationFix {
     
-    public JsCodeCompletionGeneral(String testName) {
-        super(testName);
+    ApplicationConfigurationFix(Project project, FileObject fileObject, 
+            RestConfigurationEditorAwareTaskFactory factory, String[] packs, 
+            String fqn)
+    {
+        super(project, fileObject, factory, packs );
+        this.fqn = fqn;
     }
-    
-    public void testIssue215353() throws Exception {
-        checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
-    }
-    
+
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.editor.hints.Fix#getText()
+     */
     @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/general/"))
-            })
-        );
+    public String getText() {
+        return NbBundle.getMessage( RestConfigHint.class, 
+                "MSG_HintAddResourceClass", fqn );    // NOI18N
     }
-    
+
+    private String fqn;
 }

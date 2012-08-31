@@ -110,8 +110,8 @@ public class TwigCodeTemplateFilter extends UserTask implements CodeTemplateFilt
         Result parserResult = resultIterator.getParserResult();
         if (parserResult instanceof TwigParserResult) {
             CompletionContext completionContext = TwigCompletionContextFinder.find((TwigParserResult) parserResult, offset);
-            if (CompletionContext.INSTRUCTION.equals(completionContext)) {
-                // current code templates are just for Twig Tags (which are used in instructions)
+            if (CompletionContext.BLOCK.equals(completionContext)) {
+                // current code templates are just for Twig Tags (which are used in blocks)
                 accept = true;
             } else {
                 accept = false;

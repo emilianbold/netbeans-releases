@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="JAVA_ME">
+                    <attr name="position" intvalue="403"/>
                     <file name="VDCustomComponents.zip" url="VDCustomComponents.zip">
                         <attr name="position" intvalue="100"/>
                         <attr name="template" boolvalue="true"/>
