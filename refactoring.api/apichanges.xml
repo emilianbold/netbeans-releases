@@ -49,6 +49,26 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="ServerSideQueries">
+        <api name="refactoring"/>
+        <summary>Added support for Scope Providers and ExpandableTreeElements.</summary>
+        <version major="1" minor="30"/>
+        <date day="31" month="8" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added an ExpandableTreeElement and a declarative way to add new scopes.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ExpandableTreeElement"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeProvider"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeDescription"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeReference"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeReferences"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopePanel"/>
+        <issue number="217347"/>
+    </change>
     <change id="RefactoringResultsFilters">
         <api name="refactoring"/>
         <summary>Added an API to support filters of the Find Usages results.</summary>

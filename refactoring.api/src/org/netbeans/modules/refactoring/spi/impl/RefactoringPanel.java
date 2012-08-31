@@ -63,10 +63,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
@@ -75,6 +78,7 @@ import org.netbeans.api.project.*;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
+import org.netbeans.modules.refactoring.spi.ui.ExpandableTreeElement;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringCustomUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -699,6 +703,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         final RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
         cont.makeBusy(true);
         final AtomicInteger size = new AtomicInteger();
+        final AtomicBoolean sizeIsApproximate = new AtomicBoolean();
         initialize();
         if(showParametersPanel) {
             updateFilters();
@@ -749,8 +754,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                             }
                         }
                     }
-                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size.get():elements.size(), 0);
-                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false), isQuery);
+                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size.get():elements.size(), 0, isQuery && sizeIsApproximate.get());
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false), isQuery);
                     final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
                     if (isQuery && showParametersPanel) {
@@ -773,14 +778,17 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                             // ui.getRefactoring().setClassPath();
                             for (Iterator it = elements.iterator(); it.hasNext();i++) {
                                 final RefactoringElement e = (RefactoringElement) it.next();
+                                TreeElement treeElement = null;
                                 if(e.include(filtersManager)) {
-                                    createNode(TreeElementFactory.getTreeElement(e), nodes, root);
+                                    treeElement = TreeElementFactory.getTreeElement(e);
+                                    createNode(treeElement, nodes, root);
                                 } else {
                                     hidden++;
                                 }
-                                final int occurrences = i + 1;
+                                final int occurrences = i + (treeElement instanceof ExpandableTreeElement ? ((ExpandableTreeElement) treeElement).estimateChildCount() : 1);
                                 final int hiddenOccurrences = hidden;
                                 size.set(occurrences);
+                                sizeIsApproximate.compareAndSet(false, treeElement instanceof ExpandableTreeElement);
                                 if (isQuery && showParametersPanel) {
                                     if (cancelRequest.get()) {
                                         break;
@@ -791,7 +799,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
-                                                root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences));
+                                                root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
                                                 if (last) {
                                                     tree.repaint();
                                                 }
@@ -838,19 +846,18 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                     }
                     
                     if (!(isQuery && showParametersPanel)) {
-                        root.setNodeLabel(description + getErrorDesc(errorsNum, isQuery ? size.get() : elements.size(), hidden).toString());
+                        root.setNodeLabel(description + getErrorDesc(errorsNum, isQuery ? size.get() : elements.size(), hidden, isQuery && sizeIsApproximate.get()).toString());
                         setupTree(root, showParametersPanel, elements.size());
                     }
                     
                 }
 
-                private StringBuffer getErrorDesc(int errorsNum, int occurencesNum, int hiddenNum) throws MissingResourceException {
+                private StringBuffer getErrorDesc(int errorsNum, int occurencesNum, int hiddenNum, boolean occurencesNumApproximate) throws MissingResourceException {
                     StringBuffer errorsDesc = new StringBuffer();
-                    errorsDesc.append(" [").append(occurencesNum); // NOI18N
-                    errorsDesc.append(' ');
-                    errorsDesc.append(occurencesNum == 1 ?
-                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurence") :
-                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurences")
+                    errorsDesc.append(" ["); // NOI18N
+                    errorsDesc.append(occurencesNumApproximate ?
+                        NbBundle.getMessage(RefactoringPanel.class, "LBL_OccurencesApproximate", occurencesNum) :
+                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurences", occurencesNum)
                         );
                     if (errorsNum > 0) {
                         errorsDesc.append(',');
@@ -1003,6 +1010,18 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             tree.setModel(new DefaultTreeModel(root));
         }
         tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
+
+        this.tree.addTreeWillExpandListener(new TreeWillExpandListener() {
+            @Override public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+                Object last = event.getPath().getLastPathComponent();
+
+                if (last instanceof CheckNode) {
+                    ((CheckNode) last).ensureChildrenFilled((DefaultTreeModel) RefactoringPanel.this.tree.getModel());
+                }
+            }
+
+            @Override public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException { }
+        });
     }
 
     private void setupInstantTree(final CheckNode root, final boolean showParametersPanel) {
@@ -1236,6 +1255,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
     
     protected void closeNotify() {
         if (fuListener!=null) {
+            stopSearch();
             ui.getRefactoring().removeProgressListener(fuListener);
         }
         timeStamps.clear();
