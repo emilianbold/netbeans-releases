@@ -82,13 +82,18 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     @MIMEResolver.Registration(
         displayName="org.netbeans.modules.xml.resources.Bundle#XMLFirstResolver",
         position=60001,
-        resource="resources/xml-mime-resolver.xml"
+        resource="resources/xml-mime-resolver-basic.xml",
+        showInFileChooser="#ResourceFiles"
     )
     /**
      * Special MIME type so that other XML data objects do not inherit our editor
      */
     public static final String MIME_PLAIN_XML = "text/plain+xml";
     
+    @MIMEResolver.Registration(
+        displayName = "org.netbeans.modules.xml.resources.Bundle#XMLFirstResolver",
+    position = 60004,
+    resource = "resources/xml-mime-resolver-other.xml")
     /**
      * XSD pseudo-MIME type
      */

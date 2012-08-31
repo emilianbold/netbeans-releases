@@ -62,8 +62,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Filter;
@@ -379,26 +381,31 @@ public final class JPQLEditorTopComponent extends TopComponent {
                                 }
                             }
                         } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0) || provider.equals(ProviderUtil.HIBERNATE_PROVIDER)) {//NOI18N
-                            Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.HIBERNATE_QUERY);
-                            if(qClass !=null) {
-                                Method method = qClass.getMethod(JPQLExecutor.HIBERNATE_QUERY_SQL0);
-                                if(method != null){
-                                    Object dqOject = method.invoke(query);
-                                    Method method2 = (dqOject!= null ? dqOject.getClass().getMethod(JPQLExecutor.HIBERNATE_QUERY_SQL1) : null);
-                                    if(method2!=null) {
-                                        queryStr = (String) method2.invoke(dqOject);
-                                    }
+                            Method method = emf.getClass().getMethod("getSessionFactory");
+                            Object sessionFactoryImpl = method.invoke(emf);
+                            Method method2 = sessionFactoryImpl.getClass().getMethod("getQueryPlanCache");
+                            Object qPlanCache = method2.invoke(sessionFactoryImpl);
+                            Method method3 = qPlanCache.getClass().getMethod("getHQLQueryPlan", String.class, boolean.class, Map.class);
+                            Object cache = method3.invoke(qPlanCache, jpql, true, Collections.EMPTY_MAP);
+                            Method method4 = cache.getClass().getMethod("getTranslators");
+                            Object [] translators = (Object[]) method4.invoke(cache);
+                            StringBuilder stringBuff = new StringBuilder();
+                            if(translators != null && translators.length>0){
+                                Method method5 = translators[0].getClass().getMethod("getSQLString");
+                                for(Object translator:translators){
+                                    stringBuff.append(method5.invoke(translator)).append("\n");
                                 }
                             }
-                        } else if (provider.getProviderClass().contains("openjpa")) {//NOI18N
-                            Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.OPENJPA_QUERY);
-                            if (qClass != null) {
-                                Method method = qClass.getMethod(JPQLExecutor.OPENJPA_QUERY_SQL);
-                                if (method != null) {
-                                    queryStr = (String) method.invoke(query);
-                                }
-                            }
-                        }
+                            queryStr = stringBuff.toString();
+                        } //else if (provider.getProviderClass().contains("openjpa")) {//NOI18N
+//                            Class qClass = Thread.currentThread().getContextClassLoader().loadClass(JPQLExecutor.OPENJPA_QUERY);
+//                            if (qClass != null) {
+//                                Method method = qClass.getMethod(JPQLExecutor.OPENJPA_QUERY_SQL);
+//                                if (method != null) {
+//                                    queryStr = (String) method.invoke(query);
+//                                }
+//                            }
+//                        }
 
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task

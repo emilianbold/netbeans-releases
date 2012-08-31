@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -347,7 +348,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
         for(StringTokenizer st = new StringTokenizer(key, delimiter); st.hasMoreTokens();) { //NOI18N
             String ks = st.nextToken().trim();
 
-            KeyStroke keyStroke = Utils.getKeyStroke(ks);
+            KeyStroke keyStroke = KeyStrokeUtils.getKeyStroke(ks);
 
             if (keyStroke != null) {
                 buf.append(Utilities.keyToString(keyStroke, true));
@@ -373,7 +374,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
             KeyStroke keyStroke = Utilities.stringToKey(ks);
 
             if (keyStroke != null) {
-                buf.append(Utils.getKeyStrokeAsText(keyStroke));
+                buf.append(KeyStrokeUtils.getKeyStrokeAsText(keyStroke));
                 if (st.hasMoreTokens())
                     buf.append(' ');
             } else {
