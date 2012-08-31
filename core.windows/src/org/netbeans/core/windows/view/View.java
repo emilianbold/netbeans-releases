@@ -107,7 +107,15 @@ public interface View {
     
     public int TOPCOMPONENT_REQUEST_ATTENTION = 63;
     public int TOPCOMPONENT_CANCEL_REQUEST_ATTENTION = 64;
-    public int CHANGE_MAXIMIZE_TOPCOMPONENT_SLIDE_IN = 65;
+    /**
+     * @since 2.54
+     */
+    public int TOPCOMPONENT_ATTENTION_HIGHLIGHT_ON = 65;
+    /**
+     * @since 2.54
+     */
+    public int TOPCOMPONENT_ATTENTION_HIGHLIGHT_OFF = 66;
+    public int CHANGE_MAXIMIZE_TOPCOMPONENT_SLIDE_IN = 67;
 
     //toggle TopComponent busy
     public int TOPCOMPONENT_SHOW_BUSY = 70;

@@ -120,6 +120,26 @@ abstract class AbstractTabbedImpl extends Tabbed {
 
     protected abstract void cancelRequestAttention( int tabIndex );
 
+
+    @Override
+    public final void setAttentionHighlight( TopComponent tc, boolean highlight ) {
+        int idx = indexOf( tc );
+        if( idx >= 0 ) {
+            setAttentionHighlight( idx, highlight );
+        } else {
+            throw new IllegalArgumentException( "TopComponent " + tc
+                    + " is not a child of this container" ); //NOI18N
+        }
+    }
+
+    /**
+     *
+     * @param tabIndex
+     * @param highlight
+     * @since 2.54
+     */
+    protected abstract void setAttentionHighlight( int tabIndex, boolean highlight );
+
     @Override
     public final void insertComponent( String name, javax.swing.Icon icon, Component comp, String toolTip, int position ) {
         TabData td = new TabData( comp, icon, name, toolTip );

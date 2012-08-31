@@ -213,5 +213,14 @@ public abstract class TabbedContainerUI extends ComponentUI {
     protected abstract void requestAttention (int tab);
     
     protected abstract void cancelRequestAttention (int tab);
+
+    /**
+     * Turn tab highlight on/off
+     * @param tab
+     * @since 1.38
+     */
+    protected void setAttentionHighlight (int tab, boolean highlight) {
+
+    }
     
 }

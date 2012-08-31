@@ -106,12 +106,26 @@ final class Central implements ControllerHandler {
         viewRequestor.scheduleRequest (
             new ViewRequest(modeName, View.TOPCOMPONENT_REQUEST_ATTENTION, tc, tc));
     }
-    
+
     public void topComponentCancelRequestAttention (ModeImpl mode, TopComponent tc) {
         String modeName = getModeName(mode);
         viewRequestor.scheduleRequest (
             new ViewRequest(modeName, View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION, tc, tc));
-    }    
+    }
+
+    /**
+     * Turns tab highlight on/off
+     * @param mode
+     * @param tc
+     * @param highlight 
+     * @since 2.54
+     */
+    public void topComponentAttentionHighlight (ModeImpl mode, TopComponent tc, boolean highlight) {
+        String modeName = getModeName(mode);
+        viewRequestor.scheduleRequest (
+            new ViewRequest(modeName, highlight ? View.TOPCOMPONENT_ATTENTION_HIGHLIGHT_ON
+                                                : View.TOPCOMPONENT_ATTENTION_HIGHLIGHT_OFF, tc, tc));
+    }
     
     /////////////////////
     // Mutators >>

@@ -268,6 +268,16 @@ public class NBTabbedPane extends JTabbedPane {
         stopBlinking();
     }
 
+    /**
+     *
+     * @param tabIndex
+     * @param highlight
+     * @since 2.54
+     */
+    public final void setAttentionHighlight( int tabIndex, boolean highlight ) {
+        //TODO implement
+    }
+
     public final void setActive( boolean active ) {
         if( active != this.active ) {
             this.active = active;
