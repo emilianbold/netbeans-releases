@@ -59,16 +59,18 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
     private final String type;
     private final Breakpoint breakpoint;
     
-    public LineBreakpointAnnotation(final Annotatable annotatable, final LineBreakpoint b) {
+    public LineBreakpointAnnotation(final Annotatable annotatable, final LineBreakpoint b, boolean active) {
         this.breakpoint = b;
-        type = getAnnotationType(b);
+        type = getAnnotationType(b, active);
         attach(annotatable);
     }
     
+    @Override
     public String getAnnotationType() {
         return type;
     }
     
+    @Override
     public String getShortDescription() {
         return "";
     }
@@ -79,20 +81,23 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
         return breakpoint;
     }
     
-    private static String getAnnotationType(LineBreakpoint b) {
+    private static String getAnnotationType(LineBreakpoint b, boolean active) {
         boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
         String annotationType;
         if (b instanceof LineBreakpoint) {
+            boolean conditional = b.isConditional();
             annotationType = b.isEnabled() ?
-                (b.isConditional() ? MiscEditorUtil.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                (conditional ? MiscEditorUtil.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
                     MiscEditorUtil.BREAKPOINT_ANNOTATION_TYPE) :
-                (b.isConditional() ? MiscEditorUtil.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                (conditional ? MiscEditorUtil.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
                     MiscEditorUtil.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
         } else {
             throw new IllegalStateException(b.toString());
         }
-        if (isInvalid && b.isEnabled()) {
-            annotationType += "_broken"; // NOI18N
+        if (!active) {
+            annotationType = annotationType + MiscEditorUtil.DEACTIVATED_BREAKPOINT_SUFFIX;
+        } else if (isInvalid && b.isEnabled()) {
+            annotationType += MiscEditorUtil.BROKEN_BREAKPOINT_SUFFIX;
         }
         return annotationType;
     }

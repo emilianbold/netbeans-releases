@@ -94,6 +94,8 @@ public final class MiscEditorUtil {
     public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE =  "DisabledBreakpoint"; //NOI18N
     public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  "CondBreakpoint"; //NOI18N
     public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  "DisabledCondBreakpoint"; //NOI18N
+    public static final String DEACTIVATED_BREAKPOINT_SUFFIX = "_stroke"; //NOI18N
+    public static final String BROKEN_BREAKPOINT_SUFFIX = "_broken"; //NOI18N
     public static final String CURRENT_LINE_ANNOTATION_TYPE =  "CurrentPC"; //NOI18N
     public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =  "CallSite"; //NOI18N
     public static final String PROP_LINE_NUMBER = "lineNumber"; //NOI18N

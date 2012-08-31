@@ -76,6 +76,8 @@ public final class Debugger {
     
     private static final Logger LOG = Logger.getLogger(Debugger.class.getName());
 
+    private static boolean lastBreakpointsActive = true;
+    
     private TransportHelper transport;
     private boolean enabled = false;
     private boolean suspended = false;
@@ -87,7 +89,7 @@ public final class Debugger {
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private CallFrame currentCallFrame = null;
-    private boolean breakpointsActive = true;
+    private boolean breakpointsActive = lastBreakpointsActive;
     private final Object breakpointsActiveLock = new Object();
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
@@ -429,6 +431,7 @@ public final class Debugger {
                 params.put("active", active);
                 Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointsActive", params));
                 breakpointsActive = active;
+                lastBreakpointsActive = active;
             }
         }
         if (oldActive != active) {
