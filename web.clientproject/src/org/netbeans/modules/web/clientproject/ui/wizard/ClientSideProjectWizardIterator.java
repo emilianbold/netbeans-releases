@@ -56,15 +56,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.LibraryVersion;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -301,7 +296,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries = (List<JavaScriptLibrarySelection.SelectedLibrary>) wizardDescriptor.getProperty(SELECTED_LIBRARIES);
             if (selectedLibraries != null) {
                 // any libraries selected
-                applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
+                ClientSideProjectUtilities.applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
             }
 
             // index file (#216293)
@@ -338,38 +333,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
-            }
-        }
-
-        @NbBundle.Messages({
-            "ClientSideProjectWizardIterator.error.copyingJsLib=Some of the library files could not be retrieved.",
-            "# {0} - library name",
-            "ClientSideProjectWizardIterator.msg.downloadingJsLib=Downloading {0}"
-        })
-        private void applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries, String jsLibFolder, FileObject siteRootDir,
-                ProgressHandle handle) throws IOException {
-            assert !EventQueue.isDispatchThread();
-            FileObject librariesRoot = null;
-            boolean someFilesAreMissing = false;
-            for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
-                if (selectedLibrary.isDefault()) {
-                    // ignore files from site template (they are already applied)
-                    continue;
-                }
-                if (librariesRoot == null) {
-                    librariesRoot = FileUtil.createFolder(siteRootDir, jsLibFolder);
-                }
-                LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
-                Library library = libraryVersion.getLibrary();
-                handle.progress(Bundle.ClientSideProjectWizardIterator_msg_downloadingJsLib(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
-                try {
-                    WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
-                } catch (MissingLibResourceException e) {
-                    someFilesAreMissing = true;
-                }
-            }
-            if (someFilesAreMissing) {
-                errorOccured(Bundle.ClientSideProjectWizardIterator_error_copyingJsLib());
             }
         }
 
