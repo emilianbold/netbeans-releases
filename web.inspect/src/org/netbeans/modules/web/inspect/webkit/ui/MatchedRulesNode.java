@@ -91,10 +91,11 @@ public class MatchedRulesNode extends AbstractNode {
      */
     private void initChildren() {
         Children.Array children = (Children.Array)getChildren();
+        List<String> properties = new ArrayList<String>();
         List<MatchedRuleNode> nodes = new ArrayList<MatchedRuleNode>();
         for (Rule rule : matchedStyles.getMatchedRules()) {
             if (Utilities.showInCSSStyles(rule)) {
-                nodes.add(createMatchedRuleNode(node, rule));
+                nodes.add(createMatchedRuleNode(node, rule, properties, true));
             }
         }
         Node currentNode = node;
@@ -102,7 +103,7 @@ public class MatchedRulesNode extends AbstractNode {
             currentNode = currentNode.getParentNode();
             for (Rule rule : entry.getMatchedRules()) {
                 if (Utilities.showInCSSStyles(rule) && containsInheritedProperties(rule)) {
-                    nodes.add(createMatchedRuleNode(currentNode, rule));
+                    nodes.add(createMatchedRuleNode(currentNode, rule, properties, false));
                 }
             }
         }
@@ -132,10 +133,28 @@ public class MatchedRulesNode extends AbstractNode {
      *
      * @param node node matched by the rule.
      * @param rule rule matching the node.
+     * @param properties names of properties that were specified by other rules.
+     * @param matched determines whether the rule matches the element
+     * or whether it is inherited from some parent element.
      * @return child for the specified matched rule.
      */
-    private MatchedRuleNode createMatchedRuleNode(Node node, Rule rule) {
-        return new MatchedRuleNode(node, rule, new Resource(project, rule.getSourceURL()));
+    private MatchedRuleNode createMatchedRuleNode(Node node, Rule rule, List<String> properties, boolean matched) {
+        RuleInfo ruleInfo = new RuleInfo();
+        List<org.netbeans.modules.web.webkit.debugging.api.css.Property> ruleProperties = rule.getStyle().getProperties();
+        List<String> active = new ArrayList<String>(); // Names of active properties in this rule
+        for (int i=ruleProperties.size()-1; i>=0; i--) {
+            org.netbeans.modules.web.webkit.debugging.api.css.Property property = ruleProperties.get(i);
+            String name = property.getName();
+            boolean parsedOk = property.isParsedOk();
+            boolean specifiedAlready = properties.contains(name);
+            if (parsedOk && !specifiedAlready && (matched || CSSUtils.isInheritedProperty(name))) {
+                properties.add(name);
+                active.add(name);
+            } else if (!active.contains(name) && (specifiedAlready || parsedOk)) {
+                ruleInfo.markAsOverriden(name);
+            }
+        }
+        return new MatchedRuleNode(node, rule, new Resource(project, rule.getSourceURL()), ruleInfo);
     }
 
 }

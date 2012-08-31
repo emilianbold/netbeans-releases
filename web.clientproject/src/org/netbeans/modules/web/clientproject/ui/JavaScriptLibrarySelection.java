@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultCellEditor;
+import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -126,8 +127,13 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         initComponents();
 
+        initInfos();
         initLibraries();
         initLibrariesFolder();
+    }
+
+    private void initInfos() {
+        setAdditionalInfo(null);
     }
 
     private void initLibraries() {
@@ -173,6 +179,23 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(selectedLibrariesListModel);
         selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer()));
+        selectedLibrariesListModel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                dataChanged();
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                dataChanged();
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                dataChanged();
+            }
+            private void dataChanged() {
+                fireChangeEvent();
+            }
+        });
     }
 
     private void initLibrariesButtons() {
@@ -290,6 +313,12 @@ public class JavaScriptLibrarySelection extends JPanel {
         return null;
     }
 
+    public void setAdditionalInfo(String additionalInfo) {
+        additionalInfoLabel.setText(additionalInfo);
+        additionalInfoLabel.setVisible(additionalInfo != null);
+        ((GroupLayout) getLayout()).setHonorsVisibility(additionalInfoLabel, additionalInfo != null);
+    }
+
     void enableLibraryButtons() {
         // select
         selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
@@ -325,7 +354,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 // apparently happens when deselecting more libraries
                 continue;
             }
-            if (!selectedLibraries.get(index).isFromTemplate()) {
+            if (!selectedLibraries.get(index).isDefault()) {
                 return true;
             }
         }
@@ -337,7 +366,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             return false;
         }
         for (SelectedLibrary library : selectedLibraries) {
-            if (!library.isFromTemplate()) {
+            if (!library.isDefault()) {
                 return true;
             }
         }
@@ -370,7 +399,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert EventQueue.isDispatchThread();
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
         while (iterator.hasNext()) {
-            if (!iterator.next().isFromTemplate()) {
+            if (!iterator.next().isDefault()) {
                 iterator.remove();
             }
         }
@@ -384,7 +413,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         List<SelectedLibrary> selected = new ArrayList<SelectedLibrary>(selectedIndices.length);
         for (int index : selectedIndices) {
             SelectedLibrary library = selectedLibraries.get(index);
-            if (!library.isFromTemplate()) {
+            if (!library.isDefault()) {
                 selected.add(library);
             }
         }
@@ -444,7 +473,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
         while (iterator.hasNext()) {
             SelectedLibrary library = iterator.next();
-            if (library.isFromTemplate()) {
+            if (library.isDefault()) {
                 iterator.remove();
             }
         }
@@ -463,7 +492,8 @@ public class JavaScriptLibrarySelection extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoLabel = new javax.swing.JLabel();
+        generalInfoLabel = new javax.swing.JLabel();
+        additionalInfoLabel = new javax.swing.JLabel();
         librariesLabel = new javax.swing.JLabel();
         librariesFilterTextField = new javax.swing.JTextField();
         librariesScrollPane = new javax.swing.JScrollPane();
@@ -478,7 +508,9 @@ public class JavaScriptLibrarySelection extends JPanel {
         librariesFolderLabel = new javax.swing.JLabel();
         librariesFolderTextField = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.infoLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generalInfoLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.generalInfoLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(additionalInfoLabel, "ADDITIONAL_INFO"); // NOI18N
 
         librariesLabel.setLabelFor(librariesTable);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesLabel.text")); // NOI18N
@@ -527,9 +559,8 @@ public class JavaScriptLibrarySelection extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
                     .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(generalInfoLabel)
+            .addComponent(additionalInfoLabel)
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
@@ -537,8 +568,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
+                .addComponent(generalInfoLabel)
+                .addGap(0, 0, 0)
+                .addComponent(additionalInfoLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesLabel)
                     .addComponent(selectedLabel)
@@ -564,9 +597,10 @@ public class JavaScriptLibrarySelection extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel additionalInfoLabel;
     private javax.swing.JButton deselectAllButton;
     private javax.swing.JButton deselectSelectedButton;
-    private javax.swing.JLabel infoLabel;
+    private javax.swing.JLabel generalInfoLabel;
     private javax.swing.JTextField librariesFilterTextField;
     private javax.swing.JLabel librariesFolderLabel;
     private javax.swing.JTextField librariesFolderTextField;
@@ -754,10 +788,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         private static final Comparator<SelectedLibrary> SELECTED_LIBRARIES_COMPARATOR = new Comparator<SelectedLibrary>() {
             @Override
             public int compare(SelectedLibrary library1, SelectedLibrary library2) {
-                if (library1.isFromTemplate() && !library2.isFromTemplate()) {
+                if (library1.isDefault() && !library2.isDefault()) {
                     return -1;
                 }
-                if (!library1.isFromTemplate() && library2.isFromTemplate()) {
+                if (!library1.isDefault() && library2.isDefault()) {
                     return 1;
                 }
                 return library1.getFilename().compareToIgnoreCase(library2.getFilename());
@@ -811,7 +845,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             SelectedLibrary selectedLibrary = (SelectedLibrary) value;
             Component component = defaultRenderer.getListCellRendererComponent(list, selectedLibrary.getFilename(), index, isSelected, cellHasFocus);
-            if (selectedLibrary.isFromTemplate()) {
+            if (selectedLibrary.isDefault()) {
                 component.setEnabled(false);
             }
             return component;
@@ -1005,7 +1039,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             return libraryVersion;
         }
 
-        public boolean isFromTemplate() {
+        public boolean isDefault() {
             return libraryVersion == null;
         }
 

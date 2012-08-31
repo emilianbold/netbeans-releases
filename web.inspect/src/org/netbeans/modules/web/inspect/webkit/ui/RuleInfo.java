@@ -39,65 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.inspect.webkit.ui;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.ui.RunPanel;
-import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
+ * Additional information about a rule.
  *
- * @author Jan Becicka
+ * @author Jan Stola
  */
-public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public class RuleInfo {
+    /** Names of properties that are overriden by other rules. */
+    private Set<String> overridenProperties = new HashSet<String>();
 
-    private enum Mode { Sources, Run};
-    private Mode mode;
-
-    private ClientSideProjectPanelProvider(Mode mode) {
-        this.mode = mode;
-    }
-    
-    @Override
-    public Category createCategory(Lookup context) {
-        if (mode == Mode.Run) {
-            return ProjectCustomizer.Category.create(
-                    "buildConfig",
-                    "Run",
-                    null);
-        } else {
-            return ProjectCustomizer.Category.create(
-                    "sources",
-                    "Sources",
-                    null);
-        }
+    /**
+     * Marks the specified property as overriden by other rules.
+     *
+     * @param propertyName name of the overriden property.
+     */
+    void markAsOverriden(String propertyName) {
+        overridenProperties.add(propertyName);
     }
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        if (mode == Mode.Run) {
-            return new RunPanel(category, (ClientSideProject)context.lookup(Project.class));
-        } else {
-            return new SourcesPanel(category, (ClientSideProject)context.lookup(Project.class));
-        }
+    /**
+     * Determines whether the specified property is overriden by other rules.
+     *
+     * @param propertyName name of the property to check.
+     * @return {@code true} when the property is overriden,
+     * returns {@code false} otherwise.
+     */
+    public boolean isOverriden(String propertyName) {
+        return overridenProperties.contains(propertyName);
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = ClientSideProjectType.TYPE,
-            position = 100)
-    public static ClientSideProjectPanelProvider createRunConfigs() {
-        return new ClientSideProjectPanelProvider(Mode.Run);
-    }
-    
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = ClientSideProjectType.TYPE,
-            position = 77)
-    public static ClientSideProjectPanelProvider createSources() {
-        return new ClientSideProjectPanelProvider(Mode.Sources);
-    }
-    
 }

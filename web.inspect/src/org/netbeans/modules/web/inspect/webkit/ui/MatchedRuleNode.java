@@ -74,9 +74,10 @@ public class MatchedRuleNode extends AbstractNode {
      * @param node node that was matched by the rule to represent.
      * @param rule rule to represent.
      * @param ruleOrigin origin of the rule.
+     * @param ruleInfo additional rule information.
      */
-    MatchedRuleNode(Node node, Rule rule, Resource ruleOrigin) {
-        super(Children.LEAF, Lookups.fixed(rule, ruleOrigin));
+    MatchedRuleNode(Node node, Rule rule, Resource ruleOrigin, RuleInfo ruleInfo) {
+        super(Children.LEAF, Lookups.fixed(rule, ruleOrigin, ruleInfo));
         this.node = node;
         setDisplayName(rule.getSelector());
     }

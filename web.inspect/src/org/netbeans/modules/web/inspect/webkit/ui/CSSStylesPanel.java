@@ -47,8 +47,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -59,8 +61,13 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Property;
+import org.netbeans.modules.css.model.api.PropertyValue;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -264,6 +271,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      * @param rules rules selected in this panel.
      */
     void updateRulesEditor(final Collection<? extends Rule> rules) {
+        final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -285,7 +293,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                             } else {
                                 try {
                                     Source source = Source.create(fob);
-                                    ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, controller));
+                                    ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, ruleInfo, controller));
                                 } catch (ParseException ex) {
                                     Logger.getLogger(CSSStylesPanel.class.getName()).log(Level.INFO, null, ex);
                                 }
@@ -390,6 +398,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     static class RuleEditorTask extends UserTask {
         /** Rule to show in the rules editor. */
         private Rule rule;
+        /** Additional rule information. */
+        private RuleInfo ruleInfo;
         /** Controller of the rule editor where the rule should be shown. */
         private RuleEditorController controller;
 
@@ -397,12 +407,34 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
          * Creates a new {@code RuleEditorTask}.
          *
          * @param rule rule to show in the rules editor.
+         * @param ruleInfo additional rule information.
          * @param controller controller of the rule editor where the rule
          * should be shown.
          */
-        RuleEditorTask(Rule rule, RuleEditorController controller) {
+        RuleEditorTask(Rule rule, RuleInfo ruleInfo, RuleEditorController controller) {
             this.rule = rule;
+            this.ruleInfo = ruleInfo;
             this.controller = controller;
+        }
+
+        /**
+         * Determines whether the property with the specified name and value
+         * has been parsed without problems.
+         *
+         * @param propertyName name of the property to check.
+         * @param propertyValue value of the property to check.
+         * @return {@code true} if the property has been parsed without problems,
+         * returns {@code false} otherwise.
+         */
+        private boolean isParsedOk(String propertyName, String propertyValue) {
+            for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : rule.getStyle().getProperties()) {
+                if (!property.isParsedOk()
+                        && property.getName().equals(propertyName)
+                        && property.getValue().equals(propertyValue)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
@@ -417,6 +449,29 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                         if (modelRule != null) {
                             controller.setModel(sourceModel);
                             controller.setRule(modelRule);
+                            if (ruleInfo != null) {
+                                List<String> active = new ArrayList<String>();
+                                List<Declaration> declarations = modelRule.getDeclarations().getDeclarations();
+                                for (int i=declarations.size()-1; i>=0; i--) {
+                                    Declaration declaration = declarations.get(i);
+                                    Property property = declaration.getProperty();
+                                    String propertyName = property.getContent().toString().trim();
+                                    if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
+                                        controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
+                                    } else {
+                                        if (!active.contains(propertyName)) {
+                                            // Properties that were not parsed successfully
+                                            // do not override other properties.
+                                            PropertyValue propertyValue = declaration.getPropertyValue();
+                                            Expression expression = propertyValue.getExpression();
+                                            String value = expression.getContent().toString().trim();
+                                            if (isParsedOk(propertyName, value)) {
+                                                active.add(propertyName);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             found[0] = true;
                         }
                     }
