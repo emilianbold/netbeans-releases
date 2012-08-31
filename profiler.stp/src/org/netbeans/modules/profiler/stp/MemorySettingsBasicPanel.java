@@ -123,7 +123,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     public void setContext(Lookup.Provider project, Runnable profilingPointsDisplayer) {
         this.project = project;
         this.profilingPointsDisplayer = profilingPointsDisplayer;
-        updateProject(project);
+        updateControls();
     }
 
     public HelpCtx getHelpCtx() {
@@ -365,10 +365,10 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
                 recordStackTraceCheckbox.setSelected(false);
                 lastStackTracesState = true;
             }
+            profilingPointsCheckbox.setEnabled(false);
             if (project == null) return;
             if (!lastProfilingPointsState) {
                 profilingPointsStateCache = profilingPointsCheckbox.isSelected();
-                profilingPointsCheckbox.setEnabled(false);
                 profilingPointsCheckbox.setSelected(false);
                 lastProfilingPointsState = true;
             }
@@ -383,17 +383,13 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
                 recordStackTraceCheckbox.setSelected(stackTracesStateCache);
                 lastStackTracesState = false;
             }
+            profilingPointsCheckbox.setEnabled(project != null);
             if (project == null) return;
             if (lastProfilingPointsState) {
-                profilingPointsCheckbox.setEnabled(true);
                 profilingPointsCheckbox.setSelected(profilingPointsStateCache);
                 lastProfilingPointsState = false;
             }
         }
     }
-
-    // --- Private implementation ------------------------------------------------
-    private void updateProject(final Lookup.Provider project) {
-        profilingPointsCheckbox.setEnabled(project != null);
-    }
+    
 }
