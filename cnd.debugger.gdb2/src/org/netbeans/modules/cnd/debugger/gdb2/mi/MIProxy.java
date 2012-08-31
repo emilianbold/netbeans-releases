@@ -231,4 +231,8 @@ public abstract class MIProxy {
     protected void clearMessages() {
         cmdManager.clearMessages();
     }
+    
+    public void setIdleHandler(Runnable handler) {
+        cmdManager.setIdleHandler(handler);
+    }
 }

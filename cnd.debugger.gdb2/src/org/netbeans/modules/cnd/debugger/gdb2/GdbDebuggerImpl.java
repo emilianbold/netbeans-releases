@@ -1386,18 +1386,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         NativeDebuggerManager.get().addRecentDebugTarget(progname, false);
 
-        if (Log.Bpt.fix6810534) {
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
+        //need to wait until all commands go to gdb and back
+        gdb.setGdbIdleHandler(new Runnable() {
+            @Override
+            public void run() {
+                if (Log.Bpt.fix6810534) {
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            initialAction();
+                        }
+                    });
+                } else {
                     initialAction();
                 }
-            });
-        } else {
-            initialAction();
-        }
-
-
+            }
+        });
     }
 
     public OptionClient getOptionClient() {
@@ -4055,6 +4058,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    setHandlerEnabled(0, handler.getId(), false);
 	    }
 	    */
+            
+            if (!template.isEnabled() && handler.breakpoint().isEnabled()) {
+                // manually switch off async breakpoint
+                handler.postEnable(false, handler.breakpoint().getId());
+            }
+            
 	    bm().noteNewHandler(rt, bp, handler);
         } catch (Exception x) {
             Exceptions.printStackTrace(x);
