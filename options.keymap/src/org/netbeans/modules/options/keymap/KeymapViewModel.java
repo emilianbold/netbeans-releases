@@ -68,11 +68,13 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -625,6 +627,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     
     public void refreshActions () {
         categoryToActionsCache = new HashMap<String, List<Object>> ();
+        shortcutsCache = new HashMap<String, Map<ShortcutAction, Set<String>>>();
         model.refreshActions ();
     }
     
@@ -658,7 +661,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                 shortcutsCache = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
                 model = new KeymapModel ();
                 applyInProgress = false;
-    }
+            }
         });
     }
     
@@ -766,7 +769,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             Set<String> shortcuts = new LinkedHashSet<String> ();
             for (String emacsShortcut: entry.getValue()) {
                 KeyStroke[] keyStroke = Utilities.stringToKeys (emacsShortcut);
-                shortcuts.add (Utils.getKeyStrokesAsText (keyStroke, " "));
+                shortcuts.add (KeyStrokeUtils.getKeyStrokesAsText (keyStroke, " "));
             }
             result.put (action, shortcuts);
         }
@@ -784,7 +787,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         List<KeyStroke> result = new ArrayList<KeyStroke> ();
         while (st.hasMoreTokens ()) {
             String ks = st.nextToken ().trim ();
-            KeyStroke keyStroke = Utils.getKeyStroke (ks);
+            KeyStroke keyStroke = KeyStrokeUtils.getKeyStroke (ks);
             if (keyStroke == null) return null; // text is not parsable 
             result.add (keyStroke);
         }

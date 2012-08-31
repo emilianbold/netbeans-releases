@@ -57,6 +57,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
+import org.netbeans.modules.openide.filesystems.FileFilterSupport;
 import org.openide.util.*;
 
 /**
@@ -442,6 +443,19 @@ public class FileChooserBuilder {
      */
     public FileChooserBuilder addFileFilter (FileFilter filter) {
         filters.add (filter);
+        return this;
+    }
+
+    /**
+     * Add all default file filters to the file chooser.
+     *
+     * @see MIMEResolver.Registration#showInFileChooser()
+     * @see MIMEResolver.ExtensionRegistration#showInFileChooser()
+     * @return this
+     * @since 8.1
+     */
+    public FileChooserBuilder addDefaultFileFilters() {
+        filters.addAll(FileFilterSupport.findRegisteredFileFilters());
         return this;
     }
 
