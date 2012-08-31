@@ -48,6 +48,10 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.Collections;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -61,6 +65,10 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
         super(ast, file, type, name, scope, false, false);
     }
 
+    protected ParameterImpl(CsmType type, CharSequence name, CsmScope scope, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
+        super(type, name, scope, false, false, initExpr, file, startOffset, endOffset);
+    }
+    
     public static ParameterImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope) {
         ParameterImpl parameterImpl = new ParameterImpl(ast, file, type, name, scope);
         return parameterImpl;
@@ -86,6 +94,39 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     public boolean isVarArgs() {
         return false;
     }
+    
+    
+    public static class ParameterBuilder extends OffsetableIdentifiableBuilder {
+        
+        private TypeBuilder typeBuilder;
+        private CsmScope scope;
+
+        public void setTypeBuilder(TypeFactory.TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
+        public void setScope(CsmScope scope) {
+            this.scope = scope;
+        }
+        
+        public CsmScope getScope() {
+            assert scope != null;
+            return scope;
+        }
+        
+        public ParameterImpl create() {
+            CsmType type = null;
+            if (typeBuilder != null) {
+                typeBuilder.setScope(getScope());
+                type = typeBuilder.create();
+            }
+            if (type == null) {
+                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+            }
+            ParameterImpl param = new ParameterImpl(type, getName(), getScope(), null, getFile(), getStartOffset(), getEndOffset());
+            return param;
+        }
+    }      
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
