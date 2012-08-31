@@ -167,7 +167,7 @@ public class HtmlErrorFilter implements ErrorFilter {
         InstanceContent ic = new InstanceContent();
         ic.add(result);
         WebPageMetadata wpmeta = WebPageMetadata.getMetadata(new AbstractLookup(ic));
-
+            
         if (wpmeta != null) {
             //get an artificial mimetype for the web page, this doesn't have to be equal
             //to the fileObjects mimetype.

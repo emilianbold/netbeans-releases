@@ -41,24 +41,31 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.refactoring.ExtractInlinedStyleRefactoringPlugin;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -68,7 +75,60 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class HtmlSourceUtils {
+    
+    /**
+     * Causes the file to reindexed. 
+     * 
+     * If the file is opened in the editor,  editor content will be used 
+     * instead of the file content.
+     * 
+     * @param file 
+     */
+    public static void forceReindex(FileObject file) {
+//        FileObject parent = file.getParent();
+//        
+//        URL fileURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
+//        URL parentURL = URLMapper.findURL(parent, URLMapper.EXTERNAL);
+//        
+//        IndexingManager.getDefault().refreshIndex(
+//                parentURL,
+//                Collections.<URL>singleton(fileURL),
+//                true,
+//                true);
+    }
+    
+    /**
+     * Forces to rebuild the document's {@link TokenHierarchy}.
+     * 
+     * @param doc a swing document
+     */
+    public  static void rebuildTokenHierarchy(final Document doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
+    }
      
+    
+    /**
+     * Adds a link to the given stylesheet {@link FileObject}
+     * 
+     * @param modificationResult
+     * @param result
+     * @param targetFile
+     * @return true if the import was successful
+     */
     public static boolean importStyleSheet(ModificationResult modificationResult, 
             HtmlParserResult result, 
             FileObject targetFile) {
@@ -100,7 +160,6 @@ public class HtmlSourceUtils {
                 }, ElementType.OPEN_TAG);
 
             }
-
 
             Node root = result.root();
             ElementUtils.visitChildren(root, new ElementVisitor() {

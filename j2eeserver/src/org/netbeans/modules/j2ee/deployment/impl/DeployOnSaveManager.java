@@ -111,6 +111,9 @@ public final class DeployOnSaveManager {
     private final WeakHashMap<J2eeModuleProvider, CopyOnSaveListener> copyListeners = new WeakHashMap<J2eeModuleProvider, CopyOnSaveListener>();
     
     private final WeakHashMap<J2eeModuleProvider, Object> suspended = new WeakHashMap<J2eeModuleProvider, Object>();
+    
+    private final WeakHashMap<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>> projectListeners = new
+        WeakHashMap<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>>();
 
     /**
      * We need a custom thread factory because the default one stores the
@@ -268,6 +271,32 @@ public final class DeployOnSaveManager {
             LOGGER.log(Level.FINE, "Resuming listening for {0}", provider);
         }        
     }
+    
+    public void addDeployOnSaveListener( J2eeModuleProvider provider, J2eeModuleProvider.DeployOnSaveListener listener )
+    {
+        synchronized (this) {
+            List<J2eeModuleProvider.DeployOnSaveListener> listeners = projectListeners.get(provider);
+            if (listeners == null) {
+                listeners = new ArrayList<J2eeModuleProvider.DeployOnSaveListener>();
+                projectListeners.put(provider, listeners);
+            }
+            listeners.add(listener);
+        }
+    }
+
+    public void removeDeployOnSaveListener( J2eeModuleProvider provider, J2eeModuleProvider.DeployOnSaveListener listener )
+    {
+        synchronized (this) {
+            List<J2eeModuleProvider.DeployOnSaveListener> listeners = projectListeners.get(provider);
+            if (listeners == null) {
+                return;
+            }
+            listeners.remove(listener);
+            if (listeners.isEmpty()) {
+                projectListeners.remove(provider);
+            }
+        }
+    }
 
     public static boolean isServerStateSupported(ServerInstance si) {
         return si.isRunning() && !si.isSuspended();
@@ -397,6 +426,7 @@ public final class DeployOnSaveManager {
             LOGGER.log(Level.FINE, "Performing pending deployments");
 
             Map<J2eeModuleProvider, Set<Artifact>> deployNow;
+            Map<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>> listeners = new HashMap<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>>();
             synchronized (DeployOnSaveManager.this) {
                 if (toDeploy.isEmpty()) {
                     return;
@@ -404,6 +434,14 @@ public final class DeployOnSaveManager {
 
                 deployNow = toDeploy;
                 toDeploy = new HashMap<J2eeModuleProvider, Set<Artifact>>();
+                
+                // copy the listeners
+                for (Map.Entry<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>> entry : projectListeners.entrySet()) {
+                    if (!deployNow.containsKey(entry.getKey())) {
+                        continue;
+                    }
+                    listeners.put(entry.getKey(), new ArrayList<J2eeModuleProvider.DeployOnSaveListener>(entry.getValue()));
+                }
             }
 
             for (Map.Entry<J2eeModuleProvider, Set<Artifact>> entry : deployNow.entrySet()) {
@@ -415,6 +453,14 @@ public final class DeployOnSaveManager {
                     if (updated) {
                         // run nbjpdaapprealoaded task.
                         runJPDAAppReloaded();
+                        
+                        
+                       List<J2eeModuleProvider.DeployOnSaveListener> toFire = listeners.get(entry.getKey());
+                       if (toFire != null) {
+                            for (J2eeModuleProvider.DeployOnSaveListener listener : toFire) {
+                                listener.deployed(entry.getValue());
+                            }
+                        }
                     }
                 } catch (Throwable t) {
                     // do not throw away any exception:

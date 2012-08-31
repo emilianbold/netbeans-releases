@@ -51,6 +51,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -174,13 +175,22 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         return p;
     }
 
+    @Override
+    public BrowserFamilyId getBrowserFamilyId() {
+        HtmlBrowser.Impl impl = createHtmlBrowserImpl();
+        if (impl != null && impl instanceof ExtBrowserImpl) {
+            return ((ExtBrowserImpl)impl).getDefaultBrowserFamilyId();
+        }
+        return BrowserFamilyId.UNKNOWN;
+    }
+
     private static final class Jdk6BrowserImpl extends ExtBrowserImpl {
 
         public Jdk6BrowserImpl() {
             assert ACTIVE;
         }
 
-        public void setURL(URL url) {
+        protected void loadURLInBrowser(URL url) {
             URL extURL = URLUtil.createExternalURL(url, false);
             try {
                 URI uri = extURL.toURI();
