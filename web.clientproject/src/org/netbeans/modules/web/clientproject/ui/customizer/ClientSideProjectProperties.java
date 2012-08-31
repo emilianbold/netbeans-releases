@@ -41,9 +41,20 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
+import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
@@ -51,17 +62,62 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigur
  */
 final class ClientSideProjectProperties {
 
+    private static final Logger LOGGER = Logger.getLogger(ClientSideProjectProperties.class.getName());
+
     private final ClientSideProject project;
+    private final List<JavaScriptLibrarySelection.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelection.SelectedLibrary>();
+
+    private volatile String jsLibFolder = null;
 
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
     }
 
-    void save() {
+    public void save() {
+        try {
+            // store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    saveConfig();
+                    addNewJsLibraries();
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            LOGGER.log(Level.WARNING, null, e.getException());
+        }
+    }
+
+    void saveConfig() {
+        assert ProjectManager.mutex().isWriteAccess() : "Write mutex required";
         for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
             config.save();
         }
+    }
+
+    void addNewJsLibraries() throws IOException {
+        if (jsLibFolder != null && !newJsLibraries.isEmpty()) {
+            ClientSideProjectUtilities.applyJsLibraries(newJsLibraries, jsLibFolder, project.getSiteRootFolder(), null);
+        }
+    }
+
+    public ClientSideProject getProject() {
+        return project;
+    }
+
+    public void setNewJsLibraries(List<SelectedLibrary> newJsLibraries) {
+        assert newJsLibraries != null;
+        // not needed to be locked, called always by just one caller
+        this.newJsLibraries.clear();
+        this.newJsLibraries.addAll(newJsLibraries);
+    }
+
+    public void setJsLibFolder(String jsLibFolder) {
+        assert jsLibFolder != null;
+        this.jsLibFolder = jsLibFolder;
     }
 
 }
