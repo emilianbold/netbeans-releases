@@ -71,7 +71,7 @@ import org.openide.windows.TopComponent;
 
 @NbBundle.Messages({
     "JavaResolver.Name=Java Files",
-    "JavaResolver.FileChooserName=Java Files",
+    "JavaResolver.FileChooserName=Java Files"
 })
 @MIMEResolver.ExtensionRegistration(
     position=100,
