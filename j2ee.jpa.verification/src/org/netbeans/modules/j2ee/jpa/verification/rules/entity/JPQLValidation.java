@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import java.util.ArrayList;
@@ -49,27 +48,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListResourceBundle;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
-import org.eclipse.persistence.jpa.jpql.spi.IQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
+import org.netbeans.modules.j2ee.jpa.verification.CancelListener;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
@@ -78,105 +71,90 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 
 /**
- * Verify content of @NamedQuery query
- * TODO: good to move warning to query level instead of class level
+ * Verify content of
+ *
+ * @NamedQuery query TODO: good to move warning to query level instead of class
+ * level
  */
-public class JPQLValidation extends JPAClassRule {
-    
-    /** Creates a new instance of NonFinalClass */
+public class JPQLValidation extends JPAClassRule implements CancelListener {
+
+    private ManagedTypeProvider mtp;//need to store as jpql validation may be too long and need to be cancelled if required
+    private JPQLQueryHelper helper;
+
+    /**
+     * Creates a new instance of NonFinalClass
+     */
     public JPQLValidation() {
         setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
                 ClassConstraints.EMBEDDABLE,
                 ClassConstraints.MAPPED_SUPERCLASS));
     }
-    
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+
+    @Override
+    public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx) {
+        JPAProblemContext jpaCtx = (JPAProblemContext) ctx;
+        jpaCtx.addCancelListener(this);
         Object modEl = ctx.getModelElement();
         Entity entity = (Entity) (modEl instanceof Entity ? modEl : null);
-        List<AnnotationMirror> first = Utilities.findAnnotations(subject, JPAAnnotations.NAMED_QUERY);
-        ArrayList<String> values = new ArrayList<String>();
-        ArrayList<String> names = new ArrayList<String>();
-        if(first == null || first.size()==0){
-            AnnotationMirror qs = Utilities.findAnnotation(subject, JPAAnnotations.NAMED_QUERIES);
-            if(qs != null){
-                Map<? extends ExecutableElement, ? extends AnnotationValue> maps = qs.getElementValues();
-                for(AnnotationValue vl:maps.values()){
-                    List  lst = (List) vl.getValue();
-                    for(Object val:lst){
-                        if(val instanceof AnnotationMirror){
-                            AnnotationMirror am = (AnnotationMirror) val;
-                            if(JPAAnnotations.NAMED_QUERY.equals(am.getAnnotationType().toString())){
-                                AnnotationValue qAttrValue = Utilities.getAnnotationAttrValue(am, "query");
-                                AnnotationValue nmAttrValue = Utilities.getAnnotationAttrValue(am, "name");
-                                if(qAttrValue != null){
-                                    values.add(qAttrValue.getValue().toString());
-                                    names.add(nmAttrValue == null ? "" : nmAttrValue.getValue().toString());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            for(AnnotationMirror mr:first){
-                AnnotationValue qAttrValue = Utilities.getAnnotationAttrValue(mr, "query");
-                AnnotationValue nmAttrValue = Utilities.getAnnotationAttrValue(mr, "name");
-                if(qAttrValue != null){
-                    values.add(qAttrValue.getValue().toString());
-                    names.add(nmAttrValue == null ? "" : nmAttrValue.getValue().toString());
-                }
-            }
-        }
-        JPQLQueryHelper helper = new JPQLQueryHelper();
+        helper = new JPQLQueryHelper();
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
-        for(int index=0;index<values.size();index++){
-            String value = values.get(index);
-            String qName = names.get(index);
-            NamedQuery nq = null;
-            if(entity != null) {
-                nq = entity.newNamedQuery();
-                nq.setQuery(value);
-                nq.setName(qName);
+        mtp = new ManagedTypeProvider(project, jpaCtx.getMetaData(), jpaCtx.getCompilationInfo().getElements());
+        if (entity != null) {
+            for (NamedQuery nq : entity.getNamedQuery()) {
+                if(nq!=null && nq.getQuery()!=null){
+                    helper.setQuery(new Query(nq, nq.getQuery(), mtp));
+                    List<JPQLQueryProblem> tmp = null;
+                    try {
+                        tmp = helper.validate();
+                    } catch (UnsupportedOperationException ex) {
+                        JPAProblemFinder.LOG.log(Level.INFO, "Unsupported jpql validation case: " + ex.getMessage(), ex);
+                    } catch (NullPointerException ex) {
+                        JPAProblemFinder.LOG.log(Level.INFO, "NPE in jpql validation: " + ex.getMessage(), ex);
+                    }
+                    if (tmp != null && tmp.size() > 0) {
+                        problems.addAll(tmp);
+                    }
+                    helper.dispose();
+                }
             }
-            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData())));
-            List<JPQLQueryProblem> tmp = null;
-            try{
-                tmp = helper.validate();
-            } catch (UnsupportedOperationException ex) {
-                JPAProblemFinder.LOG.log(Level.INFO, "Unsupported jpql validation case: " + ex.getMessage(), ex);
-            }catch (NullPointerException ex) {
-                JPAProblemFinder.LOG.log(Level.INFO, "NPE in jpql validation: " + ex.getMessage(), ex);
-            }
-            if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
-            helper.dispose();
         }
-        if (problems != null && problems.size()>0){
-            ErrorDescription[] ret = new ErrorDescription[problems.size()];
-            for(int i=0;i<ret.length;i++){
+        ErrorDescription[] ret = null;
+        if (!ctx.isCancelled() && problems != null && problems.size() > 0) {
+            ret = new ErrorDescription[problems.size()];
+            for (int i = 0; i < ret.length; i++) {
                 ListResourceBundle msgBundle = null;
-                try{
+                try {
                     msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
                 } catch (MissingResourceException ex) {//default en
                     msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName(), Locale.ENGLISH);//NOI18N
                 }
-                String message = java.text.MessageFormat.format(msgBundle.getString(problems.get(i).getMessageKey()), (Object[])  problems.get(i).getMessageArguments());
-                String pos = "["+problems.get(i).getStartPosition() + ";"+problems.get(i).getEndPosition()+"]";
+                String message = java.text.MessageFormat.format(msgBundle.getString(problems.get(i).getMessageKey()), (Object[]) problems.get(i).getMessageArguments());
+                String pos = "[" + problems.get(i).getStartPosition() + ";" + problems.get(i).getEndPosition() + "]";
                 Query q = (Query) problems.get(i).getQuery();
-                if(q.getNamedQuery() != null && q.getNamedQuery().getName()!=null){
-                    pos = q.getNamedQuery().getName()+pos;
+                if (q.getNamedQuery() != null && q.getNamedQuery().getName() != null) {
+                    pos = q.getNamedQuery().getName() + pos;
                 }
-                ret[i] = createProblem(subject, ctx, pos + ": " + message , Severity.WARNING);
+                ret[i] = createProblem(subject, ctx, pos + ": " + message, Severity.WARNING);
             }
-            return ret;
         }
-        return null;
+        jpaCtx.removeCancelListener(this);
+        mtp = null;
+        helper = null;
+        return ret;
     }
-    
-    @Override protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
-        JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
-        
+
+    @Override
+    protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
+        JPAProblemContext jpaCtx = (JPAProblemContext) ctx;
+
         return (jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
+    }
+
+    @Override
+    public void cancelled() {
+        if (mtp != null) {
+            mtp.invalidate();
+        }
     }
 }
