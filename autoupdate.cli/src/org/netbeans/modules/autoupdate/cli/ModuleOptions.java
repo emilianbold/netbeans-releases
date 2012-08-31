@@ -133,7 +133,7 @@ public class ModuleOptions extends OptionProcessor {
                 env.getOutputStream().println("Refreshing " + p.getDisplayName());
                 p.refresh(null, true);
             } catch (IOException ex) {
-                throw (CommandException)new CommandException(33, ex.getMessage()).initCause(ex);
+                throw (CommandException)new CommandException(31, ex.getMessage()).initCause(ex);
             }
         }
     }
@@ -172,10 +172,11 @@ public class ModuleOptions extends OptionProcessor {
             listAllModules(env.getOutputStream());
         }
     
+        if (optionValues.containsKey(install)) {
+            install(env, optionValues.get(install));
+        }
+        
         try {
-            if (optionValues.containsKey(install)) {
-                install(env, optionValues.get(install));
-            }
 
             if (optionValues.containsKey(disable)) {
                 changeModuleState(optionValues.get(disable), false);
@@ -191,6 +192,7 @@ public class ModuleOptions extends OptionProcessor {
         } catch (OperationException ex) {
             throw initCause(new CommandException(4), ex);
         }
+        
         if (optionValues.containsKey(updateAll)) {
             updateAll(env);
         }
@@ -225,8 +227,9 @@ public class ModuleOptions extends OptionProcessor {
     }
 
     @NbBundle.Messages({
+        "MSG_UpdateNotFound=Updates not found.",
         "# {0} - pattern",
-        "MSG_UpdateNoMatch=Nothing to update. The pattern {0} has no match among available updates.",
+        "MSG_UpdateNoMatchPattern=Nothing to update. The pattern {0} has no match among available updates.",
         "# {0} - module name",
         "# {1} - installed version",
         "# {2} - available version",
@@ -270,7 +273,7 @@ public class ModuleOptions extends OptionProcessor {
         }
         final InstallSupport support = operate.getSupport();
         if (support == null) {
-            env.getOutputStream().println(Bundle.MSG_UpdateNoMatch(pats == null ? null : Arrays.asList(pats)));
+            env.getOutputStream().println(pats == null ? Bundle.MSG_UpdateNotFound() : Bundle.MSG_UpdateNoMatchPattern(Arrays.asList(pats)));
             return;
         }
         try {
@@ -360,9 +363,9 @@ public class ModuleOptions extends OptionProcessor {
             // a hack
             if (OperationException.ERROR_TYPE.INSTALL.equals(ex.getErrorType())) {
                 // probably timeout of loading, don't report now
-                env.getOutputStream().println(ex.getLocalizedMessage());
+                env.getErrorStream().println(ex.getLocalizedMessage());
             } else {
-                throw (CommandException) new CommandException(33, ex.getMessage()).initCause(ex);
+                throw (CommandException) new CommandException(32, ex.getMessage()).initCause(ex);
             }
         }
     }
