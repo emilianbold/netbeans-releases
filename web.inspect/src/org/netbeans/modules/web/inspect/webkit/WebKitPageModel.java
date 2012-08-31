@@ -259,8 +259,6 @@ public class WebKitPageModel extends PageModel {
                         @Override
                         public void run() {
                             firePropertyChange(PROP_DOCUMENT, null, null);
-                            firePropertyChange(PROP_SELECTED_NODES, null, null);
-                            firePropertyChange(PROP_HIGHLIGHTED_NODES, null, null);
                         }
                     });
                 }
