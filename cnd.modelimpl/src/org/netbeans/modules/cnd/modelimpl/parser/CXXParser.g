@@ -596,9 +596,9 @@ scope Declaration;
  */
 simple_declaration_or_function_definition [decl_kind kind]
 //scope Declaration;
-@init { init_declaration(CTX, kind); }
+@init {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
+@after {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :
-                                                                                {action.simple_declaration(input.LT(1));}
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
@@ -628,7 +628,7 @@ simple_declaration_or_function_definition [decl_kind kind]
                 )* 
                 SEMICOLON                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
             )
-        )                                                                       {action.end_simple_declaration(input.LT(0));}
+        )
     ;
 
 static_assert_declaration:
@@ -700,8 +700,8 @@ type_specifier:
  */
 
 type_specifier returns [type_specifier_t ts]
-@init {action.type_specifier(input.LT(1));}
-@after {action.end_type_specifier(input.LT(0));}
+@init {if(state.backtracking == 0){action.type_specifier(input.LT(1));}}
+@after {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
     :
         // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
         (LITERAL_class SCOPE)=>

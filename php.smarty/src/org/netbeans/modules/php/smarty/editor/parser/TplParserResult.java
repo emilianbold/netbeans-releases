@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.smarty.editor.parser;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -52,7 +54,7 @@ public class TplParserResult extends ParserResult {
 
     private boolean valid = true;
     private List<Error> errorList = new ArrayList<Error>();
-    private List<Block> tagList = new ArrayList<Block>();
+    private List<Block> blockList = new ArrayList<Block>();
 
     protected TplParserResult(Snapshot snapshot) {
         super(snapshot);
@@ -67,11 +69,11 @@ public class TplParserResult extends ParserResult {
     }
 
     public List<Block> getBlocks() {
-        return tagList;
+        return blockList;
     }
 
-    public void addTag(CharSequence function, int offset, int length, CharSequence extra) {
-        tagList.add(new Block(function, offset, length, extra));
+    public void addBlock(Block block) {
+        blockList.add(block);
     }
 
     @Override
@@ -88,7 +90,7 @@ public class TplParserResult extends ParserResult {
         return errorList;
     }
 
-    public class Error implements org.netbeans.modules.csl.api.Error {
+    public static class Error implements org.netbeans.modules.csl.api.Error {
 
         private String description;
         private int offset;
@@ -156,34 +158,49 @@ public class TplParserResult extends ParserResult {
         }
     }
 
-    public class Block {
+    public static class Section {
 
-        private CharSequence function;
-        private int offset;
-        private int length;
-        private CharSequence extra;
+        private final String function;
+        private final OffsetRange offset;
+        private final String text;
 
-        public Block(CharSequence function, int offset, int length, CharSequence extra) {
+        public Section(String function, OffsetRange offset, String text) {
             this.function = function;
             this.offset = offset;
-            this.length = length;
-            this.extra = extra;
+            this.text = text;
         }
 
-        public CharSequence getExtra() {
-            return extra;
-        }
-
-        public CharSequence getDescription() {
+        public String getName() {
             return function;
         }
 
-        public int getOffset() {
+        public OffsetRange getOffset() {
             return offset;
         }
 
-        public int getLength() {
-            return length;
+        public String getText() {
+            return text;
         }
+    }
+
+    public static class Block {
+
+        private final List<Section> sections = new LinkedList<Section>();
+
+        public Block() {
+        }
+
+        public Block(Section section) {
+            sections.add(section);
+        }
+
+        public void addSection(Section section) {
+            sections.add(section);
+        }
+
+        public List<Section> getSections() {
+            return sections;
+        }
+
     }
 }

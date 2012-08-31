@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -256,4 +258,42 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
         hash = 47 * hash + this.endPosition;
         return hash;
     }
+    
+    
+    public static abstract class OffsetableBuilder implements CsmObjectBuilder {
+        
+        private CsmFile file;
+        private FileContent fileContent;
+        private int startOffset;
+        private int endOffset;
+     
+        public void setFile(CsmFile file) {
+            this.file = file;
+            this.fileContent = ((FileImpl)file).getParsingFileContent();
+        }
+        
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public CsmFile getFile() {
+            return file;
+        }
+
+        public FileContent getFileContent() {
+            return fileContent;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+    }    
 }

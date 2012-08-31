@@ -142,5 +142,11 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 214111 - No code completion for auto variable
         performTest("bug214111.cpp", 48, 23, "bug214111.cpp", 4, 5);
     }
+
+    public void testBug215662() throws Exception {
+        // Bug 215662 - c++11 auto and lambda parameter types not recognized
+        performTest("bug215662.cpp", 7, 29, "bug215662.cpp", 7, 17);
+        performTest("bug215662.cpp", 7, 96, "bug215662.cpp", 4, 20);
+    }
     
 }

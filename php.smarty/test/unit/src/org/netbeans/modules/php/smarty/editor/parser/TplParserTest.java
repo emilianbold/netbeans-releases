@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.smarty.editor.parser;
 
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -62,11 +63,11 @@ import org.openide.util.Lookup;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TplParserErrorsTest extends TplTestBase {
+public class TplParserTest extends TplTestBase {
 
     TplParserResult parserResult;
 
-    public TplParserErrorsTest(String testName) {
+    public TplParserTest(String testName) {
         super(testName);
     }
 
@@ -97,80 +98,87 @@ public class TplParserErrorsTest extends TplTestBase {
         });
     }
 
-    public void testParserErrors1() throws Exception {
-        assertParserErrors();
+    public void testParser1() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors2() throws Exception {
-        assertParserErrors();
+    public void testParser2() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors3() throws Exception {
-        assertParserErrors();
+    public void testParser3() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors4() throws Exception {
-        assertParserErrors();
+    public void testParser4() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors5() throws Exception {
-        assertParserErrors();
+    public void testParser5() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors6() throws Exception {
-        assertParserErrors();
+    public void testParser6() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors7() throws Exception {
-        assertParserErrors();
+    public void testParser7() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors8() throws Exception {
-        assertParserErrors();
+    public void testParser8() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors9() throws Exception {
-        assertParserErrors();
+    public void testParser9() throws Exception {
+        assertParserBlocks();
     }
 
-    public void testParserErrors10() throws Exception {
-        assertParserErrors();
-    }
-
-    public void testParserErrors11() throws Exception {
-        assertParserErrors();
+    public void testParser10() throws Exception {
+        assertParserBlocks();
     }
 
     private String getTestFileRelPath() {
-        return "testfiles/parserErrors/" + getName() + ".tpl";
+        return "testfiles/parserBlocks/" + getName() + ".tpl";
     }
 
     private FileObject getTestFile() {
         return super.getTestFile(getTestFileRelPath());
     }
 
-    private String serializeErrors() {
-        StringBuilder errors = new StringBuilder("Detected parser errors in the file:\n");
-        for (TplParserResult.Error error : parserResult.getErrors()) {
-            errors.append(serializeError(error));
+    private String serializeBlocks() {
+        StringBuilder blocks = new StringBuilder("Detected parser blocks in the file:\n");
+        for (TplParserResult.Block block : parserResult.getBlocks()) {
+            blocks.append(serializeBlock(block));
         }
-        return errors.toString();
+        return blocks.toString();
     }
 
-    private String serializeError(TplParserResult.Error error) {
-        StringBuilder errorSB = new StringBuilder();
-        errorSB.append(error.getDescription())
-                .append(" : offset <")
-                .append(error.getStartPosition())
-                .append(":")
-                .append(error.getEndPosition())
-                .append(">\n");
-        return errorSB.toString();
+    private String serializeBlock(TplParserResult.Block block) {
+        StringBuilder blockSB = new StringBuilder();
+        List<TplParserResult.Section> sections = block.getSections();
+        assertTrue(!sections.isEmpty());
+        blockSB.append("\n{").append(sectionToString(sections.get(0))).append("}\n");
+        for (int i = 1; i <= sections.size() - 1; i++) {
+            blockSB.append(" |\n");
+            blockSB.append(" -- {");
+            blockSB.append(sectionToString(sections.get(i))).append("}\n");
+        }
+        return blockSB.toString();
     }
 
-    private void assertParserErrors() throws Exception {
+    private String sectionToString(TplParserResult.Section section) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(section.getName());
+        sb.append(" <").append(section.getOffset().getStart()).append(":");
+        sb.append(section.getOffset().getEnd()).append("> - ");
+        sb.append(section.getText());
+        return sb.toString();
+    }
+
+    private void assertParserBlocks() throws Exception {
         parseSource(getTestSource(getTestFile()));
-        assertDescriptionMatches(getTestFileRelPath(), serializeErrors(), false, ".errors");
+        assertDescriptionMatches(getTestFileRelPath(), serializeBlocks(), false, ".blocks");
     }
 
 }

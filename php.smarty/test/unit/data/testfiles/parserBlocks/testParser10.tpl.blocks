@@ -1,0 +1,21 @@
+Detected parser blocks in the file:
+
+{foreach <42:70> -  from=$error item=foo}
+ |
+ -- {/foreach <91:99> - }
+
+{foreach <754:782> -  from=$error item=foo}
+ |
+ -- {/foreach <803:811> - }
+
+{if <23:38> -  $status == 0}
+ |
+ -- {elseif <617:636> -  $status == 1}
+ |
+ -- {elseif <676:695> -  $status == 2}
+ |
+ -- {elseif <711:730> -  $status == 5}
+ |
+ -- {elseif <1017:1036> -  $status == 6}
+ |
+ -- {/if <1064:1067> - }
