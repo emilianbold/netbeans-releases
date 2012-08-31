@@ -45,7 +45,7 @@
  *
  * Created on Jun 13, 2011, 9:51:30 AM
  */
-package org.netbeans.modules.refactoring.java.ui;
+package org.netbeans.modules.refactoring.java.ui.scope;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -92,6 +92,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Ralph Ruijs
  */
+@NbBundle.Messages({"DLG_CustomScope=Custom Scope"})
 public class CustomScopePanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     private static final Image PACKAGEBADGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageBadge.gif"); // NOI18N
