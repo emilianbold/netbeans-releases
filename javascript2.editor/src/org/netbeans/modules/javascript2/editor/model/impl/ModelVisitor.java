@@ -223,7 +223,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
                     JsObject lhs = null;
                     if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
-                        addOccurence(ident);
+                        addOccurence(ident, true);
                     } else {
                         lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
                         if (lhs != null) {
@@ -236,7 +236,7 @@ public class ModelVisitor extends PathNodeVisitor {
                                 return null;
                             }
                         } else {
-                            addOccurence(ident);
+                            addOccurence(ident, true);
                         }
                     }
                     JsObjectImpl jsObject = (JsObjectImpl)parent.getProperty(newVarName);
@@ -262,19 +262,19 @@ public class ModelVisitor extends PathNodeVisitor {
                             jsObject.addAssignment(type, binaryNode.lhs().getFinish());
                         }
                         if (!(lhs != null && jsObject.getName().equals(lhs.getName()))) {
-                            addOccurence(ident);
+                            addOccurence(ident, true);
                         }
                     }
                 }
                 if (binaryNode.rhs() instanceof IdentNode) {
-                    addOccurence((IdentNode)binaryNode.rhs());
+                    addOccurence((IdentNode)binaryNode.rhs(), false);
                 }
             } else if(binaryNode.tokenType() != TokenType.ASSIGN) {
                 if (binaryNode.lhs() instanceof IdentNode) {
-                    addOccurence((IdentNode)binaryNode.lhs());
+                    addOccurence((IdentNode)binaryNode.lhs(), true);
                 }
                 if (binaryNode.rhs() instanceof IdentNode) {
-                    addOccurence((IdentNode)binaryNode.rhs());
+                    addOccurence((IdentNode)binaryNode.rhs(), false);
                 }
             }
         }
@@ -285,11 +285,11 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(CallNode callNode, boolean onset) {
         if (onset) {
             if (callNode.getFunction() instanceof IdentNode) {
-                addOccurence((IdentNode)callNode.getFunction());
+                addOccurence((IdentNode)callNode.getFunction(), false);
             }
             for (Node argument : callNode.getArgs()) {
                 if (argument instanceof IdentNode) {
-                    addOccurence((IdentNode) argument);
+                    addOccurence((IdentNode) argument, false);
                 }
             }
                     
@@ -306,7 +306,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     || previousVisited instanceof VarNode
                     || previousVisited instanceof BinaryNode
                     || previousVisited instanceof PropertyNode)) {
-                addOccurence(identNode);
+                addOccurence(identNode, false);
             }
         }
         return super.visit(identNode, onset);
@@ -651,7 +651,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (onset) {
             Node expression = returnNode.getExpression();
             if (expression instanceof IdentNode) {
-                addOccurence((IdentNode)expression);
+                addOccurence((IdentNode)expression, false);
             }
             Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(expression);
             if(types.isEmpty()) {
@@ -667,13 +667,13 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
             if (ternaryNode.lhs() instanceof IdentNode) {
-                addOccurence((IdentNode)ternaryNode.lhs());
+                addOccurence((IdentNode)ternaryNode.lhs(), false);
             }
             if (ternaryNode.rhs() instanceof IdentNode) {
-                addOccurence((IdentNode)ternaryNode.rhs());
+                addOccurence((IdentNode)ternaryNode.rhs(), false);
             }
             if (ternaryNode.third() instanceof IdentNode) {
-                addOccurence((IdentNode)ternaryNode.third());
+                addOccurence((IdentNode)ternaryNode.third(), false);
             }
         }
         return super.visit(ternaryNode, onset);
@@ -701,7 +701,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             } else {
                 if (unaryNode.rhs() instanceof IdentNode) {
-                    addOccurence((IdentNode)unaryNode.rhs());
+                    addOccurence((IdentNode)unaryNode.rhs(), false);
                 }
             }
         }
@@ -732,7 +732,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     variable.getModifiers().add(Modifier.PRIVATE);
                 }
                 parent.addProperty(name.getName(), variable);
-            } else if (!variable.isDeclared()) {
+            } else {
                 // the variable was probably created as temporary before, now we
                 // need to replace it with the real one
                 Identifier name = new IdentifierImpl(varNode.getName().getName(),
@@ -754,7 +754,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
-                addOccurence((IdentNode)varNode.getInit());
+                addOccurence((IdentNode)varNode.getInit(), false);
             } 
             if (!(varNode.getInit() instanceof UnaryNode &&
                     Token.descType(((UnaryNode)varNode.getInit()).getToken()) == TokenType.NEW)) {
@@ -928,7 +928,7 @@ public class ModelVisitor extends PathNodeVisitor {
         return false;
     }
 
-    private void addOccurence(IdentNode iNode) {
+    private void addOccurence(IdentNode iNode, boolean leftSite) {
         if ("this".equals(iNode.getName())) {
             // don't process this node.
             return;
@@ -953,7 +953,7 @@ public class ModelVisitor extends PathNodeVisitor {
         } else {
             // it's a new global variable?
             IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
-            modelBuilder.getGlobal().addProperty(name.getName(), new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), false));
+            modelBuilder.getGlobal().addProperty(name.getName(), new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), leftSite));
         }
     }
     
