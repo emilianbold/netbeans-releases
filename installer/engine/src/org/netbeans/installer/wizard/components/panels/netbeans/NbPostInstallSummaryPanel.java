@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
@@ -299,13 +300,19 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             boolean nbInstalled = false;
             for (Product product: products) {
                 if (product.getUid().equals("nb-base")) {
+                    String platformSpecificSummary;
                     if (SystemUtils.isWindows()) {
-                        messagePaneNetBeans.setText(DEFAULT_MESSAGE_NETBEANS_TEXT_WINDOWS);
+                        platformSpecificSummary = DEFAULT_MESSAGE_NETBEANS_TEXT_WINDOWS;
                     } else if (SystemUtils.isMacOS()) {
-                        messagePaneNetBeans.setText(DEFAULT_MESSAGE_NETBEANS_TEXT_MACOSX);
+                        platformSpecificSummary = DEFAULT_MESSAGE_NETBEANS_TEXT_MACOSX;
                     } else {
-                        messagePaneNetBeans.setText(DEFAULT_MESSAGE_NETBEANS_TEXT_UNIX);
+                        platformSpecificSummary = DEFAULT_MESSAGE_NETBEANS_TEXT_UNIX;
                     }
+                    String netbeansSummary = product.getProperty(NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY);
+                    if (netbeansSummary == null) {
+                        netbeansSummary = "";
+                    }
+                    messagePaneNetBeans.setText(MessageFormat.format("{0}{1}", netbeansSummary, platformSpecificSummary)); // NOI18N
                     nbInstalled = true;
                     break;
                 }
@@ -619,6 +626,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             "message.files.remaining"; // NOI18N
     public static final String RESTART_IS_REQUIRED_PROPERTY =
             "restart.required";//NOI18N
+    public static final String NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY =
+            "netbeans.summary.message.text"; // NOI18N
     
     public static final String DEFAULT_MESSAGE_TEXT_SUCCESS =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,

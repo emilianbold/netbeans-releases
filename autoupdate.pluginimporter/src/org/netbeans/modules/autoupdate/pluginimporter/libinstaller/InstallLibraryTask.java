@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * #195123: prompt to load JUnit during startup.
  */
-@ServiceProvider(service = Runnable.class, path = "WarmUp")
+//@ServiceProvider(service = Runnable.class, path = "WarmUp")
 public class InstallLibraryTask implements Runnable {
 
     private static final String KEY = "tried.to.download.junit"; // NOI18N
@@ -84,7 +84,7 @@ public class InstallLibraryTask implements Runnable {
             LOG.fine("Content of $userdir/var/license_accepted: " + content);
             if (content != null && content.indexOf(JUNIT_APPROVED) != -1) {
                 // IDE license accepted, JUnit accpeted => let's install silently
-                LOG.fine(" IDE license accepted, JUnit accpeted => let's install silently"); 
+                LOG.fine(" IDE license accepted, JUnit accepted => let's install silently"); 
                 JUnitLibraryInstaller.install(true);
             } else if (content != null && content.indexOf(JUNIT_DENIED) != -1) {
                 // IDE license accepted but JUnit disapproved => do nothing
@@ -104,4 +104,5 @@ public class InstallLibraryTask implements Runnable {
             LOG.log(Level.INFO, "while reading " + licenseAcceptedFile, ex);
         }
     }
+    
 }
