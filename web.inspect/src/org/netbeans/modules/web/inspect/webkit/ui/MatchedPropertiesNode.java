@@ -123,7 +123,7 @@ public class MatchedPropertiesNode extends AbstractNode {
         for (int i=ruleProperties.size()-1; i>=0; i--) {
             org.netbeans.modules.web.webkit.debugging.api.css.Property property = ruleProperties.get(i);
             String name = property.getName();
-            if (!properties.contains(name) && (matchingSelection || CSSUtils.isInheritedProperty(name))) {
+            if (property.isParsedOk() && !properties.contains(name) && (matchingSelection || CSSUtils.isInheritedProperty(name))) {
                 properties.add(name);
                 MatchedPropertyNode node = new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property);
                 String shorthandName = property.getShorthandName();
