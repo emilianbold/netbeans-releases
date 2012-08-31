@@ -90,7 +90,6 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
                         ActionsManager.ACTION_STEP_OUT,
 //                        ActionsManager.ACTION_RUN_TO_CURSOR,
                         ActionsManager.ACTION_EVALUATE,
-                        ActionsManager.ACTION_KILL
                     })));
 
     private Debugger debugger;
@@ -98,7 +97,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     private void updateDebuggerState() {
         if (!debugger.isEnabled()) {
 //            setEnabled(ActionsManager.ACTION_START, false);
-            setEnabled(ActionsManager.ACTION_KILL, false);
+//            setEnabled(ActionsManager.ACTION_KILL, false);
             setEnabled(ActionsManager.ACTION_CONTINUE, false);
 //            setEnabled(ActionsManager.ACTION_PAUSE, false);
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
@@ -107,7 +106,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_EVALUATE, false);
         } else if (debugger.isSuspended()) {
 //            setEnabled(ActionsManager.ACTION_START, false);
-            setEnabled(ActionsManager.ACTION_KILL, true);
+//            setEnabled(ActionsManager.ACTION_KILL, true);
             setEnabled(ActionsManager.ACTION_CONTINUE, true);
 //            setEnabled(ActionsManager.ACTION_PAUSE, false);
             setEnabled(ActionsManager.ACTION_STEP_INTO, true);
@@ -116,7 +115,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_EVALUATE, true);
         } else {
 //            setEnabled(ActionsManager.ACTION_START, false);
-            setEnabled(ActionsManager.ACTION_KILL, true);
+//            setEnabled(ActionsManager.ACTION_KILL, true);
             setEnabled(ActionsManager.ACTION_CONTINUE, false);
 //            setEnabled(ActionsManager.ACTION_PAUSE, true);
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
