@@ -277,10 +277,11 @@ public class NbMainSequence extends WizardSequence {
             Progress removeUselessFileProgress = new Progress();
             compositeProgress.addChild(removeUselessFileProgress, 8);                       
             
-            removeUselessFileProgress.setDetail((ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.cleaning"))); // NOI18N
+            compositeProgress.setDetail((ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.cleaning"))); // NOI18N
             try {
                 FileUtils.deleteFile(new File(tmpCacheDir, "netigso"), true, removeUselessFileProgress);
                 FileUtils.deleteFile(new File(tmpCacheDir, "lastModified"), true, removeUselessFileProgress);
+                FileUtils.deleteFile(new File(tmpCacheDir, "catalogcache"), true, removeUselessFileProgress);
                 
                 String[] splashFileNames = tmpCacheDir.list(new FilenameFilter() {
 
