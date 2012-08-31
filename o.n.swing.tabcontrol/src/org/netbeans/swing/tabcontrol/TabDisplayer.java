@@ -435,12 +435,21 @@ public final class TabDisplayer extends JComponent implements Accessible {
     public final void requestAttention (int tab) {
         getUI().requestAttention(tab);
     }
-    
+
     /**
      * Cause a tab, if blinking, to stop.
      */
     public final void cancelRequestAttention (int tab) {
         getUI().cancelRequestAttention (tab);
+    }
+
+    /**
+     * Turn tab highlight on/off
+     * @param tab
+     * @since 1.38
+     */
+    public final void setAttentionHighlight (int tab, boolean highlight) {
+        getUI().setAttentionHighlight (tab, highlight);
     }
     
     public final boolean requestAttention (TabData data) {
