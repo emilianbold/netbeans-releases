@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultCellEditor;
+import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -126,8 +127,13 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         initComponents();
 
+        initInfos();
         initLibraries();
         initLibrariesFolder();
+    }
+
+    private void initInfos() {
+        setAdditionalInfo(null);
     }
 
     private void initLibraries() {
@@ -288,6 +294,12 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     public String getWarningMessage() {
         return null;
+    }
+
+    public void setAdditionalInfo(String additionalInfo) {
+        additionalInfoLabel.setText(additionalInfo);
+        additionalInfoLabel.setVisible(additionalInfo != null);
+        ((GroupLayout) getLayout()).setHonorsVisibility(additionalInfoLabel, additionalInfo != null);
     }
 
     void enableLibraryButtons() {
@@ -463,7 +475,8 @@ public class JavaScriptLibrarySelection extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoLabel = new javax.swing.JLabel();
+        generalInfoLabel = new javax.swing.JLabel();
+        additionalInfoLabel = new javax.swing.JLabel();
         librariesLabel = new javax.swing.JLabel();
         librariesFilterTextField = new javax.swing.JTextField();
         librariesScrollPane = new javax.swing.JScrollPane();
@@ -478,7 +491,9 @@ public class JavaScriptLibrarySelection extends JPanel {
         librariesFolderLabel = new javax.swing.JLabel();
         librariesFolderTextField = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.infoLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generalInfoLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.generalInfoLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(additionalInfoLabel, "ADDITIONAL_INFO"); // NOI18N
 
         librariesLabel.setLabelFor(librariesTable);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesLabel.text")); // NOI18N
@@ -527,9 +542,8 @@ public class JavaScriptLibrarySelection extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
                     .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(generalInfoLabel)
+            .addComponent(additionalInfoLabel)
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
@@ -537,8 +551,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
+                .addComponent(generalInfoLabel)
+                .addGap(0, 0, 0)
+                .addComponent(additionalInfoLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesLabel)
                     .addComponent(selectedLabel)
@@ -564,9 +580,10 @@ public class JavaScriptLibrarySelection extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel additionalInfoLabel;
     private javax.swing.JButton deselectAllButton;
     private javax.swing.JButton deselectSelectedButton;
-    private javax.swing.JLabel infoLabel;
+    private javax.swing.JLabel generalInfoLabel;
     private javax.swing.JTextField librariesFilterTextField;
     private javax.swing.JLabel librariesFolderLabel;
     private javax.swing.JTextField librariesFolderTextField;
