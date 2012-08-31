@@ -66,6 +66,9 @@ import org.openide.windows.OutputListener;
  *
  */
 public class BrowserConsoleLogger implements Console.Listener {
+    
+    private static final String LEVEL_ERROR = "error";      // NOI18N
+    private static final String LEVEL_DEBUG = "debug";      // NOI18N
 
     private Project project;
 
@@ -109,20 +112,23 @@ public class BrowserConsoleLogger implements Console.Listener {
     
     private void logMessage(ConsoleMessage msg) throws IOException {
         StringBuilder sb = new StringBuilder();
+        String level = msg.getLevel();
         sb.append(getCurrentTime());
         sb.append(" ");
         sb.append(msg.getText());
-        sb.append(" ("+msg.getLevel()+","+msg.getSource()+","+msg.getType()+")");
-        String level = msg.getLevel();
-        boolean isErr = "error".equals(level);
+        sb.append(" ("+level+","+msg.getSource()+","+msg.getType()+")");
+        boolean isErr = LEVEL_ERROR.equals(level);
         if (isErr) {
             getOutputLogger().getErr().println(sb.toString());
         } else {
             getOutputLogger().getOut().println(sb.toString());
         }
         
+        boolean doPrintStackTrace = LEVEL_ERROR.equals(level) ||
+                                    LEVEL_DEBUG.equals(level);
+        
         boolean first = true;
-        if (msg.getStackTrace() != null) {
+        if (doPrintStackTrace && msg.getStackTrace() != null) {
             for (ConsoleMessage.StackFrame sf : msg.getStackTrace()) {
                 String indent;
                 if (first) {
@@ -135,21 +141,7 @@ public class BrowserConsoleLogger implements Console.Listener {
                 sb = new StringBuilder();
                 
                 String urlStr = sf.getURLString();
-                // Try to find a more readable project-relative path:
-                // E.g.: "http://localhost:89/SimpleLiveHTMLTest/js/app.js:8:9"
-                // is turned into: "js/app.js:8:9"
-                try {
-                    URL url = new URL(urlStr);
-                    if (project != null) {
-                        FileObject fo = ServerURLMapping.fromServer(project, url);
-                        if (fo != null) {
-                            String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
-                            if (relPath != null) {
-                                urlStr = relPath;
-                            }
-                        }
-                    }
-                } catch (MalformedURLException murl) {}
+                urlStr = getProjectPath(urlStr);
                 sb.append(urlStr+":"+sf.getLine()+":"+sf.getColumn()+" ("+sf.getFunctionName()+")");
                 MyListener l = new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn());
                 if (l.isValidHyperlink()) {
@@ -159,19 +151,46 @@ public class BrowserConsoleLogger implements Console.Listener {
                 }
             }
         }
-        sb = new StringBuilder();
         if (first && msg.getURLString() != null && msg.getURLString().length() > 0) {
-            sb.append("  at "+msg.getURLString());
-            if (msg.getLine() != -1) {
-                sb.append(":"+msg.getLine());
+            getOutputLogger().getOut().print("  at ");
+            String url = msg.getURLString();
+            String file = getProjectPath(url);
+            sb = new StringBuilder(file);
+            int line = msg.getLine();
+            if (line != -1) {
+                sb.append(":");
+                sb.append(line);
             }        
-            MyListener l = new MyListener(msg.getURLString(), msg.getLine(), -1);
+            MyListener l = new MyListener(url, line, -1);
             if (l.isValidHyperlink()) {
                 getOutputLogger().getOut().println(sb.toString(), l);
             } else {
                 getOutputLogger().getOut().println(sb.toString());
             }
         }
+    }
+    
+    /**
+     * Try to find a more readable project-relative path.<p>
+     * E.g.: "http://localhost:89/SimpleLiveHTMLTest/js/app.js:8:9"
+     * is turned into: "js/app.js:8:9"
+     * @param urlStr The URL
+     * @return a project-relative path, or the original URL.
+     */
+    private String getProjectPath(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            if (project != null) {
+                FileObject fo = ServerURLMapping.fromServer(project, url);
+                if (fo != null) {
+                    String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                    if (relPath != null) {
+                        urlStr = relPath;
+                    }
+                }
+            }
+        } catch (MalformedURLException murl) {}
+        return urlStr;
     }
 
     private class MyListener implements OutputListener {
