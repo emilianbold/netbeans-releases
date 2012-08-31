@@ -546,6 +546,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
             }
         }
+        if (file.endsWith("lib" + File.pathSeparator + "dt.jar")) {
+            return false;
+        }
 
         for (Class<?> onStack : getClassContext()) {
             if (onStack.getName().equals("org.netbeans.Stamps")) {
