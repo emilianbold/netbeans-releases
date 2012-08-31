@@ -407,20 +407,27 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
-            final Model sourceModel = result.getModel();
-            sourceModel.runReadTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    org.netbeans.modules.css.model.api.Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
-                    if (modelRule == null) {
-                        controller.setNoRuleState();
-                    } else {
-                        controller.setModel(sourceModel);
-                        controller.setRule(modelRule);
+            final boolean[] found = new boolean[1];
+            for (CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
+                final Model sourceModel = result.getModel();
+                sourceModel.runReadTask(new Model.ModelTask() {
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        org.netbeans.modules.css.model.api.Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
+                        if (modelRule != null) {
+                            controller.setModel(sourceModel);
+                            controller.setRule(modelRule);
+                            found[0] = true;
+                        }
                     }
+                });
+                if (found[0]) {
+                    break;
                 }
-            });
+            }
+            if (!found[0]) {
+                controller.setNoRuleState();
+            }
         }
 
     }

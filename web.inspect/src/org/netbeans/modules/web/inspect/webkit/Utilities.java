@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Element;
@@ -52,6 +55,10 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
@@ -82,7 +89,7 @@ public class Utilities {
         for (org.netbeans.modules.web.webkit.debugging.api.css.Media media : rule.getMedia()) {
             if (media.getSource() == org.netbeans.modules.web.webkit.debugging.api.css.Media.Source.MEDIA_RULE) {
                 mediaQuery = media.getText();
-                mediaQuery = CSSUtils.normalizeSelector(mediaQuery);
+                mediaQuery = CSSUtils.normalizeMediaQuery(mediaQuery);
             }
         }
         Set<String> properties = new HashSet<String>();
@@ -179,7 +186,7 @@ public class Utilities {
                     Media media = (Media)parent;
                     MediaQueryList queryList = media.getMediaQueryList();
                     queryListText = sourceModel.getElementSource(queryList).toString();
-                    queryListText = CSSUtils.normalizeSelector(queryListText);
+                    queryListText = CSSUtils.normalizeMediaQuery(queryListText);
                 }
                 String selectorInFile = CSSUtils.normalizeSelector(image.toString());
                 if (selector.equals(selectorInFile) &&
@@ -251,6 +258,34 @@ public class Utilities {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns {@code CssCslParserResult}s (including the embedded ones) that
+     * correspond to the given {@code ResultIterator}.
+     * 
+     * @param resultIterator {@code ResultIterator} to process.
+     * @return {@code CssCslParserResult}s contained in the given {@code ResultIterator}.
+     * @throws ParseException when there is a parsing problem.
+     */
+    public static List<CssCslParserResult> cssParserResults(ResultIterator resultIterator)
+            throws ParseException {
+        List<ResultIterator> resultIterators = new ArrayList<ResultIterator>();
+        resultIterators.add(resultIterator);
+        for (Embedding embedding : resultIterator.getEmbeddings()) {
+            String mimeType = embedding.getMimeType();
+            if ("text/css".equals(mimeType)) { // NOI18N
+                resultIterators.add(resultIterator.getResultIterator(embedding));
+            }
+        }
+        List<CssCslParserResult> parserResults = new ArrayList<CssCslParserResult>(resultIterators.size());
+        for (ResultIterator iterator : resultIterators) {
+            Parser.Result parserResult = iterator.getParserResult();
+            if (parserResult instanceof CssCslParserResult) {
+                parserResults.add((CssCslParserResult)parserResult);
+            }
+        }
+        return parserResults;
     }
 
 }
