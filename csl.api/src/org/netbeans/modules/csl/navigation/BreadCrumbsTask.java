@@ -51,6 +51,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -61,11 +62,13 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -143,7 +146,11 @@ public class BreadCrumbsTask extends ElementScanningTask {
                     return new StructureItemNode(key);
                 }
                 
-            }, false));
+            }, false), Lookups.fixed(new OpenCookie() {
+                @Override public void open() {
+                    UiUtils.open(item.getElementHandle().getFileObject(), (int) item.getPosition());
+                }
+            }));
             this.item = item;
             setDisplayName(item.getName());
         }

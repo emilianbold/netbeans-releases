@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.openide.filesystems.MIMEResolver;
 
 /**
  * {@code OpenFileDialogFilter} is an abstract class used by {@link FileChooser}
@@ -107,7 +108,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @see OpenFileDialogFilter.ExtensionFilter
  *
  * @author Victor G. Vasilyev <vvg@netbeans.org>
+ * @deprecated Use {@link MIMEResolver.Registration} and its parameter
+ * {@code showInFileChooser}.
  */
+@Deprecated
 public abstract class OpenFileDialogFilter extends FileFilter {
 
     /**
@@ -257,8 +261,10 @@ public abstract class OpenFileDialogFilter extends FileFilter {
      *
      * @see OpenFileDialogFilter
      * @see FileNameExtensionFilter
-     *
+     * @deprecated Use {@link MIMEResolver.ExtensionRegistration} and its
+     * parameter {@code showInFileChooser}.
      */
+    @Deprecated
     public static abstract class ExtensionFilter extends OpenFileDialogFilter {
 
         private static final char EXTENSION_SEPARATOR = '.';

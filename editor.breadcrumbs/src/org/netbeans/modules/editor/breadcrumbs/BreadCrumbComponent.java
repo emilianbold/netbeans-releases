@@ -53,7 +53,6 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -61,7 +60,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -69,6 +67,7 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import org.netbeans.api.actions.Openable;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.view.NodeRenderer;
@@ -296,10 +295,10 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                     Node[] selected = expandManager.getSelectedNodes();
                     if (selected.length == 1) {
-                        Action action = selected[0].getPreferredAction();
+                        Openable openable = selected[0].getLookup().lookup(Openable.class);
                         
-                        if (action != null) {
-                            action.actionPerformed(new ActionEvent(selected[0], 0, ""));
+                        if (openable != null) {
+                            openable.open();
                         }
                         
                         popup.hide();

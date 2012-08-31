@@ -50,11 +50,6 @@ made subject to such option by the copyright holder.
 
     <file>
         <ext name="xml"/>
-        <ext name="wsdl"/>
         <resolver mime="text/xml"/>
-    </file>
-    <file>
-        <ext name="xsd"/>
-        <resolver mime="text/xsd+xml"/>
     </file>
 </MIME-resolver>

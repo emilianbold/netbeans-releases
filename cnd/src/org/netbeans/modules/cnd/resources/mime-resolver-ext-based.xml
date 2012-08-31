@@ -77,22 +77,6 @@ made subject to such option by the copyright holder.
         <resolver mime="application/x-core+elf"/>
     </file>
     <file>
-        <ext name="ui"/>
-        <resolver mime="text/qtui+xml"/>
-    </file>
-    <file>
-        <ext name="qrc"/>
-        <resolver mime="text/qtresource+xml"/>
-    </file>
-    <file>
-        <ext name="ts"/>
-        <resolver mime="text/qttranslation+xml"/>
-    </file>
-    <file>
-        <ext name="pro"/>
-        <resolver mime="text/x-qtproject"/>
-    </file>
-    <file>
         <ext name="cmake"/>
         <resolver mime="text/x-cmake-include"/>
     </file>

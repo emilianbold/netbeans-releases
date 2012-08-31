@@ -215,6 +215,14 @@ public abstract class MIMEResolver {
          * specify it by defining their {@link LayerBuilder#position() position}.
          */        
         public int position() default Integer.MAX_VALUE;
+        /**
+         * Show file filters for this MIME type. Set localized names of file
+         * filters that should contain files resolved by this resolver.
+         *
+         * @see FileChooserBuilder#addDefaultFileFilters()
+         * @since 8.1
+         */
+        public String[] showInFileChooser() default {};
     }
 
     /** Recognize mime type by looking into header of XML files. The
@@ -338,5 +346,15 @@ public abstract class MIMEResolver {
         /** Display name to present this type of objects to the user.
          */
         public String displayName();
+        /**
+         * Show file filters for registered MIME types. Set localized names of
+         * file filters that should accept files resolved by this resolver. Only
+         * types resolved by file name or extension (not by file content) are
+         * supported.
+         *
+         * @see FileChooserBuilder#addDefaultFileFilters()
+         * @since 8.1
+         */
+        public String[] showInFileChooser() default {};
     }
 }
