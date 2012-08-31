@@ -46,9 +46,15 @@ package org.netbeans.modules.web.javascript.debugger.callstack;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JToolTip;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -60,6 +66,8 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -75,12 +83,14 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
 
     private Debugger debugger;
+    private Project project;
 
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
     
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
+        project = contextProvider.lookupFirst(null, Project.class);
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
@@ -198,18 +208,49 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     @Override
     public Object getValueAt(Object node, String columnID)
             throws UnknownTypeException {
-        if (node instanceof CallFrame) {
-            CallFrame frame = (CallFrame) node;
-            if ( columnID.equals(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) ){
-                String file = frame.getScript().getURL();
-                int index = file.lastIndexOf("/");
-                if (index != -1) {
-                    file = file.substring(index+1);
+        if ( columnID.equals(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) ) {
+            String file;
+            CallFrame frame;
+            if (node instanceof CallFrame) {
+                frame = (CallFrame) node;
+                file = frame.getScript().getURL();
+                FileObject fo = null;
+                try {
+                    URL url = URI.create(file).toURL();
+                    if (project != null) {
+                        fo = ServerURLMapping.fromServer(project, url);
+                    }
+                } catch (MalformedURLException ex) {
                 }
-                return file + ":" + (frame.getLineNumber()+1);
+                if (fo != null) {
+                    file = fo.getNameExt();
+                }
+            } else if (node instanceof JToolTip) {
+                JToolTip tooltip = (JToolTip) node;
+                node = tooltip.getClientProperty("getShortDescription");    // NOI18N
+                if (node instanceof CallFrame) {
+                    frame = (CallFrame) node;
+                    file = frame.getScript().getURL();
+                    try {
+                        URL url = URI.create(file).toURL();
+                        if (project != null) {
+                            FileObject fo = ServerURLMapping.fromServer(project, url);
+                            if (fo != null) {
+                                file = FileUtil.getFileDisplayName(fo);
+                            }
+                        }
+                    } catch (MalformedURLException ex) {
+                    }
+                } else {
+                    throw new UnknownTypeException("Unknown Type Node: " + node);   // NOI18N
+                }
+            } else {
+                throw new UnknownTypeException("Unknown Type Node: " + node);   // NOI18N
             }
-        } 
-        throw new UnknownTypeException("Unknown Type Node: " + node + " or columnID: " + columnID);
+            return file + ":" + (frame.getLineNumber()+1);
+        } else {
+            throw new UnknownTypeException("Unknown columnID: " + columnID);
+        }
     }
 
     @Override
