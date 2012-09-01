@@ -71,4 +71,6 @@ public interface TeamServerProvider {
     
     public void removePropertyListener (PropertyChangeListener list);
 
+    public String validate (String url);
+
 }

@@ -50,12 +50,14 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.logging.Level;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -126,6 +128,9 @@ class SearchExecutor extends GitProgressSupport {
         try {
             List<RepositoryRevision> results = search(limitRevisions, getClient(), getProgressMonitor());
             setResults(results);
+        } catch (GitException.MissingObjectException ex) {
+            Git.LOG.log(Level.INFO, "Missing object for roots: {0}", Arrays.asList(master.getRoots())); //NOI18N
+            GitClientExceptionHandler.notifyException(ex, true);
         } catch (GitException ex) {
             GitClientExceptionHandler.notifyException(ex, true);
         }

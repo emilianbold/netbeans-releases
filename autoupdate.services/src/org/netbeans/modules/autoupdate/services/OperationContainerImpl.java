@@ -80,11 +80,16 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<InstallSupport> createForUpdate () {
         return new OperationContainerImpl<InstallSupport> (OperationType.UPDATE);
     }
-    public static OperationContainerImpl<OperationSupport> createForDirectInstall () {
-        return new OperationContainerImpl<OperationSupport> (OperationType.INSTALL);
+    public static OperationContainerImpl<OperationSupport> createForDirectInstall() {
+        OperationContainerImpl<OperationSupport> impl = new OperationContainerImpl<OperationSupport>(OperationType.INSTALL);
+        impl.delegate = OperationContainer.createForUpdate();
+        return impl;
     }
-    public static OperationContainerImpl<OperationSupport> createForDirectUpdate () {
-        return new OperationContainerImpl<OperationSupport> (OperationType.UPDATE);
+
+    public static OperationContainerImpl<OperationSupport> createForDirectUpdate() {
+        OperationContainerImpl<OperationSupport> impl = new OperationContainerImpl<OperationSupport>(OperationType.UPDATE);
+        impl.delegate = OperationContainer.createForUpdate();
+        return impl;
     }
     public static OperationContainerImpl<OperationSupport> createForUninstall () {
         return new OperationContainerImpl<OperationSupport> (OperationType.UNINSTALL);
@@ -472,7 +477,7 @@ public final class OperationContainerImpl<Support> {
     private OperationContainerImpl (OperationType type) {
         this.type = type;
     }
-    
+        
     public OperationType getType () {
         return type;
     }
@@ -502,4 +507,5 @@ public final class OperationContainerImpl<Support> {
         CUSTOM_UNINSTALL
     }
     private OperationType type;
+    private OperationContainer delegate;
 }

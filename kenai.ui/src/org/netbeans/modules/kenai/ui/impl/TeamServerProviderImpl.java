@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -81,6 +82,7 @@ public class TeamServerProviderImpl implements TeamServerProvider {
     private static TeamServerProviderImpl instance;
     private boolean initialized;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private static final Pattern urlPatten = Pattern.compile("https://([a-zA-Z0-9\\-\\.])+\\.(([a-zA-Z]{2,3})|(info)|(name)|(aero)|(coop)|(museum)|(jobs)|(mobi)|(travel))/?$"); //NOI18N
 
     public TeamServerProviderImpl () {
         KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
@@ -205,4 +207,17 @@ public class TeamServerProviderImpl implements TeamServerProvider {
         propertyChangeSupport.removePropertyChangeListener(list);
     }
     
+    @Override
+    @Messages({"ERR_UrlNotValid=This url does not seem to be valid",
+        "ERR_NotHttps=The only supported protocol is https"})
+    public String validate (String s) {
+        if (!s.startsWith("https://")) { //NOI18N
+            return ERR_NotHttps();
+        }
+
+        if (s.equals("https://") || !urlPatten.matcher(s).matches()) { //NOI18N
+            return ERR_UrlNotValid();
+        }
+        return null;
+    }
 }

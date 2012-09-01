@@ -48,7 +48,6 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -289,21 +288,10 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         progress.setVisible(false);
     }
 
-    private static Pattern urlPatten = Pattern.compile("https://([a-zA-Z0-9\\-\\.])+\\.(([a-zA-Z]{2,3})|(info)|(name)|(aero)|(coop)|(museum)|(jobs)|(mobi)|(travel))/?$");
-
-
-
-    private static String urlValid(String s) {
-        if(Boolean.getBoolean("team.c2c.mockClient")) {
-            // for mock accept whatever is provided
-            return null;
-        }
-        if (!s.startsWith("https://")) { //NOI18N
-            return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_NotHttps");
-        }
-
-        if (s.equals("https://") || !urlPatten.matcher(s).matches()) { //NOI18N
-            return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_UrlNotValid");
+    private String urlValid (String s) {
+        String msg = getProvider().validate(s);
+        if (msg != null) {
+            return msg;
         }
         for (TeamServer instance : TeamServerManager.getDefault().getTeamServers()) {
             if (instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) { // NOI18N
