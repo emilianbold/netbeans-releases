@@ -82,8 +82,8 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
     }
 
-    public void testSimpleIndent() throws Exception {
-        reindentFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
+    public void testSimpleIndented() throws Exception {
+        reindentFileContents("testfiles/simple.js", null);
     }
 
     public void testTrailingSpaces1() throws Exception {
@@ -180,6 +180,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionDeclaration1.js");
     }
 
+    public void testFunctionDeclaration1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration1.js", null);
+    }
+
     public void testFunctionDeclaration2Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionDeclaration2.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -193,6 +197,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionDeclaration2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionDeclaration2.js");
+    }
+
+    public void testFunctionDeclaration2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration2.js", null);
     }
 
     public void testFunctionDeclaration3Default() throws Exception {
@@ -210,12 +218,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionDeclaration3.js");
     }
 
+    public void testFunctionDeclaration3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration3.js", null);
+    }
+
     public void testFunctionDeclaration4() throws Exception {
         reformatFileContents("testfiles/formatter/functionDeclaration4.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctionDeclaration4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionDeclaration4.js");
+    }
+
+    public void testFunctionDeclaration4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration4.js", null);
     }
 
     public void testFunctionDeclaration5Always() throws Exception {
@@ -240,6 +256,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionDeclaration5.js");
     }
 
+    public void testFunctionDeclaration5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionDeclaration5.js", null);
+    }
+
     public void testFunctionCall1Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall1.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -255,6 +275,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall1.js");
     }
 
+    public void testFunctionCall1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall1.js", null);
+    }
+
     public void testFunctionCall2Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall2.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -268,6 +292,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionCall2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionCall2.js");
+    }
+
+    public void testFunctionCall2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall2.js", null);
     }
 
     public void testFunctionCall3Always() throws Exception {
@@ -292,6 +320,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall3.js");
     }
 
+    public void testFunctionCall3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall3.js", null);
+    }
+
     public void testFunctionCall4Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -312,6 +344,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFunctionCall4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functionCall4.js");
+    }
+
+    public void testFunctionCall4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall4.js", null);
     }
 
     public void testFunctionCall5WrapAlways() throws Exception {
@@ -357,12 +393,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall5.js");
     }
 
+    public void testFunctionCall5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functionCall5.js", null);
+    }
+
     public void testComments1() throws Exception {
         reformatFileContents("testfiles/formatter/comments1.js",new IndentPrefs(4, 4));
     }
 
     public void testComments1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/comments1.js");
+    }
+
+    public void testComments1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/comments1.js", null);
     }
 
     public void testObjects1() throws Exception {
@@ -473,6 +517,14 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSwitch6Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch6.js");
+    }
+
+    public void testSwitch189745() throws Exception {
+        reformatFileContents("testfiles/formatter/switch189745.js",new IndentPrefs(4, 4));
+    }
+
+    public void testSwitch189745Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch189745.js", null);
     }
 
     public void testIf1() throws Exception {
@@ -616,12 +668,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for1.js");
     }
 
+    public void testFor1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for1.js", null);
+    }
+
     public void testFor2() throws Exception {
         reformatFileContents("testfiles/formatter/for2.js",new IndentPrefs(4, 4));
     }
 
     public void testFor2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for2.js");
+    }
+
+    public void testFor2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for2.js", null);
     }
 
     public void testFor3Default() throws Exception {
@@ -640,6 +700,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for3.js");
     }
 
+    public void testFor3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for3.js", null);
+    }
+
     public void testFor4Default() throws Exception {
         reformatFileContents("testfiles/formatter/for4.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -654,6 +718,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFor4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for4.js");
+    }
+
+    public void testFor4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for4.js", null);
     }
 
     public void testFor5Always() throws Exception {
@@ -685,6 +753,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/for5.js");
     }
 
+    public void testFor5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for5.js", null);
+    }
+
     public void testFor6Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapFor, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -705,6 +777,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testFor6Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for6.js");
+    }
+
+    public void testFor6Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/for6.js", null);
     }
 
     public void testWhile1() throws Exception {
@@ -829,6 +905,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/formatting1.js");
     }
 
+    public void testFormatting1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/formatting1.js", null);
+    }
+
     public void testFormatting2() throws Exception {
         reformatFileContents("testfiles/formatter/formatting2.js",new IndentPrefs(4, 4));
     }
@@ -837,12 +917,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/formatting2.js");
     }
 
+    public void testFormatting2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/formatting2.js", null);
+    }
+
     public void testCommas1() throws Exception {
         reformatFileContents("testfiles/formatter/commas1.js",new IndentPrefs(4, 4));
     }
 
     public void testCommas1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/commas1.js");
+    }
+
+    public void testCommas1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/commas1.js", null);
     }
 
     public void testCommas2() throws Exception {
@@ -856,6 +944,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/commas2.js");
     }
 
+    public void testCommas2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/commas2.js", null);
+    }
+
     public void testCommas3() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.spaceAfterComma, false);
@@ -865,6 +957,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testCommas3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/commas3.js");
+    }
+
+    public void testCommas3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/commas3.js", null);
     }
 
     public void testPrototype() throws Exception {
@@ -1079,6 +1175,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/catch1.js");
     }
 
+    public void testCatch1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/catch1.js", null);
+    }
+
     public void testCatch2Default() throws Exception {
         reformatFileContents("testfiles/formatter/catch2.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -1094,6 +1194,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testCatch2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/catch2.js");
+    }
+
+    public void testCatch2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/catch2.js", null);
     }
 
     public void testParentheses1Default() throws Exception {
@@ -1126,6 +1230,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/arrays1.js");
     }
 
+    public void testArrays1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/arrays1.js", null);
+    }
+
     public void testArrays2Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -1146,6 +1254,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrays2.js");
+    }
+
+    public void testArrays2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/arrays2.js", null);
     }
 
     public void testPartialFormat1() throws Exception {

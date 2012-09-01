@@ -61,7 +61,6 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visibility;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -86,6 +85,44 @@ public class MoveBaseTest extends RefactoringTestBase {
                 TreePath classPath = info.getTrees().getPath(cut, classTree);
                 r[0] = new MoveRefactoring(Lookups.singleton(TreePathHandle.create(classPath, info)));
                 r[0].setTarget(Lookups.singleton(target));
+            }
+        }, true);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<Problem>();
+        addAllProblems(problems, r[0].preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
+    
+    void performMove(FileObject source, final int position, FileObject targetSource, final int targetPosition, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
+        final MoveRefactoring[] r = new MoveRefactoring[1];
+        JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = info.getCompilationUnit();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(position);
+                TreePath classPath = info.getTrees().getPath(cut, classTree);
+                r[0] = new MoveRefactoring(Lookups.singleton(TreePathHandle.create(classPath, info)));
+            }
+        }, true);
+        
+        JavaSource.forFileObject(targetSource).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = info.getCompilationUnit();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(targetPosition);
+                TreePath classPath = info.getTrees().getPath(cut, classTree);
+                r[0].setTarget(Lookups.singleton(TreePathHandle.create(classPath, info)));
             }
         }, true);
 

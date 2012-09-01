@@ -159,15 +159,15 @@ public class ModelTest extends JsTestBase {
         assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
 
         variable = global.getProperty("country");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
        
         variable = global.getProperty("telefon");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
 
         JsObject object = global.getProperty("formatter");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(false, object.isDeclared());
         
         JsObject address = global.getProperty("Address");
         assertEquals(JsElement.Kind.CONSTRUCTOR, address.getJSKind());
