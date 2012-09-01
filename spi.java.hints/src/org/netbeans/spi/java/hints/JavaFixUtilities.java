@@ -55,6 +55,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -689,15 +690,24 @@ public class JavaFixUtilities {
                 String nueName = parameterNames.get(name);
 
                 if (nueName != null) {
-                    VariableTree nue = make.Variable(node.getModifiers(), nueName, node.getType(), node.getInitializer());
-
-                    rewrite(node, nue);
-
-                    return super.visitVariable(nue, p);
+                    name = nueName;
                 }
             }
+            
+            VariableTree nue = make.Variable(node.getModifiers(), name, node.getType(), resolveOptionalValue(node.getInitializer()));
 
-            return super.visitVariable(node, p);
+            rewrite(node, nue);
+
+            return super.visitVariable(nue, p);
+        }
+
+        @Override
+        public Number visitIf(IfTree node, Void p) {
+            IfTree nue = make.If(node.getCondition(), node.getThenStatement(), resolveOptionalValue(node.getElseStatement()));
+            
+            rewrite(node, nue);
+            
+            return super.visitIf(nue, p);
         }
 
         @Override
@@ -736,14 +746,7 @@ public class JavaFixUtilities {
             List<? extends TypeParameterTree> typeParams = resolveMultiParameters(node.getTypeParameters());
             List<? extends Tree> implementsClauses = resolveMultiParameters(node.getImplementsClause());
             List<? extends Tree> members = resolveMultiParameters(Utilities.filterHidden(getCurrentPath(), node.getMembers()));
-            Tree extend = node.getExtendsClause();
-            
-            if (extend != null && Utilities.isMultistatementWildcardTree(extend)) {
-                TreePath nueExtend = parameters.get(Utilities.getWildcardTreeName(extend).toString());
-                if (nueExtend != null) extend = nueExtend.getLeaf();
-                else extend = null;
-            }
-            
+            Tree extend = resolveOptionalValue(node.getExtendsClause());
             ClassTree nue = make.Class(node.getModifiers(), newName, typeParams, extend, implementsClauses, members);
             
             rewrite(node, nue);
@@ -1119,6 +1122,16 @@ public class JavaFixUtilities {
             }
 
             return result;
+        }
+        
+        private <T extends Tree> T resolveOptionalValue(T in) {
+            if (in != null && Utilities.isMultistatementWildcardTree(in)) {
+                TreePath out = parameters.get(Utilities.getWildcardTreeName(in).toString());
+                if (out != null) return (T) out.getLeaf();
+                return null;
+            }
+            
+            return in;
         }
 
         private void rewrite(Tree from, Tree to) {
