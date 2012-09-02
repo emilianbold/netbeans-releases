@@ -39,64 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.editor.lib2.document;
 
-import javax.swing.text.Document;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
-import javax.swing.text.SimpleAttributeSet;
 
 /**
- * Line element implementation.
- * <br>
- * It only holds the starting position.The ending position
- * is obtained by being connected to another line-element chain member
- * or by having a link to position.
+ * Element about a single modification.
  *
  * @author Miloslav Metelka
- * @since 1.46
  */
+public final class ModElement extends AbstractPositionElement {
 
-public final class LineElement extends AbstractPositionElement implements Position {
-    
-    /**
-     * Attributes of this line element
-     */
-    private Object attributes; // 20(super) + 4 = 24 bytes
-    
-    LineElement(LineRootElement root, Position startPos, Position endPos) {
-        super(root, startPos, endPos);
+    public static final String NAME = "mod";
+
+    ModElement(Element parent, Position startPos, Position endPos) {
+        super(parent, startPos, endPos);
     }
 
-    @Override
-    public int getOffset() {
-        return getStartOffset();
+    ModElement(Element parent, int startOffset, int endOffset) {
+        super(parent, startOffset, endOffset);
     }
 
     @Override
     public String getName() {
-        return AbstractDocument.ParagraphElementName;
-    }
-
-    @Override
-    public AttributeSet getAttributes() {
-        // Do not return null since Swing's view factories assume that this is non-null.
-        return (attributes instanceof AttributeSet) ? (AttributeSet) attributes : SimpleAttributeSet.EMPTY;
-    }
-    
-    public void setAttributes(AttributeSet attributes) {
-        this.attributes = attributes;
-    }
-    
-    public Object legacyGetAttributesObject() {
-        return attributes;
-    }
-    
-    public void legacySetAttributesObject(Object attributes) {
-        this.attributes = attributes;
+        return NAME;
     }
 
 }

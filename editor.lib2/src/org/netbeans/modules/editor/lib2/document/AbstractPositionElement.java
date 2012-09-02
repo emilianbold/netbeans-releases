@@ -39,64 +39,111 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.editor.lib2.document;
 
-import javax.swing.text.Document;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.Element;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 
 /**
- * Line element implementation.
- * <br>
- * It only holds the starting position.The ending position
- * is obtained by being connected to another line-element chain member
- * or by having a link to position.
+ * Abstract element (requires naming) consisting of two positions.
  *
  * @author Miloslav Metelka
- * @since 1.46
  */
+public abstract class AbstractPositionElement implements Element {
+    
+    public static Position createPosition(Document doc, int offset) {
+        try {
+            return doc.createPosition(offset);
+        } catch (BadLocationException ex) {
+            throw new IndexOutOfBoundsException(ex.getMessage());
+        }
+    }
 
-public final class LineElement extends AbstractPositionElement implements Position {
-    
-    /**
-     * Attributes of this line element
-     */
-    private Object attributes; // 20(super) + 4 = 24 bytes
-    
-    LineElement(LineRootElement root, Position startPos, Position endPos) {
-        super(root, startPos, endPos);
+    private final Element parent; // 8 + 4 = 12 bytes
+
+    private final Position startPos; // 12 + 4 = 16 bytes
+
+    private final Position endPos; // 16 + 4 = 20 bytes
+
+    AbstractPositionElement(Element parent, Position startPos, Position endPos) {
+        assert (startPos != null);
+        assert (endPos != null);
+
+        this.parent = parent;
+        this.startPos = startPos;
+        this.endPos = endPos;
+    }
+
+    AbstractPositionElement(Element parent, int startOffset, int endOffset) {
+        this(
+                parent,
+                createPosition(parent.getDocument(), startOffset),
+                createPosition(parent.getDocument(), endOffset)
+        );
     }
 
     @Override
-    public int getOffset() {
-        return getStartOffset();
+    public Document getDocument() {
+        return parent.getDocument();
     }
 
     @Override
-    public String getName() {
-        return AbstractDocument.ParagraphElementName;
+    public int getStartOffset() {
+        return startPos.getOffset();
+    }
+
+    public Position getStartPosition() {
+        return startPos;
+    }
+
+    @Override
+    public int getEndOffset() {
+        return endPos.getOffset();
+    }
+
+    public Position getEndPosition() {
+        return endPos;
+    }
+
+    @Override
+    public Element getParentElement() {
+        return parent;
     }
 
     @Override
     public AttributeSet getAttributes() {
         // Do not return null since Swing's view factories assume that this is non-null.
-        return (attributes instanceof AttributeSet) ? (AttributeSet) attributes : SimpleAttributeSet.EMPTY;
+        return SimpleAttributeSet.EMPTY;
     }
-    
-    public void setAttributes(AttributeSet attributes) {
-        this.attributes = attributes;
+
+    @Override
+    public int getElementIndex(int offset) {
+        return -1;
     }
-    
-    public Object legacyGetAttributesObject() {
-        return attributes;
+
+    @Override
+    public int getElementCount() {
+        return 0;
     }
-    
-    public void legacySetAttributesObject(Object attributes) {
-        this.attributes = attributes;
+
+    @Override
+    public Element getElement(int index) {
+        return null;
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "getStartOffset()=" + getStartOffset() // NOI18N
+            + ", getEndOffset()=" + getEndOffset(); // NOI18N
     }
 
 }
