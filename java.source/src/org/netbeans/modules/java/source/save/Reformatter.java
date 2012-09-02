@@ -87,6 +87,7 @@ public class Reformatter implements ReformatTask {
     private Source source;
     private Context context;
     private CompilationController controller;
+    private Embedding currentEmbedding;
     private Document doc;
 
     public Reformatter(Source source, Context context) {
@@ -97,53 +98,17 @@ public class Reformatter implements ReformatTask {
 
     @Override
     public void reformat() throws BadLocationException {
-        if (controller == null) {
-            try {
-                if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
-                    controller = JavaSourceAccessor.getINSTANCE().createCompilationController(source);
-                } else {
-                    ParserManager.parse(Collections.singletonList(source), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            Parser.Result result = findEmbeddedJava(resultIterator);
-                            if (result != null)
-                                controller = CompilationController.get(result);
-                        }
-                        private Parser.Result findEmbeddedJava(final ResultIterator theMess) throws ParseException {
-                            final Collection<Embedding> todo = new LinkedList<Embedding>();
-                            //BFS should perform better than DFS in this dark.
-                            for (Embedding embedding : theMess.getEmbeddings()) {
-                                if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
-                                    return theMess.getResultIterator(embedding).getParserResult();
-                                } else {
-                                    todo.add(embedding);
-                                }
-                            }
-                            for (Embedding embedding : todo) {
-                                Parser.Result result = findEmbeddedJava(theMess.getResultIterator(embedding));
-                                if (result != null) {
-                                    return result;
-                                }
-                            }
-                            return null;
-                        }
-                    });
-                }
-                if (controller == null)
-                    return;
-                controller.toPhase(JavaSource.Phase.PARSED);
-            } catch (Exception ex) {
-                controller = null;
-                return;
-            }
-        }
         CodeStyle cs = (CodeStyle) doc.getProperty(CodeStyle.class);
-        if (cs == null)
+        if (cs == null) {
             cs = CodeStyle.getDefault(doc);
+        }
         List<Context.Region> indentRegions = context.indentRegions();
         Collections.reverse(indentRegions);
-        for (Context.Region region : indentRegions)
-            reformatImpl(region, cs);
+        for (Context.Region region : indentRegions) {
+            if (initRegionData(region)) {
+                reformatImpl(region, cs);
+            }
+        }
     }
     
     public static String reformat(String text, CodeStyle style) {
@@ -176,6 +141,56 @@ public class Reformatter implements ReformatTask {
         return sb.toString();
     }
     
+    private boolean initRegionData(final Context.Region region) {
+        if (controller == null || (currentEmbedding != null
+                && !(currentEmbedding.containsOriginalOffset(region.getStartOffset())
+                && currentEmbedding.containsOriginalOffset(region.getEndOffset())))) {
+            try {
+                if (JavacParser.MIME_TYPE.equals(context.mimePath())) {
+                    controller = JavaSourceAccessor.getINSTANCE().createCompilationController(source);
+                } else {
+                    ParserManager.parse(Collections.singletonList(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Parser.Result result = findEmbeddedJava(resultIterator);
+                            if (result != null) {
+                                controller = CompilationController.get(result);
+                            }
+                        }
+                        
+                        private Parser.Result findEmbeddedJava(final ResultIterator theMess) throws ParseException {
+                            final Collection<Embedding> todo = new LinkedList<Embedding>();
+                            //BFS should perform better than DFS in this dark.
+                            for (Embedding embedding : theMess.getEmbeddings()) {
+                                if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())
+                                        && embedding.containsOriginalOffset(region.getStartOffset())
+                                        && embedding.containsOriginalOffset(region.getEndOffset())) {
+                                    return theMess.getResultIterator(currentEmbedding = embedding).getParserResult();
+                                } else {
+                                    todo.add(embedding);
+                                }
+                            }
+                            for (Embedding embedding : todo) {
+                                Parser.Result result = findEmbeddedJava(theMess.getResultIterator(embedding));
+                                if (result != null) {
+                                    return result;
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                }
+                if (controller == null) {
+                    return false;
+                }
+                controller.toPhase(JavaSource.Phase.PARSED);
+            } catch (Exception ex) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void reformatImpl(Context.Region region, CodeStyle cs) throws BadLocationException {
         boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
         int startOffset = region.getStartOffset();

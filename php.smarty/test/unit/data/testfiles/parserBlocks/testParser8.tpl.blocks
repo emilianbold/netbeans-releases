@@ -1,0 +1,19 @@
+Detected parser blocks in the file:
+
+{foreach <179:221> -  from=$chat_text item=item name=foo}
+ |
+ -- {/foreach <328:336> - }
+
+{foreach <439:482> -  from=$chat_users item=item name=foo}
+ |
+ -- {/foreach <527:535> - }
+
+{capture <76:98> -  name=chat_read}
+ |
+ -- {/capture <820:828> - }
+
+{if <832:846> -  ($room > 0)}
+ |
+ -- {else <881:885> - }
+ |
+ -- {/if <998:1001> - }

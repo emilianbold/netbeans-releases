@@ -56,8 +56,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.html.editor.lib.api.HtmlParser;
-import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
@@ -86,23 +84,10 @@ public class JQueryCodeCompletion {
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (isJQuery(parserResult, lastTsOffset)) {
-//                    String functionName = findFunctionName(parserResult, lastTsOffset);
-//                    if (functionName != null) {
-//                        int paramIndex = findParamIndex(parserResult, lastTsOffset);
-//                        if (paramIndex > -1) {
-//                            System.out.println("paramIndex: " + paramIndex);
-//                            
-//                        }
-//                    }
-//                    System.out.println("functionName: " + functionName);
+                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
-            case OBJECT_PROPERTY:
-                if (isJQuery(parserResult, lastTsOffset)) {
-                    
-                }
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));
@@ -162,30 +147,7 @@ public class JQueryCodeCompletion {
         return null;
     }
     
-    private boolean isJQuery(ParserResult parserResult, int offset) {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
-        if (ts == null) {
-            return false;
-        }
-        ts.move(offset);
-        if (!(ts.moveNext() && ts.movePrevious())) {
-            return false;
-        }
-        Token<? extends JsTokenId> lastToken = ts.token();
-        Token<? extends JsTokenId> token = lastToken;
-        JsTokenId tokenId = token.id();
-        while (tokenId != JsTokenId.EOL
-                && tokenId != JsTokenId.WHITESPACE
-                && ts.movePrevious()) {
-            lastToken = token;
-            token = ts.token();
-            tokenId = token.id();
-        }
-        return (lastToken.id() == JsTokenId.IDENTIFIER 
-                && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
-                || (!ts.movePrevious() 
-                && ("$".equals(token.text().toString()) || "jQuery".equals(token.text().toString()))));
-    }
+    
 
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
         if (element.getKind() == ElementKind.CALL) {
@@ -198,7 +160,7 @@ public class JQueryCodeCompletion {
             File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
             return SelectorsLoader.getDocumentation(apiFile, name);
         } else if (element.getKind() == ElementKind.METHOD) {
-            if (isJQuery(info, lastTsOffset)) {
+            if (JQueryUtils.isJQuery(info, lastTsOffset)) {
                 File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
                 return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
             }
@@ -249,7 +211,7 @@ public class JQueryCodeCompletion {
         
     }
     
-    private class SelectorContext {
+    private static class SelectorContext {
         String prefix;
         Collection<SelectorKind> kinds;
         int prefixIndex;
@@ -273,7 +235,7 @@ public class JQueryCodeCompletion {
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
     }
     
-    protected static String HELP_LOCATION = "docs/jquery-api.xml";
+    protected static final String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
         SelectorItem item;
         File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N

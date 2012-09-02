@@ -448,6 +448,14 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
                     Collections.singletonMap("public void test() {$stmts$;}", Arrays.asList("public void test() { clone(); }")),
                     Collections.<String>emptyList());
     }
+    
+    public void testEfficientMultiMatching() throws Exception {
+        String code = "package test; public class Test { private void m() {} }";
+
+        performTest(code,
+                    Collections.<String, List<String>>emptyMap(),
+                    Collections.singletonList("$mods$ class $name implements $i$ { }"));
+    }
 
     private long measure(String baseCode, String toInsert, int repetitions, String pattern) throws Exception {
         int pos = baseCode.indexOf('|');
@@ -536,6 +544,17 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         assertEquals(Arrays.asList(new HashSet<String>(Arrays.asList("isDirectory"))), bp.getIdentifiers());
         //TODO: the actual code for kinds differs for NFABased search and REBased search:
 //        assertEquals(Arrays.asList(new HashSet<String>(Arrays.asList(Kind.METHOD_INVOCATION.name()))), bp.getKinds());
+    }
+    
+    public void testModifiersMultiVariable() throws Exception {
+        String code = "package test;\n" +
+                       "public class Test {\n" +
+                       "     @Deprecated @Override public Test test;\n" +
+                       "}\n";
+
+        performTest(code,
+                    Collections.singletonMap("$mods$ @Deprecated public $type $name = $init$;", Arrays.asList("@Deprecated @Override public Test test;")),
+                    Collections.<String>emptyList());
     }
 
     protected abstract BulkSearch createSearch();

@@ -337,7 +337,9 @@ public class BrokenReferencesSupport {
 
         @Override
         public FileObject getProjectDirectory() {
-            return delegate.getProjectDirectory();
+            return delegate != null?
+                delegate.getProjectDirectory():
+                null;
         }
 
         @Override
@@ -345,6 +347,7 @@ public class BrokenReferencesSupport {
             return lookup;
         }        
 
+        @NonNull
         static ProjectDecorator create(
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final ReferenceHelper referenceHelper,
@@ -353,16 +356,19 @@ public class BrokenReferencesSupport {
             @NonNull final String[] platformProperties,
             final boolean abortAfterFirstProblem) {
             final Project prj = FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
-            return new ProjectDecorator(
-                prj,
-                ProjectProblemsProviders.createReferenceProblemProvider(
-                    projectHelper,
-                    referenceHelper,
-                    evaluator,
-                    properties,
-                    platformProperties));
+            return prj != null?
+                new ProjectDecorator(
+                    prj,
+                    ProjectProblemsProviders.createReferenceProblemProvider(
+                        projectHelper,
+                        referenceHelper,
+                        evaluator,
+                        properties,
+                        platformProperties)):
+                new ProjectDecorator();
         }
 
+        @NonNull
         static ProjectDecorator create() {
             return new ProjectDecorator();
         }

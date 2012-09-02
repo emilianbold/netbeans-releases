@@ -390,7 +390,7 @@ public final class CndFileUtils {
                             // if we're inside INDEXED_DIRECTORY then the file does not exist
                             exists = Flags.NOT_FOUND;
                             if (ASSERT_INDEXED_NOTFOUND) {
-                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
                             }
                         }
                     }
@@ -399,7 +399,7 @@ public final class CndFileUtils {
                         // if we're inside INDEXED_DIRECTORY then the file does not exist
                         exists = Flags.NOT_FOUND;
                         if (ASSERT_INDEXED_NOTFOUND) {
-                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
                         }
                     } else if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
                         // no need to check non existing file
@@ -647,14 +647,25 @@ public final class CndFileUtils {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            clearCachesAboutFile(fe);
+            File file = CndFileUtils.toFile(fe.getFile());
+            String path = file.getAbsolutePath();
+            String absPath = preparePath(path);
+            if (getFilesMap(getLocalFileSystem()).put(absPath, Flags.DIRECTORY) != null) {
+                // If there was something in the map already - invalidate it
+                invalidateFile(path, absPath);
+            }
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            clearCachesAboutFile(fe);
+            File file = CndFileUtils.toFile(fe.getFile());
+            String path = file.getAbsolutePath();
+            String absPath = preparePath(path);
+            if (getFilesMap(getLocalFileSystem()).put(absPath, Flags.FILE) != null) {
+                // If there was something in the map already - invalidate it
+                invalidateFile(path, absPath);
+            }
         }
-
 
         @Override
         public void fileDeleted(FileEvent fe) {
@@ -683,7 +694,7 @@ public final class CndFileUtils {
         }
 
         private File clearCachesAboutFile(FileEvent fe) {
-            return clearCachesAboutFile(CndFileUtils.toFile(fe.getFile()), true);
+            return clearCachesAboutFile(CndFileUtils.toFile(fe.getFile()), false);
         }
         
         private File clearCachesAboutFile(File f, boolean withParent) {
@@ -697,20 +708,29 @@ public final class CndFileUtils {
             }
             return null;
         }
-
-        private void cleanCachesImpl(String file) {
-            String absPath = changeStringCaseIfNeeded(getLocalFileSystem(), file);
+        
+        private String preparePath(String path) {
+            String absPath = changeStringCaseIfNeeded(getLocalFileSystem(), path);
             if (isWindows) {
                 absPath = absPath.replace('/', '\\');
             }
-            Flags removed = getFilesMap(getLocalFileSystem()).remove(absPath);
-            if (TRACE_EXTERNAL_CHANGES) {
-                System.err.printf("clean cache for %s->%s\n", absPath, removed);
-            }            
+            return absPath;
+        }
+        
+        private static void invalidateFile(String file, String absPath) {
             for (CndFileExistSensitiveCache cache : getCaches()) {
                 cache.invalidateFile(file);
                 cache.invalidateFile(absPath);
             }
+        }
+
+        private void cleanCachesImpl(String file) {
+            String absPath = preparePath(file);
+            Flags removed = getFilesMap(getLocalFileSystem()).remove(absPath);
+            if (TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("clean cache for %s->%s\n", absPath, removed);
+            }
+            invalidateFile(file, absPath);
         }
     }
     private static final boolean TRACE_EXTERNAL_CHANGES = Boolean.getBoolean("cnd.modelimpl.trace.external.changes"); // NOI18N

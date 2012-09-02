@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -78,6 +79,7 @@ import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextAwareService;
 import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Item;
@@ -164,13 +166,16 @@ abstract class Lookup implements ContextProvider {
             if (l2 instanceof MetaInf) ((MetaInf) l2).setContext (context);
         }
 
-        private class CompoundLookupList<T> extends LookupList<T> implements Customizer,
-                                                                       PropertyChangeListener {
+        private class CompoundLookupList<T> extends LookupList<T>
+                                            implements PositionedList<T>,
+                                                       Customizer,
+                                                       PropertyChangeListener {
             
             private String folder;
             private Class<T> service;
             private List<PropertyChangeListener> propertyChangeListeners;
             private Customizer sublist1, sublist2;
+            private List<PositionedElement> positionedElements;
             
             public CompoundLookupList(String folder, Class<T> service) {
                 super(null);
@@ -183,12 +188,96 @@ abstract class Lookup implements ContextProvider {
                 clear();
                 List<? extends T> list1 = l1.lookup(folder, service);
                 List<? extends T> list2 = l2.lookup(folder, service);
+                if (list1 instanceof PositionedList || list2 instanceof PositionedList) {
+                    List<PositionedElement> positioned = new ArrayList<PositionedElement>();
+                    List<T> others = new ArrayList<T>();
+                    boolean hp1 = false;
+                    if (list1 instanceof PositionedList) {
+                        PositionedList<? extends T> ml1 = (PositionedList<? extends T>) list1;
+                        if (ml1.hasPositions()) {
+                            fillElements(ml1, positioned, others);
+                            hp1 = true;
+                        }
+                    }
+                    boolean hp2 = false;
+                    if (list2 instanceof PositionedList) {
+                        PositionedList<? extends T> ml2 = (PositionedList<? extends T>) list2;
+                        if (ml2.hasPositions()) {
+                            fillElements(ml2, positioned, others);
+                            hp2 = true;
+                        }
+                    }
+                    if (hp1 && hp2) { // merge
+                        if (!positioned.isEmpty()) {
+                            Collections.sort(positioned);
+                            Set<String> hiddenClassNames = new HashSet<String>();
+                            addHiddenClassNames(list1, hiddenClassNames);
+                            addHiddenClassNames(list2, hiddenClassNames);
+                            List<T> sorted = new LookupList<T>(hiddenClassNames);
+                            for (PositionedElement<T> pe : positioned) {
+                                sorted.add(pe.element);
+                            }
+                            positionedElements = positioned;
+                            list1 = sorted;
+                        } else {
+                            list1 = Collections.emptyList();
+                        }
+                        list2 = others;
+                    } else if (hp1) {
+                        positionedElements = positioned;
+                    } else if (hp2) {
+                        positionedElements = positioned;
+                        List<? extends T> switchList = list1;
+                        list1 = list2;
+                        list2 = switchList;
+                    }
+                }
                 addAll (list1);
                 addAll (list2);
                 sublist1 = (list1 instanceof Customizer) ? (Customizer) list1 : null;
                 sublist2 = (list2 instanceof Customizer) ? (Customizer) list2 : null;
             }
+            
+            private void addHiddenClassNames(List list, Set<String> hiddenClassNames) {
+                if (list instanceof LookupList) {
+                    Set<String> hcn = ((LookupList) list).hiddenClassNames;
+                    if (hcn != null) {
+                        hiddenClassNames.addAll(hcn);
+                    }
+                }
+            }
+            
+            private void fillElements(PositionedList<? extends T> ml,
+                                      List<PositionedElement> positioned, List<T> others) {
+                int s1 = ml.size();
+                for (int i = 0; i < s1; i++) {
+                    T obj = ml.get(i);
+                    int pos = ml.getPosition(i);
+                    if (pos == 0 || pos == Integer.MAX_VALUE) {
+                        others.add(obj);
+                    } else {
+                        PositionedElement<T> p = new PositionedElement<T>();
+                        p.element = obj;
+                        p.position = pos;
+                        positioned.add(p);
+                    }
+                }
+            }
 
+            @Override
+            public boolean hasPositions() {
+                return positionedElements != null && !positionedElements.isEmpty();
+            }
+
+            @Override
+            public int getPosition(int elementIndex) {
+                if (elementIndex < positionedElements.size()) {
+                    return positionedElements.get(elementIndex).position;
+                } else {
+                    return Integer.MAX_VALUE;
+                }
+            }
+            
             public synchronized void setObject(Object bean) {
                 if (sublist1 != null) sublist1.setObject(bean);
                 if (sublist2 != null) sublist2.setObject(bean);
@@ -219,6 +308,20 @@ abstract class Lookup implements ContextProvider {
                 PropertyChangeEvent evt = new PropertyChangeEvent(this, "content", null, null);
                 for (PropertyChangeListener l : listeners) {
                     l.propertyChange(evt);
+                }
+            }
+        }
+        
+        private static class PositionedElement<T> implements Comparable {
+            T element;
+            int position;
+
+            @Override
+            public int compareTo(Object o) {
+                if (o instanceof PositionedElement) {
+                    return position - ((PositionedElement) o).position;
+                } else {
+                    return +1;
                 }
             }
         }
@@ -541,13 +644,14 @@ abstract class Lookup implements ContextProvider {
          * The refreshing is performed under a lock on this list object so that
          * clients have consistent data under synchronization on this.
          */
-        private final class MetaInfLookupList<T> extends LookupList<T> implements Customizer {
+        private final class MetaInfLookupList<T> extends LookupList<T> implements PositionedList<T>, Customizer {
             
             private String folder;
             private final Class<T> service;
             private List<PropertyChangeListener> propertyChangeListeners;
             public int notifyLoadOrder = 0;
             public int notifyUnloadOrder = 0;
+            public List<Integer> elementPositions = new ArrayList<Integer>();
             
             public MetaInfLookupList(String folder, Class<T> service) {
                 this(list(folder, service), listLookup(folder, service), service);
@@ -673,6 +777,12 @@ abstract class Lookup implements ContextProvider {
                         }
                     }
                 }
+                // remember the instance position for merge purpose: li.fo.getAttribute("position")
+                int position = getPosition(li);
+                while (elementPositions.size() < size()) {
+                    elementPositions.add(Integer.MAX_VALUE);
+                }
+                elementPositions.add(position);
                 if (instance != null) {
                     try {
                         add(service.cast(instance), className);
@@ -684,7 +794,77 @@ abstract class Lookup implements ContextProvider {
                     add(new LazyInstance<T>(service, li));
                 }
             }
+            
+            private int getPosition(Item<T> li) {
+                int position = Integer.MAX_VALUE;
+                try {
+                    Field foField = li.getClass().getDeclaredField("fo");
+                    foField.setAccessible(true);
+                    FileObject fo = (FileObject) foField.get(li);
+                    if (fo != null) {
+                        Object positionObj = fo.getAttribute("position");
+                        if (positionObj instanceof Integer) {
+                            position = (Integer) positionObj;
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.log(Level.INFO, "Not able to retieve position from item "+li, ex);
+                }
+                return position;
+            }
+            
+            @Override
+            public int getPosition(int elementIndex) {
+                if (elementPositions.size() <= elementIndex) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return elementPositions.get(elementIndex);
+                }
+            }
+            
+            @Override
+            public boolean hasPositions() {
+                return !elementPositions.isEmpty();
+            }
 
+            @Override
+            public void clear() {
+                super.clear();
+                elementPositions.clear();
+            }
+
+            @Override
+            public T remove(int index) {
+                T o = super.remove(index);
+                elementPositions.remove(index);
+                return o;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                if (o instanceof LazyEntry) {
+                    return super.remove(o);
+                } else {
+                    int size = size();
+                    if (o == null) {
+                        for (int index = 0; index < size; index++) {
+                            if (getRaw(index) == null) {
+                                remove(index);
+                                return true;
+                            }
+                        }
+                    } else {
+                        for (int index = 0; index < size; index++) {
+                            if (o.equals(getRaw(index))) {
+                                remove(index);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+            
             private boolean checkClassName(String service) {
                 //String method = null;
                 if (service.endsWith("()")) {
@@ -992,10 +1172,15 @@ abstract class Lookup implements ContextProvider {
                         // Check the instances we have and remove the newly hidden ones:
                         for (Iterator it = newHiddenClassNames.iterator(); it.hasNext(); ) {
                             String className = (String) it.next();
-                            if (instanceClassNames.containsValue(className)) {
-                                for (Iterator ii = instanceClassNames.keySet().iterator(); it.hasNext(); ) {
+                            String className2 = null;
+                            if (className.endsWith("()")) {
+                                className2 = className.substring(0, className.length() - 2);
+                            }
+                            if (instanceClassNames.containsValue(className) || className2 != null && instanceClassNames.containsValue(className2)) {
+                                for (Iterator ii = instanceClassNames.keySet().iterator(); ii.hasNext(); ) {
                                     Object instance = ii.next();
-                                    if (className.equals(instanceClassNames.get(instance))) {
+                                    String icn = instanceClassNames.get(instance);
+                                    if (className.equals(icn) || className2 != null && className2.equals(icn)) {
                                         remove(instance);
                                         instanceClassNames.remove(instance);
                                         break;

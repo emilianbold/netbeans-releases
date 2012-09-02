@@ -151,7 +151,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
     }
 
 
-    private class OffsetVisitor extends NodeVisitor {
+    private static class OffsetVisitor extends NodeVisitor {
 
         private final int offset;
         private final List<Node> nodes = new LinkedList<Node>();

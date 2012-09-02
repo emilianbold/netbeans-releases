@@ -44,17 +44,29 @@
 
 package org.netbeans.modules.openfile;
 
+import java.awt.FileDialog;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileSystemView;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileChooserBuilder.SelectionApprover;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -91,10 +103,19 @@ public class OpenFileAction implements ActionListener {
      * @return  the initialized file chooser
      */
     protected JFileChooser prepareFileChooser() {
-        JFileChooser chooser = new FileChooser();
+        FileChooserBuilder fcb = new FileChooserBuilder(OpenFileAction.class);
+        fcb.setSelectionApprover(new OpenFileSelectionApprover());
+        fcb.setFilesOnly(true);
+        fcb.addDefaultFileFilters();
+        for (OpenFileDialogFilter filter :
+                Lookup.getDefault().lookupAll(OpenFileDialogFilter.class)) {
+            fcb.addFileFilter(filter);
+        }
+        JFileChooser chooser = fcb.createFileChooser();
+        chooser.setMultiSelectionEnabled(true);
+        chooser.getCurrentDirectory().listFiles(); //preload
         chooser.setCurrentDirectory(getCurrentDirectory());
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
-        
         return chooser;
     }
     
@@ -136,8 +157,32 @@ public class OpenFileAction implements ActionListener {
             JFileChooser chooser = prepareFileChooser();
             File[] files;
             try {
-                files = chooseFilesToOpen(chooser);
-                currentDirectory = chooser.getCurrentDirectory();
+                if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+                    String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+                    System.setProperty("apple.awt.fileDialogForDirectories", "false"); //NOI18N
+                    FileDialog fileDialog = new FileDialog(WindowManager.getDefault().getMainWindow());
+                    fileDialog.setMode(FileDialog.LOAD);
+                    fileDialog.setDirectory(getCurrentDirectory().getAbsolutePath());
+                    fileDialog.setTitle(chooser.getDialogTitle());
+                    fileDialog.setVisible(true);
+                    if( null != oldFileDialogProp ) {
+                        System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+                    } else {
+                        System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+                    }
+
+                    if( fileDialog.getDirectory() != null && fileDialog.getFile() != null ) {
+                        String selFile = fileDialog.getFile();
+                        File dir = new File( fileDialog.getDirectory() );
+                        files = new File[] { new File( dir, selFile ) };
+                        currentDirectory = dir;
+                    } else {
+                        throw new UserCancelException();
+                    }
+                } else {
+                    files = chooseFilesToOpen(chooser);
+                    currentDirectory = chooser.getCurrentDirectory();
+                }
             } catch (UserCancelException ex) {
                 return;
             }
@@ -173,4 +218,46 @@ public class OpenFileAction implements ActionListener {
         return currentDirectory;
     }
 
+    private static class OpenFileSelectionApprover
+            implements SelectionApprover {
+
+        @Override
+        public boolean approve(File[] selectedFiles) {
+            /* check the files: */
+            List<String> errorMsgs = null;
+            for (int i = 0; i < selectedFiles.length; i++) {
+                String msgPatternRef = null;
+                File file = selectedFiles[i];
+
+                if (!file.exists()) {
+                    msgPatternRef = "MSG_FileDoesNotExist";             //NOI18N
+                } else if (file.isDirectory()) {
+                    msgPatternRef = "MSG_FileIsADirectory";             //NOI18N
+                } else if (!file.isFile()) {
+                    msgPatternRef = "MSG_FileIsNotPlainFile";           //NOI18N
+                }
+                if (msgPatternRef == null) {
+                    continue;
+                }
+                if (errorMsgs == null) {
+                    errorMsgs = new ArrayList<String>(selectedFiles.length - i);
+                }
+                errorMsgs.add(NbBundle.getMessage(OpenFileAction.class,
+                        msgPatternRef, file.getName()));
+            }
+            if (errorMsgs == null) {
+                return true;
+            } else {
+                JPanel panel = new JPanel(
+                        new GridLayout(errorMsgs.size(), 0, 0, 2));   //gaps
+                for (String errMsg : errorMsgs) {
+                    panel.add(new JLabel(errMsg));
+                }
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                        panel, NotifyDescriptor.WARNING_MESSAGE));
+                return false;
+            }
+        }
+    }
 }

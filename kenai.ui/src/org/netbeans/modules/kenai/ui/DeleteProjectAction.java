@@ -47,9 +47,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -61,11 +61,13 @@ import org.openide.windows.WindowManager;
  */
 public class DeleteProjectAction extends AbstractAction {
 
-    private ProjectHandle project;
+    private ProjectHandle<KenaiProject> project;
+    private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
 
-    public DeleteProjectAction(ProjectHandle project) {
+    public DeleteProjectAction(ProjectHandle<KenaiProject> project) {
         super(org.openide.util.NbBundle.getMessage(DeleteProjectAction.class, "CTL_DeleteProject"));
         this.project = project;
+        dashboard = KenaiServer.getDashboard(project);
     }
 
     @Override
@@ -80,18 +82,18 @@ public class DeleteProjectAction extends AbstractAction {
         ) {
             return;
         }
-        DashboardImpl.getInstance().deletingStarted();
+        dashboard.deletingStarted();
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
                 try {
-                    KenaiProject prj = project.getKenaiProject();
+                    KenaiProject prj = project.getTeamProject();
                     prj.delete();
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            Dashboard.getDefault().removeProject(project);
-                            DashboardImpl.getInstance().refreshMemberProjects(false);
+                            dashboard.removeProject(project);
+                            dashboard.refreshMemberProjects(false);
                         }
                     });
                 } catch (KenaiException ex) {
@@ -114,7 +116,7 @@ public class DeleteProjectAction extends AbstractAction {
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            DashboardImpl.getInstance().deletingFinished();
+                            dashboard.deletingFinished();
                         }
                     });
                 }

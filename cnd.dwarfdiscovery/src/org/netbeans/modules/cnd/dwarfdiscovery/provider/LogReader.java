@@ -1026,14 +1026,22 @@ public class LogReader {
             } else if (languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
-                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
-                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                    if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
-                        language = ItemProperties.LanguageKind.CPP;
+                if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
+                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                        if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
+                            language = ItemProperties.LanguageKind.CPP;
+                        }
+                    } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                        if (li.getLanguage() != ItemProperties.LanguageKind.C) {
+                            language = ItemProperties.LanguageKind.C;
+                        }
                     }
-                } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                    if (li.getLanguage() != ItemProperties.LanguageKind.C) {
-                        language = ItemProperties.LanguageKind.C;
+                } else if (language == LanguageKind.C &&
+                          (li.compiler.equals("gcc") || li.compiler.equals("clang") || li.compiler.equals("icc"))) { // NOI18N
+                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                        language = ItemProperties.LanguageKind.CPP;
                     }
                 }
             }

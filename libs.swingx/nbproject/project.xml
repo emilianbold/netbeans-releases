@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.db.dataview</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.tasks.ui</friend>
+                <friend>org.netbeans.modules.team.ui</friend>
                 <package>org.jdesktop.beans</package>
                 <package>org.jdesktop.swingx</package>
                 <package>org.jdesktop.swingx.action</package>
@@ -99,8 +100,8 @@ made subject to such option by the copyright holder.
                 <package>org.jdesktop.swingx.util</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/swingx-all-1.6.3.jar</runtime-relative-path>
-                <binary-origin>external/swingx-all-1.6.3.jar</binary-origin>
+                <runtime-relative-path>ext/swingx-all-1.6.4.jar</runtime-relative-path>
+                <binary-origin>external/swingx-all-1.6.4.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -557,7 +557,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void resolveDocumentation(CompilationController controller) throws IOException {            
+        private void resolveDocumentation(CompilationController controller) throws IOException {
             controller.toPhase(Phase.RESOLVED);
             Element el = null;
             if (element != null) {
@@ -1064,15 +1064,28 @@ public class JavaCompletionProvider implements CompletionProvider {
                 last = param;
                 startPos = parPos;
             }
-            String headerText = controller.getText().substring(startPos, offset);
-            int parStart = headerText.indexOf('('); //NOI18N
-            if (parStart < 0 && last != null)
-                parStart = 0;
-            if (parStart >= 0) {
-                int parEnd = headerText.indexOf(')', parStart); //NOI18N
-                if (parEnd >= parStart) {
-                    headerText = headerText.substring(parEnd + 1).trim();
-                    if (THROWS_KEYWORD.equals(headerText)) {
+            TokenSequence<JavaTokenId> lastToken = findLastNonWhitespaceToken(env, startPos, offset);
+            if (lastToken != null) {
+                switch (lastToken.token().id()) {
+                    case LPAREN:
+                    case COMMA:
+                        addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                        break;
+                    case RPAREN:
+                        Tree mthParent = path.getParentPath().getLeaf();
+                        switch (mthParent.getKind()) {
+                            case ANNOTATION_TYPE:
+                                addKeyword(env, DEFAULT_KEYWORD, SPACE);
+                                break;
+                            case INTERFACE:
+                                if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0)
+                                    addKeyword(env, DEFAULT_KEYWORD, SPACE);
+                            default:
+                                addKeyword(env, THROWS_KEYWORD, SPACE);
+                        }
+                        break;
+                    case THROWS:
                         if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
                             controller.toPhase(Phase.RESOLVED);
                             Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
@@ -1084,28 +1097,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
                         if (te != null)
                             addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
-                    } else if (DEFAULT_KEYWORD.equals(headerText)) {
+                        break;
+                    case DEFAULT:
                         addLocalConstantsAndTypes(env);
-                    } else {
-                        Tree mthParent = path.getParentPath().getLeaf();
-                        switch (mthParent.getKind()) {
-                            case ANNOTATION_TYPE:
-                                addKeyword(env, DEFAULT_KEYWORD, SPACE);
-                                break;
-                            case INTERFACE:
-                                addKeyword(env, DEFAULT_KEYWORD, SPACE);
-                            default:
-                                addKeyword(env, THROWS_KEYWORD, SPACE);
-                        }
-                    }
-                } else {
-                    headerText = headerText.substring(parStart).trim();
-                    if ("(".equals(headerText) || ",".equals(headerText)) { //NOI18N
-                        addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                    }
+                        break;
                 }
-            } else if (retType != null && headerText.trim().length() == 0) {
+            } else if (retType != null) {
                 insideExpression(env, new TreePath(path, retType));
             }
         }
@@ -2793,7 +2790,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
             final boolean ctxStatic = enclClass != null && (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
-            final ExecutableElement method = scope.getEnclosingMethod();
+            final ExecutableElement method = scope.getEnclosingMethod() != null && scope.getEnclosingMethod().getEnclosingElement() == enclClass ? scope.getEnclosingMethod() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     boolean isStatic = ctxStatic || (t != null && t.getKind() == TypeKind.DECLARED && ((DeclaredType)t).asElement() != enclClass && enclStatic);
@@ -3206,8 +3203,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
+            String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class)))
-                if (startsWith(env, pkgName) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
+                if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
                     results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         

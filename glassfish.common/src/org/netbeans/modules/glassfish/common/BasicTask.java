@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -51,45 +50,86 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author Peter Williams
+ * Basic common functionality of commands execution.
+ * <p/>
+ * @author Peter Williams, Tomas Kraus
  */
 public abstract class BasicTask<V> implements Callable<V> {
 
-    /** Wait duration (ms) between server status checks.
-     */
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Wait duration (ms) between server status checks. */
     public static final int DELAY = 250;
     
-    /** Maximum amount of time (in ms) to wait for server to start.
-     */
+    /** Maximum amount of time (in ms) to wait for server to start. */
     public static final int START_TIMEOUT = 120000;
     
-    /** Maximum amount of time (in ms) to wait for server to stop.
-     */
+    /** Maximum amount of time (in ms) to wait for server to stop. */
     public static final int STOP_TIMEOUT = 10000;
 
-    /** Unit (ms) for the DELAY and START_TIMEOUT constants
-     */
+    /** Unit (ms) for the DELAY and START_TIMEOUT constants. */
     public static final TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
 
-    protected final Map<String, String> ip;
+    /** GlassFish instance accessed in this task. */
+    GlassfishInstance instance;
+
+    /** Callback to retrieve state changes. */
     protected OperationStateListener [] stateListener;
+
+    /** Name of GlassFish instance accessed in this task. */
     protected String instanceName;
 
-    public BasicTask(Map<String, String> properties, OperationStateListener... stateListener) {
-        this.ip = properties;
-        this.stateListener = stateListener;
-        this.instanceName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-    }
-    
-    
-    /** Implementation of command to execute goes here.
-     *
+    ////////////////////////////////////////////////////////////////////////////
+    // Abstract methods                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Command execution is implemented as <code>call()</code> method in child
+     * classes.
+     * <p/>
+     * @return Command execution result.
      */
+    @Override
     public abstract V call();
 
-    protected final OperationState fireOperationStateChanged(OperationState stateType, String resName, String... args) {
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs an instance of <code>BasicTask</code> class.
+     * <p/>
+     * @param instance GlassFish instance accessed in this task.
+     * @param stateListener Callback listeners used to retrieve state changes.
+     */
+    public BasicTask(GlassfishInstance instance, OperationStateListener... stateListener) {
+        this.instance = instance;
+        this.stateListener = stateListener;
+        this.instanceName = instance.getProperty(
+                GlassfishModule.DISPLAY_NAME_ATTR);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Call all registered callback listeners to inform about state change.
+     * <p/>
+     * @param stateType New state of current command execution sent
+     *        to listeners. This value will be returned by this method.
+     * @param resName Name of the resource to look for message.
+     * @param args Additional arguments passed to message.
+     * @return Passed new state of current command.
+     */
+    protected final OperationState fireOperationStateChanged(
+            OperationState stateType, String resName, String... args) {
         if(stateListener != null && stateListener.length > 0) {
             String msg = NbBundle.getMessage(BasicTask.class, resName, args);
             for(int i = 0; i < stateListener.length; i++) {

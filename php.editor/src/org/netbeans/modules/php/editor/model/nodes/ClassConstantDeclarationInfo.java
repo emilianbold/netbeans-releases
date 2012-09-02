@@ -65,8 +65,6 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
 
     public static List<? extends ClassConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
         List<ClassConstantDeclarationInfo> retval = new ArrayList<ClassConstantDeclarationInfo>();
-        List<Identifier> names = constantDeclaration.getNames();
-
         Iterator<Identifier> iteratorNames = constantDeclaration.getNames().iterator();
         Iterator<Expression> iteratorInitializers = constantDeclaration.getInitializers().iterator();
         Identifier name;

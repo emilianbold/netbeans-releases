@@ -76,6 +76,9 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-maven-hints-pom-JavaNetRepositoryError.instance">
             <attr name="position" intvalue="500"/>
         </file>
+        <file name="org-netbeans-modules-maven-hints-pom-props-TurnToPropertyHint.instance">
+            <attr name="position" intvalue="900"/>
+        </file>
         <file name="org-netbeans-modules-maven-hints-pom-MoveToDependencyManagementHint.instance">
             <attr name="position" intvalue="1000"/>
         </file>

@@ -79,6 +79,14 @@ public final class FormatContext {
 
     private final boolean embedded;
 
+    private LineWrap lastLineWrap;
+
+    private int indentationLevel;
+
+    private int offsetDiff;
+
+    private int currentLineStart;
+
     public FormatContext(Context context, Snapshot snapshot) {
         this.context = context;
         this.snapshot = snapshot;
@@ -139,6 +147,43 @@ public final class FormatContext {
             LOGGER.log(Level.FINE, "Tuned regions");
             dumpRegions();
         }
+    }
+
+
+    public void setLastLineWrap(LineWrap lineWrap) {
+        this.lastLineWrap = lineWrap;
+    }
+
+    public LineWrap getLastLineWrap() {
+        return lastLineWrap;
+    }
+
+    public int getCurrentLineStart() {
+        return currentLineStart;
+    }
+
+    public void setCurrentLineStart(int currentLineStart) {
+        this.currentLineStart = currentLineStart;
+    }
+
+    public int getIndentationLevel() {
+        return indentationLevel;
+    }
+
+    public void incIndentationLevel() {
+        this.indentationLevel++;
+    }
+
+    public void decIndentationLevel() {
+        this.indentationLevel--;
+    }
+
+    public int getOffsetDiff() {
+        return offsetDiff;
+    }
+
+    private void setOffsetDiff(int offsetDiff) {
+        this.offsetDiff = offsetDiff;
     }
 
     private void dumpRegions() {
@@ -237,56 +282,64 @@ public final class FormatContext {
         return (BaseDocument) context.document();
     }
 
-    public int indentLine(int voffset, int indentationSize, int offsetDiff,
+    public void indentLine(int voffset, int indentationSize,
             JsFormatter.Indentation indentationCheck) {
 
+        indentLineWithOffsetDiff(voffset, indentationSize, indentationCheck, offsetDiff);
+    }
+
+    public void indentLineWithOffsetDiff(int voffset, int indentationSize,
+            JsFormatter.Indentation indentationCheck, int realOffsetDiff) {
+
         if (!indentationCheck.isAllowed()) {
-            return offsetDiff;
+            return;
         }
 
         int offset = getDocumentOffset(voffset, !indentationCheck.isExceedLimits());
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         try {
             int diff = GsfUtilities.setLineIndentation(getDocument(),
-                    offset + offsetDiff, indentationSize);
-            return offsetDiff + diff;
+                    offset + realOffsetDiff, indentationSize);
+            setOffsetDiff(offsetDiff + diff);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
-    public int insert(int voffset, String newString, int offsetDiff) {
+    public void insert(int voffset, String newString) {
+        insertWithOffsetDiff(voffset, newString, offsetDiff);
+    }
+
+    public void insertWithOffsetDiff(int voffset, String newString, int realOffsetDiff) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         BaseDocument doc = getDocument();
         try {
-            doc.insertString(offset + offsetDiff, newString, null);
-            return offsetDiff + newString.length();
+            doc.insertString(offset + realOffsetDiff, newString, null);
+            setOffsetDiff(offsetDiff + newString.length());
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
-    public int replace(int voffset, String oldString, String newString, int offsetDiff) {
+    public void replace(int voffset, String oldString, String newString) {
         if (oldString.equals(newString)) {
-            return offsetDiff;
+            return;
         }
 
-        return replace(voffset, oldString.length(), newString, offsetDiff);
+        replace(voffset, oldString.length(), newString);
     }
 
-    public int replace(int voffset, int length, String newString, int offsetDiff) {
+    public void replace(int voffset, int length, String newString) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         BaseDocument doc = getDocument();
@@ -294,38 +347,61 @@ public final class FormatContext {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
                 doc.insertString(offset + offsetDiff, newString, null);
-                return offsetDiff + (newString.length() - length);
+                setOffsetDiff(offsetDiff + (newString.length() - length));
             } else {
                 LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
                         doc.getText(offset + offsetDiff, length));
-                return offsetDiff;
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
-    public int remove(int voffset, int length, int offsetDiff) {
+    public void remove(int voffset, int length) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         BaseDocument doc = getDocument();
         try {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
-                return offsetDiff - length;
+                setOffsetDiff(offsetDiff - length);
             } else {
                 LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
                         doc.getText(offset + offsetDiff, length));
-                return offsetDiff;
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
+    }
+
+    public static class LineWrap {
+
+        private final FormatToken token;
+
+        private final int offsetDiff;
+
+        private final int indentationLevel;
+
+        public LineWrap(FormatToken token, int offsetDiff, int indentationLevel) {
+            this.token = token;
+            this.offsetDiff = offsetDiff;
+            this.indentationLevel = indentationLevel;
+        }
+
+        public FormatToken getToken() {
+            return token;
+        }
+
+        public int getOffsetDiff() {
+            return offsetDiff;
+        }
+
+        public int getIndentationLevel() {
+            return indentationLevel;
+        }
     }
 
     private static class Region {

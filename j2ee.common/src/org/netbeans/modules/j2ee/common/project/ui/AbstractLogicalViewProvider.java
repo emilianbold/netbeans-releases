@@ -62,6 +62,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.filesystems.FileObject;
@@ -96,6 +97,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
@@ -105,6 +109,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -277,8 +282,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     }
 
     protected Node findPath(Node root, Project proj, FileObject fo) {
-        Project owner = FileOwnerQuery.getOwner(fo);
-        if (!proj.equals(owner)) {
+        if (isOtherProjectSource(fo, proj)) {
             return null; // Don't waste time if project does not own the fo
         }
 
@@ -308,6 +312,40 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 //        if (result != null)
 //            return result;
         return null;
+    }
+
+    private static boolean isOtherProjectSource(
+            @NonNull final FileObject fo,
+            @NonNull final Project me) {
+        final Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return false;
+        }
+        if (me.equals(owner)) {
+            return false;
+        }
+        final Sources sources = ProjectUtils.getSources(owner);
+        if (isInSourceGroup(fo, sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA))) {
+            return true;
+        }
+        if (isInSourceGroup(fo, sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT))) {
+            return true;
+        }
+        if (isInSourceGroup(fo, sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF))) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isInSourceGroup(
+            @NonNull final FileObject fo,
+            @NonNull final SourceGroup... sgs) {
+        for (SourceGroup sg : sgs) {
+            if (FileUtil.isParentOf(sg.getRootFolder(), fo)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     protected Node findNodeInDocBase(Node root, FileObject fo, String docBasePropertyName) {

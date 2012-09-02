@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Implements CsmUsingDirective
@@ -220,6 +221,10 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
             return name;
         }
         
+        public CharSequence getRawName() {
+            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
+        }
+        
         public void setFile(CsmFile file) {
             this.file = file;
         }
@@ -278,7 +283,7 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
         public UsingDirectiveImpl create() {
             UsingDirectiveImpl using = getUsingDirectiveInstance();
             if (using == null && name != null && getScope() != null) {
-                using = new UsingDirectiveImpl(name, name, file, startOffset, endOffset);
+                using = new UsingDirectiveImpl(name, getRawName(), file, startOffset, endOffset);
                 if(parent != null) {
                     ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(using);
                 } else {

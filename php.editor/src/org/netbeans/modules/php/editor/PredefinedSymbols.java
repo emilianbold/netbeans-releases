@@ -106,7 +106,7 @@ public class PredefinedSymbols {
             });
 
 
-    public static Set<String> MAGIC_METHODS = new HashSet<String>(Arrays.asList(new String[]{
+    public static final Set<String> MAGIC_METHODS = new HashSet<String>(Arrays.asList(new String[]{
                 "__callStatic",
                 "__set_state",
                 "__call",

@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -164,7 +165,12 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         }
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + panel.getPackageName().replace('.', '/')))); // NOI18N
+            TreePathHandle targetClass = panel.getTargetClass();
+            if(targetClass != null) {
+                refactoring.setTarget(Lookups.singleton(targetClass));
+            } else {
+                refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + panel.getPackageName().replace('.', '/')))); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }

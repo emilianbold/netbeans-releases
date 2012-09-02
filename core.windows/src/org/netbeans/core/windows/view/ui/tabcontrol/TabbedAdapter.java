@@ -299,6 +299,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed.Accessor, S
         }
 
         @Override
+        protected void setAttentionHighlight( int tabIndex, boolean highlight ) {
+            TabbedAdapter.this.setAttentionHighlight( tabIndex, highlight );
+        }
+
+        @Override
         protected int dropIndexOfPoint( Point location ) {
             return TabbedAdapter.this.dropIndexOfPoint( location );
         }

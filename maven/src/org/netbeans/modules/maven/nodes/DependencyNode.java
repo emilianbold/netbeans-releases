@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -77,8 +78,12 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
 import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -101,6 +106,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.spi.project.ui.PathFinder;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -112,6 +118,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -162,21 +169,39 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
 
-    public static Children createChildren(Artifact art, boolean longLiving) {
-        assert art != null;
+    private static Children createChildren(@NullAllowed Node nodeDelegate) {
+        return nodeDelegate == null ? Children.LEAF : new JarContentFilterChildren(nodeDelegate);
+    }
+
+    @NonNull
+    private static Lookup createLookup(@NonNull final Project project, @NonNull final Artifact art, @NullAllowed final Node nodeDelegate) {
+        final PathFinder pathFinderDelegate = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(PathFinder.class);
+        return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+    }
+
+    @CheckForNull
+    private static Node createNodeDelegate(@NonNull final Artifact art, final boolean longLiving) {
         assert art.getFile() != null;
         if (!longLiving) {
-            return Children.LEAF;
+            return null;
         }
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
         if (fo != null && FileUtil.isArchiveFile(fo)) {
-            return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
+            return PackageView.createPackageView(new ArtifactSourceGroup(art));
         }
-        return Children.LEAF;
+        return null;        
     }
 
     public DependencyNode(NbMavenProjectImpl project, Artifact art, boolean isLongLiving) {
-        super(createChildren(art, isLongLiving), Lookups.fixed(project, art));
+        this(project, art, isLongLiving, createNodeDelegate(art, isLongLiving));
+    }
+
+    private DependencyNode(
+            NbMavenProjectImpl project,
+            Artifact art,
+            boolean isLongLiving,
+            Node nodeDelegate) {
+        super(createChildren(nodeDelegate), createLookup(project, art, nodeDelegate));
         this.project = project;
         this.art = art;
         longLiving = isLongLiving;
@@ -324,9 +349,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                Children childs = createChildren(art, true);
+                final  Node nodeDelegate = createNodeDelegate(art, true);
+                Children childs = createChildren(nodeDelegate);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
+                    PathFinders.updateDelegate(getLookup().lookup(PathFinder.class), nodeDelegate.getLookup().lookup(PathFinder.class));
                 }
             }
         }

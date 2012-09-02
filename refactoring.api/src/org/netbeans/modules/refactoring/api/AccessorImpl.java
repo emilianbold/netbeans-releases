@@ -49,6 +49,7 @@ import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 
 /**
  *
@@ -96,4 +97,15 @@ final class AccessorImpl extends APIAccessor {
     public boolean hasChangesInReadOnlyFiles(RefactoringSession session) {
         return SPIAccessor.DEFAULT.hasChangesInReadOnlyFiles(session.getElementsBag());
     }
+    
+    @Override
+    public FiltersDescription getFiltersDescription(AbstractRefactoring refactoring) {
+        return refactoring.getFiltersDescription();
+    }
+
+    @Override
+    public boolean isFinished(RefactoringSession session) {
+        return session.isFinished();
+    }
+    
 }

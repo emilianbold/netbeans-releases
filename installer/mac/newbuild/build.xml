@@ -147,6 +147,23 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/javametmpdir"/>
     </target>
 
+    <target name="prepare-javafx-runtime-zip">
+        <mkdir dir="build"/> 
+        <get src="${javafx_runtime_location}" dest="${common.name}${ml.suffix}-javafx-runtime.zip"/>
+        
+        <mkdir dir="${basedir}/javafxrttmpdir/ide/javafxrt/x64"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -o -d ${basedir}/javafxrttmpdir/ide/javafxrt/x64 ${common.name}${ml.suffix}-javafx-runtime.zip"/>
+        </exec>
+        <delete file="${common.name}${ml.suffix}-javafx-runtime.zip"/>
+        
+        <exec executable="sh" failonerror="yes" dir="${basedir}/javafxrttmpdir">
+            <arg value="-c"/>
+            <arg value="zip -r -1 ${common.name}${ml.suffix}-javafx-runtime.zip *"/>
+        </exec>      
+        <delete dir="${basedir}/javafxrttmpdir"/>
+    </target>
 
     <target name="init-clusters">
         <property name="main.clusters" value="
@@ -158,11 +175,11 @@ Microsystems, Inc. All Rights Reserved.
                                          webcommon(webcommon),
                                          mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
-                                         ide(baseide), nb-etc(baseide), platform(baseide)
+                                         ide(baseide), javafx-runtime(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
         
         <property name="jdk-bundle.clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                                   ide(baseide), nb-etc(baseide), platform(baseide)
+                                                   ide(baseide), javafx-runtime(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
@@ -177,7 +194,7 @@ Microsystems, Inc. All Rights Reserved.
         
     </target>
 
-    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip,prepare-javafx-runtime-zip">
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
             <exec executable="sh" failonerror="no">
@@ -231,7 +248,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>
             <property name="module.builddir" value="${basedir}/netBeans/baseide/build"/>
-        </ant>            
+        </ant>
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
     </target>
@@ -355,7 +372,7 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
-                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx${ml.suffix}"/>
+                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx-x64${ml.suffix}"/>
                  <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="background.name" value="background-jdk.tif"/>
             </ant>     
@@ -603,8 +620,15 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
-        </exec>                                            
+        </exec>
         
+        <condition property="do.sign-app">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>
+        <antcall target="sign-installer"/>
+
         <condition property="output.dir" value="${output.jdk7.dir}" else="">
 	     <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
@@ -614,5 +638,17 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
-    </target>             
-</project>          
+    </target>
+
+    <target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
+        <echo message="Sign an OS X Installer '${mpkg.file}'"/>
+        <property name="signed.mpkg.file" value="${basedir}/dist_dmg/signed-${mpkg.name}.mpkg"/>   
+        <exec executable="sh" failonerror="no">
+            <arg value="-cv"/>
+            <arg value="productsign --sign '${signing_identity}' '${mpkg.file}' '${signed.mpkg.file}'"/>
+        </exec>
+        <move file="${signed.mpkg.file}" tofile="${mpkg.file}" failonerror="no"/>
+        <delete file="${signed.mpkg.file}" failonerror="no"/>
+    </target>
+    
+</project>

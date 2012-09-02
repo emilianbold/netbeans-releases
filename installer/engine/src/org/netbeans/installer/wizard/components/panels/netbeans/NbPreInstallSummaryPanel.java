@@ -135,6 +135,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_REMOVE_NETBEANS_USERDIR_LINK);
         setProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY,
                 DEFAULT_REMOVE_NETBEANS_INSTALLDIR_CHECKBOX);
+        setProperty(CHECK_FOR_UPDATES_TEXT_PROPERTY,
+                DEFAULT_CHECK_FOR_UPDATES_TEXT);
+        setProperty(CHECK_FOR_UPDATES_CHECKBOX_PROPERTY,
+                DEFAULT_CHECK_FOR_UPDATES_CHECKBOX);
     }
     
     @Override
@@ -259,6 +263,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         private NbiTextPane removeInstalldirPane;
         private NbiLabel foldersToRemove;
         private NbiPanel spacer;
+        private NbiCheckBox checkForUpdatesCheckbox;
+        private NbiTextPane checkForUpdatesPane;
         
         private List <Pair <Product, NbiCheckBox>> productCheckboxList;
         private int gridy = 0 ;
@@ -408,7 +414,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 text.append(StringUtils.format(
                         panel.getProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnAs)));
-                text.append(StringUtils.LF);                
+                text.append(StringUtils.LF);
             }
             //temporary solution to include JUnit into panel
             if (junitPresent) {
@@ -484,6 +490,28 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
             if(Boolean.getBoolean(REMOVE_NETBEANS_USERDIR_PROPERTY)) {
                 removeUserdirCheckbox.doClick();
+            }
+
+            if (nbBasePresent) {
+                checkForUpdatesCheckbox.setSelected(true);
+                System.setProperty(CHECK_FOR_UPDATES_CHECKBOX_PROPERTY, Boolean.TRUE.toString());
+                
+                checkForUpdatesCheckbox.setText(
+                        panel.getProperty(CHECK_FOR_UPDATES_CHECKBOX_PROPERTY));
+                checkForUpdatesCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                checkForUpdatesCheckbox.setVisible(true);
+
+                checkForUpdatesPane.setVisible(true);
+                checkForUpdatesPane.setContentType("text/html");
+                //checkForUpdatesPane.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
+
+                checkForUpdatesPane.setText(
+                        StringUtils.format(
+                        panel.getProperty(CHECK_FOR_UPDATES_TEXT_PROPERTY)
+                        ));
+            } else {
+                checkForUpdatesCheckbox.setVisible(false);
+                checkForUpdatesPane.setVisible(false);
             }
 
             foldersToRemove.setText(ADDITIONAL_FOLDERS_TO_DELETE);
@@ -958,6 +986,35 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             });
 
+            checkForUpdatesCheckbox = new NbiCheckBox();
+            add(checkForUpdatesCheckbox, new GridBagConstraints(
+                                    0, gridy++, // x, y
+                                    1, 1, // width, height
+                                    1.0, 0.0, // weight-x, weight-y
+                                    GridBagConstraints.PAGE_START, // anchor
+                                    GridBagConstraints.HORIZONTAL, // fill
+                                    new Insets(11, 20, 0, 11), // padding
+                                    0, 0));                           // padx, pady - ???
+
+
+            checkForUpdatesPane = new NbiTextPane();
+            add(checkForUpdatesPane, new GridBagConstraints(
+                                    0, gridy++, // x, y
+                                    1, 1, // width, height
+                                    1.0, 0.0, // weight-x, weight-y
+                                    GridBagConstraints.PAGE_START, // anchor
+                                    GridBagConstraints.HORIZONTAL, // fill
+                                    new Insets(0, 20, 0, 11), // padding
+                                    0, 0));                           // padx, pady - ???
+            
+            checkForUpdatesCheckbox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.setProperty(CHECK_FOR_UPDATES_CHECKBOX_PROPERTY, 
+                            "" + checkForUpdatesCheckbox.isSelected());
+                }
+            });
+
             add(installationSizeLabel, new GridBagConstraints(
                     0, gridy++,                             // x, y
                     1, 1,                             // width, height
@@ -1073,6 +1130,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "remove.netbeans.userdir.checkbox";
     public static final String REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY =
             "remove.netbeans.installdir.checkbox";
+    public static final String CHECK_FOR_UPDATES_PROPERTY =
+            "check.for.updates";
+    public static final String CHECK_FOR_UPDATES_TEXT_PROPERTY =
+            "check.for.updates.text";
+    public static final String CHECK_FOR_UPDATES_CHECKBOX_PROPERTY =
+            "check.for.updates.checkbox";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -1164,6 +1227,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_REMOVE_NETBEANS_INSTALLDIR_CHECKBOX =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.remove.netbeans.installdir.checkbox"); // NOI18N
+    public static final String DEFAULT_CHECK_FOR_UPDATES_TEXT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.check.for.updates.text"); // NOI18N
+    public static final String DEFAULT_CHECK_FOR_UPDATES_CHECKBOX =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.check.for.updates.checkbox"); // NOI18N
 
     public static final String NB_BASE_UID = 
             "nb-base";//NOI18N

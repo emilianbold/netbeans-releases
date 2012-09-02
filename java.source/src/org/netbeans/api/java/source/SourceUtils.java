@@ -98,6 +98,9 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -119,7 +122,6 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -168,30 +170,13 @@ public class SourceUtils {
      * @since 0.85
      */
     public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
-        try {
-            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-            Class copyFinderClass = loader.loadClass("org.netbeans.modules.java.hints.introduce.CopyFinderService");
-            Object copyFinderInstance = Lookup.getDefault().lookup(copyFinderClass);
-            if (copyFinderInstance != null) {
-                Method method = copyFinderClass.getMethod("computeDuplicates", CompilationInfo.class, TreePath.class, TreePath.class, AtomicBoolean.class);
-                if (method != null) {
-                    return (Set<TreePath>) method.invoke(copyFinderInstance, info, searchingFor, scope, cancel);
-                }
-            }
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        Set<TreePath> result = new HashSet<TreePath>();
+        
+        for (Occurrence od : Matcher.create(info).setCancel(cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
+            result.add(od.getOccurrenceRoot());
         }
-        return Collections.emptySet();
+
+        return result;
     }    
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {

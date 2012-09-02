@@ -338,9 +338,11 @@ public class AstRenderer {
                     }
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                    NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
-                    container.addDeclaration(alias);
-                    currentNamespace.addDeclaration(alias);
+                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                        NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                        container.addDeclaration(alias);
+                        currentNamespace.addDeclaration(alias);
+                    }
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE: {
                     if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
@@ -351,9 +353,11 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
-                    container.addDeclaration(using);
-                    currentNamespace.addDeclaration(using);
+                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                        UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                        container.addDeclaration(using);
+                        currentNamespace.addDeclaration(using);
+                    }
                     break;
                 }
                 case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
@@ -1927,9 +1931,11 @@ public class AstRenderer {
         }
         switch (token.getType()) {
             case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
-                container.addDeclaration(alias);
-                currentNamespace.addDeclaration(alias);
+                if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                    NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                    container.addDeclaration(alias);
+                    currentNamespace.addDeclaration(alias);
+                }
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE: {
                 if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
@@ -1940,9 +1946,11 @@ public class AstRenderer {
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {
-                UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
-                container.addDeclaration(using);
-                currentNamespace.addDeclaration(using);
+                if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                    UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
+                }
                 return true;
             }
         }
@@ -2117,16 +2125,19 @@ public class AstRenderer {
      * @return true if it's a expression, otherwise false (it's a declaration)
      */
     private boolean isExpressionLikeDeclaration(AST ast, CsmScope scope) {
-        AST type = ast.getFirstChild();
+        AST type = ast.getFirstChild();        
         if (type != null && type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-            AST name = type.getFirstChild();
-            if (name != null) {
-                if (isVariableOrFunctionName(name, false)) {
-                    if (isVariableOrFunctionName(name, true)) {
-                        return true;
-                    }
-                    if (isLocalVariableOrFunction(name.getText(), scope)) {
-                        return true;
+            AST nextToType = type.getNextSibling();
+            if(nextToType != null && nextToType.getType() != CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                AST name = type.getFirstChild();
+                if (name != null) {
+                    if (isVariableOrFunctionName(name, false)) {
+                        if (isVariableOrFunctionName(name, true)) {
+                            return true;
+                        }
+                        if (isLocalVariableOrFunction(name.getText(), scope)) {
+                            return true;
+                        }
                     }
                 }
             }

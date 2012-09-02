@@ -155,11 +155,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
                 }
                 case METHOD: {
                     if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
-                        desc = getString("DSC_WhereUsedFindUsagesAndMethodOverriders", element.getDeclaratingClassName(), element.getName());
+                        desc = getString("DSC_WhereUsedFindUsagesAndMethodOverriders", element.getDeclaringClassNameWithoutPackage(), element.getName());
                     } else if (panel.isMethodFindUsages()) {
-                        desc = getString("DSC_WhereUsedFindUsages", element.getDeclaratingClassName(), element.getName());
+                        desc = getString("DSC_WhereUsedFindUsages", element.getDeclaringClassNameWithoutPackage(), element.getName());
                     } else if (panel.isMethodOverriders()) {
-                        desc = getString("DSC_WhereUsedMethodOverriders", element.getDeclaratingClassName(), element.getName());
+                        desc = getString("DSC_WhereUsedMethodOverriders", element.getDeclaringClassNameWithoutPackage(), element.getName());
                     }
                     break;
                 }

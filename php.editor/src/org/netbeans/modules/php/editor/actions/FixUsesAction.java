@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -77,7 +78,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -88,7 +88,7 @@ import org.openide.util.RequestProcessor;
 })
 @EditorActionRegistration(
     name = FixUsesAction.ACTION_NAME,
-    mimeType = "text/x-php5",
+    mimeType = PHP_MIME_TYPE,
     shortDescription = "Fixes use statements.",
     popupText = "#FixUsesLabel"
 )

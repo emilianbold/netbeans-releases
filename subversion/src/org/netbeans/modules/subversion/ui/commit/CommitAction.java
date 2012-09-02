@@ -694,8 +694,12 @@ public class CommitAction extends ContextAction {
                     }
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
+                } else {
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "Ignoring file for commit: {0}", node.getFile()); //NOI18N
                 }
             }
+            
+            Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "All commit candidates: {0}", commitCandidates); //NOI18N
 
             // perform adds
             performAdds(client, support, addCandidates);
@@ -751,6 +755,7 @@ public class CommitAction extends ContextAction {
                 }
             }
             // finally commit
+            Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "All commit managed trees: {0} - {1}", new Object[] { managedTrees.size(), managedTrees } ); //NOI18N
             for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
 
                 // one commit for each wc

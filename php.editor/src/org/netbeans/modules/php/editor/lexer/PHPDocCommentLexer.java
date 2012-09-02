@@ -44,19 +44,13 @@
 package org.netbeans.modules.php.editor.lexer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
-import org.openide.ErrorManager;
 import org.openide.util.NbPreferences;
 
 
@@ -78,6 +72,7 @@ public final class PHPDocCommentLexer implements Lexer<PHPDocCommentTokenId> {
 
     }
 
+    @Override
     public Object state() {
         return null;
     }
@@ -86,12 +81,7 @@ public final class PHPDocCommentLexer implements Lexer<PHPDocCommentTokenId> {
         return NbPreferences.root().node("org/netbeans/modules/tasklist/docscan");
     }
 
-    private Token<PHPDocCommentTokenId> createToken(PHPDocCommentTokenId id, int length) {
-        String fixedText = id.fixedText();
-        return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
-                                   : tokenFactory.createToken(id, length);
-    }
-
+    @Override
     public Token<PHPDocCommentTokenId> nextToken() {
          try {
             PHPDocCommentTokenId tokenId = scanner.nextToken();
@@ -106,6 +96,7 @@ public final class PHPDocCommentLexer implements Lexer<PHPDocCommentTokenId> {
         return null;
     }
 
+    @Override
     public void release() {
     }
 }

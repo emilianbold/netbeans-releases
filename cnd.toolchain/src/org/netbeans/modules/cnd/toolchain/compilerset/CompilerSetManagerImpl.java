@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,24 +63,25 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.AlternativePath;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.AlternativePath;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ToolChainPathProvider;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -372,11 +373,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                     if (initCompilerSet(SunStudioPath, cs, true)){
                         flavors.add(flavor);
                         addUnsafe(cs);
-                        for(String pattern : KNOWN_STUDIO) {
-                            if (pattern.equals(flavor.toString())) {
-                                cs.setSunStudioDefault(true);
-                                break;
-                            }
+                        if (cs.getCompilerFlavor().getToolchainDescriptor().getAliases().length > 0) {
+                            cs.setSunStudioDefault(true);
                         }
                     }
                 }
@@ -823,56 +821,34 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
     }
 
-    private static final String ALIAS_SunStudio = "SunStudio"; // NOI18N
-    private static final String ALIAS_OracleSolarisStudio = "OracleSolarisStudio"; // NOI18N
-    private static final String[] KNOWN_STUDIO = new String[] {
-        "OracleSolarisStudio_12.4", // NOI18N
-        "OracleSolarisStudio_12.3", // NOI18N
-        "OracleSolarisStudio_12.2", // NOI18N
-        "SunStudio_12.1", // NOI18N
-        "SunStudio_12", // NOI18N
-        "SunStudio_11", // NOI18N
-        "SunStudio_10", // NOI18N
-        "SunStudio_9", // NOI18N
-        "SunStudio_8" // NOI18N
-    };
-
     private void completeSunStudioCompilerSet(int platform) {
-        CompilerSetImpl bestCandidate = null;
+        Set<String> aliases = new HashSet<String>();
         for(CompilerSet cs : sets) {
-            if (((CompilerSetImpl)cs).isSunStudioDefault()){
-                bestCandidate = (CompilerSetImpl) cs;
-                break;
+            aliases.addAll(Arrays.asList(cs.getCompilerFlavor().getToolchainDescriptor().getAliases()));
+        }
+        for(String alias : aliases) {
+            if (getCompilerSet(alias) != null) {
+                continue;
             }
-        }
-        // "OracleSolarisStudio" and "SunStudio" compiler sets must exist
-        if (getCompilerSet(ALIAS_OracleSolarisStudio) != null && getCompilerSet(ALIAS_SunStudio) != null) { // NOI18N
-            return;
-        }
-        // if one or both are missing, find the 'best' Sun set and copy it
-        for(String pattern : KNOWN_STUDIO){
-            if (bestCandidate !=  null) {
-                break;
+            CompilerSetImpl bestCandidate = null;
+            for(CompilerSet cs : sets) {
+                if (Arrays.asList(cs.getCompilerFlavor().getToolchainDescriptor().getAliases()).contains(alias)) {
+                    bestCandidate = (CompilerSetImpl) cs;
+                    break;
+                }
             }
-            bestCandidate = (CompilerSetImpl) getCompilerSet(pattern);
-        }
-        if (bestCandidate == null) {
-            return;
-        }
-        if (bestCandidate.isUrlPointer()) {
-            return;
-        }
-        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(ALIAS_OracleSolarisStudio, platform); // NOI18N
-        if (flavor != null && getCompilerSet(ALIAS_OracleSolarisStudio) == null) { // #158084 NPE // NOI18N
-            CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), ALIAS_OracleSolarisStudio, true, bestCandidate.getEncoding(), true); // NOI18N
-            addUnsafe(bestCandidateCopy);
-        }
-        flavor = CompilerFlavorImpl.toFlavor(ALIAS_SunStudio, platform); // NOI18N
-        if (flavor != null && getCompilerSet(ALIAS_SunStudio) == null) { // #158084 NPE // NOI18N
-            CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), ALIAS_SunStudio, true, bestCandidate.getEncoding(), true); // NOI18N
-            addUnsafe(bestCandidateCopy);
+            if (bestCandidate == null) {
+                continue;
+            }
+            if (bestCandidate.isUrlPointer()) {
+                continue;
+            }
+            CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(alias, platform);
+            if (flavor != null) {
+                CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
+                    flavor, bestCandidate.getDirectory(), alias, true, bestCandidate.getEncoding(), true);
+                addUnsafe(bestCandidateCopy);
+            }
         }
     }
 

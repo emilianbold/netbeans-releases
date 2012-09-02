@@ -42,14 +42,23 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
@@ -67,6 +76,11 @@ public class FindTypeUsages extends AbstractFindUsages {
         return new FindAllTypeUsagesVisitor(moduleNode, findingFqn);
     }
 
+    @Override
+    protected ElementKind getElementKind() {
+        return ElementKind.CLASS;
+    }
+
     /**
     * Visitor for collecting all usages for a given <code>ModuleNode</code> and fully
     * qualified name of the finding class.
@@ -79,50 +93,117 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         public FindAllTypeUsagesVisitor(ModuleNode moduleNode, String findingFqn) {
            super(moduleNode);
-           this.findingFqn = findingFqn;
+           this.findingFqn = ElementUtils.normalizeTypeName(findingFqn, null);
+        }
+
+        @Override
+        public void visitArrayExpression(ArrayExpression expression) {
+            addIfEquals(expression);
+            super.visitArrayExpression(expression);
         }
 
         @Override
         public void visitDeclarationExpression(DeclarationExpression expression) {
-            VariableExpression variable = expression.getVariableExpression();
-            if (findingFqn.equals(variable.getType().getName())) {
-                usages.add(variable);
-            }
+            addIfEquals(expression);
             super.visitDeclarationExpression(expression);
         }
 
         @Override
+        public void visitClassExpression(ClassExpression expression) {
+            addIfEquals(expression);
+            super.visitClassExpression(expression);
+        }
+
+        @Override
         public void visitField(FieldNode field) {
-            if (field.isSynthetic() && findingFqn.equals(field.getType().getName())) {
-                usages.add(field);
-            }
+            addIfEquals(field);
             super.visitField(field);
         }
 
         @Override
-        public void visitProperty(PropertyNode node) {
-            if (node.isSynthetic() && findingFqn.equals(node.getType().getName())) {
-                usages.add(node);
+        public void visitProperty(PropertyNode property) {
+            if (property.isSynthetic()) {
+                addIfEquals(property);
             }
-            super.visitProperty(node);
+            super.visitProperty(property);
         }
 
         @Override
-        public void visitClass(ClassNode node) {
-            if (findingFqn.equals(node.getSuperClass().getName())) {
-                usages.add(node);
-            }
-            super.visitClass(node);
-        }
+        public void visitImports(ModuleNode node) {
+            for (ImportNode importNode : node.getImports()) {
+                final ClassNode importType = importNode.getType();
+                if (!importNode.isStar()) {
+                    // ImportNode itself doesn't contain line/column information, so we need set them manually
+                    importNode.setLineNumber(importType.getLineNumber());
+                    importNode.setColumnNumber(importType.getColumnNumber());
+                    importNode.setLastLineNumber(importType.getLastLineNumber());
+                    importNode.setLastColumnNumber(importType.getLastColumnNumber());
 
-        @Override
-        public void visitMethod(MethodNode node) {
-            for (Parameter param : node.getParameters()) {
-                if (findingFqn.equals(param.getType().getName())) {
-                    usages.add(param);
+                    if (isEquals(importNode)) {
+                        usages.add(new FakeASTNode(importNode, importNode.getClassName()));
+                    }
                 }
             }
-            super.visitMethod(node);
+            super.visitImports(node);
+        }
+
+        @Override
+        public void visitClass(ClassNode clazz) {
+            if (isEquals(clazz.getSuperClass())) {
+                // Oh my goodness I have absolutely no idea why the hack getSuperClass() doesn't return valid initiated superclass
+                // and the method with a weird name getUnresolvedSuperClass(false) is actually returning resolved super class (with 
+                // line/column numbers set)
+                usages.add(new FakeASTNode(clazz.getUnresolvedSuperClass(false), clazz.getSuperClass().getNameWithoutPackage()));
+            }
+            for (ClassNode interfaceNode : clazz.getInterfaces()) {
+                addIfEquals(interfaceNode);
+            }
+            super.visitClass(clazz);
+        }
+
+        @Override
+        protected void visitConstructorOrMethod(MethodNode method, boolean isConstructor) {
+            if (!isConstructor && isEquals(method.getReturnType())) {
+                addIfEquals(method);
+            }
+
+            for (Parameter param : method.getParameters()) {
+                addIfEquals(param);
+            }
+            super.visitConstructorOrMethod(method, isConstructor);
+        }
+
+        @Override
+        public void visitConstructorCallExpression(ConstructorCallExpression call) {
+            addIfEquals(call);
+            super.visitConstructorCallExpression(call);
+        }
+
+        @Override
+        public void visitForLoop(ForStatement forLoop) {
+            addIfEquals(forLoop);
+            super.visitForLoop(forLoop);
+        }
+
+        private void addIfEquals(ASTNode node) {
+            final ClassNode type = ElementUtils.getType(node);
+            if (isEquals(node)) {
+                usages.add(new FakeASTNode(type, ElementUtils.getTypeName(node)));
+            }
+
+            final GenericsType[] genericTypes = type.getGenericsTypes();
+            if (genericTypes != null && genericTypes.length > 0) {
+                for (GenericsType genericType : genericTypes) {
+                    addIfEquals(genericType.getType());
+                }
+            }
+        }
+
+        private boolean isEquals(ASTNode node) {
+            if (findingFqn.equals(ElementUtils.getTypeName(node))) {
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -248,6 +249,27 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean typedefSpecifier = false;
         private boolean typeSpecifier = false;
         private boolean inDeclSpecifiers = false;
+        private DeclaratorBuilder declaratorBuilder;
+        private TypeBuilder typeBuilder;
+        private CsmObjectBuilder parametersListBuilder;
+        private int startOffset;
+        private int endOffset;
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
         
         
         public void setTypedefSpecifier() {
@@ -277,8 +299,64 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         public boolean isInDeclSpecifiers() {
             return inDeclSpecifiers;
         }
+
+        public void setDeclaratorBuilder(DeclaratorBuilder declaratorBuilder) {
+            this.declaratorBuilder = declaratorBuilder;
+        }
+
+        public void setTypeBuilder(TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
+        public TypeBuilder getTypeBuilder() {
+            return typeBuilder;
+        }
+        
+        
+        public DeclaratorBuilder getDeclaratorBuilder() {
+            return declaratorBuilder;
+        }
+
+        public void setParametersListBuilder(CsmObjectBuilder parametersListBuilder) {
+            this.parametersListBuilder = parametersListBuilder;
+        }
+
+        public CsmObjectBuilder getParametersListBuilder() {
+            return parametersListBuilder;
+        }
+        
+        public boolean isFunction() {
+            return parametersListBuilder != null;
+        }
         
     }
+    
+    public static class DeclaratorBuilder implements CsmObjectBuilder {
+
+        private int level = 0;
+        private CharSequence name;
+        
+        public void setName(CharSequence name) {
+            this.name = name;
+        }
+
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public void enterDeclarator() {
+            level++;
+        }
+        
+        public void leaveDeclarator() {
+            level--;
+        }
+        
+        public boolean isTopDeclarator() {
+            return level == 0;
+        }
+        
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

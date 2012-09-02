@@ -238,8 +238,12 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     protected abstract String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type);
 
+    private static final int EXPANDED_TEXT_TOOLTIP_LIMIT = 2000;
     private String getMacroExpandedText(final Document doc, final int start, final int end) {
         String expandedText = CsmMacroExpansion.expand(doc, start, end);
+        if (expandedText.length() > EXPANDED_TEXT_TOOLTIP_LIMIT) {
+            expandedText = expandedText.substring(0, EXPANDED_TEXT_TOOLTIP_LIMIT) + " ..."; // NOI18N
+        }
         final StringBuilder docText = new StringBuilder();
         doc.render(new Runnable() {
 

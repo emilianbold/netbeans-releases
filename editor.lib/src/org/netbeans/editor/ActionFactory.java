@@ -101,6 +101,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
@@ -496,7 +497,11 @@ public class ActionFactory {
                                     doc.insertString(previousLineStartOffset, linesText, null);
                                     
                                     // remove the line
-                                    doc.remove(startLineStartOffset + linesText.length(), Math.min(doc.getLength(),endLineEndOffset) - startLineStartOffset);
+                                    if (endLineEndOffset + linesText.length() > doc.getLength()) {
+                                        doc.remove(startLineStartOffset + linesText.length() - 1, endLineEndOffset - startLineStartOffset);
+                                    } else {
+                                        doc.remove(startLineStartOffset + linesText.length(), endLineEndOffset - startLineStartOffset);
+                                    }
                                     
                                     if (selection) {
                                         // select moved lines
@@ -573,17 +578,18 @@ public class ActionFactory {
                                 // could not get line number
                                 target.getToolkit().beep();
                                 return;
-                            } else if (zeroBaseEndLineNumber >= (rootElement.getElementCount() - 2)) {
-                                // already last or penultimate line (due to a getLength() bug)
-                                return;
                             } else {
                                 try {
                                     // get line text
                                     Element startLineElement = rootElement.getElement(zeroBaseStartLineNumber);
                                     int startLineStartOffset = startLineElement.getStartOffset();
+                                    
 
                                     Element endLineElement = rootElement.getElement(zeroBaseEndLineNumber);
                                     int endLineEndOffset = endLineElement.getEndOffset();
+                                    if (endLineEndOffset > doc.getLength()) {
+                                        return;
+                                    }
 
                                     String linesText = doc.getText(startLineStartOffset, (endLineEndOffset - startLineStartOffset));
 
@@ -594,11 +600,14 @@ public class ActionFactory {
                                     int column = start - startLineStartOffset;
 
                                     // insert it after next line
-                                    doc.insertString(nextLineEndOffset, linesText, null);
+                                    if (nextLineEndOffset > doc.getLength()) {
+                                        doc.insertString(doc.getLength(), "\n" + linesText.substring(0, linesText.length()-1), null);
+                                    } else {
+                                        doc.insertString(nextLineEndOffset, linesText, null);
+                                    }
 
                                     // remove original line
                                     doc.remove(startLineStartOffset, (endLineEndOffset - startLineStartOffset));
-
                                     if (selection) {
                                         // select moved lines
                                         if (backwardSelection) {
@@ -610,7 +619,7 @@ public class ActionFactory {
                                         }
                                     } else {
                                         // set caret position
-                                        target.setCaretPosition(Math.min(doc.getLength() - 1, nextLineEndOffset + column - (endLineEndOffset - startLineStartOffset)));
+                                        target.setCaretPosition(Math.min(doc.getLength(), nextLineEndOffset + column - (endLineEndOffset - startLineStartOffset)));
                                     }
                                 } catch (BadLocationException ex) {
                                     target.getToolkit().beep();
@@ -683,6 +692,11 @@ public class ActionFactory {
 
                                     int column = start - startLineStartOffset;
 
+                                    try {
+                                        NavigationHistory.getEdits().markWaypoint(target, startLineStartOffset, false, true);
+                                    } catch (BadLocationException e) {
+                                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                                    }
                                     // insert it
                                     doc.insertString(startLineStartOffset, linesText, null);
 
@@ -770,6 +784,15 @@ public class ActionFactory {
 
                                     int column = start - startLineStartOffset;
 
+                                    try {
+                                        if (endLineEndOffset == doc.getLength() + 1) {
+                                            NavigationHistory.getEdits().markWaypoint(target, endLineEndOffset - 1, false, true);
+                                        } else {
+                                            NavigationHistory.getEdits().markWaypoint(target, endLineEndOffset, false, true);
+                                        }
+                                    } catch (BadLocationException e) {
+                                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                                    }
                                     // insert it after next line
                                     if (endLineEndOffset == doc.getLength() + 1) { // extra newline at doc end (not included in doc-len)
                                         assert (linesText.charAt(linesText.length() - 1) == '\n');

@@ -272,7 +272,7 @@ public class BatchUtilities {
             }
 
             if (!(toApply instanceof JavaFixImpl)) {
-                throw new IllegalStateException();//XXX: hints need to provide JavaFixes
+                throw new IllegalStateException(toApply.getClass().getName());//XXX: hints need to provide JavaFixes
             }
 
 

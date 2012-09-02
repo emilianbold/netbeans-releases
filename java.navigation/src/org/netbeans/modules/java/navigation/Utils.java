@@ -48,13 +48,8 @@ import java.io.CharConversionException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
@@ -79,12 +74,17 @@ class Utils {
     
     static String format(CompilationInfo info, Element element, boolean forSignature, boolean FQNs) {
         StringBuilder stringBuilder = new StringBuilder();
-        format(info, element, stringBuilder, forSignature, FQNs);
-
+        format(info, element, stringBuilder, forSignature, FQNs, false);
         return stringBuilder.toString();
     }
 
-    static void format(CompilationInfo info, Element element, StringBuilder stringBuilder, boolean forSignature, boolean FQNs) {
+    static void format(
+            CompilationInfo info,
+            Element element,
+            StringBuilder stringBuilder,
+            boolean forSignature,
+            boolean FQNs,
+            boolean showInherited) {
         if (element == null) {
             return;
         }
@@ -137,7 +137,7 @@ class Utils {
                 ? typeElement.getQualifiedName().toString()
                 : typeElement.getSimpleName().toString());
 
-            formatTypeParameters(info, typeElement.getTypeParameters(), stringBuilder, FQNs);
+            formatTypeParameters(info, typeElement.getTypeParameters(), stringBuilder, FQNs, showInherited);
 
             break;
 
@@ -156,7 +156,7 @@ class Utils {
                                                    .getSimpleName().toString());
             stringBuilder.append("(");
             formatVariableElements(info, constructorElement.getParameters(),
-                constructorElement.isVarArgs(), stringBuilder, FQNs);
+                constructorElement.isVarArgs(), stringBuilder, FQNs, showInherited);
             stringBuilder.append(")");
 
             List<? extends TypeMirror> thrownTypesMirrors = constructorElement.getThrownTypes();
@@ -182,7 +182,7 @@ class Utils {
                 }
 
                 if ((typeParameters != null) && (typeParameters.size() > 0)) {
-                    formatTypeParameters(info, typeParameters, stringBuilder, FQNs);
+                    formatTypeParameters(info, typeParameters, stringBuilder, FQNs, showInherited);
                     if (stringBuilder.length() > 0) {
                         stringBuilder.append(" ");
                     }
@@ -198,7 +198,7 @@ class Utils {
             stringBuilder.append(methodElement.getSimpleName().toString());
             stringBuilder.append("(");
             formatVariableElements(info, methodElement.getParameters(),
-                methodElement.isVarArgs(), stringBuilder, FQNs);
+                methodElement.isVarArgs(), stringBuilder, FQNs, showInherited);
             stringBuilder.append(")");
 
             List<? extends TypeMirror> thrownTypesMirrorsByMethod = methodElement.getThrownTypes();
@@ -233,10 +233,10 @@ class Utils {
 
                 if ((typeParameters != null) && (typeParameters.size() > 0)) {
                     stringBuilder.append(":");
-                    formatTypeParameters(info, typeParameters, stringBuilder, FQNs);
+                    formatTypeParameters(info, typeParameters, stringBuilder, FQNs, showInherited);
                 }
 
-                if (JavaMembersAndHierarchyOptions.isShowInherited()) {
+                if (showInherited) {
                     stringBuilder.append(" [");
                     stringBuilder.append(getClassName(element.getEnclosingElement().toString(), FQNs));
                     stringBuilder.append("]");
@@ -312,7 +312,7 @@ class Utils {
 
                 stringBuilder.append(info.getTypeUtilities().getTypeName(fieldElement.asType(), FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
 
-                if (JavaMembersAndHierarchyOptions.isShowInherited()) {
+                if (showInherited) {
                     stringBuilder.append(" [");
                     stringBuilder.append(getClassName(element.getEnclosingElement().toString(), FQNs));
                     stringBuilder.append("]");
@@ -324,7 +324,7 @@ class Utils {
         case ENUM_CONSTANT:
             stringBuilder.append(element.toString());
 
-            if (JavaMembersAndHierarchyOptions.isShowInherited()) {
+            if (showInherited) {
                 stringBuilder.append(" [");
                 stringBuilder.append(getClassName(element.getEnclosingElement().toString(), FQNs));
                 stringBuilder.append("]");
@@ -345,7 +345,9 @@ class Utils {
     
     static void formatTypeParameters(CompilationInfo info, 
         List<? extends TypeParameterElement> typeParameters,
-        StringBuilder stringBuilder, boolean FQNs) {
+        StringBuilder stringBuilder,
+        boolean FQNs,
+        boolean showInherited) {
         if ((typeParameters == null) || (typeParameters.size() == 0)) {
             return;
         }
@@ -362,16 +364,20 @@ class Utils {
                     stringBuilder.append(", ");
                 }
 
-                format(info, typeParameterElement, stringBuilder, false, FQNs);
+                format(info, typeParameterElement, stringBuilder, false, FQNs, showInherited);
             }
 
             stringBuilder.append(">");
         }
     }
 
-    static void formatVariableElements(CompilationInfo info,
-        List<? extends VariableElement> variableElements, boolean varArgs,
-        StringBuilder stringBuilder, boolean FQNs) {
+    static void formatVariableElements(
+        CompilationInfo info,
+        List<? extends VariableElement> variableElements,
+        boolean varArgs,
+        StringBuilder stringBuilder,
+        boolean FQNs,
+        boolean showInherited) {
         if ((variableElements == null) || (variableElements.size() == 0)) {
             return;
         }
@@ -385,7 +391,7 @@ class Utils {
                 stringBuilder.append(", ");
             }
 
-           format(info, variableElement, stringBuilder, false, FQNs);
+           format(info, variableElement, stringBuilder, false, FQNs, showInherited);
         }
 
         if (varArgs) {
@@ -515,43 +521,7 @@ class Utils {
 
         return modifiers;
     }
-    
-    static boolean patternMatch(JavaElement javaToolsJavaElement, String pattern, String patternLowerCase) {
-
-        if (pattern == null) {
-            return true;
-        }
-
-        String patternRegexpString = pattern;
-
-        if (pattern.trim().length() == 0) {
-            patternRegexpString = pattern + ".*";
-        } else {
-            // TODO FIx the replacement of * and ? 
-            patternRegexpString = pattern.
-                    replaceAll(Pattern.quote("*"), Matcher.quoteReplacement(".*")).
-                    replaceAll(Pattern.quote("?"), Matcher.quoteReplacement(".")) +
-                    (pattern.endsWith("$") ? "" : ".*");
-        }
-
-        String name = javaToolsJavaElement.getName();
-
-        try {
-            Pattern compiledPattern = Pattern.compile(patternRegexpString,
-                    JavaMembersAndHierarchyOptions.isCaseSensitive() ? 0
-                                                           : Pattern.CASE_INSENSITIVE);
-            Matcher m = compiledPattern.matcher(name);
-
-            return m.matches();
-        } catch (PatternSyntaxException pse) {
-            if (JavaMembersAndHierarchyOptions.isCaseSensitive()) {
-                return name.startsWith(pattern);
-            }
-
-            return name.toLowerCase().startsWith(patternLowerCase);
-        }
-    }
-    
+            
     static String getClassName(String className) {
         return getClassName(className, false);
     }
@@ -590,68 +560,6 @@ class Utils {
         }
 
         return className;
-    }
-    
-    // Tree movement
-    static void firstRow(JTree tree) {
-        int rowCount = tree.getRowCount();
-        if (rowCount > 0) {
-            tree.setSelectionRow(0);
-            scrollTreeToSelectedRow(tree);
-        }
-    }
-    
-    static void previousRow(JTree tree) {
-        int rowCount = tree.getRowCount();
-        if (rowCount > 0) {
-            int selectedRow = tree.getSelectionModel().getMinSelectionRow();
-            if (selectedRow == -1) {
-                selectedRow = (rowCount -1);
-            } else {
-                selectedRow--;
-                if (selectedRow < 0) {
-                    selectedRow = (rowCount -1);
-                }
-            }
-            tree.setSelectionRow(selectedRow);
-            scrollTreeToSelectedRow(tree);
-        }
-    }
-    
-    static void nextRow(JTree tree) {
-        int rowCount = tree.getRowCount();
-        if (rowCount > 0) {
-            int selectedRow = tree.getSelectionModel().getMinSelectionRow();
-            if (selectedRow == -1) {
-                selectedRow = 0;
-                tree.setSelectionRow(selectedRow);
-            } else {
-                selectedRow++;
-            }
-            tree.setSelectionRow(selectedRow % rowCount);
-            scrollTreeToSelectedRow(tree);
-        }
-    }
-    
-    static void lastRow(JTree tree) {
-        int rowCount = tree.getRowCount();
-        if (rowCount > 0) {
-            tree.setSelectionRow(rowCount - 1);
-            scrollTreeToSelectedRow(tree);
-        }
-    }
-    
-    static void scrollTreeToSelectedRow(final JTree tree) {
-        final int selectedRow = tree.getLeadSelectionRow();
-        if (selectedRow >=0) {
-            SwingUtilities.invokeLater(
-                    new Runnable() {
-                public void run() {
-                    tree.scrollRectToVisible(tree.getRowBounds(selectedRow));
-                }
-            }
-            );
-        }
     }
     
     static String escape(String s) {

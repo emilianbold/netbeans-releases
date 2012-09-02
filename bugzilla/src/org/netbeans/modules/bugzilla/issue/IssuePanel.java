@@ -544,10 +544,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
                     String host = ((KenaiRepository) issue.getRepository()).getHost();
-                    JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
-                    label.setText(null);
-                    ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
-                    reportedStatusLabel = label;
+                    JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+                    if (label != null) {
+                        label.setText(null);
+                        ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
+                        reportedStatusLabel = label;
+                    }
                 }
 
                 // modified field
@@ -589,11 +591,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
-                label.setText(null);
-                ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
-                label.setVisible(assignedToStatusLabel.isVisible());
-                assignedToStatusLabel = label;
+                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+                if (label != null) {
+                    label.setText(null);
+                    ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
+                    label.setVisible(assignedToStatusLabel.isVisible());
+                    assignedToStatusLabel = label;
+                }
             }
             if (force) {
                 assignedToStatusLabel.setVisible(assignee.trim().length() > 0);

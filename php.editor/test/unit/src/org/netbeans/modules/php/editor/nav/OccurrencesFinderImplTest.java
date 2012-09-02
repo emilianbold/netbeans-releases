@@ -1092,6 +1092,30 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "D^D::bar as foo;", true);
     }
 
+    public void testIssue217357_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Str^ing {", true);
+    }
+
+    public void testIssue217357_02() throws Exception {
+        checkOccurrences(getTestPath(), "use Abc\\Str^ing;", true);
+    }
+
+    public void testIssue217357_03() throws Exception {
+        checkOccurrences(getTestPath(), "$s = new Str^ing();", true);
+    }
+
+    public void testCatchWithAlias_01() throws Exception {
+        checkOccurrences(getTestPath(), "use Blah\\Sec as B^S;", true);
+    }
+
+    public void testCatchWithAlias_02() throws Exception {
+        checkOccurrences(getTestPath(), "new B^S\\MyException();", true);
+    }
+
+    public void testCatchWithAlias_03() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (B^S\\MyException $ex) {", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

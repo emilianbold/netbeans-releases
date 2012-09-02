@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import java.awt.Image;
-import java.io.File;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 
 /**
@@ -54,90 +53,17 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 public class GlassFishAccountPlatformImpl extends GlassFishPlatformImpl {
 
     ////////////////////////////////////////////////////////////////////////////
-    // Instance attributes                                                    //
-    ////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Creates an instance of Java EE platform registered with GlassFish cloud.
      * <p/>
-     * @param url GlassFish cloud URL.
+     * @param url      GlassFish cloud URL.
      */
     GlassFishAccountPlatformImpl(GlassFishUrl url) {
-        super(url);
+        super(url, GlassFishAccountInstanceProvider
+                .getAccountInstance(url.getName()));
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public File getServerHome() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public File getDomainHome() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public File getMiddlewareHome() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public org.netbeans.spi.project.libraries.LibraryImplementation[] getLibraries() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Image getIcon() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public File[] getPlatformRoots() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Return class path for the specified tool.
-     * <p/>
-     * Use the tool constants declared  in the
-     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform}.
-     * </p>
-     * @param  toolName Tool name, for example
-     *         {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
-     * @return Class path for the specified tool.
-     */
-    @Override
-    public File[] getToolClasspathEntries(String toolName) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-
-    /**
-     * Specifies whether a tool of the given name is supported by GlassFish
-     * cloud.
-     * <p/>
-     * @param toolName Tool name, for example
-     *        {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
-     * @return Always returns <code>false</code>. This method is not supported.
-     * @deprecated
-     */
-    @Deprecated
-    @Override    
-    public boolean isToolSupported(String toolName) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

@@ -43,11 +43,13 @@
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
@@ -78,6 +80,8 @@ public abstract class AbstractFindUsages {
     }
 
     protected abstract AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass);
+
+    protected abstract ElementKind getElementKind();
 
 
     /**
@@ -120,15 +124,16 @@ public abstract class AbstractFindUsages {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+            GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
             ModuleNode moduleNode = result.getRootElement().getModuleNode();
             BaseDocument doc = GroovyProjectUtil.getDocument(result, fo);
 
             for (ASTNode node : getVisitor(moduleNode, defClass).findUsages()) {
                 if (node.getLineNumber() != -1 && node.getColumnNumber() != -1) {
-                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
+                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, node, fo, getElementKind()), doc));
                 }
             }
+            Collections.sort(usages);
         }
     }
 }

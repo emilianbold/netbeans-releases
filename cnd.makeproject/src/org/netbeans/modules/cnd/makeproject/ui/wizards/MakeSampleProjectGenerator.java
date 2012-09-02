@@ -391,10 +391,17 @@ public class MakeSampleProjectGenerator {
             if (projectFolderPath.length()>1 && projectFolderPath.charAt(1) == ':') {
                 // This is ugly work around Bug #203507
                 try {
-                    File driver = new File(projectFolderPath.substring(0,2));
-                    URL url = Utilities.toURI(driver).toURL();
-                    root = URLMapper.findFileObject(url);
-                    relPath = projectFolderPath.substring(4);
+                    if (projectFolderPath.length()>2 && projectFolderPath.charAt(2) == '\\') {
+                        File driver = new File(projectFolderPath.substring(0,3));
+                        URL url = Utilities.toURI(driver).toURL();
+                        root = URLMapper.findFileObject(url);
+                        relPath = projectFolderPath.substring(3);
+                    } else {
+                        File driver = new File(projectFolderPath.substring(0,2));
+                        URL url = Utilities.toURI(driver).toURL();
+                        root = URLMapper.findFileObject(url);
+                        relPath = projectFolderPath.substring(2);
+                    }
                 } catch (Throwable e) {
                 }
             } else if (projectFolderPath.startsWith("\\\\")) { //NOI18N

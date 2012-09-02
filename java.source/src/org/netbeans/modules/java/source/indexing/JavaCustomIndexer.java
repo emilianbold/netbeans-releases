@@ -576,17 +576,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    static boolean addAptGenerated(
+    static void addAptGenerated(
             @NonNull final Context context,
             @NonNull JavaParsingContext javaContext,
             @NonNull final CompileTuple source,
             @NonNull final Set<javax.tools.FileObject> aptGenerated) throws IOException {
-        boolean ret = false;
         final Set<javax.tools.FileObject> genSources = javaContext.getProcessorGeneratedFiles().getGeneratedSources(source.indexable.getURL());
         if (genSources != null) {
-            ret |= aptGenerated.addAll(genSources);
+            aptGenerated.addAll(genSources);
         }
-        return ret;
     }
 
     static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {

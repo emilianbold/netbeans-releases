@@ -72,6 +72,7 @@ import org.openide.util.NbBundle.Messages;
 public class NewGroupPanel extends JPanel {
 
     public static final String PROP_READY = "ready"; // NOI18N
+    private static final int MAX_NAME = 50;
 
     public NewGroupPanel() {
         initComponents();
@@ -86,15 +87,46 @@ public class NewGroupPanel extends JPanel {
         };
         directoryField.getDocument().addDocumentListener(l);
         nameField.getDocument().addDocumentListener(l);
-        updateNameField();
+        nameField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                nameConstraintsWarnings();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                nameConstraintsWarnings();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                nameConstraintsWarnings();
+            }
+        });
+    }
+    
+    private void nameConstraintsWarnings() {
+        updateNotifications();
     }
 
     public boolean isReady() {
-        if (adHocKindRadio.isSelected()) {
-            return nameField.getText() != null && nameField.getText().trim().length() > 0;
-        } else if (subprojectsKindRadio.isSelected()) {
+        //sort of suboptional to have the isReady method to duplicate the checks in updateNotifications();
+        String name = nameField.getText();
+        if (name != null) {
+            if (name.trim().length() <= 0 || name.trim().length() >= MAX_NAME) {
+                return false;
+            }
+            for (Group group : Group.allGroups()) {
+                if (name.equalsIgnoreCase(group.getName())) {
+                    return false;
+                }
+            }
+        }
+        
+        if (subprojectsKindRadio.isSelected()) {
             String s = masterProjectField.getText();
-            if (s != null && s.length() > 0) {
+            if (s != null && s.length() > 0 && s.length() < MAX_NAME) {
                 File f = new File(s);
                 FileObject fo = FileUtil.toFileObject(f);
                 if (fo != null && fo.isFolder()) {
@@ -106,11 +138,7 @@ public class NewGroupPanel extends JPanel {
                 }
             }
             return false;
-        } else {
-            assert directoryKindRadio.isSelected();
-            if (nameField.getText() == null || nameField.getText().trim().length() == 0) {
-                return false;
-            }
+        } else if (directoryKindRadio.isSelected()) {
             String s = directoryField.getText();
             if (s != null) {
                 return new File(s.trim()).isDirectory();
@@ -118,6 +146,7 @@ public class NewGroupPanel extends JPanel {
                 return false;
             }
         }
+        return true;
     }
 
     private void updateNameField() {
@@ -430,7 +459,7 @@ public class NewGroupPanel extends JPanel {
         directoryButton.setEnabled(true);
         updateNameField();
         firePropertyChange(PROP_READY, null, null);
-        updateExistingProjectListWarning();
+        updateNotifications();
     }//GEN-LAST:event_directoryKindRadioActionPerformed
 
     private void subprojectsKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subprojectsKindRadioActionPerformed
@@ -447,7 +476,7 @@ public class NewGroupPanel extends JPanel {
         directoryButton.setEnabled(false);
         updateNameField();
         firePropertyChange(PROP_READY, null, null);
-        updateExistingProjectListWarning();
+        updateNotifications();
     }//GEN-LAST:event_subprojectsKindRadioActionPerformed
 
     private void adHocKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adHocKindRadioActionPerformed
@@ -464,24 +493,42 @@ public class NewGroupPanel extends JPanel {
         directoryButton.setEnabled(false);
         updateNameField();
         firePropertyChange(PROP_READY, null, null);
-        updateExistingProjectListWarning();
+        updateNotifications();
     }//GEN-LAST:event_adHocKindRadioActionPerformed
 
     private void useOpenCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useOpenCheckboxActionPerformed
-        updateExistingProjectListWarning();
+        updateNotifications();
     }//GEN-LAST:event_useOpenCheckboxActionPerformed
 
     private NotificationLineSupport notificationLineSupport;
     void setNotificationLineSupport(NotificationLineSupport notificationLineSupport) {
         this.notificationLineSupport = notificationLineSupport;
+        updateNameField();
     }
-    @Messages("NewGroupPanel.open_project_warning=The list of projects currently open will be lost, unless you make a free group for them first.")
-    private void updateExistingProjectListWarning() { // #192899
+    
+    @Messages({"NewGroupPanel.open_project_warning=The list of projects currently open will be lost, unless you make a free group for them first.",
+               "NewGroupPanel.too_long_warning=Group name is too long.",
+               "NewGroupPanel.exists_warning=Name equal to existing group."})
+    private void updateNotifications() { // #192899
+        assert notificationLineSupport != null;
+        notificationLineSupport.clearMessages();
         if (adHocKindRadio.isSelected() && useOpenCheckbox.isSelected() || OpenProjects.getDefault().getOpenProjects().length == 0) {
-            notificationLineSupport.clearMessages();
         } else {
             notificationLineSupport.setWarningMessage(NewGroupPanel_open_project_warning());
         }
+        String name = nameField.getText();
+        if (name != null) {
+            if (name.length() > MAX_NAME) {
+                notificationLineSupport.setErrorMessage(NewGroupPanel_too_long_warning());
+            }
+            for (Group group : Group.allGroups()) {
+                if (name.equalsIgnoreCase(group.getName())) {
+                    notificationLineSupport.setErrorMessage(NewGroupPanel_exists_warning());
+                    break;
+                }
+            }
+        }
+        
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

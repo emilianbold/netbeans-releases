@@ -532,11 +532,19 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     } else if (languageArtifacts.contains("c++")) { // NOI18N
                         language = ItemProperties.LanguageKind.CPP;
                     } else {
-                        String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
-                        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                            language = ItemProperties.LanguageKind.CPP;
-                        } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                            language = ItemProperties.LanguageKind.C;
+                        if (language == LanguageKind.Unknown) {
+                            String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
+                            if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                                language = ItemProperties.LanguageKind.CPP;
+                            } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                                language = ItemProperties.LanguageKind.C;
+                            }
+                        } else if(language == LanguageKind.C &&
+                                 (compiler.equals("gcc") || compiler.equals("clang") || compiler.equals("icc"))){ // NOI18N
+                            String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
+                            if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                                language = ItemProperties.LanguageKind.CPP;
+                            }
                         }
                     }
                     ExecSource res = new ExecSource(storage);

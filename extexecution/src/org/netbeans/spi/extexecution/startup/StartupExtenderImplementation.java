@@ -68,7 +68,7 @@ public interface StartupExtenderImplementation {
      * start mode.
      *
      * @param context the lookup providing the contract between client
-     *             and provider (see {@link StartupExtender#getStartupExtender}
+     *             and provider (see {@link StartupExtender#getExtenders(Lookup context, StartupExtender.StartMode mode)}
      *             for details)
      * @param mode the startup mode the client is going to use
      * @return the list of arguments to pass to the process

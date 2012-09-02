@@ -85,8 +85,8 @@ public class KeyUtilities {
         return createProjectKey(project.getUniqueName());
     }
 
-    public static Key createProjectKey(CharSequence projectQualifiedName) {
-        return new ProjectKey(projectQualifiedName);
+    public static Key createProjectKey(CharSequence projectQualifiedName) {        
+        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName));
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
@@ -98,11 +98,24 @@ public class KeyUtilities {
         return new OffsetableDeclarationKey(obj);
     }
 
+    public static Key createOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+        assert containingFile != null;
+        assert name != null;
+        assert kind != null;
+        return new OffsetableDeclarationKey(containingFile, startOffset, kind, name);
+    }
+    
     public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj, index);
     }
 
+    public static Key createUnnamedOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, int index) {
+        assert containingFile != null;
+        assert kind != null;
+        return new OffsetableDeclarationKey(containingFile, startOffset, kind, Integer.toString(index));
+    }
+    
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);

@@ -44,9 +44,10 @@
 package org.netbeans.modules.refactoring.api;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.refactoring.spi.FiltersManager;
+import org.netbeans.modules.refactoring.spi.FiltersManager.Filterable;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -180,5 +181,17 @@ public final class RefactoringElement {
         return hash;
     }
 
-
+    /**
+     * Indicates if this element should be included in the results.
+     * @param filtersManager the FiltersManager to use
+     * @return true if this element should be included
+     * @since 1.29
+     */
+    public boolean include(FiltersManager filtersManager) {
+        if(impl instanceof FiltersManager.Filterable) {
+            Filterable filterable = (Filterable) impl;
+            return filterable.filter(filtersManager);
+        }
+        return true;
+    }
 }

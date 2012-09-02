@@ -55,9 +55,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class FileContainerKey extends ProjectNameBasedKey {
 
-    public FileContainerKey(CharSequence project) {
-        super(project);
-        //System.err.printf(">>>>> new FileContainerKey %s \n", project);
+    public FileContainerKey(int unitId) {
+        super(unitId);
     }
 
     FileContainerKey(RepositoryDataInput in) throws IOException {

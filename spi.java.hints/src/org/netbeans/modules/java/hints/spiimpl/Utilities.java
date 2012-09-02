@@ -157,13 +157,13 @@ import org.netbeans.modules.java.hints.providers.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.CatchWildcard;
-import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.ModifiersWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.lib.nbjavac.services.CancelService;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
+import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.AnnotationWildcard;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -1253,8 +1253,12 @@ public class Utilities {
                     com.sun.tools.javac.util.Name name = token.name();
 
                     nextToken();
+                    
+                    JCModifiers result = super.modifiersOpt(partial);
+                    
+                    result.annotations = result.annotations.prepend(new AnnotationWildcard(name, F.Ident(name)));
 
-                    return new ModifiersWildcard(name, F.Ident(name));
+                    return result;
                 }
             }
 
@@ -1267,9 +1271,12 @@ public class Utilities {
                 if (token.name().startsWith(dollar)) {
                     com.sun.tools.javac.util.Name name = token.name();
 
-                    nextToken();
+                    Token peeked = S.token(1);
 
-                    return new VariableWildcard(ctx, name, F.Ident(name));
+                    if (peeked.kind == TokenKind.COMMA || peeked.kind == TokenKind.RPAREN) {
+                        nextToken();
+                        return new VariableWildcard(ctx, name, F.Ident(name));
+                    }
                 }
             }
 

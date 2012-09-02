@@ -64,6 +64,7 @@ import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.Evaluator;
 import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
@@ -91,7 +92,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             SourcePathProvider.Registration.class.getCanonicalName(),
             EditorContext.Registration.class.getCanonicalName(),
             VariablesFilter.Registration.class.getCanonicalName(),
-            Evaluator.Registration.class.getCanonicalName()
+            Evaluator.Registration.class.getCanonicalName(),
+            BreakpointsClassFilter.Registration.class.getCanonicalName()
         ));
     }
 
@@ -145,6 +147,13 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
 
             final String language = reg.language();
             handleEvaluatorRegistration(e, language);
+            cnt++;
+        }
+        for (Element e : env.getElementsAnnotatedWith(BreakpointsClassFilter.Registration.class)) {
+            BreakpointsClassFilter.Registration reg = e.getAnnotation(BreakpointsClassFilter.Registration.class);
+
+            final String path = reg.path();
+            handleProviderRegistration(e, BreakpointsClassFilter.class, path);
             cnt++;
         }
         return cnt == annotations.size();

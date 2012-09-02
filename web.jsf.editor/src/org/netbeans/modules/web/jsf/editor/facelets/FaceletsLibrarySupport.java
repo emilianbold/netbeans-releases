@@ -253,7 +253,7 @@ public class FaceletsLibrarySupport {
                 //exclude the jsf jars from the classpath, if jsf20 library is available,
                 //we'll use the jars from the netbeans library instead
                 String fsName = cpRoot.getFileSystem().getDisplayName(); //any better way?
-                if(!(fsName.endsWith("jsf-impl.jar") || fsName.endsWith("jsf-api.jar"))) { //NOI18N
+                if(!fsName.endsWith("javax.faces.jar")) { //NOI18N
                     urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
                     LOGGER.log(Level.FINE, "+++{0}", cpRoot); //NOI18N
                 } else {
@@ -333,7 +333,7 @@ public class FaceletsLibrarySupport {
         //netbeans jsf2.0 library
         //
         //This is needed for the standart JSF 2.0 libraries since it may
-        //happen that there is no jsf-impl.jar with the .taglib.xml files
+        //happen that there is no javax-faces.jar with the .taglib.xml files
         //on the compile classpath and we still want the features like code
         //completion work. This happens for example in Maven web projects.
         //

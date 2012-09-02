@@ -79,9 +79,9 @@ public class DOMObjectsTest extends GeneralJavaScript {
     public void createApplication() {
         startTest();
         this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + name_iterator);
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "JavaScript File");
-        this.currentFile = "cc.js";
+        createPhpApplication(TEST_BASE_NAME + "do_" + name_iterator);
+        EditorOperator eo = createWebFile("docc", TEST_BASE_NAME + "do_" + name_iterator, "JavaScript File");
+        this.currentFile = "docc.js";
         try {
             waitScanFinished();
         } catch (Exception e) {

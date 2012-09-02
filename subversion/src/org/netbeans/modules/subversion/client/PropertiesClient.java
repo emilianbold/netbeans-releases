@@ -125,7 +125,8 @@ public final class PropertiesClient {
                                 && info.getRevision().getNumber() > -1) {
                             ISVNProperty[] props = client.getProperties(info.getCopyUrl() == null ? info.getUrl() : info.getCopyUrl(),
                                     SVNRevision.getRevision(info.getRevision().toString()),
-                                    SVNRevision.getRevision(info.getRevision().toString()));
+                                    SVNRevision.getRevision(info.getRevision().toString()),
+                                    false);
                             for (ISVNProperty prop : props) {
                                 map.put(prop.getName(), prop.getData());
                             }

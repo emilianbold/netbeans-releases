@@ -55,10 +55,13 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
@@ -73,7 +76,6 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -220,6 +222,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 case OBJECT_MEMBERS:
                     completeObjectMember(request, resultList);
+                    break;
+                case DOCUMENTATION:
+                    JsDocumentationCodeCompletion.complete(request, resultList);
+                    break;
                 default:
                     result = CodeCompletionResult.NONE;
             }
@@ -261,12 +267,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                             
                         }
-                        System.out.println(parserResult);
+                        LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                     }
                     
                 });
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
         if (documentation.length() == 0) {
@@ -274,6 +280,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (doc != null && !doc.isEmpty()) {
                 documentation.append(doc);
             }
+        }
+        if (element instanceof JsDocumentationElement) {
+            return ((JsDocumentationElement) element).getDocumentation();
         }
         if (documentation.length() == 0) {
             documentation.append(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
@@ -334,6 +343,30 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
                 }
             }
+            if (id == JsTokenId.DOC_COMMENT) {
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                if (docTokenSeq == null) {
+                    return null;
+                }
+
+                docTokenSeq.move(caretOffset);
+                // initialize moved token
+                if (!docTokenSeq.moveNext() && !docTokenSeq.movePrevious()) {
+                    return null;
+                }
+
+                if (docTokenSeq.token().id() == JsDocumentationTokenId.KEYWORD) {
+                    // inside the keyword tag
+                    prefix = docTokenSeq.token().text().toString();
+                    if (upToOffset) {
+                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                    }
+                } else {
+                    // get the token before
+                    docTokenSeq.movePrevious();
+                    prefix = docTokenSeq.token().text().toString();
+                }
+            }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
         return prefix.length() > 0 ? prefix : null;
@@ -351,6 +384,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
+        // must return null - CSL reasons, see #217101 for more information
         return null;
     }
 
@@ -428,7 +462,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return;
         }
 
-        ts.move(request.anchor);
+        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
+        ts.move(offset);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
@@ -436,6 +471,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             Token<? extends JsTokenId> token = ts.token();
             int parenBalancer = 0;
             boolean methodCall = false;
+            boolean wasLastDot = false;
             List<String> exp = new ArrayList();
             
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
@@ -467,6 +503,18 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 exp.add("@mtd");   // NOI18N
                                 methodCall = false;
                             }
+                            wasLastDot = false;
+                        }
+                    } else {
+                        wasLastDot = true;
+                    }
+                } else {
+                    if (!wasLastDot && ts.movePrevious()) {
+                        // check whether it's continuatino of previous line
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (token.id() != JsTokenId.OPERATOR_DOT) {
+                            // the dot was not found => it's not continuation of expression
+                            break;
                         }
                     }
                 }
@@ -476,153 +524,58 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 token = ts.token();
             }
             
-            List<JsObject> types = new ArrayList<JsObject>();
-            List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
-            List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
-            for (int i = exp.size() - 1; i > -1; i--) {
-                String kind = exp.get(i);
-                String name = exp.get(--i);
-                if (i == (exp.size() - 2)) {
-                    // resolving the first part of expression
-                    for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                        if (object.getName().equals(name)) {
-                            types.add(object);
-                            break;
-                        }
-                    }
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
-                        for (JsObject object : libGlobal.getProperties().values()) {
-                            if (object.getName().equals(name)) {
-                                types.add(object);
-                                break;
-                            }
-                        }
-                    }
-                    
-                    Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
-//                    Collection<String> prototypeChain = new ArrayList<String>();
-                    for (IndexedElement globalVar : globalVars) {
-                        System.out.println("globalVar: " + globalVar.getName());
-                        Collection<TypeUsage> assignments = globalVar.getAssignments();
-                        lastResolvedTypes.addAll(assignments);
-//                        for (TypeUsage typeUsage : assignments) {
-//                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
-//                        }
-                    }
-//                    for (String string : prototypeChain) {
-//                        lastResolvedTypes.add(new TypeUsageImpl(string));
-//                    }
-                    
-                    if(!types.isEmpty()){ 
-                        for(JsObject type : types) {
-                            if(type.getAssignmentForOffset(request.anchor).isEmpty()) {
-                                // also check, whether the same type is not in the index
-                                if (type instanceof JsObjectReference) {
-                                    name = ((JsObjectReference)type).getOriginal().getDeclarationName().getName();
-                                }
-                                lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                            }
-                            if ("@mtd".equals(kind)) {  //NOI18N
-                                if (type.getJSKind().isFunction()) {
-                                    lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
-                                }
-                            } else {
-                                // just property
-                                Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
-                                if (lastTypeAssignment.isEmpty()) {
-                                    lastResolvedObjects.add(type);
+            Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, offset));
+            
+            int cycle = 0;
+            boolean resolvedAll = false;
+            while(!resolvedAll && cycle < 10) {
+                cycle++;
+                resolvedAll = true;
+                Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
+                for (TypeUsage typeUsage : resolveTypeFromExpression) {
+                    if(!((TypeUsageImpl)typeUsage).isResolved()) {
+                        resolvedAll = false;
+                        String sexp = typeUsage.getType();
+                        if (sexp.startsWith("@exp;")) {
+                            sexp = sexp.substring(5);
+                            List<String> nExp = new ArrayList<String>();
+                            String[] split = sexp.split("@call;");
+                            for (int i = split.length - 1; i > -1; i--) {
+                                String string = split[i];
+                                nExp.add(split[i]);
+                                if (i == 0) {
+                                    nExp.add("@pro");
                                 } else {
-                                    resolveAssignments(type, request, lastResolvedObjects, lastResolvedTypes);
-                                    break;
+                                    nExp.add("@mtd");
                                 }
                             }
-                            
+                            resolved.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, nExp, cycle));
+                        } else {
+                            resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                         }
-                    } 
-                } else {
-                    List<JsObject> newResolvedObjects = new ArrayList<JsObject>();
-                    List<TypeUsage> newResolvedTypes = new ArrayList<TypeUsage>();
-                    for (JsObject resolved : lastResolvedObjects) {
-                        JsObject property = ((JsObject) resolved).getProperty(name);
-                        if (property != null) {
-                            if ("@mtd".equals(kind)) {  //NOI18N
-                                if (property.getJSKind().isFunction()) {
-                                    newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
-                                }
-                            } else {
-                                newResolvedObjects.add(property);
-                            }
-                        }
+                    } else {
+                        resolved.add(typeUsage);
                     }
-                    
-                    
-                    
-                    for (TypeUsage typeUsage : lastResolvedTypes) {
-                        Collection<String> prototypeChain = new ArrayList<String>();
-                        prototypeChain.add(typeUsage.getType());
-                        prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
-                        
-                        Collection<? extends IndexResult> indexResults = null;        
-                        for (String fqn : prototypeChain) {
-                            indexResults = jsIndex.findFQN(fqn + "." + name); //NOI18N
-                            if (indexResults.isEmpty()) {
-                                indexResults = jsIndex.findFQN(fqn + ".prototype." + name); //NOI18N
-                            }
-                            if(!indexResults.isEmpty()) {
-                                break;
-                            }
-                        }
-                        
-                        for (IndexResult indexResult : indexResults) {
-                            JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
-                            if ("@mtd".equals(kind) && jsKind.isFunction()) {
-                                newResolvedTypes.addAll(IndexedElement.getReturnTypes(indexResult));
-                            } else {
-                                newResolvedTypes.add(new TypeUsageImpl(typeUsage.getType() + "." + name));
-                            }
-                        }
-                        // from libraries look for top level types
-                        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
-                            for (JsObject object : libGlobal.getProperties().values()) {
-                                if (object.getName().equals(typeUsage.getType())) {
-                                    JsObject property = object.getProperty(name);
-                                    if (property != null) {
-                                        JsElement.Kind jsKind = property.getJSKind();
-                                        if ("@mtd".equals(kind) && jsKind.isFunction()) {
-                                            newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
-                                        } else {
-                                            newResolvedObjects.add(property);
-                                        }
-                                    }
-                                    newResolvedObjects.add(object);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    lastResolvedObjects = newResolvedObjects;
-                    lastResolvedTypes = newResolvedTypes;
                 }
+                resolveTypeFromExpression.clear();
+                resolveTypeFromExpression.addAll(resolved);
+            }
+            Collection<String> prototypeChain = new ArrayList<String>();
+            for (TypeUsage typeUsage : resolveTypeFromExpression) {
+                prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));
             }
             
-            // resolving prototpe chains
-            Collection<String> prototypeChain = new ArrayList<String>();
-            for (TypeUsage typeUsage : lastResolvedTypes) {
-                prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
-            }
-            for(JsObject jsObject : lastResolvedObjects) {
-                prototypeChain.addAll(findPrototypeChain(ModelUtils.createFQN(jsObject), jsIndex));
-            }
             for (String string : prototypeChain) {
-                lastResolvedTypes.add(new TypeUsageImpl(string));
+                resolveTypeFromExpression.add(new TypeUsageImpl(string));
             }
             
             HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
             boolean isFunction = false; // addding Function to the prototype chain?
-            for (TypeUsage typeUsage : lastResolvedTypes) {
+            List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
+            for (TypeUsage typeUsage : resolveTypeFromExpression) {
                 // at first try to find the type in the model
                 JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
                 if (jsObject != null) {
@@ -644,7 +597,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 //}
                 if(jsObject == null || !jsObject.isDeclared()){
                     // look at the index
-                    if (exp.get(1).equals("@pro")) {
+//                    if (exp.get(1).equals("@pro")) {
+                    boolean isObject = typeUsage.getType().equals("Object");
+                    if(exp.get(1).equals("@pro") && !isObject) {
                         for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
                             JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if (kind.isFunction()) {
@@ -652,7 +607,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                         }
                     }
-                    addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
+//                    }
+                    if (!isObject) {
+                        addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
+                    }
                 }
             }
             for (JsObject resolved : lastResolvedObjects) {
@@ -696,19 +654,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
             for(String name : addedProperties.keySet()) {
                 JsElement element = addedProperties.get(name);
                 resultList.add(JsCompletionItem.Factory.create(element, request));
-            }
-        }
-    }
-
-    private void resolveAssignments(JsObject jsObject, CompletionRequest request, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
-        Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(request.anchor);
-        for (Type typeName : assignments) {
-            JsObject byOffset = findObjectForOffset(typeName.getType(), request.anchor, request.result.getModel());
-            if (byOffset != null) {
-                resolvedObjects.add(byOffset);
-                resolveAssignments(byOffset, request, resolvedObjects, resolvedTypes);
-            } else {
-                resolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
             }
         }
     }
@@ -839,27 +784,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
     }
-    
-    private Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
-        Collection<String> result = new ArrayList<String>();
-        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
-        for (IndexedElement property : properties) {
-            if("prototype".equals(property.getName())) {
-                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
-                for (IndexResult indexResult : indexResults) {
-                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                    for (TypeUsage typeUsage : assignments) {
-                        result.add(typeUsage.getType());
-                    }
-                    for (TypeUsage typeUsage : assignments) {
-                        result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
-                    }
-                }
-            }
-        }
-        return result;
-    }
-    
+                 
     private Collection<JsObject> getLibrariesGlobalObjects() {
         Collection<JsObject> result = new ArrayList<JsObject>();
         JsObject libGlobal = JQueryModel.getGlobalObject();

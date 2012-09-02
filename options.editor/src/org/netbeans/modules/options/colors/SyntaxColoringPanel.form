@@ -219,6 +219,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.openide.awt.ColorComboBox();"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="cbBackground">
       <Properties>
@@ -226,6 +229,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="cbEffects">
       <Properties>
@@ -240,6 +246,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="tfFont">
     </Component>

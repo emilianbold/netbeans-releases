@@ -47,4 +47,23 @@
             </implies>
         </transformation>
     </transformationgroup>    
+    <transformationgroup>
+        <description>libs.springframework replaced by org.springframework.* bundles</description>
+        <transformation>
+            <trigger-dependency type="cancel">
+                <module-dependency codenamebase="org.netbeans.libs.springframework"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.springframework.beans" spec="3.1.1"/>
+                </result>
+                <result>
+                    <module-dependency codenamebase="org.springframework.context" spec="3.1.1"/>
+                </result>
+                <result>
+                    <module-dependency codenamebase="org.springframework.core" spec="3.1.1"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>    
 </transformations>

@@ -55,8 +55,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class GraphContainerKey extends ProjectNameBasedKey {
 
-    public GraphContainerKey(CharSequence project) {
-        super(project);
+    public GraphContainerKey(int unitId) {
+        super(unitId);
     }
 
     public GraphContainerKey(RepositoryDataInput in) throws IOException {

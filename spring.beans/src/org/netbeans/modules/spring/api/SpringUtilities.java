@@ -46,6 +46,7 @@ package org.netbeans.modules.spring.api;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -79,7 +80,7 @@ public final class SpringUtilities {
 
     public static Library findJSTLibrary() {
         // see Issue #169105 - first try "pure" JSTL, if there isn't any then bundled JSTL will suffice
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
+        for (Library library : getJavaLibraries()) {
             if (library.getName().startsWith("jstl")) {
                 return library;
             }
@@ -92,7 +93,7 @@ public final class SpringUtilities {
     }
 
     public static Library findSpringWebMVCLibrary(String version) {
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
+        for (Library library : getJavaLibraries()) {
             if (containsClass(library, SPRING_WEBMVC_CLASS_NAME)) {
                 if (version.equalsIgnoreCase(getSpringWebMVCLibraryVersion(library))) {
                     return library;
@@ -108,6 +109,22 @@ public final class SpringUtilities {
 
     public static boolean isSpringWebMVCLibrary(Library library) {
         return containsClass(library, SPRING_WEBMVC_CLASS_NAME);
+    }
+
+    /**
+     * Gets array of all libraries of type "j2se".
+     * @return array of all J2SE libraries
+     */
+    public static Library[] getJavaLibraries() {
+        List<Library> libraries = new LinkedList<Library>();
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(library.getType())) { //NOI18N
+                continue;
+            } else {
+                libraries.add(library);
+            }
+        }
+        return libraries.toArray(new Library[libraries.size()]);
     }
 
     /**
@@ -157,7 +174,7 @@ public final class SpringUtilities {
     }
 
     private static Library getLibrary(String className) {
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
+        for (Library library : getJavaLibraries()) {
             if (containsClass(library, className)) {
                 return library;
             }

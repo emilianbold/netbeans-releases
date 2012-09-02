@@ -139,14 +139,16 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
         for (GitBranch branch : branches.values()) {
             GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getName());
-            l.add(new BranchMapping(branch.getName(), localBranch == null ? null : localBranch.getName(), remote, false));
+            boolean preselected = localBranch != null && !localBranch.getId().equals(branch.getId());
+            l.add(new BranchMapping(branch.getName(), branch.getId(), localBranch, remote, preselected));
         }
         for (GitBranch branch : localBranches.values()) {
             if (branch.isActive()) {
                 currentBranch = branch.getName();
             }
         }
-        this.branches.setBranches(l);        
+        this.branches.setBranches(l);
+        validateBeforeNext();
     }
     
     @Override

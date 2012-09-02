@@ -126,7 +126,7 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel
         contentClassTextField = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
 
-        setName("");
+        setName(""); // NOI18N
         setPreferredSize(new java.awt.Dimension(450, 193));
 
         classLabel.setLabelFor(classTextField);
@@ -268,7 +268,8 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(contentClassLabel)
                     .addComponent(selectClassButton)
-                    .addComponent(contentClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(contentClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         classLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "ClassName")); // NOI18N

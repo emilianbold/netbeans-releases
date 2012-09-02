@@ -82,7 +82,8 @@ public class CreateDomain extends Thread {
     private final String installRootKey;
 
     public CreateDomain(String uname, String pword, File platformLocation, 
-            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register, boolean useDefaultPorts, String installRootKey) {
+            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register,
+            boolean useDefaultPorts, String installRootKey) {
         this.uname = uname;
         this.pword = pword;
         this.platformLocation = platformLocation;

@@ -217,18 +217,22 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                     }
                 }
                 // Measure width
-                float width;
+                double width;
                 if (view instanceof TabableView) {
                     width = ((TabableView) view).getTabbedSpan((float) endX, docView.getTabExpander());
                     tabViewAdded = true;
                 } else {
                     width = view.getPreferredSpan(View.X_AXIS);
                 }
+                // Enforce horizontal alignment on whole pixels' boundary
+                width = Math.ceil(width);
                 endX += width;
                 view.setRawEndVisualOffset(endX);
                 // Measure height
                 float height = view.getPreferredSpan(View.Y_AXIS);
                 if (height > childrenHeight) {
+                    // Enforce vertical alignment on whole pixels' boundary
+                    width = Math.ceil(width);
                     childrenHeight = height;
                 }
             }

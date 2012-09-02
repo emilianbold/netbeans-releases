@@ -149,6 +149,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         trimInstantiationParams();
     }
+    
+    // package-local - for facory only
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.initClassifier(classifier);
+        this.pointerDepth = (byte) pointerDepth;
+        setFlags(FLAGS_REFERENCE, reference);
+        this.arrayDepth = (byte) arrayDepth;
+        setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
+        this.classifierText = classifier.getName();
+        instantiationParams.trimToSize();
+    }    
 
     // package-local - for facory only
     TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {

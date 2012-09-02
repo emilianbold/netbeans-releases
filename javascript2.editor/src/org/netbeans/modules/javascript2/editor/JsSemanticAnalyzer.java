@@ -57,6 +57,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -66,6 +67,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  * @author Petr Pisl
  */
 public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
+    //public static final EnumSet<ColoringAttributes> UNUSED_VARIABLE_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.VA);
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -115,6 +117,13 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                     for(JsObject param: ((JsFunction)object).getParameters()) {
                         count(result, param, highlights);
+                        if(param.getOccurrences().isEmpty()) {
+                            OffsetRange range = param.getDeclarationName().getOffsetRange();
+                            if (range.getStart() < range.getEnd()) {
+                                // only for declared parameters
+                                highlights.put(range, ColoringAttributes.UNUSED_SET);
+                            }
+                        }
                     }
                     break;
                 case PROPERTY_GETTER:
@@ -161,6 +170,22 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         for(Occurrence occurence: object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         }
+                    } else {
+                        if (object.getOccurrences().isEmpty()) {
+                            OffsetRange range = object.getDeclarationName().getOffsetRange();
+                            if (range.getStart() < range.getEnd()) {
+                                // some virtual variables (like arguments) doesn't have to be declared, but are in the model
+                                highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                            }
+                        } else if (object instanceof JsObjectImpl) {
+                            if (object.getOccurrences().size() < ((JsObjectImpl)object).getCountOfAssignments()) {
+                                // probably is used only on the left site => is unused
+                                highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                for(Occurrence occurence: object.getOccurrences()) {
+                                    highlights.put(occurence.getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                }
+                            }
+                        }
                     }
             }
             if (isCancelled()) {
@@ -184,7 +209,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         cancelled = true;
     }
     

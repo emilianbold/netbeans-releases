@@ -42,11 +42,9 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.EnumSet;
-import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -70,7 +68,7 @@ public class AnonymousObject extends JsObjectImpl {
 
     @Override
     public int getOffset() {
-        return getOffsetRange(null).getStart();
+        return getOffsetRange().getStart();
     }
 
     @Override

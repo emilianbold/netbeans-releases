@@ -44,7 +44,10 @@ package org.netbeans.modules.maven.junit;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -174,17 +177,33 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                             void rerun(Set<Testcase> tests) {
                                 RunConfig brc = RunUtils.cloneRunConfig(config);
                                 StringBuilder tst = new StringBuilder();
+                                Map<String, Collection<String>> methods = new HashMap<String, Collection<String>>();
                                 for (Testcase tc : tests) {
                                     //TODO just when is the classname null??
                                     if (tc.getClassName() != null) {
+                                        Collection<String> lst = methods.get(tc.getClassName());
+                                        if (lst == null) {
+                                            lst = new ArrayList<String>();
+                                            methods.put(tc.getClassName(), lst);
+                                        }
+                                        lst.add(tc.getName());
+                                    }
+                                }
+                                for (Map.Entry<String, Collection<String>> ent : methods.entrySet()) {
                                         tst.append(",");
-                                        tst.append(tc.getClassName());
-                                        //tst.append(tc.getClassName().substring(tc.getClassName().lastIndexOf('.') + 1));
+                                        tst.append(ent.getKey());
 
                                         //#name only in surefire > 2.7.2 and junit > 4.0 or testng
                                         // bug works with the setting also for junit 3.x
-                                        tst.append("#").append(tc.getName());
-                                    }
+                                        tst.append("#");
+                                        boolean first = true;
+                                        for (String meth : ent.getValue()) {
+                                            if (!first) {
+                                                tst.append("+");
+                                            }
+                                            first = false;
+                                            tst.append(meth);
+                                        }
                                 }
                                 if (tst.length() > 0) {
                                     brc.setProperty("test", tst.substring(1));
@@ -205,7 +224,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                                         } 
                                         else 
                                         if (usingJUnit4(config.getMavenProject())) { //#214334
-                                            return usingSurefire213(config.getMavenProject());
+                                            return usingSurefire2121(config.getMavenProject());
                                         } 
                                     }
                                 }
@@ -228,9 +247,9 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
     }
     
-    private boolean usingSurefire213(MavenProject prj) {
+    private boolean usingSurefire2121(MavenProject prj) {
         String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
-        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.13")) >= 0;
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.12.1")) >= 0;
     }
     
     private boolean usingSurefire28(MavenProject prj) {

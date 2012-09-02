@@ -42,10 +42,10 @@
 
 package org.netbeans.api.extexecution;
 
-import org.netbeans.spi.extexecution.destroy.*;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.extexecution.WrapperProcess;
+import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 

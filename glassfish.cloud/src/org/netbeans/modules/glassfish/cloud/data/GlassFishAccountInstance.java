@@ -44,6 +44,10 @@ package org.netbeans.modules.glassfish.cloud.data;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishAdminInterface;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.data.cloud.GlassFishAccountEntity;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.keyring.Keyring;
@@ -51,8 +55,8 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountWizardUserComponent;
 import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -65,7 +69,7 @@ import static org.openide.util.NbBundle.getMessage;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountInstance extends GlassFishAccountEntity
-    implements ServerInstanceImplementation {
+    implements GlassFishServer, GlassFishInstance {
     
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -100,16 +104,30 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     /**
      * Build key ring identifier for password related to given user name.
      * <p/>
+     * @param serverName Name of server to add into password key.
      * @param userName User name of account user who's password will be stored.
      * @return Key ring identifier for password related to given user name
      */
-    private static String passwordKey(String userName) {
-        StringBuilder pwKey = new StringBuilder();
+    private static String passwordKey(String serverName, String userName) {
+        StringBuilder pwKey = new StringBuilder(
+                GlassFishAccountInstanceProvider
+                .KEYRING_NAME_SPACE.length()
+                + GlassFishAccountInstanceProvider
+                .KEYRING_NAME_SEPARATOR.length()
+                + PROPERTY_USER_PASSWORD.length()
+                + GlassFishAccountInstanceProvider
+                .KEYRING_IDENT_SEPARATOR.length()
+                + (serverName != null ? serverName.length() : 0)
+                + GlassFishAccountInstanceProvider
+                .KEYRING_IDENT_SEPARATOR.length()
+                + (userName != null ? userName.length() : 0));
         pwKey.append(GlassFishAccountInstanceProvider.KEYRING_NAME_SPACE);
         pwKey.append(GlassFishAccountInstanceProvider.KEYRING_NAME_SEPARATOR);
         pwKey.append(PROPERTY_USER_PASSWORD);
         pwKey.append(GlassFishAccountInstanceProvider.KEYRING_IDENT_SEPARATOR);
-        pwKey.append(userName);
+        pwKey.append(serverName != null ? serverName : "");
+        pwKey.append(GlassFishAccountInstanceProvider.KEYRING_IDENT_SEPARATOR);
+        pwKey.append(userName != null ? userName : "");
         return pwKey.toString();
     }
 
@@ -120,11 +138,23 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     /** The display name of GlassFish cloud server type. */
     private final String serverDisplayName;
 
+    /** Description of GlassFish cloud user account. */
+    private final String description;
+
     /** GlassFish Cloud GUI Node. */
     private volatile Node basicNode;
 
     /** Stored server instance. */
     private ServerInstance serverInstance;
+
+    /** Support for load events listeners. */
+    private final ChangeSupport loadListeners;
+
+    /** Support for store events listeners. */
+    private final ChangeSupport storeListeners;
+
+    /** Support for remove events listeners. */
+    private final ChangeSupport removeListeners;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -142,12 +172,16 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     @SuppressWarnings("LeakingThisInConstructor")
     public GlassFishAccountInstance(String name, String account, String userName,
             String userPassword, GlassFishCloud cloudEntity) {
-        super(name, GlassFishUrl.url(
-                GlassFishUrl.Id.CLOUD, name),
-                account, userName, userPassword, cloudEntity);
+        super(name, account, userName, userPassword,
+                GlassFishUrl.url(GlassFishUrl.Id.CLOUD, name), cloudEntity);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
-                Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
+                Bundle.GLASSFISH_ACCOUNT_SERVER_TYPE, new Object[]{});
+        this.description = getMessage(GlassFishCloudInstance.class,
+                Bundle.GLASSFISH_ACCOUNT_DESCRIPTION, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
+        this.loadListeners = new ChangeSupport(Event.LOAD);
+        this.storeListeners = new ChangeSupport(Event.STORE);
+        this.removeListeners = new ChangeSupport(Event.REMOVE);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -165,7 +199,124 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Implemented ServerInstanceImplementation Interface Methods             //
+    // Implemented missing GlassFishServer interface methods                  //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get GlassFish cloud host.
+     * <p/>
+     * @return Cloud host.
+     */
+    @Override
+    public String getHost() {
+        return cloudEntity != null ? cloudEntity.getHost() : null;
+    }
+
+    /**
+     * Get GlassFish cloud port.
+     * <p/>
+     * @return Cloud port.
+     */
+    @Override
+    public int getPort() {
+        return -1;
+    }
+
+   /**
+     * Get GlassFish cloud CPAS port.
+     * <p/>
+     * @return CPAS port.
+     */
+    @Override
+    public int getAdminPort() {
+        return cloudEntity != null ? cloudEntity.getPort() : -1;
+    }
+
+    /**
+     * Get GlassFish cloud account user name.
+     * <p/>
+     * @return Cloud account user name.
+     */
+    @Override
+    public String getAdminUser() {
+        return userName;
+    }
+
+    /**
+     * Get GlassFish cloud account user password.
+     * <p/>
+     * @return Cloud account user password.
+     */
+    @Override
+    public String getAdminPassword() {
+        return userPassword;
+    }
+
+    /**
+     * Get GlassFish cloud domains folder.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getDomainsFolder() {
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud domain name.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getDomainName() {
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud installation root.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getServerRoot() {
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud server home.
+     * <p/>
+     * @return Always returns <code>null</code> because cloud server is remote.
+     */
+    @Override
+    public String getServerHome() {
+        return null;
+    }
+
+   /** Get GlassFish cloud version.
+     * <p/>
+     * Attempts to retrieve cloud version using CPAS interface.
+     * <p/>
+     * @return Cloud version or <code>null</code> if version could not
+     *         be retrieved.
+     */
+    @Override
+    public GlassFishVersion getVersion() {
+        // TODO: implement version check.
+        return null;
+    }
+
+    /**
+     * Get GlassFish cloud administration interface type.
+     * <p/>
+     * @return GlassFish cloud administration interface is REST.
+     */
+    @Override
+    public GlassFishAdminInterface getAdminInterface() {
+        return GlassFishAdminInterface.REST;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented ServerInstanceImplementation interface methods             //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -176,6 +327,16 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     @Override
     public String getDisplayName() {
         return this.name;
+    }
+
+    /**
+     * Get description of GlassFish cloud user account.
+     * <p/>
+     * @return Description of GlassFish cloud user account.
+     */
+    @Override
+    public String getDescription() {
+        return this.description;
     }
 
     /**
@@ -255,6 +416,86 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         return true;
     }
     
+    /**
+     * Get GlassFish local server registered with cloud.
+     * <p/>
+     * @return GlassFish cloud local server.
+     */
+    @Override
+    public GlassFishServer getLocalServer() {
+        GlassFishCloud cloud = getCloudEntity();
+        return cloud != null
+                ? cloud.getLocalServer()
+                : null;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Listeners handling methods                                             //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Check for <code>Event</code> occurrence in <code>Event</code>s array.
+     * <p/>
+     * @param events Events to be checked.
+     * @return Array of <code>Event.length</code> size where values on indexes
+     *         of <code>Event</code> ordinal values passed to this method are
+     *         set to <code>true</code> and rest of the array values set
+     *         to <code>false</code>.
+     */
+    private boolean[] selectEventsToModify(Event[] events) {
+        boolean addEvent[] = new boolean[Event.length];
+        for (int i = 0; i < Event.length; i++) {
+            addEvent[i] = false;
+        }
+        if (events != null) {
+            for (int i = 0; i < events.length; i++) {
+                addEvent[events[i].ordinal()] = true;
+            }
+        }
+        return addEvent;
+    }
+
+    /**
+     * Add a listener to changes of the panel validity.
+     * <p/>
+     * @param listener Listener to add.
+     * @param events   Which events to listen for.
+     * @see #isValid
+     */
+    @Override
+    public void addChangeListener(ChangeListener listener, Event[] events) {
+        boolean addEvent[] = selectEventsToModify(events);
+        if (addEvent[Event.LOAD.ordinal()]) {
+            loadListeners.addChangeListener(listener);
+        }
+        if (addEvent[Event.STORE.ordinal()]) {
+            storeListeners.addChangeListener(listener);
+        }
+        if (addEvent[Event.REMOVE.ordinal()]) {
+            removeListeners.addChangeListener(listener);
+        }
+    }
+
+    /**
+     * Remove a listener to changes of the panel validity.
+     * <p/>
+     * @param listener Listener to remove
+     * @param events   Events from which specified listener will be removed.
+     */
+    @Override
+    public void removeChangeListener(ChangeListener listener, Event[] events) {
+        boolean addEvent[] = selectEventsToModify(events);
+        if (addEvent[Event.LOAD.ordinal()]) {
+            loadListeners.removeChangeListener(listener);
+        }
+        if (addEvent[Event.STORE.ordinal()]) {
+            storeListeners.removeChangeListener(listener);
+        }
+        if (addEvent[Event.REMOVE.ordinal()]) {
+            removeListeners.removeChangeListener(listener);
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Persistency methods                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -270,12 +511,13 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         props.putString(PROPERTY_USER_NAME, userName);
         props.putString(PROPERTY_CLOUD_NAME,
                 cloudEntity != null ? cloudEntity.getName() : null);
-        Keyring.save(passwordKey(userName), userPassword.toCharArray(),
+        Keyring.save(passwordKey(name, userName), userPassword.toCharArray(),
                 "GlassFish cloud account user password");
         LOG.log(Level.FINER,
                 "Stored GlassFishCloudInstance({0}, {1}, {2}, <password>, {4})",
                 new Object[]{name, account, userName, cloudEntity != null
                     ? cloudEntity.getName() : "null"});
+        storeListeners.fireChange();
     }
 
     /**
@@ -293,7 +535,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
             String cloudName = props.getString(PROPERTY_CLOUD_NAME, null);
             String userPassword;
             if (userName != null) {
-                char[] password = Keyring.read(passwordKey(userName));
+                char[] password = Keyring.read(passwordKey(name, userName));
                 userPassword = password != null ? new String(password) : null;
             } else {
                 userPassword = null;
@@ -305,13 +547,26 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
                     "Loaded GlassFishCloudInstance({0}, {1}, {2}, <password>, {4})",
                     new Object[]{name, account, userName, cloudEntity != null
                     ? cloudEntity.getName() : "null"});
-            return new GlassFishAccountInstance(name, account, userName,
+            GlassFishAccountInstance instance 
+                    = new GlassFishAccountInstance(name, account, userName,
                     userPassword, cloudEntity);
+            instance.loadListeners.fireChange();
+            return instance;
         } else {
             LOG.log(Level.WARNING,
                     "Stored GlassFishCloudInstance name is null, skipping");
             return null;
         }
+    }
+
+    /**
+     * Remove content of GlassFish Cloud instance object from given properties.
+     * <P/>
+     * @param props Set of properties to remove.
+     */
+    void remove(InstanceProperties props) {
+        props.remove();
+        removeListeners.fireChange();
     }
 
     /**

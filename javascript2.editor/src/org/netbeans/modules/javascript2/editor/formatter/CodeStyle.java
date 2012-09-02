@@ -82,10 +82,18 @@ public final class CodeStyle {
     }
     
     public static CodeStyle get(FormatContext context) {
-        if (context.isEmbedded()) {
-            return new CodeStyle(CodeStylePreferences.get(context.getDocument(), JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
+        return get(context.getDocument(), context.isEmbedded());
+    }
+
+    public static CodeStyle get(IndentContext context) {
+        return get(context.getDocument(), context.isEmbedded());
+    }
+
+    private static CodeStyle get(Document doc, boolean embedded) {
+        if (embedded) {
+            return new CodeStyle(CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
         }
-        return new CodeStyle(CodeStylePreferences.get(context.getDocument()).getPreferences());
+        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
 
     // General tabs and indents ------------------------------------------------
@@ -377,6 +385,9 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeFinallyLeftBrace, getDefaultAsBoolean(spaceBeforeFinallyLeftBrace));
     }
 
+    public boolean spaceBeforeWithLeftBrace() {
+        return preferences.getBoolean(spaceBeforeWithLeftBrace, getDefaultAsBoolean(spaceBeforeWithLeftBrace));
+    }
 //
 //    public boolean spaceBeforeSynchronizedLeftBrace() {
 //        return preferences.getBoolean(spaceBeforeSynchronizedLeftBrace, getDefaultAsBoolean(spaceBeforeSynchronizedLeftBrace));
@@ -537,13 +548,13 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
 
-    public WrapStyle wrapExtendsImplementsKeyword() {
-        String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
+    public WrapStyle wrapStatement() {
+        String wrap = preferences.get(wrapStatement, getDefaultAsString(wrapStatement));
         return WrapStyle.valueOf(wrap);
     }
 
-    public WrapStyle wrapExtendsImplementsList() {
-        String wrap = preferences.get(wrapExtendsImplementsList, getDefaultAsString(wrapExtendsImplementsList));
+    public WrapStyle wrapVariables() {
+        String wrap = preferences.get(wrapVariables, getDefaultAsString(wrapVariables));
         return WrapStyle.valueOf(wrap);
     }
 
@@ -560,6 +571,10 @@ public final class CodeStyle {
     public WrapStyle wrapChainedMethodCalls() {
         String wrap = preferences.get(wrapChainedMethodCalls, getDefaultAsString(wrapChainedMethodCalls));
         return WrapStyle.valueOf(wrap);
+    }
+
+    public boolean wrapAfterDotInChainedMethodCalls() {
+        return preferences.getBoolean(wrapAfterDotInChainedMethodCalls, getDefaultAsBoolean(wrapAfterDotInChainedMethodCalls));
     }
 
     public WrapStyle wrapArrayInit() {
@@ -592,11 +607,20 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public WrapStyle wrapWithStatement() {
+        String wrap = preferences.get(wrapWithStatement, getDefaultAsString(wrapWithStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapBinaryOps() {
         String wrap = preferences.get(wrapBinaryOps, getDefaultAsString(wrapBinaryOps));
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterBinaryOps() {
+        return preferences.getBoolean(wrapAfterBinaryOps, getDefaultAsBoolean(wrapAfterBinaryOps));
+    }
+    
     public WrapStyle wrapTernaryOps() {
         String wrap = preferences.get(wrapTernaryOps, getDefaultAsString(wrapTernaryOps));
         return WrapStyle.valueOf(wrap);
@@ -607,12 +631,21 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterTernaryOps() {
+        return preferences.getBoolean(wrapAfterTernaryOps, getDefaultAsBoolean(wrapAfterTernaryOps));
+    }
+
     public boolean wrapBlockBrace() {
         return preferences.getBoolean(wrapBlockBraces, getDefaultAsBoolean(wrapBlockBraces));
     }
 
     public boolean wrapStatementsOnTheSameLine() {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
+    }
+
+    public WrapStyle wrapProperties() {
+        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+        return WrapStyle.valueOf(wrap);
     }
 
     // Uses

@@ -50,9 +50,13 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -102,9 +106,12 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    if (function.isDeclared()) {
+                        collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    }
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && child.isDeclared()) {
+            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
+                    && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.getModifiers().contains(Modifier.PUBLIC)
@@ -156,9 +163,14 @@ public class JsStructureScanner implements StructureScanner {
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
                 if (tokenId == JsTokenId.DOC_COMMENT) {
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                    // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
+                    int startOffset = ts.offset() + 3;
+                    int endOffset = ts.offset() + ts.token().length() - 2;
+                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(startOffset, endOffset));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                    int startOffset = ts.offset() + 2;
+                    int endOffset = ts.offset() + ts.token().length() - 2;
+                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(startOffset, endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -217,7 +229,7 @@ public class JsStructureScanner implements StructureScanner {
         
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
-        final private JsParserResult parserResult;
+        final protected JsParserResult parserResult;
         
         public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, JsParserResult parserResult) {
             this.modelElement = elementHandle;
@@ -237,7 +249,7 @@ public class JsStructureScanner implements StructureScanner {
                 JsStructureItem item = (JsStructureItem) obj;
                 if (item.getName() != null && this.getName() != null) {
                     thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange(null) == modelElement.getOffsetRange(null);
+                            && item.modelElement.getOffsetRange() == modelElement.getOffsetRange();
                 }
             }
             return thesame;
@@ -295,7 +307,7 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange(null).getEnd();
+            return modelElement.getOffsetRange().getEnd();
         }
 
         @Override
@@ -308,7 +320,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            if (!types.isEmpty() && !types.contains(Type.UNRESOLVED)) {
+            if (!types.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;
@@ -424,6 +436,42 @@ public class JsStructureScanner implements StructureScanner {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
             Collection<? extends Type> types = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
+            Model model = parserResult.getModel();
+            FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+            JsIndex jsIndex = JsIndex.get(fo);
+            int cycle = 0;
+            boolean resolvedAll = false;
+            while(!resolvedAll && cycle < 10) {
+                cycle++;
+                resolvedAll = true;
+                Collection<Type> resolved = new ArrayList<Type>();
+                for (Type typeUsage : types) {
+                    if(!((TypeUsageImpl)typeUsage).isResolved()) {
+                        resolvedAll = false;
+                        String sexp = typeUsage.getType();
+                        if (sexp.startsWith("@exp;")) {
+                            sexp = sexp.substring(5);
+                            List<String> nExp = new ArrayList<String>();
+                            String[] split = sexp.split("@call;");
+                            for (int i = split.length - 1; i > -1; i--) {
+                                nExp.add(split[i]);
+                                if (i == 0) {
+                                    nExp.add("@pro");
+                                } else {
+                                    nExp.add("@mtd");
+                                }
+                            }
+                            resolved.addAll(ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, cycle));
+                        } else {
+                            resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                        }
+                    } else {
+                        resolved.add((TypeUsage)typeUsage);
+                    }
+                }
+                types.clear();
+                types = new ArrayList<Type>(resolved);
+            }
             appendTypeInfo(formatter, types);
             return formatter.getText();
         }

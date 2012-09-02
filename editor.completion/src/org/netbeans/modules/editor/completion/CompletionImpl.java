@@ -968,7 +968,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
         final boolean noSuggestions = sortedResultItems.size() == 0;
         if (noSuggestions) {
-            if (hasAdditionalItems && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+            if (hasAdditionalItems && qType == CompletionProvider.COMPLETION_QUERY_TYPE && !this.refreshedQuery) {
                 showCompletion(this.explicitQuery, this.refreshedQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
                 return;
             }

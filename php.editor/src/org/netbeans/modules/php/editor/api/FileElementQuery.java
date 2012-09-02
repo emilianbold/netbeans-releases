@@ -129,7 +129,7 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
         } else if (node instanceof InterfaceDeclaration) {
             retval = create(namespace, (InterfaceDeclaration) node);
         } else if (node instanceof TraitDeclaration) {
-            retval = create(namespace, (InterfaceDeclaration) node);
+            retval = create(namespace, (TraitDeclaration) node);
         }
         addElement(retval);
         return retval;

@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -153,8 +154,8 @@ public abstract class RestSupport {
     public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
     
     private AntProjectHelper helper;
-    protected RestServicesModel restServicesModel;
-    protected RestApplicationModel restApplicationModel;
+    private AtomicReference<RestServicesModel> restServicesModel;
+    private AtomicReference<RestApplicationModel> restApplicationModel;
     private List<PropertyChangeListener> modelListeners = new ArrayList<PropertyChangeListener>();
     protected final Project project;
 
@@ -164,6 +165,8 @@ public abstract class RestSupport {
             throw new IllegalArgumentException("Null project");
         }
         this.project = project;
+        restServicesModel = new AtomicReference<RestServicesModel>();
+        restApplicationModel = new AtomicReference<RestApplicationModel>();
     }
    
     /** 
@@ -246,21 +249,23 @@ public abstract class RestSupport {
 
     public void addModelListener(PropertyChangeListener listener) {
         modelListeners.add(listener);
-        if (restServicesModel != null) {
-            restServicesModel.addPropertyChangeListener(listener);
+        RestServicesModel model = restServicesModel.get();
+        if (model != null) {
+            model.addPropertyChangeListener(listener);
         }
     }
 
     public void removeModelListener(PropertyChangeListener listener) {
         modelListeners.remove(listener);
-        if (restServicesModel != null) {
-            restServicesModel.removePropertyChangeListener(listener);
+        RestServicesModel model = restServicesModel.get();
+        if (model != null) {
+            model.removePropertyChangeListener(listener);
         }
     }
     
     public RestServicesModel getRestServicesModel() {
         FileObject sourceRoot = findSourceRoot();
-        if (restServicesModel == null && sourceRoot != null) {
+        if (restServicesModel.get() == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             if (cpProvider != null) {
                 ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
@@ -272,19 +277,22 @@ public abstract class RestSupport {
                             extendWithJsr311Api(compileCP),
                             sourceCP,
                             null);
-                    restServicesModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit, project);
-                    for (PropertyChangeListener pcl : modelListeners) {
-                        restServicesModel.addPropertyChangeListener(pcl);
+                    RestServicesModel model = RestServicesMetadataModelFactory.
+                            createMetadataModel(metadataUnit, project);
+                    if (restServicesModel.compareAndSet(null, model)) {
+                        for (PropertyChangeListener pcl : modelListeners) {
+                            model.addPropertyChangeListener(pcl);
+                        }
                     }
                 }
             }
         }
-        return restServicesModel;
+        return restServicesModel.get();
     }
 
     public RestApplicationModel getRestApplicationsModel() {
         FileObject sourceRoot = findSourceRoot();
-        if (restApplicationModel == null && sourceRoot != null) {
+        if (restApplicationModel.get() == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             /*
              * Fix for BZ#158250 -  NullPointerException: The classPath parameter cannot be null 
@@ -300,22 +308,25 @@ public abstract class RestSupport {
                     getClassPath(getProject(), ClassPath.SOURCE),
                     null
                     );
-            restApplicationModel =
-                    RestServicesMetadataModelFactory.createApplicationMetadataModel(metadataUnit, project);
+            RestApplicationModel model =
+                    RestServicesMetadataModelFactory.
+                    createApplicationMetadataModel(metadataUnit, project);
+            restApplicationModel.compareAndSet(null, model);
         }
-        return restApplicationModel;
+        return restApplicationModel.get();
     }
 
     protected void refreshRestServicesMetadataModel() {
-        if (restServicesModel != null) {
+        RestServicesModel model = restServicesModel.get();
+        if (model != null) {
             for (PropertyChangeListener pcl : modelListeners) {
-                restServicesModel.removePropertyChangeListener(pcl);
+                model.removePropertyChangeListener(pcl);
             }
-            restServicesModel = null;
+            restServicesModel.compareAndSet( model, null);
         }
 
         try {
-            RestServicesModel model = getRestServicesModel();
+            model = getRestServicesModel();
             if (model != null) {
                 model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
 
@@ -585,29 +596,9 @@ public abstract class RestSupport {
      * Should be overridden by sub-classes
      */
     public boolean hasSwdpLibrary() {
-        return ! needsSwdpLibrary(getProject());
+        return hasResource(REST_SERVLET_ADAPTOR_CLASS.replace('.', '/')+".class");  // NOI18N
     }
 
-    /**
-     * A quick check if swdp is already part of classpath.
-     */
-    private static boolean needsSwdpLibrary(Project restEnableProject) {
-        // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(restEnableProject).
-                getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        //this package name will change when open source, should just rely on subclass to use file names
-        FileObject restClass = classPath.findResource(REST_SERVLET_ADAPTOR_CLASS);  
-        if (restClass != null) {
-            return false;
-        }
-        return true;
-    }
-    
     public abstract boolean isRestSupportOn();
 
     public void setProjectProperty(String name, String value) {
@@ -707,19 +698,7 @@ public abstract class RestSupport {
      * Check to see if there is JTA support.
      */
     public boolean hasJTASupport() {
-        // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        //this package name will change when open source, should just rely on subclass to use file names
-        FileObject utxClass = classPath.findResource("javax/transaction/UserTransaction.class"); // NOI18N
-        if (utxClass != null) {
-            return true;
-        }
-        return false;
+        return hasResource("javax/transaction/UserTransaction.class");  // NOI18N
     }
     
     /**
@@ -727,21 +706,9 @@ public abstract class RestSupport {
      * 
      */
     public boolean hasSpringSupport() {
-          // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        //this package name will change when open source, should just rely on subclass to use file names
-        FileObject utxClass = classPath.findResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
-        if (utxClass != null) {
-            return true;
-        }
-        return false;
+        return hasResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
     }
-
+    
     public String getServerType() {
         return getProjectProperty(J2EE_SERVER_TYPE);
     }
@@ -840,6 +807,20 @@ public abstract class RestSupport {
                 (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
     }
 
+    protected boolean hasResource(String resource ){
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        FileObject resourceFile = classPath.findResource(resource); 
+        if (resourceFile != null) {
+            return true;
+        }
+        return false;
+    }
 
     public abstract void configure(String... packages) throws IOException;
 

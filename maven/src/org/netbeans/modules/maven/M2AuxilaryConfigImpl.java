@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven;
 
-import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,8 +49,6 @@ import java.io.StringReader;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,11 +56,8 @@ import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -200,7 +194,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                             ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                                     TXT_Problem_Broken_Config(),
                                     DESC_Problem_Broken_Config(ex.getMessage()),
-                                    new OpenConfigAction(config));
+                                    ProblemReporterImpl.createOpenFileAction(config));
                             rep.setId(BROKEN_NBCONFIG);
                             reporter.addReport(rep);
                         }
@@ -369,30 +363,6 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
         }
         return true;
-    }
-
-    static class OpenConfigAction extends AbstractAction {
-
-        private FileObject fo;
-
-        @Messages("TXT_OPEN_FILE=Open File")
-        OpenConfigAction(FileObject file) {
-            putValue(Action.NAME, TXT_OPEN_FILE());
-            fo = file;
-        }
-
-
-        public @Override void actionPerformed(ActionEvent e) {
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                    edit.edit();
-                } catch (DataObjectNotFoundException ex) {
-                    LOG.log(Level.FINEST, "no dataobject for " + fo, ex);
-                }
-            }
-        }
     }
 
     private Document createNewSharedDocument() throws DOMException {

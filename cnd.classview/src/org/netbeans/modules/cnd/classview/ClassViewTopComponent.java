@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
@@ -160,7 +161,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         }
         view.startup();
         addRemoveModelListeners(true);
-        if (CsmModelAccessor.getModel().projects().isEmpty()) {
+        if( NativeProjectRegistry.getDefault().getOpenProjects().isEmpty() ) {
             removeAll();
             add(createEmptyContent(), BorderLayout.CENTER);
         } else {

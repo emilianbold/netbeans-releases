@@ -90,6 +90,14 @@ public interface ModeContainer {
 
     public void cancelRequestAttention(TopComponent tc);
 
+    /**
+     * 
+     * @param tc
+     * @param highlight 
+     * @since 2.54
+     */
+    public void setAttentionHighlight(TopComponent tc, boolean highlight);
+
     public void makeBusy(TopComponent tc, boolean busy);
 }
 

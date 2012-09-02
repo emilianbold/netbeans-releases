@@ -106,6 +106,17 @@ public class JsParserTest extends JsTestBase {
             JsParser.Sanitize.MISSING_CURLY);
     }
     
+    public void testSimpleSemicolon1() throws Exception {
+        parse("\n"
+            + "label:\n"
+            + "\n",
+            "\n"
+            + "label:\n"
+            + "\n;",
+            1,
+            JsParser.Sanitize.MISSING_SEMICOLON);
+    }
+
     public void testSimpleCurrentError1() throws Exception {
         parse("var global1 = new Foo.Bar();\n"
             + "var global2 = new Array();\n"

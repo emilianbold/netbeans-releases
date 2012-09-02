@@ -215,26 +215,28 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         for(Integer position : assignments.keySet()) {
             if (closeOffset < position && position <= offset) {
                 closeOffset = position;
-                result = assignments.get(position);
+                result = new ArrayList(assignments.get(position));
             }
         }
-        if (!result.isEmpty()) {
+        if (result.isEmpty()) {
+//            Collection<TypeUsage> resolved = new HashSet();
+//            for(TypeUsage item : result) {
+//                TypeUsageImpl type = (TypeUsageImpl)item;
+//                if (type.isResolved()) {
+//                    resolved.add(type);
+//                } else {
+//                    JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
+//                    if(jsObject != null) {
+//                        resolved.addAll(resolveAssignments(jsObject, offset));
+//                    }
+//                }
+//            }
+//            if(resolved.isEmpty()) {
+//                // keep somthink in the assignments. 
+//                resolved.add(new TypeUsageImpl("Object", offset, true));
+//            }
             Collection<TypeUsage> resolved = new HashSet();
-            for(TypeUsage item : result) {
-                TypeUsageImpl type = (TypeUsageImpl)item;
-                if (type.isResolved()) {
-                    resolved.add(type);
-                } else {
-                    JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
-                    if(jsObject != null) {
-                        resolved.addAll(resolveAssignments(jsObject, offset));
-                    }
-                }
-            }
-            if(resolved.isEmpty()) {
-                // keep somthink in the assignments. 
-                resolved.add(new TypeUsageImpl("Object", offset, true));
-            }
+            //resolved.add(new TypeUsageImpl("Object", offset, true));
             result = resolved;
         }
         
@@ -242,6 +244,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return result;
     }
 
+    public int getCountOfAssignments() {
+        return assignments.size();
+    }
+    
     @Override
     public Collection<? extends TypeUsage> getAssignments() {
         List<TypeUsage> values;
@@ -339,21 +345,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             unresolved.addAll(resolved);
         }
         
-        
-        if(!assignments.isEmpty()) {
-            int start = -1;
-            int end = -1;
-            for(Integer offset : assignments.keySet()) {
-                
-                end = offset.intValue();
-            }
-            for(JsObject property: getProperties().values()) {
-                if (!property.isDeclared()) {
-                    
-                }
-            }
-            
-        }
         if (parent != null && !isAnonymous() && assignments.isEmpty()) {
             // try to recount occurrences
             JsObject global = ModelUtils.getGlobalObject(parent);
@@ -364,7 +355,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 obAssignment.addOccurrence(getDeclarationName().getOffsetRange());
             }
             
-            for(Occurrence occurrence: occurrences) {
+            for(Occurrence occurrence: new ArrayList<Occurrence>(occurrences)) {
                 obAssignment = findRightTypeAssignment(occurrence.getOffsetRange().getStart(), global);
                 if(obAssignment != null) {
                     obAssignment.addOccurrence(occurrence.getOffsetRange());

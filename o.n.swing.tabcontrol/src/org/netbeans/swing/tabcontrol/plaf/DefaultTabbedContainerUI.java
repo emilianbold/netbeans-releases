@@ -700,6 +700,11 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     protected void cancelRequestAttention (int tab) {
         tabDisplayer.cancelRequestAttention(tab);
     }
+
+    @Override
+    protected void setAttentionHighlight (int tab, boolean highlight) {
+        tabDisplayer.setAttentionHighlight(tab, highlight);
+    }
     
     public void setShowCloseButton (boolean val) {
         tabDisplayer.setShowCloseButton(val);

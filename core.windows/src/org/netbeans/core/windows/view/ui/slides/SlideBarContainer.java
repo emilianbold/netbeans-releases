@@ -108,6 +108,11 @@ public final class SlideBarContainer extends AbstractModeContainer {
     }
 
     @Override
+    public void setAttentionHighlight( TopComponent tc, boolean highlight ) {
+        tabbedHandler.setAttentionHighlight (tc, highlight);
+    }
+
+    @Override
     public void makeBusy(TopComponent tc, boolean busy) {
         tabbedHandler.makeBusy( tc, busy );
     }

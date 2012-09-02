@@ -945,6 +945,21 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         );
     }
 
+    /**
+     * Permanently highlights this TopComponent's tab until user activates it.
+     * @param highlight True to highlight the tab, false to switch the highlight off.
+     * @since 6.58
+     * @see #requestAttention(boolean)
+     */
+    public final void setAttentionHighlight( final boolean highlight ) {
+        Mutex.EVENT.readAccess( new Runnable() {
+            @Override
+            public void run() {
+                WindowManager.getDefault().topComponentAttentionHighlight( TopComponent.this, highlight );
+            }
+        });
+    }
+
     /** Set the name of this top component.
     * The default implementation just notifies the window manager.
     * @param name the new display name

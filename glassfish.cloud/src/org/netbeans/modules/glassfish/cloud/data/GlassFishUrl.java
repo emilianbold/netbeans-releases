@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.enterprise.deploy.spi.Target;
 import org.glassfish.tools.ide.data.DataException;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
 
@@ -54,8 +55,11 @@ import org.glassfish.tools.ide.utils.StringPrefixTree;
  * GlassFish cloud URL syntax:
  * <ul>
  * <li>URL :: &lt;identifier&gt; &lt;separator&gt; &lt;name&gt;</li>
- * <li>&lt;identifier&gt; :: {@see GlassFishCloudInstance.URL_PREFIX}
- * | {@see GlassFishAccountInstance.URL_PREFIX}</li>
+ * <li>&lt;identifier&gt; :: {@see GlassFishCloudInstance#URL_PREFIX}
+ * | {@see GlassFishAccountInstance#URL_PREFIX}</li>
+ * <li>&lt;separator&gt; :: ':'</li>
+ * <li>&lt;name&gt; :: GlassFish server name (key attribute to identify
+ * GlassFish instance in IDE)</li>
  * </ul></p>
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
@@ -76,7 +80,7 @@ public class GlassFishUrl {
      * <code>J2EE::DeploymentPlugins::GlassFish Local Server::Factory.instance
      * </code> regular expression in <code>layer.xml</code> file.
      * Actually <code>^gfc[r|l]:.*$</code> describes all strings used for local
-     * GlassFish server {@see LOCAL_STR} and GlassFish cloud {@see CLOUD_STR}.
+     * GlassFish server {@see #LOCAL_STR} and GlassFish cloud {@see #CLOUD_STR}.
      */
     public static enum Id {
         ////////////////////////////////////////////////////////////////////////
@@ -354,6 +358,35 @@ public class GlassFishUrl {
      */
     public String getName() {
         return name;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Compares this GlassFish cloud URL to the specified object.
+     * <p/>
+     * The result is <code>true</code> if and only if the argument is not
+     * <code>null</code> and is a <code>GlassFishUrl</code> object that
+     * represents the same type ID and name <code>String</code>.
+     * @param urlObject  The object to compare this <code>GlassFishUrl</code>
+     *                   object against.
+     * @return <code>true</code> if the given object represents
+     *         a <code>GlassFishUrl</code> equivalent to this string,
+     *         <code>false</code> otherwise.
+     */
+    public boolean equals(Object urlObject) {
+        if (this == urlObject) {
+            return true;
+        }
+        if (urlObject instanceof GlassFishUrl) {
+            GlassFishUrl url = (GlassFishUrl) urlObject;
+            return url != null
+                    ? this.type == url.type && this.name.equals(url.name)
+                    : false;
+        }
+        return false;
     }
 
 }

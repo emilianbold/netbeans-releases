@@ -29,8 +29,8 @@
             
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value=""/>
-    <!-- /java/re/glassfish/v3.1.2/promoted/p02/b05/bundles/ -->
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/v3.1.2/promoted"/>
+    <!-- /java/re/glassfish/3.1.2.2/promoted/b05/bundles/ -->
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.1.2.2/promoted"/>
     
     <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
     
@@ -55,8 +55,8 @@
         <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}.zip"/>
         <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}-ml.zip"/>
     -->
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/p02/b05/bundles/glassfish-3.1.2-2-b05.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/p02/b05/bundles/glassfish-3.1.2-2-b05-ml.zip"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/b05/bundles/glassfish-3.1.2-2-b05.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/b05/bundles/glassfish-3.1.2-2-b05-ml.zip"/>
     <property name="glassfish.v3.subdir"       value="glassfish3"/>
     
     <!-- Java ME SDK 3.0 Properties-->
@@ -64,17 +64,19 @@
     <property name="javame_sdk30_bits_update_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac-update.zip"/>
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
+    <!-- Java FX Runtime -->
+    <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.0/promoted/fcs/b21/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <!-- JDK Properties-->    
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
-    <property name="mpkg.version_jdk" value=" 7 Update 06"/> 
-    <property name="jdk.bundle.files.prefix" value="jdk-7u6"/>
+    <property name="mpkg.version_jdk" value=" 7 Update 07"/> 
+    <property name="jdk.bundle.files.prefix" value="jdk-7u7"/>
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
-    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_06.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u6/promoted/all/b20/bundles/macosx-x64/jdk-7u6-ea-macosx-x64.dmg"/>
-    <property name="jdk.package.name" value="JDK\ 7\ Update\ 06"/>
+    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_07.jdk/Contents/Home"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u7/promoted/fcs/b10/bundles/macosx-x64/jdk-7u7-macosx-x64.dmg"/>
+    <property name="jdk.package.name" value="JDK\ 7\ Update\ 07"/>
 
 </project>

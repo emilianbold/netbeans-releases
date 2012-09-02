@@ -62,6 +62,7 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -82,6 +83,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -144,7 +146,11 @@ public class GoToPanel extends javax.swing.JPanel {
         
         // matchesList.setBackground( bgColorBrighter );
         // matchesScrollPane1.setBackground( bgColorBrighter );
-        matchesList.setCellRenderer( contentProvider.getListCellRenderer( matchesList ) );
+        matchesList.setCellRenderer(
+                contentProvider.getListCellRenderer(
+                matchesList,
+                nameField.getDocument(),
+                caseSensitive.getModel()));
         contentProvider.setListModel( this, null );
         
         PatternListener pl = new PatternListener( this );
@@ -567,7 +573,7 @@ public class GoToPanel extends javax.swing.JPanel {
     
     public static interface ContentProvider {
         
-        public ListCellRenderer getListCellRenderer( JList list );
+        public ListCellRenderer getListCellRenderer(JList list, Document nameDocument, ButtonModel caseSensitive);
         
         public void setListModel( GoToPanel panel, String text  );
         

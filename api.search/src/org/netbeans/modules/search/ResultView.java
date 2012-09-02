@@ -526,11 +526,13 @@ public final class ResultView extends TopComponent {
         } else if (singlePanel.getComponents().length == 1
                 && singlePanel.getComponent(0) == toReuse) {
             removePanel(toReuse);
+            clearReusableTab();
             return 0;
         } else if (tabs.getTabCount() > 0) {
             int index = tabs.indexOfComponent(toReuse);
             if (index >= 0) {
                 removePanel(toReuse);
+                clearReusableTab();
                 return index;
             }
         }

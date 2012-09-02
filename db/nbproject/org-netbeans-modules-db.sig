@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.46.0
+#Version 1.48.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -223,8 +223,12 @@ fld protected final static java.lang.String FKREFERRINGSCHEMA = "ReferringFKSche
 fld protected final static java.lang.String FKREFERRINGSCHEMADESC = "ReferringFKSchema"
 fld protected final static java.lang.String FKREFERRINGTABLE = "ReferringFKTable"
 fld protected final static java.lang.String FKREFERRINGTABLEDESC = "ReferringFKTable"
+fld protected final static java.lang.String INDEXPART = "IndexPart"
+fld protected final static java.lang.String INDEXPARTDESC = "IndexPartDescription"
 fld protected final static java.lang.String NULL = "Null"
 fld protected final static java.lang.String NULLDESC = "NullDescription"
+fld protected final static java.lang.String PKPART = "PKPart"
+fld protected final static java.lang.String PKPARTDESC = "PKPartDescription"
 fld protected final static java.lang.String POSITION = "Position"
 fld protected final static java.lang.String POSITIONDESC = "PositionDescription"
 fld protected final static java.lang.String PROP_DEFCATALOG = "DefaultCatalog"
@@ -263,12 +267,13 @@ meth public java.util.Collection<? extends org.openide.nodes.Node> getChildNodes
 meth public java.util.Collection<org.openide.nodes.Node$Property> getProperties()
 meth public javax.swing.Action[] getActions(boolean)
 meth public org.netbeans.modules.db.explorer.node.NodeRegistry getNodeRegistry()
+meth public org.openide.nodes.Node$PropertySet[] getPropertySets()
 meth public void destroy()
 meth public void refresh()
 meth public void setPropertyValue(org.openide.nodes.Node$Property,java.lang.Object)
 meth public void update()
 supr org.openide.nodes.AbstractNode
-hfds actionRegistry,childNodeFactory,dataLookup,nodeProvider,nodeRegistry,propMap,props
+hfds actionRegistry,childNodeFactory,dataLookup,firePropChangeAfterRefresh,nodeProvider,nodeRegistry,propMap,props,refreshing
 
 CLSS public org.netbeans.api.db.explorer.node.ChildNodeFactory
 cons public init(org.openide.util.Lookup)
@@ -474,12 +479,15 @@ hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBa
 hcls LookupEventList
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()

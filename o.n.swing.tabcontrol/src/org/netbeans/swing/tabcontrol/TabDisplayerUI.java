@@ -273,6 +273,14 @@ public abstract class TabDisplayerUI extends ComponentUI {
     protected abstract void cancelRequestAttention (int tab);
 
     /**
+     * Turn tab highlight on/off
+     * @param tab
+     * @since 1.38
+     */
+    protected void setAttentionHighlight (int tab, boolean highlight) {
+    }
+
+    /**
      * @since 1.9
      * @return An icon for various buttons displayed in tab control (close/pin/scroll left/right etc), see TabControlButton class.
      */

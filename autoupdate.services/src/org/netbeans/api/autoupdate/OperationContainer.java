@@ -138,8 +138,9 @@ public final class OperationContainer<Support> {
      * @return newly constructed instance of <code>OperationContainer</code> for update operation
      */    
     public static OperationContainer<OperationSupport> createForDirectUpdate() {
+        OperationContainerImpl<OperationSupport> implContainerForDirectUpdate = OperationContainerImpl.createForDirectUpdate();
         OperationContainer<OperationSupport> retval =
-                new OperationContainer<OperationSupport>(OperationContainerImpl.createForDirectUpdate(), new OperationSupport());
+                new OperationContainer<OperationSupport>(implContainerForDirectUpdate, new OperationSupport());
         retval.getSupportInner ().setContainer(retval);
         return retval;
     }    

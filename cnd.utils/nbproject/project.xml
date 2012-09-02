@@ -14,15 +14,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.utilities</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.34</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -67,6 +58,10 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.insane</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -94,6 +89,10 @@
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -119,6 +118,7 @@
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
