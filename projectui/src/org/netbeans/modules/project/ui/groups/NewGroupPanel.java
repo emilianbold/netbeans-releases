@@ -104,7 +104,6 @@ public class NewGroupPanel extends JPanel {
                 nameConstraintsWarnings();
             }
         });
-        updateNameField();
     }
     
     private void nameConstraintsWarnings() {
@@ -504,12 +503,14 @@ public class NewGroupPanel extends JPanel {
     private NotificationLineSupport notificationLineSupport;
     void setNotificationLineSupport(NotificationLineSupport notificationLineSupport) {
         this.notificationLineSupport = notificationLineSupport;
+        updateNameField();
     }
     
     @Messages({"NewGroupPanel.open_project_warning=The list of projects currently open will be lost, unless you make a free group for them first.",
                "NewGroupPanel.too_long_warning=Group name is too long.",
                "NewGroupPanel.exists_warning=Name equal to existing group."})
     private void updateNotifications() { // #192899
+        assert notificationLineSupport != null;
         notificationLineSupport.clearMessages();
         if (adHocKindRadio.isSelected() && useOpenCheckbox.isSelected() || OpenProjects.getDefault().getOpenProjects().length == 0) {
         } else {

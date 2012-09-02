@@ -92,6 +92,9 @@ public class ShelveChangesAction extends ContextAction {
     
     @Override
     public boolean enable(Node[] nodes) {
+        if (!Subversion.getInstance().getStatusCache().ready()) {
+            return false;
+        }
         Context ctx = getCachedContext(nodes);
         if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus, true)) {
             return false;

@@ -82,6 +82,7 @@ import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.Document;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.output2.Controller.ControllerOutputEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
@@ -99,7 +100,7 @@ import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 import static org.netbeans.core.output2.OutputTab.ACTION.*;
-import org.openide.windows.IOProvider;
+import org.netbeans.core.output2.ui.OutputKeymapManager;
 
 
 /**
@@ -716,6 +717,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private final Map<ACTION, TabAction> actions = new EnumMap<ACTION, TabAction>(ACTION.class);;
 
     private void createActions() {
+        KeyStrokeUtils.refreshActionCache();
         for (ACTION a : ACTION.values()) {
             TabAction action;
             switch(a) {
@@ -782,10 +784,22 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         TabAction(ACTION action, String bundleKey) {
             if (bundleKey != null) {
                 String name = NbBundle.getMessage(OutputTab.class, bundleKey);
-                KeyStroke accelerator = getAcceleratorFor(bundleKey);
+                List<KeyStroke[]> accels = getAcceleratorsFor(action);
                 this.action = action;
                 putValue(NAME, name);
-                putValue(ACCELERATOR_KEY, accelerator);
+                if (accels != null && accels.size() > 0) {
+                    List<KeyStroke> l = new ArrayList<KeyStroke>(accels.size());
+                    for (KeyStroke[] ks : accels) {
+                        if (ks.length == 1) { // ignore multi-key accelerators
+                            l.add(ks[0]);
+                        }
+                    }
+                    if (l.size() > 0) {
+                        putValue(ACCELERATORS_KEY,
+                                l.toArray(new KeyStroke[l.size()]));
+                        putValue(ACCELERATOR_KEY, l.get(0));
+                    }
+                }
             }
         }
 
@@ -814,15 +828,62 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
          * Get a keyboard accelerator from the resource bundle, with special handling
          * for the mac keyboard layout.
          *
-         * @param name The bundle key prefix
+         * @param action Action to get accelerator for.
          * @return A keystroke
          */
-        private KeyStroke getAcceleratorFor(String name) {
-            String key = name + ".accel"; //NOI18N
-            if (Utilities.isMac()) {
-                key += ".mac"; //NOI18N
+        private List<KeyStroke[]> getAcceleratorsFor(ACTION action) {
+            switch (action) {
+                case COPY:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "copy-to-clipboard", null);                 //NOI18N
+                case PASTE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "paste-from-clipboard", null);              //NOI18N
+                case SAVEAS:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.SAVE_AS_ACTION_ID, null);
+                case CLOSE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.CLOSE_ACTION_ID, null);
+                case NEXT_ERROR:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "next-error", null);                        //NOI18N
+                case PREV_ERROR:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "previous-error", null);                    //NOI18N
+                case SELECT_ALL:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "select-all", null);                        //NOI18N
+                case FIND:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "incremental-search-forward", null);        //NOI18N
+                case FIND_NEXT:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "find-next", null);                         //NOI18N
+                case FIND_PREVIOUS:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "find-previous", null);                     //NOI18N
+                case FILTER:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.FILTER_ACTION_ID, null);
+                case LARGER_FONT:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.LARGER_FONT_ACTION_ID, null);
+                case SMALLER_FONT:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.SMALLER_FONT_ACTION_ID, null);
+                case FONT_TYPE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.FONT_TYPE_ACTION_ID, null);
+                case CLEAR:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.CLEAR_ACTION_ID, null);
+                case WRAP:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.WRAP_ACTION_ID, null);
+                default:
+                    return null;
             }
-            return Utilities.stringToKey(NbBundle.getMessage(OutputTab.class, key));
         }
 
         public ACTION getAction() {

@@ -46,6 +46,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
@@ -58,8 +59,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,13 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({"ERR_NotClass=Selected element is not a top-level class or interface.",
     "# {0} - The file not of java type.",
     "ERR_NotJava=Selected element is not defined in a java file. {0}",
-    "ERR_CannotMovePublicIntoSamePackage=Cannot move public class to the same package."})
+    "ERR_CannotMovePublicIntoSamePackage=Cannot move public class to the same package.",
+    "ERR_NoTargetFound=Cannot find the target to move to.",
+    "# {0} - Class name.",
+    "ERR_ClassToMoveClashes=Class \"{0}\" already exists in the target package.",
+    "# {0} - Source Class name.",
+    "# {1} - Target Class name.",
+    "ERR_ClassToMoveClashesInner=Type \"{0}\" already exists in the target \"{1}\"."})
 public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     private final MoveRefactoring moveRefactoring;
@@ -128,30 +135,39 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
                     return new Problem(true, NbBundle.getMessage(MoveClassRefactoringPlugin.class, "ERR_NotJava", f));
                 }
                 final URL targetUrl = moveRefactoring.getTarget().lookup(URL.class);
-                String targetPackageName = targetUrl != null? RefactoringUtils.getPackageName(targetUrl) : null;
-                if (targetPackageName == null || !RefactoringUtils.isValidPackageName(targetPackageName)) {
-                    String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
-                    String msg = new MessageFormat(s).format(
-                            new Object[]{targetPackageName});
-                    return new Problem(true, msg);
-                }
-                FileObject targetRoot = RefactoringUtils.getClassPathRoot(targetUrl);
-                FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
+                if (targetUrl != null) {
+                    String targetPackageName = targetUrl != null ? RefactoringUtils.getPackageName(targetUrl) : null;
+                    if (targetPackageName == null || !RefactoringUtils.isValidPackageName(targetPackageName)) {
+                        String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
+                        String msg = new MessageFormat(s).format(
+                                new Object[]{targetPackageName});
+                        return new Problem(true, msg);
+                    }
 
-                if ((targetF != null && !targetF.canWrite())) {
-                    return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_PackageIsReadOnly")).format( // NOI18N
-                            new Object[]{targetPackageName}));
-                }
+                    FileObject targetRoot = RefactoringUtils.getClassPathRoot(targetUrl);
+                    FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
 
-                String fileName = f.getName();
-                if (targetF != null) {
-                    FileObject[] children = targetF.getChildren();
-                    for (int i = 0; i < children.length; i++) {
-                        if (children[i].getName().equals(fileName) && "java".equals(children[i].getExt()) && !children[i].equals(f) && !children[i].isVirtual()) { //NOI18N
-                            return new Problem(true, new MessageFormat(
-                                    NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_ClassToMoveClashes")).format(new Object[]{fileName} // NOI18N
-                                    ));
+                    if ((targetF != null && !targetF.canWrite())) {
+                        return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_PackageIsReadOnly")).format( // NOI18N
+                                new Object[]{targetPackageName}));
+                    }
+
+                    String fileName = f.getName();
+                    if (targetF != null) {
+                        FileObject[] children = targetF.getChildren();
+                        for (int i = 0; i < children.length; i++) {
+                            if (children[i].getName().equals(fileName) && "java".equals(children[i].getExt()) && !children[i].equals(f) && !children[i].isVirtual()) { //NOI18N
+                                return new Problem(true, new MessageFormat(
+                                        NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_ClassToMoveClashes")).format(new Object[]{fileName} // NOI18N
+                                        ));
+                            }
                         }
+                    }
+                } else {
+                    TreePathHandle target = moveRefactoring.getTarget().lookup(TreePathHandle.class);
+                    if(target == null) {
+                        String s = NbBundle.getMessage(MoveClassRefactoringPlugin.class, "ERR_NoTargetFound"); //NOI18N
+                        return new Problem(true, s);
                     }
                 }
             }
@@ -166,14 +182,33 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
         javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
         for (TreePathHandle tph : moveRefactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
             FileObject f = tph.getFileObject();
+            Element resolveElement = tph.resolveElement(javac);
             URL targetUrl = moveRefactoring.getTarget().lookup(URL.class);
-            FileObject targetRoot = RefactoringUtils.getClassPathRoot(targetUrl);
-            String targetPackageName = RefactoringUtils.getPackageName(targetUrl);
-            FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
-            if (f.getParent().equals(targetF)) {
-                Element resolveElement = tph.resolveElement(javac);
-                if(resolveElement.getModifiers().contains(Modifier.PUBLIC)) {
-                    return new Problem(true, NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_CannotMovePublicIntoSamePackage"));
+            if(targetUrl != null) {
+                FileObject targetRoot = RefactoringUtils.getClassPathRoot(targetUrl);
+                String targetPackageName = RefactoringUtils.getPackageName(targetUrl);
+                FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
+                if (f.getParent().equals(targetF)) {
+                    if(resolveElement.getModifiers().contains(Modifier.PUBLIC)) {
+                        return new Problem(true, NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_CannotMovePublicIntoSamePackage"));
+                    }
+                }
+            } else {
+                TreePathHandle target = moveRefactoring.getTarget().lookup(TreePathHandle.class);
+                ElementHandle elementHandle = target.getElementHandle();
+                assert elementHandle != null;
+                TypeElement targetType = (TypeElement) elementHandle.resolve(javac);
+                List<? extends Element> enclosedElements = targetType.getEnclosedElements();
+                for (Element element : enclosedElements) {
+                    switch (element.getKind()) {
+                        case ENUM:
+                        case CLASS:
+                        case ANNOTATION_TYPE:
+                        case INTERFACE:
+                            if(element.getSimpleName().contentEquals(resolveElement.getSimpleName())) {
+                                return new Problem(true, ERR_ClassToMoveClashesInner(element.getSimpleName(), targetType.getSimpleName()));
+                            }
+                    }
                 }
             }
         }
@@ -198,6 +233,10 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
                 ClassIndex.SearchKind.IMPLEMENTORS),
                 EnumSet.of(ClassIndex.SearchScope.SOURCE));
         elementHandles.addAll(handles);
+        TreePathHandle targetHandle = moveRefactoring.getTarget().lookup(TreePathHandle.class);
+        if(targetHandle != null) {
+            set.add(targetHandle.getFileObject());
+        }
         return set;
     }
 
@@ -222,9 +261,18 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles(tph);
         Problem p = checkProjectDeps(a);
         fireProgressListenerStep(a.size());
-        MoveClassTransformer transformer = new MoveClassTransformer(tph.getElementHandle(), moveRefactoring.getTarget().lookup(URL.class));
+        MoveClassTransformer transformer;
+        URL target = moveRefactoring.getTarget().lookup(URL.class);
+        if(target != null) {
+            transformer = new MoveClassTransformer(tph, target);
+        } else {
+            transformer = new MoveClassTransformer(tph, moveRefactoring.getTarget().lookup(TreePathHandle.class).getElementHandle());
+        }
         TransformTask task = new TransformTask(transformer, null);
         Problem prob = createAndAddElements(a, task, elements, moveRefactoring);
+        if(transformer.deleteFile()) {
+            elements.add(moveRefactoring, new DeleteFile(tph.getFileObject(), elements));
+        }
         fireProgressListenerStop();
         return prob != null ? prob : JavaPluginUtils.chainProblems(p, transformer.getProblem());
     }

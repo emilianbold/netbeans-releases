@@ -54,11 +54,11 @@ made subject to such option by the copyright holder.
       <api name="awt"/>
       <summary>Minor API extensions to allow better integration of embedded browsers.</summary>
       <version major="7" minor="52"/>
-      <date day="21" month="8" year="2012"/>
+      <date day="31" month="8" year="2012"/>
       <author login="saubrecht"/>
       <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
       <description>
-          Interenal web browser can now contain an additional toolbar component: HtmlBrowser(Factory, boolean, boolean, Component)
+          Internal web browser can now contain an additional toolbar component: HtmlBrowser(Factory, boolean, boolean, Component)
           Browser implementation can pass arbitrary data to Web browser window's Lookup: HtmlBrowser.Impl.getLookup()
       </description>
       <class package="org.openide.awt" name="HtmlBrowser"/>

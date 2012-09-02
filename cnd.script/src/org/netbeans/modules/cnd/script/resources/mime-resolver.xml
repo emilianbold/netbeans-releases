@@ -3,27 +3,6 @@
         "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <ext name="mk"/>
-        <resolver mime="text/x-make"/>
-    </file>
-    <file>
-        <ext name=""/>
-        <name name="makefile" substring="true"/>
-        <resolver mime="text/x-make"/>
-    </file>
-    <file>
-        <!--  configure input file-->
-        <ext name="in"/>
-        <name name="makefile" substring="true"/>
-        <resolver mime="text/x-make"/>
-    </file>
-    <file>
-        <!--  automake input file-->
-        <ext name="am"/>
-        <name name="makefile" substring="true"/>
-        <resolver mime="text/x-make"/>
-    </file>
-    <file>
         <ext name="sh"/>
         <ext name="bash"/>
         <ext name="csh"/>

@@ -166,15 +166,14 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             Project project = Templates.getProject(wizard);
             WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
             Profile profile = webModule.getJ2eeProfile();
-            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            final WebRestSupport restSupport = project.getLookup().lookup(WebRestSupport.class);
             boolean hasSpringSupport = restSupport!= null && restSupport.hasSpringSupport();
-            boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
-                Profile.JAVA_EE_6_FULL.equals(profile);
+            boolean hasJaxRs = restSupport.hasJaxRsApi();
             if ( hasSpringSupport ){
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
             if (jerseyPanel != null) {
-                if (!isJee6 || hasSpringSupport
+                if (!hasJaxRs || hasSpringSupport
                         || restSupport.isRestSupportOn())
                 {
                     remove(jerseyPanel);

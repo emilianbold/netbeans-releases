@@ -266,8 +266,21 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     if (ed != null) {
                         JEditorPane[] panes = ed.getOpenedPanes();
                         if (panes != null && panes.length > 0) {
-                            final int selectionStart = panes[0].getSelectionStart();
-                            final int selectionEnd = panes[0].getSelectionEnd();
+                            //#214527
+                            JEditorPane pane = panes[0];
+                            if (panes.length > 1) {
+                                for (JEditorPane p : panes) {
+                                    if (p.isFocusOwner()) {
+                                        pane = p;
+                                        break;
+                                    }
+                                }
+                            }
+                            //TODO this code is called very often apparently.
+                            //we should only run the checks if something changed..
+                            //something means file + selection start + selection end.
+                            final int selectionStart = pane.getSelectionStart();
+                            final int selectionEnd = pane.getSelectionEnd();
                             RP.post(new Runnable() {
                                 @Override
                                 public void run() {

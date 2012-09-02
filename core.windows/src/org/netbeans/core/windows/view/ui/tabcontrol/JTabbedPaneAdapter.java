@@ -189,6 +189,11 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
         }
 
         @Override
+        protected void setAttentionHighlight( int tabIndex, boolean highlight ) {
+            JTabbedPaneAdapter.this.setAttentionHighlight( tabIndex, highlight );
+        }
+
+        @Override
         protected int dropIndexOfPoint( Point location ) {
             return JTabbedPaneAdapter.this.dropIndexOfPoint( location );
         }

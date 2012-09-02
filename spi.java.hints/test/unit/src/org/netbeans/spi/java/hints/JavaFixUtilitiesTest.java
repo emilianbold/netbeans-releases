@@ -765,6 +765,64 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "public class Test {\n" +
 		           "}\n");
     }
+    
+    public void testOptionalVariableInitializer1() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private int I;\n" +
+                           "}\n",
+                           "$mods$ int $name = $init$; => $mods$ long $name = $init$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private long I;\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalVariableInitializer2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private int I = 1;\n" +
+                           "}\n",
+                           "$mods$ int $name = $init$; => $mods$ long $name = $init$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private long I = 1;\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalElse1() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (true) System.err.println(\"a\");\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if (true) $then else $else$; => if (false) $then else $else$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (false) System.err.println(\"a\");\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalElse2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (true) System.err.println(\"a\");\n" +
+                           "        else System.err.println(\"b\");\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if (true) $then else $else$; => if (false) $then else $else$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (false) System.err.println(\"a\");\n" +
+                           "        else System.err.println(\"b\");\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);

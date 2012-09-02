@@ -475,6 +475,18 @@ public abstract class WebRestSupport extends RestSupport {
         return JaxRsStackSupport.getInstance(project);
     }
     
+    public boolean hasJaxRsApi(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
+                Profile.JAVA_EE_6_FULL.equals(profile); 
+        // Fix for BZ#216345: JAVA_EE_6_WEB profile doesn't contain JAX-RS API
+        return isJee6 && supportsTargetProfile(Profile.JAVA_EE_6_FULL);
+    }
+    
     public boolean supportsTargetProfile(Profile profile){
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
                 lookup(J2eeModuleProvider.class);

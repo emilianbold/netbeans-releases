@@ -204,11 +204,15 @@ public final class SystemUtils {
     }
     
     public static ExecutionResults executeCommand(String... command) throws IOException {
-        return executeCommand(null, command);
+        return executeCommand(null, null, command);
+    }
+    
+    public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
+        return executeCommand(null, workingDirectory, command);
     }
     
     @SuppressWarnings({"SleepWhileInLoop", "empty-statement"})
-    public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
+    public static ExecutionResults executeCommand(Progress progress, File workingDirectory, String... command) throws IOException {
         // construct the initial log message
         String commandString = StringUtils.asString(command, StringUtils.SPACE);
         
@@ -258,6 +262,11 @@ public final class SystemUtils {
             if (string.length() > 0) {
                 BufferedReader reader = new BufferedReader(new StringReader(string));
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    if (progress != null) {
+                        if (! line.trim().isEmpty()) {
+                            progress.setDetail(line);
+                        }
+                    }
                     LogManager.log(ErrorLevel.MESSAGE, "[stdout]: " + line);
                 }
                 

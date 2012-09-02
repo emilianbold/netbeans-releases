@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -83,6 +85,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
+    private static final Logger LOG = Logger.getLogger(MoveToDependencyManagementHint.class.getName());
 
     private Configuration configuration;
 
@@ -107,13 +110,17 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         boolean inDepManag = exp1.contains("dependencyManagement") || exp2.contains("dependencyManagement"); //NOI18N
         boolean inPlugin = exp1.contains("plugin") || exp2.contains("plugin"); //NOI18N
         if (!inDepManag && !inPlugin && exp1.contains("dependencies") && exp2.contains("dependencies")) { //NOI18N
-            Line line = NbEditorUtilities.getLine(model.getBaseDocument(), selectionEnd, false);
-            err.add(ErrorDescriptionFactory.createErrorDescription(
-                    Severity.HINT,
-                    NbBundle.getMessage(MoveToDependencyManagementHint.class, "TEXT_MoveToDependencyManagementHint"),
-                    Collections.<Fix>singletonList(new MoveFix(selectionStart, selectionEnd, model, prj)),
-                    model.getBaseDocument(), line.getLineNumber() + 1));
-
+            try {
+                Line line = NbEditorUtilities.getLine(model.getBaseDocument(), selectionEnd, false);
+                err.add(ErrorDescriptionFactory.createErrorDescription(
+                        Severity.HINT,
+                        NbBundle.getMessage(MoveToDependencyManagementHint.class, "TEXT_MoveToDependencyManagementHint"),
+                        Collections.<Fix>singletonList(new MoveFix(selectionStart, selectionEnd, model, prj)),
+                        model.getBaseDocument(), line.getLineNumber() + 1));
+            } catch (IndexOutOfBoundsException ioob) {
+                //#214527
+                LOG.log(Level.FINE, "document changed", ioob);
+            }
         }
         return err;
     }
@@ -252,8 +259,13 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Line line = NbEditorUtilities.getLine(model.getBaseDocument(), offset, false);
-                line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                try {
+                    Line line = NbEditorUtilities.getLine(model.getBaseDocument(), offset, false);
+                    line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                } catch (IndexOutOfBoundsException e) {
+                    //#214527
+                    LOG.log(Level.FINE, "document changed", e);
+                }
             }
         });
     }

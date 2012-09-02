@@ -540,7 +540,7 @@ public class FormatVisitor extends NodeVisitor {
                     if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
                         assert formatToken != null && formatToken.getText() != null
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
-                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
+                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
                         // we remove blindly inserted binary op markers
                         FormatToken toRemove = findVirtualToken(formatToken,
                                 FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);

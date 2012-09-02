@@ -152,6 +152,12 @@ final class ViewRequest {
             case  View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION :
                 tp = "TOPCOMPONENT_CANCEL_REQUEST_ATTENTION"; //NOI18N
                 break;
+            case  View.TOPCOMPONENT_ATTENTION_HIGHLIGHT_ON :
+                tp = "TOPCOMPONENT_ATTENTION_HIGHLIGHT_ON"; //NOI18N
+                break;
+            case  View.TOPCOMPONENT_ATTENTION_HIGHLIGHT_OFF :
+                tp = "TOPCOMPONENT_ATTENTION_HIGHLIGHT_OFF"; //NOI18N
+                break;
             default :
                 tp = "UNKNOWN";
                 break;

@@ -90,7 +90,7 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-maven")
+@ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-maven/war")
 public class MavenProjectRestSupport extends WebRestSupport {
 
     private static final String DEPLOYMENT_GOAL = "package";             //NOI18N   
@@ -116,7 +116,16 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         WebRestSupport.RestConfig restConfig = null;
-        if (configType == null && getApplicationPathFromDD() == null) {
+        
+        /*WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        // Fix for BZ#217231 : don't check not Web projects
+        if ( webModule == null ){
+            return;
+        }*/
+        // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
+        boolean hasJaxRs = hasJaxRsApi();
+        
+        if (!hasJaxRs && configType == null && getApplicationPathFromDD() == null) {
             restConfig = setApplicationConfigProperty(false);
             if (restConfig == WebRestSupport.RestConfig.DD) {
                 addResourceConfigToWebApp(restConfig.getResourcePath());

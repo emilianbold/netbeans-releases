@@ -107,16 +107,14 @@ public class WebProjectRestSupport extends WebRestSupport {
         boolean needsRefresh = false;
         
         WebRestSupport.RestConfig restConfig = null;
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        Profile profile = webModule.getJ2eeProfile();
-        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
-                Profile.JAVA_EE_6_FULL.equals(profile); 
+        // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
+        boolean hasJaxRs = hasJaxRsApi();
         
         /*
          *  do not show config dialog in JEE6 case. Manually created REST service 
          *  should be configured via editor hint  
          */
-        if ( !isJee6 && !isRestSupportOn()) {
+        if ( !hasJaxRs && !isRestSupportOn()) {
             needsRefresh = true;
             restConfig = setApplicationConfigProperty(
                     RestUtils.isAnnotationConfigAvailable(project));
@@ -139,7 +137,7 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
 
-        if (!isJee6) {
+        if (!hasJaxRs) {
             if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType))
             {
 

@@ -45,6 +45,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 
 /**
  * KeyListener trasforming keystrokes to human-readable and displaying them
@@ -125,7 +126,7 @@ public class ShortcutListener implements KeyListener {
     }
 
     private void addKeyStroke(KeyStroke keyStroke, boolean add) {
-        String k = Utils.getKeyStrokeAsText(keyStroke);
+        String k = KeyStrokeUtils.getKeyStrokeAsText(keyStroke);
         if (key.equals("")) { //NOI18N
             textField.setText(k);
             if (add)
