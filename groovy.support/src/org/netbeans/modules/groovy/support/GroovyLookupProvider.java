@@ -59,6 +59,7 @@ import org.openide.util.lookup.Lookups;
     })
 public class GroovyLookupProvider implements LookupProvider {
 
+    @Override
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project project = baseContext.lookup(Project.class);
         if (project == null) {
