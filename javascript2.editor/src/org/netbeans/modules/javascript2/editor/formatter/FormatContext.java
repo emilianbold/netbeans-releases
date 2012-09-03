@@ -201,7 +201,7 @@ public final class FormatContext {
         }
     }
     
-    private int getDocumentOffset(int offset) {
+    public int getDocumentOffset(int offset) {
         return getDocumentOffset(offset, true);
     }
 
@@ -251,8 +251,9 @@ public final class FormatContext {
             try {
                 /*
                  * If the lineStart is going to be in different region (this
-                 * might happen) we move to that region and we're getting
-                 * the indent from the start of that region.
+                 * might happen when another embedding in JS) we move to that
+                 * region and we're getting the indent from the start of that
+                 * region.
                  */
                 int lineStart = context.lineStartOffset(start.getOriginalStart());
                 while (start != null && lineStart < start.getOriginalStart()) {
@@ -274,6 +275,11 @@ public final class FormatContext {
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
+        }
+        try {
+            return context.lineIndent(context.lineStartOffset(docOffset));
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         return 0;
     }
