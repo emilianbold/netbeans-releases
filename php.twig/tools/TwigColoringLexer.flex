@@ -166,12 +166,14 @@ COMMENT_END=([^"#""}"]|"#"|"}")*"#}"
 TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"extends"|"filter"|"endfilter"|"flush"|"for"|"endfor"|"from"|"if"|"else"|"elseif"|"endif"|"import"|"include"|"macro"|"endmacro"|"raw"|"endraw"|"sandbox"|"endsandbox"|"set"|"endset"|"spaceless"|"endspaceless"|"use")
 INTERPOLATION_START="#{"
 INTERPOLATION_END="}"
-D_PRE_INTERPOLATION="\"" ([^"\""] | "\\\"")* {INTERPOLATION_START}
 D_NO_INTERPOLATION=([^"#""\""] | #[^"{""\""] | "\\\"")*
+D_INTERPOLATION={D_NO_INTERPOLATION} {INTERPOLATION_START}
+D_PRE_INTERPOLATION="\"" {D_INTERPOLATION}
 D_NO_INTERPOLATION_INSIDE="\"" {D_NO_INTERPOLATION} "\""
 D_POST_INTERPOLATION={D_NO_INTERPOLATION} "\""
-S_PRE_INTERPOLATION="'" ([^"'"] | "\\'")* {INTERPOLATION_START}
 S_NO_INTERPOLATION=([^"#""'"] | #[^"{""'"] | "\\'")*
+S_INTERPOLATION={S_NO_INTERPOLATION} {INTERPOLATION_START}
+S_PRE_INTERPOLATION="'" {S_INTERPOLATION}
 S_NO_INTERPOLATION_INSIDE="'" {S_NO_INTERPOLATION} "'"
 S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
 
@@ -274,7 +276,7 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
 }
 
 <ST_D_STRING> {
-    {D_PRE_INTERPOLATION} {
+    {D_PRE_INTERPOLATION} | {D_INTERPOLATION} {
         yypushback(2);
         pushState(ST_INTERPOLATION);
         return TwigTokenId.T_TWIG_STRING;
@@ -290,7 +292,7 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
 }
 
 <ST_S_STRING> {
-    {S_PRE_INTERPOLATION} {
+    {S_PRE_INTERPOLATION} | {S_INTERPOLATION} {
         yypushback(2);
         pushState(ST_INTERPOLATION);
         return TwigTokenId.T_TWIG_STRING;
