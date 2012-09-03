@@ -159,7 +159,7 @@ NetBeans.sendUrlChangeMessage = function(tabId, url) {
 
 NetBeans.sendLoadResizeOptionsMessage = function() {
     // XXX message sent more than once
-    if (ResizeOptions != null) {
+    if (ResizeOptions !== null) {
         return;
     }
     this.sendMessage({
@@ -496,7 +496,7 @@ NetBeans_Preset.allTypes = function() {
 NetBeans_Preset.typeForIdent = function(ident) {
     var allTypes = NetBeans_Preset.allTypes();
     for (i in allTypes) {
-        if (allTypes[i].ident == ident) {
+        if (allTypes[i].ident === ident) {
             return allTypes[i];
         }
     }
@@ -514,11 +514,11 @@ NetBeans_Presets._presets = null;
 // active/current preset
 NetBeans_Presets._preset = null;
 NetBeans_Presets.getPreset = function(preset) {
-    if (preset == undefined) {
+    if (preset === undefined) {
         return this._preset;
     }
     var tmp = this.getPresets()[preset];
-    if (tmp == undefined) {
+    if (tmp === undefined) {
         return null;
     }
     this._preset = tmp;
@@ -529,7 +529,7 @@ NetBeans_Presets.getPresets = function(copy) {
     if (copy) {
         return this._loadPresets();
     }
-    if (this._presets == null) {
+    if (this._presets === null) {
         this._presets = this._loadPresets();
     }
     return this._presets;
@@ -542,7 +542,7 @@ NetBeans_Presets.setPresets = function(presets) {
 };
 // load presets from the central storage
 NetBeans_Presets._loadPresets = function() {
-    if (ResizeOptions == null) {
+    if (ResizeOptions === null) {
         // netbeans not running?
         return null;
     }

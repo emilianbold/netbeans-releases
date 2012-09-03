@@ -78,7 +78,7 @@ NetBeans_PresetMenu.resizePage = function(preset) {
 /*** ~Private ***/
 // menu init
 NetBeans_PresetMenu._init = function() {
-    if (this._container != null) {
+    if (this._container !== null) {
         return;
     }
     this._container = document.getElementById('presetMenu');

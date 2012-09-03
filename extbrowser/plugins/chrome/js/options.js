@@ -76,7 +76,7 @@ NetBeans_PresetCustomizer.show = function(presets) {
 /*** ~Private ***/
 // customizer init
 NetBeans_PresetCustomizer._init = function() {
-    if (this._rowContainer != null) {
+    if (this._rowContainer !== null) {
         return;
     }
     if (!INFOBAR) {
@@ -124,7 +124,7 @@ NetBeans_PresetCustomizer._registerEvents = function() {
 };
 // put presets to the customizer?
 NetBeans_PresetCustomizer._putPresets = function(presets) {
-    if (this._presets == null) {
+    if (this._presets === null) {
         this._putNoPresets();
         this._enableButtons();
     } else {
@@ -292,7 +292,7 @@ NetBeans_PresetCustomizer._cancel = function() {
 };
 // callback when row is selected
 NetBeans_PresetCustomizer._rowSelected = function(row) {
-    if (this._activePreset != null) {
+    if (this._activePreset !== null) {
         if (this._activePreset['_row'] === row) {
             // repeated click => ignore
             return;
@@ -317,7 +317,7 @@ NetBeans_PresetCustomizer._enableButtons = function() {
 };
 // enable/disable preset buttons (based on the active preset)
 NetBeans_PresetCustomizer._enablePresetButtons = function() {
-    if (this._activePreset != null) {
+    if (this._activePreset !== null) {
         // any preset selected
         if (this._activePreset.isDefault) {
             this._removePresetButton.setAttribute('disabled', 'disabled');
@@ -335,7 +335,7 @@ NetBeans_PresetCustomizer._enablePresetButtons = function() {
             this._moveDownPresetButton.setAttribute('disabled', 'disabled');
         }
     } else {
-        if (this._presets == null) {
+        if (this._presets === null) {
             // nb not running
             this._addPresetButton.setAttribute('disabled', 'disabled');
         }
@@ -347,7 +347,7 @@ NetBeans_PresetCustomizer._enablePresetButtons = function() {
 // enable/disable customizer buttons
 NetBeans_PresetCustomizer._enableMainButtons = function() {
     var anyError = false;
-    if (this._presets == null) {
+    if (this._presets === null) {
         anyError = true;
     } else {
         for (i in this._presets) {
@@ -365,12 +365,12 @@ NetBeans_PresetCustomizer._enableMainButtons = function() {
 };
 // callback when preset type changes
 NetBeans_PresetCustomizer._typeChanged = function(input) {
-    if (this._activePreset == null) {
+    if (this._activePreset === null) {
         // select change event fired before row click event => select the closest row
         var row = input;
         while (true) {
             row = row.parentNode;
-            if (row.tagName.toLowerCase() == 'tr') {
+            if (row.tagName.toLowerCase() === 'tr') {
                 break;
             }
         }
@@ -417,12 +417,12 @@ NetBeans_PresetCustomizer._checkField = function(input, key, validation) {
     var index = this._activePreset['_errors'].indexOf(key);
     if (validation(value)) {
         nbRemoveCssClass(input, 'error');
-        if (index != -1) {
+        if (index !== -1) {
             this._activePreset['_errors'].splice(index, 1);
         }
     } else {
         nbAddCssClass(input, 'error');
-        if (index == -1) {
+        if (index === -1) {
             this._activePreset['_errors'].push(key);
         }
     }
@@ -434,7 +434,7 @@ NetBeans_PresetCustomizer._checkField = function(input, key, validation) {
 // mirror function to element.insertBefore()
 function nbInsertAfter(newElement, targetElement) {
 	var parent = targetElement.parentNode;
-	if (parent.lastchild == targetElement) {
+	if (parent.lastchild === targetElement) {
 		parent.appendChild(newElement);
     } else {
 		parent.insertBefore(newElement, targetElement.nextSibling);
@@ -443,7 +443,7 @@ function nbInsertAfter(newElement, targetElement) {
 // add CSS class to the given element
 function nbAddCssClass(element, cssClass) {
     var className = element.className;
-    if (className.indexOf(cssClass) != -1) {
+    if (className.indexOf(cssClass) !== -1) {
         // already has this class
         return;
     }
