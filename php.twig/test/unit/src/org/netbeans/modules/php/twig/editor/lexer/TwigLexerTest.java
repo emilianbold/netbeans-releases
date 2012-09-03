@@ -552,6 +552,10 @@ public class TwigLexerTest extends TwigTestBase {
         performTest("comment");
     }
 
+    public void testMultiInterpolation() throws Exception {
+        performTest("multi-interpolation");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/twig/" + filename + ".twig"));
