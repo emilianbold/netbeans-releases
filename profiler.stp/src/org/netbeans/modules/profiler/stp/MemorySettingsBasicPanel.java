@@ -75,7 +75,7 @@ import org.openide.util.Lookup;
 @NbBundle.Messages({
     "MemorySettingsBasicPanel_AllocRadioText=&Quick (sampled)",
     "MemorySettingsBasicPanel_LivenessRadioText=&Advanced (instrumented)",
-    "StpFullLifecycleText=&Record full object lifecycle.",
+    "StpFullLifecycleText=&Record full object lifecycle",
     "MemorySettingsBasicPanel_TrackEveryLabelText=&Track every",
 //# Used as Track every [JSpinner] object allocations
     "MemorySettingsBasicPanel_AllocLabelText=object allocations",
