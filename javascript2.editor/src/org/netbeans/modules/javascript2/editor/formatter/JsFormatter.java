@@ -1241,12 +1241,16 @@ public class JsFormatter implements Formatter {
                     if (ts != null) {
                         JsTokenId id = ts.token().id();
                         int index = ts.index();
-                        Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
-                        JsTokenId previousId = previous != null ? previous.id() : null;
+                        JsTokenId previousId = null;
+                        if (ts.movePrevious()) {
+                            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                            if (previous != null) {
+                                previousId = previous.id();
+                            }
 
-                        ts.moveIndex(index);
-                        ts.moveNext();
-
+                            ts.moveIndex(index);
+                            ts.moveNext();
+                        }
                         // We don't have multiline string literals in JavaScript!
                         if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT) {
                             if (ts.offset() == pos) {

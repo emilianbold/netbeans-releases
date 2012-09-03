@@ -114,12 +114,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions1.js");
     }
 
+    public void testFunctions1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions1.js", null);
+    }
+
     public void testFunctions2() throws Exception {
         reformatFileContents("testfiles/formatter/functions2.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctions2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functions2.js");
+    }
+
+    public void testFunctions2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions2.js", null);
     }
 
     public void testFunctions3() throws Exception {
@@ -130,6 +138,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions3.js");
     }
 
+    public void testFunctions3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions3.js", null);
+    }
+
     public void testFunctions4() throws Exception {
         reformatFileContents("testfiles/formatter/functions4.js",new IndentPrefs(4, 4));
     }
@@ -138,12 +150,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions4.js");
     }
 
+    public void testFunctions4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions4.js", null);
+    }
+
     public void testFunctions5() throws Exception {
         reformatFileContents("testfiles/formatter/functions5.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctions5Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functions5.js");
+    }
+
+    public void testFunctions5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions5.js", null);
     }
 
     public void testFunctions6Default() throws Exception {
@@ -162,12 +182,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions6.js");
     }
 
+    public void testFunctions6Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions6.js", null);
+    }
+
     public void testFunctions7() throws Exception {
         reformatFileContents("testfiles/formatter/functions7.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctions7Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functions7.js");
+    }
+
+    public void testFunctions7Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions7.js", null);
     }
 
     public void testFunctionDeclaration1() throws Exception {
