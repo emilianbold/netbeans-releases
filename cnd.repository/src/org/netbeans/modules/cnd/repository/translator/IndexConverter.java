@@ -58,8 +58,8 @@ public class IndexConverter {
         public final String to;
 
         public Rule(String first, String second) {
-            this.from = first.endsWith("/") ? first : first + "/"; // NOI18N
-            this.to = second.endsWith("/") ? second : second + "/"; // NOI18N
+            this.from = first.endsWith("/") ? first.substring(0, first.length() - 1) : first; // NOI18N // TODO: should we add slash?
+            this.to = second.endsWith("/") ? second.substring(0, second.length() - 1) : second; // NOI18N // TODO: should we add slash?
         }
     }
 
