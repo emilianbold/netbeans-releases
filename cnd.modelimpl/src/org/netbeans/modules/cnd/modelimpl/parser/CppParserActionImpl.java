@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.DeclaratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.CompoundStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
@@ -521,12 +523,9 @@ public class CppParserActionImpl implements CppParserActionEx {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
             
             if(declBuilder.isFunction()) {
-                FunctionBuilder builder = new FunctionBuilder(currentContext.file.getParsingFileContent());
+                FunctionBuilder builder = new FunctionBuilder();
 
                 CsmObjectBuilder parent = builderContext.top(1);
-                if(parent instanceof ClassBuilder) {
-                    ((ClassBuilder)parent).addChild(builder);
-                }
                 builder.setParent(parent);
                 builder.setFile(currentContext.file);
 
@@ -569,10 +568,22 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void compound_statement(Token token) {
         globalSymTab.push();
+        
+        CompoundStatementBuilder builder = new CompoundStatementBuilder();
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(builder);
     }
 
     @Override
     public void end_compound_statement(Token token) {
+        CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
+        builderContext.pop();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        
+        FunctionDDBuilder funBuilder = (FunctionDDBuilder)builderContext.top();
+        funBuilder.setBodyBuilder(builder);
+
         globalSymTab.pop();
     }
 
@@ -1313,9 +1324,29 @@ public class CppParserActionImpl implements CppParserActionEx {
         ((FunctionParameterListBuilder)builderContext.top()).addParameterBuilder(builder);
     }    
     
-    @Override public void function_definition_after_declarator(Token token) {}
+    @Override public void function_definition_after_declarator(Token token) {
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            
+        FunctionDDBuilder builder = new FunctionDDBuilder();
+
+        CsmObjectBuilder parent = builderContext.top(1);
+        builder.setParent(parent);
+        builder.setFile(currentContext.file);
+
+        builder.setStartOffset(declBuilder.getStartOffset());
+        builder.setEndOffset(((APTToken)token).getOffset());
+
+        builder.setName(declBuilder.getDeclaratorBuilder().getName());
+        builder.setTypeBuilder(declBuilder.getTypeBuilder());
+        builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+        builderContext.push(builder);
+    }
     @Override public void function_definition_after_declarator(int kind, Token token) {}
-    @Override public void end_function_definition_after_declarator(Token token) {}
+    @Override public void end_function_definition_after_declarator(Token token) {
+        FunctionDDBuilder builder = (FunctionDDBuilder)builderContext.top();
+        builderContext.pop();
+        builder.create();                
+    }
     @Override public void function_declaration(Token token) {}
     @Override public void end_function_declaration(Token token) {}
     @Override public void function_definition(Token token) {}

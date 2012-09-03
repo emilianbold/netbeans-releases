@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -66,6 +67,11 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         super(ast, file, scope);
     }
 
+    protected CompoundStatementImpl(List<CsmStatement> statements, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+        this.statements = new ArrayList<CsmStatement>(statements);
+    }
+    
     public static CompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         CompoundStatementImpl stmt = new CompoundStatementImpl(ast, file, scope);
         stmt.init(ast);
@@ -120,6 +126,14 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return out;
     }
 
+    public static class CompoundStatementBuilder extends ScopedDeclarationBuilder {
+
+        public CompoundStatementImpl create() {
+            CompoundStatementImpl stmt = new CompoundStatementImpl(new ArrayList<CsmStatement>(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            return stmt;
+        }
+    }      
+    
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         // HAVE TO BE ONLY DELEGATION INTO SUPER
