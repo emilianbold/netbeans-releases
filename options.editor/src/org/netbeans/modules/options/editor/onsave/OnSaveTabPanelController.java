@@ -76,7 +76,7 @@ import org.openide.util.WeakListeners;
     displayName="#CTL_OnSave_DisplayName",
     keywords="#KW_OnSave",
     keywordsCategory="Editor/OnSave",
-    position=750
+    position=730
 )
 public final class OnSaveTabPanelController extends OptionsPanelController {
 
