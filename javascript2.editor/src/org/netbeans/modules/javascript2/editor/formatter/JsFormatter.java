@@ -1001,9 +1001,7 @@ public class JsFormatter implements Formatter {
 
             JsTokenId id = token.id();
 
-            // http://www.netbeans.org/issues/show_bug.cgi?id=115279
-            boolean isContinuationOperator = isBinaryOperator(id, previousId)
-                    || id == JsTokenId.OPERATOR_DOT;
+            boolean isContinuationOperator = isBinaryOperator(id, previousId);
 
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
@@ -1257,7 +1255,7 @@ public class JsFormatter implements Formatter {
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }
-                        } else if (isBinaryOperator(id, previousId) || id == JsTokenId.OPERATOR_DOT) {
+                        } else if (isBinaryOperator(id, previousId)) {
                             // If a line starts with a non unary operator we can
                             // assume it's a continuation from a previous line
                             continued = true;
@@ -1648,6 +1646,7 @@ public class JsFormatter implements Formatter {
             case OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT:
             case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
             case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
+            case OPERATOR_DOT:
                 return true;
             case OPERATOR_PLUS:
             case OPERATOR_MINUS:
