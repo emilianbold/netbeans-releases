@@ -72,9 +72,9 @@ import org.openide.util.NbBundle;
 
 public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
-    private int index;
-    private WizardDescriptor.Panel[] panels;
-    protected WizardDescriptor wiz;
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    protected transient WizardDescriptor wiz;
     
     public JavaEESamplesWizardIterator() {}
     
@@ -223,6 +223,10 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
     
     @Override
     public WizardDescriptor.Panel current() {
+        // Not sure how but issue 217645 proves that it might happen
+        if (panels == null) {
+            panels = createPanels();
+        }
         return panels[index];
     }
     
