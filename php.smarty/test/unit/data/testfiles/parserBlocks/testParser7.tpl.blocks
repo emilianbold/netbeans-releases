@@ -10,11 +10,25 @@ Detected parser blocks in the file:
  |
  -- {/if <469:472> - }
 
+{null <679:696> - $conf_data.action}
+
+{null <708:725> - $conf_data.method}
+
+{null <850:862> - $form.method}
+
+{null <901:916> - $smarty.get.url}
+
+{null <928:940> - $form.method}
+
 {if <783:807> -  $smarty.get.url == ""}
  |
  -- {else <873:877> - }
  |
  -- {/if <951:954> - }
+
+{null <989:1001> - $form.action}
+
+{null <1013:1025> - $form.method}
 
 {if <746:774> -  $form.action == "GET_URL"}
  |
@@ -27,6 +41,14 @@ Detected parser blocks in the file:
  -- {else <734:738> - }
  |
  -- {/if <1045:1048> - }
+
+{null <1391:1405> - $conf_data.yes}
+
+{null <1574:1587> - $conf_data.no}
+
+{null <1764:1773> - $form.yes}
+
+{null <1942:1950> - $form.no}
 
 {if <1298:1346> -  isset($conf_data.no) && isset($conf_data.yes)}
  |

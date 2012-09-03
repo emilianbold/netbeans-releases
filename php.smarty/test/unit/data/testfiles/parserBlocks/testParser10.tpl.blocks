@@ -1,12 +1,18 @@
 Detected parser blocks in the file:
 
+{null <77:81> - $foo}
+
 {foreach <42:70> -  from=$error item=foo}
  |
  -- {/foreach <91:99> - }
 
+{null <789:793> - $foo}
+
 {foreach <754:782> -  from=$error item=foo}
  |
  -- {/foreach <803:811> - }
+
+{null <892:894> - $u}
 
 {if <23:38> -  $status == 0}
  |
