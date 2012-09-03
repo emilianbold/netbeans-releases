@@ -82,6 +82,7 @@ public class C2CClientTest extends NbTestCase  {
     private static String passw;
     private static String proxy_host;
     private static String proxy_port;
+    private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
     
     public C2CClientTest(String arg0) {
         super(arg0);
@@ -98,7 +99,7 @@ public class C2CClientTest extends NbTestCase  {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         if (firstRun) {
             if (uname == null) {
-                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team2")));
                 uname = br.readLine();
                 passw = br.readLine();
                 proxy_host = br.readLine();
@@ -129,46 +130,46 @@ public class C2CClientTest extends NbTestCase  {
         assertNotNull(projects);
         assertFalse(projects.isEmpty());
         // anagram game should be there
-        Project anagramGameProject = null;
+        Project myProject = null;
         for (Project p : projects) {
-            if ("anagramgame".equals(p.getIdentifier())) {
-                anagramGameProject = p;
+            if (MY_PROJECT.equals(p.getIdentifier())) {
+                myProject = p;
                 break;
             }
         }
-        assertNotNull(anagramGameProject);
+        assertNotNull(myProject);
     }
     
     public void testGetProjectById () throws Exception {
         ODSClient client = getClient();
-        Project project = client.getProjectById("anagramgame");
+        Project project = client.getProjectById(MY_PROJECT);
         assertNotNull(project);
-        assertEquals("anagramgame", project.getIdentifier());
+        assertEquals(MY_PROJECT, project.getIdentifier());
     }
     
     public void testSearchProjects () throws Exception {
         ODSClient client = getClient();
-        for (String pattern : new String[] { "netbeans", "anagram", "anagramgame", "NetBeans PROJECT" }) {
+        for (String pattern : new String[] { "netbeans", "dummy", "testing", "nb PROJECT" }) {
             List<Project> projects = client.searchProjects(pattern);
             assertNotNull(projects);
             assertFalse(projects.isEmpty());
             // anagram game should be there
-            Project anagramGameProject = null;
+            Project myProject = null;
             for (Project p : projects) {
-                if ("anagramgame".equals(p.getIdentifier())) {
-                    anagramGameProject = p;
+                if (MY_PROJECT.equals(p.getIdentifier())) {
+                    myProject = p;
                     break;
                 }
             }
-            assertNotNull(anagramGameProject);
+            assertNotNull(myProject);
         }
     }
 
     public void testGetProjectServices () throws Exception {
         ODSClient client = getClient();
-        Project project = client.getProjectById("anagramgame");
+        Project project = client.getProjectById(MY_PROJECT);
         assertNotNull(project);
-        assertEquals("anagramgame", project.getIdentifier());
+        assertEquals(MY_PROJECT, project.getIdentifier());
         List<ProjectService> services = project.getProjectServices();
         Set<ServiceType> expectedServices = EnumSet.of(ServiceType.SCM, ServiceType.TASKS, ServiceType.WIKI, ServiceType.BUILD);
         for (ProjectService s : services) {
@@ -182,7 +183,7 @@ public class C2CClientTest extends NbTestCase  {
     
     public void testWatchUnwatchProject () throws Exception {
         ODSClient client = getClient();
-        String projectIdent = "qatestingproject";
+        String projectIdent = "qa-dev_getting-started";
         client.unwatchProject(projectIdent);
         assertFalse(client.isWatchingProject(projectIdent));
         List<Project> watchedProjects = client.getWatchedProjects();
@@ -199,7 +200,7 @@ public class C2CClientTest extends NbTestCase  {
     
     public void testGetRecentActivities () throws Exception {
         ODSClient client = getClient();
-        Project project = client.getProjectById("anagramgame");
+        Project project = client.getProjectById(MY_PROJECT);
         List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
         assertNotNull(shortActivities);
         assertTrue(shortActivities.size() > 0);
@@ -221,12 +222,12 @@ public class C2CClientTest extends NbTestCase  {
     
     public void testGetHudsonStatus () throws Exception {
         ODSClient client = getClient();
-        Project project = client.getProjectById("c2c");
+        Project project = client.getProjectById(MY_PROJECT);
         HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
         assertNotNull(status);
         assertTrue(status.getJobs().size() > 0);
         for (JobSummary summary : status.getJobs()) {
-            JobDetails details = client.getJobDetails("c2c", summary.getName());
+            JobDetails details = client.getJobDetails(MY_PROJECT, summary.getName());
             assertNotNull(details);
             assertEquals(summary.getName(), details.getName());
             assertEquals(summary.getColor(), details.getColor());
@@ -240,24 +241,41 @@ public class C2CClientTest extends NbTestCase  {
     
     public void testGetBuildDetails () throws Exception {
         ODSClient client = getClient();
-        Project project = client.getProjectById("c2c");
+        Project project = client.getProjectById(MY_PROJECT);
         HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
         assertNotNull(status);
         assertTrue(status.getJobs().size() > 0);
-        JobDetails jobDetails = client.getJobDetails("c2c", "Code2Cloud Server - Nightly");
-        BuildDetails details = client.getBuildDetails("c2c", jobDetails.getName(), jobDetails.getBuilds().get(0).getNumber());
+        JobDetails jobDetails = client.getJobDetails(MY_PROJECT, "Sample Maven Build");
+        BuildDetails details = client.getBuildDetails(MY_PROJECT, jobDetails.getName(), jobDetails.getBuilds().get(0).getNumber());
         assertNotNull(details);
     }
 
     public void testGetScmRepositories () throws Exception {
         ODSClient client = getClient();
-        List<ScmRepository> repositories = client.getScmRepositories("anagramgame");
+        List<ScmRepository> repositories = client.getScmRepositories(MY_PROJECT);
         assertNotNull(repositories);
         assertFalse(repositories.isEmpty());
     }
+//    
+//    public void testCreateDeleteProject () throws Exception {
+//        ODSClient client = getClient();
+//        Project project = new Project();
+//        project.setName("Test Project 2");
+//        project.setDescription("Netbeans testing junit project for internal purposes");
+//        project.setAccessibility(ProjectAccessibility.PRIVATE);
+//        ProjectPreferences prefs = new ProjectPreferences();
+//        prefs.setWikiLanguage(WikiMarkupLanguage.CONFLUENCE);
+//        project.setProjectPreferences(prefs);
+//        Project created = client.createProject(project);
+//        assertEquals(project.getName(), created.getName());
+//        assertEquals(project.getDescription(), created.getDescription());
+//        assertEquals(project.getAccessibility(), created.getAccessibility());
+//        assertEquals(WikiMarkupLanguage.CONFLUENCE, created.getProjectPreferences().getWikiLanguage());
+//        assertFalse(created.getProjectServices().isEmpty());
+//    }
     
     private ODSClient getClient () {
-        return ODSFactory.getInstance().createClient("https://q.tasktop.com",
+        return ODSFactory.getInstance().createClient("http://qa-dev.developer.us.oracle.com",
                 new PasswordAuthentication(uname, passw.toCharArray()));
     }
 
