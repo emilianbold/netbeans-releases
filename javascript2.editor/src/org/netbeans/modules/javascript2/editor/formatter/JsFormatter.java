@@ -635,12 +635,18 @@ public class JsFormatter implements Formatter {
 
     }
 
+    // FIXME can we movet his to FormatContext ?
     private Indentation checkIndentation(BaseDocument doc, FormatToken token,
             FormatContext formatContext, Context context, int indentationSize) {
 
         assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
-        if (token.getKind() != FormatToken.Kind.SOURCE_START
+        // this: (token.getKind() != FormatToken.Kind.SOURCE_START
+        // && formatContext.getDocumentOffset(token.getOffset()) >= 0)
+        // handles the case when virtual source for embedded code contains
+        // non existing eols we must not do indentation on these
+        if ((token.getKind() != FormatToken.Kind.SOURCE_START && formatContext.getDocumentOffset(token.getOffset()) >= 0)
                 || (context.startOffset() <= 0 && !formatContext.isEmbedded())) {
+
             return Indentation.ALLOWED;
         }
 
