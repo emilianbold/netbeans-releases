@@ -108,16 +108,9 @@ made subject to such option by the copyright holder.
 
     </folder>
 
-<!--    <folder name="Menu">
+    <!-- Main menu -->
+     <folder name="Menu">
         <folder name="RunProject">
-            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
-                <attr name="position" intvalue="600"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
-                <attr name="position" intvalue="700"/>
-            </file>
             <file name="Separator11.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="800"/>
@@ -159,37 +152,16 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                 <attr name="position" intvalue="2300"/>
             </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
+                <attr name="position" intvalue="2400"/>
+            </file>
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                 <attr name="position" intvalue="2500"/>
             </file>
         </folder>
-        <folder name="Window">
-            <folder name="Debug">
-                <file name="HttpMonitorAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
-                    <attr name="position" intvalue="1500"/>
-                </file>
-            </folder>
-        </folder>
     </folder>
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="HttpMonitorTopComponent.settings" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentSettings.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="output">
-                <file name="HttpMonitorTopComponent.wstcref" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentWstcref.xml">
-                    <attr name="position" intvalue="1300"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="Groups">
-            <folder name="debugger">
-                <file name="HttpMonitorTopComponentWstgrp.xml" url="../../javascript/debugger/http/ui/HttpMonitorTopComponentWstgrp.xml"/>
-            </folder>
-        </folder>
-    </folder> -->
     
     <folder name="Debugger">
         <folder name="javascript-debuggerengine">
