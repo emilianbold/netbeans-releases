@@ -59,14 +59,13 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.core.GsfHtmlFormatter;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureItem.CollapsedDefault;
+import org.netbeans.modules.csl.core.GsfHtmlFormatter;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.navigation.actions.OpenAction;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
@@ -112,7 +111,6 @@ public class ElementNode extends AbstractNode {
         this.ui = ui;
         this.fileObject = fileObject;
     }
-    
     
     @Override
     public Image getIcon(int type) {

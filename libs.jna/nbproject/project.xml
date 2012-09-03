@@ -80,6 +80,11 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.masterfs.macosx</friend>
                 <friend>org.netbeans.modules.python.qshell</friend>
                 <friend>org.netbeans.libs.svnClientAdapter.svnkit</friend>
+                <friend>org.netbeans.modules.libs.djnsswt</friend>
+                <friend>org.netbeans.libs.djnsswt.gtklinuxx86</friend>
+                <friend>org.netbeans.libs.djnsswt.gtklinuxx64</friend>
+                <friend>org.netbeans.libs.djnsswt.win32x86</friend>
+                <friend>org.netbeans.libs.djnsswt.win32x64</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
                 <package>com.sun.jna.win32</package>

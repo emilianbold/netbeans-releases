@@ -266,17 +266,22 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>com.ext4yii.editor</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.html.navigator</friend>
                 <friend>org.netbeans.modules.html.parser</friend>
                 <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.web.domdiff</friend>
+                <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>
+                <friend>org.netbeans.modules.web.livehtml</friend>
                 <package>org.netbeans.modules.html.editor.lib.api</package>
                 <package>org.netbeans.modules.html.editor.lib.api.dtd</package>
                 <package>org.netbeans.modules.html.editor.lib.api.elements</package>

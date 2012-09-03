@@ -50,10 +50,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +69,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
     private Browser browser;
     private CssModule module;
     private final Set<String> supportedPropertiesNames = new HashSet<String>();
-    private final Collection<Property> vendorSpecificProperties = new HashSet<Property>();
+    private final Collection<PropertyDefinition> vendorSpecificProperties = new HashSet<PropertyDefinition>();
 
     public BrowserSpecificDefinitionParser(String resourcePath, Browser browser, CssModule module) {
         this.resourcePath = resourcePath;
@@ -100,7 +103,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
                 if (propertyName.startsWith(browser.getVendorSpecificPropertyPrefix())) {
                     //vendor specific property
-                    vendorSpecificProperties.add(new Property(propertyName, value, module));
+                    vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
                     supportedPropertiesNames.add(propertyName);
 
                 } else {
@@ -109,7 +112,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                         case '!':
                             //experimental property only
                             String vendorSpecificPropertyName = createVendorSpecificPropertyName(browser.getVendorSpecificPropertyPrefix(), propertyName);
-                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, propertyName));
+                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
                             supportedPropertiesNames.add(vendorSpecificPropertyName);
                             break;
                         case '+':
@@ -119,7 +122,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                         case '*':
                             //standard + experimental property                            
                             vendorSpecificPropertyName = createVendorSpecificPropertyName(browser.getVendorSpecificPropertyPrefix(), propertyName);
-                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, propertyName));
+                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
                             supportedPropertiesNames.add(propertyName);
                             supportedPropertiesNames.add(vendorSpecificPropertyName);
                             break;
@@ -130,7 +133,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
                         default:
                             //even standard property can be vendor specific (zoom for webkit)
-                            vendorSpecificProperties.add(new Property(propertyName, value, module));
+                            vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
                             supportedPropertiesNames.add(propertyName);
 
                     }
@@ -152,26 +155,26 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
         return supportedPropertiesNames.contains(propertyName);
     }
 
-    public Collection<Property> getVendorSpecificProperties() {
+    public Collection<PropertyDefinition> getVendorSpecificProperties() {
         return vendorSpecificProperties;
     }
 
-    private class ProxyProperty extends Property {
+    private class ProxyProperty extends PropertyDefinition {
 
         private String delegateToPropertyName;
 
-        public ProxyProperty(String name, String delegateToPropertyName) {
-            super(name, null, module);
+        public ProxyProperty(String name, PropertyCategory category, String delegateToPropertyName) {
+            super(name, null, category, module);
             this.delegateToPropertyName = delegateToPropertyName;
         }
 
         @Override
         public String getValueGrammar() {
             //try to get the normal property first
-            Collection<Property> p = CssModuleSupport.getProperties(delegateToPropertyName);
+            Collection<PropertyDefinition> p = Properties.getProperties(delegateToPropertyName);
             if(p == null) {
                 //the browser specific definition may address an invisible property
-                p = CssModuleSupport.getProperties(delegateToPropertyName, true);
+                p = Properties.getProperties(delegateToPropertyName, true);
             }
             
             if (p == null) {

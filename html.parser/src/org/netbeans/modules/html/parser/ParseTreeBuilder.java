@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Properties;
 import java.util.Stack;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -59,6 +60,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.html.parser.ElementsFactory.*;
 import static nu.validator.htmlparser.impl.Tokenizer.*;
 import nu.validator.htmlparser.impl.TreeBuilder;
@@ -94,6 +96,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
     //element's internall offsets
     private int offset;
     private int tag_lt_offset;
+    private int data_section_start = -1;
     private boolean self_closing_starttag;
     //stack of opened tags
     private Stack<ModifiableOpenTag> stack = new Stack<ModifiableOpenTag>();
@@ -106,12 +109,20 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
     private ModifiableOpenTag currentOpenTag;
     private ModifiableCloseTag currentCloseTag;
     
-    private CharSequence sourceCode;
+    private final CharSequence sourceCode;
 
-    public ParseTreeBuilder(CharSequence sourceCode) {
+    private boolean ADD_TEXT_NODES = false;
+    
+    public ParseTreeBuilder(CharSequence sourceCode, Lookup lookup) {
         this.sourceCode = sourceCode;
         factory = new ElementsFactory(sourceCode);
         root = factory.createRoot();
+        
+        //want text nodes?
+        Properties properties = lookup.lookup(Properties.class);
+        if(properties != null) {
+            ADD_TEXT_NODES = Boolean.parseBoolean(properties.getProperty("add_text_nodes"));//NOI18N
+        }
     }
 
     public Node getRoot() {
@@ -285,6 +296,20 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         }
         this.offset = offset;
         int tag_gt_offset = -1;
+        
+        if(ADD_TEXT_NODES) {
+            switch(from) {
+                case DATA:
+                case RCDATA:
+                case SCRIPT_DATA:
+                        if(data_section_start != -1) {
+                            stack.peek().addChild(factory.createText(data_section_start, offset));
+                            data_section_start = -1;
+                        }
+                    break;
+            }
+        }
+        
         switch (to) {
             case SELF_CLOSING_START_TAG:
                 if (LOG_FINER) {
@@ -378,6 +403,8 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
         }
 
+        data_section_start = tag_gt_offset;
+        
         //set the current tag end offset:
         //the transition for the closing tag symbol are done AFTER the element for the tag is created,
         //so it needs to be additionaly set to the latest element

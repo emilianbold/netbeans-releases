@@ -51,9 +51,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.css.editor.URLRetriever;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -88,7 +88,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     private static final String NO_HELP_MSG = NbBundle.getMessage(StandardPropertiesHelpResolver.class, "completion-help-no-documentation-found");
 
     @Override
-    public String getHelp(Property property) {
+    public String getHelp(PropertyDefinition property) {
         CssModule cssModule = property.getCssModule();
         if (cssModule == null) {
             return null;
@@ -215,7 +215,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     }
 
     @Override
-    public URL resolveLink(Property property, String link) {
+    public URL resolveLink(PropertyDefinition property, String link) {
         return null;
     }
 

@@ -90,7 +90,7 @@ public class PHPFormatterTemplateTest extends PHPCodeCompletionTestBase {
             System.out.println("neco spatne");
         }
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
+        MockMimeLookup.setInstances(MimePath.parse("text/css"), cssFactory);
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"));
     }

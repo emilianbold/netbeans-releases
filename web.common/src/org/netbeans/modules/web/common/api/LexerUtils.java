@@ -94,6 +94,41 @@ public class LexerUtils {
         //for position just at the length of the text
         return line;
     }
+    
+    /**
+     * Note: The input text must contain only \n as line terminators.
+     * This is compatible with the netbeans document which never contains \r\n
+     * line separators.
+     *
+     * @param text
+     * @param line line number
+     * @return offset of the beginning of the line
+     */
+    public static int getLineBeginningOffset(CharSequence text, int line) throws BadLocationException {
+        if(text == null) {
+            throw new NullPointerException();
+        }
+
+        if(line < 0) {
+            throw new IllegalArgumentException("Line number must be >= 0!");
+        }
+        int linecount = 0; 
+        for(int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if(c == '\r') {
+                throw new IllegalArgumentException("The input text cannot contain carriage return char \\r"); //NOI18N
+            }
+            if(linecount == line) {
+                return i;
+            }
+            if(c == '\n') {
+                linecount++;
+            }
+        }
+
+        //for position just at the length of the text
+        return text.length();
+    }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {
         return followsToken(ts, Collections.singletonList(searchedId), backwards, repositionBack, skipIds);
@@ -180,6 +215,18 @@ public class LexerUtils {
             return false;
         } else {
             return equals(text1.subSequence(0, prefix.length()), prefix, ignoreCase, optimized);
+        }
+    }
+    
+    /** 
+     * @since 1.21
+     * @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only
+     */
+    public static boolean endsWith(CharSequence text1, CharSequence prefix, boolean ignoreCase, boolean optimized) {
+        if (text1.length() < prefix.length()) {
+            return false;
+        } else {
+            return equals(text1.subSequence(text1.length() - prefix.length(), text1.length()), prefix, ignoreCase, optimized);
         }
     }
 

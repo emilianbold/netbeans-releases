@@ -82,9 +82,6 @@ public class AllClustersProcessedCheck extends NbTestCase {
             if (n.equals("extra")) {
                 continue;
             }
-            if (n.equals("webcommon")) {
-                continue;
-            }
             if (n.equals("nb")) {
                 continue;
             }
