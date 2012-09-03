@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.smarty.editor.utlis;
 
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.smarty.editor.parser.TplParserResult;
 
 /**
@@ -61,9 +62,12 @@ public final class ParserUtils {
      * no such block was found
      */
     public static TplParserResult.Block getBlockForOffset(TplParserResult parserResult, int offset) {
+        // XXX - should think about the custom delimiters later
         for (TplParserResult.Block block : parserResult.getBlocks()) {
             for (TplParserResult.Section section : block.getSections()) {
-                if (section.getOffset().containsInclusive(offset)) {
+                OffsetRange or = section.getOffset();
+                or = new OffsetRange(or.getStart() - 1, or.getEnd() + 1);
+                if (or.containsInclusive(offset)) {
                     return block;
                 }
             }

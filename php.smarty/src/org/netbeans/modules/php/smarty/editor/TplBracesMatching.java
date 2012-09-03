@@ -42,6 +42,9 @@
 package org.netbeans.modules.php.smarty.editor;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -66,8 +69,7 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.openide.util.Exceptions;
 
 /**
- * TPL parser based implementation of BracesMatcher.
- * Inspired by HtmlBracesMatching.
+ * TPL parser based implementation of BracesMatcher. Inspired by HtmlBracesMatching.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -140,10 +142,10 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     } else if (t3.id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
                                         if (tagNameEnd != -1) {
                                             return new int[]{from, to,
-                                                    from, tagNameEnd,
-                                                    to - 1, to};
+                                                        from, tagNameEnd,
+                                                        to - 1, to};
                                         } else {
-                                            return new int[] {from, to};
+                                            return new int[]{from, to};
                                         }
                                     }
                                 }
@@ -186,34 +188,42 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             || !source.getMimeType().equals(TplDataLoader.MIME_TYPE)) {
                         return;
                     }
-                    
+
                     if (resultIterator == null) {
                         ret[0] = new int[]{searchOffset, searchOffset};
                         return;
                     }
 
-                    TplParserResult result = (TplParserResult) resultIterator.getParserResult();
-                    if (result == null) {
+                    TplParserResult parserResult = (TplParserResult) resultIterator.getParserResult();
+                    if (parserResult == null) {
                         return;
                     }
 
                     int searchOffsetLocal = searchOffset;
                     while (searchOffsetLocal != context.getLimitOffset()) {
-                        int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
-                        Block block = ParserUtils.getBlockForOffset(result, searched);
+                        int searched = parserResult.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
+                        Block block = ParserUtils.getBlockForOffset(parserResult, searched);
                         if (block == null || block.getSections().size() == 1) {
                             //just simple tag - was found by findOrigin()
                             ret[0] = new int[]{searchOffset, searchOffset};
                             return;
                         }
 
-                        int sectionsCount = block.getSections().size();
-                        ret[0] = new int[sectionsCount * 2];
-                        for (int i = 0; i < sectionsCount; i++) {
-                            OffsetRange offset = block.getSections().get(i).getOffset();
-                            ret[0][i * 2] = offset.getStart();
-                            ret[0][i * 2 + 1] = offset.getEnd();
+                        List<Integer> result = new LinkedList<Integer>();
+                        for (TplParserResult.Section section : block.getSections()) {
+                            OffsetRange or = section.getOffset();
+                            // XXX - keep in mind custom delimiters
+                            or = new OffsetRange(or.getStart() - 1, or.getEnd() + 1);
+                            if (!or.containsInclusive(searchOffset)) {
+                                OffsetRange offset = section.getOffset();
+                                // XXX - keep in mind custom delimiters
+                                result.add(offset.getStart() - 1);
+                                result.add(offset.getStart() + section.getFunctionNameLength());
+                                result.add(offset.getEnd());
+                                result.add(offset.getEnd() + 1);
+                            }
                         }
+                        ret[0] = convertToIntegers(result);
                         searchOffsetLocal = searchOffsetLocal + (context.isSearchingBackward() ? -1 : +1);
                     }
                 }
@@ -224,6 +234,15 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
         }
 
         return ret[0];
+    }
+
+    private static int[] convertToIntegers(List<Integer> list) {
+        int[] integers = new int[list.size()];
+        Iterator<Integer> iterator = list.iterator();
+        for (int i = 0; i < integers.length; i++) {
+            integers[i] = iterator.next().intValue();
+        }
+        return integers;
     }
 
     @Override
@@ -242,5 +261,4 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
         });
         return ret[0];
     }
-
 }

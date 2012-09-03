@@ -110,8 +110,6 @@ public class TplParser extends Parser {
                         section.function = CharSequenceUtilities.toString(functionName);
                         section.offsetRange = new OffsetRange(startOffset, endOffset);
                         section.text = textBuilder.toString();
-
-                        String name = functionName.toString().startsWith("/") ? functionName.toString().substring(1) : functionName.toString();
                         sectionList.add(section);
                     }
                 }
