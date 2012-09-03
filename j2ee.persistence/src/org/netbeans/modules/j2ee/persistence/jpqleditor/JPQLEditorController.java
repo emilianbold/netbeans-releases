@@ -118,11 +118,10 @@ public class JPQLEditorController {
                     try {
                         // Parse POJOs from JPQL
                         // Check and if required compile POJO files mentioned in JPQL
-                        //SessionFactory sessionFactory = processAndConstructSessionFactory(jpql, configFileObject, customClassLoader, project);
 
                         ph.progress(50);
-                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
-                        jpqlResult = queryExecutor.execute(jpql, pu, pe, maxRowCount, ph);
+                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToProvider"));
+                        jpqlResult = queryExecutor.execute(jpql, pu, pe, maxRowCount, ph, true);
                         ph.progress(80);
                         ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionProcessResults"));
 
