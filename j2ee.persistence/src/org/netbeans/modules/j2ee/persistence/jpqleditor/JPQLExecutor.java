@@ -62,19 +62,23 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
  */
 public class JPQLExecutor {
 
-    static public final String ECLIPSELINK_QUERY = "org.eclipse.persistence.jpa.JpaQuery";//NOI18N
-    static   public final String ECLIPSELINK_QUERY_SQL0 = "getDatabaseQuery";//NOI18N
-    static public final String ECLIPSELINK_QUERY_SQL1 = "getSQLString";//NOI18N
-    static public final String HIBERNATE_QUERY = "org.hibernate.ejb.HibernateQuery";//NOI18N
-    static public final String HIBERNATE_QUERY_SQL0 = "getHibernateQuery";//NOI18N
-    static public final String HIBERNATE_QUERY_SQL1 = "getQueryString";//NOI18N
-    static public final String OPENJPA_QUERY = "org.apache.openjpa.persistence.QueryImpl";//NOI18N
-    static public final String OPENJPA_QUERY_SQL = "getQueryString";//NOI18N
+    static private final String ECLIPSELINK_QUERY = "org.eclipse.persistence.jpa.JpaQuery";//NOI18N
+    static private final String ECLIPSELINK_QUERY_SQL0 = "getDatabaseQuery";//NOI18N
+    static private final String ECLIPSELINK_QUERY_SQL1 = "getSQLString";//NOI18N
+    static private final String HIBERNATE_QUERY = "org.hibernate.ejb.HibernateQuery";//NOI18N
+    static private final String HIBERNATE_QUERY_SQL0 = "getSessionFactory";//NOI18N
+    static private final String HIBERNATE_QUERY_SQL1 = "getQueryPlanCache";//NOI18N
+    static private final String HIBERNATE_QUERY_SQL2 = "getHQLQueryPlan";//NOI18N
+    static private final String HIBERNATE_QUERY_SQL3 = "getTranslators";//NOI18N
+    static private final String HIBERNATE_QUERY_SQL4 = "getSQLString";//NOI18N
+    static private final String OPENJPA_QUERY = "org.apache.openjpa.persistence.QueryImpl";//NOI18N
+    static private final String OPENJPA_QUERY_SQL = "getQueryString";//NOI18N
 
     /**
      * Executes given JPQL query and returns the result.
      *
      * @param jpql the query
+     * @param execute execute query (true) or just try to get SQL (false)
      * @return JPQLResult containing the execution result (including any
      * errors).
      */
@@ -82,12 +86,13 @@ public class JPQLExecutor {
             PersistenceUnit pu,
             PersistenceEnvironment pe,
             int maxRowCount,
-            ProgressHandle ph) {
+            ProgressHandle ph,
+            boolean execute) {
         JPQLResult result = new JPQLResult();
         try {
             ph.progress(60);
 
-            Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
+            Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
             javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
 
             EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
@@ -121,17 +126,17 @@ public class JPQLExecutor {
                 }
             } 
             else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
-                Method method = emf.getClass().getMethod("getSessionFactory");
+                Method method = emf.getClass().getMethod(HIBERNATE_QUERY_SQL0);
                 Object sessionFactoryImpl = method.invoke(emf);
-                Method method2 = sessionFactoryImpl.getClass().getMethod("getQueryPlanCache");
+                Method method2 = sessionFactoryImpl.getClass().getMethod(HIBERNATE_QUERY_SQL1);
                 Object qPlanCache = method2.invoke(sessionFactoryImpl);
-                Method method3 = qPlanCache.getClass().getMethod("getHQLQueryPlan", String.class, boolean.class, Map.class);
+                Method method3 = qPlanCache.getClass().getMethod(HIBERNATE_QUERY_SQL2, String.class, boolean.class, Map.class);
                 Object cache = method3.invoke(qPlanCache, jpql, true, Collections.EMPTY_MAP);
-                Method method4 = cache.getClass().getMethod("getTranslators");
+                Method method4 = cache.getClass().getMethod(HIBERNATE_QUERY_SQL3);
                 Object [] translators = (Object[]) method4.invoke(cache);
                 StringBuilder stringBuff = new StringBuilder();
                 if(translators != null && translators.length>0){
-                    Method method5 = translators[0].getClass().getMethod("getSQLString");
+                    Method method5 = translators[0].getClass().getMethod(HIBERNATE_QUERY_SQL4);
                     for(Object translator:translators){
                         stringBuff.append(method5.invoke(translator)).append("\n");
                     }
@@ -150,15 +155,17 @@ public class JPQLExecutor {
             //
             ph.progress(70);
 
-            query.setMaxResults(maxRowCount);
+            if(execute){
+                query.setMaxResults(maxRowCount);
 
-            jpql = jpql.trim();
-            jpql = jpql.toUpperCase();
+                jpql = jpql.trim();
+                jpql = jpql.toUpperCase();
 
-            if (jpql.startsWith("UPDATE") || jpql.startsWith("DELETE")) { //NOI18N
-                result.setUpdateOrDeleteResult(query.executeUpdate());
-            } else {
-                result.setQueryResults(query.getResultList());
+                if (jpql.startsWith("UPDATE") || jpql.startsWith("DELETE")) { //NOI18N
+                    result.setUpdateOrDeleteResult(query.executeUpdate());
+                } else {
+                    result.setQueryResults(query.getResultList());
+                }
             }
         } catch (Exception e) {
             result.getExceptions().add(e);

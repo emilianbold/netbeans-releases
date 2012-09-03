@@ -154,7 +154,7 @@ public class JsFormatter implements Formatter {
                     FormatToken token = tokens.get(i);
 
                     // FIXME optimize performance
-                    if (token.getOffset() >= 0) {
+                    if (!token.isVirtual()) {
                         if (!firstTokenFound) {
                             firstTokenFound = true;
                             formatContext.setCurrentLineStart(token.getOffset());
@@ -993,17 +993,20 @@ public class JsFormatter implements Formatter {
 
         if (ts != null && token != null) {
             int index = ts.index();
-            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
-            JsTokenId previousId = previous != null ? previous.id() : null;
+            JsTokenId previousId = null;
+            if (ts.movePrevious()) {
+                Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                if (previous != null) {
+                    previousId = previous.id();
+                }
 
-            ts.moveIndex(index);
-            ts.moveNext();
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
 
             JsTokenId id = token.id();
 
-            // http://www.netbeans.org/issues/show_bug.cgi?id=115279
-            boolean isContinuationOperator = isBinaryOperator(id, previousId)
-                    || id == JsTokenId.OPERATOR_DOT;
+            boolean isContinuationOperator = isBinaryOperator(id, previousId);
 
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
@@ -1243,12 +1246,16 @@ public class JsFormatter implements Formatter {
                     if (ts != null) {
                         JsTokenId id = ts.token().id();
                         int index = ts.index();
-                        Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
-                        JsTokenId previousId = previous != null ? previous.id() : null;
+                        JsTokenId previousId = null;
+                        if (ts.movePrevious()) {
+                            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                            if (previous != null) {
+                                previousId = previous.id();
+                            }
 
-                        ts.moveIndex(index);
-                        ts.moveNext();
-
+                            ts.moveIndex(index);
+                            ts.moveNext();
+                        }
                         // We don't have multiline string literals in JavaScript!
                         if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT) {
                             if (ts.offset() == pos) {
@@ -1257,7 +1264,7 @@ public class JsFormatter implements Formatter {
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }
-                        } else if (isBinaryOperator(id, previousId) || id == JsTokenId.OPERATOR_DOT) {
+                        } else if (isBinaryOperator(id, previousId)) {
                             // If a line starts with a non unary operator we can
                             // assume it's a continuation from a previous line
                             continued = true;
@@ -1648,6 +1655,7 @@ public class JsFormatter implements Formatter {
             case OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT:
             case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
             case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
+            case OPERATOR_DOT:
                 return true;
             case OPERATOR_PLUS:
             case OPERATOR_MINUS:
