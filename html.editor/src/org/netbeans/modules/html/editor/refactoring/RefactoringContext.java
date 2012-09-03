@@ -75,7 +75,7 @@ import org.openide.util.Exceptions;
  */
 public class RefactoringContext {
 
-    private static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+    private static final String CSS_MIME_TYPE = "text/css";//NOI18N
     private FileObject file;
     private Document document;
     private int from, to;

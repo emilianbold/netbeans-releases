@@ -81,7 +81,7 @@ public class CssIndenterTest extends TestBase {
         CssBracketCompleter.unitTestingSupport = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/css"), cssFactory, CssTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/x-jsp"), HTMLTokenId.language());
     }

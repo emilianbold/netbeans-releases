@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <div data-role="page">
+            <div data-role="header">
+                <h1>Add New Manufacturer</h1>
+            </div>
+            <div data-role="content">	
+                    <table id="aaCC">xxxx
+                    </table>
+            </div>
+        </div>
+    </body>
+</html>

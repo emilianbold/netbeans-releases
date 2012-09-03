@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.*;
-import java.beans.*;
 import java.io.*;
 import java.net.*;
 import java.util.logging.Level;
@@ -75,6 +73,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * Status is checked after each second.
      */
     protected static final int CMD_TIMEOUT = 6;
+    
+    private static RequestProcessor RP = new RequestProcessor();
     
     /** Creates modified NbProcessDescriptor that can be used to start
      * browser process when <CODE>-remote openURL()</CODE> options
@@ -142,13 +142,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
-    public void setURL(URL url) {
+    protected void loadURLInBrowser(URL url) {
         if (SwingUtilities.isEventDispatchThread ()) {
             final URL newUrl = url;
             RequestProcessor.getDefault ().post (
                 new Runnable () {
                     public void run () {
-                        UnixBrowserImpl.this.setURL (newUrl);
+                        UnixBrowserImpl.this.loadURLInBrowser (newUrl);
                     }
             });
             return;
@@ -171,11 +171,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
             p = cmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
             
-            RequestProcessor.getDefault ().post (new Status (cmd, p, url), 1000);
+            RP.post (new Status (cmd, p, url), 1000);
 
-            URL old = this.url;
-            this.url = url;
-            pcs.firePropertyChange (PROP_URL, old, url);
+            pcs.firePropertyChange (PROP_URL, getURL(), url);
         }
         catch (java.io.IOException ex) {
             ExtWebBrowser.getEM().log(Level.INFO, null, ex);
@@ -241,6 +239,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
          * If the execution is not finished during timeout message is displayed.
          */
         public void run () {
+            try {
+                // wait for process to finish before testing exit status:
+                p.waitFor();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
             boolean retried = false;
             if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                 ExtWebBrowser.getEM().log(Level.FINE, "Retried: " + retried); // NOI18N
@@ -259,7 +264,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     ExtWebBrowser.getEM().log(Level.FINE, "Time: " + System.currentTimeMillis()); // NOI18N
                 }
                 if (retries > 0) {
-                    RequestProcessor.getDefault().post(this, 1000);
+                    RP.post(this, 1000);
                     return;
                 } else {
                     if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {

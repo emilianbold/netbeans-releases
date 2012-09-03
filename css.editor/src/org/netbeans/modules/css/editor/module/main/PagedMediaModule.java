@@ -57,14 +57,15 @@ import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -77,7 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class PagedMediaModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/paged_media"; //NOI18N
-    private static Collection<Property> propertyDescriptors;
+    private static Collection<PropertyDefinition> propertyDescriptors;
     private static final Collection<String> PAGE_PSEUDO_CLASSES = Arrays.asList(new String[]{"first", "left", "right"}); //NOI18N
     private static final Collection<String> PAGE_MARGIN_SYMBOLS =
             Arrays.asList(new String[]{
@@ -100,7 +101,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
             });
 
     @Override
-    public synchronized Collection<Property> getProperties() {
+    public synchronized Collection<PropertyDefinition> getProperties() {
         if (propertyDescriptors == null) {
             propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
@@ -184,7 +185,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
     }
 
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
-        return Utilities.wrapProperties(CssModuleSupport.getProperties(context), context.getAnchorOffset());
+        return Utilities.wrapProperties(Properties.getProperties(), context.getAnchorOffset());
     }
 
     @Override

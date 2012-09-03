@@ -53,6 +53,7 @@ import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -93,7 +94,6 @@ public class HtmlGSFParser extends Parser {
 
     public @Override
     Result getResult(Task task) throws ParseException {
-        assert lastResult != null : "getResult() called prior parse()"; //NOI18N
         return lastResult;
     }
 
@@ -117,9 +117,16 @@ public class HtmlGSFParser extends Parser {
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
+        if(snapshot == null) {
+            //#215101: calling "ParserManager.parseWhenScanFinished("text/html",someTask)" results into null snapshot passed here
+            return null; 
+        }
+        
         HtmlSource source = new HtmlSource(snapshot);
 
-        String sourceMimetype = snapshot.getSource().getMimeType();
+        Source snapshotSource = snapshot.getSource();
+        String sourceMimetype = snapshotSource != null ? snapshotSource.getMimeType() : snapshot.getMimeType(); //prefer source mimetype
+        
         Collection<HtmlExtension> exts = HtmlExtension.getRegisteredExtensions(sourceMimetype);
         Collection<UndeclaredContentResolver> resolvers = new ArrayList<UndeclaredContentResolver>();
         for (HtmlExtension ex : exts) {
