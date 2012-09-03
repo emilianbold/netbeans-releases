@@ -51,6 +51,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -198,7 +199,7 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
     
     public static void removeTrailingWhitespace(Context context, String policy) {
         Document doc = context.getInstance(Document.class);
-        Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, policy);
         Runnable beforeSaveRunnable = (Runnable) doc.getProperty("beforeSaveRunnable");
         assertNotNull(beforeSaveRunnable);
