@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
-import org.netbeans.modules.web.javascript.debugger.annotation.LineBreakpointAnnotation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -56,6 +55,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.modules.web.javascript.debugger.annotation.LineBreakpointAnnotation;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.text.Annotation;
@@ -104,7 +104,9 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if (Breakpoint.PROP_ENABLED.equals(propertyName)) {
+        if (Breakpoint.PROP_ENABLED.equals(propertyName) ||
+            LineBreakpoint.PROP_LINE.equals(propertyName)) {
+            
             Breakpoint b = (Breakpoint) evt.getSource();
             removeAnnotation(b);
             addAnnotation(b);
@@ -123,7 +125,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
         synchronized (myAnnotations) {
             myAnnotations.put( breakpoint, annotation );
         }
-        breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        breakpoint.addPropertyChangeListener(this);
     }
 
     private void removeAnnotation(Breakpoint breakpoint) {
@@ -137,7 +139,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
         }
         
         annotation.detach();
-        breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        breakpoint.removePropertyChangeListener(this);
     }
 
     @Override
