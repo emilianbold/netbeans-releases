@@ -77,7 +77,7 @@ import org.openide.util.RequestProcessor;
 public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                                      implements LazyDebuggerManagerListener {
 
-    private static final RequestProcessor RP = new RequestProcessor("Breakpoint updater");
+    public static final RequestProcessor RP = new RequestProcessor("Breakpoint updater");
     
     private final Debugger d;
     private final WebKitDebugging wd;
