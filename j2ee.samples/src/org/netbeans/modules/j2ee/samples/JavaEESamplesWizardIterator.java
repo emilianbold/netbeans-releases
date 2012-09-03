@@ -60,6 +60,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.examples.WebSampleProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -68,7 +69,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.web.examples.WebSampleProjectGenerator;
 
 public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
