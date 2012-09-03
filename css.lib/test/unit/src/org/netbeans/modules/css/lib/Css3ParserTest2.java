@@ -52,7 +52,11 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
+ * 
+ * THIS TEST DOESN'T REGULARLY RUN IN THE UNIT TEST SUITE (due to the Test2 postfix).
  *
+ * Most of the tests are not passing or even valid.
+ * 
  * @author marekfukala
  */
 public class Css3ParserTest2 extends CslTestBase {

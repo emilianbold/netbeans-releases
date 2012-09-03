@@ -254,12 +254,12 @@ public class CssFileModel {
         
         @Override
         public boolean visit(Node node) {
-            if (node.type() == NodeType.imports) {
+            if (node.type() == NodeType.importItem) {
                 Entry entry = getImportedEntry(node);
                 if (entry != null) {
                     getImportsCollectionInstance().add(entry);
                 }
-            } else if (node.type() == NodeType.ruleSet) {
+            } else if (node.type() == NodeType.rule) {
                 currentBodyRange = NodeUtil.getRuleBodyRange(node);
             } else if (NodeUtil.isSelectorNode(node)) {
 
@@ -395,7 +395,7 @@ public class CssFileModel {
         //computed lazily
         private OffsetRange documentRange, documentBodyRange;
         private CharSequence elementText, elementLineText;
-        private int lineOffset;
+        private int lineOffset = -1;
 
         public LazyEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
             this.name = name;

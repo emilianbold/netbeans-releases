@@ -43,23 +43,29 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 
 /**
- * 
+ *
  * @author Marek Fukala
  */
 public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserResult> {
@@ -72,14 +78,13 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if(mimeType.equals("text/html")) { //NOI18N
+            if (mimeType.equals("text/html")) { //NOI18N
                 return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
                 return Collections.emptyList();
             }
         }
     }
-
     private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
 
     public static synchronized Source forDocument(Document doc) {
@@ -108,8 +113,10 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
+        HtmlElementProperties.parsed(result, event);
+        
         Document doc = result.getSnapshot().getSource().getDocument(false);
-        if(doc != null) {
+        if (doc != null) {
             forDocument(doc).parsed(result, event);
         }
     }
