@@ -137,8 +137,8 @@ public class GlobalComponentsIndexSupport implements Runnable {
                 if (cached != null) {
                     if (type.isInstance(cached)) {
                         result = type.cast(cached);
-                    } else {
-                        assert cached instanceof List;
+                    } else if (cached instanceof List) {
+                        // #207608 - may be a single element, whose type is different than searched for.
                         List compList = List.class.cast(cached);
                         for (Object sComp : compList) {
                             if (type.isInstance(sComp)) {

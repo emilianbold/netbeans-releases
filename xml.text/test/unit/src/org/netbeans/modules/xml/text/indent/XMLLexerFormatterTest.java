@@ -70,6 +70,9 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         suite.addTest(new XMLLexerFormatterTest("testFormat_ContentIndent"));
         suite.addTest(new XMLLexerFormatterTest("testFormat_AttrsIndent"));
         suite.addTest(new XMLLexerFormatterTest("testFormat_ProcessingIndent"));
+        suite.addTest(new XMLLexerFormatterTest("testFormat_nestedSameElements"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatWithCdataContent217342"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatBreaksMixedContent216986"));
         return suite;
     }
 
@@ -220,6 +223,26 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
         BaseDocument outputDoc = getDocument("indent/output_nestedSame.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
+    
+    public void testFormatWithCdataContent217342() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_cdataContent.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_cdataContent.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
+
+    public void testFormatBreaksMixedContent216986() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_breaksMixedContent.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_breaksMixedContent.xml");
         assert (compare(formattedDoc, outputDoc));
     }
 }
