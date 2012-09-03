@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support;
+package org.netbeans.modules.groovy.webproject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,32 +67,35 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
+ * Implementation of the GroovyExtender for Java EE Ant based projects.
  *
  * @author Martin Janicek
  */
-@ProjectServiceProvider(service = GroovyExtender.class, projectType="org-netbeans-modules-java-j2seproject")
-public class J2seProjectGroovyExtender implements GroovyExtender {
+@ProjectServiceProvider(
+    service =
+        GroovyExtender.class,
+    projectType = {
+        "org-netbeans-modules-web-project"
+    }
+)
+public class WebProjectGroovyExtender implements GroovyExtender {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N
-    private static final String GROOVY_BUILD_XSL = "org/netbeans/modules/groovy/support/resources/groovy-build.xsl"; // NOI18N
-    private static final String J2SE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
-    private static final String J2SE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
-    private static final String J2SE_DISABLE_COMPILE_ON_SAVE = "compile.on.save.unsupported.groovy"; // NOI18N
+    private static final String GROOVY_BUILD_XSL = "org/netbeans/modules/groovy/webproject/resources/groovy-build.xsl"; // NOI18N
+    private static final String J2EE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
+    private static final String J2EE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
+    private static final String J2EE_DISABLE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; // NOI18N
+    private static final String J2EE_COMPILE_ON_SAVE_UNSUPPORTED = "compile.on.save.unsupported.groovy"; // NOI18N
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
-
     private final Project project;
 
 
-    public J2seProjectGroovyExtender(Project project) {
+    public WebProjectGroovyExtender(Project project) {
         this.project = project;
     }
 
 
-    /**
-     * Checks only build script extension, not classpath, not excludes
-     * @return true if build script is modified with groovy extension
-     */
     @Override
     public boolean isActive() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
@@ -101,18 +104,15 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
 
     @Override
     public boolean activate() {
-        return addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
+        return addGroovyToClasspath() && addExcludes() && addBuildScript() && disableCompileOnSave();
     }
 
     @Override
     public boolean deactivate() {
-        return removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
+        return true; // There is currently no way how to disable groovy in existing project
     }
 
-    /**
-     * Add groovy-all.jar on classpath
-     */
-    private boolean addClasspath() {
+    private boolean addGroovyToClasspath() {
         Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
         if (groovyAllLib != null) {
             try {
@@ -133,38 +133,13 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
         return false;
     }
 
-    /**
-     * Removes groovy-all library from classpath
-     */
-    private boolean removeClasspath() {
-        Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
-        if (groovyAllLib != null) {
-            try {
-                Sources sources = ProjectUtils.getSources(project);
-                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                for (SourceGroup sourceGroup : sourceGroups) {
-                    ProjectClassPathModifier.removeLibraries(new Library[]{groovyAllLib}, sourceGroup.getRootFolder(), ClassPath.COMPILE);
-                }
-                return true;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (UnsupportedOperationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Add *.groovy to excludes
-     */
     private boolean addExcludes() {
         try {
-            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
-            String exclude = props.getProperty(J2SE_EXCLUDE_PROPERTY);
+            EditableProperties props = getEditableProperties(project, J2EE_PROJECT_PROPERTIES_PATH);
+            String exclude = props.getProperty(J2EE_EXCLUDE_PROPERTY);
             if (!exclude.contains(EXCLUSION_PATTERN)) {
-                props.setProperty(J2SE_EXCLUDE_PROPERTY, exclude + "," + EXCLUSION_PATTERN); // NOI18N
-                storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+                props.setProperty(J2EE_EXCLUDE_PROPERTY, exclude + "," + EXCLUSION_PATTERN); // NOI18N
+                storeEditableProperties(project, J2EE_PROJECT_PROPERTIES_PATH, props);
             }
             return true;
         } catch (IOException ex) {
@@ -173,28 +148,6 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
         return false;
     }
 
-    /**
-     * Removes *.groovy from excludes
-     */
-    private boolean removeExcludes() {
-        try {
-            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
-            String exclude = props.getProperty(J2SE_EXCLUDE_PROPERTY);
-            if (exclude.contains("," + EXCLUSION_PATTERN)) {
-                exclude = exclude.replace("," + EXCLUSION_PATTERN, "");
-                props.setProperty(J2SE_EXCLUDE_PROPERTY, exclude);
-                storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
-            }
-            return true;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return false;
-    }
-
-    /**
-     * Wrap javac into groovyc using imported groovy-build.xml
-     */
     private boolean addBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
@@ -221,42 +174,12 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
         return false;
     }
 
-    private boolean removeBuildScript() {
-        AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
-        if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
-            AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
-            if (extension != null) {
-                FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-                try {
-                    extension.removeDependency(EXTENSIBLE_TARGET_NAME, "-groovy-init-macrodef-javac"); // NOI18N
-                    extender.removeExtension(GROOVY_EXTENSION_ID);
-                    if (destDirFO != null) {
-                        FileObject fileToRemove = destDirFO.getFileObject("groovy-build.xml"); // NOI18N
-                        if (fileToRemove != null) {
-                            fileToRemove.delete();
-                        }
-                    }
-                    ProjectManager.getDefault().saveProject(project);
-                    return true;
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            } else {
-                // extension is not registered
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Disables compile on save
-     */
-    private boolean addDisableCompileOnSaveProperty() {
+    private boolean disableCompileOnSave() {
         try {
-            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
-            props.put(J2SE_DISABLE_COMPILE_ON_SAVE, "true");
-            storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            EditableProperties props = getEditableProperties(project, J2EE_PROJECT_PROPERTIES_PATH);
+            props.put(J2EE_DISABLE_COMPILE_ON_SAVE, "false");
+            props.put(J2EE_COMPILE_ON_SAVE_UNSUPPORTED, "true");
+            storeEditableProperties(project, J2EE_PROJECT_PROPERTIES_PATH, props);
             return true;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -264,23 +187,7 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
         return false;
     }
 
-    /**
-     * Enabled compile on save
-     */
-    private boolean removeDisableCompileOnSaveProperty() {
-        try {
-            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
-            props.remove(J2SE_DISABLE_COMPILE_ON_SAVE);
-            storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
-            return true;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return false;
-    }
-
-    private static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath)
-        throws IOException {
+    private static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath) throws IOException {
         try {
             return
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<EditableProperties>() {
@@ -290,7 +197,7 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
                     EditableProperties ep = null;
                     if (propertiesFo!=null) {
                         InputStream is = null;
-                        ep = new EditableProperties();
+                        ep = new EditableProperties(true);
                         try {
                             is = propertiesFo.getInputStream();
                             ep.load(is);
@@ -329,3 +236,4 @@ public class J2seProjectGroovyExtender implements GroovyExtender {
         }
     }
 }
+
