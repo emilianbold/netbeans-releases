@@ -459,10 +459,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     return new Node[]{new FolderFilterNode(type, fakeNode.getNodeDelegate(), ignoreList)};
                 }
             } else {
-                DataFolder df = DataFolder.findFolder(root);
-                if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
-                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
-                }
+                return new Node[]{new FolderFilterNode(type, DataFolder.findFolder(root).getNodeDelegate(), ignoreList)};
             }
             return new Node[0];
         }
