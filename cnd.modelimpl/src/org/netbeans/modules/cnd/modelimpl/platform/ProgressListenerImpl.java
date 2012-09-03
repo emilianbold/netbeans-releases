@@ -44,11 +44,18 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -58,11 +65,35 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 public class ProgressListenerImpl implements CsmProgressListener {
 
     private final Map<CsmProject, ParsingProgress> handles = new HashMap<CsmProject, ParsingProgress>();
-
-    private synchronized ParsingProgress getHandle(CsmProject project, boolean createIfNeed) {
+    private static final Logger LOG = Logger.getLogger(ProgressListenerImpl.class.getName());
+    
+    private synchronized ParsingProgress getHandle(final CsmProject project, boolean createIfNeed) {
         ParsingProgress handle = handles.get(project);
         if (handle == null && createIfNeed) {
-            handle = new ParsingProgress(project);
+            handle = new ParsingProgress(project, new Cancellable() {
+
+                @Override
+                public boolean cancel() {
+                    UIGesturesSupport.submit("USG_CND_CANCEL_PARSE"); //NOI18N
+                    LOG.log(Level.INFO, "Cancel Parse requst for project {0}", project); //NOI18N
+                    CsmModel model = CsmModelAccessor.getModel();
+                    if (model instanceof ModelImpl && project instanceof ProjectBase) {
+                        final ModelImpl modelImpl = (ModelImpl)model;
+                        modelImpl.enqueueModelTask(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                LOG.log(Level.INFO, "Enqueue disabling Code Assistance for project {0}", project); //NOI18N
+                                modelImpl.disableProject((ProjectBase)project);
+                            }
+                        }, "disable " + project.getDisplayName()); // NOI18N
+                        
+                        return true;
+                    }
+                    return false;
+                }
+                
+            });
             handles.put(project, handle);
         }
         return handle;

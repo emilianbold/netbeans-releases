@@ -37,21 +37,25 @@ FormattingToken{kind=TEXT, offset=45, text=true}
 FormattingToken{kind=BEFORE_WHILE_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=49, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=50, text=
 }
 FormattingToken{kind=WHITESPACE, offset=51, text= }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=52, text=a}
 FormattingToken{kind=WHITESPACE, offset=53, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=54, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=55, text= }
 FormattingToken{kind=TEXT, offset=56, text=b}
 FormattingToken{kind=WHITESPACE, offset=57, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=58, text=+}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=59, text= }
 FormattingToken{kind=TEXT, offset=60, text=c}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

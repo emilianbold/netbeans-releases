@@ -45,7 +45,9 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -61,6 +63,8 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
+import org.netbeans.modules.javafx2.editor.parser.processors.EventResolver;
+import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.parser.processors.IncludeResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.NamedInstancesCollector;
 import org.netbeans.modules.javafx2.editor.parser.processors.PropertyResolver;
@@ -105,7 +109,7 @@ class FxmlParser extends Parser implements ErrorReporter {
     @SuppressWarnings("unchecked")
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         this.snapshot = snapshot;
-        TokenHierarchy<XMLTokenId> h = (TokenHierarchy<XMLTokenId>)snapshot.getTokenHierarchy();
+        TokenHierarchy<?> h = (TokenHierarchy<?>)snapshot.getTokenHierarchy();
         XmlLexerParser tokenParser = new XmlLexerParser(h);
         FxModelBuilder builder = new FxModelBuilder();
         
@@ -124,6 +128,7 @@ class FxmlParser extends Parser implements ErrorReporter {
         
         final ClasspathInfo cpInfo = ClasspathInfo.create(snapshot.getSource().getFileObject());
         
+        problems.addAll(tokenParser.getErrors());
         problems.addAll(builder.getErrors());
         model = builder.getModel();
         
@@ -163,12 +168,14 @@ class FxmlParser extends Parser implements ErrorReporter {
     }
     
     private static final class ResultImpl extends FxmlParserResult {
-        public ResultImpl(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, TokenHierarchy<XMLTokenId>  h) {
+        private ImportProcessor importProcessor;
+        
+        public ResultImpl(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, TokenHierarchy<?>  h) {
             super(_snapshot, sourceModel, problems, h);
         }
 
         @Override
-        protected FxNewInstance resolveInstance(FxInclude include) {
+        public FxNewInstance resolveInstance(FxInclude include) {
             // FIXME
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -176,6 +183,15 @@ class FxmlParser extends Parser implements ErrorReporter {
         @Override
         protected FxTreeUtilities createTreeUtilities() {
             return new FxTreeUtilities(ModelAccessor.INSTANCE, getSourceModel(), getTokenHierarchy());
+        }
+
+        @Override
+        public Set<String> resolveClassName(CompilationInfo info, String className) {
+            if (importProcessor == null) {
+                importProcessor = new ImportProcessor(getTokenHierarchy(), null, getTreeUtilities());
+                importProcessor.load(info, getSourceModel());
+            }
+            return importProcessor.resolveTypeName(info, className);
         }
     }
     
@@ -186,6 +202,7 @@ class FxmlParser extends Parser implements ErrorReporter {
         steps.add(new TypeResolver());
         steps.add(new ReferenceResolver());
         steps.add(new PropertyResolver());
+        steps.add(new EventResolver());
     }
     
     @SuppressWarnings("unchecked")

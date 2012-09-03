@@ -92,7 +92,7 @@ public final class BugtrackingManager implements LookupListener {
     private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private Map<String, List<RecentIssue>> recentIssues;
-    private KenaiAccessor kenaiAccessor;
+    private KenaiAccessor[] kenaiAccessors;
 
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
@@ -171,11 +171,12 @@ public final class BugtrackingManager implements LookupListener {
         return Collections.unmodifiableMap(getRecentIssues());
     }
 
-    public KenaiAccessor getKenaiAccessor() {
-        if (kenaiAccessor == null) {
-            kenaiAccessor = Lookup.getDefault().lookup(KenaiAccessor.class);
+    public KenaiAccessor[] getKenaiAccessors() {
+        if (kenaiAccessors == null) {
+            Collection<? extends KenaiAccessor> coll = Lookup.getDefault().lookupAll(KenaiAccessor.class);
+            kenaiAccessors = coll.toArray(new KenaiAccessor[coll.size()]);
         }
-        return kenaiAccessor;
+        return kenaiAccessors;
     }
 
     private Map<String, List<RecentIssue>> getRecentIssues() {

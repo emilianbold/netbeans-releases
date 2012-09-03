@@ -51,6 +51,7 @@ PARSERRORS="-J-Dparser.report.errors=true"
 DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
 NB_COPY="${TMP_PREFIX}/${USER}/nb-copy"
+VERBOSE=true
 
 while [ -h "$PRG" ]; do
     ls=`ls -ld "$PRG"`
@@ -101,6 +102,11 @@ do
 		    echo "Press ENTER to proceed or ^C to abort"
 		    read t
 		fi
+                ;;
+        --quiet|-q)
+                echo "Disabled verbose mode"
+                PARSERRORS=""
+                VERBOSE=false
                 ;;
 	--nodebug|-nodebug)
 		echo "Debug mode OFF"
@@ -182,16 +188,16 @@ DEFS=""
 DEFS="${DEFS} ${CONSOLE}"
 DEFS="${DEFS} ${PARSERRORS}"
 DEFS="${DEFS} -J-Dcnd.modelimpl.timing=true"
-DEFS="${DEFS} -J-Dcnd.modelimpl.timing.per.file.flat=true"
-DEFS="${DEFS} -J-Dparser.report.include.failures=true"
+DEFS="${DEFS} -J-Dcnd.modelimpl.timing.per.file.flat=${VERBOSE}"
+DEFS="${DEFS} -J-Dparser.report.include.failures=${VERBOSE}"
 DEFS="${DEFS} -J-Dsun.java2d.pmoffscreen=false"
 DEFS="${DEFS} -J-Dtest.xref.action=true"
 DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
 DEFS="${DEFS} -J-Dcnd.callgraph.showgraph=true"
 DEFS="${DEFS} -J-Dcnd.trace.includes=true"
-DEFS="${DEFS} -J-Dcnd.standalone.trace=true"
+DEFS="${DEFS} -J-Dcnd.standalone.trace=${VERBOSE}"
 DEFS="${DEFS} -J-Dcnd.refactoring.extra=true"
-DEFS="${DEFS} -J-Dcnd.completion.trace.multiple.visible=true"
+DEFS="${DEFS} -J-Dcnd.completion.trace.multiple.visible=${VERBOSE}"
 DEFS="${DEFS} -J-Dcnd.semantic.line.limit=-1"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"

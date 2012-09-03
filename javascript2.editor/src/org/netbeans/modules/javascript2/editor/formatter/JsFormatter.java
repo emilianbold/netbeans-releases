@@ -42,21 +42,32 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -66,11 +77,13 @@ public class JsFormatter implements Formatter {
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
-    private static boolean ELSE_IF_SINGLE_LINE = true;
+    private static final boolean ELSE_IF_SINGLE_LINE = true;
 
     private final Language<JsTokenId> language;
 
-    int lastOffsetDiff = 0;
+    private int lastOffsetDiff = 0;
+
+    private Set<FormatToken> processed = new HashSet<FormatToken>();
 
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;
@@ -93,6 +106,8 @@ public class JsFormatter implements Formatter {
 
     @Override
     public void reformat(final Context context, final ParserResult compilationInfo) {
+        processed.clear();
+        lastOffsetDiff = 0;
         final BaseDocument doc = (BaseDocument) context.document();
 
         doc.runAtomic(new Runnable() {
@@ -102,10 +117,10 @@ public class JsFormatter implements Formatter {
                 long startTime = System.nanoTime();
 
                 FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
-                
+
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
-                
+
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, context.startOffset(), context.endOffset());
                 LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
@@ -123,7 +138,7 @@ public class JsFormatter implements Formatter {
                 LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
-                
+
                 int initialIndent = CodeStyle.get(formatContext).getInitialIndent();
                 int continuationIndent = CodeStyle.get(formatContext).getContinuationIndentSize();
 
@@ -144,336 +159,116 @@ public class JsFormatter implements Formatter {
                             firstTokenFound = true;
                             formatContext.setCurrentLineStart(token.getOffset());
                         }
-                        lastOffsetDiff = formatContext.getOffsetDiff();
+                        // we do not store last things for potentially
+                        // removed/replaced tokens
+                        if (token.getKind() != FormatToken.Kind.WHITESPACE
+                                && token.getKind() != FormatToken.Kind.EOL) {
+                            lastOffsetDiff = formatContext.getOffsetDiff();
+                        }
                         initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
-                    
-                    switch (token.getKind()) {
-                        case BEFORE_ASSIGNMENT_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundAssignOps());
-                            break;
-                        case AFTER_ASSIGNMENT_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundAssignOps());
-                            break;
-                        case BEFORE_BINARY_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundBinaryOps());
-                            break;
-                        case AFTER_BINARY_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundBinaryOps());
-                            break;
-                        case BEFORE_COMMA:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeComma());
-                            break;
-                        case AFTER_COMMA:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAfterComma());
-                            break;
-                        case AFTER_IF_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeIfParen());
-                            break;
-                        case AFTER_WHILE_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWhileParen());
-                            break;
-                        case AFTER_FOR_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeForParen());
-                            break;
-                        case AFTER_WITH_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWithParen());
-                            break;
-                        case AFTER_SWITCH_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeSwitchParen());
-                            break;
-                        case AFTER_CATCH_KEYWORD:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeCatchParen());
-                            break;
-                        case BEFORE_WHILE_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWhile());
-                            break;
-                        case BEFORE_ELSE_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeElse());
-                            break;
-                        case BEFORE_CATCH_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeCatch());
-                            break;
-                        case BEFORE_FINALLY_KEYWORD:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeFinally());
-                            break;
-                        case BEFORE_SEMICOLON:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeSemi());
-                            break;
-                        case AFTER_SEMICOLON:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAfterSemi());
-                            break;
-                        case BEFORE_UNARY_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundUnaryOps());
-                            break;
-                        case AFTER_UNARY_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundUnaryOps());
-                            break;
-                        case BEFORE_TERNARY_OPERATOR:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundTernaryOps());
-                            break;
-                        case AFTER_TERNARY_OPERATOR:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceAroundTernaryOps());
-                            break;
-                        case BEFORE_FUNCTION_DECLARATION:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeMethodDeclParen());
-                            break;
-                        case BEFORE_FUNCTION_CALL:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeMethodCallParen());
-                            break;
-                        case AFTER_FUNCTION_DECLARATION_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodDeclParens());
-                            break;
-                        case BEFORE_FUNCTION_DECLARATION_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodDeclParens());
-                            break;
-                        case AFTER_FUNCTION_CALL_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodCallParens());
-                            break;
-                        case BEFORE_FUNCTION_CALL_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinMethodCallParens());
-                            break;
-                        case AFTER_IF_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinIfParens());
-                            break;
-                        case BEFORE_IF_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinIfParens());
-                            break;
-                        case AFTER_WHILE_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWhileParens());
-                            break;
-                        case BEFORE_WHILE_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWhileParens());
-                            break;
-                        case AFTER_FOR_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinForParens());
-                            break;
-                        case BEFORE_FOR_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinForParens());
-                            break;
-                        case AFTER_WITH_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWithParens());
-                            break;
-                        case BEFORE_WITH_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinWithParens());
-                            break;
-                        case AFTER_SWITCH_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinSwitchParens());
-                            break;
-                        case BEFORE_SWITCH_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinSwitchParens());
-                            break;
-                        case AFTER_CATCH_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinCatchParens());
-                            break;
-                        case BEFORE_CATCH_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinCatchParens());
-                            break;
-                        case AFTER_LEFT_PARENTHESIS:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinParens());
-                            break;
-                        case BEFORE_RIGHT_PARENTHESIS:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinParens());
-                            break;
-                        case BEFORE_IF_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeIfLeftBrace());
-                            break;
-                        case BEFORE_ELSE_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeElseLeftBrace());
-                            break;
-                        case BEFORE_WHILE_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeWhileLeftBrace());
-                            break;
-                        case BEFORE_FOR_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeForLeftBrace());
-                            break;
-                        case BEFORE_DO_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeDoLeftBrace());
-                            break;
-                        case BEFORE_TRY_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeTryLeftBrace());
-                            break;
-                        case BEFORE_CATCH_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeCatchLeftBrace());
-                            break;
-                        case BEFORE_FINALLY_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeFinallyLeftBrace());
-                            break;
-                        case BEFORE_SWITCH_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeSwitchLeftBrace());
-                            break;
-                        case BEFORE_FUNCTION_DECLARATION_BRACE:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceBeforeMethodDeclLeftBrace());
-                            break;
-                        case AFTER_ARRAY_LITERAL_BRACKET:
-                            i = handleSpaceAfter(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
-                            break;
-                        case BEFORE_ARRAY_LITERAL_BRACKET:
-                            i = handleSpaceBefore(tokens, i, formatContext,
-                                    !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
-                            break;
-                        // line wrap and eol handling
-                        case ELSE_IF_AFTER_BLOCK_START:
-                            if (!ELSE_IF_SINGLE_LINE) {
-                                i = handleLineWrap(tokens, i, formatContext, initialIndent);
-                            }
-                            break;
-                        case AFTER_CASE:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
-                            break;
-                        case AFTER_BLOCK_START:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
-                            break;
-                        case AFTER_STATEMENT:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
-                            break;
-                        case AFTER_VAR_DECLARATION:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
-                            break;
-                        case SOURCE_START:
-                        case EOL:
-                            // XXX refactor eol token WRAP_IF_LONG handling
-                            if (token.getKind() != FormatToken.Kind.SOURCE_START) {
-                                // search for token which will be present just before eol
-                                FormatToken tokenBeforeEol = null;
-                                for (int j = i - 1; j >= 0; j--) {
-                                    tokenBeforeEol = tokens.get(j);
-                                    if (!tokenBeforeEol.isVirtual()) {
-                                        break;
-                                    }
-                                }
-                                if (tokenBeforeEol.getKind() != FormatToken.Kind.SOURCE_START) {
-                                    int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
-                                            - formatContext.getCurrentLineStart() + lastOffsetDiff;
 
-                                    if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
-                                        FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
-                                        if (lastWrap != null) {
-                                            // we dont have to remove trailing spaces as indentation will fix it
-                                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
-                                            // do the indentation
-                                            // FIXME continuation, initialIndent and level - check it is ok
-                                            int indentationSize = initialIndent
-                                                    + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                                            formatContext.indentLineWithOffsetDiff(
-                                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
-                                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
-                                        }
-                                    }
-                                }
-                            }
-
-                            // remove trailing spaces
-                            removeTrailingSpaces(tokens, i, formatContext, token);
-
-                            if (token.getKind() != FormatToken.Kind.SOURCE_START) {
-                                formatContext.setCurrentLineStart(token.getOffset()
-                                        + 1 + formatContext.getOffsetDiff());
-                                formatContext.setLastLineWrap(null);
-                            }
-
-                            // following code handles the indentation
-                            // do not do indentation for line comments starting
-                            // at the beginning of the line to support comment/uncomment
-                            FormatToken next = getNextNonVirtual(token);
-                            if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
-                                break;
-                            }
-
-                            FormatToken indentationStart = null;
-                            FormatToken indentationEnd = null;
-                            StringBuilder current = new StringBuilder();
-                            int index = i;
-                            // we move main loop here as well to not to process tokens twice
-                            for (int j = i + 1; j < tokens.size(); j++) {
-                                FormatToken nextToken = tokens.get(j);
-                                if (!nextToken.isVirtual()) {
-                                    if (nextToken.getKind() != FormatToken.Kind.WHITESPACE) {
-                                        indentationEnd = nextToken;
-                                        if (indentationStart == null) {
-                                            indentationStart = nextToken;
-                                        }
-                                        break;
-                                    } else {
-                                        if (indentationStart == null) {
-                                            indentationStart = nextToken;
-                                        }
-                                        current.append(nextToken.getText());
-                                    }
-                                } else {
-                                    updateIndentationLevel(nextToken, formatContext);
-                                }
-                                i++;
-                            }
-                            if (indentationEnd != null
-                                    && indentationEnd.getKind() != FormatToken.Kind.EOL) {
-                                int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
-                                if (isContinuation(tokens, index)) {
-                                    indentationSize += continuationIndent;
-                                }
-                                formatContext.indentLine(
-                                        indentationStart.getOffset(), indentationSize,
-                                        checkIndentation(doc, token, formatContext, context, indentationSize));
-                            }
-                            break;
+                    if (processed.contains(token)) {
+                        continue;
                     }
 
-                    // update the indentation for the token
-                    updateIndentationLevel(token, formatContext);
+                    if (token.getKind().isSpaceMarker()) {
+                        formatSpace(tokens, i, formatContext);
+                    } else if (token.getKind().isLineWrapMarker()) {
+                        formatLineWrap(tokens, i, formatContext, initialIndent,
+                                continuationIndent);
+                    } else if (token.getKind().isIndentationMarker()) {
+                        updateIndentationLevel(token, formatContext);
+                    } else if (token.getKind() == FormatToken.Kind.SOURCE_START
+                            || token.getKind() == FormatToken.Kind.EOL) {
+                        processed.clear();
+                        // XXX refactor eol token WRAP_IF_LONG handling
+                        if (token.getKind() != FormatToken.Kind.SOURCE_START) {
+                            // search for token which will be present just before eol
+                            FormatToken tokenBeforeEol = null;
+                            for (int j = i - 1; j >= 0; j--) {
+                                tokenBeforeEol = tokens.get(j);
+                                if (!tokenBeforeEol.isVirtual()) {
+                                    break;
+                                }
+                            }
+                            if (tokenBeforeEol.getKind() != FormatToken.Kind.SOURCE_START) {
+                                int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                                        - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+                                if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
+                                    FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                                    if (lastWrap != null) {
+                                        // we dont have to remove trailing spaces as indentation will fix it
+                                        formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                                        // do the indentation
+                                        // FIXME continuation, initialIndent and level - check it is ok
+                                        int indentationSize = initialIndent
+                                                + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                                        if (isContinuation(lastWrap.getToken(), true)) {
+                                            indentationSize += continuationIndent;
+                                        }
+                                        formatContext.indentLineWithOffsetDiff(
+                                                lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                                                indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                                    }
+                                }
+                            }
+                        }
+
+                        // remove trailing spaces
+                        removeTrailingSpaces(tokens, i, formatContext, token);
+
+                        if (token.getKind() != FormatToken.Kind.SOURCE_START) {
+                            formatContext.setCurrentLineStart(token.getOffset()
+                                    + 1 + formatContext.getOffsetDiff());
+                            formatContext.setLastLineWrap(null);
+                        }
+
+                        // following code handles the indentation
+                        // do not do indentation for line comments starting
+                        // at the beginning of the line to support comment/uncomment
+                        FormatToken next = getNextNonVirtual(token);
+                        if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                            continue;
+                        }
+
+                        FormatToken indentationStart = null;
+                        FormatToken indentationEnd = null;
+                        StringBuilder current = new StringBuilder();
+                        // we move main loop here as well to not to process tokens twice
+                        for (int j = i + 1; j < tokens.size(); j++) {
+                            FormatToken nextToken = tokens.get(j);
+                            if (!nextToken.isVirtual()) {
+                                if (nextToken.getKind() != FormatToken.Kind.WHITESPACE) {
+                                    indentationEnd = nextToken;
+                                    if (indentationStart == null) {
+                                        indentationStart = nextToken;
+                                    }
+                                    break;
+                                } else {
+                                    if (indentationStart == null) {
+                                        indentationStart = nextToken;
+                                    }
+                                    current.append(nextToken.getText());
+                                }
+                            } else {
+                                updateIndentationLevel(nextToken, formatContext);
+                            }
+                            i++;
+                        }
+                        if (indentationEnd != null
+                                && indentationEnd.getKind() != FormatToken.Kind.EOL) {
+                            int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
+                            if (isContinuation(token, false)) {
+                                indentationSize += continuationIndent;
+                            }
+                            formatContext.indentLine(
+                                    indentationStart.getOffset(), indentationSize,
+                                    checkIndentation(doc, token, formatContext, context, indentationSize));
+                        }
+                    }
                 }
                 LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
@@ -502,15 +297,18 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private int handleLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
-            int initialIndent) {
+    private void formatLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
+            int initialIndent, int continuationIndent) {
 
         FormatToken token = tokens.get(index);
-        int i = index;
+        CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
+        if (style == null) {
+            return;
+        }
 
         // search for token which will be present after eol
         FormatToken tokenAfterEol = token.next();
-        int startIndex = i;
+        int startIndex = index;
         while (tokenAfterEol != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL
                 && tokenAfterEol.getKind() != FormatToken.Kind.TEXT) {
             tokenAfterEol = tokenAfterEol.next();
@@ -527,7 +325,10 @@ public class JsFormatter implements Formatter {
             }
         }
 
-        CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
+        // assert we can use the lastOffsetDiff and lastIndentationLevel
+        assert tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE
+                && tokenBeforeEol.getKind() != FormatToken.Kind.EOL;
+
         if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
             int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
                     - formatContext.getCurrentLineStart() + lastOffsetDiff;
@@ -542,23 +343,27 @@ public class JsFormatter implements Formatter {
                     formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
                             + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
                     // do the indentation
-                    // FIXME continuation, initialIndent and level - check it is ok
                     int indentationSize = initialIndent
-                            + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                            + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                    if (isContinuation(lastWrap.getToken(), true)) {
+                        indentationSize += continuationIndent;
+                    }
                     formatContext.indentLineWithOffsetDiff(
                             lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
                             indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
-                            tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges)));
-                    return i;
+                            tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges),
+                            formatContext.getIndentationLevel()));
+                    return;
                 }
                 // we proceed with wrapping if there is no wrap other than current
                 // and we are longer than whats allowed
             } else {
                 formatContext.setLastLineWrap(new FormatContext.LineWrap(
-                        tokenBeforeEol, lastOffsetDiff));
-                return i;
+                        tokenBeforeEol, lastOffsetDiff,
+                        formatContext.getIndentationLevel()));
+                return;
             }
         }
 
@@ -582,19 +387,48 @@ public class JsFormatter implements Formatter {
                 || extendedTokenAfterEol != tokenAfterEol && !isStatementWrap(token))) {
 
             // proceed the skipped tokens moving the main loop
-            i = moveForward(token, i, extendedTokenAfterEol, formatContext);
+            moveForward(token, extendedTokenAfterEol, formatContext, true);
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+
+                    // we have to check the line length and wrap if needed
+                    // FIXME duplicated code
+                    int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                            - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+                    if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
+                        FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                        if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                            // we dont have to remove trailing spaces as indentation will fix it
+                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                            // there is + 1 for eol
+                            formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
+                                    + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
+                            // do the indentation
+                            int indentationSize = initialIndent
+                                    + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                            if (isContinuation(lastWrap.getToken(), true)) {
+                                indentationSize += continuationIndent;
+                            }
+                            formatContext.indentLineWithOffsetDiff(
+                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                        }
+                    }
+
                     // we dont have to remove trailing spaces as indentation will fix it
                     formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
                     // there is + 1 for eol
                     formatContext.setCurrentLineStart(tokenBeforeEol.getOffset()
-                            + tokenBeforeEol.getText().length() + 1);
+                        + tokenBeforeEol.getText().length() + 1);
                     formatContext.setLastLineWrap(null);
                     // do the indentation
                     int indentationSize = initialIndent
                             + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                    if (isContinuation(tokenBeforeEol, true)) {
+                        indentationSize += continuationIndent;
+                    }
                     formatContext.indentLine(
                             tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
                             indentationSize, Indentation.ALLOWED);
@@ -607,19 +441,21 @@ public class JsFormatter implements Formatter {
                                 extendedTokenAfterEol.getOffset() - tokenAfterEol.getOffset());
                         // move to eol to do indentation in next cycle
                         // it is safe because we know the token to which we move is eol
-                        i--;
+                        processed.remove(extendedTokenAfterEol.previous());
                     } else {
                         FormatToken last = tokens.get(tokens.size() - 1);
                         while (last != null && last.isVirtual()) {
                             last = last.previous();
                         }
-                        formatContext.remove(tokenAfterEol.getOffset(),
-                                last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                        if (last != null) {
+                            formatContext.remove(tokenAfterEol.getOffset(),
+                                    last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                        }
                     }
                 }
             } else {
                 int start = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length();
-                
+
                 FormatToken endToken = extendedTokenAfterEol;
                 if (endToken == null) {
                     // end of file
@@ -627,37 +463,57 @@ public class JsFormatter implements Formatter {
                     while (endToken != null && endToken.isVirtual()) {
                         endToken = endToken.previous();
                     }
-                    formatContext.remove(start, endToken.getOffset() + endToken.getText().length() - start);
+                    if (endToken != null) {
+                        formatContext.remove(start, endToken.getOffset() + endToken.getText().length() - start);
+                    }
                 } else if (endToken.getKind() != FormatToken.Kind.EOL) {
                     // no eol
-                    // XXX do it only when it is really needed
-                    formatContext.replace(start, endToken.getOffset() - start, " "); // NOI18N
+                    FormatToken spaceStartToken = tokenBeforeEol;
+                    if (spaceStartToken.next() != null) {
+                        spaceStartToken = spaceStartToken.next();
+                    }
+
+                    if (isSpace(spaceStartToken, formatContext, true, true)) {
+                        formatContext.replace(start, endToken.getOffset() - start, " "); // NOI18N
+                    } else {
+                        formatContext.remove(start, endToken.getOffset() - start);
+                    }
                 } else if (tokenAfterEol != endToken) {
                     // multiple eols
                     formatContext.remove(start, endToken.getOffset() - start);
-                } else {
-                    return index;
                 }
             }
         }
-        return i;
     }
 
-    private int handleSpaceAfter(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
-
+    private void formatSpace(List<FormatToken> tokens, int index, FormatContext formatContext) {
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
 
-        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext);
+        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext, true);
+        // wrapping will take care of everything
         if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return index;
+            return;
         }
 
-        // now we have some AFTER token, find next non white token
-        FormatToken end = null;
-        boolean containsEol = false;
+        FormatToken lastEol = null;
 
+        FormatToken start = null;
+        for (FormatToken current = token.previous(); current != null;
+                current = current.previous()) {
+
+            if (!current.isVirtual()) {
+                if (current.getKind() != FormatToken.Kind.WHITESPACE
+                        && current.getKind() != FormatToken.Kind.EOL) {
+                    start = current;
+                    break;
+                } else if (lastEol == null && current.getKind() == FormatToken.Kind.EOL) {
+                    lastEol = current;
+                }
+            }
+        }
+
+        FormatToken end = null;
         for (FormatToken current = token.next(); current != null;
                 current = current.next()) {
 
@@ -667,30 +523,40 @@ public class JsFormatter implements Formatter {
                     end = current;
                     break;
                 } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    containsEol = true;
+                    lastEol = current;
                 }
             }
         }
 
-        // this avoids collision of after and before rules on same whitespace
-        for (FormatToken virtual = end; virtual != null && virtual != token;
-                virtual = virtual.previous()) {
-            // the before marker should win anyway
-            if (virtual.isBeforeMarker()) {
-                return index;
+        // we mark space and WRAP_NEVER tokens as processed
+        for (FormatToken current = start; current != end; current = current.next()) {
+            if (current.isVirtual()
+                    && !current.getKind().isIndentationMarker()
+                    && getLineWrap(current, formatContext) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
+                processed.add(current);
             }
         }
-        //XXX
-        FormatToken start = getNextNonVirtual(token);
 
+        // FIXME if end is null we might be at EOF
         if (start != null && end != null) {
+            boolean remove = !isSpace(token, formatContext, true, false);
+
+            // we fetch the space or next token to start
+            start = getNextNonVirtual(start);
+
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
+                assert start == end : start;
                 if (!remove) {
                     formatContext.insert(start.getOffset(), " "); // NOI18N
                 }
-            } else if (!containsEol) {
-                if (remove) {
+            } else {
+                if (lastEol != null) {
+                    end = lastEol;
+                }
+                // if it should be removed or there is eol (in fact space)
+                // which will stay there
+                if (remove || end.getKind() == FormatToken.Kind.EOL) {
                     formatContext.remove(start.getOffset(),
                             end.getOffset() - start.getOffset());
                 } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
@@ -698,74 +564,11 @@ public class JsFormatter implements Formatter {
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
             }
-            // we have done everything needed so move forward
-            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, end, formatContext);
-            }
         }
-        return index;
     }
 
-    private int handleSpaceBefore(List<FormatToken> tokens, int index, FormatContext formatContext,
-            boolean remove) {
-
-        FormatToken token = tokens.get(index);
-        assert token.isVirtual();
-
-        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext);
-        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return index;
-        }
-
-        // now we have some BEFORE token, find previous non white token
-        FormatToken start = null;
-        boolean containsEol = false;
-
-        for (FormatToken current = token.previous(); current != null;
-                current = current.previous()) {
-
-            if (!current.isVirtual()) {
-                if (current.getKind() != FormatToken.Kind.WHITESPACE
-                        && current.getKind() != FormatToken.Kind.EOL) {
-                    start = current;
-                    break;
-                } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    containsEol = true;
-                }
-            }
-        }
-
-        if (start != null) {
-            // we fetch the space to start
-            start = getNextNonVirtual(start);
-            // and the token we are before
-            FormatToken theToken = getNextNonVirtual(token);
-            if (start.getKind() != FormatToken.Kind.WHITESPACE
-                    && start.getKind() != FormatToken.Kind.EOL) {
-                if (!remove) {
-                    formatContext.insert(start.getOffset(), " "); // NOI18N
-                }
-            } else if (!containsEol) {
-                if (remove) {
-                    formatContext.remove(start.getOffset(),
-                            theToken.getOffset() - start.getOffset());
-                } else if (theToken.getOffset() - start.getOffset() != 1 || start.getKind() == FormatToken.Kind.EOL) {
-                    formatContext.replace(start.getOffset(),
-                            theToken.getOffset() - start.getOffset(), " "); // NOI18N
-                }
-            }
-            // we have done everything needed so move forward
-            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, theToken, formatContext);
-            }
-        }
-        return index;
-    }
-
-    private boolean isContinuation(List<FormatToken> tokens, int index) {
-        FormatToken token = tokens.get(index);
-
-        assert token.getKind() == FormatToken.Kind.SOURCE_START
+    private boolean isContinuation(FormatToken token, boolean noRealEol) {
+        assert noRealEol || token.getKind() == FormatToken.Kind.SOURCE_START
                 || token.getKind() == FormatToken.Kind.EOL;
 
         if (token.getKind() == FormatToken.Kind.SOURCE_START) {
@@ -773,12 +576,14 @@ public class JsFormatter implements Formatter {
         }
 
         FormatToken next = token.next();
-        if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
-                || next.getKind() == FormatToken.Kind.AFTER_PROPERTY
-                || next.getKind() == FormatToken.Kind.AFTER_CASE
-                // do not suppose continuation when indentation is changed
-                || next.isIndentationMarker()) {
-            return false;
+        for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
+            if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                    || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                    || current.getKind() == FormatToken.Kind.AFTER_CASE
+                    // do not suppose continuation when indentation is changed
+                    || current.getKind().isIndentationMarker()) {
+                return false;
+            }
         }
 
         // this may happen when curly bracket is on new line
@@ -797,7 +602,7 @@ public class JsFormatter implements Formatter {
 
         // search backwards for important token
         FormatToken result = null;
-        for (FormatToken previous = token.previous(); previous != null;
+        for (FormatToken previous = noRealEol ? token : token.previous(); previous != null;
                 previous = previous.previous()) {
 
             FormatToken.Kind kind = previous.getKind();
@@ -807,7 +612,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.AFTER_PROPERTY
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
-                    || previous.isIndentationMarker()) {
+                    || kind.isIndentationMarker()) {
                 result = previous;
                 break;
             }
@@ -818,7 +623,7 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
-                || result.isIndentationMarker()) {
+                || result.getKind().isIndentationMarker()) {
             return false;
         }
 
@@ -826,7 +631,7 @@ public class JsFormatter implements Formatter {
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
                 // this is just safeguard literal offsets should be fixed
-                || JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text));
+                /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
 
     }
 
@@ -843,7 +648,7 @@ public class JsFormatter implements Formatter {
         if (formatContext.isEmbedded()) {
             return Indentation.FORBIDDEN;
         }
-        
+
         try {
             // when we are formatting only selection we
             // have to handle the source start indentation properly
@@ -889,13 +694,14 @@ public class JsFormatter implements Formatter {
                 || token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START;
     }
 
-    private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index, FormatContext context) {
+    private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index,
+            FormatContext context, boolean skipWitespace) {
         FormatToken token = tokens.get(index);
-        
+
         assert token.isVirtual();
 
         FormatToken next = token;
-        while (next != null && next.isVirtual()) {
+        while (next != null && (next.isVirtual() || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE)) {
             CodeStyle.WrapStyle style = getLineWrap(next, context);
             if (style != null) {
                 return style;
@@ -906,58 +712,987 @@ public class JsFormatter implements Formatter {
     }
 
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
-        if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-            return CodeStyle.get(context).wrapStatement();
+        switch (token.getKind()) {
+            case AFTER_STATEMENT:
+                return CodeStyle.get(context).wrapStatement();
+            case AFTER_BLOCK_START:
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case AFTER_CASE:
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case ELSE_IF_AFTER_BLOCK_START:
+                if (ELSE_IF_SINGLE_LINE) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
+                // XXX option
+                return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            case AFTER_VAR_DECLARATION:
+                return CodeStyle.get(context).wrapVariables();
+            case BEFORE_FUNCTION_DECLARATION_PARAMETER:
+                return CodeStyle.get(context).wrapMethodParams();
+            case BEFORE_FUNCTION_CALL_ARGUMENT:
+                return CodeStyle.get(context).wrapMethodCallArgs();
+            case AFTER_IF_START:
+                return CodeStyle.get(context).wrapIfStatement();
+            case AFTER_ELSE_START:
+                return CodeStyle.get(context).wrapIfStatement();
+            case AFTER_WHILE_START:
+                return CodeStyle.get(context).wrapWhileStatement();
+            case AFTER_DO_START:
+                return CodeStyle.get(context).wrapDoWhileStatement();
+            case AFTER_FOR_START:
+                return CodeStyle.get(context).wrapForStatement();
+            case AFTER_WITH_START:
+                return CodeStyle.get(context).wrapWithStatement();
+            case BEFORE_FOR_TEST:
+            case BEFORE_FOR_MODIFY:
+                return CodeStyle.get(context).wrapFor();
+            case BEFORE_CHAIN_CALL_DOT:
+                if (CodeStyle.get(context).wrapAfterDotInChainedMethodCalls()) {
+                    return null;
+                }
+                return CodeStyle.get(context).wrapChainedMethodCalls();
+            case AFTER_CHAIN_CALL_DOT:
+                if (CodeStyle.get(context).wrapAfterDotInChainedMethodCalls()) {
+                    return CodeStyle.get(context).wrapChainedMethodCalls();
+                }
+                return null;
+            case AFTER_BINARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterBinaryOps()) {
+                    return CodeStyle.get(context).wrapBinaryOps();
+                }
+                return null;
+            case BEFORE_BINARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterBinaryOps()) {
+                    return null;
+                }
+                return CodeStyle.get(context).wrapBinaryOps();
+            case AFTER_ASSIGNMENT_OPERATOR_WRAP:
+                return CodeStyle.get(context).wrapAssignOps();
+            case AFTER_TERNARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterTernaryOps()) {
+                    return CodeStyle.get(context).wrapTernaryOps();
+                }
+                return null;
+            case BEFORE_TERNARY_OPERATOR_WRAP:
+                if (CodeStyle.get(context).wrapAfterTernaryOps()) {
+                    return null;
+                }
+                return CodeStyle.get(context).wrapTernaryOps();
+            case AFTER_PROPERTY:
+                return CodeStyle.get(context).wrapProperties();
+            case AFTER_ARRAY_LITERAL:
+                return CodeStyle.get(context).wrapArrayInit();
+            default:
+                return null;
         }
-        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+    }
+
+    private static boolean isSpace(FormatToken token, FormatContext context,
+            boolean skipWitespace, boolean skipEol) {
+
+        if (!(token.isVirtual()
+                || skipWitespace && token.getKind() == FormatToken.Kind.WHITESPACE
+                || skipEol && token.getKind() == FormatToken.Kind.EOL)) {
+            return false;
         }
-        if (token.getKind() == FormatToken.Kind.AFTER_CASE) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
-        }
-        if (token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START) {
-            if (ELSE_IF_SINGLE_LINE) {
-                return CodeStyle.WrapStyle.WRAP_NEVER;
+
+        FormatToken next = token;
+        while (next != null && (next.isVirtual()
+                || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE
+                || skipWitespace && next.getKind() == FormatToken.Kind.EOL)) {
+            if (next.getKind() != FormatToken.Kind.WHITESPACE
+                    && next.getKind() != FormatToken.Kind.EOL
+                    && isSpace(next, context)) {
+                return true;
             }
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            next = next.next();
         }
-        if (token.getKind() == FormatToken.Kind.AFTER_VAR_DECLARATION) {
-            return CodeStyle.get(context).wrapVariables();
+        return false;
+    }
+
+    private static boolean isSpace(FormatToken token, FormatContext formatContext) {
+        switch (token.getKind()) {
+            case BEFORE_ASSIGNMENT_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundAssignOps();
+            case AFTER_ASSIGNMENT_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundAssignOps();
+            case BEFORE_BINARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundBinaryOps();
+            case AFTER_BINARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundBinaryOps();
+            case BEFORE_COMMA:
+                return CodeStyle.get(formatContext).spaceBeforeComma();
+            case AFTER_COMMA:
+                return CodeStyle.get(formatContext).spaceAfterComma();
+            case AFTER_IF_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeIfParen();
+            case AFTER_WHILE_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeWhileParen();
+            case AFTER_FOR_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeForParen();
+            case AFTER_WITH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeWithParen();
+            case AFTER_SWITCH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeSwitchParen();
+            case AFTER_CATCH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeCatchParen();
+            case BEFORE_WHILE_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeWhile();
+            case BEFORE_ELSE_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeElse();
+            case BEFORE_CATCH_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeCatch();
+            case BEFORE_FINALLY_KEYWORD:
+                return CodeStyle.get(formatContext).spaceBeforeFinally();
+            case BEFORE_SEMICOLON:
+                return CodeStyle.get(formatContext).spaceBeforeSemi();
+            case AFTER_SEMICOLON:
+                return CodeStyle.get(formatContext).spaceAfterSemi();
+            case BEFORE_UNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundUnaryOps();
+            case AFTER_UNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundUnaryOps();
+            case BEFORE_TERNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundTernaryOps();
+            case AFTER_TERNARY_OPERATOR:
+                return CodeStyle.get(formatContext).spaceAroundTernaryOps();
+            case BEFORE_FUNCTION_DECLARATION:
+                return CodeStyle.get(formatContext).spaceBeforeMethodDeclParen();
+            case BEFORE_FUNCTION_CALL:
+                return CodeStyle.get(formatContext).spaceBeforeMethodCallParen();
+            case AFTER_FUNCTION_DECLARATION_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodDeclParens();
+            case BEFORE_FUNCTION_DECLARATION_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodDeclParens();
+            case AFTER_FUNCTION_CALL_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodCallParens();
+            case BEFORE_FUNCTION_CALL_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinMethodCallParens();
+            case AFTER_IF_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinIfParens();
+            case BEFORE_IF_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinIfParens();
+            case AFTER_WHILE_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWhileParens();
+            case BEFORE_WHILE_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWhileParens();
+            case AFTER_FOR_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinForParens();
+            case BEFORE_FOR_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinForParens();
+            case AFTER_WITH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWithParens();
+            case BEFORE_WITH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinWithParens();
+            case AFTER_SWITCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinSwitchParens();
+            case BEFORE_SWITCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinSwitchParens();
+            case AFTER_CATCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinCatchParens();
+            case BEFORE_CATCH_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinCatchParens();
+            case AFTER_LEFT_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinParens();
+            case BEFORE_RIGHT_PARENTHESIS:
+                return CodeStyle.get(formatContext).spaceWithinParens();
+            case BEFORE_IF_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeIfLeftBrace();
+            case BEFORE_ELSE_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeElseLeftBrace();
+            case BEFORE_WHILE_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeWhileLeftBrace();
+            case BEFORE_FOR_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeForLeftBrace();
+            case BEFORE_DO_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeDoLeftBrace();
+            case BEFORE_TRY_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeTryLeftBrace();
+            case BEFORE_CATCH_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeCatchLeftBrace();
+            case BEFORE_FINALLY_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeFinallyLeftBrace();
+            case BEFORE_SWITCH_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeSwitchLeftBrace();
+            case BEFORE_WITH_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeWithLeftBrace();
+            case BEFORE_FUNCTION_DECLARATION_BRACE:
+                return CodeStyle.get(formatContext).spaceBeforeMethodDeclLeftBrace();
+            case AFTER_ARRAY_LITERAL_BRACKET:
+                return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
+            case BEFORE_ARRAY_LITERAL_BRACKET:
+                return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
+            case AFTER_VAR_KEYWORD:
+                // no option as false (removing space) would brake the code
+                return true;
+            case BEFORE_DOT:
+            case AFTER_DOT:
+                return false;
+            default:
+                return false;
         }
+    }
+
+    private int getFormatStableStart(BaseDocument doc, Language<JsTokenId> language,
+            int offset, boolean embedded) {
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                TokenHierarchy.get(doc), offset, language);
+        if (ts == null) {
+            return 0;
+        }
+
+        ts.move(offset);
+        if (!ts.movePrevious()) {
+            return 0;
+        }
+
+        // Look backwards to find a suitable context
+        // which we will assume is properly indented and balanced
+        do {
+            Token<?extends JsTokenId> token = ts.token();
+            TokenId id = token.id();
+
+            // FIXME should we check for more tokens like {, if, else ...
+            if (id == JsTokenId.KEYWORD_FUNCTION) {
+                return ts.offset();
+            }
+        } while (ts.movePrevious());
+
+        if (embedded && !ts.movePrevious()) {
+            // I may have moved to the front of an embedded JavaScript area, e.g. in
+            // an attribute or in a <script> tag. If this is the end of the line,
+            // go to the next line instead since the reindent code will go to the beginning
+            // of the stable formatting start.
+            int sequenceBegin = ts.offset();
+            try {
+                int lineTextEnd = Utilities.getRowLastNonWhite(doc, sequenceBegin);
+                if (lineTextEnd == -1 || sequenceBegin > lineTextEnd) {
+                    return Math.min(doc.getLength(), Utilities.getRowEnd(doc, sequenceBegin) + 1);
+                }
+
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+
+        return ts.offset();
+    }
+
+    private boolean isContinuation(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
+
+        offset = Utilities.getRowLastNonWhite(doc, offset);
+        if (offset == -1) {
+            return false;
+        }
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, offset, language);
+        Token<? extends JsTokenId> token = (ts != null ? ts.token() : null);
+
+        if (ts != null && token != null) {
+            int index = ts.index();
+            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+            JsTokenId previousId = previous != null ? previous.id() : null;
+
+            ts.moveIndex(index);
+            ts.moveNext();
+
+            JsTokenId id = token.id();
+
+            // http://www.netbeans.org/issues/show_bug.cgi?id=115279
+            boolean isContinuationOperator = isBinaryOperator(id, previousId)
+                    || id == JsTokenId.OPERATOR_DOT;
+
+            if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
+                // Continued lines have different token types
+                isContinuationOperator = true;
+            }
+
+            if (id == JsTokenId.OPERATOR_COMMA) {
+                // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses
+                // parameter lists we should not treat it as such since we'd "double indent" the items, and
+                // NOT the first item (where there's no comma, e.g. you'd have
+                //  foo(
+                //    firstarg,
+                //      secondarg,  # indented both by ( and hanging indent ,
+                //      thirdarg)
+                isContinuationOperator = (bracketBalance == 0);
+            }
+
+            if (id == JsTokenId.OPERATOR_COLON) {
+                TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                Token<? extends JsTokenId> foundToken = LexUtilities.findPreviousIncluding(inner,
+                        Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT, JsTokenId.OPERATOR_COLON));
+                if (foundToken != null && (foundToken.id() == JsTokenId.KEYWORD_CASE
+                        || foundToken.id() == JsTokenId.KEYWORD_DEFAULT)) {
+                    isContinuationOperator = false;
+                } else {
+                    isContinuationOperator = true;
+                }
+            }
+            return isContinuationOperator;
+        }
+
+        return false;
+    }
+
+    // FIXME we do not reindent multiple regions
+    @Override
+    public void reindent(final Context context) {
+
+        Document document = context.document();
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+
+        final IndentContext indentContext = new IndentContext(context);
+        int indentationSize = IndentUtils.indentLevelSize(document);
+        int continuationIndent = CodeStyle.get(indentContext).getContinuationIndentSize();
+
+        try {
+            final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
+
+            startOffset = Utilities.getRowStart(doc, startOffset);
+            int endLineOffset = Utilities.getRowStart(doc, endOffset);
+            final boolean indentOnly = (startOffset == endLineOffset)
+                    && (Utilities.isRowEmpty(doc, startOffset) || Utilities.isRowWhite(doc, startOffset));
+            if (indentOnly && indentContext.isEmbedded()) {
+                // Make sure we're not messing with indentation in HTML
+                Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset);
+                if (token == null) {
+                    return;
+                }
+            }
+
+            if (endOffset > doc.getLength()) {
+                endOffset = doc.getLength();
+            }
+
+            
+            final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
+            int initialOffset = 0;
+            int initialIndent = 0;
+            if (startOffset > 0) {
+                int prevOffset = Utilities.getRowStart(doc, startOffset-1);
+                initialOffset = getFormatStableStart(doc, language, prevOffset, indentContext.isEmbedded());
+                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
+            }
+
+            // Build up a set of offsets and indents for lines where I know I need
+            // to adjust the offset. I will then go back over the document and adjust
+            // lines that are different from the intended indent. By doing piecemeal
+            // replacements in the document rather than replacing the whole thing,
+            // a lot of things will work better: breakpoints and other line annotations
+            // will be left in place, semantic coloring info will not be temporarily
+            // damaged, and the caret will stay roughly where it belongs.
+
+            // When we're formatting sections, include whitespace on empty lines; this
+            // is used during live code template insertions for example. However, when
+            // wholesale formatting a whole document, leave these lines alone.
+            boolean indentEmptyLines = (startOffset != 0 || endOffset + 1 != doc.getLength());
+
+            boolean includeEnd = endOffset == doc.getLength() || indentOnly;
+
+            // TODO - remove initialbalance etc.
+            computeIndents(indentContext, initialIndent, indentationSize, continuationIndent, initialOffset, endOffset,
+                    indentEmptyLines, includeEnd, indentOnly);
+
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        List<IndentContext.Indentation> indents = indentContext.getIndentations();
+                        // Iterate in reverse order such that offsets are not affected by our edits
+                        for (int i = indents.size() - 1; i >= 0; i--) {
+                            IndentContext.Indentation indentation = indents.get(i);
+                            int indent = indentation.getSize();
+                            int lineBegin = indentation.getOffset();
+
+                            if (lineBegin < lineStart) {
+                                // We're now outside the region that the user wanted reformatting;
+                                // these offsets were computed to get the correct continuation context etc.
+                                // for the formatter
+                                break;
+                            }
+
+                            if (lineBegin == lineStart && i > 0) {
+                                // Look at the previous line, and see how it's indented
+                                // in the buffer.  If it differs from the computed position,
+                                // offset my computed position (thus, I'm only going to adjust
+                                // the new line position relative to the existing editing.
+                                // This avoids the situation where you're inserting a newline
+                                // in the middle of "incorrectly" indented code (e.g. different
+                                // size than the IDE is using) and the newline position ending
+                                // up "out of sync"
+                                IndentContext.Indentation prevIndentation = indents.get(i - 1);
+                                int prevOffset = prevIndentation.getOffset();
+                                int prevIndent = prevIndentation.getSize();
+                                int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
+                                // NOTE: in embedding this is usually true as we have some nonzero initial indent,
+                                // I am just not sure if it is better to add indentOnly check (as I did) or
+                                // remove blank lines condition completely?
+                                if (actualPrevIndent != prevIndent) {
+                                    // For blank lines, indentation may be 0, so don't adjust in that case
+                                    if (indentOnly || !(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                                        indent = actualPrevIndent + (indent-prevIndent);
+                                    }
+                                }
+                            }
+
+                            // Adjust the indent at the given line (specified by offset) to the given indent
+                            int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
+
+                            if (currentIndent != indent && indent >= 0) {
+                                //org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
+                                //editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                                context.modifyIndent(lineBegin, indent);
+                            }
+                        }
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
+                    }
+                }
+            });
+        } catch (BadLocationException ble) {
+            LOGGER.log(Level.FINE, null, ble);
+        }
+    }
+
+    private void computeIndents(IndentContext context, int initialIndent, int indentSize, int continuationIndent,
+            int startOffset, int endOffset, boolean indentEmptyLines, boolean includeEnd, boolean indentOnly) {
+
+        BaseDocument doc = context.getDocument();
+        // PENDING:
+        // The reformatting APIs in NetBeans should be lexer based. They are still
+        // based on the old TokenID apis. Once we get a lexer version, convert this over.
+        // I just need -something- in place until that is provided.
+
+        try {
+            // Algorithm:
+            // Iterate over the range.
+            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance,
+            //      },),] and "end" decreases it
+            // If the line starts with an end marker, indent the line to the level AFTER the token
+            // else indent the line to the level BEFORE the token (the level being the balance * indentationSize)
+            // Compute the initial balance and indentation level and use that as a "base".
+            // If the previous line is not "done" (ends with a comma or a binary operator like "+" etc.
+            // add a "hanging indent" modifier.
+            // At the end of the day, we're recording a set of line offsets and indents.
+            // This can be used either to reformat the buffer, or indent a new line.
+
+            // State:
+            int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
+            int end = endOffset;
+
+
+            // Pending - apply comment formatting too?
+
+            // XXX Look up RHTML too
+            //int indentSize = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getSpacesPerTab();
+            //int hangingIndentSize = indentSize;
+
+
+            // Build up a set of offsets and indents for lines where I know I need
+            // to adjust the offset. I will then go back over the document and adjust
+            // lines that are different from the intended indent. By doing piecemeal
+            // replacements in the document rather than replacing the whole thing,
+            // a lot of things will work better: breakpoints and other line annotations
+            // will be left in place, semantic coloring info will not be temporarily
+            // damaged, and the caret will stay roughly where it belongs.
+
+            // The token balance at the offset
+            int balance = 0;
+            // The bracket balance at the offset ( parens, bracket, brace )
+            int bracketBalance = 0;
+            boolean continued = false;
+//            boolean indentHtml = false;
+//            if (embeddedJavaScript) {
+//                indentHtml = codeStyle.indentHtml();
+//            }
+
+            //int originallockCommentIndention = 0;
+            int adjustedBlockCommentIndention = 0;
+
+            int endIndents;
+
+            final int IN_CODE = 0;
+            final int IN_LITERAL = 1;
+            final int IN_BLOCK_COMMENT_START = 2;
+            final int IN_BLOCK_COMMENT_MIDDLE = 3;
+
+            // this cycle is written in offset but in fact it iretates over lines
+            while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
+                int indent; // The indentation to be used for the current line
+
+                if (context.isEmbedded()) {
+                    // now using JavaScript indent size to indent from <SCRIPT> tag; should it be HTML?
+                    initialIndent = context.getEmbeddedIndent() + indentSize;
+                }
+
+
+                int lineType = IN_CODE;
+                int pos = Utilities.getRowFirstNonWhite(doc, offset);
+                TokenSequence<?extends JsTokenId> ts = null;
+
+                if (pos != -1) {
+                    // I can't look at the first position on the line, since
+                    // for a string array that is indented, the indentation portion
+                    // is recorded as a blank identifier
+                    ts = LexUtilities.getPositionedSequence(doc, pos, false, language);
+
+                    if (ts != null) {
+                        JsTokenId id = ts.token().id();
+                        int index = ts.index();
+                        Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                        JsTokenId previousId = previous != null ? previous.id() : null;
+
+                        ts.moveIndex(index);
+                        ts.moveNext();
+
+                        // We don't have multiline string literals in JavaScript!
+                        if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT) {
+                            if (ts.offset() == pos) {
+                                lineType = IN_BLOCK_COMMENT_START;
+                                //originallockCommentIndention = GsfUtilities.getLineIndent(doc, offset);
+                            } else {
+                                lineType =  IN_BLOCK_COMMENT_MIDDLE;
+                            }
+                        } else if (isBinaryOperator(id, previousId) || id == JsTokenId.OPERATOR_DOT) {
+                            // If a line starts with a non unary operator we can
+                            // assume it's a continuation from a previous line
+                            continued = true;
+                        } else if (id == JsTokenId.STRING || id == JsTokenId.STRING_END ||
+                                id == JsTokenId.REGEXP || id == JsTokenId.REGEXP_END) {
+                            // You can get multiline literals in JavaScript by inserting a \ at the end
+                            // of the line
+                            lineType = IN_LITERAL;
+                        }
+                    } else {
+                        // No ruby token -- leave the formatting alone!
+                        // (Probably in an RHTML file on a line with no JavaScript)
+                        lineType = IN_LITERAL;
+                    }
+                }
+
+                int hangingIndent = continued ? (continuationIndent) : 0;
+
+                if (lineType == IN_LITERAL) {
+                    // Skip this line - leave formatting as it is prior to reformatting
+                    indent = GsfUtilities.getLineIndent(doc, offset);
+
+                    // No compound indent for JavaScript
+                    //                    if (embeddedJavaScript && indentHtml && balance > 0) {
+                    //                        indent += balance * indentSize;
+                    //                    }
+                } else if (lineType == IN_BLOCK_COMMENT_MIDDLE) {
+                    if (doc.getText(pos,1).charAt(0) == '*') {
+                        // *-lines get indented to be flushed with the * in /*, other lines
+                        // get indented to be aligned with the presumably indented text content!
+                        //indent = LexUtilities.getLineIndent(doc, ts.offset())+1;
+                        indent = adjustedBlockCommentIndention+1;
+                    } else {
+                        // Leave indentation of comment blocks alone since they probably correspond
+                        // to commented out code - we don't want to lose the indentation.
+                        // Possibly, I could shift the code all relative to the first line
+                        // in the commented out block... A possible later enhancement.
+                        // This shifts by the starting line which is wrong - should use the first comment line
+                        //indent = LexUtilities.getLineIndent(doc, offset)-originallockCommentIndention+adjustedBlockCommentIndention;
+                        indent = GsfUtilities.getLineIndent(doc, offset);
+                    }
+                } else if ((endIndents = isEndIndent(context, offset)) > 0) {
+                    indent = (balance-endIndents) * indentSize + hangingIndent + initialIndent;
+                } else {
+                    assert lineType == IN_CODE || lineType == IN_BLOCK_COMMENT_START;
+                    indent = balance * indentSize + hangingIndent + initialIndent;
+
+//                    System.out.println("### indent " + indent + " = " + balance + " * " + indentSize + " + " + hangingIndent + " + " + initialIndent);
+
+                    if (lineType == IN_BLOCK_COMMENT_START) {
+                        adjustedBlockCommentIndention = indent;
+                    }
+                }
+
+                if (indent < 0) {
+                    indent = 0;
+                }
+
+                int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
+
+                // Insert whitespace on empty lines too -- needed for abbreviations expansion
+                if (lineBegin != -1 || indentEmptyLines) {
+                    // Don't do a hanging indent if we're already indenting beyond the parent level?
+
+                    context.addIndentation(new IndentContext.Indentation(offset, indent, continued));
+                }
+
+                int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
+
+                if (lineBegin != -1) {
+                    balance += getTokenBalance(context, ts, lineBegin, endOfLine, true, indentOnly);
+                    int bracketDelta = getTokenBalance(context, ts, lineBegin, endOfLine, false, indentOnly);
+                    bracketBalance += bracketDelta;
+                    continued = isContinuation(doc, offset, bracketBalance);
+                }
+
+                offset = endOfLine;
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+    }
+
+    private int getTokenBalance(IndentContext context, TokenSequence<? extends JsTokenId> ts, int begin, int end, boolean includeKeywords, boolean indentOnly) {
+        int balance = 0;
+        BaseDocument doc = context.getDocument();
+
+        if (ts == null) {
+            try {
+                // remember indent of previous html tag
+                context.setEmbeddedIndent(Utilities.getRowIndent(doc, begin));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return 0;
+        }
+
+        ts.move(begin);
+
+        if (!ts.moveNext()) {
+            return 0;
+        }
+
+        int last = begin;
+        do {
+            Token<? extends JsTokenId> token = ts.token();
+            if (token == null) {
+                break;
+            }
+            JsTokenId id = token.id();
+
+            if (includeKeywords) {
+                int delta = getTokenBalanceDelta(context, id, ts, indentOnly);
+                balance += delta;
+            } else {
+                balance += getBracketBalanceDelta(id);
+            }
+            last = ts.offset() + token.length();
+        } while (ts.moveNext() && (ts.offset() < end));
+
+        if (context.isEmbedded() && last < end) {
+            // We're not done yet... find the next section...
+            TokenSequence<? extends JsTokenId> ets = LexUtilities.getNextJsTokenSequence(doc, last+1, end, language);
+            if (ets != null && ets.offset() > begin) {
+                return balance + getTokenBalance(context, ets, ets.offset(), end, includeKeywords, indentOnly);
+            }
+        }
+
+        return balance;
+    }
+
+    private int getBracketBalanceDelta(JsTokenId id) {
+        if (id == JsTokenId.BRACKET_LEFT_PAREN || id == JsTokenId.BRACKET_LEFT_BRACKET) {
+            return 1;
+        } else if (id == JsTokenId.BRACKET_RIGHT_PAREN || id == JsTokenId.BRACKET_RIGHT_BRACKET) {
+            return -1;
+        }
+        return 0;
+    }
+
+    private int getTokenBalanceDelta(IndentContext context, JsTokenId id, TokenSequence<? extends JsTokenId> ts, boolean indentOnly) {
+        try {
+            BaseDocument doc = context.getDocument();
+            OffsetRange range = OffsetRange.NONE;
+            if (id == JsTokenId.BRACKET_LEFT_BRACKET || id == JsTokenId.BRACKET_LEFT_CURLY) {
+                // block with braces, just record it to stack and return 1
+                context.getBlocks().push(new IndentContext.BlockDescription(
+                        false, new OffsetRange(ts.offset(), ts.offset())));
+                return 1;
+            } else if (id == JsTokenId.KEYWORD_CASE || id == JsTokenId.KEYWORD_DEFAULT) {
+
+                int index = ts.index();
+
+                // find colon ':'
+                LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.OPERATOR_COLON));
+
+                // skip whitespaces, comments and newlines
+                Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
+                JsTokenId tokenId = token.id();
+
+                if (tokenId == JsTokenId.KEYWORD_CASE || tokenId == JsTokenId.KEYWORD_DEFAULT) {
+                    return 0;
+                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                    return -1;
+                } else {
+                    // look at the beginning of next line if there is case or default
+                    LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+                    LexUtilities.findNextNonWsNonComment(ts);
+                    if (ts.token().id() == JsTokenId.KEYWORD_CASE || ts.token().id() == JsTokenId.KEYWORD_DEFAULT) {
+                        return 0;
+                    }
+                }
+
+                ts.moveIndex(index);
+                ts.moveNext();
+
+                return 1;
+            } else if (id == JsTokenId.BRACKET_RIGHT_BRACKET || id == JsTokenId.BRACKET_RIGHT_CURLY) {
+                /*
+                 * End of braces block.
+                 * If we are not on same line where block started, try to push
+                 * all braceless blocks from stack and decrease indent for them,
+                 * otherwise just decrese indent by 1.
+                 * For example:
+                 * if (true)
+                 *   if (true)
+                 *     if (true)
+                 *       foo();     // we should decrease indent by 3 levels
+                 *
+                 * but:
+                 * if (true)
+                 *   if (true)
+                 *     if (map[0]) // at ']' we should decrease only by 1
+                 *       foo();
+                 */
+                int delta = -1;
+                IndentContext.BlockDescription lastPop = context.getBlocks().empty() ? null : context.getBlocks().pop();
+                if (lastPop != null && lastPop.getRange().getStart() <= (doc.getLength() + 1)
+                        && Utilities.getLineOffset(doc, lastPop.getRange().getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
+                    int blocks = 0;
+                    while (!context.getBlocks().empty() && context.getBlocks().pop().isBraceless()) {
+                        blocks++;
+                    }
+                    delta -= blocks;
+                }
+                return delta;
+            } else if ((range = LexUtilities.getMultilineRange(doc, ts)) != OffsetRange.NONE) {
+                // we found braceless block, let's record it in the stack
+                context.getBlocks().push(new IndentContext.BlockDescription(true, range));
+            } else if (id == JsTokenId.EOL) {
+
+                if (!indentOnly) {
+                    TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                    // skip whitespaces and newlines
+                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(inner);
+                    TokenId tokenId = nextToken == null ? null : nextToken.id();
+                    if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                        // if it is end of 'switch'
+                        OffsetRange offsetRange = LexUtilities.findBwd(doc, inner, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+                        if (offsetRange != OffsetRange.NONE) {
+                            inner.movePrevious();
+                            if (LexUtilities.skipParenthesis(inner, true)) {
+                                Token<? extends JsTokenId> token = inner.token();
+                                token = LexUtilities.findPreviousNonWsNonComment(inner);
+                                if (token.id() == JsTokenId.KEYWORD_SWITCH) {
+                                    return -1;
+                                }
+                            }
+                        }
+                    } else if (tokenId == JsTokenId.KEYWORD_CASE || tokenId == JsTokenId.KEYWORD_DEFAULT) {
+                        inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                        Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(inner);
+                        if (prevToken.id() != JsTokenId.BRACKET_LEFT_CURLY) {
+                            // it must be case or default
+                            inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                            prevToken = LexUtilities.findPreviousIncluding(inner,
+                                    Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT));
+                            int beginLine = Utilities.getLineOffset(doc, inner.offset());
+                            int eolLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (beginLine != eolLine) {
+                                return -1;
+                            }
+                        }
+                    }
+                }
+
+                // other
+                if (!context.getBlocks().empty()) {
+                    if (context.getBlocks().peek().isBraceless()) {
+                        // end of line after braceless block start
+                        OffsetRange stackOffset = context.getBlocks().peek().getRange();
+                        if (stackOffset.containsInclusive(ts.offset())) {
+                            if (indentOnly) {
+                                // enter pressed in braceless block
+                                return 1;
+                            }
+                            // we are in the braceless block statement
+                            int stackEndLine = Utilities.getLineOffset(doc, stackOffset.getEnd());
+                            int offsetLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (stackEndLine == offsetLine) {
+                                // if we are at the last line of braceless block statement
+                                // increse indent by 1
+                                return 1;
+                            }
+                        } else {
+                            // we are not in braceless block statement,
+                            // let's decrease indent for all braceless blocks in top of stack (if any)
+                            int blocks = 0;
+                            while (!context.getBlocks().empty() && context.getBlocks().peek().isBraceless()) {
+                                blocks++;
+                                context.getBlocks().pop();
+                            }
+                            return -blocks;
+                        }
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            LOGGER.log(Level.INFO, null, ble);
+        }
+        return 0;
+    }
+
+    private int isEndIndent(IndentContext context, int offset) throws BadLocationException {
+        BaseDocument doc = context.getDocument();
+        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
+
+        if (lineBegin != -1) {
+            Token<?extends JsTokenId> token = getFirstToken(context, offset);
+
+            if (token == null) {
+                return 0;
+            }
+
+            TokenId id = token.id();
+
+            // If the line starts with an end-marker, such as "end", "}", "]", etc.,
+            // find the corresponding opening marker, and indent the line to the same
+            // offset as the beginning of that line.
+            if (id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET
+                    || id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                int indents = 1;
+
+                // Check if there are multiple end markers here... if so increase indent level.
+                // This should really do an iteration... for now just handling the most common
+                // scenario in JavaScript where we have }) in object literals
+                int lineEnd = Utilities.getRowEnd(doc, offset);
+                int newOffset = offset;
+                while (newOffset < lineEnd && token != null) {
+                    newOffset = newOffset + token.length();
+                    if (newOffset < doc.getLength()) {
+                        token = LexUtilities.getToken(doc, newOffset);
+                        if (token != null) {
+                            id = token.id();
+                            if (id == JsTokenId.WHITESPACE) {
+                                continue;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                return indents;
+            }
+        }
+
+        return 0;
+    }
+
+    private Token<? extends JsTokenId> getFirstToken(IndentContext context, int offset) throws BadLocationException {
+        BaseDocument doc = context.getDocument();
+        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
+
+        if (lineBegin != -1) {
+            if (context.isEmbedded()) {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        TokenHierarchy.get(doc), lineBegin, language);
+                if (ts != null) {
+                    ts.moveNext();
+                    Token<? extends JsTokenId> token = ts.token();
+                    while (token != null && token.id() == JsTokenId.WHITESPACE) {
+                        if (!ts.moveNext()) {
+                            return null;
+                        }
+                        token = ts.token();
+                    }
+                    return token;
+                }
+            } else {
+                return LexUtilities.getToken(doc, lineBegin);
+            }
+        }
+
         return null;
+    }
+
+    private static boolean isBinaryOperator(JsTokenId id, JsTokenId previous) {
+        switch (id) {
+            case OPERATOR_GREATER:
+            case OPERATOR_LOWER:
+            case OPERATOR_EQUALS:
+            case OPERATOR_EQUALS_EXACTLY:
+            case OPERATOR_LOWER_EQUALS:
+            case OPERATOR_GREATER_EQUALS:
+            case OPERATOR_NOT_EQUALS:
+            case OPERATOR_NOT_EQUALS_EXACTLY:
+            case OPERATOR_AND:
+            case OPERATOR_OR:
+            case OPERATOR_MULTIPLICATION:
+            case OPERATOR_DIVISION:
+            case OPERATOR_BITWISE_AND:
+            case OPERATOR_BITWISE_OR:
+            case OPERATOR_BITWISE_XOR:
+            case OPERATOR_MODULUS:
+            case OPERATOR_LEFT_SHIFT_ARITHMETIC:
+            case OPERATOR_RIGHT_SHIFT_ARITHMETIC:
+            case OPERATOR_RIGHT_SHIFT:
+            case OPERATOR_ASSIGNMENT:
+            case OPERATOR_PLUS_ASSIGNMENT:
+            case OPERATOR_MINUS_ASSIGNMENT:
+            case OPERATOR_MULTIPLICATION_ASSIGNMENT:
+            case OPERATOR_DIVISION_ASSIGNMENT:
+            case OPERATOR_BITWISE_AND_ASSIGNMENT:
+            case OPERATOR_BITWISE_OR_ASSIGNMENT:
+            case OPERATOR_BITWISE_XOR_ASSIGNMENT:
+            case OPERATOR_MODULUS_ASSIGNMENT:
+            case OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT:
+            case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
+            case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
+                return true;
+            case OPERATOR_PLUS:
+            case OPERATOR_MINUS:
+                if (previous != null && (previous == JsTokenId.IDENTIFIER || previous == JsTokenId.NUMBER
+                        || previous == JsTokenId.REGEXP_END || previous == JsTokenId.STRING_END
+                        || previous == JsTokenId.BRACKET_RIGHT_BRACKET || previous == JsTokenId.BRACKET_RIGHT_CURLY
+                        || previous == JsTokenId.BRACKET_RIGHT_PAREN)) {
+                    return true;
+                }
+                return false;
+            default:
+                return false;
+        }
     }
 
     /**
      * Iterates tokens from token to limit while properly updating indentation
      * level. Returns the new index in token sequence.
-     * 
+     *
      * @param token start token
      * @param index start index
      * @param limit end token
      * @param formatContext context to update
      * @return the new index
      */
-    private static int moveForward(FormatToken token, int index, FormatToken limit,
-            FormatContext formatContext) {
+    private void moveForward(FormatToken token, FormatToken limit,
+            FormatContext formatContext, boolean allowComment) {
 
-        int i = index;
         for (FormatToken current = token; current != null && current != limit; current = current.next()) {
             assert current.isVirtual()
                     || current.getKind() == FormatToken.Kind.WHITESPACE
-                    || current.getKind() == FormatToken.Kind.EOL : current;
+                    || current.getKind() == FormatToken.Kind.EOL
+                    || allowComment
+                        && (current.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                        || current.getKind() == FormatToken.Kind.LINE_COMMENT
+                        || current.getKind() == FormatToken.Kind.DOC_COMMENT): current;
 
+            processed.add(current);
             updateIndentationLevel(current, formatContext);
             if (current.getKind() == FormatToken.Kind.EOL) {
                 formatContext.setCurrentLineStart(current.getOffset()
                         + 1 + formatContext.getOffsetDiff());
                 formatContext.setLastLineWrap(null);
             }
-            i++;
         }
-        return i;
     }
 
     private static FormatToken getNextNonVirtual(FormatToken token) {
@@ -976,20 +1711,15 @@ public class JsFormatter implements Formatter {
         }
         return true;
     }
-    
-    @Override
-    public void reindent(Context context) {
-        // TODO
-    }
 
     static class Indentation {
-        
+
         static final Indentation ALLOWED = new Indentation(true, false);
-        
+
         static final Indentation FORBIDDEN = new Indentation(false, false);
-        
+
         private final boolean allowed;
-        
+
         private final boolean exceedLimits;
 
         public Indentation(boolean allowed, boolean exceedLimits) {

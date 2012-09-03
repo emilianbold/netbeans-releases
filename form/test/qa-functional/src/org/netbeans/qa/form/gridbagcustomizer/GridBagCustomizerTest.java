@@ -44,8 +44,6 @@ package org.netbeans.qa.form.gridbagcustomizer;
 import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -98,18 +96,7 @@ public class GridBagCustomizerTest extends ExtJellyTestCase {
         FormDesignerOperator designer = new FormDesignerOperator(FILE_NAME);
         designer.source();
         designer.design();
-        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         
-        inspector.freezeNavigatorAndRun(new Runnable() {
-
-            @Override
-            public void run() {
-                System.out.println("helou");
-            }
-        });
-       // designer.source();
-        //designer.design();
-
         new ComponentInspectorOperator().freezeNavigatorAndRun(new Runnable() {
 
             @Override
@@ -133,20 +120,7 @@ public class GridBagCustomizerTest extends ExtJellyTestCase {
                 CustomizeLayoutOperator clo = new CustomizeLayoutOperator();
                 clo.dragNDrop(500, 500, 20, 20);
 
-                //int i=0;
-                // while(i<47){
-                // JButtonOperator jb=new JButtonOperator(clo,i);
-                //String name=.toStringSource();
-
-                //System.out.println("index "+i+", ToolTip - "+ jb.getToolTipText() );
-                //System.out.println(jb.getText());
-                //System.out.println();
-                //i++;
-                //}
-
-                //if(i==47) return;
-
-
+                
                 clo.btYGridPlus().push();
                 clo.btYGridPlus().push();
                 clo.btXGridPlus().push();
@@ -235,10 +209,9 @@ public class GridBagCustomizerTest extends ExtJellyTestCase {
                 clo.btXWeightMinus().push();
                 clo.btXWeightMinus().push();
 
-                clo.btCancel().push();
+                clo.btClose().push();
 
-                findInCode("", designer);
-
+                
                 ArrayList<String> lines = new ArrayList<String>();
 
                 lines.add("jButton1.setText(\"jButton1\");");

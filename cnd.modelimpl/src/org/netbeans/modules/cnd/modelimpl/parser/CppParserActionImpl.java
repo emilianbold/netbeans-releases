@@ -61,11 +61,19 @@ import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl.UsingDirectiveBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl.VariableBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.DeclaratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -201,16 +209,18 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override
-    public void decl_specifiers() {
-        if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
-            builderContext.getSimpleDeclarationBuilderIfExist().declSpecifiers();
+    public void decl_specifiers(Token token) {
+        SimpleDeclarationBuilder declarationBuilder = builderContext.getSimpleDeclarationBuilderIfExist();
+        if(declarationBuilder != null) {
+            declarationBuilder.declSpecifiers();
         }
     }
 
     @Override
-    public void end_decl_specifiers() {
-        if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
-            builderContext.getSimpleDeclarationBuilderIfExist().endDeclSpecifiers();
+    public void end_decl_specifiers(Token token) {
+        SimpleDeclarationBuilder declarationBuilder = builderContext.getSimpleDeclarationBuilderIfExist();
+        if(declarationBuilder != null) {
+            declarationBuilder.endDeclSpecifiers();
         }
     }
     
@@ -333,7 +343,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void class_declaration(Token token) {
         ClassBuilder classBuilder = new ClassBuilder(currentContext.file.getParsingFileContent());
-        CsmObjectBuilder parent = builderContext.top(1);
+        CsmObjectBuilder parent = builderContext.top(2);
         if(parent instanceof ClassBuilder) {
             ((ClassBuilder)parent).addChild(classBuilder);
         }
@@ -418,7 +428,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
-            CsmObjectBuilder parent = builderContext.top(2);
+            CsmObjectBuilder parent = builderContext.top(3);
             if(parent == null || parent instanceof NamespaceBuilder) {
                 ClassImpl cls = classBuilder.create();
                 if(cls != null) {
@@ -501,9 +511,54 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void simple_declaration(Token token) {
         SimpleDeclarationBuilder builder = new SimpleDeclarationBuilder();
+        builder.setStartOffset(((APTToken)token).getOffset());
         builderContext.push(builder);        
     }
 
+    @Override
+    public void simple_declaration(int kind, Token token) {
+        if(kind == SIMPLE_DECLARATION__SEMICOLON) {
+            SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            
+            if(declBuilder.isFunction()) {
+                FunctionBuilder builder = new FunctionBuilder(currentContext.file.getParsingFileContent());
+
+                CsmObjectBuilder parent = builderContext.top(1);
+                if(parent instanceof ClassBuilder) {
+                    ((ClassBuilder)parent).addChild(builder);
+                }
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+
+                builder.setStartOffset(declBuilder.getStartOffset());
+                builder.setEndOffset(((APTToken)token).getOffset());
+
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+
+                builder.create();                
+            } else {
+                VariableBuilder builder = new VariableBuilder(currentContext.file.getParsingFileContent());
+
+                CsmObjectBuilder parent = builderContext.top(1);
+                if(parent instanceof ClassBuilder) {
+                    ((ClassBuilder)parent).addChild(builder);
+                }
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+
+                builder.setStartOffset(declBuilder.getStartOffset());
+                builder.setEndOffset(((APTToken)token).getOffset());
+
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
+
+                builder.create();
+            }
+        }
+    }
+    
     @Override
     public void end_simple_declaration(Token token) {
         if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
@@ -534,10 +589,50 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     @Override
     public void simple_type_specifier(Token token) {
+    }
+    
+    @Override
+    public void simple_type_specifier(int kind, Token token) {        
         if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
             builderContext.getSimpleDeclarationBuilderIfExist().setTypeSpecifier();
-        }        
+        }
+        
+        if(kind == SIMPLE_TYPE_SPECIFIER__ID) {
+            builderContext.push(new NameBuilder());
+        }
+        
+        
+        if (kind == SIMPLE_TYPE_SPECIFIER__CHAR
+                || kind == SIMPLE_TYPE_SPECIFIER__WCHAR_T
+                || kind == SIMPLE_TYPE_SPECIFIER__CHAR16_T
+                || kind == SIMPLE_TYPE_SPECIFIER__CHAR32_T
+                || kind == SIMPLE_TYPE_SPECIFIER__BOOL
+                || kind == SIMPLE_TYPE_SPECIFIER__SHORT
+                || kind == SIMPLE_TYPE_SPECIFIER__INT
+                || kind == SIMPLE_TYPE_SPECIFIER__LONG
+                || kind == SIMPLE_TYPE_SPECIFIER__SIGNED
+                || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
+                || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
+                || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
+                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
+            CsmObjectBuilder top = builderContext.top();
+            if(top instanceof TypeBuilder) {
+                ((TypeBuilder)top).setSimpleTypeSpecifier(token.getText());
+            }
+            
+        }
+        
     }
+
+    @Override
+    public void end_simple_type_specifier(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof NameBuilder) {
+            builderContext.pop();
+            TypeBuilder builder = (TypeBuilder)builderContext.top();
+            builder.setNameBuilder((NameBuilder)top);
+        }
+    }    
 
     @Override
     public void nested_name_specifier(Token token) {
@@ -872,7 +967,48 @@ public class CppParserActionImpl implements CppParserActionEx {
             }               
         }        
         
-    }    
+    }   
+    
+    @Override
+    public void greedy_declarator() {
+        if(!(builderContext.top() instanceof DeclaratorBuilder)) {
+            DeclaratorBuilder builder = new DeclaratorBuilder();
+            builderContext.push(builder);        
+        } else {
+            DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+            declaratorBuilder.enterDeclarator();
+        }
+    }
+
+    @Override
+    public void end_greedy_declarator() {
+        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+        if(declaratorBuilder.isTopDeclarator()) {
+            builderContext.pop();
+            if(builderContext.top() instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+                declBuilder.setDeclaratorBuilder(declaratorBuilder);
+            }
+        } else {
+            declaratorBuilder.leaveDeclarator();
+        }
+    }
+    
+    @Override
+    public void declarator_id() {
+        builderContext.push(new NameBuilder());
+    }
+
+    @Override
+    public void end_declarator_id() {
+        NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+        builderContext.pop();
+        if(builderContext.top() instanceof DeclaratorBuilder) {
+            CharSequence name = nameBuilder.getName();
+            DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();        
+            declaratorBuilder.setName(name);
+        }
+    }
     
     @Override
     public boolean isType(String name) {
@@ -980,4 +1116,353 @@ public class CppParserActionImpl implements CppParserActionEx {
         };
         currentContext.file.addReference(ref, definition);
     }   
+    
+    @Override public void translation_unit(Token token) {}
+    @Override public void end_translation_unit(Token token) {}
+    @Override public void statement(Token token) {}
+    @Override public void end_statement(Token token) {}
+    @Override public void labeled_statement(Token token) {}
+    @Override public void labeled_statement(int kind, Token token) {}
+    @Override public void labeled_statement(int kind, Token token1, Token token2) {}
+    @Override public void end_labeled_statement(Token token) {}
+    @Override public void expression_statement(Token token) {}
+    @Override public void end_expression_statement(Token token) {}
+    @Override public void selection_statement(Token token) {}
+    @Override public void selection_statement(int kind, Token token) {}
+    @Override public void end_selection_statement(Token token) {}
+    @Override public void condition(Token token) {}
+    @Override public void condition(int kind, Token token) {}
+    @Override public void end_condition(Token token) {}
+    @Override public void iteration_statement(Token token) {}
+    @Override public void iteration_statement(int kind, Token token) {}
+    @Override public void end_iteration_statement(Token token) {}
+    @Override public void for_init_statement(Token token) {}
+    @Override public void end_for_init_statement(Token token) {}
+    @Override public void for_range_declaration(Token token) {}
+    @Override public void end_for_range_declaration(Token token) {}
+    @Override public void for_range_initializer(Token token) {}
+    @Override public void end_for_range_initializer(Token token) {}
+    @Override public void jump_statement(Token token) {}
+    @Override public void jump_statement(int kind, Token token) {}
+    @Override public void jump_statement(int kind, Token token1, Token token2) {}
+    @Override public void end_jump_statement(Token token) {}
+    @Override public void declaration_statement(Token token) {}
+    @Override public void end_declaration_statement(Token token) {}
+    @Override public void declaration(Token token) {}
+    @Override public void end_declaration(Token token) {}
+    @Override public void block_declaration(Token token) {}
+    @Override public void end_block_declaration(Token token) {}
+    @Override public void id_expression(Token token) {}
+    @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
+    @Override public void end_alias_declaration(Token token) {}
+    @Override public void function_specifier(int kind, Token token) {}
+    
+    @Override public void type_specifier(Token token) {
+        if(builderContext.top() instanceof SimpleDeclarationBuilder) {
+            SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            TypeBuilder typeBuilder = declarationBuilder.getTypeBuilder() != null ? declarationBuilder.getTypeBuilder() : new TypeBuilder();
+            typeBuilder.setFile(currentContext.file);
+            typeBuilder.setStartOffset(((APTToken)token).getOffset());
+            builderContext.push(typeBuilder);    
+        }
+    }
+    
+    @Override public void end_type_specifier(Token token) {
+        TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
+        typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        builderContext.pop();
+        SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
+        declarationBuilder.setTypeBuilder(typeBuilder);
+    }
+    
+    @Override public void trailing_type_specifier(Token token) {}
+    @Override public void end_trailing_type_specifier(Token token) {}
+    @Override public void decltype_specifier(Token token) {}
+    @Override public void decltype_specifier(int kind, Token token) {}
+    @Override public void end_decltype_specifier(Token token) {}
+    @Override public void end_elaborated_type_specifier(Token token) {}
+    @Override public void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken) {}
+    @Override public void linkage_specification(Token externToken, Token stringToken) {}
+    @Override public void linkage_specification(int kind, Token token) {}
+    @Override public void end_linkage_specification(Token token) {}
+    @Override public void init_declarator_list(Token token) {}
+    @Override public void init_declarator_list(int kind, Token token) {}
+    @Override public void end_init_declarator_list(Token token) {}
+    @Override public void init_declarator(Token token) {}
+    @Override public void end_init_declarator(Token token) {}
+    
+    @Override public void declarator(Token token) {
+        if(!(builderContext.top() instanceof DeclaratorBuilder)) {
+            DeclaratorBuilder builder = new DeclaratorBuilder();
+            builderContext.push(builder);        
+        } else {
+            DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+            declaratorBuilder.enterDeclarator();
+        }
+    }
+    
+    @Override public void end_declarator(Token token) {
+        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+        if(declaratorBuilder.isTopDeclarator()) {
+            builderContext.pop();
+            if(builderContext.top() instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+                declBuilder.setDeclaratorBuilder(declaratorBuilder);
+            }
+        } else {
+            declaratorBuilder.leaveDeclarator();
+        }      
+    }
+    
+    @Override public void noptr_declarator(Token token) {}
+    @Override public void noptr_declarator(int kind, Token token) {}
+    @Override public void end_noptr_declarator(Token token) {}
+    @Override public void function_declarator(Token token) {}
+    @Override public void end_function_declarator(Token token) {}
+    @Override public void constructor_declarator(Token token) {}
+    @Override public void end_constructor_declarator(Token token) {}
+    @Override public void function_declarator(int kind, Token token) {}
+    @Override public void noptr_abstract_declarator(Token token) {}
+    @Override public void noptr_abstract_declarator(int kind, Token token) {}
+    @Override public void end_noptr_abstract_declarator(Token token) {}
+    @Override public void universal_declarator(Token token) {}
+    @Override public void end_universal_declarator(Token token) {}
+
+    @Override public void greedy_declarator(Token token) {
+        declarator(token);
+    }
+    
+    @Override public void end_greedy_declarator(Token token) {
+        end_declarator(token);
+    }
+    
+    @Override public void greedy_nonptr_declarator(Token token) {}
+    @Override public void greedy_nonptr_declarator(int kind, Token token) {}
+    @Override public void end_greedy_nonptr_declarator(Token token) {}
+    @Override public void ptr_operator(Token token) {}
+    @Override public void ptr_operator(int kind, Token token) {}
+    @Override public void end_ptr_operator(Token token) {}
+    @Override public void cv_qualifier(int kind, Token token) {}
+    @Override public void ref_qualifier(int kind, Token token) {}
+    @Override public void declarator_id(Token token) {
+        builderContext.push(new NameBuilder());
+    }
+    
+    @Override public void declarator_id(int kind, Token token) {
+    }
+    
+    @Override public void end_declarator_id(Token token) {
+        NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+        builderContext.pop();
+        if(builderContext.top() instanceof DeclaratorBuilder) {
+            CharSequence name = nameBuilder.getName();
+            DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();        
+            declaratorBuilder.setName(name);
+        }
+    }
+    
+    @Override public void type_id(Token token) {}
+    @Override public void end_type_id(Token token) {}
+    
+    @Override public void parameters_and_qualifiers(Token token) {}
+    
+    @Override public void parameters_and_qualifiers(int kind, Token token) {
+        if(kind == PARAMETERS_AND_QUALIFIERS__LPAREN) {
+            FunctionParameterListBuilder builder = new FunctionParameterListBuilder();
+            builder.setFile(currentContext.file);
+            builder.setStartOffset(((APTToken)token).getOffset());
+            builderContext.push(builder);
+        } else if(kind == PARAMETERS_AND_QUALIFIERS__RPAREN) {
+            FunctionParameterListBuilder builder = (FunctionParameterListBuilder) builderContext.top();
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            ((SimpleDeclarationBuilder)builderContext.top(1)).setParametersListBuilder(builder);
+        }
+    }
+    
+    @Override public void end_parameters_and_qualifiers(Token token) {}
+    
+    @Override public void parameter_declaration_clause(Token token) {}
+    @Override public void parameter_declaration_clause(int kind, Token token) {}
+    @Override public void end_parameter_declaration_clause(Token token) {}
+    @Override public void parameter_declaration_list(Token token) {}
+    @Override public void end_parameter_declaration_list(int kind, Token token) {}
+    @Override public void end_parameter_declaration_list(Token token) {}
+    
+    @Override public void parameter_declaration(Token token) {
+        ParameterBuilder builder = new ParameterBuilder();
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(builder);
+        SimpleDeclarationBuilder declBuilder = new SimpleDeclarationBuilder();
+        declBuilder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(declBuilder);        
+    }
+    
+    @Override public void parameter_declaration(int kind, Token token) {}
+    
+    @Override public void end_parameter_declaration(Token token) {
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+        declBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        builderContext.pop();
+        ParameterBuilder builder = (ParameterBuilder) builderContext.top();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        builder.setTypeBuilder(declBuilder.getTypeBuilder());
+        builder.setName(declBuilder.getDeclaratorBuilder().getName());
+        builderContext.pop();
+        ((FunctionParameterListBuilder)builderContext.top()).addParameterBuilder(builder);
+    }    
+    
+    @Override public void function_definition_after_declarator(Token token) {}
+    @Override public void function_definition_after_declarator(int kind, Token token) {}
+    @Override public void end_function_definition_after_declarator(Token token) {}
+    @Override public void function_declaration(Token token) {}
+    @Override public void end_function_declaration(Token token) {}
+    @Override public void function_definition(Token token) {}
+    @Override public void end_function_definition(Token token) {}
+    @Override public void function_body(Token token) {}
+    @Override public void end_function_body(Token token) {}
+    @Override public void initializer(Token token) {}
+    @Override public void initializer(int kind, Token token) {}
+    @Override public void end_initializer(Token token) {}
+    @Override public void brace_or_equal_initializer(Token token) {}
+    @Override public void brace_or_equal_initializer(int kind, Token token) {}
+    @Override public void end_brace_or_equal_initializer(Token token) {}
+    @Override public void initializer_clause(Token token) {}
+    @Override public void end_initializer_clause(Token token) {}
+    @Override public void initializer_list(Token token) {}
+    @Override public void initializer_list(int kind, Token token) {}
+    @Override public void end_initializer_list(Token token) {}
+    @Override public void braced_init_list(Token token) {}
+    @Override public void braced_init_list(int kind, Token token) {}
+    @Override public void end_braced_init_list(Token token) {}
+    @Override public void end_class_name(Token token) {}
+    @Override public void optionally_qualified_name(Token token) {}
+    @Override public void end_optionally_qualified_name(Token token) {}
+    @Override public void class_head(Token token) {}
+    @Override public void end_class_head(Token token) {}
+    @Override public void class_virtual_specifier(int kind, Token token) {}
+    @Override public void member_specification(Token token) {}
+    @Override public void member_specification(int kind, Token token) {}
+    @Override public void end_member_specification(Token token) {}
+
+    @Override public void member_declaration(Token token){
+        SimpleDeclarationBuilder builder = new SimpleDeclarationBuilder();
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(builder);            
+    }
+    
+    @Override public void member_declaration(int kind, Token token){
+        if(kind == MEMBER_DECLARATION__SEMICOLON) {
+            SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            if(declBuilder.isFunction()) {
+                MethodBuilder builder = new MethodBuilder(currentContext.file.getParsingFileContent());
+
+                CsmObjectBuilder parent = builderContext.top(1);
+                
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+
+                builder.setStartOffset(declBuilder.getStartOffset());
+                builder.setEndOffset(((APTToken)token).getOffset());
+
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+
+                ((ClassBuilder)parent).addChild(builder);
+            } else {            
+                FieldBuilder builder = new FieldBuilder(currentContext.file.getParsingFileContent());
+
+                CsmObjectBuilder parent = builderContext.top(1);
+                
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+
+                builder.setStartOffset(declBuilder.getStartOffset());
+                builder.setEndOffset(((APTToken)token).getOffset());
+
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
+
+                ((ClassBuilder)parent).addChild(builder);
+            }
+        }    
+    }
+    
+    @Override public void end_member_declaration(Token token){
+        if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
+            builderContext.pop();
+        }    
+    }    
+    
+    @Override public void member_declarator(Token token) {
+        declarator(token);
+    }
+    
+    @Override public void end_member_declarator(Token token) {
+        end_declarator(token);
+    }
+    
+    @Override public void pure_specifier(Token token) {}
+    @Override public void end_pure_specifier(Token token) {}
+    @Override public void constant_initializer(Token token) {}
+    @Override public void end_constant_initializer(Token token) {}
+    @Override public void virt_specifier(int kind, Token token) {}
+    @Override public void base_clause(Token token) {}
+    @Override public void end_base_clause(Token token) {}
+    @Override public void base_specifier_list(Token token) {}
+    @Override public void base_specifier_list(int kind, Token token) {}
+    @Override public void end_base_specifier_list(Token token) {}
+    @Override public void class_or_decltype(Token token) {}
+    @Override public void class_or_decltype(int kind, Token token) {}
+    @Override public void end_class_or_decltype(Token token) {}
+    @Override public void base_type_specifier(Token token) {}
+    @Override public void end_base_type_specifier(Token token) {}
+    @Override public void access_specifier(int kind, Token token) {}
+    @Override public void conversion_function_id(Token token) {}
+    @Override public void end_conversion_function_id(Token token) {}
+    @Override public void conversion_type_id(Token token) {}
+    @Override public void end_conversion_type_id(Token token) {}
+    @Override public void ctor_initializer(Token token) {}
+    @Override public void end_ctor_initializer(Token token) {}
+    @Override public void mem_initializer_list(Token token) {}
+    @Override public void mem_initializer_list(int kind, Token token) {}
+    @Override public void end_mem_initializer_list(Token token) {}
+    @Override public void mem_initializer(Token token) {}
+    @Override public void mem_initializer(int kind, Token token) {}
+    @Override public void end_mem_initializer(Token token) {}
+    @Override public void mem_initializer_id(Token token) {}
+    @Override public void end_mem_initializer_id(Token token) {}
+    @Override public void mem_operator_function_id(Token token) {}
+    @Override public void operator_function_id(int kind, Token token) {}
+    @Override public void end_operator_function_id(Token token) {}
+    @Override public void operator_id(Token token) {}
+    @Override public void end_operator_id(Token token) {}
+    @Override public void literal_operator_id(Token operatorToken, Token stringToken, Token identToken) {}
+    @Override public void template_declaration(Token token) {}
+    @Override public void end_template_declaration(Token token) {}
+    @Override public void template_parameter_list(Token token) {}
+    @Override public void template_parameter_list(int kind, Token token) {}
+    @Override public void end_template_parameter_list(Token token) {}
+    @Override public void template_parameter(Token token) {}
+    @Override public void end_template_parameter(Token token) {}
+    @Override public void type_parameter(int kind, Token token) {}
+    @Override public void template_argument_list(Token token) {}
+    @Override public void template_argument_list(int kind, Token token) {}
+    @Override public void end_template_argument_list(Token token) {}
+    @Override public void template_argument(Token token) {}
+    @Override public void end_template_argument(Token token) {}
+    @Override public void explicit_instantiation(Token token) {}
+    @Override public void explicit_instantiation(int kind, Token token) {}
+    @Override public void end_explicit_instantiation(Token token) {}
+    @Override public void explicit_specialization(Token templateToken, Token lessthenToken, Token greaterthenToken) {}
+    @Override public void end_explicit_specialization(Token token) {}
+    @Override public void try_block(Token token) {}
+    @Override public void end_try_block(Token token) {}
+    @Override public void function_try_block(Token token) {}
+    @Override public void end_function_try_block(Token token) {}
+    @Override public void handler(Token token) {}
+    @Override public void handler(int kind, Token token) {}
+    @Override public void end_handler(Token token) {}
 }

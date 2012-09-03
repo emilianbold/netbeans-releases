@@ -43,6 +43,7 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.beans.BeanInfo;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 
@@ -50,7 +51,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author sdedic
  */
-public class ResourcePathItem extends AbstractCompletionItem {
+final  class ResourcePathItem extends AbstractCompletionItem {
     private DataObject  target;
     private ImageIcon   icon;
     private String      right;
@@ -72,8 +73,8 @@ public class ResourcePathItem extends AbstractCompletionItem {
     }
 
     @Override
-    protected int getCaretShift() {
-        int pos = super.getCaretShift();
+    protected int getCaretShift(Document d) {
+        int pos = super.getCaretShift(d);
         if (!target.getPrimaryFile().isData()) {
             // skip the closing " in the value.
             pos -= 1;
@@ -89,5 +90,8 @@ public class ResourcePathItem extends AbstractCompletionItem {
         return icon;
     }
 
-    
+
+    public String toString() {
+        return "resource[" + super.getSubstituteText() + "]";
+    }
 }

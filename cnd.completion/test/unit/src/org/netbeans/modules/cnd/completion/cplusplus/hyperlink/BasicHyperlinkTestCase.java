@@ -942,6 +942,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug200171.c", 2, 17, "bug200171.c", 2, 5);
     }    
     
+    public void testTwoMacros() throws Exception {
+        // two macros with the same name
+        performTest("twoMacros1.h", 1, 9, "twoMacros1.c", 1, 1);
+        performTest("twoMacros2.h", 1, 9, "twoMacros2.c", 1, 1);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

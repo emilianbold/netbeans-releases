@@ -103,7 +103,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                             Element e = co.getTrees().getElement(TreePath.getPath(cut, t));
                             if (e!=null && e.getSimpleName().toString().equals(co.getFileObject().getName())) {
                                 treePathHandle = TreePathHandle.create(TreePath.getPath(cut, t), co);
-                                refactoring.getContext().add(co);
                                 break;
                             }
                         }

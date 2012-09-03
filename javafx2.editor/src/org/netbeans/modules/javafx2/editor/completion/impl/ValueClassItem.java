@@ -50,6 +50,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
@@ -63,7 +64,7 @@ import org.openide.text.NbDocument;
  *
  * @author sdedic
  */
-public class ValueClassItem extends SimpleClassItem {
+final class ValueClassItem extends SimpleClassItem {
     private static final Logger LOG = Logger.getLogger(ValueClassItem.class.getName());
 
     private boolean shouldClose;
@@ -92,13 +93,13 @@ public class ValueClassItem extends SimpleClassItem {
     }
     
     @Override
-    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+    protected void doSubstituteText(JTextComponent c, BaseDocument d, String text) throws BadLocationException {
         // substitute the class element
         super.doSubstituteText(c, d, text);
         if (!isValueAttributePresent()) {
             addAttribute(c, d, text);
         } else {
-            if (!ctx.isTagClosed()) {
+            if (!ctx.isTagFinished()) {
                 int off = getStartOffset() + text.length();
                 d.insertString(off, ">", null); // NOI18N
             }
@@ -130,7 +131,7 @@ public class ValueClassItem extends SimpleClassItem {
 
         int l = sb.length();
         sb.append("\"");
-        if (!ctx.isTagClosed()) {
+        if (!ctx.isTagFinished()) {
             if (shouldClose) {
                 sb.append("/>");
             } else {
@@ -193,6 +194,10 @@ public class ValueClassItem extends SimpleClassItem {
     /* test */ static boolean acceptsType(TypeElement elem, CompilationInfo ci) {
         LOG.log(Level.FINE, "Checking class: {0}", elem.getQualifiedName());
         return FxClassUtils.findValueOf(elem, ci) != null;
+    }
+    
+    public String toString() {
+        return "value-class["  + getFullClassName() + "]";
     }
     
 }

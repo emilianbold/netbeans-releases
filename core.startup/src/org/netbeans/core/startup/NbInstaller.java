@@ -715,6 +715,7 @@ final class NbInstaller extends ModuleInstaller {
     public void close(List<Module> modules) {
         Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
+        WarmUpSupport.waitFinished();
         moduleList.shutDown();
         List<Task> waitFor = onStartStop.startClose(modules);
         // [PENDING] this may need to write out changed ModuleInstall externalized

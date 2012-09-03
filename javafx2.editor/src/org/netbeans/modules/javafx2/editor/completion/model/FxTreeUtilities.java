@@ -137,11 +137,16 @@ public final class FxTreeUtilities {
         } catch (Error e) {
             // expected
         }
-        if (!visitor.nodeStack.isEmpty() && ignoreTag) {
+        if (visitor.nodeStack.size() > 1 && ignoreTag) {
             FxNode n = visitor.nodeStack.peekFirst();
             if (!accessor.i(n).contentContains(position, caret)) {
                 visitor.nodeStack.removeFirst();
             }
+        }
+        if (visitor.nodeStack.isEmpty()) {
+            // compensate bcs model.contains() does not accept 0th position, but the
+            // model by def contains everything in the source.
+            visitor.nodeStack.add(model);
         }
         return Collections.unmodifiableList(
                 new ArrayList<FxNode>(visitor.nodeStack)
@@ -150,6 +155,9 @@ public final class FxTreeUtilities {
     
     public int[] findAttributePos(FxNode node, String uri, String name, boolean value) {
         NodeInfo ni = accessor.i(node);
+        if (!ni.isElement()) {
+            throw new IllegalArgumentException();
+        }
         TokenSequence<XMLTokenId> seq = hierarchy.tokenSequence();
         seq.move(ni.getStart());
         
@@ -166,7 +174,7 @@ public final class FxTreeUtilities {
                 case TAG:
                     if (t.text().charAt(0) == '>' || seq.offset() != ni.getStart()) {
                         // broken tag or something
-                        return null;
+                        return new int[] { ni.getStart(), ni.getContentStart() };
                     }
                     break;
                     
@@ -198,8 +206,8 @@ public final class FxTreeUtilities {
                         break;
                     }
                     return new int[] {
-                        seq.offset(),
-                        seq.offset() + t.length()
+                        seq.offset() + 1,
+                        seq.offset() + t.length() + 1
                     };
             }
         }
@@ -208,5 +216,13 @@ public final class FxTreeUtilities {
 
     public TextPositions positions(FxNode node) {
         return accessor.i(node);
+    }
+
+    public boolean isElement(FxNode node) {
+        return accessor.i(node).isElement();
+    }
+    
+    public boolean isAttribute(FxNode node) {
+        return accessor.i(node).isAttribute();
     }
 }

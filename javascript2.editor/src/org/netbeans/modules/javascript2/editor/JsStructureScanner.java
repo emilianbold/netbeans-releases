@@ -106,9 +106,12 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    if (function.isDeclared()) {
+                        collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    }
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && child.isDeclared()) {
+            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
+                    && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.getModifiers().contains(Modifier.PUBLIC)
@@ -160,9 +163,14 @@ public class JsStructureScanner implements StructureScanner {
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
                 if (tokenId == JsTokenId.DOC_COMMENT) {
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                    // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
+                    int startOffset = ts.offset() + 3;
+                    int endOffset = ts.offset() + ts.token().length() - 2;
+                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(startOffset, endOffset));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
+                    int startOffset = ts.offset() + 2;
+                    int endOffset = ts.offset() + ts.token().length() - 2;
+                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(startOffset, endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -241,7 +249,7 @@ public class JsStructureScanner implements StructureScanner {
                 JsStructureItem item = (JsStructureItem) obj;
                 if (item.getName() != null && this.getName() != null) {
                     thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange(null) == modelElement.getOffsetRange(null);
+                            && item.modelElement.getOffsetRange() == modelElement.getOffsetRange();
                 }
             }
             return thesame;
@@ -299,7 +307,7 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange(null).getEnd();
+            return modelElement.getOffsetRange().getEnd();
         }
 
         @Override
@@ -312,7 +320,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            if (!types.isEmpty() && !types.contains(Type.UNRESOLVED)) {
+            if (!types.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;

@@ -45,7 +45,7 @@ package org.netbeans.modules.groovy.refactoring.findusages;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -86,7 +86,7 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
 
     @Override
     public String getDisplayText() {
-        return line.getText().trim();
+        return FindUsagesPainter.colorASTNode(element.getNode(), line);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
 
     @Override
     public PositionBounds getPosition() {
-        OffsetRange range = AstUtilities.getRange(element.getNode(), doc);
+        OffsetRange range = ASTUtils.getRange(element.getNode(), doc);
         if (range == OffsetRange.NONE) {
             return null;
         }

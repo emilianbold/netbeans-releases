@@ -211,6 +211,8 @@ final class EntrySupportLazyState {
          * cached node for this entry
          */
         private NodeRef refNode;
+        /** reference to thread which is just creating the node for this info */
+        Thread creatingNodeThread;
 
         public EntryInfo(EntrySupportLazy lazy, Entry entry) {
             this(lazy, entry, -1, (NodeRef)null);
@@ -259,7 +261,6 @@ final class EntrySupportLazyState {
         public final Node getNode() {
             return getNode(false, null);
         }
-        private Thread creatingNodeThread = null;
 
         public final Node getNode(boolean refresh, Object source) {
             while (true) {
@@ -289,39 +290,42 @@ final class EntrySupportLazyState {
                     }
                 }
                 Collection<Node> nodes = Collections.emptyList();
-                if (creating) {
-                    try {
-                        nodes = entry.nodes(source);
-                    } catch (RuntimeException ex) {
-                        NodeOp.warning(ex);
-                    }
-                }
-                synchronized (lock()) {
-                    if (!creating) {
-                        if (refNode != null) {
-                            node = refNode.get();
-                            if (node != null) {
-                                return node;
-                            }
-                        }
-                        // node created by other thread was GCed meanwhile, try once again
-                        continue;
-                    }
-                    if (nodes.isEmpty()) {
-                        node = new EntrySupportLazy.DummyNode();
-                    } else {
-                        if (nodes.size() > 1) {
-                            EntrySupportLazy.LOGGER.log(Level.FINE, 
-                                "Number of nodes for Entry: {0} is {1} instead of 1", // NOI18N
-                                new Object[]{entry, nodes.size()}
-                            ); 
-                        }
-                        node = nodes.iterator().next();
-                    }
-                    refNode = new NodeRef(node, this);
+                try {
                     if (creating) {
-                        creatingNodeThread = null;
-                        lock().notifyAll();
+                        try {
+                            nodes = entry.nodes(source);
+                        } catch (RuntimeException ex) {
+                            NodeOp.warning(ex);
+                        }
+                    }
+                } finally {
+                    synchronized (lock()) {
+                        if (!creating) {
+                            if (refNode != null) {
+                                node = refNode.get();
+                                if (node != null) {
+                                    return node;
+                                }
+                            }
+                            // node created by other thread was GCed meanwhile, try once again
+                            continue;
+                        }
+                        if (nodes.isEmpty()) {
+                            node = new EntrySupportLazy.DummyNode();
+                        } else {
+                            if (nodes.size() > 1) {
+                                EntrySupportLazy.LOGGER.log(Level.FINE, 
+                                    "Number of nodes for Entry: {0} is {1} instead of 1", // NOI18N
+                                    new Object[]{entry, nodes.size()}
+                                ); 
+                            }
+                            node = nodes.iterator().next();
+                        }
+                        refNode = new NodeRef(node, this);
+                        if (creating) {
+                            creatingNodeThread = null;
+                            lock().notifyAll();
+                        }
                     }
                 }
                 final Children ch = lazy().children;

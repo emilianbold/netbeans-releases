@@ -80,7 +80,7 @@ public class SearchCompletion implements CompletionProvider {
     static class Query extends AsyncCompletionQuery {
 
         private SearchBar searchBar = SearchBar.getInstance();
-        Set<SearchCompletionItem> results;
+        private Set<SearchCompletionItem> results;
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {

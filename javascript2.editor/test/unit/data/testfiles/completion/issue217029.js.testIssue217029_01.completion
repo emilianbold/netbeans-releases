@@ -1,0 +1,5 @@
+Code completion result for source line:
+element.ch|arAt(10);
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      childNodes                      [PUBLIC]   stub_DOM_Node.js

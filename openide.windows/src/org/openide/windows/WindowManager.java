@@ -534,6 +534,15 @@ public abstract class WindowManager extends Object implements Serializable {
     protected void topComponentCancelRequestAttention(TopComponent tc) {
     }
 
+    /**
+     * Highlights the tab of the given TopComponent until user activates it.
+     * @param tc
+     * @param highlight True to highlight the tab, false to switch the highlight off.
+     * @since 6.58
+     */
+    protected void topComponentAttentionHighlight(TopComponent tc, boolean highlight) {
+    }
+
     /** Returns unique ID for specified <code>TopComponent</code>.
      * @param tc <code>TopComponent</code> the component for which is ID returned
      * @return unique <code>TopComponent</code> ID

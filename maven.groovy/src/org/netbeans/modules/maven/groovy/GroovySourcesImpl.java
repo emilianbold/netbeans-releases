@@ -72,22 +72,28 @@ public class GroovySourcesImpl implements Sources, SourceGroupModifierImplementa
     @Override public SourceGroup[] getSourceGroups(String type) {
         if (TYPE_GROOVY.equals(type)) {
             List<SourceGroup> groups = new ArrayList<SourceGroup>();
-            maybeAddGroup(groups, false);
-            maybeAddGroup(groups, true);
+            addTestGroup(groups);
+            addSourcesGroup(groups);
             return groups.toArray(new SourceGroup[groups.size()]);
         } else {
             return new SourceGroup[0];
         }
     }
 
-    @NbBundle.Messages({
-        "SG_GroovySources=Groovy Packages",
-        "SG_Test_GroovySources=Groovy Test Packages"
-    })
-    private void maybeAddGroup(List<SourceGroup> groups, boolean test) {
-        FileObject root = project.getProjectDirectory().getFileObject("src/" + (test ? "test" : "main") + "/groovy");
+    @NbBundle.Messages({"SG_Test_GroovySources=Groovy Test Packages"})
+    private void addTestGroup(List<SourceGroup> groups) {
+        addGroupIfRootExists(groups, "test", NAME_GROOVYTESTSOURCE, SG_Test_GroovySources());
+    }
+
+    @NbBundle.Messages({"SG_GroovySources=Groovy Packages"})
+    private void addSourcesGroup(List<SourceGroup> groups) {
+        addGroupIfRootExists(groups, "main", NAME_GROOVYSOURCE, SG_GroovySources());
+    }
+
+    private void addGroupIfRootExists(List<SourceGroup> groups, String rootType, String name, String displayName) {
+        FileObject root = project.getProjectDirectory().getFileObject("src/" + rootType + "/groovy");
         if (root != null) {
-            groups.add(GenericSources.group(project, root, test ? NAME_GROOVYTESTSOURCE : NAME_GROOVYSOURCE, test ? SG_Test_GroovySources() : SG_GroovySources(), null, null));
+            groups.add(GenericSources.group(project, root, name, displayName, null, null));
         }
     }
 
@@ -102,7 +108,12 @@ public class GroovySourcesImpl implements Sources, SourceGroupModifierImplementa
             return null;
         }
         List<SourceGroup> groups = new ArrayList<SourceGroup>();
-        maybeAddGroup(groups, JavaProjectConstants.SOURCES_HINT_TEST.equals(hint));
+
+        if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+            addTestGroup(groups);
+        } else {
+            addSourcesGroup(groups);
+        }
         return groups.isEmpty() ? null : groups.get(0);
     }
 

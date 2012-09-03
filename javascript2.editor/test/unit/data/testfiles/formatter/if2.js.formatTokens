@@ -8,10 +8,11 @@ FormattingToken{kind=TEXT, offset=4, text=x}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=5, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=6, text=
 }
 FormattingToken{kind=WHITESPACE, offset=7, text=     }
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=12, text="}
 FormattingToken{kind=TEXT, offset=13, text=hello}
 FormattingToken{kind=TEXT, offset=18, text="}
@@ -23,10 +24,11 @@ FormattingToken{kind=WHITESPACE, offset=20, text=         }
 FormattingToken{kind=BEFORE_ELSE_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=29, text=else}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_ELSE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=33, text=
 }
 FormattingToken{kind=WHITESPACE, offset=34, text=         }
+FormattingToken{kind=BEFORE_ELSE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=43, text="}
 FormattingToken{kind=TEXT, offset=44, text=neco}
 FormattingToken{kind=TEXT, offset=48, text="}
@@ -99,15 +101,17 @@ FormattingToken{kind=WHITESPACE, offset=109, text= }
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=110, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=111, text=
 }
 FormattingToken{kind=WHITESPACE, offset=112, text=         }
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=121, text=a}
 FormattingToken{kind=WHITESPACE, offset=122, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=123, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=124, text= }
 FormattingToken{kind=TEXT, offset=125, text=7}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -126,9 +130,11 @@ FormattingToken{kind=TEXT, offset=132, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=133, text=e}
 FormattingToken{kind=WHITESPACE, offset=134, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=135, text=||}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=137, text= }
 FormattingToken{kind=TEXT, offset=138, text=b}
 FormattingToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null}
@@ -137,9 +143,10 @@ FormattingToken{kind=WHITESPACE, offset=140, text=  }
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=142, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=143, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=144, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -149,9 +156,10 @@ FormattingToken{kind=EOL, offset=145, text=
 FormattingToken{kind=BEFORE_ELSE_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=146, text=else}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_ELSE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=150, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_ELSE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=151, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -167,36 +175,48 @@ FormattingToken{kind=WHITESPACE, offset=156, text= }
 FormattingToken{kind=TEXT, offset=157, text=(}
 FormattingToken{kind=AFTER_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=158, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=165, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=166, text=select}
 FormattingToken{kind=WHITESPACE, offset=172, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=173, text=&&}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=175, text= }
 FormattingToken{kind=TEXT, offset=176, text=(}
 FormattingToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=177, text= }
 FormattingToken{kind=TEXT, offset=178, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=185, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=186, text=tagName}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=193, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=194, text=toLowerCase}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=205, text=(}
 FormattingToken{kind=TEXT, offset=206, text=)}
 FormattingToken{kind=WHITESPACE, offset=207, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=208, text=!=}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=210, text= }
 FormattingToken{kind=TEXT, offset=211, text='}
 FormattingToken{kind=TEXT, offset=212, text=input}
 FormattingToken{kind=TEXT, offset=217, text='}
 FormattingToken{kind=WHITESPACE, offset=218, text= }
+FormattingToken{kind=BEFORE_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=219, text=||}
 FormattingToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=221, text=
 }
 FormattingToken{kind=WHITESPACE, offset=222, text=      }
@@ -210,6 +230,7 @@ FormattingToken{kind=TEXT, offset=237, text='}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=238, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=239, text= }
 FormattingToken{kind=TEXT, offset=240, text='}
 FormattingToken{kind=TEXT, offset=241, text=reset}
@@ -217,19 +238,25 @@ FormattingToken{kind=TEXT, offset=246, text='}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=247, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=248, text= }
 FormattingToken{kind=TEXT, offset=249, text='}
 FormattingToken{kind=TEXT, offset=250, text=submit}
 FormattingToken{kind=TEXT, offset=256, text='}
 FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=257, text=]}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=258, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=259, text=include}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=266, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=267, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=274, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=275, text=type}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=279, text=)}
@@ -240,12 +267,15 @@ FormattingToken{kind=WHITESPACE, offset=282, text= }
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=283, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=284, text=
 }
 FormattingToken{kind=WHITESPACE, offset=285, text=      }
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=291, text=element}
+FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=298, text=.}
+FormattingToken{kind=AFTER_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=299, text=select}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=305, text=(}

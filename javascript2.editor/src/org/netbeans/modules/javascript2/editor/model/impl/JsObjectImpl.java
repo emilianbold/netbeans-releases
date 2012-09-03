@@ -215,7 +215,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         for(Integer position : assignments.keySet()) {
             if (closeOffset < position && position <= offset) {
                 closeOffset = position;
-                result = assignments.get(position);
+                result = new ArrayList(assignments.get(position));
             }
         }
         if (result.isEmpty()) {
@@ -244,6 +244,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return result;
     }
 
+    public int getCountOfAssignments() {
+        return assignments.size();
+    }
+    
     @Override
     public Collection<? extends TypeUsage> getAssignments() {
         List<TypeUsage> values;

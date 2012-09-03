@@ -50,8 +50,10 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * CsmVariable + CsmMember implementation
@@ -85,6 +87,11 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         return fieldImpl;
     }
 
+    private FieldImpl(CsmType type, CharSequence name, CsmScope cls, CsmVisibility visibility, boolean _static, boolean _extern, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset, type, name, cls, _static, _extern);
+        this.visibility = visibility;
+    }
+    
     @Override
     public CsmClass getContainingClass() {
         return (CsmClass) getScope();
@@ -98,6 +105,132 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     @Override
     public String toString() {
         return "FIELD " + super.toString(); // NOI18N
+    }
+    
+    public static class FieldBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;// = CharSequences.empty();
+        private boolean _static = false;
+        private boolean _extern = false;
+        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+        CsmVisibility visibility = CsmVisibility.PUBLIC;
+        private CsmFile file;
+        private final FileContent fileContent;
+        private int startOffset;
+        private int endOffset;
+        private CsmObjectBuilder parent;
+
+        private TypeFactory.TypeBuilder typeBuilder;
+        
+        private CsmScope scope;
+        private FieldImpl instance;
+
+        public FieldBuilder(FileContent fileContent) {
+            assert fileContent != null;
+            this.fileContent = fileContent;
+        }
+        
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+        
+        public void setName(CharSequence name) {
+            if(this.name == null) {
+                this.name = name;
+            }
+        }
+        
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public CharSequence getRawName() {
+            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
+        }
+        
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setStatic() {
+            this._static = true;
+        }
+
+        public void setExtern() {
+            this._extern = true;
+        }
+
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }
+
+        public void setTypeBuilder(TypeFactory.TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
+        private FieldImpl getVariableInstance() {
+            return instance;
+        }
+        
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if (parent == null) {
+                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                }
+            }
+            return scope;
+        }
+        
+        public FieldImpl create() {
+            FieldImpl field = getVariableInstance();
+            CsmScope s = getScope();
+            if (field == null && s != null && name != null && getScope() != null) {
+                CsmType type = null;
+                if(typeBuilder != null) {
+                    typeBuilder.setScope(s);
+                    type = typeBuilder.create();
+                }
+                if(type == null) {
+                    type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
+                }
+                
+                field = new FieldImpl(type, name, scope, visibility, _static, _extern, file, startOffset, endOffset);
+                
+                postObjectCreateRegistration(true, field);
+                NameHolder.createName(name).addReference(fileContent, field);;
+                //name.addReference(fileContent, field);
+                
+                if(parent != null) {
+                    if(parent instanceof ClassImpl.ClassBuilder) {
+                        ((ClassImpl.ClassBuilder)parent).getClassDefinitionInstance().addMember(field, true);
+                    }
+                } else {
+                    fileContent.addDeclaration(field);
+                }
+            }
+            if(getScope() instanceof CsmNamespace) {
+                ((NamespaceImpl)getScope()).addDeclaration(field);
+            }
+            return field;
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////

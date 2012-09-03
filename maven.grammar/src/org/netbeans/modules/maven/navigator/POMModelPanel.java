@@ -152,8 +152,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         JComponent buttons = createFilterButtons();
         buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         filtersPanel.add(buttons);
-        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) {
+            filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background"));//NOI18N
+        } 
 
         add(filtersPanel, BorderLayout.SOUTH);
     }
@@ -370,7 +371,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         FileObject fo = FileUtil.toFileObject(pom);
                         if (fo != null) {
                             ModelSource ms = org.netbeans.modules.maven.model.Utilities.createModelSource(fo);
-                            POMModel mdl = POMModelFactory.getDefault().getModel(ms);
+                            POMModel mdl = POMModelFactory.getDefault().createFreshModel(ms);
                             if (mdl != null) {
                                 prjs.add(mdl.getProject());
                                 mdls.add(mdl);

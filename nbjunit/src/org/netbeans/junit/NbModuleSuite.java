@@ -63,6 +63,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -95,6 +97,7 @@ import junit.framework.TestResult;
  *   public void testABC() { ... }
  * }
  * </pre>
+ * For more advanced configuration see {@link #emptyConfiguration()} and {@link Configuration}.
  *
  * @since 1.46
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
@@ -111,10 +114,12 @@ public class NbModuleSuite {
     
     
     /** Settings object that allows one to configure execution of
-     * whole {@link NbModuleSuite}.
+     * whole {@link NbModuleSuite}. Chain the method invocations
+     * (each method returns new instance of {@link Configuration})
+     * and call {@link #suite()} at the end to generate the final
+     * JUnit test class.
      * 
      * @since 1.48
-     * 
      */
     public static final class Configuration extends Object {
         final List<Item> tests;
@@ -676,7 +681,12 @@ public class NbModuleSuite {
         public void run(final TestResult result) {
             result.runProtected(this, new Protectable() {
                 public @Override void protect() throws Throwable {
-                    runInRuntimeContainer(result);
+                    ClassLoader before = Thread.currentThread().getContextClassLoader();
+                    try {
+                        runInRuntimeContainer(result);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(before);
+                    }
                 }
             });
         }
@@ -942,13 +952,12 @@ public class NbModuleSuite {
             Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
             Method getDefault = lifeClazz.getMethod("getDefault"); // NOI18N
             Method exit = lifeClazz.getMethod("exit");
+            LOG.log(Level.FINE, "Closing via LifecycleManager loaded by {0}", lifeClazz.getClassLoader());
             Object life = getDefault.invoke(null);
             if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
                 System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
                 exit.invoke(life);
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public @Override void run() {}
-                });
+                waitForAWT();
             }
         }
 
@@ -1252,6 +1261,16 @@ public class NbModuleSuite {
             return false;
         }
 
+        private static void waitForAWT() throws InvocationTargetException, InterruptedException {
+            final CountDownLatch cdl = new CountDownLatch(1);
+            SwingUtilities.invokeLater(new Runnable() {
+                public @Override void run() {
+                    cdl.countDown();
+                }
+            });
+            cdl.await(10, TimeUnit.SECONDS);
+        }
+
         private static final class JUnitLoader extends ClassLoader {
             private final ClassLoader junit;
 
@@ -1406,7 +1425,7 @@ public class NbModuleSuite {
         }
 
         private static void writeModule(File file, String xml) throws IOException {
-            String previous = null;
+            String previous;
             if (file.exists()) {
                 previous = asString(new FileInputStream(file), true);
                 if (previous.equals(xml)) {
@@ -1414,10 +1433,10 @@ public class NbModuleSuite {
                 }
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "rewrite module file: {0}", file);
-                    charDump(previous);
-                    LOG.fine("new----");
-                    charDump(xml);
-                    LOG.fine("end----");
+                    charDump(Level.FINEST, previous);
+                    LOG.finest("new----");
+                    charDump(Level.FINEST, xml);
+                    LOG.finest("end----");
                 }
             }
             FileOutputStream os = new FileOutputStream(file);
@@ -1425,7 +1444,7 @@ public class NbModuleSuite {
             os.close();
         }
 
-        private static void charDump(String text) {
+        private static void charDump(Level logLevel, String text) {
             StringBuilder sb = new StringBuilder(5 * text.length());
             for (int i = 0; i < text.length(); i++) {
                 if (i % 8 == 0) {
@@ -1444,7 +1463,7 @@ public class NbModuleSuite {
                 }
             }
             sb.append('\n');
-            LOG.fine(sb.toString());
+            LOG.log(logLevel, sb.toString());
         }
 
         private static String two(String s) {

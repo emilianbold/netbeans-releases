@@ -101,7 +101,7 @@ import org.openide.util.WeakListeners;
 public abstract class PHPCompletionItem implements CompletionProposal {
 
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
-    protected static ImageIcon keywordIcon = null;
+    protected static final ImageIcon KEYWORD_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
     final CompletionRequest request;
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
@@ -111,7 +111,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
         this.element = element;
-        keywordIcon = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
         this.generateAs = generateAs;
     }
 
@@ -893,17 +892,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        @NbBundle.Messages("Generate=- generate")
         public String getLhsHtml(HtmlFormatter formatter) {
             StringBuilder sb = new StringBuilder();
             sb.append(super.getLhsHtml(formatter));
-            sb.append(' ').append(NbBundle.getMessage(PHPCompletionItem.class, "Generate"));//NOI18N
+            sb.append(' ').append(Bundle.Generate());
             return sb.toString();
         }
 
         @Override
+        @NbBundle.Messages("MagicMethod=Magic Method")
         public String getRhsHtml(HtmlFormatter formatter) {
             if (isMagic()) {
-                final String message = NbBundle.getMessage(PHPCompletionItem.class, "MagicMethod");//NOI18N
+                final String message = Bundle.MagicMethod();
                 formatter.appendText(message);
                 return formatter.getText();
             }
@@ -978,7 +979,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return keywordIcon;
+            return KEYWORD_ICON;
         }
 
         @Override
@@ -1133,7 +1134,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return keywordIcon;
+            return KEYWORD_ICON;
         }
     }
 

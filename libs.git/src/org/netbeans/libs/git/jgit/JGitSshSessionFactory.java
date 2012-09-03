@@ -39,9 +39,19 @@ package org.netbeans.libs.git.jgit;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.Session;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -120,6 +130,35 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
             byHostName.put(hostName, jsch);
         }
         return jsch;
+    }
+
+    @Override
+    protected Session createSession (Host hc, String user, String host, int port, FS fs) throws JSchException {
+        Session session = super.createSession(hc, user, host, port, fs);
+        try {
+            List<Proxy> proxies = ProxySelector.getDefault().select(new URI("ssh",
+                    null,
+                    host,
+                    port == -1 ? 22 : port,
+                    null, null, null));
+            if (proxies.size() > 0) {
+                Proxy p = proxies.iterator().next();
+                if (p.type() == Proxy.Type.DIRECT) {
+                    session.setProxy(null);
+                } else {
+                    SocketAddress addr = p.address();
+                    if (addr instanceof InetSocketAddress) {
+                        InetSocketAddress inetAddr = (InetSocketAddress) addr;
+                        String proxyHost = inetAddr.getHostName();
+                        int proxyPort = inetAddr.getPort();
+                        session.setProxy(new ProxyHTTP(proxyHost, proxyPort));
+                    }
+                }
+            }
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(JGitSshSessionFactory.class.getName()).log(Level.INFO, "Invalid URI: " + host + ":" + port, ex);
+        }
+        return session;
     }
     
 }

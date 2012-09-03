@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.rest.spi;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -56,8 +57,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.Comment.Style;
@@ -67,6 +75,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -77,8 +89,10 @@ import org.netbeans.modules.websvc.rest.model.api.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -107,6 +121,8 @@ public abstract class WebRestSupport extends RestSupport {
     
     public static final String JERSEY_CONFIG_IDE="ide";         //NOI18N
     public static final String JERSEY_CONFIG_SERVER="server";   //NOI18N
+    
+    public static final String CONTAINER_RESPONSE_FILTER = "com.sun.jersey.spi.container.ContainerResponseFilters";//NOI18N
     
     public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
     protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
@@ -265,6 +281,38 @@ public abstract class WebRestSupport extends RestSupport {
             Exceptions.printStackTrace(ioe);
         }
     }
+    
+    public void addInitParam( String paramName, String value ) {
+        try {
+            FileObject ddFO = getWebXml();
+            WebApp webApp = findWebApp();
+            if (ddFO == null || webApp == null) {
+                return;
+            }
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,
+                    REST_SERVLET_ADAPTOR);
+            InitParam initParam = (InitParam) adaptorServlet.findBeanByName(
+                    "InitParam", // NOI18N
+                    "ParamName", // NOI18N
+                    paramName);
+            if (initParam == null) {
+                try {
+                    initParam = (InitParam) adaptorServlet
+                            .createBean("InitParam"); // NOI18N
+                    adaptorServlet.addInitParam(initParam);
+                }
+                catch (ClassNotFoundException ex) {
+                }
+            }
+            initParam.setParamName(paramName);
+            initParam.setParamValue(value);
+            
+            webApp.write(ddFO);
+        }
+        catch (IOException e) {
+            Logger.getLogger(WebRestSupport.class.getName()).log(Level.WARNING,  null , e);
+        }
+    }
 
     public FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
@@ -313,6 +361,102 @@ public abstract class WebRestSupport extends RestSupport {
         }
         return null;
     }
+    
+    public boolean hasApplicationResourceClass(final String fqn){
+        List<RestApplication> applications = getRestApplications();
+        if ( applications.isEmpty() ){
+            return false;
+        }
+        final String clazz = applications.get(0).getApplicationClass();
+        final boolean[] has = new boolean[1];
+        try {
+            JavaSource javaSource = getJavaSourceFromClassName(clazz);
+
+            if (javaSource == null ){
+                return false;
+            }
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run( final CompilationController controller )
+                        throws Exception
+                {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+
+                    TypeElement typeElement = controller.getElements()
+                            .getTypeElement(clazz);
+                    if (typeElement == null) {
+                        return;
+                    }
+                    TypeElement restResource = controller.getElements()
+                            .getTypeElement(fqn);
+                    if (restResource == null) {
+                        return;
+                    }
+                    List<ExecutableElement> methods = ElementFilter
+                            .methodsIn(typeElement.getEnclosedElements());
+                    ExecutableElement getClasses = null;
+                    for (ExecutableElement method : methods) {
+                        if (method.getSimpleName().contentEquals(
+                                GET_REST_RESOURCE_CLASSES)
+                                && method.getParameters().isEmpty())
+                        {
+                            getClasses = method;
+                            break;
+                        }
+                    }
+                    if (getClasses == null) {
+                        return;
+                    }
+
+                    final String className = restResource.getQualifiedName()
+                            .toString() + ".class"; // NOI18N
+                    final MethodTree tree = controller.getTrees().getTree(
+                            getClasses);
+                    final Document doc = controller.getDocument();
+                    if ( doc ==null){
+                        return;
+                    }
+                    doc.render(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            SourcePositions srcPos = controller.getTrees()
+                                    .getSourcePositions();
+                            int start = (int) srcPos.getStartPosition(
+                                    controller.getCompilationUnit(), tree);
+                            int end = (int) srcPos.getEndPosition(
+                                    controller.getCompilationUnit(), tree);
+
+                            try {
+                                String text = doc.getText(start, end - start + 1);
+                                if (text.contains(className)) {
+                                    has[0] = true;
+                                }
+                            }
+                            catch(BadLocationException e ){
+                                // should not happen inside document lock
+                                assert false;
+                            }
+                        }
+                    });
+
+                    /*
+                     * List<? extends ImportTree> imports =
+                     * controller.getCompilationUnit().getImports(); for
+                     * (ImportTree importTree : imports) { importTree. }
+                     */
+                }
+
+            }, true);
+        }
+        catch(IOException e ){
+            Logger.getLogger(WebRestSupport.class.getName()).log(
+                    Level.INFO, e.getLocalizedMessage(), e);
+        }
+        
+        return has[0];
+    }
 
     protected boolean hasRestServletAdaptor() {
         try {
@@ -330,8 +474,38 @@ public abstract class WebRestSupport extends RestSupport {
     public JaxRsStackSupport getJaxRsStackSupport(){
         return JaxRsStackSupport.getInstance(project);
     }
+    
+    public boolean hasJaxRsApi(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
+                Profile.JAVA_EE_6_FULL.equals(profile); 
+        // Fix for BZ#216345: JAVA_EE_6_WEB profile doesn't contain JAX-RS API
+        return isJee6 && supportsTargetProfile(Profile.JAVA_EE_6_FULL);
+    }
+    
+    public boolean supportsTargetProfile(Profile profile){
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
+                lookup(J2eeModuleProvider.class);
+        String serverInstanceID = provider.getServerInstanceID();
+        if ( serverInstanceID == null ){
+            return false;
+        }
+        ServerInstance serverInstance = Deployment.getDefault().
+                 getServerInstance(serverInstanceID);
+        try {
+            Set<Profile> profiles = serverInstance.getJ2eePlatform().getSupportedProfiles();
+            return profiles.contains( profile);
+        }
+        catch( InstanceRemovedException e ){
+            return false;
+        }
+    }
 
-    protected Servlet getRestServletAdaptor(WebApp webApp) {
+    public Servlet getRestServletAdaptor(WebApp webApp) {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
                 String servletClass = s.getServletClass();
@@ -808,6 +982,18 @@ public abstract class WebRestSupport extends RestSupport {
             }
 
         }).commit();
+        Collection<FileObject> files = javaSource.getFileObjects();
+        if ( files.isEmpty() ){
+            return;
+        }
+        FileObject fileObject = files.iterator().next();
+        DataObject dataObject = DataObject.find(fileObject);
+        if ( dataObject!= null){
+            SaveCookie cookie = dataObject.getLookup().lookup(SaveCookie.class);
+            if ( cookie!= null ){
+                cookie.save();
+            }
+        }
     }
 
     protected FileObject getFileObjectFromClassName(String qualifiedClassName) 

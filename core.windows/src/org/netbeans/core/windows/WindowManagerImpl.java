@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.actions.ActionUtils;
+import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.MainWindow;
@@ -155,8 +156,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     @Override
     public void topComponentCancelRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
-        
+
         central.topComponentCancelRequestAttention(mode, tc);
+    }
+
+    @Override
+    public void topComponentAttentionHighlight(TopComponent tc, boolean highlight) {
+        ModeImpl mode = (ModeImpl) findMode(tc);
+
+        central.topComponentAttentionHighlight(mode, tc, highlight);
     }
 
     /////////////////////////
@@ -457,6 +465,13 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             exclusive = new Exclusive();
         }
         return exclusive;
+    }
+
+    private void toggleUseNativeFileChooser() {
+        if( null == System.getProperty("nb.native.filechooser") ) { //NOI18N
+            boolean useNativeFileChooser = WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, false);
+            System.setProperty("nb.native.filechooser", useNativeFileChooser ? "true" : "false"); //NOI18N
+        }
     }
     
     private static class WrapMode implements Mode {
@@ -910,6 +925,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             } else {
                 FloatingWindowTransparencyManager.getDefault().start();
             }
+            toggleUseNativeFileChooser();
         } else {
             getExclusive().stop();
             exclusivesCompleted = false;

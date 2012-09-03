@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.problems;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.netbeans.api.project.Project;
@@ -47,6 +48,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.test.TestFileUtils;
 
 public class ProblemReporterImplTest extends NbTestCase { // #175472
@@ -80,6 +82,25 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
         pr.doIDEConfigChecks();
+        final Object lock = new Object();
+        pr.RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                synchronized (lock) {
+                    lock.notifyAll();
+                }
+            }
+        });
+        synchronized (lock) {
+            lock.wait(5000);
+        }
+        
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }
@@ -92,6 +113,24 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
         pr.doIDEConfigChecks();
+        final Object lock = new Object();
+        pr.RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                synchronized (lock) {
+                    lock.notifyAll();
+                }
+            }
+        });
+        synchronized (lock) {
+            lock.wait(5000);
+        }
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }

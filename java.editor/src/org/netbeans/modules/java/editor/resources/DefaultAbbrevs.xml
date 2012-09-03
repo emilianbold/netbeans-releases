@@ -76,11 +76,11 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="psfi"><code><![CDATA[${no-format}private static final int ]]></code></codetemplate> 
     <codetemplate abbreviation="psfs"><code><![CDATA[${no-format}private static final String ]]></code></codetemplate> 
     <codetemplate abbreviation="psfb"><code><![CDATA[${no-format}private static final boolean ]]></code></codetemplate> 
-    <codetemplate abbreviation="pst"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
+    <codetemplate abbreviation="pst" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
     <codetemplate abbreviation="pu"><code><![CDATA[${no-indent}public ]]></code></codetemplate> 
     <codetemplate abbreviation="re"><code><![CDATA[${no-indent}return ]]></code></codetemplate>
-    <codetemplate abbreviation="serr"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
-    <codetemplate abbreviation="sout"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
+    <codetemplate abbreviation="serr" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
+    <codetemplate abbreviation="sout" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
     <codetemplate abbreviation="st"><code><![CDATA[${no-indent}static ]]></code></codetemplate> 
     <codetemplate abbreviation="sw"><code><![CDATA[switch (${var instanceof="java.lang.Enum"}) {
         case ${val completionInvoke}:

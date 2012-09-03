@@ -499,9 +499,11 @@ public final class RequestProcessor implements ScheduledExecutorService {
     */
     public boolean isRequestProcessorThread() {
         Thread c = Thread.currentThread();
-        synchronized (processorLock) {
-            return c instanceof Processor && processors.contains((Processor) c);
+        if (c instanceof Processor) {
+            Processor p = (Processor)c;
+            return p.procesing == this;
         }
+        return false;
     }
 
     /** Stops processing of runnables processor.
@@ -1894,6 +1896,7 @@ outer:  do {
 
         /** Waiting lock */
         private final Object lock = new Object();
+        private RequestProcessor procesing;
 
         public Processor() {
             super(TOP_GROUP.getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
@@ -2029,6 +2032,7 @@ outer:  do {
                             em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
                         registerParallel(todo, current);
+                        procesing = current;
                         todo.run();
 
                         if (loggable) {
@@ -2049,6 +2053,7 @@ outer:  do {
                     } catch (Throwable t) {
                         doNotify(todo, t);
                     } finally {
+                        procesing = null;
                         unregisterParallel(todo, current);
                     }
 

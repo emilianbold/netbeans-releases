@@ -42,22 +42,11 @@
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
-import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
-import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.openide.util.Exceptions;
 
 /**
  * Abstract class, which completes attributes, or member elements for
@@ -65,7 +54,7 @@ import org.openide.util.Exceptions;
  * 
  * @author sdedic
  */
-public abstract class InstanceCompleter implements Completer, Completer.Factory {
+abstract class InstanceCompleter implements Completer, Completer.Factory {
     protected final FxInstance          instance;
     protected final boolean             attribute;
     protected final CompletionContext   ctx;

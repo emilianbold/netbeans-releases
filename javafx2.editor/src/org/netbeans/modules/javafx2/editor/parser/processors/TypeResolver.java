@@ -48,10 +48,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.parser.BuildEnvironment;
 import org.netbeans.modules.javafx2.editor.parser.ModelBuilderStep;
 import org.openide.util.NbBundle;
@@ -74,13 +76,14 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
 
     @Override
     public void visitSource(FxModel model) {
-        importProcessor = new ImportProcessor(env.getCompilationInfo(), env.getHierarchy(), null, env.getTreeUtilities());
-        model.accept(importProcessor);
+        importProcessor = new ImportProcessor(env.getHierarchy(), env, env.getTreeUtilities());
+        importProcessor.load(env.getCompilationInfo(), model);
         
         // try to resolve the fx:controller
         String controller = model.getController();
         if (controller != null) {
-            ElementHandle<TypeElement> handle = resolveClassname(controller, model.getRootComponent());
+            int[] pos = env.getTreeUtilities().findAttributePos(model.getRootComponent(), JavaFXEditorUtils.FXML_FX_NAMESPACE, FxXmlSymbols.FX_CONTROLLER, true);
+            ElementHandle<TypeElement> handle = resolveClassname(controller, model.getRootComponent(), pos[0]);
             env.getAccessor().resolve(model, handle, null, null, null);
         }
         
@@ -91,19 +94,21 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
         "# {0} - full class name",
         "ERR_unableAnalyzeClass=Unable to analyze class {0} for properties.",
         "# {0} - full class name",
-        "ERR_notFxInstance=Class {0} cannot be created by FXML loader."
+        "ERR_notFxInstance=Instances of {0} cannot be created by FXML loader."
     })
     @Override
     public void visitInstance(FxNewInstance decl) {
         String sourceName = decl.getSourceName();
         // try to resolve the sourceName, may be a full classname
         TypeElement el = env.getCompilationInfo().getElements().getTypeElement(sourceName);
-        FxBean bean = null;
+        FxBean bean;
+        ElementHandle<TypeElement> handle;
         
         if (el == null) {
-            ElementHandle<TypeElement> handle = resolveClassname(sourceName, decl);
+            int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            handle = resolveClassname(sourceName, decl, start);
+
             String fqn;
-            
             if (handle != null) {
                 fqn = handle.getQualifiedName();
             } else {
@@ -111,24 +116,25 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
             }
             env.getAccessor().resolve(decl, handle, null, null, bean = env.getBeanInfo(fqn));
         } else {
-            ElementHandle<TypeElement> handle = ElementHandle.create(el);
+            handle = ElementHandle.create(el);
             env.getAccessor().resolve(decl, handle, null, null, bean = env.getBeanInfo(handle.getQualifiedName()));
         }
-        if (el != null) {
+        // if handle == null, the unresolved err was reported already
+        if (handle != null) {
             int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
             if (bean == null) {
                 env.addError(new ErrorMark(
                     start, sourceName.length(),
                     "unable-analyze-class",
-                    ERR_unableAnalyseClass(el.getQualifiedName().toString()),
-                    ElementHandle.create(el)
+                    ERR_unableAnalyseClass(handle.getQualifiedName().toString()),
+                    handle
                 ));
-            } else if (!bean.isFxInstance()) {
+            } else if (!bean.isFxInstance() && bean.getBuilder() == null) {
                 env.addError(new ErrorMark(
                     start, sourceName.length(),
                     "class-not-fx-instance",
-                    ERR_notFxInstance(el.getQualifiedName().toString()),
-                    ElementHandle.create(el)
+                    ERR_notFxInstance(handle.getQualifiedName().toString()),
+                    handle
                 ));
             }
         }
@@ -141,9 +147,20 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
         "# {0} - class name.",
         "# {1} - alternative1",
         "# {2} - alternative2",
-        "ERR_symbolAmbiguous=Name {0} is ambiguous. Can be e.g. {1} or {2}"
+        "ERR_symbolAmbiguous=Name {0} is ambiguous. Can be e.g. {1} or {2}",
+        "# {0} - the identifier",
+        "ERR_invalidJavaIdentifier={0} is not a valid Java identifier"
     })
-    private ElementHandle<TypeElement> resolveClassname(String name, FxNode decl) {
+    private ElementHandle<TypeElement> resolveClassname(String name, FxNode decl, int start) {
+        if (!FxXmlSymbols.isQualifiedIdentifier(name)) {
+            env.addError(new ErrorMark(
+                start, name.length(),
+                "invalid-java-identifier",
+                ERR_invalidJavaIdentifier(name),
+                name
+            ));
+            return null;
+        }
         TypeElement el = env.getCompilationInfo().getElements().getTypeElement(name);
         if (el != null) {
             return ElementHandle.create(el);
@@ -161,7 +178,6 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
             }
         }
         
-        int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
         // also cover the fall-through case of not found TypeElement
         if (names == null || names.size() == 1) {
             env.addError(new ErrorMark(

@@ -496,6 +496,19 @@ public class NPECheck {
         }
 
         @Override
+        public State visitInstanceOf(InstanceOfTree node, Void p) {
+            super.visitInstanceOf(node, p);
+            
+            Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
+
+            if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
+                testedTo.put((VariableElement) e, State.NOT_NULL);
+            }
+            
+            return null;
+        }
+
+        @Override
         public State visitConditionalExpression(ConditionalExpressionTree node, Void p) {
             //TODO: handle the condition similarly to visitIf
             scan(node.getCondition(), p);

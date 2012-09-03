@@ -77,4 +77,92 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("DiscriminatorMap"));
     }
 
+    public void testEntityParser() {
+        assertNotNull(parser.parse("Entity"));
+    }
+
+    public void testGeneratedValueParser() {
+        assertNotNull(parser.parse("GeneratedValue"));
+    }
+
+    public void testHasLifecycleCallbacksParser() {
+        assertNotNull(parser.parse("HasLifecycleCallbacks"));
+    }
+
+    public void testTableParser() {
+        assertNotNull(parser.parse("Table"));
+    }
+
+    public void testIdParser() {
+        assertNotNull(parser.parse("Id"));
+    }
+
+    public void testInheritanceTypeParser() {
+        assertNotNull(parser.parse("InheritanceType"));
+    }
+
+    public void testJoinColumnParser() {
+        assertNotNull(parser.parse("JoinColumn"));
+    }
+
+    public void testMappedSuperclassParser() {
+        assertNotNull(parser.parse("MappedSuperclass"));
+    }
+
+    public void testPostLoadParser() {
+        assertNotNull(parser.parse("PostLoad"));
+    }
+
+    public void testPostPersistParser() {
+        assertNotNull(parser.parse("PostPersist"));
+    }
+
+    public void testPostRemoveParser() {
+        assertNotNull(parser.parse("PostRemove"));
+    }
+
+    public void testPostUpdateParser() {
+        assertNotNull(parser.parse("PostUpdate"));
+    }
+
+    public void testPrePersistParser() {
+        assertNotNull(parser.parse("PrePersist"));
+    }
+
+    public void testPreRemoveParser() {
+        assertNotNull(parser.parse("PreRemove"));
+    }
+
+    public void testPreUpdateParser() {
+        assertNotNull(parser.parse("PreUpdate"));
+    }
+
+    public void testVersionParser() {
+        assertNotNull(parser.parse("Version"));
+    }
+
+    public void testJoinColumnsParser() {
+        assertNotNull(parser.parse("JoinColumns"));
+    }
+
+    public void testJoinTableParser() {
+        assertNotNull(parser.parse("JoinTable"));
+    }
+
+    public void testManyToOneParser() {
+        assertNotNull(parser.parse("ManyToOne"));
+    }
+
+    public void testManyToManyParser() {
+        assertNotNull(parser.parse("ManyToMany"));
+    }
+
+    public void testOneToOneParser() {
+        assertNotNull(parser.parse("OneToOne"));
+    }
+    
+    public void testOneToManyParser() {
+        assertNotNull(parser.parse("OneToMany"));
+    }
+
 }

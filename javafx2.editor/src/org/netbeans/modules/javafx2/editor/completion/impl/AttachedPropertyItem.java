@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
 import org.openide.util.ImageUtilities;
@@ -79,7 +80,7 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
     private final boolean primitive;
     
     private boolean attribute;
-
+    
     public AttachedPropertyItem(CompletionContext ctx, String text, String classPrefix, String propertySamples) {
         super(ctx, text);
         this.classPrefix = classPrefix;
@@ -104,14 +105,19 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
 
     @Override
     protected String getSubstituteText() {
+        boolean replaceExisting = ctx.isReplaceExisting();
         if (attribute) {
-            if (type == null) {
+            if (replaceExisting || type == null) {
                 return super.getSubstituteText();
             } else {
                 return super.getSubstituteText() + "=\"\" "; // NOI18N
             } 
         } else {
-            return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+            if (replaceExisting || type == null) {
+                return "<" + super.getSubstituteText();
+            } else {
+                return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+            }
         }
     }
     
@@ -132,14 +138,14 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
     }
 
     @Override
-    protected int getCaretShift() {
+    protected int getCaretShift(Document d) {
         if (classPrefix != null) {
-            return super.getCaretShift();
+            return super.getCaretShift(d);
         } else if (!attribute) {
             return 2 + super.getSubstituteText().length();
         } else {
             // position the caret into apostrophes:
-            return super.getCaretShift() - 2;
+            return super.getCaretShift(d) - 2;
         }
     }
 
@@ -168,5 +174,7 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
         return ICON;
     }
     
-    
+    public String toString() {
+        return "staticProperty[" + propertyName + "]";
+    }
 }

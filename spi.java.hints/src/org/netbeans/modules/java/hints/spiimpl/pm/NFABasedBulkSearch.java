@@ -42,11 +42,13 @@
 
 package org.netbeans.modules.java.hints.spiimpl.pm;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -201,7 +203,7 @@ public class NFABasedBulkSearch extends BulkSearch {
                         return null;
                     }
 
-                    if (Utilities.isMultistatementWildcardTree(t)) {
+                    if (Utilities.isMultistatementWildcardTree(t) || multiModifiers(t)) {
                         int target = nextState[0]++;
 
                         setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "$", false)), target);
@@ -420,6 +422,14 @@ public class NFABasedBulkSearch extends BulkSearch {
             }
         }
         return new Input(t.getKind(), name, false);
+    }
+    
+    private boolean multiModifiers(Tree t) {
+        if (t.getKind() != Kind.MODIFIERS) return false;
+        
+        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(((ModifiersTree) t).getAnnotations());
+
+        return !annotations.isEmpty() && annotations.get(0).getAnnotationType().getKind() == Kind.IDENTIFIER;
     }
 
     @Override

@@ -51,17 +51,17 @@ import org.openide.util.NbBundle;
 
 public class ChromeBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descr = new BeanDescriptor (ChromeBrowser.class);
-        descr.setDisplayName (NbBundle.getMessage (ChromeBrowserBeanInfo.class, 
-                "CTL_ChromeBrowserName"));              // NOI18N     
-        descr.setShortDescription (NbBundle.getMessage (ChromeBrowserBeanInfo.class, 
-                "HINT_ChromeBrowserName"));             // NOI18N
+        descr.setDisplayName (NbBundle.getMessage (ChromeBrowserBeanInfo.class, "CTL_ChromeBrowserName"));
+        descr.setShortDescription (NbBundle.getMessage (ChromeBrowserBeanInfo.class, "HINT_ChromeBrowserName"));
 
         descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
         return descr;
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         return new PropertyDescriptor [0];
     }
@@ -69,6 +69,7 @@ public class ChromeBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }
@@ -78,6 +79,7 @@ public class ChromeBrowserBeanInfo extends SimpleBeanInfo {
      * may override this if you want to (for example) return a
      * BeanInfo for a base class.
      */
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (ExtWebBrowser.class) };

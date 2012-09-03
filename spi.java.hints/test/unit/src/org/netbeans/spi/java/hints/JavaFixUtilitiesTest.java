@@ -673,6 +673,156 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testAdd2Modifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ $ret $name() { $body$; } => $mods$ @java.lang.Deprecated private $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    @Deprecated\n" +
+                           "    private void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testReplaceInModifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public @Override void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ public @Override $ret $name() { $body$; } => $mods$ private @Deprecated $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private @Deprecated void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testKeepInModifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public @Override void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ public @Override $ret $name() { $body$; } => $mods$ public @Override $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public @Override void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testRemoveInModifiers() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public static @Deprecated @Override void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ public @Override $ret $name() { $body$; } => $mods$ $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    static @Deprecated void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testRewriteMethodParametersWildcard() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public static void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ void $name($args$) { $body$; } => $mods$ int $name($args$) { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    public static int t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testRewriteClass() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "}\n",
+                           "$mods$ class $name<$tp$> extends $e$ implements $i$ { $members$; } => $mods$ @java.lang.Deprecated class $name<$tp$> extends $e$ implements $i$ { $members$; }",
+                           "package test;\n" +
+                           "@Deprecated\n" +
+                           "public class Test {\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalVariableInitializer1() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private int I;\n" +
+                           "}\n",
+                           "$mods$ int $name = $init$; => $mods$ long $name = $init$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private long I;\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalVariableInitializer2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private int I = 1;\n" +
+                           "}\n",
+                           "$mods$ int $name = $init$; => $mods$ long $name = $init$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private long I = 1;\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalElse1() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (true) System.err.println(\"a\");\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if (true) $then else $else$; => if (false) $then else $else$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (false) System.err.println(\"a\");\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testOptionalElse2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (true) System.err.println(\"a\");\n" +
+                           "        else System.err.println(\"b\");\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if (true) $then else $else$; => if (false) $then else $else$;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        if (false) System.err.println(\"a\");\n" +
+                           "        else System.err.println(\"b\");\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);

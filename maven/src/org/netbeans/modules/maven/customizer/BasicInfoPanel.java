@@ -49,10 +49,13 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponentUpdater;
 import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
 import static org.netbeans.modules.maven.customizer.Bundle.*;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -67,12 +70,14 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
     private final ModelHandle2 handle;
     private List<TextComponentUpdater> listeners;
     private final Category category;
+    private final org.netbeans.api.project.Project prj;
     
     /** Creates new form BasicInfoPanel */
-    public BasicInfoPanel(ModelHandle2 handle, Category category) {
+    public BasicInfoPanel(ModelHandle2 handle, Category category, org.netbeans.api.project.Project prj) {
         initComponents();
         this.handle = handle;
         this.category = category;
+        this.prj = prj;
         initValues();
     }
     
@@ -80,8 +85,10 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         Project mdl = handle.getPOMModel().getProject();
         MavenProject project;
         try {
-            project = handle.getProject().getParent();
-        } catch (IllegalStateException x) { // #200320
+            NbMavenProjectImpl nbi = prj.getLookup().lookup(NbMavenProjectImpl.class);
+            assert nbi != null;
+            project = nbi.loadParentOf(EmbedderFactory.getProjectEmbedder(), handle.getProject());      
+        } catch (ProjectBuildingException ex) {
             project = null;
         }
         listeners = new ArrayList<TextComponentUpdater>();

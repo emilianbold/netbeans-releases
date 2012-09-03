@@ -81,6 +81,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.61</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -260,8 +269,8 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.wagon.shared.http4</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/maven-dependency-tree-1.2.jar</runtime-relative-path>
-                <binary-origin>external/maven-dependency-tree-1.2.jar</binary-origin>
+                <runtime-relative-path>ext/maven/maven-dependency-tree-2.0.jar</runtime-relative-path>
+                <binary-origin>external/maven-dependency-tree-2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/jdom-1.0.jar</runtime-relative-path>

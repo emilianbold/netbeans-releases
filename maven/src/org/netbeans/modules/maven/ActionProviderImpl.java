@@ -54,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -78,8 +77,6 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.problems.ProblemsPanel;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
@@ -543,43 +540,6 @@ public class ActionProviderImpl implements ActionProvider {
             Set<? extends Project> lst = subs.getSubprojects();
             Project[] arr = lst.toArray(new Project[lst.size()]);
             OpenProjects.getDefault().close(arr);
-        }
-    }
-
-    @ActionID(id = "org.netbeans.modules.maven.showProblems", category = "Project")
-    @ActionRegistration(displayName = "#ACT_ShowProblems", lazy=false)
-    @ActionReference(position = 3100, path = "Projects/org-netbeans-modules-maven/Actions")
-    @Messages("ACT_ShowProblems=Show and Resolve Problems...")
-    public static ContextAwareAction showProblemsAction() {
-        return new ConditionallyShownAction() {
-            protected @Override Action forProject(Project p) {
-                ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
-                return reporter != null && !reporter.getReports().isEmpty() ? new ShowProblemsAction(reporter) : null;
-            }
-        };
-    }
-    private static class ShowProblemsAction extends AbstractAction {
-        private final ProblemReporterImpl reporter;
-        ShowProblemsAction(ProblemReporterImpl reporter) {
-            this.reporter = reporter;
-            putValue(Action.NAME, ACT_ShowProblems());
-        }
-        @Messages({
-            "BTN_Close=Close",
-            "TIT_Show_Problems=Show Problems"
-        })
-        @Override public void actionPerformed(ActionEvent arg0) {
-            JButton butt = new JButton();
-            ProblemsPanel panel = new ProblemsPanel(reporter);
-            panel.setActionButton(butt);
-            JButton close = new JButton();
-            panel.setCloseButton(close);
-            close.setText(BTN_Close());
-            DialogDescriptor dd = new DialogDescriptor(panel, TIT_Show_Problems());
-            dd.setOptions(new Object[] { butt,  close});
-            dd.setClosingOptions(new Object[] { butt, close });
-            dd.setModal(false);
-            DialogDisplayer.getDefault().notify(dd);
         }
     }
 

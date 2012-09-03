@@ -262,7 +262,7 @@ private void cbSpringVersionActionPerformed(java.awt.event.ActionEvent evt) {//G
             Vector<String> items = new Vector<String>();
             springLibs.clear();
 
-            for (Library library : LibraryManager.getDefault().getLibraries()) {
+            for (Library library : SpringUtilities.getJavaLibraries()) {
                 if (SpringUtilities.isSpringLibrary(library)) {
                     items.add(library.getDisplayName());
                     springLibs.add(library);

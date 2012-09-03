@@ -34,11 +34,12 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,11 +48,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -64,6 +63,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -192,7 +192,7 @@ public final class CreateMethodFix implements Fix {
                     argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), nameIt.next(), make.Type(tm), null));
                 }
                 
-                BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, returnType) : null;
+                BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, targetTree, returnType) : null;
                 
                 if(body != null && !body.getStatements().isEmpty()) {
                     working.tag(body.getStatements().get(0), methodBodyTag);
@@ -251,16 +251,12 @@ public final class CreateMethodFix implements Fix {
     }
     
     //XXX should be moved into the GeneratorUtils:
-    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TypeMirror returnType) {
-        TreeMaker make = wc.getTreeMaker();
-        List<StatementTree> blockStatements = new ArrayList<StatementTree>();
-        TypeElement uoe = wc.getElements().getTypeElement("java.lang.UnsupportedOperationException"); // NOI18N
-        if (uoe != null) {
-            NewClassTree nue = make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.QualIdent(uoe), Collections.singletonList(make.Literal("Not yet implemented")), null);
-            blockStatements.add(make.Throw(nue));
-        }
-        return make.Block(blockStatements, false);
+    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TreePath targetTree, TypeMirror returnType) {
+        TreeUtilities tu = wc.getTreeUtilities();
+        StatementTree st = tu.parseStatement("{class ${abstract " + (returnType != null ? returnType.toString() : "void") + " $();}}", new SourcePositions[1]); //NOI18N
+        Trees trees = wc.getTrees();
+        tu.attributeTree(st, trees.getScope(targetTree));
+        ExecutableElement ee = (ExecutableElement) wc.getTrees().getElement(new TreePath(targetTree, ((ClassTree)((BlockTree)st).getStatements().get(0)).getMembers().get(1)));
+        return GeneratorUtilities.get(wc).createAbstractMethodImplementation((TypeElement)wc.getTrees().getElement(targetTree), ee).getBody();
     }
-
 }
-

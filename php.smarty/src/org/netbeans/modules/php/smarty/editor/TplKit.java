@@ -53,6 +53,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.php.smarty.editor.actions.ToggleBlockCommentAction;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -104,9 +105,10 @@ public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             CslActions.createSelectCodeElementAction(true),
             CslActions.createSelectCodeElementAction(false),
             CslActions.createInstantRenameAction(),
-            CslActions.createToggleBlockCommentAction(),
-            new ExtKit.CommentAction(""), //NOI18N
-            new ExtKit.UncommentAction("") //NOI18N
+//            CslActions.createToggleBlockCommentAction(),
+            new ToggleBlockCommentAction(),
+//            new ExtKit.CommentAction(""), //NOI18N
+//            new ExtKit.UncommentAction("") //NOI18N
         };
 
         return TextAction.augmentList(super.createActions(), javaActions);

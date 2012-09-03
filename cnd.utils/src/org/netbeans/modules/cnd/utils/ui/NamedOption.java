@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.utils.ui;
 
 import java.util.Arrays;
 import java.util.prefs.Preferences;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.Lookups;
 
@@ -139,6 +140,11 @@ public abstract class NamedOption {
                     if (name.equals(option.getName())) {
                         return option;
                     }
+                }
+            }
+            for (NamedOption option : Lookup.getDefault().lookupAll(NamedOption.class)) {
+                if (name.equals(option.getName())) {
+                    return option;
                 }
             }
             throw new IllegalArgumentException("Not found option " + name); //NOI18N

@@ -72,7 +72,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     //automatically by ANTLR but we do not care about them since 
     //the error recovery implementation in syncToSet(...)
     //calls DBG.enter/exit/Rule("recovery") itself.
-    private String[] IGNORED_RULES = new String[]{"syncToFollow", "syncTo_IDENT_RBRACE"}; //must be sorted alphabetically!
+    private String[] IGNORED_RULES = new String[]{"syncToDeclarationsRule", "syncToFollow"}; //!!! must be sorted alphabetically !!!
     Stack<RuleNode> callStack = new Stack<RuleNode>();
     List<CommonToken> hiddenTokens = new ArrayList<CommonToken>();
     private int backtracking = 0;

@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Represents base parameter element class with optional parameter type and description.
@@ -50,10 +51,10 @@ import java.util.List;
  */
 public abstract class ParameterElement extends JsDocElementImpl {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
+    private final List<Type> paramTypes;
     private final String paramDescription;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    public ParameterElement(JsDocElementType type, List<Type> paramTypes, String paramDescription) {
         super(type);
         this.paramTypes = paramTypes;
         this.paramDescription = paramDescription;
@@ -71,7 +72,7 @@ public abstract class ParameterElement extends JsDocElementImpl {
      * Gets the parameter types.
      * @return parameter types
      */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
+    public List<Type> getParamTypes() {
         return paramTypes;
     }
 

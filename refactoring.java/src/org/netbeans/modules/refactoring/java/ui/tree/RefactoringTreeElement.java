@@ -46,9 +46,11 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 
 import com.sun.source.tree.Tree;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -59,11 +61,14 @@ public class RefactoringTreeElement implements TreeElement {
     private RefactoringElement refactoringElement;
     private ElementGrip thisFeature;
     private ElementGrip parent;
+    private Icon icon;
     
     RefactoringTreeElement(RefactoringElement element) {
+        final Lookup lookup = element.getLookup();
         this.refactoringElement = element;
-        thisFeature = getFeature(element.getLookup().lookup(ElementGrip.class));
+        thisFeature = getFeature(lookup.lookup(ElementGrip.class));
         parent = thisFeature;
+        icon = lookup.lookup(Icon.class);
     }
     
     @Override
@@ -84,7 +89,7 @@ public class RefactoringTreeElement implements TreeElement {
 
     @Override
     public Icon getIcon() {
-        return null;   
+        return icon;
     }
 
     @Override

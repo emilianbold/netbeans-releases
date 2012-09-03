@@ -55,6 +55,7 @@ import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -513,6 +514,123 @@ public class FileObjectTestHid extends TestBaseHid {
         fsFail  ("move  should fire exception if file already exists");
     }
     
+    public void  testRenameLookup() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+
+        Lookup first = fo1.getLookup();
+        Collection<? extends FileObject> all = first.lookupAll(FileObject.class);
+        assertTrue("Contains itself before rename: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            fo1.rename(lock, "New" + fo1.getName(), fo1.getExt());
+            ret = fo1;
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        Lookup second = ret.getLookup();
+        assertSame("Lookup's identity is preserved during rename", first, second);
+        all = second.lookupAll(FileObject.class);
+        assertTrue("Contains itself after rename: " + all, all.contains(ret));
+    }
+    public void  testMoveLookup() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        FileObject sub;
+        try {
+            sub = fold.createFolder("sub");
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        }
+
+        Lookup first = fo1.getLookup();
+        Collection<? extends FileObject> all = first.lookupAll(FileObject.class);
+        assertTrue("Contains itself before move: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            ret = fo1.move(lock, sub, fo1.getName(), fo1.getExt());
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        Lookup second = ret.getLookup();
+        assertSame("Lookup's identity is preserved during move", first, second);
+        
+        all = second.lookupAll(FileObject.class);
+        assertTrue("Contains itself after move: " + all, all.contains(ret));
+    }
+    
+    public void  testMoveAndChanges() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        FileObject sub;
+        try {
+            sub = fold.createFolder("sub");
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        }
+        
+        class L implements LookupListener {
+            int cnt;
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                cnt++;
+            }
+            
+            public void assertChange(String msg) {
+                assertTrue(msg, cnt > 0);
+                cnt = 0;
+            }
+        }
+        L listener = new L();
+
+        Lookup first = fo1.getLookup();
+        Result<FileObject> result = first.lookupResult(FileObject.class);
+        result.addLookupListener(listener);
+        
+        Collection<? extends FileObject> all = result.allInstances();
+        assertTrue("Contains itself before move: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            ret = fo1.move(lock, sub, fo1.getName(), fo1.getExt());
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        
+        listener.assertChange("File object has changed");
+        all = result.allInstances();
+        assertTrue("Contains itself after move: " + all, all.contains(ret));
+        
+        FileObject ret2 = FileUtil.moveFile(ret, fold, "strange.name");
+
+        listener.assertChange("Another change in the lookup");
+        all = result.allInstances();
+        assertTrue("Contains itself after move: " + all, all.contains(ret2));
+    }
+    
     /** Test of move method, of class org.openide.filesystems.FileObject. */
     public void  testMove1() throws IOException {
         checkSetUp();
@@ -568,8 +686,33 @@ public class FileObjectTestHid extends TestBaseHid {
             assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
             lock.releaseLock();
             lock = toMove2.lock();
-            assertNotNull (toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
-            
+            FileObject ret = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt());
+            assertNotNull("Moved object returned", ret);
+            assertEquals("Has the right parent", fold1, ret.getParent());
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    public void  testMoveToSameFolderAlaRename() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        FileObject toMove = fold1.createData("something");
+        final String origName = toMove.getName();
+        FileLock lock = toMove.lock();
+        try {
+            FileObject toMove2 = null;
+            final String origExt = toMove.getExt();
+            assertNotNull (toMove2 = toMove.move(lock, fold1, "New" + origName, origExt));
+            lock.releaseLock();
+            lock = toMove2.lock();
+            FileObject ret = toMove2.move(lock, fold1, origName, origExt);
+            assertNotNull("Moved object returned", ret);
+            assertEquals("Has the right parent", fold1, ret.getParent());
         } finally {
             lock.releaseLock();
         }

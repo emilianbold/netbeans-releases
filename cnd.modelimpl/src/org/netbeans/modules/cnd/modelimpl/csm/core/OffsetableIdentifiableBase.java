@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NameHolder;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -57,6 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.openide.util.CharSequences;
 
 /**
  * class to present object that has unique ID and is offsetable
@@ -116,6 +118,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         public void setGlobal() {
             global = true;
         }
+
+        public List<CharSequence> getNameParts() {
+            return nameParts;
+        }
         
         public CharSequence getName() {
             StringBuilder sb = new StringBuilder();
@@ -134,6 +140,43 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             return nameParts.get(nameParts.size() - 1);
         }        
     }
+    
+    public static abstract class OffsetableIdentifiableBuilder extends OffsetableBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;
+        private int nameStartOffset = 0;
+        private int nameEndOffset = 0;
+        private boolean isMacroExpanded = false;
+
+        public void setName(CharSequence name) {
+            this.name = name;
+        }
+
+        public void setNameStartOffset(int nameStartOffset) {
+            this.nameStartOffset = nameStartOffset;
+        }
+
+        public void setNameEndOffset(int nameEndOffset) {
+            this.nameEndOffset = nameEndOffset;
+        }
+
+        public void setMacroExpanded() {
+            this.isMacroExpanded = true;
+        }
+
+        public CharSequence getName() {
+            return NameCache.getManager().getString(name);
+        }
+        
+        public CharSequence getRawName() {
+            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
+        }
+        
+        public NameHolder getNameHolder() {
+            return NameHolder.createName(name, nameStartOffset, nameEndOffset, isMacroExpanded);
+        }
+
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

@@ -309,6 +309,8 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     
                 case ISI_ERROR:      // DONE
                     state = INIT;
+                    prevState = 0;
+                    subState = 0;
                     if (input.readLength() > 1) {
                         input.backup(1);
                     }
@@ -929,6 +931,8 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                         state = ISA_REF_HASH;
                         break;
                     }
+                    // get back to &, proclaim as character, although not according to spec.
+                    input.backup(1);
                     state = subState;
                     continue;
                     

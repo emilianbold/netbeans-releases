@@ -44,7 +44,8 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -55,11 +56,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class ChromeModule extends BrowserSupportModule {
 
     public ChromeModule() {
-        super(new DefaultBrowser("Chrome", "Google", "webkit", "", "chrome20"), "webkit"); //NOI18N
+        super(new DefaultBrowser("Chrome", "Google", "webkit", "", "chrome20", PropertyCategory.CHROME), "webkit"); //NOI18N
     }
 
     @Override
-    public Collection<Property> getProperties() {
+    public Collection<PropertyDefinition> getProperties() {
         return Collections.emptyList(); //properties are provided by safari - webkit is the common renderer
     }
     

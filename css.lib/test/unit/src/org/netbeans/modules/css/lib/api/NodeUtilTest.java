@@ -65,7 +65,7 @@ public class NodeUtilTest extends NbTestCase {
         CssParserResult res = TestUtil.parse(code);
         
 //        TestUtil.dumpResult(res);
-        Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports/resourceIdentifier"); 
+        Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports/importItem/resourceIdentifier"); 
         assertNotNull(imports);
         
         Node value = NodeUtil.getChildTokenNode(imports, CssTokenId.STRING);
@@ -99,7 +99,7 @@ public class NodeUtilTest extends NbTestCase {
         
 //        TestUtil.dumpResult(result);
         
-        Node ruleSet = NodeUtil.query(result.getParseTree(), TestUtil.bodysetPath + "ruleSet");
+        Node ruleSet = NodeUtil.query(result.getParseTree(), TestUtil.bodysetPath + "rule");
         assertNotNull(ruleSet);
         
         int[] range = NodeUtil.getRuleBodyRange(ruleSet);

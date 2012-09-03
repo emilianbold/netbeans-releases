@@ -126,6 +126,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private int showingResults;
     private Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap;
     private List<SvnLogEntry> logEntries;
+    private boolean selectFirstRevision;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -202,8 +203,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
 
-    void setSearchCriteria(boolean b) {
-        criteriaVisible = b;
+    void setSearchCriteria(boolean showCriteria) {
+        criteriaVisible = showCriteria;
         refreshComponents(false);
     }
 
@@ -317,6 +318,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                         diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
+                    if (selectFirstRevision) {
+                        selectFirstRevision();
+                    }
                 }
             }
             resultsPanel.revalidate();
@@ -331,6 +335,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         enableFilters(results != null);
         revalidate();
         repaint();
+    }
+
+    private void selectFirstRevision () {
+        if (diffView != null && results != null && !results.isEmpty()) {
+            diffView.select(results.get(0));
+        }
     }
     
     void setResults (List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, int limit) {
@@ -501,6 +511,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             int n2 = Integer.parseInt(st2.nextToken());
             if (n1 != n2) return n2 - n1;
         }
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        tbDiff.setSelected(true);
+        this.selectFirstRevision = selectFirstRevision;
+        selectFirstRevision();
     }
     
     /** This method is called from within the constructor to

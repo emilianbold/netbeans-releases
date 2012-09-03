@@ -55,10 +55,13 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
@@ -73,7 +76,6 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -220,6 +222,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 case OBJECT_MEMBERS:
                     completeObjectMember(request, resultList);
+                    break;
+                case DOCUMENTATION:
+                    JsDocumentationCodeCompletion.complete(request, resultList);
+                    break;
                 default:
                     result = CodeCompletionResult.NONE;
             }
@@ -261,12 +267,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                             
                         }
-                        System.out.println(parserResult);
+                        LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                     }
                     
                 });
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
         if (documentation.length() == 0) {
@@ -274,6 +280,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (doc != null && !doc.isEmpty()) {
                 documentation.append(doc);
             }
+        }
+        if (element instanceof JsDocumentationElement) {
+            return ((JsDocumentationElement) element).getDocumentation();
         }
         if (documentation.length() == 0) {
             documentation.append(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
@@ -334,6 +343,30 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
                 }
             }
+            if (id == JsTokenId.DOC_COMMENT) {
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                if (docTokenSeq == null) {
+                    return null;
+                }
+
+                docTokenSeq.move(caretOffset);
+                // initialize moved token
+                if (!docTokenSeq.moveNext() && !docTokenSeq.movePrevious()) {
+                    return null;
+                }
+
+                if (docTokenSeq.token().id() == JsDocumentationTokenId.KEYWORD) {
+                    // inside the keyword tag
+                    prefix = docTokenSeq.token().text().toString();
+                    if (upToOffset) {
+                        prefix = prefix.substring(0, caretOffset - docTokenSeq.offset());
+                    }
+                } else {
+                    // get the token before
+                    docTokenSeq.movePrevious();
+                    prefix = docTokenSeq.token().text().toString();
+                }
+            }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
         return prefix.length() > 0 ? prefix : null;
@@ -351,6 +384,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
+        // must return null - CSL reasons, see #217101 for more information
         return null;
     }
 
@@ -428,7 +462,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return;
         }
 
-        ts.move(request.anchor);
+        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
+        ts.move(offset);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
@@ -436,6 +471,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             Token<? extends JsTokenId> token = ts.token();
             int parenBalancer = 0;
             boolean methodCall = false;
+            boolean wasLastDot = false;
             List<String> exp = new ArrayList();
             
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
@@ -467,6 +503,18 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 exp.add("@mtd");   // NOI18N
                                 methodCall = false;
                             }
+                            wasLastDot = false;
+                        }
+                    } else {
+                        wasLastDot = true;
+                    }
+                } else {
+                    if (!wasLastDot && ts.movePrevious()) {
+                        // check whether it's continuatino of previous line
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (token.id() != JsTokenId.OPERATOR_DOT) {
+                            // the dot was not found => it's not continuation of expression
+                            break;
                         }
                     }
                 }
@@ -479,7 +527,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
             Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, request.anchor));
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, offset));
             
             int cycle = 0;
             boolean resolvedAll = false;

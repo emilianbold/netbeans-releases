@@ -98,7 +98,7 @@ public class ModelUtils {
     public static boolean isGlobal(JsObject object) {
         return object.getJSKind() == JsElement.Kind.FILE;
     }
-    
+
     public static JsObject findJsObject(Model model, int offset) {
         JsObject result = null;
         JsObject global = model.getGlobalObject();
@@ -113,7 +113,7 @@ public class ModelUtils {
         JsObjectImpl jsObject = (JsObjectImpl)object;
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
@@ -167,7 +167,7 @@ public class ModelUtils {
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
         DeclarationScope result = null;
         DeclarationScope function = null;
-        if (dScope.getOffsetRange(null).containsInclusive(offset)) {
+        if (dScope.getOffsetRange().containsInclusive(offset)) {
             result = dScope;
             for (DeclarationScope innerScope : dScope.getDeclarationsScope()) {
                 function = getDeclarationScope(innerScope, offset);
@@ -197,6 +197,9 @@ public class ModelUtils {
     public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
         int lStart = LexUtilities.getLexerOffset(result, start);
         int lEnd = LexUtilities.getLexerOffset(result, end);
+        if (lStart == -1 || lEnd == -1) {
+            return OffsetRange.NONE;
+        }
         if (lEnd < lStart) {
             // TODO this is a workaround for bug in nashorn, when sometime the start and end are not crorrect
             int length = lStart - lEnd;
@@ -282,7 +285,7 @@ public class ModelUtils {
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
-            if (objectName != null && object.getOffsetRange(null).getEnd() == objectName.getOffsetRange().getEnd()) {
+            if (objectName != null && object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
                 // the assignment is during declaration
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
                 JsObject property = object.getParent().getProperty(pName);
@@ -525,7 +528,7 @@ public class ModelUtils {
         }
     }
     
-    private static JsObject findObjectForOffset(String name, int offset, Model model) {
+    public static JsObject findObjectForOffset(String name, int offset, Model model) {
         for (JsObject object : model.getVariables(offset)) {
             if (object.getName().equals(name)) {
                 return object;
@@ -583,7 +586,9 @@ public class ModelUtils {
                     if (iNode.getName().equals("this")) {
                         List<? extends Node> path = getPath();
                         if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
-                            result.add(new TypeUsageImpl("@this." + aNode.getProperty().getName(), iNode.getStart(), false));                //NOI18N
+                            sb.append("@this."); //NOI18N
+                            sb.append(aNode.getProperty().getName());
+                            result.add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));                //NOI18N
                             // plus five due to this.
                         }
                     } else {
@@ -647,6 +652,9 @@ public class ModelUtils {
                     } else {
                         sb.insert(6, "@call;"); //NOI18N
                     }
+                    // don't visit arguments, just name the name of function.
+                    callNode.getFunction().accept(this);
+                    return null;
                 }
             }
             return super.visit(callNode, onset);
@@ -683,7 +691,8 @@ public class ModelUtils {
                         || value instanceof Double) {
                     result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
                 } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                    result.add(new TypeUsageImpl("Array", lNode.getStart(), true));
+                    // offset is set to -1, to prevent coloring, etc 
+                    result.add(new TypeUsageImpl("Array", -1, true));
                 }
                 return null;
             }

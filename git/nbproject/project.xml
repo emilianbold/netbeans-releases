@@ -276,7 +276,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.ods.git</friend>
+                <package>org.netbeans.modules.git.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

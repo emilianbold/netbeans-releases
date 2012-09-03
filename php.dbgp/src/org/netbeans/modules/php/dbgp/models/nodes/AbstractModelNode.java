@@ -1,20 +1,43 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
-
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp.models.nodes;
 
@@ -41,29 +64,29 @@ public abstract class AbstractModelNode {
     private static final String OBJECT  = "object";         // NOI18N
 
     private static final String ARRAY   = "array";          // NOI18N
-    
+
     private static final String STRING  = "string";         // NOI18N
-    
+
     private static final String UNDEF   = "uninitialized";  // NOI18N
-    
+
     private static final String NULL    = "null";           // NOI18N
-    
+
     AbstractModelNode( AbstractModelNode parent , List<Property> properties ){
         myParent = parent;
         initVariables( properties );
     }
-    
+
     public AbstractModelNode getParent() {
         return myParent;
     }
-    
+
     public boolean hasType( Set<FilterType> set ) {
         return isTypeApplied( set );
     }
-    
+
     public static org.netbeans.modules.php.dbgp.models.
-        VariablesModel.AbstractVariableNode createVariable( Property property , 
-            AbstractModelNode parent ) 
+        VariablesModel.AbstractVariableNode createVariable( Property property ,
+            AbstractModelNode parent )
     {
         String type = property.getType();
         if ( STRING.equals(type)) {
@@ -86,38 +109,38 @@ public abstract class AbstractModelNode {
         }
         else if ( ScalarTypeVariableNode.BOOLEAN.equals(type) ||
                 ScalarTypeVariableNode.BOOL.equals(type) ||
-                ScalarTypeVariableNode.INTEGER.equals(type) || 
+                ScalarTypeVariableNode.INTEGER.equals(type) ||
                 ScalarTypeVariableNode.INT.equals(type) ||
-                ScalarTypeVariableNode.FLOAT.equals(type) 
-                ) 
+                ScalarTypeVariableNode.FLOAT.equals(type)
+                )
         {
             return new ScalarTypeVariableNode( property , parent );
         }
         else {
-            return new BaseVariableNode( property , parent ); 
+            return new BaseVariableNode( property , parent );
         }
     }
-    
+
     protected abstract boolean isTypeApplied( Set<FilterType> set );
-    
+
     protected List<AbstractVariableNode> getVariables()
     {
         return myVars;
     }
-    
+
     protected void initVariables( List<Property> properties ) {
         if ( properties == null ) {
             return;
         }
-        myVars = new ArrayList<AbstractVariableNode>( );        
+        myVars = new ArrayList<AbstractVariableNode>( );
         for (Property property : properties) {
             org.netbeans.modules.php.dbgp.models.VariablesModel.
                 AbstractVariableNode var = createVariable( property , this );
             myVars.add(var);
         }
     }
-    
-    protected void setVars( List<AbstractVariableNode> variables ) 
+
+    protected void setVars( List<AbstractVariableNode> variables )
     {
         myVars = variables;
     }
@@ -126,10 +149,10 @@ public abstract class AbstractModelNode {
         boolean hasChanged = false;
         if (node.getVariables() != null && node.getVariables().size() > 0) {
             Iterator<AbstractVariableNode> iterator = node.getVariables().iterator();
-            
+
             while (iterator.hasNext()) {
                 AbstractVariableNode newChild = iterator.next();
-                
+
                 getVariables().add(newChild);
                 hasChanged = true;
             }
@@ -141,10 +164,10 @@ public abstract class AbstractModelNode {
             AbstractModelNode node, Collection<ModelEvent> events )
     {
         boolean hasChanged = false;
-        List<AbstractVariableNode> list = new ArrayList<AbstractVariableNode>( 
+        List<AbstractVariableNode> list = new ArrayList<AbstractVariableNode>(
                 getVariables() );
 
-        int currentIndx = 0; 
+        int currentIndx = 0;
         for( AbstractVariableNode child : list ) {
             Property property = child.getProperty();
 
@@ -176,7 +199,7 @@ public abstract class AbstractModelNode {
         }
         return hasChanged;
     }
-    
+
     protected boolean updatePage( AbstractVariableNode node ) {
         Property property = node.getProperty();
         if ( property.getPageSize() >0 && property.getPage() >0 ){
@@ -205,7 +228,7 @@ public abstract class AbstractModelNode {
     }
 
     private List<AbstractVariableNode> myVars;
-    
+
     private AbstractModelNode myParent;
 
 

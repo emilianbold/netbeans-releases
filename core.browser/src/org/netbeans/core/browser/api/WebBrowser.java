@@ -43,8 +43,8 @@
 package org.netbeans.core.browser.api;
 
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Map;
+import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 
 /**
@@ -71,6 +71,9 @@ public abstract class WebBrowser {
 
     /** history property name */
     public static final String PROP_HISTORY = "history"; // NOI18N
+
+    /** loading property name */
+    public static final String PROP_LOADING = "loading"; // NOI18N
 
     /**
      * Returns visual component of html browser, it doesn't include any toolbars
@@ -216,6 +219,8 @@ public abstract class WebBrowser {
      * Execute JavaScript
      * @param script
      */
-    public abstract void executeJavaScript( String script );
+    public abstract Object executeJavaScript( String script );
 
+    public abstract Lookup getLookup();
+    
 }

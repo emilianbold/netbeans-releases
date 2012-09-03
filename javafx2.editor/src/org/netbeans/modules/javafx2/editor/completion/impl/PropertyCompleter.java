@@ -43,34 +43,22 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
-import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
-import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
-import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
-import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.openide.util.Exceptions;
 
 /**
  * Creates property names completions. Activates in tag names, or attribute names
@@ -95,6 +83,8 @@ public class PropertyCompleter extends InstanceCompleter {
     
     private boolean itemsFiltered;
     
+    private String namePrefix;
+    
     public boolean hasMoreItems() {
         return itemsFiltered;
     }
@@ -116,12 +106,18 @@ public class PropertyCompleter extends InstanceCompleter {
         FxBean parentInfo = beanInfo.getSuperclassInfo();
 
         for (String s : propNames) {
+            if (alreadyAdded.contains(s)) {
+                continue;
+            }
             FxProperty pi = beanInfo.getProperty(s);
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
 
             if (existingPropNames.contains(s)) {
-                continue;
+                // if replacing, leave the property being replaced in the list
+                if (!s.startsWith(namePrefix) || !ctx.isReplaceExisting()) {
+                    continue;
+                }
             }
 
             if (attribute && !pi.isSimple()) {
@@ -165,12 +161,19 @@ public class PropertyCompleter extends InstanceCompleter {
         boolean next = false;
         do {
             addPropertiesFrom(beanInfo.getDeclareadInfo(), names, next);
+            if (beanInfo.getBuilder() != null) {
+                addPropertiesFrom(beanInfo.getBuilder().getDeclareadInfo(), names, next);
+            }
             beanInfo = beanInfo.getSuperclassInfo();
             next = true;
         } while (beanInfo != null && resultItems.size() < IMPORTANT_PROPERTIES_TRESHOLD);
     }
 
     private void init() {
+        namePrefix = ctx.getPrefix();
+        if (namePrefix.startsWith("<")) {
+            namePrefix = namePrefix.substring(1);
+        }
         for (PropertyValue pv : (Collection<PropertyValue>)instance.getProperties()) {
             existingPropNames.add(pv.getPropertyName());
         }
@@ -180,36 +183,46 @@ public class PropertyCompleter extends InstanceCompleter {
     public List<CompletionItem> complete() {
         init();
         
+        Set<String> names = new HashSet<String>();
         if (ctx.getCompletionType() == CompletionProvider.COMPLETION_QUERY_TYPE) {
             addImportantProperties();
             if (resultItems.isEmpty()) {
-                addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
+                addPropertiesFrom(getBeanInfo(), names, false);
+                addPropertiesFrom(getBeanInfo().getBuilder(), names, false);
             }
         } else if (ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
-            addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
+            addPropertiesFrom(getBeanInfo(), names, false);
+            addPropertiesFrom(getBeanInfo().getBuilder(), names, false);
         }
         if (ctx.getType() == CompletionContext.Type.PROPERTY) {
+            String ns = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
             if (instance.getId() == null) {
-                // suggest also fx:id
-                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id",
-                        true);
-                pi.setPrimitive(true);
-                pi.setInherited(false);
-                pi.setSystem(true);
-                pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
-                pi.setPropertyType("String"); // NOI18N
-                resultItems.add(pi);
+                if ("id".startsWith(namePrefix) || // NOI18N
+                    (ns != null && (ns + ":id").startsWith(namePrefix))) {  // NOI18N
+                    // suggest also fx:id
+                    PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id", // NOI18N
+                            true);
+                    pi.setPrimitive(true);
+                    pi.setInherited(false);
+                    pi.setSystem(true);
+                    pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                    pi.setPropertyType("String"); // NOI18N
+                    resultItems.add(pi);
+                }
             }
             if (ctx.isRootElement() && ctx.getModel().getController() == null) {
-                // suggest also fx:id
-                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller",
-                        true);
-                pi.setPrimitive(true);
-                pi.setInherited(false);
-                pi.setSystem(true);
-                pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
-                pi.setPropertyType("Class"); // NOI18N
-                resultItems.add(pi);
+                if ("controller".startsWith(namePrefix) || // NOI18N
+                    (ns != null && (ns + ":controller").startsWith(namePrefix))) {  // NOI18N
+                    // suggest also fx:id
+                    PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller", // NOI18N
+                            true);
+                    pi.setPrimitive(true);
+                    pi.setInherited(false);
+                    pi.setSystem(true);
+                    pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                    pi.setPropertyType("Class"); // NOI18N
+                    resultItems.add(pi);
+                }
             }
         }
         return resultItems;

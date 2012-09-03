@@ -12,15 +12,17 @@ FormattingToken{kind=TEXT, offset=21, text=)}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=22, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=23, text=
 }
 FormattingToken{kind=WHITESPACE, offset=24, text=                }
+FormattingToken{kind=BEFORE_IF_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=40, text=k}
 FormattingToken{kind=WHITESPACE, offset=41, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=42, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=43, text= }
 FormattingToken{kind=TEXT, offset=44, text=l}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -33,6 +35,7 @@ FormattingToken{kind=TEXT, offset=46, text=else}
 FormattingToken{kind=ELSE_IF_INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=ELSE_IF_AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=50, text= }
+FormattingToken{kind=BEFORE_ELSE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=51, text=if}
 FormattingToken{kind=AFTER_IF_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=53, text= }
@@ -57,6 +60,7 @@ FormattingToken{kind=WHITESPACE, offset=83, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=84, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=85, text= }
 FormattingToken{kind=TEXT, offset=86, text=1}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -86,6 +90,7 @@ FormattingToken{kind=WHITESPACE, offset=135, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=136, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=137, text= }
 FormattingToken{kind=TEXT, offset=138, text=b}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}

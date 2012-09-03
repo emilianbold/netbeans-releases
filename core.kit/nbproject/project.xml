@@ -33,6 +33,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.autoupdate.cli</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.autoupdate.services</code-name-base>
                     <run-dependency>
                         <specification-version>1.3</specification-version>

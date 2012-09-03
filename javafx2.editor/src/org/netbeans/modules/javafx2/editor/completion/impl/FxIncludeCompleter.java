@@ -43,8 +43,11 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
@@ -58,7 +61,7 @@ public class FxIncludeCompleter implements Completer, Completer.Factory {
     public FxIncludeCompleter() {
     }
 
-    public FxIncludeCompleter(CompletionContext context) {
+    FxIncludeCompleter(CompletionContext context) {
         this.context = context;
     }
 
@@ -80,9 +83,23 @@ public class FxIncludeCompleter implements Completer, Completer.Factory {
             case BEAN:
             case ROOT:
             case CHILD_ELEMENT:
-                return new FxIncludeCompleter(ctx);
+            case PROPERTY_ELEMENT:
+                break;
+            default:
+                return null;
+        }
+        FxProperty prop = ctx.getEnclosingProperty();
+        if (prop != null) {
+            TypeMirror tm = prop.getType().resolve(ctx.getCompilationInfo());
+            // check that the type is a subclass of javafx.scene.Node
+            TypeElement te = ctx.getCompilationInfo().getElements().getTypeElement("javafx.scene.Node");
+            if (te != null && ctx.getCompilationInfo().getTypes().isAssignable(te.asType(), tm)) {
+                return new FxIncludeCompleter(ctx);                
+                
+            }
         }
         return null;
+        
     }
 
     

@@ -62,6 +62,7 @@ public class CompletionContextFinder {
         EXPRESSION, // usually, we will offer everything what we know in the context
         OBJECT_PROPERTY, // object property that are visible outside the object
         OBJECT_MEMBERS, // usually after this.
+        DOCUMENTATION, // inside documentation blocks
         GLOBAL
     } 
    
@@ -85,11 +86,13 @@ public class CompletionContextFinder {
         if (th == null) {
             return CompletionContext.NONE;
         }
-        TokenSequence<JsTokenId> ts = th == null ? null : th.tokenSequence(JsTokenId.javascriptLanguage());
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
         if (ts == null) {
             return CompletionContext.NONE;
         }
-        ts.move(caretOffset);
+        
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        ts.move(offset);
         
         if (!ts.moveNext() && !ts.movePrevious()){
             return CompletionContext.NONE;
@@ -97,7 +100,6 @@ public class CompletionContextFinder {
         
         Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
-        int tokenOffset = ts.offset();
         
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
@@ -116,6 +118,9 @@ public class CompletionContextFinder {
         }
         if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
             return CompletionContext.GLOBAL;
+        }
+        if (tokenId == JsTokenId.DOC_COMMENT) {
+            return CompletionContext.DOCUMENTATION;
         }
         return CompletionContext.EXPRESSION;
     }

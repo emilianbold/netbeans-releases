@@ -48,7 +48,7 @@ import java.util.List;
  *
  * @author sdedic
  */
-final class CompoundCharSequence implements CharSequence {
+public final class CompoundCharSequence implements CharSequence {
     private List<CharSequence> parts;
     private int[] partBoundaries;
     private int startOffset;
@@ -92,7 +92,7 @@ final class CompoundCharSequence implements CharSequence {
         } else {
             for (int i = 0; i < parts.size(); i++) {
                 if (partBoundaries[i] > index) {
-                    int start = i == 0 ? 0 : partBoundaries[i - 1];
+                    int start = i == 0 ? startOffset : partBoundaries[i - 1];
                     partNo = i;
                     return parts.get(i).charAt(index - start);
                 }

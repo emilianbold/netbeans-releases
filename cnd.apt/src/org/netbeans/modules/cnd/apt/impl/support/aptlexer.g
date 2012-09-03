@@ -790,7 +790,9 @@ tokens {
                 return null;
             }
         }
-        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine());
+        // Our literal check
+        int literalType = testLiteralsTable(0);
+        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine(), literalType);
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()

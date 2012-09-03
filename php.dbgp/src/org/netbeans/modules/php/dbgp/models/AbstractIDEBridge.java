@@ -1,20 +1,43 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
-
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp.models;
 
@@ -52,38 +75,38 @@ import org.openide.text.Line;
  *
  */
 public abstract class AbstractIDEBridge {
-    
+
     public static final String LOCALS_VIEW_NAME     = "LocalsView";     // NOI18N
-    
+
     public static final String CALLSTACK_VIEW_NAME  = "CallStackView";  // NOI18N
-    
+
     public static final String WATCHES_VIEW_NAME    = "WatchesView";    // NOI18N
-    
-    public static final String BREAKPOINTS_VIEW_NAME 
+
+    public static final String BREAKPOINTS_VIEW_NAME
                                                     = "BreakpointsView";// NOI18N
-    
+
     public static final String THREADS_VIEW_NAME    = "ThreadsView";    // NOI18N
-    
+
     protected AbstractIDEBridge() {
         myAnnotations = new HashMap<String,List<DebuggerAnnotation>>();
         isSuspended = new AtomicBoolean( false );
     }
-    
+
     public void hideAnnotations(){
         Collection<List<DebuggerAnnotation>> annotations;
         synchronized ( myAnnotations ) {
-            annotations = new ArrayList<List<DebuggerAnnotation>>( 
+            annotations = new ArrayList<List<DebuggerAnnotation>>(
                     myAnnotations.values());
             myAnnotations.clear();
         }
-        
+
         for( List<DebuggerAnnotation> list : annotations ){
             for (DebuggerAnnotation annotation : list ) {
                 annotation.detach();
             }
         }
     }
-    
+
     public void showCurrentDebuggerLine( final Line line ) {
         if ( line != null) {
             annotate( new CurrentLineAnnotation( line ) );
@@ -108,16 +131,16 @@ public abstract class AbstractIDEBridge {
             list.add( annotation );
         }
     }
-    
+
     public VariablesModel getVariablesModel() {
         DebuggerEngine engine = getEngine();
         if ( engine == null ) {
             return null;
         }
-        return (VariablesModel)engine.lookupFirst(LOCALS_VIEW_NAME, 
+        return (VariablesModel)engine.lookupFirst(LOCALS_VIEW_NAME,
                 TreeModel.class);
     }
-    
+
     public CallStackModel getCallStackModel() {
         DebuggerEngine engine = getEngine();
         if ( engine == null ) {
@@ -126,16 +149,16 @@ public abstract class AbstractIDEBridge {
         return (CallStackModel)engine.lookupFirst(CALLSTACK_VIEW_NAME,
                 TreeModel.class);
     }
-    
+
     public WatchesModel getWatchesModel() {
         DebuggerEngine engine = getEngine();
         if ( engine == null ) {
             return null;
         }
-        return (WatchesModel)engine.lookupFirst(WATCHES_VIEW_NAME, 
+        return (WatchesModel)engine.lookupFirst(WATCHES_VIEW_NAME,
                 TreeModel.class);
     }
-    
+
     public BreakpointModel getBreakpointModel() {
         DebuggerManager debuggerManager = DebuggerManager.getDebuggerManager();
         Iterator it = debuggerManager != null ? debuggerManager.lookup(
@@ -150,16 +173,16 @@ public abstract class AbstractIDEBridge {
 
         return null;
     }
-    
+
     public ThreadsModel getThreadsModel() {
         DebuggerEngine engine = getEngine();
         if ( engine == null ) {
             return null;
         }
-        return (ThreadsModel)engine.lookupFirst(THREADS_VIEW_NAME, 
+        return (ThreadsModel)engine.lookupFirst(THREADS_VIEW_NAME,
                 TreeModel.class);
     }
-    
+
     public void setSuspended( boolean flag ) {
         isSuspended.set( flag );
         synchronized (SessionManager.getInstance()) {
@@ -167,7 +190,7 @@ public abstract class AbstractIDEBridge {
             if ( id == null ){
                 return;
             }
-            DebugSession current = 
+            DebugSession current =
                 SessionManager.getInstance().getSession(id);
             if ( current != null && !current.equals( getDebugSession() ) ){
                 return;
@@ -183,7 +206,7 @@ public abstract class AbstractIDEBridge {
                 if ( obj == ActionsManager.ACTION_CONTINUE ||
                         obj == ActionsManager.ACTION_STEP_INTO ||
                             obj ==  ActionsManager.ACTION_STEP_OVER ||
-                                obj == ActionsManager.ACTION_STEP_OUT || 
+                                obj == ActionsManager.ACTION_STEP_OUT ||
                                     obj == ActionsManager.ACTION_RUN_TO_CURSOR)
                 {
                     provider.setEnabled(flag);
@@ -191,17 +214,17 @@ public abstract class AbstractIDEBridge {
             }
         }
     }
-    
+
     public boolean isSuspended(){
         return isSuspended.get();
     }
-    
-    protected abstract DebuggerEngine getEngine(); 
-    
+
+    protected abstract DebuggerEngine getEngine();
+
     protected abstract DebugSession getDebugSession();
-    
+
     private Map<String, List<DebuggerAnnotation>> myAnnotations;
-    
+
     private AtomicBoolean isSuspended;
-    
+
 }

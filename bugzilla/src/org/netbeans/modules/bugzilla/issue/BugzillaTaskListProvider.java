@@ -61,7 +61,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
@@ -456,7 +455,7 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
                             continue;
                         }
                         add(issueName, issueUrl, issueId, projectName);
-                        KenaiAccessor ka = KenaiUtil.getKenaiAccessor();
+                        KenaiAccessor ka = KenaiUtil.getKenaiAccessor(url);
                         if(ka != null) {
                             String host = issueUrl.getHost();
                             Map<String, PropertyChangeListener> kl = getKenaiListeners();

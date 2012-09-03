@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -56,6 +60,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class ExtDocDocumentationProvider implements JsDocumentationProvider {
 
     private static Set<String> supportedTags;
+
+    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
+            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
+
+    private static final SyntaxProvider SYNTAX_PROVIDER = new ExtDocSyntaxProvider();
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
@@ -73,5 +82,15 @@ public class ExtDocDocumentationProvider implements JsDocumentationProvider {
             supportedTags.remove("description");
         }
         return supportedTags;
+    }
+
+    @Override
+    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
+        return ANNOTATION_PROVIDERS;
+    }
+
+    @Override
+    public SyntaxProvider getSyntaxProvider() {
+        return SYNTAX_PROVIDER;
     }
 }

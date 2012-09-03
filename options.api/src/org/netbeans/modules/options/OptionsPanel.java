@@ -63,6 +63,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -104,9 +105,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -125,6 +123,7 @@ public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
+    private JPanel quickSearch;
     private CardLayout cLayout;
     
     private int selectedTabIndex = -1;
@@ -163,6 +162,16 @@ public class OptionsPanel extends JPanel {
     public OptionsPanel (String categoryID) {        
         // init UI components, layout and actions, and add some default values
         initUI(categoryID);        
+        if (getActionMap().get("SEARCH_OPTIONS") == null) {//NOI18N
+            InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+            if(Utilities.isMac()) {
+                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_MASK), "SEARCH_OPTIONS");//NOI18N
+            } else {
+                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK), "SEARCH_OPTIONS");//NOI18N
+            }
+            getActionMap().put("SEARCH_OPTIONS", new SearchAction());//NOI18N
+        }
     }
     
     private String getCategoryID(String categoryID) {
@@ -202,26 +211,12 @@ public class OptionsPanel extends JPanel {
         }
     }
     
-    private boolean isErgonomicsPresent() {
-        List<UpdateUnit> unit = UpdateManager.getDefault().getUpdateUnits();
-        for (Iterator<UpdateUnit> it = unit.iterator(); it.hasNext();) {
-            UpdateUnit updateUnit = it.next();
-            UpdateElement element = updateUnit.getInstalled();
-            
-            if(element != null && element.getDisplayName().equalsIgnoreCase("Ergonomic IDE") && element.isEnabled()) {//NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private void setCurrentCategory (final CategoryModel.Category category, String subpath) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             if(category == null) {
                 JComponent component = new JPanel(new BorderLayout());
-                JLabel label = isErgonomicsPresent() ? new JLabel(loc("CTL_Options_Search_Nothing_Found_Ergonomics")) //NOI18N
-                        : new JLabel(loc("CTL_Options_Search_Nothing_Found"));//NOI18N
+                JLabel label = new JLabel(loc("CTL_Options_Search_Nothing_Found"));//NOI18N
                 label.setHorizontalAlignment(JLabel.CENTER);
                 label.setHorizontalTextPosition(JLabel.CENTER);
                 component.add(label, BorderLayout.CENTER);
@@ -274,10 +269,12 @@ public class OptionsPanel extends JPanel {
     }
     
     void save () {
+        clearSearchField();
         CategoryModel.getInstance().save();
     }
     
     void cancel () {
+        clearSearchField();
         CategoryModel.getInstance().cancel();    
     }
     
@@ -312,10 +309,16 @@ public class OptionsPanel extends JPanel {
         pCategories2.setBorder (null);
         addCategoryButtons();        
 
+        quickSearch = new JPanel(new BorderLayout());
+        quickSearch.setBackground(Color.white);
+        QuickSearch qs = QuickSearch.attach(quickSearch, null, new OptionsQSCallback());
+        qs.setAlwaysShown(true);
+        
         pCategories = new JPanel (new BorderLayout ());
         pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
         pCategories.setBackground (Color.white);
         pCategories.add ("Center", pCategories2);
+        pCategories.add ("East", quickSearch);
         
         // layout
         setLayout (new BorderLayout (10, 10));
@@ -336,6 +339,11 @@ public class OptionsPanel extends JPanel {
                 b.setSelected();
             }
         }
+    }
+    
+    private void clearSearchField() {
+        JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
+        ((JTextComponent) searchPanel.getComponent(searchPanel.getComponentCount() - 1)).setText("");
     }
         
     private void computeOptionsWords() {
@@ -607,6 +615,10 @@ public class OptionsPanel extends JPanel {
         @Override
         public void quickSearchUpdate(String searchText) {
             searchText = searchText.trim();
+            if (searchText.length() == 0) {
+                clearAll();
+                return;
+            }
             if (searchText.length() < 3) {
                 return;
             }
@@ -961,6 +973,14 @@ public class OptionsPanel extends JPanel {
             if (highlightedB != null) {
                 setCurrentCategory(highlightedB, null);
             }
+        }
+    }
+    
+    private class SearchAction extends AbstractAction {
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            JComponent searchPanel = (JComponent)quickSearch.getComponent(0);
+            searchPanel.getComponent(searchPanel.getComponentCount() - 1).requestFocusInWindow();
         }
     }
     

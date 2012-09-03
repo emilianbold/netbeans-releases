@@ -96,9 +96,13 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         initComponents(repositoryUrl, localRoot, revision);
     }
 
-    public void search() {        
+    public void search (boolean showCriteria) {        
         shp.executeSearch();
-        shp.setSearchCriteria(false);
+        shp.setSearchCriteria(showCriteria);
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        shp.activateDiffView(selectFirstRevision);
     }
     
     private void initComponents(SVNUrl repositoryUrl, File localRoot, long revision) {

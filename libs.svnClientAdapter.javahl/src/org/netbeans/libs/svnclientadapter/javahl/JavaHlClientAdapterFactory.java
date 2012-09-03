@@ -84,12 +84,15 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     private static final String SLIKSVN_CLIENT_LIBRARY = "SlikSvn-svn_client-1.dll"; //NOI18N
     private static final String[] SLIKSVN_LIBRARIES = new String[] { 
         "SlikSvn-DB44-20-win32.dll", //NOI18N
+        "SlikSvn-DB44-20-x64.dll", //NOI18N
         "SlikSvn-libapr-1.dll", //NOI18N
         "SlikSvn-libaprutil-1.dll", //NOI18N
         "SlikSvn-libeay32.dll", //NOI18N
         "SlikSvn-libintl-Win32.dll", //NOI18N
+        "SlikSvn-libintl-x64.dll", //NOI18N
         "SlikSvn-ssleay32.dll", //NOI18N
         "SlikSvn-Sasl21-23-win32.dll", //NOI18N
+        "SlikSvn-Sasl21-23-x64.dll", //NOI18N
         "SlikSvn-svn_subr-1.dll", //NOI18N
         "SlikSvn-svn_delta-1.dll", //NOI18N
         "SlikSvn-svn_diff-1.dll", //NOI18N

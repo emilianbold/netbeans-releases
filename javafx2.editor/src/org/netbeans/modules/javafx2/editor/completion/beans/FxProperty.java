@@ -68,10 +68,15 @@ public final class FxProperty extends FxDefinition {
     /**
      * Object type that the attached property accepts.
      */
-    private ElementHandle<TypeElement> objectType;
+    private TypeMirrorHandle objectType;
+    
+    /**
+     * Property getter method, which returns 
+     */
+    private ElementHandle<ExecutableElement> observableAccessor;
 
     /**
-     * Accessor used to get/set the property. Getter in the case of readonly
+     * Accessor used to set the property. Getter in the case of readonly
      * properties
      */
     private ElementHandle<ExecutableElement> accessor;
@@ -102,7 +107,7 @@ public final class FxProperty extends FxDefinition {
      * @return 
      */
     @CheckForNull
-    public ElementHandle<TypeElement> getObjectType() {
+    public TypeMirrorHandle getObjectType() {
         return objectType;
     }
 
@@ -117,6 +122,10 @@ public final class FxProperty extends FxDefinition {
     public ElementHandle<ExecutableElement> getAccessor() {
         return accessor;
     }
+    
+    public ElementHandle<ExecutableElement> getObservableAccessor() {
+        return observableAccessor;
+    }
 
     /**
      * Returns kind of the property. The property may be {@link FxDefinitionKind#ATTACHED}
@@ -130,12 +139,16 @@ public final class FxProperty extends FxDefinition {
         return kind;
     }
     
-    void setObjectType(ElementHandle<TypeElement> objectType) {
+    void setObjectType(TypeMirrorHandle objectType) {
         this.objectType = objectType;
     }
 
     void setAccessor(ElementHandle<ExecutableElement> accessor) {
         this.accessor = accessor;
+    }
+
+    void setObservableAccessors(ElementHandle<ExecutableElement> observableAccessor) {
+        this.observableAccessor = observableAccessor;
     }
 
     void setSimple(boolean simple) {

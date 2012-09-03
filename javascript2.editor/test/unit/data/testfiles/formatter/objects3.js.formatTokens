@@ -4,6 +4,7 @@ FormattingToken{kind=WHITESPACE, offset=1, text= }
 FormattingToken{kind=BEFORE_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=2, text==}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
+FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=3, text= }
 FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=4, text={}
@@ -98,6 +99,7 @@ FormattingToken{kind=TEXT, offset=108, text="}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=109, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=110, text=
 }
 FormattingToken{kind=WHITESPACE, offset=111, text=      }
@@ -131,6 +133,7 @@ FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=162, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=163, text=
 }
 FormattingToken{kind=WHITESPACE, offset=164, text=      }
@@ -164,6 +167,7 @@ FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=211, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=212, text=
 }
 FormattingToken{kind=WHITESPACE, offset=213, text=      }

@@ -98,6 +98,10 @@ public final class UseInjectionInsteadOfInstantionRule {
 
         // is valid class?
         final TypeElement javaClass = (TypeElement) cpi.getTrees().getElement(clazzTreePath);
+        if (javaClass == null) {
+            return null;
+        }
+
         final FileObject targetType = SourceUtils.getFile(ElementHandle.create(javaClass), cpi.getClasspathInfo());
         if (targetType == null) {
             return null;

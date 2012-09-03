@@ -1,0 +1,57 @@
+Detected parser blocks in the file:
+
+{capture <1:33> -  name=href_informace_left}
+ |
+ -- {/capture <130:138> - }
+
+{capture <142:171> -  name=href_vybava_left}
+ |
+ -- {/capture <267:275> - }
+
+{capture <279:308> -  name=href_odkazy_left}
+ |
+ -- {/capture <404:412> - }
+
+{capture <416:445> -  name=href_vzkazy_left}
+ |
+ -- {/capture <541:549> - }
+
+{capture <553:582> -  name=href_vzhled_left}
+ |
+ -- {/capture <679:687> - }
+
+{capture <691:724> -  name=href_informace_right}
+ |
+ -- {/capture <822:830> - }
+
+{capture <834:864> -  name=href_vybava_right}
+ |
+ -- {/capture <961:969> - }
+
+{capture <973:1003> -  name=href_odkazy_right}
+ |
+ -- {/capture <1100:1108> - }
+
+{capture <1112:1142> -  name=href_vzkazy_right}
+ |
+ -- {/capture <1239:1247> - }
+
+{capture <1251:1281> -  name=href_vzhled_right}
+ |
+ -- {/capture <1378:1386> - }
+
+{if <1455:1504> -  ($smarty.request.action eq "edit_pokoje_info")}
+ |
+ -- {elseif <1798:1853> -  ($smarty.request.action eq "edit_pokoje_vybava")}
+ |
+ -- {elseif <2143:2198> -  ($smarty.request.action eq "edit_pokoje_odkazy")}
+ |
+ -- {elseif <2487:2542> -  ($smarty.request.action eq "edit_pokoje_vzkazy")}
+ |
+ -- {elseif <2830:2885> -  ($smarty.request.action eq "edit_pokoje_vzhled")}
+ |
+ -- {/if <3172:3175> - }
+
+{capture <1390:1419> -  name=nastaveni_header}
+ |
+ -- {/capture <3178:3186> - }

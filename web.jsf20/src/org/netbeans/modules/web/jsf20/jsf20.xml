@@ -50,8 +50,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/web/jsf20/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/jsf-api.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/jsf-impl.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/javax.faces.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -61,10 +60,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>
-                com.sun.faces:jsf-api:2.1.1-b04:jar
-                com.sun.faces:jsf-impl:2.1.1-b04:jar
-            </value>
+            <value>org.glassfish:javax.faces:2.1.11:jar</value>
         </property>
     </properties>    
 </library>

@@ -50,6 +50,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.ImageIcon;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -145,7 +146,7 @@ public class SimpleClassItem extends AbstractCompletionItem {
     @Override
     protected String getSubstituteText() {
         // the opening < is a part of the replacement area
-        return "<" + super.getSubstituteText() + " "; // NOI18N
+        return "<" + super.getSubstituteText() + (ctx.isReplaceExisting() ? "" : " "); // NOI18N
     }
 
     @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=ClassItemFactory.class)
@@ -153,6 +154,11 @@ public class SimpleClassItem extends AbstractCompletionItem {
 
         @Override
         public CompletionItem convert(TypeElement elem, CompletionContext ctx, int priorityHint) {
+            // ignore Strings, they are written as char content
+            if (elem.getQualifiedName().contentEquals("java.lang.String")) { // NOI18N
+                return null;
+            }
+            boolean ok = false;
             Collection<? extends ExecutableElement> execs = ElementFilter.constructorsIn(elem.getEnclosedElements());
             for (ExecutableElement e : execs) {
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
@@ -164,16 +170,29 @@ public class SimpleClassItem extends AbstractCompletionItem {
                     continue;
                 }
                 if (e.getParameters().isEmpty()) {
-                    // non-public, no-arg ctor -> provide an item
-                    String fqn = elem.getQualifiedName().toString();
-                    String sn = ctx.getSimpleClassName(fqn);
-                    
-                    return setup(new SimpleClassItem(ctx, 
-                            sn == null ? fqn : sn),
-                            elem, ctx, priorityHint);
+                    ok = true;
                 }
             }
-            return null;
+            
+            // non-public, no-arg ctor -> provide an item
+            String fqn = elem.getQualifiedName().toString();
+
+            if (!ok) {
+                // last chance - try to find a Builder 
+                FxBean bean = ctx.getBeanInfo(fqn);
+                if (bean != null && !bean.isFxInstance() && bean.getBuilder() != null) {
+                    ok = true;
+                }
+            }
+            
+            if (!ok) {
+                return null;
+            }
+
+            String sn = ctx.getSimpleClassName(fqn);
+            return setup(new SimpleClassItem(ctx, 
+                    sn == null ? fqn : sn),
+                    elem, ctx, priorityHint);
         }
     }
 
@@ -188,6 +207,6 @@ public class SimpleClassItem extends AbstractCompletionItem {
     }
     
     public String toString() {
-        return "SCI[" + getFullClassName() + "]";
+        return "simple-class[" + getFullClassName() + "]";
     }
 }
