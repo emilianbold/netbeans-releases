@@ -91,34 +91,28 @@ public class TplParser extends Parser {
             List<Section> sectionList = new ArrayList<Section>();
 
             for (TokenSequence<?> ts : tsList) {
-                while (ts.moveNext()) {
-                    Token<TplTokenId> token = (Token<TplTokenId>) ts.token();
+                ts.moveNext();
+                Token<TplTokenId> token = (Token<TplTokenId>) ts.token();
+                Section section = new Section();
+                int startOffset = ts.offset();
+                StringBuilder textBuilder = new StringBuilder();
 
-                    /* Parse Smarty Functions */
-                    if (token.id() == TplTokenId.FUNCTION) {
-                        Section section = new Section();
-                        CharSequence functionName = token.text();
-
-                        int startOffset = ts.offset();
-
-                        StringBuilder textBuilder = new StringBuilder();
-                        while (ts.moveNext()) {
-                            token = (Token<TplTokenId>) ts.token();
-                            textBuilder.append(token.text());
-                        }
-                        int endOffset = startOffset + ((startOffset == ts.offset()) ? token.length() : ts.offset() - startOffset + token.length());
-                        section.function = CharSequenceUtilities.toString(functionName);
-                        section.offsetRange = new OffsetRange(startOffset, endOffset);
-                        section.text = textBuilder.toString();
-                        sectionList.add(section);
-                    } else {
-                        Section section = new Section();
-                        int startOffset = ts.offset();
-                        ts.moveEnd(); ts.movePrevious();
-                        section.offsetRange = new OffsetRange(startOffset, ts.offset() + ts.token().length());
-                        sectionList.add(section);
-                    }
+                if (token.id() == TplTokenId.FUNCTION) {
+                    // store function specific information
+                    section.function = CharSequenceUtilities.toString(token.text());
+                } else {
+                    textBuilder.append(token.text());
                 }
+
+                // rest of tag processing
+                while (ts.moveNext()) {
+                    token = (Token<TplTokenId>) ts.token();
+                    textBuilder.append(token.text());
+                }
+                int endOffset = startOffset + ((startOffset == ts.offset()) ? token.length() : ts.offset() - startOffset + token.length());
+                section.offsetRange = new OffsetRange(startOffset, endOffset);
+                section.text = textBuilder.toString();
+                sectionList.add(section);
             }
 
             /* Analyse functionList structure */
