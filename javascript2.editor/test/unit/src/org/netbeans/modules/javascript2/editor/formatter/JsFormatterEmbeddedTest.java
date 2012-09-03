@@ -108,4 +108,8 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
     public void testEmbeddedMultipleSections1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections1.html", new IndentPrefs(4,4));
     }
+
+    public void testEmbeddedMultipleSections2() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
+    }
 }
