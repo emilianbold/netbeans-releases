@@ -222,9 +222,6 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
         pushState(ST_BLOCK);
         return TwigTokenId.T_TWIG_NAME;
     }
-    {OPERATOR} {
-        return TwigTokenId.T_TWIG_OPERATOR;
-    }
 }
 
 <ST_BLOCK> {
