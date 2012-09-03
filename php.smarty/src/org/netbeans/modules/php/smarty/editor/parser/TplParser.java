@@ -111,6 +111,12 @@ public class TplParser extends Parser {
                         section.offsetRange = new OffsetRange(startOffset, endOffset);
                         section.text = textBuilder.toString();
                         sectionList.add(section);
+                    } else {
+                        Section section = new Section();
+                        int startOffset = ts.offset();
+                        ts.moveEnd(); ts.movePrevious();
+                        section.offsetRange = new OffsetRange(startOffset, ts.offset() + ts.token().length());
+                        sectionList.add(section);
                     }
                 }
             }
@@ -118,7 +124,11 @@ public class TplParser extends Parser {
             /* Analyse functionList structure */
             Stack<Block> blockStack = new Stack<Block>();
             for (Section section : sectionList) {
-                if (TplSyntax.isEndingSmartyCommand(section.function) || TplSyntax.isElseSmartyCommand(section.function)) { //NOI18N
+                if (section.function == null) {
+                    // simple tags - like variables
+                    TplParserResult.Block block = new TplParserResult.Block(section.toParserResultSection());
+                    result.addBlock(block);
+                } else if (TplSyntax.isEndingSmartyCommand(section.function) || TplSyntax.isElseSmartyCommand(section.function)) { //NOI18N
                     if (blockStack.empty()) {
                         result.addError(
                                 NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedBaseCommand(section.function)), //NOI18N
@@ -150,7 +160,7 @@ public class TplParser extends Parser {
                     blockStack.push(block);
 
                 } else {
-                    // simple, not-paired tags - just store them into result
+                    // non-paired function tags
                     TplParserResult.Block block = new TplParserResult.Block(section.toParserResultSection());
                     result.addBlock(block);
                 }
