@@ -993,11 +993,16 @@ public class JsFormatter implements Formatter {
 
         if (ts != null && token != null) {
             int index = ts.index();
-            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
-            JsTokenId previousId = previous != null ? previous.id() : null;
+            JsTokenId previousId = null;
+            if (ts.movePrevious()) {
+                Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                if (previous != null) {
+                    previousId = previous.id();
+                }
 
-            ts.moveIndex(index);
-            ts.moveNext();
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
 
             JsTokenId id = token.id();
 
