@@ -197,6 +197,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
     }
 
     public static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
+        int[] span = ignoreWhitespaces(ci, Math.min(start, end), Math.max(start, end));
+
+        start = span[0];
+        end   = span[1];
+        
         TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
 
         for ( ; tp != null; tp = tp.getParentPath()) {

@@ -155,24 +155,52 @@ BLOCK_END="%}"
 VAR_START="{{"
 VAR_END="}}"
 OPERATOR=("as"|"="|"not"|"+"|"-"|"or"|"b-or"|"b-xor"|"and"|"b-and"|"=="|"!="|">"|"<"|">="|"<="|"in"|"~"|"*"|"/"|"//"|"%"|"is"|".."|"**")
-PUNCTUATION=("|"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"."|",")
+OPEN_CURLY="{"
+PUNCTUATION=("|"|"("|")"|"["|"]"|{OPEN_CURLY}|"}"|"?"|":"|"."|",")
 NUMBER=[0-9]+(\.[0-9]+)?
 NAME=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
-D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
-S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
+D_STRING="\""([^"\""]|"\\\"")*"\""
+S_STRING="'"([^"'"]|"\\'")*"'"
 COMMENT_START="{#"
 COMMENT_END=([^"#""}"]|"#"|"}")*"#}"
 TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"extends"|"filter"|"endfilter"|"flush"|"for"|"endfor"|"from"|"if"|"else"|"elseif"|"endif"|"import"|"include"|"macro"|"endmacro"|"raw"|"endraw"|"sandbox"|"endsandbox"|"set"|"endset"|"spaceless"|"endspaceless"|"use")
+INTERPOLATION_START="#{"
+INTERPOLATION_END="}"
+D_NO_INTERPOLATION=([^"#""\""] | #[^"{""\""] | "\\\"")*
+D_INTERPOLATION={D_NO_INTERPOLATION} {INTERPOLATION_START}
+D_PRE_INTERPOLATION="\"" {D_INTERPOLATION}
+D_NO_INTERPOLATION_INSIDE="\"" {D_NO_INTERPOLATION} "\""
+D_POST_INTERPOLATION={D_NO_INTERPOLATION} "\""
+S_NO_INTERPOLATION=([^"#""'"] | #[^"{""'"] | "\\'")*
+S_INTERPOLATION={S_NO_INTERPOLATION} {INTERPOLATION_START}
+S_PRE_INTERPOLATION="'" {S_INTERPOLATION}
+S_NO_INTERPOLATION_INSIDE="'" {S_NO_INTERPOLATION} "'"
+S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
 
 %state ST_BLOCK
 %state ST_BLOCK_START
 %state ST_VAR
 %state ST_COMMENT
-%state ST_STRING
+%state ST_D_STRING
+%state ST_S_STRING
 %state ST_INTERPOLATION
 %state ST_HIGHLIGHTING_ERROR
 
 %%
+<YYINITIAL, ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_COMMENT, ST_D_STRING, ST_S_STRING, ST_INTERPOLATION>{WHITESPACE}+ {
+    return TwigTokenId.T_TWIG_WHITESPACE;
+}
+
+<ST_INTERPOLATION> {
+    {INTERPOLATION_START} {
+        return TwigTokenId.T_TWIG_INTERPOLATION_START;
+    }
+    {INTERPOLATION_END} {
+        popState();
+        return TwigTokenId.T_TWIG_INTERPOLATION_END;
+    }
+}
+
 <YYINITIAL> {
     {BLOCK_START} {
         pushState(ST_BLOCK_START);
@@ -205,30 +233,6 @@ TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"ex
         pushState(ST_BLOCK);
         return TwigTokenId.T_TWIG_NAME;
     }
-    {OPERATOR} {
-        return TwigTokenId.T_TWIG_OPERATOR;
-    }
-}
-
-<ST_BLOCK, ST_BLOCK_START, ST_VAR> {
-    {OPERATOR} {
-        return TwigTokenId.T_TWIG_OPERATOR;
-    }
-}
-
-<ST_BLOCK, ST_VAR> {
-    {PUNCTUATION} {
-        return TwigTokenId.T_TWIG_PUNCTUATION;
-    }
-    {NUMBER} {
-        return TwigTokenId.T_TWIG_NUMBER;
-    }
-    {D_STRING} | {S_STRING} {
-        return TwigTokenId.T_TWIG_STRING;
-    }
-    {NAME} {
-        return TwigTokenId.T_TWIG_NAME;
-    }
 }
 
 <ST_BLOCK> {
@@ -245,10 +249,63 @@ TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"ex
     }
 }
 
-<ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_COMMENT, ST_STRING, ST_INTERPOLATION>{WHITESPACE}+ {
-    return TwigTokenId.T_TWIG_WHITESPACE;
+<ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_INTERPOLATION> {
+    {OPERATOR} {
+        return TwigTokenId.T_TWIG_OPERATOR;
+    }
 }
 
+<ST_BLOCK, ST_VAR, ST_INTERPOLATION> {
+    {PUNCTUATION} {
+        return TwigTokenId.T_TWIG_PUNCTUATION;
+    }
+    {NUMBER} {
+        return TwigTokenId.T_TWIG_NUMBER;
+    }
+    {D_STRING} {
+        yypushback(yylength());
+        pushState(ST_D_STRING);
+    }
+    {S_STRING} {
+        yypushback(yylength());
+        pushState(ST_S_STRING);
+    }
+    {NAME} {
+        return TwigTokenId.T_TWIG_NAME;
+    }
+}
+
+<ST_D_STRING> {
+    {D_PRE_INTERPOLATION} | {D_INTERPOLATION} {
+        yypushback(2);
+        pushState(ST_INTERPOLATION);
+        return TwigTokenId.T_TWIG_STRING;
+    }
+    {D_NO_INTERPOLATION_INSIDE} {
+        popState();
+        return TwigTokenId.T_TWIG_STRING;
+    }
+    {D_POST_INTERPOLATION} {
+        popState();
+        return TwigTokenId.T_TWIG_STRING;
+    }
+}
+
+<ST_S_STRING> {
+    {S_PRE_INTERPOLATION} | {S_INTERPOLATION} {
+        yypushback(2);
+        pushState(ST_INTERPOLATION);
+        return TwigTokenId.T_TWIG_STRING;
+    }
+    {S_NO_INTERPOLATION_INSIDE} {
+        popState();
+        return TwigTokenId.T_TWIG_STRING;
+    }
+    {S_POST_INTERPOLATION} {
+        popState();
+        return TwigTokenId.T_TWIG_STRING;
+    }
+}
 
 
 /* ============================================
@@ -269,7 +326,7 @@ TAG=("autoescape"|"endautoescape"|"block"|"endblock"|"do"|"embed"|"endembed"|"ex
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_COMMENT, ST_STRING, ST_INTERPOLATION> {
+<YYINITIAL, ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_COMMENT, ST_D_STRING, ST_S_STRING, ST_INTERPOLATION> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);

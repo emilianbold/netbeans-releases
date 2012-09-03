@@ -2038,6 +2038,10 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 2);
     }
 
+    public void testWhitespace216402() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {int y = 3; y =|  2   |; }}", true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 

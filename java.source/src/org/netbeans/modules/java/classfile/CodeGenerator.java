@@ -54,6 +54,7 @@ import com.sun.tools.javap.Messages;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -293,9 +294,15 @@ public class CodeGenerator {
                     JavaFileObject classfile = ((ClassSymbol) e).classfile;
 
                     if (classfile != null && classfile.getKind() == Kind.CLASS) {
-                        cf = ClassFile.read(classfile.openInputStream());
-                        for (Method m : cf.methods) {
-                            sig2Method.put(cf.constant_pool.getUTF8Value(m.name_index) + ":" + cf.constant_pool.getUTF8Value(m.descriptor.index), m);
+                        InputStream in = classfile.openInputStream();
+                        
+                        try {
+                            cf = ClassFile.read(in);
+                            for (Method m : cf.methods) {
+                                sig2Method.put(cf.constant_pool.getUTF8Value(m.name_index) + ":" + cf.constant_pool.getUTF8Value(m.descriptor.index), m);
+                            }
+                        } finally {
+                            in.close();
                         }
                     }
                 } catch (ConstantPoolException ex) {

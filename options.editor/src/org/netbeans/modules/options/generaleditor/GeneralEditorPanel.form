@@ -29,12 +29,6 @@
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                      <Component id="lRemoveTrailingWhitespace" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cboRemoveTrailingWhitespace" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lCollapseByDefault" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -86,11 +80,6 @@
               <Component id="lCamelCaseBehavior1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator6" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <Component id="lWhenSavingFiles" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator4" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
@@ -153,17 +142,7 @@
               <Component id="cbCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jSeparator4" min="-2" pref="10" max="-2" attributes="0"/>
-                  <Component id="lWhenSavingFiles" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lRemoveTrailingWhitespace" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cboRemoveTrailingWhitespace" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="lSearch" min="-2" max="-2" attributes="0"/>
                   <Component id="jSeparator5" min="-2" pref="10" max="-2" attributes="0"/>
@@ -267,37 +246,10 @@
         <Property name="text" type="java.lang.String" value="&lt;html&gt;Example: Caret stops at J, T, N in &quot;JavaTypeName&quot;&lt;br&gt;when using next/previous word acctions&lt;/html&gt;"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSeparator" name="jSeparator4">
-    </Component>
-    <Component class="javax.swing.JLabel" name="lWhenSavingFiles">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="When Saving Files"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="lRemoveTrailingWhitespace">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="cboRemoveTrailingWhitespace"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Remove Trailing Whitespace:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="cboRemoveTrailingWhitespace">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="4">
-            <StringItem index="0" value="Item 1"/>
-            <StringItem index="1" value="Item 2"/>
-            <StringItem index="2" value="Item 3"/>
-            <StringItem index="3" value="Item 4"/>
-          </StringArray>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="lEditorSearchType">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="cboRemoveTrailingWhitespace"/>
+          <ComponentRef name="default"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Editor Search Type:"/>
       </Properties>
