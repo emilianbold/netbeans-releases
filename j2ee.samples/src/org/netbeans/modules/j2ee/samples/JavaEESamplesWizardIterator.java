@@ -83,7 +83,7 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
-        boolean specifyPrjName = "web".equals(Templates.getTemplate(wiz).getAttribute("prjType"));
+        boolean specifyPrjName = "web".equals(Templates.getTemplate(wiz).getAttribute("prjType")); // NOI18N
         return new WizardDescriptor.Panel[] {
             new JavaEESamplesWizardPanel(false, specifyPrjName)
         };
@@ -91,20 +91,20 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
     
     protected String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_CreateProjectStep")
+            NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_CreateProjectStep") // NOI18N
         };
     }
     
     @Override
     public Set<FileObject> instantiate() throws IOException {
-        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator."; // NOI18N
         return null;
     }
 
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         handle.start(2);
-        handle.progress(NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_NewSampleProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        handle.progress(NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_NewSampleProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
 
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(WizardProperties.PROJ_DIR));
@@ -112,7 +112,7 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
         FileObject template = Templates.getTemplate(wiz);
 
         FileObject dir = null;
-        if ("web".equals(template.getAttribute("prjType"))) {
+        if ("web".equals(template.getAttribute("prjType"))) { // NOI18N
             // Use generator from web.examples to create project with specified name
             dir = WebSampleProjectGenerator.createProjectFromTemplate(template, dirF, name);
         }
@@ -130,7 +130,7 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         ProjectManager.getDefault().clearNonProjectCache();
-        handle.progress(NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_NewSampleProjectWizardIterator_WizardProgress_PreparingToOpen"), 2);
+        handle.progress(NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_NewSampleProjectWizardIterator_WizardProgress_PreparingToOpen"), 2); // NOI18N
 
         // Always open top dir as a project:
         resultSet.add(dir);
