@@ -94,7 +94,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     @Override
     public boolean isDefined(CharSequence token) {
-        assert CharSequences.isCompact(token);
+        token = CharSequences.create(token);
         // check own map
         initCache();
         // no need to check in super, because everything is in cache already
