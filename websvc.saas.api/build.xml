@@ -69,21 +69,24 @@
         <xjc schema="${saas.service.xsd}"      
             package="org.netbeans.modules.websvc.saas.model.jaxb"
             target="2.1"
-            destdir="src">
+            destdir="src"
+	    encoding="UTF-8">
             <depends file="${saas-service.xsd}"/>
             <produces dir="${saas.model.jaxb}"/>
         </xjc>
         <xjc schema="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
             package="org.netbeans.modules.websvc.saas.model.wadl"
             target="2.1"
-            destdir="src">
+            destdir="src"
+	    encoding="UTF-8">
             <depends file="${wadl.xsd}"/>
             <produces dir="${saas.model.wadl}"/>
         </xjc>
         <xjc schema="src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"
             package="org.netbeans.modules.websvc.saas.model.oauth"
             target="2.1"
-            destdir="src">
+            destdir="src"
+	    encoding="UTF-8">
             <depends file="${oauth.xsd}"/>
             <produces dir="${oauth.model}"/>
         </xjc>

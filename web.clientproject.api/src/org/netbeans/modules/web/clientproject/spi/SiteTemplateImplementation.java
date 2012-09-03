@@ -47,7 +47,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,7 +60,7 @@ public interface SiteTemplateImplementation {
     String getDescription();
 
     /**
-     * Check whether site template is already {@link #prepare() prepared}.
+     * Check whether site template is already {@link #prepare() prepared} (e.g. downloaded from a remote website).
      * @return {@code true} if site template is already {@link #prepare(ProgressHandle) prepared}, {@code false} otherwise
      * @since 1.3
      */
@@ -69,7 +68,7 @@ public interface SiteTemplateImplementation {
 
     /**
      * Prepare site template, e.g. download it to a cache directory if it is not already downloaded.
-     * This method is always called before {@link #apply(FileObject, ProgressHandle) applying} this site template
+     * This method is always called before {@link #apply(AntProjectHelper, ProgressHandle) applying} this site template
      * but only if the site template is not already {@link #isPrepared() prepared}.
      * <p>
      * This method is never called in the UI thread.

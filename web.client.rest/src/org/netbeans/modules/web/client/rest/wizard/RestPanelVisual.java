@@ -80,7 +80,6 @@ public final class RestPanelVisual extends JPanel  {
         initComponents();
         String jsName = suggestJsName(panel.getDescriptor());
         Templates.setTargetName(panel.getDescriptor(), jsName);
-        
         ui.setModel( new DefaultComboBoxModel( RestPanel.JsUi.values()));
     }
 
@@ -275,7 +274,10 @@ public final class RestPanelVisual extends JPanel  {
     private String suggestJsName(  WizardDescriptor descriptor ) {
         FileObject targetFolder = Templates.getTargetFolder(descriptor);
         
-        String suggestName = REST_CLIENT;          
+        String suggestName = REST_CLIENT;       
+        if ( targetFolder == null ){
+            return suggestName;
+        }
         FileObject restClient = null;
         int count =0;
         String result = null;

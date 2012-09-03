@@ -63,8 +63,8 @@ import org.openide.util.Utilities;
 
 
 /**
- *
- * @author Jan Jancura
+ * @since 1.21
+ * @author Jan Jancura, Jaroslav Havlin
  */
 public class KeyStrokeUtils {
 

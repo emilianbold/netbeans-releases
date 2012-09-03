@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test217711() throws Exception {
+        // #217711: complain about recursive include while #pragma once guarding the file
+        performTest("iz217711.h");
+    }
+
     public void test205270() throws Exception {
         // #205270 - R-value references breaks code model parser
         performTest("iz205270.cc");
