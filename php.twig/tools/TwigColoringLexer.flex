@@ -69,7 +69,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private TwigStateStack stack = new TwigStateStack();
     private LexerInput input;
-    private int brackets = 0;
 
     public TwigColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -190,6 +189,16 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
     return TwigTokenId.T_TWIG_WHITESPACE;
 }
 
+<ST_INTERPOLATION> {
+    {INTERPOLATION_START} {
+        return TwigTokenId.T_TWIG_INTERPOLATION_START;
+    }
+    {INTERPOLATION_END} {
+        popState();
+        return TwigTokenId.T_TWIG_INTERPOLATION_END;
+    }
+}
+
 <YYINITIAL> {
     {BLOCK_START} {
         pushState(ST_BLOCK_START);
@@ -238,13 +247,13 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
     }
 }
 
-<ST_BLOCK, ST_BLOCK_START, ST_VAR> {
+<ST_BLOCK, ST_BLOCK_START, ST_VAR, ST_INTERPOLATION> {
     {OPERATOR} {
         return TwigTokenId.T_TWIG_OPERATOR;
     }
 }
 
-<ST_BLOCK, ST_VAR> {
+<ST_BLOCK, ST_VAR, ST_INTERPOLATION> {
     {PUNCTUATION} {
         return TwigTokenId.T_TWIG_PUNCTUATION;
     }
@@ -296,37 +305,6 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
     }
 }
 
-<ST_INTERPOLATION> {
-    {INTERPOLATION_START} {
-        brackets++;
-        return TwigTokenId.T_TWIG_INTERPOLATION_START;
-    }
-    {OPEN_CURLY} {
-        brackets++;
-        return TwigTokenId.T_TWIG_PUNCTUATION;
-    }
-    {INTERPOLATION_END} {
-        brackets--;
-        if (brackets == 0) {
-            popState();
-            return TwigTokenId.T_TWIG_INTERPOLATION_END;
-        } else {
-            return TwigTokenId.T_TWIG_PUNCTUATION;
-        }
-    }
-    {NUMBER} {
-        return TwigTokenId.T_TWIG_NUMBER;
-    }
-    {OPERATOR} {
-        return TwigTokenId.T_TWIG_OPERATOR;
-    }
-    {NAME} {
-        return TwigTokenId.T_TWIG_NAME;
-    }
-    {PUNCTUATION} {
-        return TwigTokenId.T_TWIG_PUNCTUATION;
-    }
-}
 
 /* ============================================
    Stay in this state until we find a whitespace.
