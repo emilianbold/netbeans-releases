@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -836,30 +837,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         if (DEF_COLORS != null) {
             return DEF_COLORS;
         }
-        Color out = UIManager.getColor("nb.output.foreground"); //NOI18N
-        if (out == null) {
-            out = UIManager.getColor("textText");
-            if (out == null) {
-                out = Color.BLACK;
-            }
-        }
-
-        Color err = UIManager.getColor("nb.output.err.foreground"); //NOI18N
-        if (err == null) {
-            err = LFCustoms.shiftColor(Color.red);
-        }
-
-        Color hyperlink = UIManager.getColor("nb.output.link.foreground"); //NOI18N
-        if (hyperlink == null) {
-            hyperlink = LFCustoms.shiftColor(Color.blue);
-        }
-
-        Color hyperlinkImp = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
-        if (hyperlinkImp == null) {
-            hyperlinkImp = hyperlink;
-        }
-
-        return DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
+        return DEF_COLORS = new Color[]{
+            OutputOptions.getDefault().getColorStandard(),
+            OutputOptions.getDefault().getColorError(),
+            OutputOptions.getDefault().getColorLink(),
+            OutputOptions.getDefault().getColorLinkImportant()
+        };
     }
 
     public void setDefColor(IOColors.OutputType type, Color color) {
