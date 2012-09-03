@@ -291,11 +291,14 @@ class RouterGenerator {
                     .getDisplayNameAlias();
             myRouters.append("/*\n * get values from the HTML controls and"); // NOI18N
             myRouters.append(" put them here as a hash of attributes\n"); // NOI18N
-            myRouters.append(" * f.e.\n * ");                             // NOI18N
-            myRouters.append(mainModelAttribute);
-            myRouters.append(":$('#");                                    // NOI18N
-            myRouters.append(mainModelAttribute);
-            myRouters.append("').val(),\n * ....\n */\n");                // NOI18N
+            if ( mainModelAttribute!= null ){
+                myRouters.append(" * f.e.\n * ");                         // NOI18N
+                myRouters.append(mainModelAttribute);
+                myRouters.append(":$('#");                                // NOI18N
+                myRouters.append(mainModelAttribute);
+                myRouters.append("').val(),\n * ....\n");                 // NOI18N
+            }
+            myRouters.append(" */\n");                                // NOI18N
         }
         myRouters.append("};\n}\n");                                      // NOI18N
         
