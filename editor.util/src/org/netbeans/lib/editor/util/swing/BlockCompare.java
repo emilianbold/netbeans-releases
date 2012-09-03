@@ -113,7 +113,8 @@ public final class BlockCompare {
     /**
      * Check if block X is contained in block Y.
      *
-     * @return true if block X is contained inside block Y.
+     * @return true if block X is contained inside block Y
+     * i.e. xStartOffset &gt;= yStartOffset &amp;&amp; xEndOffset &lt;= yEndOffset.
      */
     public boolean inside() {
         return (value & INSIDE) != 0;

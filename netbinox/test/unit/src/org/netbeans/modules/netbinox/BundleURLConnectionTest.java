@@ -165,7 +165,7 @@ public class BundleURLConnectionTest extends NbTestCase {
             }
         }
         
-        assertSize("Find the array", Collections.singleton(u), 3200000, new MF());
+        assertSize("Find the array", Collections.singleton(u), 32000000, new MF());
         assertEquals("The array should not be referenced by the URL", null, found[0]);
     }
     

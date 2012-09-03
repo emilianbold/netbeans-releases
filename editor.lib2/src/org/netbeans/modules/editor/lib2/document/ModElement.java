@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,44 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.lib2.document;
 
-var listener = function(port) {
-    port.onDisconnect.addListener(function() {
-        chrome.extension.onConnect.removeListener(listener);
-    });
-    port.onMessage.addListener(function(message) {
-        var result = new Object();
-        result.message = 'eval';
-        result.id = message.id;
-        var type = message.message;
-        if (type === 'eval') {
-            // Do not remove this variable - it serves as an API.
-            // Scripts that want to send some message back to IDE call this method.
-            var postMessageToNetBeans = function(message) {
-                port.postMessage(message);
-            };
-            try {
-                result.result = eval(message.script);
-                result.status = 'ok';
-                postMessageToNetBeans(result);
-            } catch (err) {
-                result.status = 'error';
-                console.log('Problem during script evaluation!');
-                console.log(message);
-                console.log(err);
-                if (err instanceof Error) {
-                    result.result = err.name + ':' + err.message;
-                    console.log(result.result);
-                } else {
-                    result.result = err;
-                }
-                postMessageToNetBeans(result);
-            }
-        } else {
-            console.log('Ignoring unexpected message from the background page!');
-            console.log(message);
-        }
-    });
-};
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 
-chrome.extension.onConnect.addListener(listener);
+/**
+ * Element about a single modification.
+ *
+ * @author Miloslav Metelka
+ */
+public final class ModElement extends AbstractPositionElement {
+
+    public static final String NAME = "mod";
+
+    ModElement(Element parent, Position startPos, Position endPos) {
+        super(parent, startPos, endPos);
+    }
+
+    ModElement(Element parent, int startOffset, int endOffset) {
+        super(parent, startOffset, endOffset);
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+}

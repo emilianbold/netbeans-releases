@@ -58,8 +58,8 @@ import org.openide.windows.TopComponent;
 /** Represents a C++ object in the Repository.
  *
  */
-@MIMEResolver.Registration(displayName="#CExtResolver", position=214, resource="resources/mime-resolver-ext-based-c.xml",
-        showInFileChooser={"#FILECHOOSER_C_SOURCES_FILEFILTER"})
+@MIMEResolver.Registration(displayName="#CExtResolver", position=214, resource="resources/mime-resolver-ext-based-c.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_C_SOURCES_FILEFILTER"}) // NOI18N
 public class CDataObject extends SourceDataObject {
 
     /** Serial version number */

@@ -39,36 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.smarty.editor.utlis;
+package org.netbeans.modules.editor.lib2.document;
 
-import org.netbeans.modules.php.smarty.editor.parser.TplParserResult;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Miloslav Metelka
  */
-public final class ParserUtils {
+public class DocumentInternalUtils {
 
-    private ParserUtils() {
+    private DocumentInternalUtils() {
+        // no instances
     }
 
-    /**
-     * Gets block of tags for given offset.
-     *
-     * @param parserResult tplParserResult
-     * @param offset examined offset
-     * @return {@code TplParserResult.Block} where one of sections contain the offset, {@code null} otherwise - if
-     * no such block was found
-     */
-    public static TplParserResult.Block getBlockForOffset(TplParserResult parserResult, int offset) {
-        for (TplParserResult.Block block : parserResult.getBlocks()) {
-            for (TplParserResult.Section section : block.getSections()) {
-                if (section.getOffset().containsInclusive(offset)) {
-                    return block;
-                }
-            }
+    public static Element customElement(Document doc, int startOffset, int endOffset) {
+        return new CustomElement(doc, startOffset, endOffset);
+    }
+
+    private static final class CustomElement extends AbstractPositionElement {
+
+        CustomElement(Document doc, int startOffset, int endOffset) {
+            super(new CustomRootElement(doc), startOffset, endOffset);
+            CharSequenceUtilities.checkIndexesValid(startOffset, endOffset, doc.getLength() + 1);
         }
-        return null;
+
+        @Override
+        public String getName() {
+            return "CustomElement";
+        }
+
     }
 
+
+    private static final class CustomRootElement extends AbstractRootElement<CustomElement> {
+
+        public CustomRootElement(Document doc) {
+            super(doc);
+        }
+
+        @Override
+        public String getName() {
+            return "CustomRootElement";
+        }
+
+    }
 }
