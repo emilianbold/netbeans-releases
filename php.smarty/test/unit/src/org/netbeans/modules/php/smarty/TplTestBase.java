@@ -41,15 +41,18 @@
  */
 package org.netbeans.modules.php.smarty;
 
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.editor.gsf.TplLanguage;
+import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
@@ -72,6 +75,18 @@ public abstract class TplTestBase extends CslTestBase {
         MockLookup.setInstances(
                 new SimpleFileOwnerQueryImplementation(),
                 new TestLanguageProvider());
+
+        assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
+
+        try {
+            TestLanguageProvider.register(HTMLTokenId.language());
+            TestLanguageProvider.register(PHPTokenId.language());
+            TestLanguageProvider.register(JsTokenId.javascriptLanguage());
+            TestLanguageProvider.register(TplTopTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
+        }
+        
         super.setUp();
     }
 

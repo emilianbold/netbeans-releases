@@ -39,64 +39,89 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.sites;
+package org.netbeans.core.output2.options;
 
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
-@ServiceProvider(service=SiteTemplateImplementation.class, position=300)
-public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
+@OptionsPanelController.SubRegistration(
+    location = "Advanced",
+displayName = "#AdvancedOption_DisplayName_OutputSettings",
+keywords = "#AdvancedOption_Keywords_OutputSettings",
+keywordsCategory = "Advanced/OutputSettings",
+id="OutputSettings")
+@org.openide.util.NbBundle.Messages({
+    "AdvancedOption_DisplayName_OutputSettings=Output",
+    "AdvancedOption_Keywords_OutputSettings=Output Window Font Color"})
+public final class OutputSettingsOptionsPanelController extends OptionsPanelController {
 
-    private static final Logger LOGGER = Logger.getLogger(SiteHtml5Boilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-301.zip"); // NOI18N
-
-
-    @NbBundle.Messages("SiteHtml5Boilerplate.name=HTML5 Boilerplate")
-    @Override
-    public String getName() {
-        return Bundle.SiteHtml5Boilerplate_name();
-    }
-
-    @NbBundle.Messages("SiteHtml5Boilerplate.description=Site template from html5boilerplate.com. Version: 3.0.1")
-    @Override
-    public String getDescription() {
-        return Bundle.SiteHtml5Boilerplate_description();
-    }
+    private OutputSettingsPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
 
     @Override
-    public boolean isPrepared() {
-        return LIB_FILE.isFile();
+    public void update() {
+        getPanel().load();
+        changed = false;
     }
 
     @Override
-    public void prepare() throws IOException {
-        assert !EventQueue.isDispatchThread();
-        assert !isPrepared();
-        SiteHelper.download("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", LIB_FILE, null); // NOI18N
+    public void applyChanges() {
+        getPanel().store();
+        changed = false;
     }
 
     @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
-        if (!isPrepared()) {
-            // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
-            return;
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
+    }
+
+    @Override
+    public boolean isValid() {
+        return getPanel().valid();
+    }
+
+    @Override
+    public boolean isChanged() {
+        return changed;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
+    }
+
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private OutputSettingsPanel getPanel() {
+        if (panel == null) {
+            panel = new OutputSettingsPanel(this);
         }
-        SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);
+        return panel;
     }
 
-    @Override
-    public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(LIB_FILE);
+    void changed() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
-
 }

@@ -84,8 +84,8 @@ public class OutputKeymapManager extends KeymapManager {
             "output-window-smaller-font";                               //NOI18N
     public static final String CLOSE_ACTION_ID =
             "output-window-close";                                      //NOI18N
-    public static final String FONT_TYPE_ACTION_ID =
-            "output-window-font-type";                                  //NOI18N
+    public static final String OUTPUT_SETTINGS_ACTION_ID =
+            "output-window-settings";                                   //NOI18N
     public static final String SAVE_AS_ACTION_ID =
             "output-window-save-as";                                    //NOI18N
     public static final String WRAP_ACTION_ID =
@@ -112,7 +112,7 @@ public class OutputKeymapManager extends KeymapManager {
     private final OutWinShortCutAction closeWindow = new OutWinShortCutAction(
             CLOSE_ACTION_ID, "ACTION_CLOSE");                           //NOI18N
     private final OutWinShortCutAction fontType = new OutWinShortCutAction(
-            FONT_TYPE_ACTION_ID, "ACTION_FONT_TYPE");                   //NOI18N
+            OUTPUT_SETTINGS_ACTION_ID, "ACTION_SETTINGS");              //NOI18N
     private final OutWinShortCutAction saveAs = new OutWinShortCutAction(
             SAVE_AS_ACTION_ID, "ACTION_SAVEAS");                        //NOI18N
     /**
@@ -242,6 +242,7 @@ public class OutputKeymapManager extends KeymapManager {
             this.defaultShortcut = nbKeys;
         }
 
+        @Override
         public String getId() {
             return id;
         }
@@ -250,6 +251,7 @@ public class OutputKeymapManager extends KeymapManager {
             return bundleKey;
         }
 
+        @Override
         public String getDisplayName() {
             return displayName;
         }

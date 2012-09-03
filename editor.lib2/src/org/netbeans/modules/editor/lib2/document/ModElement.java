@@ -39,36 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.smarty.editor.utlis;
+package org.netbeans.modules.editor.lib2.document;
 
-import org.netbeans.modules.php.smarty.editor.parser.TplParserResult;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 
 /**
+ * Element about a single modification.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Miloslav Metelka
  */
-public final class ParserUtils {
+public final class ModElement extends AbstractPositionElement {
 
-    private ParserUtils() {
+    public static final String NAME = "mod";
+
+    ModElement(Element parent, Position startPos, Position endPos) {
+        super(parent, startPos, endPos);
     }
 
-    /**
-     * Gets block of tags for given offset.
-     *
-     * @param parserResult tplParserResult
-     * @param offset examined offset
-     * @return {@code TplParserResult.Block} where one of sections contain the offset, {@code null} otherwise - if
-     * no such block was found
-     */
-    public static TplParserResult.Block getBlockForOffset(TplParserResult parserResult, int offset) {
-        for (TplParserResult.Block block : parserResult.getBlocks()) {
-            for (TplParserResult.Section section : block.getSections()) {
-                if (section.getOffset().containsInclusive(offset)) {
-                    return block;
-                }
-            }
-        }
-        return null;
+    ModElement(Element parent, int startOffset, int endOffset) {
+        super(parent, startOffset, endOffset);
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
 }

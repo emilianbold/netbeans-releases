@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,44 +39,83 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.core.output2.options;
 
-var listener = function(port) {
-    port.onDisconnect.addListener(function() {
-        chrome.extension.onConnect.removeListener(listener);
-    });
-    port.onMessage.addListener(function(message) {
-        var result = new Object();
-        result.message = 'eval';
-        result.id = message.id;
-        var type = message.message;
-        if (type === 'eval') {
-            // Do not remove this variable - it serves as an API.
-            // Scripts that want to send some message back to IDE call this method.
-            var postMessageToNetBeans = function(message) {
-                port.postMessage(message);
-            };
-            try {
-                result.result = eval(message.script);
-                result.status = 'ok';
-                postMessageToNetBeans(result);
-            } catch (err) {
-                result.status = 'error';
-                console.log('Problem during script evaluation!');
-                console.log(message);
-                console.log(err);
-                if (err instanceof Error) {
-                    result.result = err.name + ':' + err.message;
-                    console.log(result.result);
-                } else {
-                    result.result = err;
-                }
-                postMessageToNetBeans(result);
-            }
-        } else {
-            console.log('Ignoring unexpected message from the background page!');
-            console.log(message);
-        }
-    });
-};
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOContainer.CallBacks;
 
-chrome.extension.onConnect.addListener(listener);
+/**
+ *
+ * @author jhavlin
+ */
+public class PreviewIOProvider implements IOContainer.Provider {
+
+    JPanel panel;
+
+    public PreviewIOProvider(JPanel panel) {
+        this.panel = panel;
+    }
+
+    @Override
+    public void open() {
+    }
+
+    @Override
+    public void requestActive() {
+        panel.requestFocusInWindow();
+    }
+
+    @Override
+    public void requestVisible() {
+        panel.requestFocusInWindow();
+    }
+
+    @Override
+    public boolean isActivated() {
+        return panel.hasFocus();
+    }
+
+    @Override
+    public void add(JComponent comp, CallBacks cb) {
+        panel.add(comp);
+    }
+
+    @Override
+    public void remove(JComponent comp) {
+        panel.remove(comp);
+    }
+
+    @Override
+    public void select(JComponent comp) {
+    }
+
+    @Override
+    public JComponent getSelected() {
+        return (JComponent) panel.getComponent(0);
+    }
+
+    @Override
+    public void setTitle(JComponent comp, String name) {
+    }
+
+    @Override
+    public void setToolTipText(JComponent comp, String text) {
+    }
+
+    @Override
+    public void setIcon(JComponent comp, Icon icon) {
+    }
+
+    @Override
+    public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
+    }
+
+    @Override
+    public boolean isCloseable(JComponent comp) {
+        return false;
+    }
+}

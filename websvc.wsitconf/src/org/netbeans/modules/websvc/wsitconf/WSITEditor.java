@@ -81,6 +81,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -203,12 +205,21 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotSupported"));
     }
 
+    @Override
     public void save(Node node) {
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
         try {
             WSDLModel model = WSITModelSupport.getModel(node, jaxWsModel, this, false, createdFiles);
             if (model != null) {
                 WSITModelSupport.save(model);
+            }
+            else {
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(WSITEditor.class, "TXT_NO_WSDL_FILE"),  // NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify( descriptor );
             }
         } catch (Exception e){
             logger.log(Level.SEVERE, null, e);

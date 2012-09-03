@@ -326,6 +326,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     for (Annotation ann : old) {
                         NbDocument.removeAnnotation(styled, ann);
                     }
+                    styled.putProperty("maven_annot", null); //217741
                 }
                 if (checkModelValid(model)) {
                     //Mkleint: this code is very very suspicious
@@ -342,7 +343,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                         List<Annotation> anns = new ArrayList<Annotation>();
                         //now add a link to parent pom.
                         Parent p = model.findComponent(selectionStart, Parent.class, true);
-                        if (p != null) {
+                        if (p != null && p.getArtifactId() != null && p.getGroupId() != null && p.getVersion() != null) { //217741
                             Annotation ann = new ParentPomAnnotation();
                             anns.add(ann);
                             Position position = NbDocument.createPosition(document, selectionStart, Position.Bias.Forward);

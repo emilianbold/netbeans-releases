@@ -143,7 +143,7 @@ public class RuleEditorPanel extends JPanel {
         ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
     }
     
-    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
+//    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
     
     private PropertySheet sheet;
     
@@ -174,8 +174,9 @@ public class RuleEditorPanel extends JPanel {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override
                     public void run() {
-                        northWestPanel.add(APPLIED_LABEL, BorderLayout.EAST);    
-                        northWestPanel.validate();
+                        northWestPanel.add(APPLIED_LABEL);    
+                        northWestPanel.revalidate();
+                        northWestPanel.repaint();
                     }
                 });
                 //re-set the css model as the CssCaretAwareSourceTask won't work 
@@ -414,6 +415,7 @@ public class RuleEditorPanel extends JPanel {
         //remove the "applied changes mark"
         northWestPanel.remove(APPLIED_LABEL);
         northWestPanel.validate();
+        northWestPanel.repaint();
         
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
         
@@ -496,23 +498,13 @@ public class RuleEditorPanel extends JPanel {
         
         //check if the rule is valid
         if(!rule.isValid()) {
-            northWestPanel.add(ERROR_LABEL, BorderLayout.WEST);
-            //the component returns different RGB color that is really pained, at least on motif
-            Color npc = northWestPanel.getBackground();
-            Color bitMoreRed = new Color(
-                Math.min(255, npc.getRed() + 6), 
-                Math.max(0, npc.getGreen() - 3), 
-                Math.max(0, npc.getBlue() - 3));
-            northWestPanel.setBackground(bitMoreRed);
-            
+            northWestPanel.add(ERROR_LABEL);
             addPropertyButton.setEnabled(false);
         } else {
             northWestPanel.remove(ERROR_LABEL);
-            northWestPanel.setBackground(defaultPanelBackground);
-            
             addPropertyButton.setEnabled(true);
         }
-        northWestPanel.validate();
+        northWestPanel.revalidate();
         
         node.fireContextChanged();
         
@@ -598,8 +590,12 @@ public class RuleEditorPanel extends JPanel {
         northEastPanel.setLayout(new java.awt.BorderLayout());
         northPanel.add(northEastPanel, java.awt.BorderLayout.EAST);
 
-        northWestPanel.setLayout(new java.awt.BorderLayout());
-        northWestPanel.add(titleLabel, java.awt.BorderLayout.CENTER);
+        northWestPanel.setLayout(new javax.swing.BoxLayout(northWestPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        titleLabel.setMaximumSize(null);
+        titleLabel.setPreferredSize(new java.awt.Dimension(100, 16));
+        northWestPanel.add(titleLabel);
 
         northPanel.add(northWestPanel, java.awt.BorderLayout.CENTER);
 
