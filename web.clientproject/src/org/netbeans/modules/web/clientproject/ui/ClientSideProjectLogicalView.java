@@ -277,6 +277,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     }
     private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
+        // XXX threading! for all fields
         private ClientSideProject project;
         private FileObject siteRootFolder;
         private FileObject testsFolder;
