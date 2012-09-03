@@ -154,7 +154,7 @@ public class JsFormatter implements Formatter {
                     FormatToken token = tokens.get(i);
 
                     // FIXME optimize performance
-                    if (token.getOffset() >= 0) {
+                    if (!token.isVirtual()) {
                         if (!firstTokenFound) {
                             firstTokenFound = true;
                             formatContext.setCurrentLineStart(token.getOffset());
