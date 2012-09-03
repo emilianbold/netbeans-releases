@@ -66,7 +66,8 @@ public final class LookupMergerSupport {
      */
     @LookupMerger.Registration(projectType={
         "org-netbeans-modules-java-j2seproject",
-        "org-netbeans-modules-web-project"
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject"
     })
     public static LookupMerger<ActionProvider> createActionProviderLookupMerger() {
         return new ActionProviderMerger();
