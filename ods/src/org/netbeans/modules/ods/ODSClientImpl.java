@@ -266,6 +266,20 @@ public final class ODSClientImpl implements ODSClient {
         }, scmClient, buildUrl(SCM_SERVICE, projectId));
     }
 
+    @Override
+    public Project createProject (final Project project) throws ODSException {
+        return run(new Callable<Project> () {
+            @Override
+            public Project call () throws Exception {
+                Project p = profileClient.createProject(project);
+                if (p.getProjectServices() == null) {
+                    p = profileClient.getProjectByIdentifier(p.getIdentifier());
+                }
+                return p;
+            }
+        }, profileClient, PROFILE_SERVICE);
+    }
+
     private <T> T run (Callable<T> callable, AbstractRestServiceClient client, String service) throws ODSException {
         try {
             Authentication auth = null;

@@ -29,6 +29,9 @@ public class ODSJerseyClient implements ODSClient {
     private final Client client;
 
     public ODSJerseyClient(String url, PasswordAuthentication pa) {
+        if (!url.endsWith("/")) { //NOI18N
+            url = url + '/';
+        }
         this.url = url;
         this.pa = pa;
         this.client = getClient();
@@ -41,7 +44,7 @@ public class ODSJerseyClient implements ODSClient {
 
     @Override
     public Profile getCurrentProfile() throws ODSException {
-        WebResource root = client.resource(url + "/alm/api/profile");
+        WebResource root = client.resource(url + "api/profile");
         ProfileWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ProfileWrapper.class);
         return wrapper.profile;
     }
@@ -68,7 +71,7 @@ public class ODSJerseyClient implements ODSClient {
 
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODSException {
-        WebResource root = client.resource(url + "/alm/api/activity/"+ projectId);
+        WebResource root = client.resource(url + "api/activity/"+ projectId);
         ActivityWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ActivityWrapper.class);
         if(wrapper.commits == null) {
             return Collections.emptyList();
@@ -109,6 +112,11 @@ public class ODSJerseyClient implements ODSClient {
 
     @Override
     public List<Project> getWatchedProjects () throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Project createProject (Project project) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

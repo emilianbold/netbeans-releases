@@ -54,7 +54,6 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -169,6 +168,11 @@ public final class ODSMockClient implements ODSClient {
 
     @Override
     public List<Project> getWatchedProjects () throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Project createProject (Project project) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

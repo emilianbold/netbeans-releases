@@ -56,6 +56,7 @@ import java.util.List;
  */
 public interface ODSClient {
 
+    Project createProject (Project project) throws ODSException;
 
     BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws ODSException;
 
