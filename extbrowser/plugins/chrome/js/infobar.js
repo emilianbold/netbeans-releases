@@ -66,7 +66,7 @@ NetBeans_Infobar.redrawPresets = function() {
 };
 // init
 NetBeans_Infobar._init = function() {
-    if (this._container != null) {
+    if (this._container !== null) {
         return;
     }
     this._container = document.getElementById('presets');

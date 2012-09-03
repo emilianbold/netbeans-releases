@@ -45,7 +45,7 @@ NetBeans.cleanup();
 
 // Register reload-callback
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
-    if (newUrl != undefined) {
+    if (newUrl !== undefined) {
         chrome.tabs.get(tabId, function(tab) {
             if (tab.url === newUrl) {
                 chrome.tabs.reload(tabId, {bypassCache: true});
@@ -138,12 +138,12 @@ NetBeans.resetPageSize = function(callback) {
     });
 };
 NetBeans.resizePage = function(preset, callback) {
-    if (preset == null) {
+    if (preset === null) {
         this.resetPageSize(callback);
         return;
     }
     var data = NetBeans_Presets.getPreset(preset);
-    if (data == null) {
+    if (data === null) {
         console.error('Preset [' + preset + '] not found.');
         return;
     }
@@ -238,7 +238,7 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
-    if (message.type == 'VIEWPORT') {
+    if (message.type === 'VIEWPORT') {
         console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
