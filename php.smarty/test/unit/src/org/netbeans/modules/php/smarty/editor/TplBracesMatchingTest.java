@@ -181,8 +181,24 @@ public class TplBracesMatchingTest extends TplTestBase {
         BracesMatcher matcher = createMatcher(5, false, 1);
         assertOrigin(0, 17, matcher);
         assertMatch(5, 5, matcher);
+    }
 
-        matcher = createMatcher(19, false, 1);
+    public void testUnfinishedTag() throws Exception {
+        setDocumentText("{writing");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(7, false, 1);
+        assertNull(matcher.findOrigin());
+        assertMatch(7, 7, matcher);
+    }
+
+    public void testMoreMatchedTag() throws Exception {
+        setDocumentText("{if}{else}{/if}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(3, false, 1);
+        assertOrigin(0, 4, matcher);
+        assertMatch(new int []{4, 9, 9, 10, 10, 14, 14, 15}, matcher);
     }
 
     //--------------------------------------------------------------------------
@@ -210,6 +226,15 @@ public class TplBracesMatchingTest extends TplTestBase {
         }
         if (expectedEnd2 != -1) {
             assertEquals("Incorrect match block end:", expectedEnd2, match[3]);
+        }
+    }
+
+    private void assertMatch(int[] expected, BracesMatcher matcher) throws InterruptedException, BadLocationException {
+        int[] match = matcher.findMatches();
+        assertNotNull(match);
+        for (int i = 0; i < match.length; i++) {
+            assertEquals(expected[i], match[i]);
+            
         }
     }
 
