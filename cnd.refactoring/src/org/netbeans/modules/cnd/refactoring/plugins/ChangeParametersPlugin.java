@@ -329,7 +329,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             startOffset = funInfo.getStartOffset();
             endOffset = funInfo.getEndOffset();
             boolean skipComma = true;
-            boolean wereChanges = false;
+            boolean wereChanges = funInfo.getNrParameters() != parameterInfo.length;
             oldText.append(funInfo.getOriginalParamsText());
             newText.append("(");// NOI18N
             // TODO: varargs
@@ -428,10 +428,10 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             return endOffset;
         }
 
-        public List<CharSequence> getParametersText() {
-            return paramText;
+        private int getNrParameters() {
+            return paramText.size();
         }
-
+                
         private void addParam(String param) {
             paramText.add(param);
         }

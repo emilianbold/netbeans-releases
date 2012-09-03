@@ -66,6 +66,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.*;
+import org.openide.windows.InputOutput;
 import org.openide.windows.Mode;
 import org.openide.windows.WindowManager;
 
@@ -435,21 +436,27 @@ public final class Manager {
     }
 
     /** singleton of the <code>ResultDisplayHandler</code> */
-    private Map<TestSession,ResultDisplayHandler> displayHandlers;
+    // the ResultDisplayHandler holds TestSession and is referenced from other
+    // places so we use WeakReference, otherwise there would be memory leak
+    private Map<TestSession,WeakReference<ResultDisplayHandler>> displayHandlers;
     private Semaphore lock;
     /**
      */
     private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
-        ResultDisplayHandler displayHandler = (displayHandlers != null)
-                                              ? displayHandlers.get(session)
-                                              : null;
-        if (displayHandler == null) {
-            if (displayHandlers == null) {
-                displayHandlers = new WeakHashMap<TestSession,ResultDisplayHandler>(7);
+        ResultDisplayHandler displayHandler = null;
+        if (displayHandlers != null) {
+            WeakReference<ResultDisplayHandler> reference = displayHandlers.get(session);
+            if (reference != null) {
+                displayHandler = reference.get();
             }
+        } else {
+            displayHandlers = new WeakHashMap<TestSession,WeakReference<ResultDisplayHandler>>(7);
+        }
+
+        if (displayHandler == null) {
             displayHandler = new ResultDisplayHandler(session);
             createIO(displayHandler);
-            displayHandlers.put(session, displayHandler);
+            displayHandlers.put(session, new WeakReference<ResultDisplayHandler>(displayHandler));
             final ResultDisplayHandler dispHandler = displayHandler;
             lock = new Semaphore(1);
             try {
@@ -483,11 +490,12 @@ public final class Manager {
     private void createIO(final ResultDisplayHandler displayHandler) {
         try {
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     final ResultWindow window = ResultWindow.getInstance();
-                    window.addDisplayComponent(displayHandler.getDisplayComponent(), displayHandler.getLookup());
                     window.setOutputComp(displayHandler.getOutputComponent());
-                    displayHandler.createIO(window.getIOContainer());
+                    InputOutput io = displayHandler.createIO(window.getIOContainer());
+                    window.addDisplayComponent(displayHandler.getDisplayComponent(), io);
                 }
             };
             if (SwingUtilities.isEventDispatchThread()){

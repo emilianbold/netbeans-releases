@@ -102,6 +102,23 @@ switch ($omg) {
 $variableCompact = 'test';
 compact('variableCompact');
 
+function test() {
+    $index = 1;
+    $used = 1;
+
+    function ($index) use ($used) {};
+}
+
+function test2() {
+    function ($index) { };
+    function ($index) { };
+}
+
+function test3() {
+    function ($index) { };
+    function () { $index = 5; };
+}
+
 ?>
 
 <?= $usedShortEcho; ?>

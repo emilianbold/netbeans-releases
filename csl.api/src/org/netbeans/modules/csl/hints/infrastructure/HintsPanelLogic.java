@@ -186,7 +186,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         if (pane != null) {
             Document doc = pane.getDocument();
             final Source source = Source.create(doc);
-            if (source != null) {
+            // see issue #212967; non-file Source appears for some reason.
+            if (source != null && source.getFileObject() != null) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {

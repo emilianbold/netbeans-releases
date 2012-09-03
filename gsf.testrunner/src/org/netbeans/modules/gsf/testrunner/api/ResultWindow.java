@@ -70,12 +70,12 @@ import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOContainer.CallBacks;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -93,6 +93,7 @@ final class ResultWindow extends TopComponent {
     private static WeakReference<ResultWindow> instance = null;
 
     private Map<String,JSplitPane> viewMap = new HashMap<String,JSplitPane>();
+    private Map<String,InputOutput> ioMap = new HashMap<String,InputOutput>();
 
     private final JTabbedPane tabPane;
     private JPopupMenu pop;
@@ -199,15 +200,19 @@ final class ResultWindow extends TopComponent {
 
     /**
      */
-    public void addDisplayComponent(JSplitPane displayComp, Lookup l) {
+    public void addDisplayComponent(JSplitPane displayComp, InputOutput io) {
         assert EventQueue.isDispatchThread();
         String key = displayComp.getToolTipText();
 
         JSplitPane prevComp = viewMap.put(key, displayComp);
+        InputOutput prevIo = ioMap.put(key, io);
         if (prevComp == null){
             addView(displayComp);
         }else{
             replaceView(prevComp, displayComp);
+            if (prevIo != null) {
+                prevIo.closeInputOutput();
+            }
         }
         revalidate();
     }
@@ -384,6 +389,10 @@ final class ResultWindow extends TopComponent {
         }
         tabPane.remove(view);
         viewMap.remove(view.getToolTipText());
+        InputOutput io = ioMap.remove(view.getToolTipText());
+        if (io != null) {
+            io.closeInputOutput();
+        }
 
         validate();
     }
@@ -393,7 +402,6 @@ final class ResultWindow extends TopComponent {
         public void remove(JComponent comp) {
             outputTab = null;
             outputComp.remove(comp);
-            ResultWindow.getInstance().close();
         }
 
         public void select(JComponent comp) {

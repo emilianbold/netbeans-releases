@@ -66,6 +66,8 @@ class MICommandManager {
     private int commandToken = MIN_TOKEN;
     
     private final ConcurrentLinkedQueue<MICommand> pendingCommands = new ConcurrentLinkedQueue<MICommand>();
+    
+    private Runnable idleHandler = null;
 
     public MICommandManager(MICommandInjector injector, GdbLogger gdbLogger) {
 	this.injector = injector;
@@ -100,6 +102,13 @@ class MICommandManager {
 
     void finish(MICommand cmd) {
         pendingCommands.remove(cmd);
+        
+        // idle handler that work one time when no commands need to be processed
+        if (idleHandler != null && pendingCommands.isEmpty()) {
+            idleHandler.run();
+            idleHandler = null;
+        }
+        
 	if (Log.MI.finish) {
 	    echo(String.format("## finished %d\n\r", cmd.getToken())); // NOI18N
 	    echo(String.format("## outstanding: ")); // NOI18N
@@ -114,6 +123,13 @@ class MICommandManager {
             }
 	    echo(String.format("\n\r")); // NOI18N
 	}
+    }
+    
+    /**
+     * Executed only once when all commands are sent and all answers dispatched
+     */
+    void setIdleHandler(Runnable handler) {
+        this.idleHandler = handler;
     }
     
     // check for async error like

@@ -44,7 +44,10 @@ package org.netbeans.modules.maven.junit;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -52,6 +55,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.jdom.Document;
@@ -171,17 +177,33 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                             void rerun(Set<Testcase> tests) {
                                 RunConfig brc = RunUtils.cloneRunConfig(config);
                                 StringBuilder tst = new StringBuilder();
+                                Map<String, Collection<String>> methods = new HashMap<String, Collection<String>>();
                                 for (Testcase tc : tests) {
                                     //TODO just when is the classname null??
                                     if (tc.getClassName() != null) {
+                                        Collection<String> lst = methods.get(tc.getClassName());
+                                        if (lst == null) {
+                                            lst = new ArrayList<String>();
+                                            methods.put(tc.getClassName(), lst);
+                                        }
+                                        lst.add(tc.getName());
+                                    }
+                                }
+                                for (Map.Entry<String, Collection<String>> ent : methods.entrySet()) {
                                         tst.append(",");
-                                        tst.append(tc.getClassName());
-                                        //tst.append(tc.getClassName().substring(tc.getClassName().lastIndexOf('.') + 1));
+                                        tst.append(ent.getKey());
 
                                         //#name only in surefire > 2.7.2 and junit > 4.0 or testng
                                         // bug works with the setting also for junit 3.x
-                                        tst.append("#").append(tc.getName());
-                                    }
+                                        tst.append("#");
+                                        boolean first = true;
+                                        for (String meth : ent.getValue()) {
+                                            if (!first) {
+                                                tst.append("+");
+                                            }
+                                            first = false;
+                                            tst.append(meth);
+                                        }
                                 }
                                 if (tst.length() > 0) {
                                     brc.setProperty("test", tst.substring(1));
@@ -192,7 +214,21 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                             public @Override
                             boolean enabled(RerunType type) {
                                 //TODO debug doesn't property update debug port in runconfig..
-                                return (RerunType.ALL.equals(type) || RerunType.CUSTOM.equals(type)) && fType.equals(TestSession.SessionType.TEST);
+                                if (fType.equals(TestSession.SessionType.TEST)) {
+                                    if (RerunType.ALL.equals(type)) {
+                                        return true;
+                                    }
+                                    if (RerunType.CUSTOM.equals(type)) {
+                                        if (usingTestNG(config.getMavenProject())) { //#214334 test for testng has to come first, as itself depends on junit
+                                            return usingSurefire28(config.getMavenProject());
+                                        } 
+                                        else 
+                                        if (usingJUnit4(config.getMavenProject())) { //#214334
+                                            return usingSurefire2121(config.getMavenProject());
+                                        } 
+                                    }
+                                }
+                                return false;
                             }
 
                             public @Override
@@ -210,6 +246,37 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             }
         }
     }
+    
+    private boolean usingSurefire2121(MavenProject prj) {
+        String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.12.1")) >= 0;
+    }
+    
+    private boolean usingSurefire28(MavenProject prj) {
+        String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.8")) >= 0;
+    } 
+    
+     private boolean usingTestNG(MavenProject prj) {
+        for (Artifact a : prj.getArtifacts()) {
+            if ("org.testng".equals(a.getGroupId()) && "testng".equals(a.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
+    }   
+
+    private boolean usingJUnit4(MavenProject prj) { // SUREFIRE-724
+        for (Artifact a : prj.getArtifacts()) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
+                String version = a.getVersion();
+                if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }    
 
     public @Override void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         if (session == null) {

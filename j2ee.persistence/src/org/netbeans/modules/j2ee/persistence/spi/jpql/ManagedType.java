@@ -90,7 +90,9 @@ abstract public class ManagedType implements IManagedType {
     @Override
     public IType getType() {
         if (type == null) {
+            if(((ManagedTypeProvider)provider).isValid()){
                 type = provider.getTypeRepository().getType(element.getTypeElement().getQualifiedName().toString());
+            }
         }
         return type;
     }

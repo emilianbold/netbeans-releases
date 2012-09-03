@@ -99,6 +99,8 @@ public class Main implements BundleActivator {
             URLConnection buc = u.openConnection();
             System.setProperty("activated.entry.local", ((URL)call(buc, "getLocalURL")).toExternalForm());
             System.setProperty("activated.entry.file", ((URL)call(buc, "getFileURL")).toExternalForm());
+            
+            System.getProperties().put("activated.entry.url", u);
 
             LOG.log(Level.INFO, "BundleURLConnection is OK");
         }
@@ -121,6 +123,6 @@ public class Main implements BundleActivator {
             return Class.forName(name);
         }
         return Class.forName(name, true, ldr);
-    }
+    }    
 }
 

@@ -77,25 +77,31 @@ public final class ActiveQueue {
     private static final class Impl extends ReferenceQueue<Object> {
         private static final Field LOCK;
         static {
+            Field f = null;
             try {
-                LOCK = ReferenceQueue.class.getDeclaredField("lock"); // NOI18N
-                LOCK.setAccessible(true);
+                f = ReferenceQueue.class.getDeclaredField("lock"); // NOI18N
+                f.setAccessible(true);
             } catch (NoSuchFieldException ex) {
-                throw new IllegalStateException(ex);
+                reportError(ex);
             } catch (SecurityException ex) {
-                throw new IllegalStateException(ex);
+                reportError(ex);
             }
+            LOCK = f;
         }
         private final Object myLock;
         
         Impl() {
+            Object l = this;
             try {
-                LOCK.set(this, myLock = LOCK.get(ACTIVE));
+                if (LOCK != null) {
+                    LOCK.set(this, l = LOCK.get(ACTIVE));
+                }
             } catch (IllegalArgumentException ex) {
-                throw new IllegalStateException(ex);
+                reportError(ex);
             } catch (IllegalAccessException ex) {
-                throw new IllegalStateException(ex);
+                reportError(ex);
             }
+            myLock = l;
         }
 
         @Override
@@ -199,5 +205,9 @@ public final class ActiveQueue {
                 }
             }
         }
+    }
+    private static <T extends Throwable> T reportError(T ex) throws IllegalStateException {
+        LOGGER.log(Level.WARNING, "Cannot hack ReferenceQueue to fix bug #206621!", ex);
+        return ex;
     }
 }

@@ -70,9 +70,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
@@ -280,11 +277,6 @@ public class RunAnalysis {
             for (Entry<FileObject, ClassPath> e : roots.entrySet()) {
                 if (cancel.get()) return null;
                 target = augment(target, Collections.singletonList(e.getKey()), null, null);
-            }
-        } else {
-            for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                if (cancel.get()) return null;
-                target = augment(target, Collections.singletonList(sg.getRootFolder()), null, null);
             }
         }
 

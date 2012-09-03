@@ -141,6 +141,10 @@ public abstract class IOProvider {
      *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.
      * @param ioContainer parent container accessor
      * @return an <code>InputOutput</code> instance for accessing the new tab
+     * <br>Note: Please remember that {@link InputOutput} objects need to be
+     * properly closed. Ensure that {@link InputOutput#closeInputOutput()} is
+     * called when returned object is no longer needed, otherwise allocated
+     * memory and other resources will not be freed.
      * @see InputOutput
      * @since 1.15
      * <br>Note: The method is non-abstract for backward compatibility reasons only. If you are

@@ -125,10 +125,13 @@
 	<property file="${conf.dir}/common.properties"/>
         <property file="${conf.dir}/${os.type}.properties"/>
         <antcall target="get-jvm"/>
-        <antcall target="pack-files"/>
+        <antcall target="do.pack-files"/>
         <antcall target="create-zip-sfx"/>	
         <antcall target="test-jvm"/>
         <antcall target="release-jvm"/>
+    </target>
+    <target name="do.pack-files" unless="prepare.jdk.launcher">
+        <antcall target="pack-files"/>
     </target>
     
     <target name="release-jvm">

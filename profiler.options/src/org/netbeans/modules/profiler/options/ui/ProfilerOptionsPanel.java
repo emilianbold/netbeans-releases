@@ -689,7 +689,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         takingSnapshotCombo.setModel(new DefaultComboBoxModel(new String[] {
                                                                   Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText(), 
                                                                   Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText(),
-                                                                  Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText()
+                                                                  Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText()
                                                               }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;

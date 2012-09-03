@@ -184,21 +184,6 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
             // be taken into account when profiling single test
             props.put("test.type", getTestType(profiledClassFile)); //NOI18N
         }
-        
-        String agentArg = props.get("agent.jvmargs"); //NOI18N
-        if (agentArg.indexOf(' ') != -1) { //NOI18N
-            if (Utilities.isUnix()) {
-                // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
-                // create temporary link in /tmp directory and use it instead of directory with space
-                String libsDir = Profiler.getDefault().getLibsDir();
-                props.put("agent.jvmargs", IntegrationUtils.fixLibsDirPath(libsDir, agentArg)); //NOI18N
-            } else if (Utilities.isWindows() && isNbSourceModule(getProject())) {
-                // Profiler is installed in directory with space on Windows
-                // surround the whole -agentpath argument with quotes for NB source module
-                agentArg = "\"" + agentArg + "\""; //NOI18N
-                props.put("agent.jvmargs", agentArg); //NOI18N
-            }
-        }
     }
 
     @Override

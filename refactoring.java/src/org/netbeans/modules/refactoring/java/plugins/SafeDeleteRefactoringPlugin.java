@@ -116,30 +116,34 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         Set<Object> refactoredObjects = new HashSet<Object>();
         Collection<? extends FileObject> files = lookupJavaFileObjects();
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
-        for(int i = 0;i < whereUsedQueries.length; ++i) {
-            Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
-            refactoredObjects.add(refactoredObject);
-            
-            whereUsedQueries[i].prepare(inner);
-            TreePathHandle treePathHandle = grips.get(i);
-            if(Tree.Kind.METHOD == treePathHandle.getKind()){
-                JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
-                try {
-                    javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), true);
-                } catch (IOException ioException) {
-                    ErrorManager.getDefault().notify(cancelRequested.get()?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
+        try {
+            for(int i = 0;i < whereUsedQueries.length; ++i) {
+                Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
+                refactoredObjects.add(refactoredObject);
+
+                whereUsedQueries[i].prepare(inner);
+                TreePathHandle treePathHandle = grips.get(i);
+                if(Tree.Kind.METHOD == treePathHandle.getKind()){
+                    JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
+                    try {
+                        javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), true);
+                    } catch (IOException ioException) {
+                        ErrorManager.getDefault().notify(cancelRequested.get()?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
+                    }
                 }
-            }
-            
-            if (!files.contains(treePathHandle.getFileObject())) {
-                TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
-                Problem problem = createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
-                if (problem != null) {
-                    fireProgressListenerStop();
-                    return problem;
+
+                if (!files.contains(treePathHandle.getFileObject())) {
+                    TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
+                    Problem problem = createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
+                    if (problem != null) {
+                        fireProgressListenerStop();
+                        return problem;
+                    }
                 }
+                fireProgressListenerStep();
             }
-            fireProgressListenerStep();
+        } finally {
+            inner.finished();
         }
         Problem problemFromWhereUsed = null;
         Problem problemImplemented = null;

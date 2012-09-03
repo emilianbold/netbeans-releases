@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
@@ -63,6 +64,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
 import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
@@ -292,8 +295,17 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         if (inplace) {
             webappFO = getDocumentBase();
         } else {
-            webappFO = super.getContentDirectory();
-        } 
+            MavenProject mavenProject = mavenproject().getMavenProject();
+            String webappLocation = PluginPropertyUtils.getPluginProperty(project,
+                Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_WAR,
+                "webappDirectory", "war"); //NOI18N
+            if (webappLocation == null) {
+                webappLocation = mavenProject.getBuild().getDirectory() + File.separator + mavenProject.getBuild().getFinalName();
+            }
+            File webapp = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), webappLocation);
+            webappFO = FileUtil.toFileObject(webapp);
+        }
         if (webappFO != null) {
             webappFO.refresh();
         }

@@ -281,6 +281,9 @@ final class RepositoryRevision {
                     if(path == null) {
                         try {
                             path = SvnUtils.getRelativePath(selectionRoot);
+                            if (!path.startsWith("/")) { //NOI18B
+                                path = "/" + path; //NOI18B
+                            }
                         } catch (SVNClientException ex) {
                             Subversion.LOG.log(Level.INFO, selectionRoot.getAbsolutePath(), ex);
                             path = "/"; //NOI18B

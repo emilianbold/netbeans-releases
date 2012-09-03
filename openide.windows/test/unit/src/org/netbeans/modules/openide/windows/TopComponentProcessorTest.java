@@ -93,11 +93,6 @@ public class TopComponentProcessorTest extends  NbTestCase {
         assertValidate(set.asText());
     }
 
-    public void testNonPersistentTCHasNoSettingsGenerated() throws Exception {
-        FileObject set = FileUtil.getConfigFile("Windows2/Components/my-nonpersistentTC.settings");
-        assertNull("Non-persistent TC cannot have .settings file", set);
-    }
-
     public void testModeIsOK() throws Exception {
         FileObject set = FileUtil.getConfigFile("Windows2/Modes/output/my-tc.wstcref");
         assertNotNull("Mode file found", set);
@@ -190,17 +185,6 @@ public class TopComponentProcessorTest extends  NbTestCase {
     public static class TC2 extends TopComponent {
     }
     
-    @TopComponent.Registration(
-        mode="output",
-        openAtStartup=false
-    )
-    @TopComponent.Description(
-        preferredID="my-nonpersistentTC", iconBase="org/openide/windows/Icon.png",
-        persistenceType=TopComponent.PERSISTENCE_NEVER
-    )
-    public static class NonPersistentTC extends TopComponent {
-    }
-
     @TopComponent.Registration(
         mode="explorer",
         openAtStartup=true

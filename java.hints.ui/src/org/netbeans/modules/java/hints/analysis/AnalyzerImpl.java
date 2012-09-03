@@ -163,6 +163,8 @@ public class AnalyzerImpl implements Analyzer {
             List<WarningDescription> result = new ArrayList<WarningDescription>();
 
             for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
+                if (e.getKey().options.contains(Options.NO_BATCH)) continue;
+                if (e.getKey().kind != Kind.INSPECTION) continue;
                 String displayName = e.getKey().displayName;
                 String category = e.getKey().category;
                 FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);

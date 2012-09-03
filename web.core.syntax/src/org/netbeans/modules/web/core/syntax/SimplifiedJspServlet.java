@@ -58,7 +58,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -79,6 +78,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 
 /**
  * Utility class for generating a simplified <em>JSP servlet</em> class from a JSP file.
@@ -147,6 +148,23 @@ public class SimplifiedJspServlet extends JSPProcessor {
         this.snapshot = snapshot;
     }
 
+    private boolean isUnfinishedScriptletInQueue(TokenSequence ts) {
+        Token<JspTokenId> scriptletToken = ts.token();
+        if (ts.moveNext()) {
+            // scriptlet is unfinished
+            if (ts.token().id() != JspTokenId.SYMBOL2
+                    // or it contains scriptlet starting delimiter - like <% java HTML <% java %>
+                    || CharSequenceUtilities.indexOf(scriptletToken.text(), "<%") != -1) { //NOI18N
+                ts.movePrevious();
+                return true;
+            }
+            ts.movePrevious();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     /* process under document readlock */
     @Override
     protected void renderProcess() throws BadLocationException{
@@ -194,6 +212,13 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
                 } else {
+                    if (isUnfinishedScriptletInQueue(tokenSequence)) {
+                        // see issue #213963 - we are trying to cut rest of the tag after the caret position
+                        int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, null);
+                        if (caretOffset - blockStart > 0) {
+                            blockLength = Math.min(blockLength, caretOffset - blockStart);
+                        }
+                    }
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }

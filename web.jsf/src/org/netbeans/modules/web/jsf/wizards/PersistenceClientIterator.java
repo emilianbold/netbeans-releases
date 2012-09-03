@@ -505,7 +505,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             String controllerClassName = controllerFileObjects[i].getName();
             String managedBean = controllerClassName.substring(0, 1).toLowerCase() + controllerClassName.substring(1);
             params.put("managedBeanName", managedBean);
-            params.put("cdiEnabled", isCdiEnabled(project));
+            // see issue #215703 - JSF 2.1 and CDI are not integrated enough
+            // can be probably enabled again for JSF 2.2+ where it should work
+            // params.put("cdiEnabled", isCdiEnabled(project));
             params.put("controllerPackageName", controllerPkg);
             params.put("controllerClassName", controllerClassName);
             params.put("entityFullClassName", entityClass);

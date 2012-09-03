@@ -171,6 +171,8 @@ public final class PhpProject implements Project {
 
     // true if property src.dir does not exist
     volatile boolean sourcesDirectoryInvalid = false;
+    // true if project is being deleted; do not warn about invalid sources then
+    private volatile boolean deleting;
 
     // try to restore missing test folders just once
     volatile boolean testsDirectoryResolved = false;
@@ -314,6 +316,10 @@ public final class PhpProject implements Project {
         if (sourceDir != null) {
             sourcesDirectoryInvalid = false;
             return sourceDir;
+        }
+        if (deleting) {
+            // project is being deleted, temporarily return project directory (to avoid NPE)
+            return helper.getProjectDirectory();
         }
         // source dir not resolved?!
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
@@ -753,6 +759,10 @@ public final class PhpProject implements Project {
     public void fireIgnoredFilesChange() {
         resetIgnoredFolders();
         ignoredFoldersChangeSupport.fireChange();
+    }
+
+    void setDeleting() {
+        deleting = true;
     }
 
     private final class Info implements ProjectInformation {

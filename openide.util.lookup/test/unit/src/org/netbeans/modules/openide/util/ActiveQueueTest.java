@@ -60,6 +60,11 @@ public class ActiveQueueTest extends NbTestCase{
         super(name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 45000;
+    }
+
     public void testMemoryLeak() throws Exception {
         final Class<?> u1 = ActiveQueue.class;
         class L extends URLClassLoader {

@@ -80,8 +80,10 @@ public class Brick extends Parent {
         this.type = newType;
         Image image = Config.getBricksImages().get(type);
         content.setImage(image);
-        content.setFitWidth(Config.FIELD_WIDTH / 15);
+        content.setFitWidth(Config.FIELD_WIDTH/15);
     }
+
+    
 
     public static int getBrickType(String s) {
         if (s.equals("L")) {
@@ -113,6 +115,7 @@ public class Brick extends Parent {
             return TYPE_WHITE;
         }
     }
+
 }
 
 

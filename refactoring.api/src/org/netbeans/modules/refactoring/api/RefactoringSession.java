@@ -45,7 +45,6 @@ package org.netbeans.modules.refactoring.api;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,16 +52,13 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
-import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -87,7 +83,6 @@ public final class RefactoringSession {
     private UndoManager undoManager = UndoManager.getDefault();
     boolean realcommit = true;
     private AtomicBoolean finished = new AtomicBoolean(false);
-    private AtomicBoolean prepareStarted = new AtomicBoolean(false);
     
     private RefactoringSession(String description) {
         //internalList = new LinkedList();
@@ -240,21 +235,22 @@ public final class RefactoringSession {
     }
     
     /**
-     * get elements from session
+     * Get elements from session
+     * @since 1.23 the returned collection is blocking until finished.
+     * @see #finished()
      * @return collection of RefactoringElements
      */
     @NonNull
     public Collection<RefactoringElement> getRefactoringElements() {
-        if (!prepareStarted.get())
-            return Collections.emptyList();
         return refactoringElements;
     }
     
-    void started() {
-        prepareStarted.set(true);
-    }
-    
-    void finished() {
+    /**
+     * Inform the session it, and all its plugins, are finished.
+     * @since 1.28
+     * @see #getRefactoringElements()
+     */
+    public void finished() {
         finished.set(true);
     }
     

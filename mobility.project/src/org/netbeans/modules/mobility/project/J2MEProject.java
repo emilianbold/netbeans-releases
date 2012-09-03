@@ -123,6 +123,7 @@ import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ProjectLookupProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -467,7 +468,8 @@ public final class J2MEProject implements Project, AntProjectListener {
             new J2MEProjectClassPathExtender(this, helper, refHelper, configHelper),
             new J2MEProjectOperations(this, helper, refHelper),
             new PreprocessorFileFilterImplementation(configHelper, helper),
-            new FileEncodingQueryImpl(helper)
+            new FileEncodingQueryImpl(helper),
+            LookupProviderSupport.createActionProviderMerger()
         };
         ArrayList<Object> list=new ArrayList<Object>();
         list.addAll(Arrays.asList(stdLookups));
@@ -475,7 +477,9 @@ public final class J2MEProject implements Project, AntProjectListener {
         {
             list.addAll(provider.createLookupElements(this,helper,refHelper,configHelper));
         }
-        return Lookups.fixed(list.toArray());
+        Lookup base = Lookups.fixed(list.toArray());
+        lookup = base;
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-mobility-project/Lookup"); //NOI18N
 //        return new AnalysisLookup (list.toArray());
     }
     

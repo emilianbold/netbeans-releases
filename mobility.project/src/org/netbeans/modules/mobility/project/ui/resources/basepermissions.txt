@@ -1,3 +1,9 @@
+com.oracle.deviceaccess.gpio
+com.oracle.deviceaccess.gpio.read
+com.oracle.deviceaccess.gpio.write
+com.oracle.deviceaccess.i2c
+com.oracle.deviceaccess.spi
+com.oracle.deviceaccess.mmio
 javax.microedition.amms.control.camera.enableShutterFeedback
 javax.microedition.amms.control.tuner.setPreset
 javax.microedition.apdu.aid

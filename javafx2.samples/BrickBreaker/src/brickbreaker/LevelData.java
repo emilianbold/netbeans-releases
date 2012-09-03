@@ -32,6 +32,7 @@
 package brickbreaker;
 
 import java.util.Arrays;
+
 import javafx.collections.ObservableList;
 
 public class LevelData {

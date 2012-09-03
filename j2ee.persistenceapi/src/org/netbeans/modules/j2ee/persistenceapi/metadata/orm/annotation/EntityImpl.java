@@ -90,7 +90,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         AnnotationMirror entityAnn = annByType.get("javax.persistence.Entity"); // NOI18N
         if (entityAnn == null) {
             return false;
-        }annByType.get("javax.persistence.NamedQueries");
+        }
         AnnotationParser parser = AnnotationParser.create(helper);
         parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         ParseResult parseResult = parser.parse(entityAnn); // NOI18N
@@ -101,10 +101,10 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         // XXX locale?
         table = new TableImpl(helper, annByType.get("javax.persistence.Table"), name.toUpperCase()); // NOI18N
         //fill named queries
-        AnnotationMirror nqsAnn = annByType.get("javax.persistence.NamedQueries");
+        AnnotationMirror nqsAnn = annByType.get("javax.persistence.NamedQueries");// NOI18N
         ArrayList<AnnotationMirror> nqAnn = null;
         if(nqsAnn == null){
-            nqsAnn = annByType.get("javax.persistence.NamedQuery");
+            nqsAnn = annByType.get("javax.persistence.NamedQuery");// NOI18N
             if(nqsAnn != null){
                 nqAnn = new ArrayList<AnnotationMirror>();
                 nqAnn.add(nqsAnn);
@@ -117,9 +117,8 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
                     for(Object val:lst){
                         if(val instanceof AnnotationMirror){
                             AnnotationMirror am = (AnnotationMirror) val;
-                            if("javax.persistence.NamedQuery".equals(am.getAnnotationType().toString())){
+                            if("javax.persistence.NamedQuery".equals(am.getAnnotationType().toString())){//NOI18N
                                 nqAnn.add(am);
-                                //values.add(Utilities.getAnnotationAttrValue(am, "query").toString());
                             }
                         }
                     }
@@ -133,7 +132,6 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
             for(AnnotationMirror am:nqAnn){
                 parseResult = parser.parse(am); // NOI18N
                 String nm = parseResult.get("name", String.class); // NOI18N            
-                parseResult = parser.parse(am); // NOI18N
                 String qr = parseResult.get("query", String.class); // NOI18N
                 this.addNamedQuery(new NamedQueryImpl(nm, qr));
             }

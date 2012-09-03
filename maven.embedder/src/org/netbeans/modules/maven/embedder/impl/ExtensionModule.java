@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.embedder.impl;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.plugin.internal.PluginDependenciesResolver;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManagerFactory;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
@@ -69,6 +70,7 @@ public class ExtensionModule implements Module {
         
         //exxperimental only.
 //        binder.bind(InheritanceAssembler.class).to(NbInheritanceAssembler.class);
+        binder.bind(ModelBuilder.class).to(NBModelBuilder.class);
     }
     
 }

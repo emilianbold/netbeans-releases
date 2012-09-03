@@ -52,26 +52,13 @@ import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.MenuElement;
-import javax.swing.MenuSelectionManager;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.StatusDisplayer;
+import org.openide.awt.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -105,6 +92,9 @@ public class RecentFileAction extends AbstractAction
                      NbBundle.getMessage(RecentFileAction.class,
                                          "OFMSG_FILE_NOT_EXISTS");     // NOI18N
 
+    private static final String OFMSG_NO_RECENT_FILE =
+                     NbBundle.getMessage(RecentFileAction.class,
+                                         "OFMSG_NO_RECENT_FILE");     // NOI18N
 
     private JMenu menu;
     
@@ -168,10 +158,18 @@ public class RecentFileAction extends AbstractAction
     /** Fills submenu with recently closed files got from RecentFiles support */
     private void fillSubMenu () {
         List<HistoryItem> files = RecentFiles.getRecentFiles();
+        boolean first = true;
         for (final HistoryItem hItem : files) {
             try { // #188403
                 JMenuItem jmi = newSubMenuItem(hItem);
                 menu.add(jmi);
+                if( first ) {
+                    Object accel = getValue( Action.ACCELERATOR_KEY );
+                    if( accel instanceof KeyStroke ) {
+                        jmi.setAccelerator( (KeyStroke)accel );
+                    }
+                    first = false;
+                }
             } catch (Exception ex) {
                 continue;
             }
@@ -259,19 +257,27 @@ public class RecentFileAction extends AbstractAction
     @Override
     public void actionPerformed(ActionEvent evt) {
         Object source = evt.getSource();
+        String path = null;
+        String msg = null;
         if (source instanceof JMenuItem) {
             JMenuItem menuItem = (JMenuItem) source;
-            String path = (String) menuItem.getClientProperty(PATH_PROP);
-            String msg = openFile(path);
-            if (msg != null) {
-                StatusDisplayer.getDefault().setStatusText(msg);
-                Toolkit.getDefaultToolkit().beep();
-                RecentFiles.pruneHistory();
+            path = (String) menuItem.getClientProperty(PATH_PROP);
+        } else {
+            List<HistoryItem> items = RecentFiles.getRecentFiles();
+            if( !items.isEmpty() ) {
+                HistoryItem item = RecentFiles.getRecentFiles().get( 0 );
+                path = item.getPath();
+            } else {
+                msg = OFMSG_NO_RECENT_FILE;
             }
         }
-        // TODO: Processing of pressing of a shortcut key that can be associated
-        // with this action. Note, in this case, any UI component can be passed
-        // as the source.
+        if( null == msg )
+            msg = openFile(path);
+        if (msg != null) {
+            StatusDisplayer.getDefault().setStatusText(msg);
+            Toolkit.getDefaultToolkit().beep();
+            RecentFiles.pruneHistory();
+        }
     }
 
     /**
