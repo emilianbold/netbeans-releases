@@ -452,15 +452,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
-            if (root == null) {
-                if (type == BasicNodes.Sources) {
-                    // when site root is configured to point to non-existent directory:
-                    DataFolder fakeNode = DataFolder.findFolder(project.getProjectDirectory());
-                    return new Node[]{new FolderFilterNode(type, fakeNode.getNodeDelegate(), ignoreList)};
-                }
-            } else {
+            if (root != null && root.isValid()) {
                 return new Node[]{new FolderFilterNode(type, DataFolder.findFolder(root).getNodeDelegate(), ignoreList)};
             }
+            // missing root should be solved by project problems
             return new Node[0];
         }
 
