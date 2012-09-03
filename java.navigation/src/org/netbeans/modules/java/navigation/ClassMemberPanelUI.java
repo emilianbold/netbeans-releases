@@ -746,6 +746,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     return res;
                 }
             };
+            historyCombo.setPrototypeDisplayValue(ClassMemberPanelUI.class.getSimpleName());
             historyCombo.setRenderer(HistorySupport.createRenderer(history));
             historyCombo.setActionCommand(CMD_HISTORY);
             historyCombo.addActionListener(this);
