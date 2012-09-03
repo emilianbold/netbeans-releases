@@ -243,6 +243,10 @@ public final class DelegateRepository implements Repository {
             return unitId;
         }        
     }
+
+    public File getCacheLocation(int unitId) {
+        return getDelegate(unitId).getCacheLocation();
+    }
     
     private static class DummyRepository extends BaseRepository {
 

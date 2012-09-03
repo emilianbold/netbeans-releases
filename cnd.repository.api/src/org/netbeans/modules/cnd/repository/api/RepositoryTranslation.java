@@ -62,6 +62,7 @@ public interface RepositoryTranslation {
      * ${userdir}/var/cache/cnd/model will be used
      */
     int getUnitId(CharSequence unitName, File cacheLocation);
+    File getCacheLocation(int unitId);
     CharSequence getUnitName(int unitId);
     CharSequence getUnitNameSafe(int unitId);
 }

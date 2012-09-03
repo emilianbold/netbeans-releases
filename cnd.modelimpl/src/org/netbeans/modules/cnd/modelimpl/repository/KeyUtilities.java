@@ -89,7 +89,7 @@ public class KeyUtilities {
     public static Key createProjectKey(NativeProject nativeProject) {
         return new ProjectKey(KeyUtilities.getUnitId(
                 ProjectBase.getUniqueName(nativeProject),
-                ProjectBase.getCacheBaseDirectory(nativeProject)));
+                ProjectBase.getCacheLocation(nativeProject)));
     }
 
     public static Key createProjectKey(ProjectBase project) {

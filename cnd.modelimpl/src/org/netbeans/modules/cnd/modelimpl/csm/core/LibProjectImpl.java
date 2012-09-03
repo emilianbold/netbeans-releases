@@ -67,28 +67,28 @@ public final class LibProjectImpl extends ProjectBase {
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
-    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName) {
-        super(model, fs, includePathName, includePathName);
+    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName, File cacheLocation) {
+        super(model, fs, includePathName, includePathName, cacheLocation);
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
 
-    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName) {
+    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName, File cacheLocation) {
         ProjectBase instance = null;
         assert includePathName != null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, fs, includePathName, includePathName);
+                instance = readInstance(model, fs, includePathName, includePathName, cacheLocation);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(fs, includePathName, true);
+                cleanRepository(fs, includePathName, true, cacheLocation);
                 DiagnosticExceptoins.register(e);
             }
         }
         if (instance == null) {
-            instance = new LibProjectImpl(model, fs, includePathName);
+            instance = new LibProjectImpl(model, fs, includePathName, cacheLocation);
         }
         if (instance instanceof LibProjectImpl) {
             assert ((LibProjectImpl) instance).includePath != null;

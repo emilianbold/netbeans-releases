@@ -140,6 +140,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -166,18 +167,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         CndFileSystemProvider.CndFileSystemProblemListener {
 
     protected ProjectBase(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
-        this(model, fs, (Object) platformProject, name);
+        this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject));
     }
 
-    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name) {
-        this(model, fs, (Object) platformProject, name);
+    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, File cacheLocation) {
+        this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject, cacheLocation));
     }
 
     /** Creates a new instance of CsmProjectImpl */
-    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name, Key key) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         this.uniqueName = getUniqueName(fs, platformProject);
-        Key key = createProjectKey(fs, platformProject);
         RepositoryUtils.openUnit(key);
         unitId = key.getUnitId();
         setStatus(Status.Initial);
@@ -340,16 +340,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         status = newStatus;
     }
 
-    protected static void cleanRepository(FileSystem fs, Object platformProject, boolean articicial) {
+    protected static void cleanRepository(FileSystem fs, NativeProject platformProject, boolean articicial) {
         Key key = createProjectKey(fs, platformProject);
         RepositoryUtils.closeUnit(key, null, true);
     }
 
-    private static Key createProjectKey(FileSystem fs, Object platfProj) {
-        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), getCacheBaseDirectory(platfProj));
+    protected static void cleanRepository(FileSystem fs, CharSequence platformProject, boolean articicial, File cacheLocation) {
+        Key key = createProjectKey(fs, platformProject, cacheLocation);
+        RepositoryUtils.closeUnit(key, null, true);
     }
 
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private static Key createProjectKey(FileSystem fs, NativeProject platfProj) {
+        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), getCacheLocation(platfProj));
+    }
+
+    private static Key createProjectKey(FileSystem fs, CharSequence  platfProj, File cacheLocation) {
+        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), cacheLocation);
+    }
+
+    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
+        return readInstance(model, createProjectKey(fs, platformProject), platformProject, name);
+    }
+
+    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, File cacheLocation) {
+        ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, cacheLocation), platformProject, name);
+        if (instance != null) {
+            assert (cacheLocation == null) ? instance.getCacheLocation() == null : cacheLocation.equals(instance.getCacheLocation());
+        }
+        return instance;
+    }
+
+    private static ProjectBase readInstance(ModelImpl model, Key key, Object platformProject, String name) {
 
         long time = 0;
         if (TraceFlags.TIMING) {
@@ -358,7 +379,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         assert TraceFlags.PERSISTENT_REPOSITORY;
-        Key key = createProjectKey(fs, platformProject);
         RepositoryUtils.openUnit(key);
         Persistent o = RepositoryUtils.get(key);
         if (o != null) {
@@ -408,23 +428,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
 
-    public static File getCacheBaseDirectory(Object platfProj) {
-        if (platfProj instanceof NativeProject) {
-            return getCacheBaseDirectory((NativeProject) platfProj);
-        } else if (platfProj instanceof CharSequence) {
-            return getCacheBaseDirectory((CharSequence) platfProj);
-        } else if (platfProj == null) {
-            throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
-        } else {
-            throw new IllegalArgumentException("Incorrect platform project class: " + platfProj.getClass()); // NOI18N
-        }        
+    public File getCacheLocation() {
+        return RepositoryAccessor.getTranslator().getCacheLocation(unitId);
     }
-    
-    public static File getCacheBaseDirectory(CharSequence platfProj) {
-        return null;
-    }
-    
-    public static File getCacheBaseDirectory(NativeProject np) {
+
+    public static File getCacheLocation(NativeProject np) {
         if (CndFileUtils.isLocalFileSystem(np.getFileSystem())) {
             File cache = new File(np.getProjectRoot() + "/nbproject/private/cache/model"); //NOI18N
             if (TraceFlags.CACHE_IN_PROJECT) {
@@ -1349,7 +1357,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (aPlatformProject != null){
             searcher = APTFileSearch.get(KeyUtilities.createProjectKey(
                     ProjectBase.getUniqueName(fileSystem, aPlatformProject),
-                    ProjectBase.getCacheBaseDirectory(platformProject)));
+                    ProjectBase.getCacheLocation(nativeFile.getNativeProject())));
         }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }

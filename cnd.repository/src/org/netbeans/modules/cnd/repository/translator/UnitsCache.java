@@ -731,7 +731,7 @@ import org.openide.util.NbBundle;
         }
 
         public CharSequence getName() {
-            return getValueById(unitId);
+            return getValueById(unitCodec.removeRepositoryID(unitId));
         }
 
         public int getUnitId() {

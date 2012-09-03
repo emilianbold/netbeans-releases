@@ -83,6 +83,11 @@ public class DelegateRepositoryTranslator implements RepositoryTranslation {
     }
 
     @Override
+    public File getCacheLocation(int unitId) {
+        return repositoryImpl.getCacheLocation(unitId);
+    }
+
+    @Override
     public CharSequence getUnitName(int unitId) {
         return repositoryImpl.getTranslatorImpl(unitId).getUnitName(unitId);
     }

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
@@ -82,7 +83,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         projectRoot1.waitParse();
         
         final FilesAccessStrategyImpl strategy = FilesAccessStrategyImpl.testGetStrategy(                
-                ProjectBase.getCacheBaseDirectory(projectRoot1.getPlatformProject()));
+                ProjectBase.getCacheLocation((NativeProject) projectRoot1.getPlatformProject()));
         
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override
