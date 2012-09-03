@@ -65,13 +65,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListResourceBundle;
+import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.lang.model.util.Elements;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -83,23 +88,40 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
+import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
+import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
+import org.netbeans.modules.j2ee.persistence.jpqleditor.completion.JPQLEditorCodeCompletionProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
+import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
@@ -361,7 +383,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
  
                             ph2.progress(50);
                             ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingPassControlToProvider"));
-                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, 0, ph, false);
+                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, 0, ph2, false);
                             ph2.progress(80);
                             ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingProcessResults"));
 
@@ -375,14 +397,18 @@ public final class JPQLEditorTopComponent extends TopComponent {
                         }
                         if(jpqlResult.getExceptions() != null && jpqlResult.getExceptions().size()>0){
                             logger.log(Level.INFO, "", jpqlResult.getExceptions());
-                            showSQLError("GeneralError");
+                            showSQLError(pe, selectedConfigObject, "GeneralError");//NOI18N
                         } else {
-                            showSQL(jpqlResult.getSqlQuery());
+                            if(jpqlResult.getSqlQuery() == null || jpqlResult.getSqlQuery().length()==0){
+                                showSQLError(pe, selectedConfigObject, "UnsupportedProvider");//NOI18N
+                            } else {
+                                showSQL(jpqlResult.getSqlQuery());
+                            }
                         }
 
                     } catch (Exception e) {
                         logger.log(Level.INFO, "", e);
-                        showSQLError("GeneralError");
+                        showSQLError(pe, selectedConfigObject, "GeneralError");//NOI18N
                     } finally {
                         isSqlTranslationProcessDone = true;
                         ph2.finish();
@@ -399,9 +425,70 @@ public final class JPQLEditorTopComponent extends TopComponent {
         switchToSQLView();
     }
 
-    private void showSQLError(String errorResourceKey) {
-        sqlEditorPane.setText(
-                NbBundle.getMessage(JPQLEditorTopComponent.class, errorResourceKey));
+    private void showSQLError(PersistenceEnvironment pe, PersistenceUnit pu, String errorResourceKey) {
+        //try to parse jpql
+        final Project project = pe.getProject();
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        JavaSource js = JavaSource.create(ClasspathInfo.create(sourceGroups[0].getRootFolder()));
+        final List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
+        try {
+            js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                @Override
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    EntityClassScopeProvider provider = (EntityClassScopeProvider) project.getLookup().lookup(EntityClassScopeProvider.class);
+                    EntityClassScope ecs = null;
+                    if (provider != null) {
+                        ecs = provider.findEntityClassScope(puObject.getPrimaryFile());
+                    }
+                    EntityClassScope scope = ecs;
+                    MetadataModel<EntityMappingsMetadata> entityMappingsModel = null;
+                    if (scope != null) {
+                        entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
+                    }
+                    if (entityMappingsModel != null) {
+                        final Elements elms = controller.getElements();
+                        entityMappingsModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Boolean>() {
+                            @Override
+                            public Boolean run(EntityMappingsMetadata metadata) throws Exception {
+                                ManagedTypeProvider mtp = new ManagedTypeProvider(project, metadata, elms);
+                                //////////////////////
+                                JPQLQueryHelper helper = new JPQLQueryHelper();
+
+                                helper.setQuery(new org.netbeans.modules.j2ee.persistence.spi.jpql.Query(null, jpqlEditor.getText().trim(), mtp));                           
+                                try {
+                                    problems.addAll(helper.validate());
+                                } catch (Exception ex) {
+
+                                } 
+                                /////////////////////
+                                return null;
+                            }
+                        });
+                    }
+                }
+            }, false);
+        } catch (IOException ex) {
+        }
+        if(problems.size()>0){
+            //use parsed result for errors
+             StringBuilder message = new StringBuilder();
+             for (int i = 0; i < problems.size(); i++) {
+                ListResourceBundle msgBundle = null;
+                try {
+                    msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
+                } catch (MissingResourceException ex) {//default en
+                    msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName(), Locale.ENGLISH);//NOI18N
+                }
+                message.append(java.text.MessageFormat.format(msgBundle.getString(problems.get(i).getMessageKey()), (Object[]) problems.get(i).getMessageArguments())).append("\n");
+             }
+             sqlEditorPane.setText(message.toString());
+       } else {
+            //use default error message
+            sqlEditorPane.setText(
+                    NbBundle.getMessage(JPQLEditorTopComponent.class, errorResourceKey));
+        }
+        //
         switchToSQLView();
     }
 
