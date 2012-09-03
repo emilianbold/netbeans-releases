@@ -164,7 +164,7 @@ public final class RunUtils {
             return false;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        return cos == null || "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos);
+        return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
     }
 
     /**

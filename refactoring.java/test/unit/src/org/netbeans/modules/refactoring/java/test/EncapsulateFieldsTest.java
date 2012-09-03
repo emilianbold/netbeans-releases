@@ -408,6 +408,18 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "}\n"
                 + "\n"));
     }
+    
+    public void test217262() throws Exception { // #217262
+        writeFilesAndWaitForScan(src,
+                new File("encap/A.java", "package encap; import java.util.List; public class A { public List<String> i; public List<Double> j; public void setI(List<String> i) { this.i = i; } }"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC));
+        verifyContent(src,
+                new File("encap/A.java", "package encap; import java.util.List; public class A { private List<String> i; private List<Double> j;\n"
+                + "public void setI(List<String> i) { this.i = i; }\n"
+                + "public List<String> getI() { return i; }\n"
+                + "public List<Double> getJ() { return j; }\n"
+                + "public void setJ(List<Double> j) { this.j = j; } }"));
+    }
 
     /**
      * TODO: Test for issue #108489. The issue was closed, but the case still fails.
