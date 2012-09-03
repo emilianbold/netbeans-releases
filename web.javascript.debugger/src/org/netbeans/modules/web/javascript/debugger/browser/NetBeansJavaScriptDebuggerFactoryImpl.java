@@ -84,7 +84,7 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
             return ; // No engine, nothing to stop.
         }
         Debugger debugger = engine.lookupFirst(null, Debugger.class);
-        if (debugger != null) {
+        if ((debugger != null) && debugger.isEnabled()) {
             debugger.disable();
         }
         session.kill();
