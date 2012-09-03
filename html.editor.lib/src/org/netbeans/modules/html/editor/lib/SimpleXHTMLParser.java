@@ -77,7 +77,7 @@ public class SimpleXHTMLParser implements HtmlParser {
 
     @Override
     public HtmlParseResult parse(HtmlSource source, final HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, lookup.lookup(ElementsIteratorHandle.class).getIterator());
+        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, lookup);
         return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), preferedVersion) {
 
             @Override

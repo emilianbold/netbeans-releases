@@ -50,15 +50,20 @@ package org.netbeans.modules.websvc.rest.model.api;
 
 import java.util.List;
 
+import org.openide.filesystems.FileObject;
+
+
 public interface RestServiceDescription {
 
-    public String getName();
+    String getName();
 
-    public String getUriTemplate();
+    String getUriTemplate();
 
-    public List<RestMethodDescription> getMethods();
+    List<RestMethodDescription> getMethods();
  
-    public String getClassName();
+    String getClassName();
   
-    public boolean isRest();
+    boolean isRest();
+    
+    FileObject getFile();
 }

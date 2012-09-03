@@ -117,6 +117,15 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
             </file>
+            <file name="CrossOriginResourceSharingFilter.java">
+                <attr name="position" intvalue="490"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.OriginResourceIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/OriginResourceFilter.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
+            </file>
 
             <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template">
                 <attr name="position" intvalue="0"/>

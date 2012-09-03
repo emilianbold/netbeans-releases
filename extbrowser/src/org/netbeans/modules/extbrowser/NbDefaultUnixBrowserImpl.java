@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -92,7 +93,7 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     }
 
     
-    public void setURL(URL url) {
+    protected void loadURLInBrowser(URL url) {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
         }
@@ -108,7 +109,6 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
     }
 
     private static final class ProcessWatcher implements Runnable {

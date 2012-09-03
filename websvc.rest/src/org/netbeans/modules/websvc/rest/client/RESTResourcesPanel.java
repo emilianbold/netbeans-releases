@@ -371,7 +371,7 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
             }
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private String getSaasResourceName(Node node) {
+    public static String getSaasResourceName(Node node) {
         WadlSaasResource saasResource = node.getLookup().lookup(WadlSaasResource.class);
 
         String resourceName = saasResource.getResource().getPath();
