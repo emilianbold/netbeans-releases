@@ -43,6 +43,7 @@ package org.netbeans.modules.progress.spi;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JPanel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 
@@ -116,4 +117,64 @@ public interface RunOffEDTProvider {
          */
         public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> toRun, ProgressHandle handle, boolean includeDetailLabel);
     }
+        
+    public interface Progress2 extends Progress {
+        
+        /**
+         * Runs operation out of the event thread, blocking the whole UI. When
+         * operation takes more than 1s, the method first displays wait cursor.
+         * If operation will not end in 3s interval, modal dialog with
+         * progress is shown up.
+         * If operation is marked with {@link org.openide.util.Cancellable}
+         * interface, cancel button is part of dialog and can be used 
+         * to interrupt the operation.
+         * 
+         * @param operation  task to perform in the background
+         * @param dialogTitle dialog title
+         * @param progress  progress handle. Do not invoke any methods before
+         *                  passing to this method. Start/progress/finish it
+         *                  only in {@code operation}
+         * @param includeDetailLabel  show progress detail label in the dialog
+         * @param waitCursorAfter amount of time, in milliseconds, after which 
+         *                        wait cursor is shown
+         * @param dialogAfter amount of time, in milliseconds, after which 
+         *                    dialog is shown
+         * 
+         * @since 1.30
+         */
+        public void runOffEventThreadWithProgressDialog(
+            final Runnable operation, 
+            final String operationDescr,
+            final ProgressHandle progress, 
+            final boolean includeDetailLabel,
+            int waitCursorAfter,
+            int dialogAfter);
+
+
+        /**
+         * Runs operation out of the event thread, blocking the whole UI. When
+         * operation takes more than 1s, the method first displays wait cursor.
+         * If operation will not end up in 3s interval, modal dialog with
+         * {@code content} panel is shown.
+         * If operation is marked with {@link org.openide.util.Cancellable} 
+         * interface, cancel button is part of dialog and can be used to 
+         * interrupt the operation.
+         * 
+         * @param operation  task to perform in the background
+         * @param dialogTitle dialog title
+         * @param content  panel to be shown in the dialog
+         * @param waitCursorAfter amount of time, in milliseconds, after which 
+         *                        wait cursor is shown
+         * @param dialogAfter amount of time, in milliseconds, after which 
+         *                    dialog is shown
+         * 
+         * @since 1.30
+         */
+        public void runOffEventThreadWithCustomDialogContent(
+            final Runnable operation,
+            final String dialogTitle,
+            final JPanel content,
+            int waitCursorAfter,
+            int dialogAfter);
+        }
 }
