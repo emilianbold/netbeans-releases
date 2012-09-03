@@ -91,10 +91,6 @@ public class HtmlBrowserComponentTest {
     @Test
     public void testLookup() {
         System.out.println( "getLookup" );
-        System.out.println("NB-Core-Build #8825: Unstable");
-        if (true) {
-            return ;
-        }
         //The content of HtmlBrowser.Impl lookup must appear in browser TopComponent lookup
         HtmlBrowser.Factory factory = new HtmlBrowser.Factory() {
             @Override
