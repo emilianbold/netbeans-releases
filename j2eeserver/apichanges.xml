@@ -132,7 +132,7 @@ is the proper place.
                     deploy on save event.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <issue number="207724"/>
        </change>
        <change id="commonServerBridge">
