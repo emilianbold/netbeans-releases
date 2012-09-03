@@ -56,8 +56,8 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
-import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
@@ -70,11 +70,11 @@ import org.openide.util.NbBundle;
  */
 public class BuildListNode extends SectionNode {
 
-    private final BuildAccessor accessor;
-    private List<BuildHandle> builds;
+    private final BuilderAccessor accessor;
+    private List<JobHandle> builds;
     private final Object BUILDS_LOCK = new Object();
 
-    public BuildListNode(ProjectNode parent, BuildAccessor accessor) {
+    public BuildListNode(ProjectNode parent, BuilderAccessor accessor) {
         super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent,  null ); //NOI18N
         this.accessor = accessor;
         parent.getProject().addPropertyChangeListener(new PropertyChangeListener() {
@@ -82,7 +82,7 @@ public class BuildListNode extends SectionNode {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ProjectHandle.PROP_BUILD_LIST.equals(evt.getPropertyName())) {
                     synchronized (BUILDS_LOCK) {
-                        builds = (List<BuildHandle>) evt.getNewValue();
+                        builds = (List<JobHandle>) evt.getNewValue();
                     }
                     refreshChildren(); 
                 }
@@ -101,9 +101,9 @@ public class BuildListNode extends SectionNode {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
         synchronized (BUILDS_LOCK) {
             if(builds == null) {
-                builds = accessor.getBuilds(project);
+                builds = accessor.getJobs(project);
             }
-            for( BuildHandle b : builds ) {
+            for( JobHandle b : builds ) {
                 res.add( new BuildNode( b, this ) );
             }
         }

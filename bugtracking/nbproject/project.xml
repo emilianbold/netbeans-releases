@@ -241,7 +241,9 @@
                 <friend>org.netbeans.modules.bugtracking.util</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
+                <friend>org.netbeans.modules.mylyn.util</friend>
                 <friend>org.netbeans.modules.ods.tasks</friend>
+                <friend>org.netbeans.modules.ods.tasks.bridge</friend>
                 <friend>org.netbeans.modules.tasks.ui</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <package>org.netbeans.modules.bugtracking.api</package>
