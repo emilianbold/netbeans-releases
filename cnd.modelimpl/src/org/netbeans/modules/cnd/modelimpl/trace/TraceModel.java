@@ -1153,7 +1153,7 @@ public class TraceModel extends TraceModelBase {
                 sleep(100); // so that we don't run ahead of fileParsingFinished event
             }
             APTPreprocHandler preprocHandler = states.get(fileImpl);
-            assert preprocHandler != null;
+            assert preprocHandler != null : "no handler was kept for " + fileImpl;
             dumpMacroMap(preprocHandler.getMacroMap());
         }
         time = System.currentTimeMillis() - time;

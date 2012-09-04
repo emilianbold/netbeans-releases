@@ -39,54 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.models.nodes;
+package org.netbeans.modules.php.editor;
 
-import java.util.Set;
-import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
-import org.netbeans.modules.php.dbgp.packets.Property;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author ads
  *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+public class PHPCodeCompletion217330Test extends PHPCodeCompletionTestBase {
 
-    private static final String TYPE_FLOAT = "TYPE_Float";     // NOI18N
-    private static final String TYPE_INT = "TYPE_Int";       // NOI18N
-    private static final String TYPE_BOOLEAN = "TYPE_Boolean";   // NOI18N
-    public static final String BOOLEAN = "boolean";        // NOI18N
-    public static final String BOOL = "bool";           // NOI18N
-    public static final String INTEGER = "integer";        // NOI18N
-    public static final String INT = "int";            // NOI18N
-    public static final String FLOAT = "float";          // NOI18N
-
-    ScalarTypeVariableNode(Property property, AbstractModelNode parent) {
-        super(property, parent);
+    public PHPCodeCompletion217330Test(String testName) {
+        super(testName);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode#getType()
-     */
-    @Override
-    public String getType() {
-        String type = super.getType();
-        String bundleKey;
-        if (BOOLEAN.equals(type) || BOOL.equals(type)) {
-            bundleKey = TYPE_BOOLEAN;
-        } else if (INTEGER.equals(type) || INT.equals(type)) {
-            bundleKey = TYPE_INT;
-        } else if (FLOAT.equals(type)) {
-            bundleKey = TYPE_FLOAT;
-        } else {
-            assert false : type;
-            bundleKey = null;
-        }
-        return NbBundle.getMessage(ScalarTypeVariableNode.class, bundleKey);
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests217330/tests217330.php", "$my->^", false);
     }
 
     @Override
-    protected boolean isTypeApplied(Set<FilterType> filters) {
-        return filters.contains(FilterType.SCALARS);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests217330/"))
+            })
+        );
     }
+
 }

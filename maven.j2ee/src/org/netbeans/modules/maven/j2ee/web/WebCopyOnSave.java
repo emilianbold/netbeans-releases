@@ -47,10 +47,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -85,13 +85,14 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private boolean isInPlace() throws IOException {
+        WebModule webModule = getWebModule();
         J2eeModule j2eeModule = getJ2eeModule();
-        if (j2eeModule == null) {
+        FileObject fo = j2eeModule.getContentDirectory();
+
+        if (j2eeModule == null || webModule == null || fo == null) {
             return false;
         }
-
-        FileObject fo = j2eeModule.getContentDirectory();
-        return fo != null && fo.equals(getWebModule().getDocumentBase());
+        return fo.equals(webModule.getDocumentBase());
     }
 
     @Override
