@@ -84,7 +84,8 @@ public class GlobalOutputProcessor implements OutputProcessor {
      * @see org.apache.maven.DefaultMaven#collectProjects
      */
     static final Pattern MODEL_PROBLEM = Pattern.compile(".+ @ (?:\\S+, (.+), )?line (\\d+), column (\\d+)");
-
+    static final Pattern MODEL_PROBLEM2 = Pattern.compile(".*Non-parseable POM (.+)pom.xml: .* @ (.*pom.xml)?,? ?line (\\d+), column (\\d+) .*");
+    
     private static final Logger LOG = Logger.getLogger(GlobalOutputProcessor.class.getName());
 
     private final RunConfig config;
@@ -136,44 +137,71 @@ public class GlobalOutputProcessor implements OutputProcessor {
         }
         final Matcher m2 = MODEL_PROBLEM.matcher(line);
         if (m2.matches()) {
-            visitor.setOutputListener(new OutputListener() {
-                public @Override void outputLineAction(OutputEvent ev) {
-                    String loc = m2.group(1);
-                    File pom;
-                    if (loc == null) {
-                        pom = new File(config.getExecutionDirectory(), "pom.xml");
-                    } else {
-                        pom = FileUtil.normalizeFile(new File(loc));
-                    }
-                    FileObject pomFO = FileUtil.toFileObject(pom);
-                    if (pomFO == null) {
-                        LOG.log(Level.WARNING, "no such file: {0}", pom);
-                        return;
-                    }
-                    int line = Integer.parseInt(m2.group(2));
-                    int column = Integer.parseInt(m2.group(3));
-                    DataObject pomDO;
-                    try {
-                        pomDO = DataObject.find(pomFO);
-                    } catch (DataObjectNotFoundException x) {
-                        LOG.log(Level.INFO, null, x);
-                        return;
-                    }
-                    LineCookie lc = pomDO.getLookup().lookup(LineCookie.class);
-                    if (lc == null) {
-                        LOG.log(Level.WARNING, "no LineCookie in {0}", pom);
-                        return;
-                    }
-                    try {
-                        lc.getLineSet().getOriginal(line - 1).show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column - 1);
-                    } catch (IndexOutOfBoundsException x) {
-                        LOG.log(Level.WARNING, "no such line {0} in {1}: {2}", new Object[] {line, pom, x});
-                    }
-                }
-                public @Override void outputLineSelected(OutputEvent ev) {}
-                public @Override void outputLineCleared(OutputEvent ev) {}
-            });
+            visitor.setOutputListener(new OL(m2.group(1), Integer.parseInt(m2.group(2)), Integer.parseInt(m2.group(3)), config));
         }
+        final Matcher m3 = MODEL_PROBLEM2.matcher(line);
+        if (m3.matches()) {
+            //when in parent pom, the 2nd group is the location of the file, otherwise use the first group.
+            String loc = m3.group(2) != null ? m3.group(2) : m3.group(1) + "pom.xml";
+            visitor.setOutputListener(new OL(loc, Integer.parseInt(m3.group(3)), Integer.parseInt(m3.group(4)), config));
+        }
+    }
+    
+    private static class OL implements OutputListener {
+        private final int column;
+        private final int line;
+        private final String loc;
+        private final RunConfig config;
+
+        public OL(String loc, int line, int column, RunConfig config) {
+            this.loc = loc;
+            this.line = line;
+            this.column = column;
+            this.config = config;
+        }
+
+        @Override
+        public void outputLineSelected(OutputEvent ev) {
+        }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+
+            File pom;
+            if (loc == null) {
+                pom = new File(config.getExecutionDirectory(), "pom.xml");
+            } else {
+                pom = FileUtil.normalizeFile(new File(loc));
+            }
+            FileObject pomFO = FileUtil.toFileObject(pom);
+            if (pomFO == null) {
+                LOG.log(Level.WARNING, "no such file: {0}", pom);
+                return;
+            }
+
+            DataObject pomDO;
+            try {
+                pomDO = DataObject.find(pomFO);
+            } catch (DataObjectNotFoundException x) {
+                LOG.log(Level.INFO, null, x);
+                return;
+            }
+            LineCookie lc = pomDO.getLookup().lookup(LineCookie.class);
+            if (lc == null) {
+                LOG.log(Level.WARNING, "no LineCookie in {0}", pom);
+                return;
+            }
+            try {
+                lc.getLineSet().getOriginal(line - 1).show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column - 1);
+            } catch (IndexOutOfBoundsException x) {
+                LOG.log(Level.WARNING, "no such line {0} in {1}: {2}", new Object[]{line, pom, x});
+            }
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
+        }
+            
     }
 
     @Override public void sequenceStart(String sequenceId, OutputVisitor visitor) {

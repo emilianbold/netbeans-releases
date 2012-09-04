@@ -1,7 +1,7 @@
 /**
  * 
  * @param {type} ahoj
- * @return {Shape}^
+ * @returns {Shape}^
  */
 function Shape(ahoj) {
 

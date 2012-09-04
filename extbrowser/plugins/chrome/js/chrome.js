@@ -106,6 +106,11 @@ NetBeans.createContextMenu = function(tabId, url) {
     });
 };
 
+// Initializes keyboard shortcuts
+NetBeans.initShortcuts = function(tabId) {
+    chrome.tabs.executeScript(tabId, {file: 'js/shortcuts.js'});
+};
+
 // Updates the Select Mode context menu
 NetBeans.updateContextMenu = function() {
     chrome.contextMenus.update('selectionMode', {
@@ -238,11 +243,14 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
-    if (message.type === 'VIEWPORT') {
+    var type = message.type;
+    if (type === 'VIEWPORT') {
         console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
         sendResponse();
+    } else if (type === 'switchSelectionMode') {
+        NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
     }
 });
 

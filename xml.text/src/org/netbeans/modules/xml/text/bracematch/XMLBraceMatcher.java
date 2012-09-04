@@ -372,22 +372,35 @@ public class XMLBraceMatcher implements BracesMatcher {
     
     private int[] findMatchingTagBackward(TokenSequence ts, String tagToMatch) {
         Stack<String> stack = new Stack<String>();
+        boolean selfClosing = false;
         while(ts.movePrevious()) {
             Token t = ts.token();
             if(XMLTokenId.TAG != t.id())
                 continue;
             String tag = t.text().toString();
-            if(">".equals(tag) || "/>".equals(tag))
+            if(">".equals(tag)) {
+                selfClosing = false;
                 continue;
-            if(stack.empty()) {
-                if(("<"+tagToMatch).equals(tag))
-                    return findTagPosition(ts, true);
-            } else {
-                if(tag.startsWith("<") && ("<"+stack.peek()).equals(tag))
-                    stack.pop();
             }
-            if(tag.startsWith("</"))
+            if ("/>".equals(tag)) {
+                selfClosing = true;
+                continue;
+            }
+            if(stack.empty()) {
+                if (!selfClosing) {
+                    if(("<"+tagToMatch).equals(tag)) {
+                        return findTagPosition(ts, true);
+                    }
+                }
+            } else {
+                if(tag.startsWith("<") && ("<"+stack.peek()).equals(tag)) {
+                    stack.pop();
+                }
+            }
+            if(tag.startsWith("</")) {
                 stack.push(tag.substring(2));
+            }
+            selfClosing = false;
         }
         
         return null;

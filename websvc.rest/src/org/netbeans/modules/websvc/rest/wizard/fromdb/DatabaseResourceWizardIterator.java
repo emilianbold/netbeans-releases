@@ -629,17 +629,18 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             beforeSteps = (String[]) prop;
         }
 
-        if (beforeSteps == null) {
-            beforeSteps = new String[0];
+        String[] res;
+        byte start=0;
+        if ( beforeSteps == null || beforeSteps.length == 0 ){
+            res = new String[panels.length];
         }
-
-        String[] res = new String[(beforeSteps.length - 1) + panels.length];
-        for (int i = 0; i < res.length; i++) {
-            if (i < (beforeSteps.length - 1)) {
-                res[i] = beforeSteps[i];
-            } else {
-                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
-            }
+        else {
+            res = new String[panels.length+1];
+            res[0]= beforeSteps[0];
+            start =1;
+        }
+        for (int i = start; i < res.length; i++) {
+            res[i] = panels[i-start].getComponent().getName();
         }
         return res;
     }
