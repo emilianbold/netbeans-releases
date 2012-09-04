@@ -1011,7 +1011,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     break;
                 }
                 if (lp.startingLine < startLine) {
-                    if (startLine < lp.endingLine) {
+                    if (startLine <= lp.endingLine) {
                         lp.startingLine = startLine;
                     } else {
                         continue;

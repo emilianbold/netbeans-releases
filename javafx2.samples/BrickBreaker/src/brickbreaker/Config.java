@@ -167,31 +167,32 @@ public final class Config {
 
     public static void initialize() {
         for (String imageName : IMAGES_NAMES) {
-            Image image = new Image(Config.class.getResourceAsStream(IMAGE_DIR + imageName));
+            Image image = new Image(Config.class.getResourceAsStream(IMAGE_DIR+imageName));
             if (image.isError()) {
-                System.out.println("Image " + imageName + " not found");
+                System.out.println("Image "+imageName+" not found");
             }
             images.add(image);
         }
         for (String imageName : BRICKS_IMAGES) {
-            final String url = IMAGE_DIR + "brick/" + imageName;
+            final String url = IMAGE_DIR+"brick/"+imageName;
             Image image = new Image(Config.class.getResourceAsStream(url));
             if (image.isError()) {
-                System.out.println("Image " + url + " not found");
+                System.out.println("Image "+url+" not found");
             }
             bricksImages.add(image);
         }
         for (String imageName : BONUSES_IMAGES) {
-            final String url = IMAGE_DIR + "bonus/" + imageName;
+            final String url = IMAGE_DIR+"bonus/"+imageName;
             Image image = new Image(Config.class.getResourceAsStream(url));
             if (image.isError()) {
-                System.out.println("Image " + url + " not found");
+                System.out.println("Image "+url+" not found");
             }
             bonusesImages.add(image);
         }
     }
 
     private Config() {
+        
     }
 
 }

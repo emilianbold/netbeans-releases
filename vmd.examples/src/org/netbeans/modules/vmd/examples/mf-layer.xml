@@ -48,12 +48,13 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="JAVA_ME">
+                    <attr name="position" intvalue="403"/>
                     <file name="VDCustomComponents.zip" url="VDCustomComponents.zip">
                         <attr name="position" intvalue="100"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/examples/descriptions/VisualDesignerCustomComponents.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.examples.Bundle"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/examples/resources/j2meProject.gif"/>
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
                         <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                         <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
@@ -63,7 +64,7 @@ made subject to such option by the copyright holder.
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/examples/descriptions/GameBuilderDemo.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.examples.Bundle"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/examples/resources/j2meProject.gif"/>
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
                         <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                         <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
@@ -73,7 +74,7 @@ made subject to such option by the copyright holder.
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/examples/descriptions/LocalizationDemo.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.examples.Bundle"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/examples/resources/j2meProject.gif"/>
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
                         <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                         <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>

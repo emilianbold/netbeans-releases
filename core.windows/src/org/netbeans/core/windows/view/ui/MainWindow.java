@@ -145,7 +145,8 @@ public final class MainWindow {
                }
            }
            //#198639 - workaround for main menu & mouse issues in Gnome 3
-           if ("gnome-shell".equals(System.getenv("DESKTOP_SESSION"))) { //NOI18N
+           String session = System.getenv("DESKTOP_SESSION"); //NOI18N
+           if ("gnome-shell".equals(session) || "gnome".equals(session)) { //NOI18N
                try {
                    Class<?> xwm = Class.forName("sun.awt.X11.XWM"); //NOI18N
                    Field awt_wmgr = xwm.getDeclaredField("awt_wmgr"); //NOI18N

@@ -1069,6 +1069,10 @@ public class Gdb {
         }
     }
     static final String versionString = "GNU gdb";		// NOI18N
+    
+    void setGdbIdleHandler(Runnable handler) {
+        myMIProxy.setIdleHandler(handler);
+    }
 
     private class MyMIProxy extends MIProxy {
 

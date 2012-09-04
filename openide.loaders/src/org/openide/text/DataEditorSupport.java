@@ -65,8 +65,6 @@ import java.lang.ref.Reference;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -569,9 +567,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 flush();
             }
         };
-        CharsetEncoder encoder = c.newEncoder();
-        encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
-        Writer w = new OutputStreamWriter (fos, encoder);
+        Writer w = new OutputStreamWriter (fos, c);
         try {
             kit.write(w, doc, 0, doc.getLength());
         } finally {
