@@ -143,8 +143,10 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
                 }
             }
             return true;
-        } else {
+        } else if (node instanceof ScopedRemoteObject) {
             return super.isLeaf(node);
+        } else {
+            return original.isLeaf(node);
         }
     }
     
