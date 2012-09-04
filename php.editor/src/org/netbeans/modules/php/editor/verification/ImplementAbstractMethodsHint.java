@@ -147,7 +147,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
                         }
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                         List typeNameResolvers = new ArrayList<TypeNameResolver>();
-                        if (CodeUtils.isPhp_52(fileObject)) {
+                        if (fileObject != null && CodeUtils.isPhp_52(fileObject)) {
                             typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                         } else {
                             typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
