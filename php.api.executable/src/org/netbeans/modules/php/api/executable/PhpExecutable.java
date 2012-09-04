@@ -721,7 +721,7 @@ public final class PhpExecutable {
         }
 
         private boolean isNewLine(char ch) {
-            return ch == '\n' || ch == '\r';
+            return ch == '\n' || ch == '\r' || ch == '\u0000'; // NOI18N
         }
 
     }
