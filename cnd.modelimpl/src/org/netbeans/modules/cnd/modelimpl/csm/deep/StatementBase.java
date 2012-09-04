@@ -120,6 +120,10 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }   
 
+    public interface StatementBuilderContainer {
+        public void addStatementBuilder(StatementBuilder builder);
+    }
+    
     public static abstract class StatementBuilder extends ScopedDeclarationBuilder {
         abstract StatementBase create();
     }    

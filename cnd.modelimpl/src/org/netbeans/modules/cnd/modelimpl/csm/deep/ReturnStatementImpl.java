@@ -80,7 +80,7 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
         return null;
     }
     
-    public static class ReturnStatementBuilder extends ScopedDeclarationBuilder {
+    public static class ReturnStatementBuilder extends StatementBuilder {
 
         public ReturnStatementImpl create() {
             ReturnStatementImpl stmt = new ReturnStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());

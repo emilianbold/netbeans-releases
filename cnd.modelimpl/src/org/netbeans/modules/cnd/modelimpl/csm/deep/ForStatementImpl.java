@@ -199,13 +199,14 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         return l;
     }
     
-    public static class ForStatementBuilder extends StatementBuilder {
+    public static class ForStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         ExpressionBuilder iteration;
         ConditionDeclarationBuilder conditionDeclaration;
         ConditionExpressionBuilder conditionExpression;
         StatementBuilder init;
         StatementBuilder body;
+        boolean head = true;
 
         public void setIteration(ExpressionBuilder iteration) {
             this.iteration = iteration;
@@ -225,6 +226,10 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
 
         public void setBody(StatementBuilder body) {
             this.body = body;
+        }
+
+        public void body() {
+            this.head = false;
         }
         
         @Override
@@ -249,6 +254,15 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
             }
             
             return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            if(head) {
+                init = builder;
+            } else {
+                body = builder;
+            }
         }
     }         
     

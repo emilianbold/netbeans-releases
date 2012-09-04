@@ -92,7 +92,7 @@ public final class LabelImpl extends StatementBase implements CsmStatement, CsmL
     }
     
     
-    public static class LabelBuilder extends ScopedDeclarationBuilder {
+    public static class LabelBuilder extends StatementBuilder {
 
         CharSequence label;
 

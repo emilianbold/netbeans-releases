@@ -285,6 +285,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
             DeclarationStatementImpl stmt = new DeclarationStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
             List<CsmDeclaration> decls = new ArrayList<CsmDeclaration>();
             for (SimpleDeclarationBuilder declBuilder : declarations) {
+                declBuilder.setScope(getScope());
                 decls.add(declBuilder.create());
             }
             if(decls.isEmpty()) {

@@ -139,7 +139,7 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
         return DeepUtil.merge(getCondition(), getBody());
     }
  
-    public static class LoopStatementBuilder extends StatementBuilder {
+    public static class LoopStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         boolean postCheck;
         ConditionExpressionBuilder conditionExpression;
@@ -175,6 +175,11 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
                 stmt.condition = conditionExpression.create();
             }
             return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            body = builder;
         }
     }       
 }

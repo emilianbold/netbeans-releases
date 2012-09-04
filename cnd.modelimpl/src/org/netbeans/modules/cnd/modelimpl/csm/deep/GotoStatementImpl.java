@@ -85,7 +85,7 @@ public final class GotoStatementImpl extends StatementBase implements CsmGotoSta
         return label;
     }
 
-    public static class GotoStatementBuilder extends ScopedDeclarationBuilder {
+    public static class GotoStatementBuilder extends StatementBuilder {
 
         CharSequence label;
 

@@ -151,7 +151,7 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
     }
     
     
-    public static class IfStatementBuilder extends StatementBuilder {
+    public static class IfStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         ConditionDeclarationBuilder conditionDeclaration;
         ConditionExpressionBuilder conditionExpression;
@@ -191,6 +191,15 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
                 stmt.elseStmt = elseStatement.create();
             }
             return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            if(thenStatement == null) {
+                thenStatement = builder;
+            } else {
+                elseStatement = builder;
+            }
         }
     }  
     

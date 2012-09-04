@@ -124,7 +124,7 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         return DeepUtil.merge(getCondition(), getBody());
     }
     
-    public static class SwitchStatementBuilder extends StatementBuilder {
+    public static class SwitchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         ConditionExpressionBuilder conditionExpression;
         ConditionDeclarationBuilder conditionDeclaration;
@@ -155,6 +155,11 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
                 stmt.condition = conditionExpression.create();
             }
             return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            body = builder;
         }
     }    
     

@@ -103,7 +103,7 @@ public final class CaseStatementImpl extends StatementBase implements CsmCaseSta
         return CsmStatement.Kind.CASE;
     }
     
-    public static class CaseStatementBuilder extends ScopedDeclarationBuilder {
+    public static class CaseStatementBuilder extends StatementBuilder {
 
         ExpressionBuilder expression;
 
@@ -116,6 +116,6 @@ public final class CaseStatementImpl extends StatementBase implements CsmCaseSta
             CaseStatementImpl expr = new CaseStatementImpl(expression.create(), getScope(), getFile(), getStartOffset(), getEndOffset());
             return expr;
         }
-    }    
+    }
 }
 

@@ -68,6 +68,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.CompoundStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -254,7 +256,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         return l;
     }
 
-    public static class FunctionDDBuilder extends FunctionBuilder {
+    public static class FunctionDDBuilder extends FunctionBuilder implements StatementBuilderContainer {
 
         CompoundStatementBuilder bodyBuilder;
         
@@ -288,6 +290,12 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             
             return functionDDImpl;
         }        
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            assert builder instanceof CompoundStatementBuilder;
+            setBodyBuilder((CompoundStatementBuilder)builder);
+        }
 
     }
     

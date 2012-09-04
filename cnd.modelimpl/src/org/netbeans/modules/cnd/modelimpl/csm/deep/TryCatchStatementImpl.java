@@ -129,7 +129,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
 	return elements;
     }
  
-    public static class TryCatchStatementBuilder extends StatementBuilder {
+    public static class TryCatchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         private List<ExceptionHandlerBuilder> handlers = new ArrayList<ExceptionHandlerBuilder>();
         private StatementBuilder tryStatement;
@@ -162,6 +162,11 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
             }
                     
             return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            tryStatement = builder;
         }
     }       
     

@@ -128,10 +128,11 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return out;
     }
 
-    public static class CompoundStatementBuilder extends StatementBuilder {
+    public static class CompoundStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         private List<StatementBuilder> statements = new ArrayList<StatementBuilder>();
         
+        @Override
         public void addStatementBuilder(StatementBuilder statement) {
             statements.add(statement);
         }

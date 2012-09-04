@@ -85,7 +85,7 @@ public final class ExpressionStatementImpl extends StatementBase implements CsmE
         return expr;
     }
 
-    public static class ExpressionStatementBuilder extends ScopedDeclarationBuilder {
+    public static class ExpressionStatementBuilder extends StatementBuilder {
 
         ExpressionBuilder expression;
 
