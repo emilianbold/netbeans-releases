@@ -491,6 +491,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/switch1.js");
     }
 
+    public void testSwitch1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch1.js", null);
+    }
+
     public void testSwitch2() throws Exception {
         reformatFileContents("testfiles/formatter/switch2.js",new IndentPrefs(4, 4));
     }
@@ -513,6 +517,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSwitch3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch3.js");
+    }
+
+    public void testSwitch3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch3.js", null);
     }
 
     public void testSwitch4Default() throws Exception {
