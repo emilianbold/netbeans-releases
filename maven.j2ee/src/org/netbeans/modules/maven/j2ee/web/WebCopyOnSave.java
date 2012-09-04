@@ -85,13 +85,14 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private boolean isInPlace() throws IOException {
+        WebModule webModule = getWebModule();
         J2eeModule j2eeModule = getJ2eeModule();
-        if (j2eeModule == null) {
+        FileObject fo = j2eeModule.getContentDirectory();
+
+        if (j2eeModule == null || webModule == null || fo == null) {
             return false;
         }
-
-        FileObject fo = j2eeModule.getContentDirectory();
-        return fo != null && fo.equals(getWebModule().getDocumentBase());
+        return fo.equals(webModule.getDocumentBase());
     }
 
     @Override
