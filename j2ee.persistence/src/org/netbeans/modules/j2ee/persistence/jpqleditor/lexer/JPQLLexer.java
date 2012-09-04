@@ -725,7 +725,8 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                     }
 
                     // Invalid char
-                    return token(JPQLTokenId.ERROR);
+                    return token(JPQLTokenId.WHITESPACE);
+                    //return token(JPQLTokenId.ERROR); //disabled until complete implementation for the parser
             } // end of switch (c)
         } // end of while(true)
 
