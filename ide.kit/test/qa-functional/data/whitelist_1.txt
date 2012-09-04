@@ -1,3 +1,13 @@
+#217785
+org.json.simple.JSONArray
+org.json.simple.JSONAware
+org.json.simple.JSONObject
+org.json.simple.JSONStreamAware
+org.json.simple.JSONValue
+org.json.simple.parser.JSONParser
+org.json.simple.parser.Yylex
+org.json.simple.parser.Yytoken
+
 #213235
 org.netbeans.modules.search.ActionManager
 org.netbeans.modules.search.ActionManager$FindActionManager
