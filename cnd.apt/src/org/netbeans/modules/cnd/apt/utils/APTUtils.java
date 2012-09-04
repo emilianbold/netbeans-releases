@@ -113,13 +113,11 @@ public class APTUtils {
     }
 
     public static CharSequence getFileOnceMacroName(APTFile apt) {
-        String path = apt.getPath().toString();
+        // use Unix like separators to be the same on Win/Unix
+        String path = apt.getPath().toString().replace("\\", "/");//NOI18N
         if (CndUtils.isUnitTestMode()) {
             String TEST_DATA_DIR = "/unit/data/";//NOI18N
             int idx = path.indexOf(TEST_DATA_DIR);
-            if (idx < 0) {
-                idx = path.indexOf(TEST_DATA_DIR.replace("/", "\\"));//NOI18N
-            }
             assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
             path = path.substring(idx + TEST_DATA_DIR.length());
         }
