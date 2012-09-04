@@ -219,13 +219,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
 
     public void selectElementNode(final ParserResult info, final int offset) {
-        ElementNode root = getRootNode();
-        if ( root == null ) {
-            return;
-        }
-        final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                ElementNode root = getRootNode();
+                if ( root == null ) {
+                    return;
+                }
+                final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
                 Node[] selectedNodes = manager.getSelectedNodes();
                 if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
                     try {
