@@ -1,3 +1,13 @@
+#217786
+org.netbeans.modules.web.clientproject.ClientSideProject
+org.netbeans.modules.web.clientproject.PathRecognizerImpl
+org.netbeans.modules.web.clientproject.api.WebClientLibraryManager
+org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider
+org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider
+org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider
+org.netbeans.modules.web.clientproject.remote.RemoteFilesCache
+org.netbeans.modules.web.clientproject.remote.RemoteURLMapper
+
 #217785
 org.json.simple.JSONArray
 org.json.simple.JSONAware
