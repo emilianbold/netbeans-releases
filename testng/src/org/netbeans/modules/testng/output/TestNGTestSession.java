@@ -111,6 +111,17 @@ public class TestNGTestSession extends TestSession {
             }
         }
     }
+    
+    public String getSuiteName(String name) {
+        int suitesNum = 0;
+        for (TestNGTestSuite suite : suites) {
+            if (suite.getName().startsWith(name)) {
+                suitesNum++;
+            }
+        }
+        name = suitesNum == 0 ? name : name.concat(" ").concat(Integer.toString(suitesNum));
+        return name;
+    }
 
 
     class ProjectFileLocator implements FileLocator {
