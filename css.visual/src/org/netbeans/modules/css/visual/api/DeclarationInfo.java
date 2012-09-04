@@ -53,6 +53,16 @@ public enum DeclarationInfo {
     /**
      * Indicates the declaration is overridden by another declaration.
      */
-    OVERRIDDEN;
+    OVERRIDDEN,
+    
+    /**
+     * Flags inactive declaration.
+     */
+    INACTIVE,
+    
+    /**
+     * Flags erroneous declaration.
+     */
+    ERRONEOUS;
     
 }

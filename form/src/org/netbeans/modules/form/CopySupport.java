@@ -365,6 +365,10 @@ class CopySupport {
                         RADVisualComponent sourceCompVisual = (RADVisualComponent) sourceComp;
                         if (!sourceCompVisual.isMenuComponent()) {
                             LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceCompVisual.getId());
+                            if (layoutComp == null) { // workaround for bug 214841, the source layout is broken or container was removed
+                                commonRoot = null;
+                                break;
+                            }
                             LayoutInterval compInterval = layoutComp.getLayoutInterval(0);
                             if (commonRoot == null) {
                                 commonRoot = compInterval.getRoot();
@@ -511,14 +515,24 @@ class CopySupport {
 
         private static Rectangle getComponentBounds(RADComponent sourceComp) {
             FormDesigner designer = FormEditor.getFormDesigner(sourceComp.getFormModel());
-            Component comp = (Component) designer.getComponent(sourceComp);
-            return comp != null ? comp.getBounds() : null;
+            if (designer != null) {
+                Component comp = (Component) designer.getComponent(sourceComp);
+                if (comp != null) {
+                    return comp.getBounds();
+                }
+            }
+            return null;
         }
 
         private static Dimension getComponentSize(RADComponent sourceComp) {
             FormDesigner designer = FormEditor.getFormDesigner(sourceComp.getFormModel());
-            Component comp = (Component) designer.getComponent(sourceComp);
-            return comp != null ? comp.getSize() : null;
+            if (designer != null) {
+                Component comp = (Component) designer.getComponent(sourceComp);
+                if (comp != null) {
+                    return comp.getSize();
+                }
+            }
+            return null;
         }
 
         private static boolean isConvertibleLayout(RADVisualContainer metaCont) {

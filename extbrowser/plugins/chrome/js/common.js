@@ -390,6 +390,7 @@ NetBeans.tabUpdated = function(tab) {
             this.sendUrlChangeMessage(tab.id, tab.url);
             this.showPageIcon(tab.id);
             this.createContextMenu(tab.id, tab.url);
+            this.initShortcuts(tab.id);
             if (this.INFOBAR) {
                 this.showInfoBar(tab.id);
             }

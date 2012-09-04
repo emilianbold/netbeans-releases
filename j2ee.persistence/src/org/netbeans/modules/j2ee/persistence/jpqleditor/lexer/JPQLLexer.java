@@ -77,8 +77,10 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
             JPQLTokenId lookupId = null;
             switch (c) {
                 case '"': // string literal
-                    if (lookupId == null) lookupId = JPQLTokenId.STRING_LITERAL;
-                    while (true)
+                    if (lookupId == null) {
+                        lookupId = JPQLTokenId.STRING_LITERAL;
+                    }
+                    while (true) {
                         switch (input.read()) {
                             case '"': // NOI18N
                                 return token(lookupId);
@@ -91,9 +93,11 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                                 return tokenFactory.createToken(lookupId, //XXX: \n handling for exotic identifiers?
                                         input.readLength(), PartType.START);
                         }
-
+                    }
                 case '\'': // char literal
-                    if (lookupId == null) lookupId = JPQLTokenId.STRING_LITERAL;
+                    if (lookupId == null) {
+                        lookupId = JPQLTokenId.STRING_LITERAL;
+                    }
                     while (true)
                         switch (input.read()) {
                             case '\'': // NOI18N
@@ -172,15 +176,18 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                     return token(JPQLTokenId.BANG);
 
                 case '.':
-                    if ((c = input.read()) == '.')
+                    if ((c = input.read()) == '.') {
                         if (input.read() == '.') { // ellipsis ...
                             return token(JPQLTokenId.ELLIPSIS);
-                        } else
+                        } else {
                             input.backup(2);
+                        }
+                    }
                     else if ('0' <= c && c <= '9') { // float literal
                         return finishNumberLiteral(input.read(), true);
-                    } else
+                    } else {
                         input.backup(1);
+                    }
                     return token(JPQLTokenId.DOT);
 
                 case '~':
@@ -249,13 +256,15 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                     switch (c = input.read()) {
                         case 'b':
                         case 'B':
-                            if ((c = input.read()) == 's' || c=='S')
+                            if ((c = input.read()) == 's' || c=='S') {
                                 return keywordOrIdentifier(JPQLTokenId.ABS);
+                            }
                             break;
                         case 's':
                         case 'S':
-                            if ((c = input.read()) == 'c' || c=='C')
+                            if ((c = input.read()) == 'c' || c=='C') {
                                 return keywordOrIdentifier(JPQLTokenId.ASC);
+                            }
                             break;
                     }
                     return finishIdentifier(c);
@@ -718,14 +727,17 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                 default:
                     if (c >= 0x80) { // lowSurr ones already handled above
                         c = translateSurrogates(c);
-                        if (Character.isJavaIdentifierStart(c))
+                        if (Character.isJavaIdentifierStart(c)) {
                             return finishIdentifier();
-                        if (Character.isWhitespace(c))
+                        }
+                        if (Character.isWhitespace(c)) {
                             return finishWhitespace();
+                        }
                     }
 
                     // Invalid char
-                    return token(JPQLTokenId.ERROR);
+                    return token(JPQLTokenId.WHITESPACE);
+                    //return token(JPQLTokenId.ERROR); //disabled until complete implementation for the parser
             } // end of switch (c)
         } // end of while(true)
 
@@ -781,8 +793,9 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
             // For surrogate 2 chars must be backed up
             input.backup((c >= Character.MIN_SUPPLEMENTARY_CODE_POINT) ? 2 : 1);
             return token(keywordId);
-        } else // c is identifier part
+        } else {// c is identifier part
             return finishIdentifier();
+        }
     }
     
     private Token<JPQLTokenId> finishNumberLiteral(int c, boolean inFraction) {
@@ -820,8 +833,9 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
         if (c == '+' || c == '-') {
             c = input.read();
         }
-        if (c < '0' || '9' < c)
+        if (c < '0' || '9' < c) {
             return token(JPQLTokenId.ERROR);
+        }
         do {
             c = input.read();
         } while ('0' <= c && c <= '9'); // reading exponent

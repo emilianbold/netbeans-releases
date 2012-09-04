@@ -221,7 +221,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
         innerPanel.setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(scope);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

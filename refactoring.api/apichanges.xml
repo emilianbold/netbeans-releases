@@ -63,7 +63,6 @@ made subject to such option by the copyright holder.
         </description>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ExpandableTreeElement"/>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeProvider"/>
-        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeDescription"/>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeReference"/>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeReferences"/>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopePanel"/>
