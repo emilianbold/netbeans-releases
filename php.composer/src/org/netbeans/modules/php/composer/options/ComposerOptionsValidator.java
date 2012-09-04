@@ -44,6 +44,7 @@ package org.netbeans.modules.php.composer.options;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.composer.commands.Composer;
 import org.openide.util.NbBundle;
@@ -53,13 +54,16 @@ import org.openide.util.NbBundle;
  */
 public final class ComposerOptionsValidator {
 
+    private static final Pattern EMAIL_REGEX = Pattern.compile("^\\w+[\\.\\w\\-]*@\\w+[\\.\\w\\-]*\\.[a-z]{2,}$", Pattern.CASE_INSENSITIVE); // NOI18N
+
     private final List<Message> errors = new LinkedList<Message>();
     private final List<Message> warnings = new LinkedList<Message>();
 
 
     public void validate(String composerPath, String authorName, String authorEmail) {
         validateComposer(composerPath);
-        validateAuthor(authorName, authorEmail);
+        validateAuthorName(authorName);
+        validateAuthorEmail(authorEmail);
     }
 
     public boolean hasErrors() {
@@ -85,18 +89,17 @@ public final class ComposerOptionsValidator {
         }
     }
 
-    @NbBundle.Messages({
-        "ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.",
-        "ComposerOptionsValidator.error.invalidAuthorEmail=Author e-mail is not valid."
-    })
-    private void validateAuthor(String authorName, String authorEmail) {
-        // author
+    @NbBundle.Messages("ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.")
+    private void validateAuthorName(String authorName) {
         if (!StringUtils.hasText(authorName)) {
             errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName())); // NOI18N
         }
-        // email
+    }
+
+    @NbBundle.Messages("ComposerOptionsValidator.error.invalidAuthorEmail=Author e-mail is not valid.")
+    void validateAuthorEmail(String authorEmail) {
         if (!StringUtils.hasText(authorEmail)
-                || !authorEmail.contains("@")) { // NOI18N
+                || !EMAIL_REGEX.matcher(authorEmail).matches()) {
             errors.add(new Message("authorEmail", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail())); // NOI18N
         }
     }
