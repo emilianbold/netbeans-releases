@@ -1,3 +1,13 @@
+#217794
+org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer$Factory
+org.netbeans.modules.java.source.indexing.JavaBinaryIndexer$Factory
+org.netbeans.modules.java.source.parsing.JavaPathRecognizer
+org.netbeans.modules.java.source.ui.JavaSourceUIModule
+org.netbeans.modules.java.source.ui.OpenProjectFastIndex
+org.netbeans.modules.java.source.usages.ClassIndexManager$InternalLock
+org.netbeans.modules.java.source.usages.ClassIndexManagerEvent
+org.netbeans.modules.java.source.usages.ClassIndexManagerListener
+
 #217786
 org.netbeans.modules.web.clientproject.ClientSideProject
 org.netbeans.modules.web.clientproject.PathRecognizerImpl
