@@ -199,6 +199,9 @@ public class BrowserConsoleLogger implements Console.Listener {
                 io.getOut().println(sb.toString());
             }
         }
+        if (io.isClosed() || isErr) {
+            io.select();
+        }
     }
     
     private static final String LOG_IGNORED = "log";    // NOI18N
