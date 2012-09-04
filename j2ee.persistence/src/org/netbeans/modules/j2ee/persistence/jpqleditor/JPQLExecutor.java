@@ -115,6 +115,7 @@ public class JPQLExecutor {
             ProgressHandle ph,
             boolean execute) {
         JPQLResult result = new JPQLResult();
+        jpql = jpql.trim();
         try {
             ph.progress(60);
 
@@ -179,14 +180,13 @@ public class JPQLExecutor {
             result.setSqlQuery(queryStr);
             //
             ph.progress(70);
-
             if (execute) {
                 query.setMaxResults(maxRowCount);
 
-                jpql = jpql.trim();
-                jpql = jpql.toUpperCase();
+                
+                String jpql0 = jpql.toUpperCase();
 
-                if (jpql.startsWith("UPDATE") || jpql.startsWith("DELETE")) { //NOI18N
+                if (jpql0.startsWith("UPDATE") || jpql0.startsWith("DELETE")) { //NOI18N
                     result.setUpdateOrDeleteResult(query.executeUpdate());
                 } else {
                     result.setQueryResults(query.getResultList());
