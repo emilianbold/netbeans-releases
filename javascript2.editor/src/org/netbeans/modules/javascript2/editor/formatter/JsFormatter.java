@@ -1506,12 +1506,40 @@ public class JsFormatter implements Formatter {
                         if (prevToken.id() != JsTokenId.BRACKET_LEFT_CURLY) {
                             // it must be case or default
                             inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
-                            prevToken = LexUtilities.findPreviousIncluding(inner,
+                            LexUtilities.findPreviousIncluding(inner,
                                     Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT));
-                            int beginLine = Utilities.getLineOffset(doc, inner.offset());
+
+                            int offset = inner.offset();
+                            inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                            prevToken = LexUtilities.findPrevious(inner, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL));
+
+                            int beginLine = Utilities.getLineOffset(doc, offset);
                             int eolLine = Utilities.getLineOffset(doc, ts.offset());
-                            if (beginLine != eolLine) {
-                                return -1;
+
+                            // we need to take care of case like this:
+                            // case 'a':
+                            //      test();
+                            //      break;
+                            //
+                            //      //comment
+                            //
+                            //    case 'b':
+                            //      test();
+                            //      break;
+                            // note the comment - we would get to this block twice
+                            // (eol after break and eol after //comment)
+                            // so indentation level change would be -2 instead of -1
+                            if (prevToken.id() != JsTokenId.BLOCK_COMMENT
+                                    && prevToken.id() != JsTokenId.DOC_COMMENT
+                                    && prevToken.id() != JsTokenId.LINE_COMMENT) {
+                                if (beginLine != eolLine) {
+                                    return -1;
+                                }
+                            } else {
+                                int commentLine = Utilities.getLineOffset(doc, inner.offset());
+                                if (beginLine != eolLine && commentLine == beginLine) {
+                                    return -1;
+                                }
                             }
                         }
                     }
