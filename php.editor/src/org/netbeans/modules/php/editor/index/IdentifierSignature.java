@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.index;
 
-import java.util.Map;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
