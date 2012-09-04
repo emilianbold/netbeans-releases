@@ -2141,6 +2141,7 @@ AtomicLockListener, FoldHierarchyListener {
                     setDot(startOffset, false);
                 }
             }
+            saveFoldCaretBounds = null;
             scrollToView = false;
         }        
         // Update caret's visual position
@@ -2151,7 +2152,8 @@ AtomicLockListener, FoldHierarchyListener {
             public @Override void run() {
                LOG.finest("Updating after fold hierarchy change");
                updateAfterFoldHierarchyChange = true;
-               boolean wasInView = component.getVisibleRect().intersects(saveFoldCaretBounds);
+               Rectangle b = saveFoldCaretBounds;
+               boolean wasInView = b != null && component.getVisibleRect().intersects(b);
                // scroll if:
                // a/ a fold was added and the caret was originally in the view
                // b/ scrollToView is true (= caret was positioned within a new now collapsed fold)
