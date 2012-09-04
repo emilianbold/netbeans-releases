@@ -49,10 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.java.navigation.ClassMemberPanel;
 import org.netbeans.modules.java.navigation.ClassMemberPanelUI;
 import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -111,8 +108,7 @@ public class ShowMembersAction extends AbstractAction {
                 @Override
                 public void run() {
                     NavigatorHandler.activateNavigator();
-                    final Collection<? extends NavigatorPanel> panels =
-                            Lookups.forPath("Navigator/Panels/text/x-java/").lookupAll(NavigatorPanel.class);
+                    final Collection<? extends NavigatorPanel> panels = getPanels(context);
                     NavigatorPanel cmp = null;
                     for (NavigatorPanel panel : panels) {
                         if (panel.getComponent().getClass() == ClassMemberPanelUI.class) {
@@ -127,6 +123,15 @@ public class ShowMembersAction extends AbstractAction {
                 }
             });
         }
+    }
+
+    private static Collection<? extends NavigatorPanel> getPanels(@NonNull final JavaSource context) {
+        final Collection<? extends FileObject> files = context.getFileObjects();
+        assert files.size() == 1;
+        return Lookups.forPath(
+            String.format(
+                "Navigator/Panels/%s/",  //NOI18N
+                files.iterator().next().getMIMEType())).lookupAll(NavigatorPanel.class);
     }
 
 
