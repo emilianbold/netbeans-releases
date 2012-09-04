@@ -1031,7 +1031,7 @@ public class VariousUtils {
         if (token != null) {
             CharSequence tokenText = token.text();
             if (PHPTokenId.PHP_COMMENT.equals(token.id()) && tokenText != null
-                    && tokenText.toString().trim().startsWith(VAR_TYPE_COMMENT_PREFIX)) { //NOI18N
+                    && tokenText.toString().trim().startsWith(VAR_TYPE_COMMENT_PREFIX)) {
                 result = true;
             }
         }
