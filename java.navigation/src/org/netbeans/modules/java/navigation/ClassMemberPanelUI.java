@@ -677,30 +677,22 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             try {
                 final Pair<URI,ElementHandle<TypeElement>> handlePair = becomesHandle.get();
                 if (handlePair != null) {
-                    final FileObject fo = URLMapper.findFileObject(handlePair.first.toURL());
-                    if (fo != null) {
-                        final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
-                        final FileObject target = SourceUtils.getFile(handlePair.second, cpInfo);
-                        if (target != null) {
-                            final JavaSource targetJs = JavaSource.forFileObject(target);
-                            if (targetJs != null) {
-                                history.addToHistory(handlePair);
-                                targetJs.runUserActionTask(this, true);
-                                ((Toolbar)getToolbar()).select(handlePair);
-                            } else {
-                                clearNodes();
-                                StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                    handlePair.second.getQualifiedName()));
-                            }
+                    final FileObject target = URLMapper.findFileObject(handlePair.first.toURL());
+                    if (target != null) {
+                        final JavaSource targetJs = JavaSource.forFileObject(target);
+                        if (targetJs != null) {
+                            history.addToHistory(handlePair);
+                            targetJs.runUserActionTask(this, true);
+                            ((Toolbar)getToolbar()).select(handlePair);
                         } else {
                             clearNodes();
                             StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                    handlePair.second.getQualifiedName()));
+                                handlePair.second.getQualifiedName()));
                         }
                     } else {
                         clearNodes();
                         StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                    handlePair.second.getQualifiedName()));
+                                handlePair.second.getQualifiedName()));
                     }
                 } else {
                     clearNodes();
