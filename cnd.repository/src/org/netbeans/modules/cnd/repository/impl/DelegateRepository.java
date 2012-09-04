@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -78,8 +80,8 @@ public final class DelegateRepository implements Repository {
     private int persistMechanismVersion = -1;
 
     public DelegateRepository() {
-        delegates = new ArrayList<BaseRepository>();
-        delegates.add(new DummyRepository(0, CacheLocation.DEFAULT));
+        delegates = new ArrayList<BaseRepository>();        
+        delegates.add(new DummyRepository(0));
     }
 
     @Override
@@ -252,10 +254,10 @@ public final class DelegateRepository implements Repository {
 
         private static final String exceptionText = "DummyRepository should never be accessed"; //NOI18N
 
-        public DummyRepository(int id, CacheLocation cacheLocation) {
-            super(id, cacheLocation);
+        public DummyRepository(int id) {
+            super(id, new CacheLocation(new File(Utilities.isWindows() ? "nul" : "/dev/null"))); //NOI18N;
         }
-                
+
         @Override
         public void hang(Key key, Persistent obj) {
             throw new IllegalArgumentException(exceptionText);
