@@ -216,7 +216,7 @@ public final class CodeModelDiagnostic {
             printOut.printf("====ModelImpl:\n");// NOI18N
             ModelImpl.instance().dumpInfo(printOut, false);
             printOut.printf("====Libraries:\n"); //NOI18N
-            LibraryManager.getInstance().dumpInfo(printOut, false);
+            LibraryManager.dumpInfo(printOut, false);
         }
     }
     
@@ -233,7 +233,7 @@ public final class CodeModelDiagnostic {
             printOut.printf("====ModelImpl:\n");// NOI18N
             ModelImpl.instance().dumpInfo(printOut, true);
             printOut.printf("====Libraries:\n"); //NOI18N
-            LibraryManager.getInstance().dumpInfo(printOut, true);
+            LibraryManager.dumpInfo(printOut, true);
         }
     }
     

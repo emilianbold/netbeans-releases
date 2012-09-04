@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.repository.api;
 
-import java.io.File;
-
 /**
  *
  * @author Nickolay Dalmatov
@@ -61,8 +59,9 @@ public interface RepositoryTranslation {
      * @param cacheLocation can be null, in this case standard location 
      * ${userdir}/var/cache/cnd/model will be used
      */
-    int getUnitId(CharSequence unitName, File cacheLocation);
-    File getCacheLocation(int unitId);
+    int getUnitId(CharSequence unitName, CacheLocation cacheLocation);
+
+    CacheLocation getCacheLocation(int unitId);
     CharSequence getUnitName(int unitId);
     CharSequence getUnitNameSafe(int unitId);
 }

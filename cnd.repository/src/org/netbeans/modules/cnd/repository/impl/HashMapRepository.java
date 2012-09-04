@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -109,7 +109,7 @@ public class HashMapRepository extends BaseRepository {
      *  HashMapRepository creates from META-INF/services;
      *  no need for public constructor
      */
-    public HashMapRepository(int id, File cacheLocation) {
+    public HashMapRepository(int id, CacheLocation cacheLocation) {
         super(id, cacheLocation);
         units = new ConcurrentHashMap<Integer, Unit>();
     }

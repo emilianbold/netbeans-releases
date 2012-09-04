@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
@@ -60,7 +60,7 @@ public class KeyValidatorRepository extends HashMapRepository {
     
     Map<Key, Key> keyMap = Collections.synchronizedMap(new HashMap<Key, Key>());
 
-    public KeyValidatorRepository(int id, File cacheLocation) {
+    public KeyValidatorRepository(int id, CacheLocation cacheLocation) {
         super(id, cacheLocation);
     }
 

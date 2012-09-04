@@ -43,15 +43,14 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
-import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -74,13 +73,13 @@ public final class DelegateRepository implements Repository {
     private final ArrayList<BaseRepository> delegates;
     
     /** guarded by delegatesLock */
-    private final Map<File, BaseRepository> cacheToDelegate = new HashMap<File, BaseRepository>();
+    private final Map<CacheLocation, BaseRepository> cacheToDelegate = new HashMap<CacheLocation, BaseRepository>();
     
     private int persistMechanismVersion = -1;
 
     public DelegateRepository() {
         delegates = new ArrayList<BaseRepository>();
-        delegates.add(new DummyRepository(0, null));
+        delegates.add(new DummyRepository(0, CacheLocation.DEFAULT));
     }
 
     @Override
@@ -173,7 +172,7 @@ public final class DelegateRepository implements Repository {
         this.persistMechanismVersion = persistMechanismVersion;
     }
 
-    private BaseRepository createRepository(int id, File cacheLocation) {
+    private BaseRepository createRepository(int id, CacheLocation cacheLocation) {
         BaseRepository delegate;
         if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
             Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
@@ -226,9 +225,10 @@ public final class DelegateRepository implements Repository {
         return getDelegate(unitId).getTranslation();
     }
 
-    public int getUnitId(CharSequence unitName, File cacheLocation) {
+    public int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+        CndUtils.assertNotNull(cacheLocation, "null cache location"); //NOI18N
         if (cacheLocation == null) {
-            cacheLocation = StorageAllocator.getDefaultCacheLocation();
+            cacheLocation = CacheLocation.DEFAULT;
         }
         assert cacheLocation != null;
         synchronized (delegatesLock) {
@@ -244,7 +244,7 @@ public final class DelegateRepository implements Repository {
         }        
     }
 
-    public File getCacheLocation(int unitId) {
+    public CacheLocation getCacheLocation(int unitId) {
         return getDelegate(unitId).getCacheLocation();
     }
     
@@ -252,7 +252,7 @@ public final class DelegateRepository implements Repository {
 
         private static final String exceptionText = "DummyRepository should never be accessed"; //NOI18N
 
-        public DummyRepository(int id, File cacheLocation) {
+        public DummyRepository(int id, CacheLocation cacheLocation) {
             super(id, cacheLocation);
         }
                 

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -67,14 +68,14 @@ public final class LibProjectImpl extends ProjectBase {
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
-    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName, File cacheLocation) {
+    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName, CacheLocation cacheLocation) {
         super(model, fs, includePathName, includePathName, cacheLocation);
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
 
-    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName, File cacheLocation) {
+    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName, CacheLocation cacheLocation) {
         ProjectBase instance = null;
         assert includePathName != null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
@@ -116,7 +117,7 @@ public final class LibProjectImpl extends ProjectBase {
     public Collection<ProjectBase> getDependentProjects() {
         // TODO: looks like not very safe way to get dependencies
         // see issue #211061
-        return LibraryManager.getInstance().getProjectsByLibrary(this);
+        return LibraryManager.getInstance(this).getProjectsByLibrary(this);
     }
 
     @Override

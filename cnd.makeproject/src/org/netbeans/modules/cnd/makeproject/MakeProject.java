@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -82,6 +83,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -100,6 +102,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -328,7 +331,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
-                    new CPPImpl(sources)
+                    new CPPImpl(sources),
+                    createCacheLocation(helper),
                 };
         
         MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
@@ -350,6 +354,24 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
+    }
+    
+    private static CacheLocation createCacheLocation(MakeProjectHelper helper) {
+        try {
+            FileObject projectDirectory = helper.getProjectDirectory();
+            if (CndFileUtils.isLocalFileSystem(projectDirectory.getFileSystem())) {
+                File cache = new File(projectDirectory.getPath() + "/nbproject/private/cache/model"); //NOI18N
+                if (DebugUtils.getBoolean("cnd.cache.in.project", true)) {
+                    cache.mkdirs();
+                }
+                if (cache.exists()) {
+                    return new CacheLocation(cache);
+                }
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return CacheLocation.DEFAULT;
     }
 
     @Override

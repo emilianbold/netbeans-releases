@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -150,11 +149,13 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -170,7 +171,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject));
     }
 
-    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, File cacheLocation) {
+    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, CacheLocation cacheLocation) {
         this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject, cacheLocation));
     }
 
@@ -345,16 +346,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         RepositoryUtils.closeUnit(key, null, true);
     }
 
-    protected static void cleanRepository(FileSystem fs, CharSequence platformProject, boolean articicial, File cacheLocation) {
+    protected static void cleanRepository(FileSystem fs, CharSequence platformProject, boolean articicial, CacheLocation cacheLocation) {
         Key key = createProjectKey(fs, platformProject, cacheLocation);
         RepositoryUtils.closeUnit(key, null, true);
     }
 
     private static Key createProjectKey(FileSystem fs, NativeProject platfProj) {
-        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), getCacheLocation(platfProj));
+        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), ProjectBase.getCacheLocation(platfProj));
     }
 
-    private static Key createProjectKey(FileSystem fs, CharSequence  platfProj, File cacheLocation) {
+    private static Key createProjectKey(FileSystem fs, CharSequence  platfProj, CacheLocation cacheLocation) {
         return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), cacheLocation);
     }
 
@@ -362,11 +363,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return readInstance(model, createProjectKey(fs, platformProject), platformProject, name);
     }
 
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, File cacheLocation) {
+    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, CacheLocation cacheLocation) {
         ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, cacheLocation), platformProject, name);
-        if (instance != null) {
-            assert (cacheLocation == null) ? instance.getCacheLocation() == null : cacheLocation.equals(instance.getCacheLocation());
-        }
         return instance;
     }
 
@@ -428,23 +426,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
 
-    public File getCacheLocation() {
+    /*package*/ CacheLocation getCacheLocation() {
         return RepositoryAccessor.getTranslator().getCacheLocation(unitId);
     }
 
-    public static File getCacheLocation(NativeProject np) {
-        if (CndFileUtils.isLocalFileSystem(np.getFileSystem())) {
-            File cache = new File(np.getProjectRoot() + "/nbproject/private/cache/model"); //NOI18N
-            if (TraceFlags.CACHE_IN_PROJECT) {
-                cache.mkdirs();
-            }
-            if (cache.exists()) {
-                return cache;
+    public static CacheLocation getCacheLocation(NativeProject project) {
+        assert project != null;
+        Provider lp = project.getProject();
+        if (lp != null) {
+            CacheLocation loc = lp.getLookup().lookup(CacheLocation.class);
+            if (loc != null) {
+                return loc;
             }
         }
-        return null;
+        return CacheLocation.DEFAULT;
     }
-    
+
     @Override
     public String getDisplayName() {
         if (CndFileUtils.isLocalFileSystem(fileSystem)) {
@@ -468,9 +465,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         String postfix = CndFileUtils.isLocalFileSystem(fs) ? "" : fs.getDisplayName();
         String result;
         if (platformProject instanceof NativeProject) {
-            result = ((NativeProject) platformProject).getProjectRoot() + 'N' + postfix;
+            result = ((NativeProject) platformProject).getProjectRoot() + "/N/" + postfix;
         } else if (platformProject instanceof CharSequence) {
-            result = ((CharSequence)platformProject).toString() + 'L' + postfix;
+            result = ((CharSequence)platformProject).toString() + "/L/" + postfix;
         } else if (platformProject == null) {
             throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
         } else {
@@ -2654,7 +2651,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         //    res.add(lib);
         //}
         if (!isArtificial()) {
-            for (CsmUID<CsmProject> library : LibraryManager.getInstance().getLirariesKeys(getUID())) {
+            for (CsmUID<CsmProject> library : LibraryManager.getInstance(this).getLirariesKeys(getUID())) {
                 res.add(RepositoryUtils.UIDtoKey(library));
             }
         }
@@ -2681,7 +2678,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         //    res.add(lib);
         //}
         if (!isArtificial()) {
-            List<LibProjectImpl> libraries = LibraryManager.getInstance().getLibraries((ProjectImpl) this);
+            List<LibProjectImpl> libraries = LibraryManager.getInstance(this).getLibraries((ProjectImpl) this);
             int size = libraries.size();
             for (int i = 0; i < size; i++) {
                 res.add(libraries.get(i));

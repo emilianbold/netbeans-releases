@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.impl.DelegateRepository;
@@ -370,7 +371,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
     }
     
-    public static FilesAccessStrategyImpl testGetStrategy(File cacheLocation) {
+    public static FilesAccessStrategyImpl testGetStrategy(CacheLocation cacheLocation) {
         DelegateRepository repository = (DelegateRepository) RepositoryAccessor.getRepository();
         for (BaseRepository delegate : repository.testGetDelegates()) {
             if (cacheLocation.equals(delegate.getCacheLocation())) {

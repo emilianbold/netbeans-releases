@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.File;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -59,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -82,7 +82,7 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
 
-    public static Key createProjectKey(CharSequence projectQualifiedName, File cacheLocation) {
+    public static Key createProjectKey(CharSequence projectQualifiedName, CacheLocation cacheLocation) {
         return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName, cacheLocation));
     }
 
@@ -150,7 +150,7 @@ public class KeyUtilities {
      * @param cacheLocation can be null, in this case standard location 
      * ${userdir}/var/cache/cnd/model will be used
      */
-    public static int getUnitId(CharSequence unitName, File cacheLocation) {
+    public static int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
         return APTSerializeUtils.getUnitId(unitName, cacheLocation);
     }
 

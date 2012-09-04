@@ -64,12 +64,10 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     
     /*package*/ ProjectKey(RepositoryDataInput aStream) throws IOException {
 	this(aStream.readUnitId()); 
-        // super(aStream);
     }
 
     ProjectKey(KeyDataPresentation presentation) {
         this(presentation.getUnitPresentation()); 
-        //super(presentation);
     }
     
     @Override

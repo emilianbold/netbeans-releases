@@ -43,12 +43,12 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
@@ -79,20 +80,45 @@ import org.openide.filesystems.FileSystem;
  */
 public final class LibraryManager {
 
-    private static final LibraryManager instance = new LibraryManager();
-
-    public static LibraryManager getInstance() {
-        return instance;
+    private static final Map<CacheLocation, LibraryManager> instances = new HashMap<CacheLocation, LibraryManager>();
+    
+    private final CacheLocation cacheLocation;
+    
+    public static LibraryManager getInstance(ProjectBase project) {
+        return getInstance(project.getCacheLocation());
     }
 
-    private LibraryManager() {
-    }    
+    private  static LibraryManager getInstance(CacheLocation cacheLocation) {
+        synchronized (instances) {
+            LibraryManager manager = instances.get(cacheLocation);
+            if (manager == null) {
+                manager = new LibraryManager(cacheLocation);
+                instances.put(cacheLocation, manager);
+            }
+            return manager;
+        }
+    }
+
+    public LibraryManager(CacheLocation cacheLocation) {
+        this.cacheLocation = cacheLocation;
+    }
+    
     private final Map<LibraryKey, LibraryEntry> librariesEntries = new ConcurrentHashMap<LibraryKey, LibraryEntry>();
     
     private static final class Lock {}
     private final Object lock = new Lock();
 
-    public void shutdown(){
+    public static void shutdown(){
+        Collection<LibraryManager> list;
+        synchronized (instances) {
+            list = instances.values();
+        }
+        for (LibraryManager manager : list) {
+            manager.shutdownImpl();
+        }
+    }
+
+    private void shutdownImpl(){
         librariesEntries.clear();
     }
     
@@ -116,7 +142,7 @@ public final class LibraryManager {
 
     public Collection<ProjectBase> getProjectsByLibrary(LibProjectImpl library) {
         //getDependentProjects();
-        LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath().toString(), library.getCacheLocation());
+        LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath().toString());
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
             return Collections.<ProjectBase>emptyList();
@@ -334,7 +360,7 @@ public final class LibraryManager {
 
     private LibProjectImpl getLibrary(ProjectImpl project, FileSystem fs, String folder) {
         CsmUID<CsmProject> projectUid = project.getUID();
-        LibraryKey libraryKey = new LibraryKey(fs, folder, project.getCacheLocation());
+        LibraryKey libraryKey = new LibraryKey(fs, folder);
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
             entry = getOrCreateLibrary(libraryKey);
@@ -402,9 +428,25 @@ public final class LibraryManager {
     }
 
     /*package*/
-    final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
+    static void cleanLibrariesData(Collection<LibProjectImpl> libs) {
+        Map<CacheLocation, Collection<LibProjectImpl>> map = new HashMap<CacheLocation, Collection<LibProjectImpl>>();
+        for (LibProjectImpl lib : libs) {
+            CacheLocation loc = lib.getCacheLocation();
+            Collection<LibProjectImpl> coll = map.get(loc);
+            if (coll == null) {
+                coll = new ArrayList<LibProjectImpl>();
+                map.put(loc, coll);
+            }
+            coll.add(lib);
+        }
+        for (Map.Entry<CacheLocation, Collection<LibProjectImpl>> entry : map.entrySet()) {
+            getInstance(entry.getKey()).cleanLibrariesDataImpl(entry.getValue());
+        }
+    }
+    
+    private void cleanLibrariesDataImpl(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
-            librariesEntries.remove(new LibraryKey(entry.getFileSystem(), entry.getPath().toString(), entry.getCacheLocation()));
+            librariesEntries.remove(new LibraryKey(entry.getFileSystem(), entry.getPath().toString()));
             entry.dispose(true);
         }
     }
@@ -455,25 +497,20 @@ public final class LibraryManager {
 
         private final FileSystem fileSystem;
         private final String folder;
-        private final File cacheLocation;
 
-        public LibraryKey(FileSystem fileSystem, String folder, File cacheLocation) {
+        public LibraryKey(FileSystem fileSystem, String folder) {
             this.fileSystem = fileSystem;
             this.folder = folder;
-            this.cacheLocation = cacheLocation;
         }
 
         private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
             this.folder = input.readUTF();
-            String path = input.readUTF();
-            this.cacheLocation = (path.length() == 0) ? null : new File(path);
         }
         
         private void write(RepositoryDataOutput out) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, out);
             out.writeUTF(folder);
-            out.writeUTF(cacheLocation == null ? "" : cacheLocation.getAbsolutePath());
         }
 
         @Override
@@ -491,9 +528,6 @@ public final class LibraryManager {
             if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
                 return false;
             }
-            if (this.cacheLocation != other.cacheLocation && (this.cacheLocation == null || !this.cacheLocation.equals(other.cacheLocation))) {
-                return false;
-            }
             return true;
         }
 
@@ -502,12 +536,11 @@ public final class LibraryManager {
             int hash = 5;
             hash = 83 * hash + (this.folder != null ? this.folder.hashCode() : 0);
             hash = 83 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
-            hash = 83 * hash + (this.cacheLocation != null ? this.cacheLocation.hashCode() : 0);
             return hash;
         }
     }
 
-    private static final class LibraryEntry {
+    private final class LibraryEntry {
 
         private final LibraryKey key;
         private CsmUID<CsmProject> libraryUID;
@@ -526,10 +559,6 @@ public final class LibraryManager {
             return key.fileSystem;
         }
 
-        private File getCacheLocation() {
-            return key.cacheLocation;
-        }
-
         public LibraryKey getKey() {
             return key;
         }
@@ -545,7 +574,7 @@ public final class LibraryManager {
         private synchronized void createUID() {
             if (libraryUID == null) {
                 ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-                LibProjectImpl library = LibProjectImpl.createInstance(model, getFileSystem(), getFolder(), getCacheLocation());
+                LibProjectImpl library = LibProjectImpl.createInstance(model, getFileSystem(), getFolder(), cacheLocation);
                 libraryUID = library.getUID();
             }
         }
@@ -587,8 +616,18 @@ public final class LibraryManager {
         
     }
     
-    public void dumpInfo(PrintWriter printOut,boolean withContainers) {
-        printOut.printf("LibraryManager: libs=%d\n", librariesEntries.size());// NOI18N
+    public static void dumpInfo(PrintWriter printOut, boolean withContainers) {
+        Collection<LibraryManager> list;
+        synchronized (instances) {
+            list = instances.values();
+        }
+        for (LibraryManager manager : list) {
+            manager.dumpInfoImpl(printOut, withContainers);
+        }
+    }
+    
+    private void dumpInfoImpl(PrintWriter printOut, boolean withContainers) {
+        printOut.printf("LibraryManager [%s]: libs=%d\n", cacheLocation, librariesEntries.size());// NOI18N
         int ind = 1;
         for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
             printOut.printf("Lib[%d] %s with LibEntry %s\n", ind++, entry.getKey(), entry.getValue());// NOI18N

@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,6 +61,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
@@ -93,7 +93,7 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
     private static final class UnitLock {}
     private final Object mainUnitLock = new UnitLock();
 
-    public DiskRepositoryManager(int id, File cacheLocation) {
+    public DiskRepositoryManager(int id, CacheLocation cacheLocation) {
         super(id, cacheLocation);
         removedObject = new RemovedPersistent();
         queueLock = new ReentrantReadWriteLock(true);

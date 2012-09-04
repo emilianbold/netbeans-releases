@@ -47,6 +47,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
@@ -71,7 +72,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         //System.setProperty("cnd.repository.trace.conflicts", "true");
     }
     private final FilesAccessStrategyImpl strategy = new FilesAccessStrategyImpl(
-            new StorageAllocator(StorageAllocator.getDefaultCacheLocation()),
+            new StorageAllocator(CacheLocation.DEFAULT),
             new UnitCodec() {
                 @Override
                 public int removeRepositoryID(int unitId) {

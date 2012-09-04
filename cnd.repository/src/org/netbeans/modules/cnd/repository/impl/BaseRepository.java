@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.File;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategy;
 import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategyImpl;
@@ -58,13 +59,13 @@ public abstract class BaseRepository implements Repository, UnitCodec {
     public static final int REPO_DENOM = 100000;
     
     private final int id;
-    private final File cacheLocation;
+    private final CacheLocation cacheLocation;
     private final RepositoryTranslatorImpl translator;
     private final StorageAllocator storageAllocator;
     private final FilesAccessStrategy filesAccessStrategy;
     
 
-    protected BaseRepository(int id, File cacheLocation) {
+    protected BaseRepository(int id, CacheLocation cacheLocation) {
         this.id = id;
         this.cacheLocation = cacheLocation;
         this.storageAllocator = new StorageAllocator(cacheLocation);
@@ -94,12 +95,12 @@ public abstract class BaseRepository implements Repository, UnitCodec {
         return filesAccessStrategy;
     }
 
-    public File getCacheLocation() {
+    public CacheLocation getCacheLocation() {
         return cacheLocation;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ' ' + id + ' ' + cacheLocation.getAbsolutePath();
+        return getClass().getSimpleName() + ' ' + id + ' ' + cacheLocation;
     }
 }

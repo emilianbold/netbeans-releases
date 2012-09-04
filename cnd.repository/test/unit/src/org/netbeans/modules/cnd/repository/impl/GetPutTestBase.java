@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -60,7 +61,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
  */
 public abstract class GetPutTestBase extends CndBaseTestCase {
 
-    private static final int TEST_UNIT_ID = RepositoryAccessor.getTranslator().getUnitId("Repository_Test_Unit", null);
+    private static final int TEST_UNIT_ID = RepositoryAccessor.getTranslator().getUnitId("Repository_Test_Unit", CacheLocation.DEFAULT);
     
     protected GetPutTestBase(java.lang.String testName) {
         super(testName);

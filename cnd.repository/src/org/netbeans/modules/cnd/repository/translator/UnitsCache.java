@@ -203,9 +203,9 @@ import org.openide.util.NbBundle;
         fileNamesCaches.clear();
         stream.readInt();
         stream.readLong();
-        String oldIndexCanonicalPath = stream.readUTF();
-        if( ! oldIndexCanonicalPath.equals(masterIndexFile.getCanonicalPath())) {
-            converter = new IndexConverter(oldIndexCanonicalPath, masterIndexFile.getCanonicalPath());
+        String oldIndexPath = stream.readUTF();
+        if( ! oldIndexPath.equals(masterIndexFile.getAbsolutePath())) {
+            converter = new IndexConverter(oldIndexPath, masterIndexFile.getAbsolutePath());
         }
         int size = stream.readInt();
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -562,7 +562,7 @@ import org.openide.util.NbBundle;
         assert stream != null;
         stream.writeInt(RepositoryTranslatorImpl.getVersion());
         stream.writeLong(timestamp);
-        stream.writeUTF(masterIndexFile.getCanonicalPath());
+        stream.writeUTF(masterIndexFile.getAbsolutePath());
         int size = cache.size();
         stream.writeInt(size);
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -580,8 +580,8 @@ import org.openide.util.NbBundle;
     }
 
     int getId(CharSequence value) {
-        CharSequence prevString = null;
-        int prevInt = 0;
+        CharSequence prevString;
+        int prevInt;
         synchronized (oneItemCacheLock) {
             prevString = oneItemCacheString;
             prevInt = oneItemCacheInt;

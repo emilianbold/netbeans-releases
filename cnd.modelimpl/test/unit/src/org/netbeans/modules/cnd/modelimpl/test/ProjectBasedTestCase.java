@@ -314,7 +314,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
                 new CsmTracer(System.err).dumpModel(lib);
             }
         }
-        LibraryManager.getInstance().dumpInfo(new PrintWriter(System.err), true);
+        LibraryManager.dumpInfo(new PrintWriter(System.err), true);
     }
 
     protected void waitAllProjectsParsed() {

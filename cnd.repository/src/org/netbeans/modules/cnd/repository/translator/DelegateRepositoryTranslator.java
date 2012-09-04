@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.repository.translator;
 
-import java.io.File;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
@@ -78,12 +78,12 @@ public class DelegateRepositoryTranslator implements RepositoryTranslation {
     }
 
     @Override
-    public int getUnitId(CharSequence unitName, File cacheLocation) {
+    public int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
         return repositoryImpl.getUnitId(unitName, cacheLocation);
     }
 
     @Override
-    public File getCacheLocation(int unitId) {
+    public CacheLocation getCacheLocation(int unitId) {
         return repositoryImpl.getCacheLocation(unitId);
     }
 

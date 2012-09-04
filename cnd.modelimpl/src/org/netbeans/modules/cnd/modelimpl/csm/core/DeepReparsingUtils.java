@@ -316,7 +316,7 @@ public final class DeepReparsingUtils {
                 // invalide libraries when asked but after deep reparsing activity
                 // because this activity uses information about project dependency and library dependencies
                 assert (changedProject instanceof ProjectImpl): "should be ProjectImpl: " + changedProject;
-                LibraryManager.getInstance().onProjectPropertyChanged(changedProject);
+                LibraryManager.getInstance(changedProject).onProjectPropertyChanged(changedProject);
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);

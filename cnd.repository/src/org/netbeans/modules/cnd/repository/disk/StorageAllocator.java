@@ -49,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.modules.Places;
 
@@ -60,24 +61,11 @@ public class StorageAllocator {
 
     private final File diskRepository;
     
-    public StorageAllocator(File cacheLocation) {
-        diskRepository = cacheLocation;
+    public StorageAllocator(CacheLocation cacheLocation) {
+        diskRepository = cacheLocation.getLocation();
     };
 
     private Map<CharSequence, String> unit2path = new ConcurrentHashMap<CharSequence, String>();
-    
-    public static File getDefaultCacheLocation() {
-        File diskRepository = null;
-        if (diskRepository == null) {
-            String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-            if (diskRepositoryPath != null) {
-                diskRepository = new File(diskRepositoryPath);
-            } else {
-                diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
-            }
-        }
-        return diskRepository;
-    }
     
     public String reduceString (String name) {
         if (name.length() > 128) {
