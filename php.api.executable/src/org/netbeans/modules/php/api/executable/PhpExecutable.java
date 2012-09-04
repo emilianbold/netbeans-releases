@@ -717,7 +717,7 @@ public final class PhpExecutable {
         }
 
         private String colorize(String msg) {
-            return "\033[1;30;47m" + msg + "\033[00m"; // NOI18N
+            return "\033[1;30m" + msg + "\033[0m"; // NOI18N
         }
 
         private boolean isNewLine(char ch) {
