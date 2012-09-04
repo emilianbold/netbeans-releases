@@ -453,7 +453,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
             if (root != null && root.isValid()) {
-                return new Node[]{new FolderFilterNode(type, DataFolder.findFolder(root).getNodeDelegate(), ignoreList)};
+                DataFolder df = DataFolder.findFolder(root);
+                if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
+                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
+                }
             }
             // missing root should be solved by project problems
             return new Node[0];
