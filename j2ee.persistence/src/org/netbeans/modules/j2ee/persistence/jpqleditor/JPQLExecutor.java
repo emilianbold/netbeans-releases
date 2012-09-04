@@ -41,21 +41,47 @@
  */
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.ListResourceBundle;
+import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.lang.model.util.Elements;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
+import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
+import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
+import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
+import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
+import org.openide.util.NbBundle;
 
 /**
  * Executes JPQL query.
@@ -84,7 +110,7 @@ public class JPQLExecutor {
      */
     public JPQLResult execute(String jpql,
             PersistenceUnit pu,
-            PersistenceEnvironment pe,
+            final PersistenceEnvironment pe,
             int maxRowCount,
             ProgressHandle ph,
             boolean execute) {
@@ -102,7 +128,7 @@ public class JPQLExecutor {
             Logger.getLogger("org.hibernate.hql.internal.ast.ErrorCounter").setFilter(new Filter() {//NOI18N
                 @Override
                 public boolean isLoggable(LogRecord record) {
-                    if(record.getLevel().intValue()>Level.INFO.intValue()){//workaround to avoid exception dialog from nb for logged exception
+                    if (record.getLevel().intValue() > Level.INFO.intValue()) {//workaround to avoid exception dialog from nb for logged exception
                         record.setLevel(Level.INFO);
                     }
                     return true;
@@ -112,20 +138,19 @@ public class JPQLExecutor {
             //
             Provider provider = ProviderUtil.getProvider(pu);
             String queryStr = null;
-            if(provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)){//NOI18N
+            if (provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {//NOI18N
                 Class qClass = Thread.currentThread().getContextClassLoader().loadClass(ECLIPSELINK_QUERY);
-                if(qClass !=null) {
+                if (qClass != null) {
                     Method method = qClass.getMethod(ECLIPSELINK_QUERY_SQL0);
-                    if(method != null){
+                    if (method != null) {
                         Object dqOject = method.invoke(query);
-                        Method method2 = (dqOject!= null ? dqOject.getClass().getMethod(ECLIPSELINK_QUERY_SQL1) : null);
-                        if(method2!=null) {
+                        Method method2 = (dqOject != null ? dqOject.getClass().getMethod(ECLIPSELINK_QUERY_SQL1) : null);
+                        if (method2 != null) {
                             queryStr = (String) method2.invoke(dqOject);
                         }
                     }
                 }
-            } 
-            else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)){//NOI18N
+            } else if (provider.equals(ProviderUtil.HIBERNATE_PROVIDER2_0)) {//NOI18N
                 Method method = emf.getClass().getMethod(HIBERNATE_QUERY_SQL0);
                 Object sessionFactoryImpl = method.invoke(emf);
                 Method method2 = sessionFactoryImpl.getClass().getMethod(HIBERNATE_QUERY_SQL1);
@@ -133,11 +158,11 @@ public class JPQLExecutor {
                 Method method3 = qPlanCache.getClass().getMethod(HIBERNATE_QUERY_SQL2, String.class, boolean.class, Map.class);
                 Object cache = method3.invoke(qPlanCache, jpql, true, Collections.EMPTY_MAP);
                 Method method4 = cache.getClass().getMethod(HIBERNATE_QUERY_SQL3);
-                Object [] translators = (Object[]) method4.invoke(cache);
+                Object[] translators = (Object[]) method4.invoke(cache);
                 StringBuilder stringBuff = new StringBuilder();
-                if(translators != null && translators.length>0){
+                if (translators != null && translators.length > 0) {
                     Method method5 = translators[0].getClass().getMethod(HIBERNATE_QUERY_SQL4);
-                    for(Object translator:translators){
+                    for (Object translator : translators) {
                         stringBuff.append(method5.invoke(translator)).append("\n");
                     }
                 }
@@ -155,7 +180,7 @@ public class JPQLExecutor {
             //
             ph.progress(70);
 
-            if(execute){
+            if (execute) {
                 query.setMaxResults(maxRowCount);
 
                 jpql = jpql.trim();
@@ -169,6 +194,63 @@ public class JPQLExecutor {
             }
         } catch (Exception e) {
             result.getExceptions().add(e);
+            final Project project = pe.getProject();
+            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            JavaSource js = JavaSource.create(ClasspathInfo.create(sourceGroups[0].getRootFolder()));
+            final List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
+            final String jpql0 = jpql;
+            try {
+                js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        EntityClassScopeProvider provider = (EntityClassScopeProvider) project.getLookup().lookup(EntityClassScopeProvider.class);
+                        EntityClassScope ecs = null;
+                        if (provider != null) {
+                            ecs = provider.findEntityClassScope(pe.getLocation().getFileObject("persistence.xml"));
+                        }
+                        EntityClassScope scope = ecs;
+                        MetadataModel<EntityMappingsMetadata> entityMappingsModel = null;
+                        if (scope != null) {
+                            entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
+                        }
+                        if (entityMappingsModel != null) {
+                            final Elements elms = controller.getElements();
+                            entityMappingsModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Boolean>() {
+                                @Override
+                                public Boolean run(EntityMappingsMetadata metadata) throws Exception {
+                                    ManagedTypeProvider mtp = new ManagedTypeProvider(project, metadata, elms);
+                                    //////////////////////
+                                    JPQLQueryHelper helper = new JPQLQueryHelper();
+
+                                    helper.setQuery(new org.netbeans.modules.j2ee.persistence.spi.jpql.Query(null, jpql0, mtp));
+                                    try {
+                                        problems.addAll(helper.validate());
+                                    } catch (Exception ex) {
+                                    }
+                                    /////////////////////
+                                    return null;
+                                }
+                            });
+                        }
+                    }
+                }, false);
+            } catch (IOException ex) {
+            }
+            if (problems.size() > 0) {
+                //use parsed result for errors
+                StringBuilder message = new StringBuilder();
+                for (int i = 0; i < problems.size(); i++) {
+                    ListResourceBundle msgBundle = null;
+                    try {
+                        msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
+                    } catch (MissingResourceException ex) {//default en
+                        msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName(), Locale.ENGLISH);//NOI18N
+                    }
+                    message.append(java.text.MessageFormat.format(msgBundle.getString(problems.get(i).getMessageKey()), (Object[]) problems.get(i).getMessageArguments())).append("\n");
+                }
+                result.setQueryProblems(message.toString());
+            }
         }
         return result;
     }

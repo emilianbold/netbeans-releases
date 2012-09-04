@@ -397,10 +397,10 @@ public final class JPQLEditorTopComponent extends TopComponent {
                         }
                         if(jpqlResult.getExceptions() != null && jpqlResult.getExceptions().size()>0){
                             logger.log(Level.INFO, "", jpqlResult.getExceptions());
-                            showSQLError(pe, selectedConfigObject, "GeneralError");//NOI18N
+                            showSQLError( "GeneralError", jpqlResult.getQueryProblems());//NOI18N
                         } else {
                             if(jpqlResult.getSqlQuery() == null || jpqlResult.getSqlQuery().length()==0){
-                                showSQLError(pe, selectedConfigObject, "UnsupportedProvider");//NOI18N
+                                showSQLError("UnsupportedProvider", jpqlResult.getQueryProblems());//NOI18N
                             } else {
                                 showSQL(jpqlResult.getSqlQuery());
                             }
@@ -408,7 +408,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
                     } catch (Exception e) {
                         logger.log(Level.INFO, "", e);
-                        showSQLError(pe, selectedConfigObject, "GeneralError");//NOI18N
+                        showSQLError( "GeneralError", null);//NOI18N
                     } finally {
                         isSqlTranslationProcessDone = true;
                         ph2.finish();
@@ -425,65 +425,10 @@ public final class JPQLEditorTopComponent extends TopComponent {
         switchToSQLView();
     }
 
-    private void showSQLError(PersistenceEnvironment pe, PersistenceUnit pu, String errorResourceKey) {
-        //try to parse jpql
-        final Project project = pe.getProject();
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        JavaSource js = JavaSource.create(ClasspathInfo.create(sourceGroups[0].getRootFolder()));
-        final List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
-        try {
-            js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-                @Override
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    EntityClassScopeProvider provider = (EntityClassScopeProvider) project.getLookup().lookup(EntityClassScopeProvider.class);
-                    EntityClassScope ecs = null;
-                    if (provider != null) {
-                        ecs = provider.findEntityClassScope(puObject.getPrimaryFile());
-                    }
-                    EntityClassScope scope = ecs;
-                    MetadataModel<EntityMappingsMetadata> entityMappingsModel = null;
-                    if (scope != null) {
-                        entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
-                    }
-                    if (entityMappingsModel != null) {
-                        final Elements elms = controller.getElements();
-                        entityMappingsModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Boolean>() {
-                            @Override
-                            public Boolean run(EntityMappingsMetadata metadata) throws Exception {
-                                ManagedTypeProvider mtp = new ManagedTypeProvider(project, metadata, elms);
-                                //////////////////////
-                                JPQLQueryHelper helper = new JPQLQueryHelper();
-
-                                helper.setQuery(new org.netbeans.modules.j2ee.persistence.spi.jpql.Query(null, jpqlEditor.getText().trim(), mtp));                           
-                                try {
-                                    problems.addAll(helper.validate());
-                                } catch (Exception ex) {
-
-                                } 
-                                /////////////////////
-                                return null;
-                            }
-                        });
-                    }
-                }
-            }, false);
-        } catch (IOException ex) {
-        }
-        if(problems.size()>0){
-            //use parsed result for errors
-             StringBuilder message = new StringBuilder();
-             for (int i = 0; i < problems.size(); i++) {
-                ListResourceBundle msgBundle = null;
-                try {
-                    msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
-                } catch (MissingResourceException ex) {//default en
-                    msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName(), Locale.ENGLISH);//NOI18N
-                }
-                message.append(java.text.MessageFormat.format(msgBundle.getString(problems.get(i).getMessageKey()), (Object[]) problems.get(i).getMessageArguments())).append("\n");
-             }
-             sqlEditorPane.setText(message.toString());
-       } else {
+    private void showSQLError(String errorResourceKey, String queryProblems) {
+        if(queryProblems!=null){
+            sqlEditorPane.setText(queryProblems);
+        } else {
             //use default error message
             sqlEditorPane.setText(
                     NbBundle.getMessage(JPQLEditorTopComponent.class, errorResourceKey));
@@ -579,7 +524,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
         Thread.currentThread().setContextClassLoader(ccl);
         if (result.getSqlQuery() != null) {
             sqlEditorPane.setText(result.getSqlQuery());
-        }
+        } 
         if (result.getExceptions().isEmpty()) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
@@ -640,7 +585,9 @@ public final class JPQLEditorTopComponent extends TopComponent {
                         removePersistenceModuleCodelines(sWriter.toString()));
 
             }
-
+            if(result.getQueryProblems() != null){
+                sqlEditorPane.setText(result.getQueryProblems());
+            }
         }
 
         ph.progress(99);
