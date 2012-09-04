@@ -350,7 +350,11 @@ public final class FormatContext {
 
         BaseDocument doc = getDocument();
         try {
-            if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
+            String oldText = doc.getText(offset + offsetDiff, length);
+            if (newString.equals(oldText)) {
+                return;
+            }
+            if (SAFE_DELETE_PATTERN.matcher(oldText).matches()) {
                 doc.remove(offset + offsetDiff, length);
                 doc.insertString(offset + offsetDiff, newString, null);
                 setOffsetDiff(offsetDiff + (newString.length() - length));

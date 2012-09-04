@@ -559,7 +559,7 @@ public class JsFormatter implements Formatter {
                 if (remove || end.getKind() == FormatToken.Kind.EOL) {
                     formatContext.remove(start.getOffset(),
                             end.getOffset() - start.getOffset());
-                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                } else {
                     formatContext.replace(start.getOffset(),
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
