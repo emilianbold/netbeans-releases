@@ -42,38 +42,27 @@
 package org.netbeans.modules.php.dbgp.models.nodes;
 
 import java.util.Set;
-
 import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
-
 
 /**
  * @author ads
  *
  */
-class ScalarTypeVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode
-{
+class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
 
-    private static final String TYPE_FLOAT      = "TYPE_Float";     // NOI18N
+    private static final String TYPE_FLOAT = "TYPE_Float";     // NOI18N
+    private static final String TYPE_INT = "TYPE_Int";       // NOI18N
+    private static final String TYPE_BOOLEAN = "TYPE_Boolean";   // NOI18N
+    public static final String BOOLEAN = "boolean";        // NOI18N
+    public static final String BOOL = "bool";           // NOI18N
+    public static final String INTEGER = "integer";        // NOI18N
+    public static final String INT = "int";            // NOI18N
+    public static final String FLOAT = "float";          // NOI18N
 
-    private static final String TYPE_INT        = "TYPE_Int";       // NOI18N
-
-    private static final String TYPE_BOOLEAN    = "TYPE_Boolean";   // NOI18N
-
-    public static final String BOOLEAN          = "boolean";        // NOI18N
-
-    public static final String BOOL             = "bool";           // NOI18N
-
-    public static final String INTEGER          = "integer";        // NOI18N
-
-    public static final String INT              = "int";            // NOI18N
-
-    public static final String FLOAT            = "float";          // NOI18N
-
-    ScalarTypeVariableNode( Property property , AbstractModelNode parent ) {
-        super(property , parent );
+    ScalarTypeVariableNode(Property property, AbstractModelNode parent) {
+        super(property, parent);
     }
 
     /* (non-Javadoc)
@@ -83,25 +72,21 @@ class ScalarTypeVariableNode extends
     public String getType() {
         String type = super.getType();
         String bundleKey;
-        if ( BOOLEAN.equals(type) || BOOL.equals( type )) {
+        if (BOOLEAN.equals(type) || BOOL.equals(type)) {
             bundleKey = TYPE_BOOLEAN;
-        }
-        else if ( INTEGER.equals( type ) || INT.equals( type )) {
+        } else if (INTEGER.equals(type) || INT.equals(type)) {
             bundleKey = TYPE_INT;
-        }
-        else if ( FLOAT.equals( type )) {
+        } else if (FLOAT.equals(type)) {
             bundleKey = TYPE_FLOAT;
-        }
-        else {
-            assert false;
+        } else {
+            assert false : type;
             bundleKey = null;
         }
-        return NbBundle.getMessage( ScalarTypeVariableNode.class , bundleKey);
+        return NbBundle.getMessage(ScalarTypeVariableNode.class, bundleKey);
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.SCALARS );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.SCALARS);
     }
-
 }
