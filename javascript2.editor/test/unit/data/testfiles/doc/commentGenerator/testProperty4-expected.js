@@ -4,7 +4,7 @@ ShapeFactory.prototype = {
         /**
          * 
          * @param {type} asf
-         * @return {undefined}^
+         * @returns {undefined}^
          */
         ahoj: function(asf) {
         }

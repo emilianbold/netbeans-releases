@@ -39,34 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc;
-
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+package org.netbeans.modules.javascript2.editor;
 
 /**
- * Syntax provider of the JsDoc documentation tool.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocSyntaxProvider implements SyntaxProvider {
+public class JsCodeCompletionDocumentationTest extends JsCodeComplationBase {
 
-    @Override
-    public String typesSeparator() {
-        return "|";
+    public JsCodeCompletionDocumentationTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String paramTagTemplate() {
-        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
+    public void testCompletionDocumentation01() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "eer^o(1, 2);", false, "eer");
     }
 
-    @Override
-    public String returnTagTemplate() {
-        return "@returns {" + TYPE_PLACEHOLDER + "}";
+    public void testCompletionDocumentation02() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "vari^able;", false, "vari");
     }
 
-    @Override
-    public String typeTagTemplate() {
-        return "@type " + TYPE_PLACEHOLDER;
+    public void testCompletionDocumentation03() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "prom^enna;", false, "prom");
+    }
+
+    public void testIssue180805() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "tes^t(1, 2);", false, "tes");
     }
 }

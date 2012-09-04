@@ -48,14 +48,12 @@ package org.netbeans.modules.php.smarty.ui.options;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -63,10 +61,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -246,25 +244,24 @@ public class SmartyOptionsPanel extends JPanel {
         errorLabel = new JLabel();
         learnMoreLabel = new JLabel();
         installationInfoLabel = new JLabel();
-        editorPanel = new JPanel();
-        smartyVersionComboBox = new JComboBox();
+        editorSettingsLabel = new JLabel();
+        jSeparator1 = new JSeparator();
         smartyVersionLabel = new JLabel();
+        smartyVersionComboBox = new JComboBox();
         openDelimiterLabel = new JLabel();
+        openDelimiterTextField = new JTextField();
         closeDelimiterLabel = new JLabel();
         closeDelimiterTextField = new JTextField();
-        openDelimiterTextField = new JTextField();
-        perContextRadioButton = new JRadioButton();
-        asSmartyRadioButton = new JRadioButton();
         toggleCommentLable = new JLabel();
-        projectPanel = new JPanel();
+        asSmartyRadioButton = new JRadioButton();
+        perContextRadioButton = new JRadioButton();
+        projectSettingsLabel = new JLabel();
+        jSeparator2 = new JSeparator();
+        depthOfScanningLabel = new JLabel();
         depthOfScanningComboBox = new JComboBox();
         depthOfScanningNoteLabel = new JLabel();
-        depthOfScanningLabel = new JLabel();
 
-        errorLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
         Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.errorLabel.text")); // NOI18N
-
-        learnMoreLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
         Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.learnMoreLabel.text")); // NOI18N
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -274,137 +271,125 @@ public class SmartyOptionsPanel extends JPanel {
                 learnMoreLabelMousePressed(evt);
             }
         });
-
-        installationInfoLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.installationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(editorSettingsLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsEditorPanel")); // NOI18N
 
-        editorPanel.setBorder(BorderFactory.createTitledBorder(null, NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsEditorPanel"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("Dialog", 1, 11))); // NOI18N
-        editorPanel.setFont(new Font("Dialog", 0, 10)); // NOI18N
-        editorPanel.setName(NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsEditorPanel")); // NOI18N
-
-        smartyVersionLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
+        smartyVersionLabel.setDisplayedMnemonic('v');
+        smartyVersionLabel.setLabelFor(smartyVersionComboBox);
         Mnemonics.setLocalizedText(smartyVersionLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.smartyVersionLabel.text")); // NOI18N
 
-        openDelimiterLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
+        openDelimiterLabel.setDisplayedMnemonic('O');
+        openDelimiterLabel.setLabelFor(openDelimiterTextField);
+
         Mnemonics.setLocalizedText(openDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.openDelimiterLabel.text")); // NOI18N
 
-        closeDelimiterLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
-        Mnemonics.setLocalizedText(closeDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.closeDelimiterLabel.text")); // NOI18N
-
-        closeDelimiterTextField.setText(NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.closeDelimiterTextField.text")); // NOI18N
-        closeDelimiterTextField.setMinimumSize(new Dimension(4, 24));
-        closeDelimiterTextField.setPreferredSize(new Dimension(4, 24));
-
-        openDelimiterTextField.setText(NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.openDelimiterTextField.text")); // NOI18N
         openDelimiterTextField.setPreferredSize(new Dimension(4, 24));
 
-        toggleCommentButtonGroup.add(perContextRadioButton);
-        perContextRadioButton.setFont(new Font("Dialog", 0, 11)); // NOI18N
-        Mnemonics.setLocalizedText(perContextRadioButton, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.perContextRadioButton.text")); // NOI18N
+        closeDelimiterLabel.setDisplayedMnemonic('C');
+        closeDelimiterLabel.setLabelFor(closeDelimiterTextField);
+
+        Mnemonics.setLocalizedText(closeDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.closeDelimiterLabel.text")); // NOI18N
+
+        closeDelimiterTextField.setMinimumSize(new Dimension(4, 24));
+        closeDelimiterTextField.setPreferredSize(new Dimension(4, 24));
+        Mnemonics.setLocalizedText(toggleCommentLable, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.toggleCommentLable.text")); // NOI18N
 
         toggleCommentButtonGroup.add(asSmartyRadioButton);
-        asSmartyRadioButton.setFont(new Font("Dialog", 0, 11)); // NOI18N
+        asSmartyRadioButton.setMnemonic('a');
         asSmartyRadioButton.setSelected(true);
         Mnemonics.setLocalizedText(asSmartyRadioButton, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.asSmartyRadioButton.text")); // NOI18N
 
-        toggleCommentLable.setFont(new Font("Dialog", 0, 11)); // NOI18N
-        Mnemonics.setLocalizedText(toggleCommentLable, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.toggleCommentLable.text")); // NOI18N
+        toggleCommentButtonGroup.add(perContextRadioButton);
+        perContextRadioButton.setMnemonic('l');
 
-        GroupLayout editorPanelLayout = new GroupLayout(editorPanel);
-        editorPanel.setLayout(editorPanelLayout);
-        editorPanelLayout.setHorizontalGroup(
-            editorPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(editorPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(editorPanelLayout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(openDelimiterLabel)
-                    .addComponent(toggleCommentLable)
-                    .addComponent(smartyVersionLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(editorPanelLayout.createParallelGroup(Alignment.LEADING, false)
-                    .addComponent(asSmartyRadioButton)
-                    .addGroup(editorPanelLayout.createSequentialGroup()
-                        .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.UNRELATED)
-                        .addComponent(closeDelimiterLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))
-                    .addComponent(smartyVersionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(perContextRadioButton, GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        editorPanelLayout.setVerticalGroup(
-            editorPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(editorPanelLayout.createSequentialGroup()
-                .addGroup(editorPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(smartyVersionLabel)
-                    .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(editorPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(openDelimiterLabel)
-                    .addComponent(closeDelimiterLabel)
-                    .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(editorPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(toggleCommentLable)
-                    .addComponent(asSmartyRadioButton)
-                    .addComponent(perContextRadioButton))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        Mnemonics.setLocalizedText(perContextRadioButton, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.perContextRadioButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(projectSettingsLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsProjectPanel")); // NOI18N
 
-        projectPanel.setBorder(BorderFactory.createTitledBorder(null, NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsProjectPanel"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("Dialog", 1, 11))); // NOI18N
-
-        depthOfScanningNoteLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
-        Mnemonics.setLocalizedText(depthOfScanningNoteLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningNoteLabel.text")); // NOI18N
-
-        depthOfScanningLabel.setFont(new Font("Dialog", 0, 11)); // NOI18N
+        depthOfScanningLabel.setDisplayedMnemonic('S');
+        depthOfScanningLabel.setLabelFor(depthOfScanningComboBox);
         Mnemonics.setLocalizedText(depthOfScanningLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningLabel.text")); // NOI18N
-
-        GroupLayout projectPanelLayout = new GroupLayout(projectPanel);
-        projectPanel.setLayout(projectPanelLayout);
-        projectPanelLayout.setHorizontalGroup(
-            projectPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(projectPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(depthOfScanningLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(depthOfScanningComboBox, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(depthOfScanningNoteLabel)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        projectPanelLayout.setVerticalGroup(
-            projectPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(projectPanelLayout.createSequentialGroup()
-                .addGroup(projectPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(depthOfScanningLabel, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(depthOfScanningComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(depthOfScanningNoteLabel))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        Mnemonics.setLocalizedText(depthOfScanningNoteLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningNoteLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(editorSettingsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jSeparator1))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(projectSettingsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jSeparator2))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(errorLabel)
                     .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(installationInfoLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(projectPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(editorPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(installationInfoLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(openDelimiterLabel)
+                                    .addComponent(smartyVersionLabel)
+                                    .addComponent(toggleCommentLable))
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(12, 12, 12)
+                                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                            .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, 393, GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(ComponentPlacement.RELATED)
+                                                .addComponent(closeDelimiterLabel)
+                                                .addPreferredGap(ComponentPlacement.RELATED)
+                                                .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(asSmartyRadioButton)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(perContextRadioButton, GroupLayout.PREFERRED_SIZE, 178, GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(depthOfScanningLabel)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(depthOfScanningComboBox, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(depthOfScanningNoteLabel)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(editorPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(editorSettingsLabel)
+                    .addComponent(jSeparator1, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(projectPanel, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(smartyVersionLabel)
+                    .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(openDelimiterLabel)
+                    .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(closeDelimiterLabel)
+                    .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(toggleCommentLable)
+                    .addComponent(asSmartyRadioButton)
+                    .addComponent(perContextRadioButton))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(projectSettingsLabel)
+                    .addComponent(jSeparator2, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(depthOfScanningLabel, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(depthOfScanningComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(depthOfScanningNoteLabel))
+                .addPreferredGap(ComponentPlacement.RELATED, 180, Short.MAX_VALUE)
                 .addComponent(installationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -436,14 +421,16 @@ public class SmartyOptionsPanel extends JPanel {
     private JComboBox depthOfScanningComboBox;
     private JLabel depthOfScanningLabel;
     private JLabel depthOfScanningNoteLabel;
-    private JPanel editorPanel;
+    private JLabel editorSettingsLabel;
     private JLabel errorLabel;
     private JLabel installationInfoLabel;
+    private JSeparator jSeparator1;
+    private JSeparator jSeparator2;
     private JLabel learnMoreLabel;
     private JLabel openDelimiterLabel;
     private JTextField openDelimiterTextField;
     private JRadioButton perContextRadioButton;
-    private JPanel projectPanel;
+    private JLabel projectSettingsLabel;
     private JComboBox smartyVersionComboBox;
     private JLabel smartyVersionLabel;
     private ButtonGroup toggleCommentButtonGroup;
