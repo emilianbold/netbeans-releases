@@ -117,7 +117,7 @@ public class APTUtils {
         if (CndUtils.isUnitTestMode()) {
             String TEST_DATA_DIR = "/build/test/unit/data/";//NOI18N
             int idx = path.indexOf(TEST_DATA_DIR);
-            assert idx > 0;
+            assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
             path = path.substring(idx + TEST_DATA_DIR.length());
         }
         return CharSequences.create("\"" + path + "\""); //NOI18N
