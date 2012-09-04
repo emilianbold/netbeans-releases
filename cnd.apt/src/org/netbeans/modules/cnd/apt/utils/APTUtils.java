@@ -115,7 +115,7 @@ public class APTUtils {
     public static CharSequence getFileOnceMacroName(APTFile apt) {
         String path = apt.getPath().toString();
         if (CndUtils.isUnitTestMode()) {
-            String TEST_DATA_DIR = "/build/test/unit/data/";//NOI18N
+            String TEST_DATA_DIR = "/unit/data/";//NOI18N
             int idx = path.indexOf(TEST_DATA_DIR);
             assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
             path = path.substring(idx + TEST_DATA_DIR.length());
