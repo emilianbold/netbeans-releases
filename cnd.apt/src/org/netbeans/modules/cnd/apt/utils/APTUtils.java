@@ -118,7 +118,7 @@ public class APTUtils {
             String TEST_DATA_DIR = "/unit/data/";//NOI18N
             int idx = path.indexOf(TEST_DATA_DIR);
             if (idx < 0) {
-                idx = path.indexOf(TEST_DATA_DIR.replace("/", "\\"));
+                idx = path.indexOf(TEST_DATA_DIR.replace("/", "\\"));//NOI18N
             }
             assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
             path = path.substring(idx + TEST_DATA_DIR.length());
