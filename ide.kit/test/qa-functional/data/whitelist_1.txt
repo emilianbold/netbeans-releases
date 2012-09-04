@@ -1,3 +1,8 @@
+#217801
+org.netbeans.api.debugger.Lookup$FutureInstance
+org.netbeans.api.debugger.PositionedList
+org.netbeans.spi.debugger.ui.EditorContextDispatcher$EditorRegistryListener
+
 #217800
 org.netbeans.modules.editor.bookmarks.BookmarkManager
 org.netbeans.modules.editor.breadcrumbs.support.BreadCrumbsScheduler
