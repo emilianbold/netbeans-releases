@@ -329,44 +329,52 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             startOffset = funInfo.getStartOffset();
             endOffset = funInfo.getEndOffset();
             boolean skipComma = true;
-            boolean wereChanges = funInfo.getNrParameters() != parameterInfo.length;
+            final boolean setDefaultValue = refactoring.isUseDefaultValueOnlyInFunctionDeclaration();
+            boolean wereChanges = (parameterInfo.length < funInfo.getNrParameters());
             oldText.append(funInfo.getOriginalParamsText());
             newText.append("(");// NOI18N
             // TODO: varargs
             for (int i = 0; i < parameterInfo.length; i++) {
-                if (!skipComma) {
-                    newText.append(","); // NOI18N
-                }
                 ParameterInfo pi = parameterInfo[i];
                 int originalIndex = pi.getOriginalIndex();
                 if (originalIndex == -1) {
+                    if (!skipComma) {
+                        if (!decl && setDefaultValue) {
+                            skipComma = true;
+                        }
+                    }
+                    if (!skipComma) {
+                        newText.append(","); // NOI18N
+                    }
                     if (!skipComma && needSpaceAfterComma()) {
                         newText.append(" "); // NOI18N
                     }
                     skipComma = false;
                     // new parameter
                     if (decl) {
-                        boolean setDefaultValue = refactoring.isUseDefaultValueOnlyInFunctionDeclaration();
-                        if (setDefaultValue && def) {
+                        boolean defValueInSignature = setDefaultValue;
+                        if (defValueInSignature && def) {
                             // check if there is only one function declaration or more
                             // if only one => change it anyway
-                            setDefaultValue = false;
+                            defValueInSignature = false;
                             CsmFunction fun = (CsmFunction) ref.getReferencedObject();
                             if (fun != null) {
                                 if (fun.getDeclaration() == fun.getDefinition()) {
-                                    setDefaultValue = true;
+                                    defValueInSignature = true;
                                 }
                             }
                         }
                         // in declaration add parameter
                         newText.append(pi.getType()).append(" ").append(pi.getName()); // NOI18N
                         if (setDefaultValue) {
-                            newText.append(" = ").append(pi.getDefaultValue()); // NOI18N
-                        } else {
-                            newText.append(" /* = ").append(pi.getDefaultValue()).append(" */"); // NOI18N
+                            if (defValueInSignature) {
+                                newText.append(" = ").append(pi.getDefaultValue()); // NOI18N
+                            } else {
+                                newText.append(" /* = ").append(pi.getDefaultValue()).append(" */"); // NOI18N
+                            }
                         }
                         wereChanges = true;
-                    } else if (!refactoring.isUseDefaultValueOnlyInFunctionDeclaration()) {
+                    } else if (!setDefaultValue) {
                         // in reference add default value
                         newText.append(pi.getDefaultValue());
                         wereChanges = true;
@@ -374,6 +382,9 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                         skipComma = true;
                     }
                 } else if (funInfo.hasParam(originalIndex)) {
+                    if (!skipComma) {
+                        newText.append(","); // NOI18N
+                    }
                     wereChanges |= (originalIndex != i); // swap of params change
                     CharSequence origText = funInfo.getParameter(originalIndex);
                     if (i == 0) {
