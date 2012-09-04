@@ -288,7 +288,7 @@ public class DialogDisplayerImpl extends DialogDisplayer {
             if (query.running) {
                 while (query.result == null) {
                     try {
-                        query.wait ();
+                        query.wait (3000);
                     } catch (InterruptedException ex) {
                         // one more round
                     }
