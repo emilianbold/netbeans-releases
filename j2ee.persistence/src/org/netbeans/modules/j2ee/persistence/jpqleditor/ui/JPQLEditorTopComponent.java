@@ -59,27 +59,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListResourceBundle;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.logging.Filter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.lang.model.util.Elements;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -88,40 +75,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
-import org.netbeans.modules.j2ee.persistence.jpqleditor.completion.JPQLEditorCodeCompletionProvider;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
-import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
@@ -149,7 +116,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
      * path to the icon used by the component and its open action
      */
     static final String ICON_PATH = "org/netbeans/modules/j2ee/persistence/jpqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
-    private Logger logger = Logger.getLogger(JPQLEditorTopComponent.class.getName());
+    private static final Logger logger = Logger.getLogger(JPQLEditorTopComponent.class.getName());
     private PUDataObject puObject;
     private HashMap<String, PersistenceUnit> puConfigMap = new HashMap<String, PersistenceUnit>();
     private static List<Integer> windowCounts = new ArrayList<Integer>();
@@ -286,6 +253,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
         private class PopupActionListener implements ActionListener {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getActionCommand().equals(RUN_JPQL_COMMAND)) {
                     runJPQLButtonActionPerformed(e);
@@ -451,14 +419,17 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
     private class JPQLDocumentListener implements DocumentListener {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             process();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             process();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             process();
         }
@@ -475,7 +446,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
     public void fillPersistenceConfigurations(Node[] activatedNodes) {
         Node node = activatedNodes[0];
-        DataObject dO = node.getCookie(DataObject.class);
+        DataObject dO = node.getLookup().lookup(DataObject.class);
         puObject = null;
         if (dO instanceof PUDataObject) {
             puObject = (PUDataObject) dO;
@@ -545,7 +516,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
             Vector<String> tableHeaders = new Vector<String>();
             Vector<Vector> tableData = new Vector<Vector>();
 
-            if (result.getQueryResults().size() != 0) {
+            if (!result.getQueryResults().isEmpty()) {
 
                 Object firstObject = result.getQueryResults().get(0);
                 if (firstObject instanceof Object[]) {
@@ -572,7 +543,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
 
         } else {
-            logger.info("JPQL query execution resulted in following " + result.getExceptions().size() + " errors.");
+            logger.log(Level.INFO, "JPQL query execution resulted in following {0} errors.", result.getExceptions().size());//NOI18N
 
             switchToErrorView();
             setStatus(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionError"));

@@ -76,12 +76,10 @@ import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
-import org.openide.util.NbBundle;
 
 /**
  * Executes JPQL query.
@@ -241,7 +239,7 @@ public class JPQLExecutor {
                 //use parsed result for errors
                 StringBuilder message = new StringBuilder();
                 for (int i = 0; i < problems.size(); i++) {
-                    ListResourceBundle msgBundle = null;
+                    ListResourceBundle msgBundle;
                     try {
                         msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
                     } catch (MissingResourceException ex) {//default en
