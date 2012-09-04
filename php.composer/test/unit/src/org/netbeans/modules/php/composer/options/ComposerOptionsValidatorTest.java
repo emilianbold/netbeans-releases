@@ -54,6 +54,10 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
         validator.validateAuthorEmail("john.doe@domain.net");
         assertFalse(validator.hasErrors());
         assertFalse(validator.hasWarnings());
+        validator = new ComposerOptionsValidator();
+        validator.validateAuthorEmail("john1-doe@domain.net");
+        assertFalse(validator.hasErrors());
+        assertFalse(validator.hasWarnings());
     }
 
     public void testInvalidAuthorEmail() {
