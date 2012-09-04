@@ -515,6 +515,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/switch3.js");
     }
 
+    public void testSwitch3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch3.js", null);
+    }
+
     public void testSwitch4Default() throws Exception {
         reformatFileContents("testfiles/formatter/switch4.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
