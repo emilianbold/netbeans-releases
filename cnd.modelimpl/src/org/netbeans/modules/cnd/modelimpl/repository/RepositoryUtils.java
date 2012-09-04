@@ -306,13 +306,13 @@ public final class RepositoryUtils {
         }
     }
 
-    private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {
-        CharSequence unit = KeyUtilities.getUnitName(unitId);
+    private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {        
         if (!cleanRepository) {
             int errors = myRepositoryListenerProxy.getErrorCount(unitId);
             if (errors > 0) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.log(Level.INFO, "Clean index for project \"{0}\" because index was corrupted (was {1} errors).", new Object[]{unit, errors}); // NOI18N
+                    CharSequence unit = KeyUtilities.getUnitNameSafe(unitId);
+                    LOG.log(Level.INFO, "Clean index for project {0} \"{1}\" because index was corrupted (was {1} errors).", new Object[]{unitId, unit, errors}); // NOI18N
                 }
                 cleanRepository = true;
             }
