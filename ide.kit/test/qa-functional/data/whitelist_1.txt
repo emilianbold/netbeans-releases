@@ -1,3 +1,13 @@
+#217800
+org.netbeans.modules.editor.bookmarks.BookmarkManager
+org.netbeans.modules.editor.breadcrumbs.support.BreadCrumbsScheduler
+org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider
+org.netbeans.modules.editor.impl.ReformatBeforeSaveTask
+org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory
+org.netbeans.modules.editor.lib.BeforeSaveTasks
+org.netbeans.modules.editor.lib.BeforeSaveTasks$Task
+org.netbeans.modules.editor.settings.storage.Utils$NoNetworkAccessEntityCatalog
+
 #217794
 org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer$Factory
 org.netbeans.modules.java.source.indexing.JavaBinaryIndexer$Factory
