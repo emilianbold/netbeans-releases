@@ -43,10 +43,12 @@ package org.netbeans.modules.php.editor.codegen;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.model.*;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -59,21 +61,29 @@ public class CodegenUtils {
 
     /**
      * Creates chain of resolvers in this order: forFullyQualifiedName and forSmartName.
+     * <p>
+     * If affected file is of version PHP 5.2, {@code TypeNameResolverImpl.forUnqualifiedName()} resolver is used.
+     * </p>
      *
      * @param originalElement element, where fully qualified name resolver is applied.
      * @param currentModel model, where smart name resolver is applied.
      * @param caretOffset offset in current model, where action was invoked.
-     * @return 
+     * @return
      */
     public static TypeNameResolver createSmarterTypeNameResolver(final PhpElement originalElement, final Model currentModel, final int caretOffset) {
+        assert originalElement != null;
+        assert currentModel != null;
         TypeNameResolver result = TypeNameResolverImpl.forNull();
         final List<TypeNameResolver> typeNameResolvers = new LinkedList<TypeNameResolver>();
-        if (originalElement != null) {
-            FileScope fileScope = ModelUtils.getFileScope(originalElement.getFileObject(), 300);
-            NamespaceScope namespaceScope = (fileScope != null) ? ModelUtils.getNamespaceScope(fileScope, originalElement.getOffset()) : null;
-            if (namespaceScope != null) {
-                typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, originalElement.getOffset()));
-                if (currentModel != null) {
+        FileScope fileScope = ModelUtils.getFileScope(originalElement.getFileObject(), 300);
+        if (fileScope != null) {
+            FileObject fileObject = fileScope.getFileObject();
+            if (fileObject != null) {
+                if (CodeUtils.isPhp_52(fileObject)) {
+                    typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
+                } else {
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, originalElement.getOffset());
+                    typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, originalElement.getOffset()));
                     VariableScope variableScope = currentModel.getVariableScope(caretOffset);
                     if (variableScope != null) {
                         typeNameResolvers.add(TypeNameResolverImpl.forSmartName(variableScope, caretOffset));
