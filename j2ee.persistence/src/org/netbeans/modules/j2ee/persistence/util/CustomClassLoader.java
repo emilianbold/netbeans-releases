@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.persistence.util;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -55,8 +54,6 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +76,7 @@ import org.openide.ErrorManager;
 public class CustomClassLoader extends URLClassLoader {
 
     private Map<String, File> package2File = new HashMap<String, File>();
-    private Logger logger = Logger.getLogger(CustomClassLoader.class.getName());
+    private static final Logger logger = Logger.getLogger(CustomClassLoader.class.getName());
 
     public CustomClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
@@ -130,7 +127,7 @@ public class CustomClassLoader extends URLClassLoader {
             throw new ClassNotFoundException("Log4J is forbidden");
         }
         int dotIndex = name.indexOf(".");
-        String fileName = null;
+        String fileName;
         String separator = File.separator;
         if (separator.equals("\\")) {
             separator = "\\\\";
@@ -165,7 +162,7 @@ public class CustomClassLoader extends URLClassLoader {
             BufferedInputStream bis = new BufferedInputStream(is);
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] bytes = new byte[1024 * 5];
-            int readBytes = 0;
+            int readBytes;
             while ((readBytes = bis.read(bytes)) != -1) {
                 os.write(bytes, 0, readBytes);
             }

@@ -115,6 +115,7 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
             jerseyPanel = new JerseyPanel( this );
             mainPanel.addChangeListener(jerseyPanel );
             add( jerseyPanel );
+            setName(name);
         }
 
         /* (non-Javadoc)

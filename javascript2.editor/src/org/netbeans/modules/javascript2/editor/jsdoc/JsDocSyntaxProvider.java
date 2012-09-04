@@ -62,7 +62,7 @@ public class JsDocSyntaxProvider implements SyntaxProvider {
 
     @Override
     public String returnTagTemplate() {
-        return "@return {" + TYPE_PLACEHOLDER + "}";
+        return "@returns {" + TYPE_PLACEHOLDER + "}";
     }
 
     @Override

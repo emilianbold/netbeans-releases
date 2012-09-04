@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "__MSG__pluginName__",
-  "version": "0.4.24",
+package org.netbeans.modules.javascript2.editor;
 
-  "background_page": "html/main.html",
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class JsCodeCompletionDocumentationTest extends JsCodeComplationBase {
 
-  "options_page": "html/options.html",
+    public JsCodeCompletionDocumentationTest(String testName) {
+        super(testName);
+    }
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
+    public void testCompletionDocumentation01() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "eer^o(1, 2);", false, "eer");
+    }
 
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "debugger",
-    "http://*/*", // content scripts (maybe localhost could be enough)
-    "https://*/*" // content scripts  (maybe localhost could be enough)
-  ],
+    public void testCompletionDocumentation02() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "vari^able;", false, "vari");
+    }
 
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  },
+    public void testCompletionDocumentation03() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "prom^enna;", false, "prom");
+    }
 
-  "default_locale": "en"
-
+    public void testIssue180805() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "tes^t(1, 2);", false, "tes");
+    }
 }

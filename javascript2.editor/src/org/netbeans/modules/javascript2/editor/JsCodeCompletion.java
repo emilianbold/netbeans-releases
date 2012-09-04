@@ -274,6 +274,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             } catch (ParseException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
             }
+        } else if (element instanceof JsObject) {
+            JsObject jsObject = (JsObject) element;
+            if (jsObject.getDocumentation() != null) {
+                documentation.append(jsObject.getDocumentation());
+            }
         }
         if (documentation.length() == 0) {
             String doc = jqueryCC.getHelpDocumentation(info, element);
