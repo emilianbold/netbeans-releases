@@ -107,7 +107,7 @@ public class RepositoryThreadManager {
     }
 
     public RepositoryQueue startup() {
-	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager.startup\n"); // NOI18N
+	if( Stats.queueTrace ) { System.err.printf("RepositoryThreadManager.startup\n"); } // NOI18N
 	int threadCount = Integer.getInteger("cnd.repository.writer.threads", 1).intValue(); // NOI18N
         if (threadCount < 1) {
             threadCount = 1;
@@ -126,13 +126,13 @@ public class RepositoryThreadManager {
 	}
 
     public void shutdown() {
-	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager.shutdown\n"); // NOI18N
+	if( Stats.queueTrace ) { System.err.printf("RepositoryThreadManager.shutdown\n"); } // NOI18N
 	proceed = false;
 	queue.shutdown();
 
-        if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager waiting for threads to finish...\n"); // NOI18N
+        if( Stats.queueTrace ) { System.err.printf("RepositoryThreadManager waiting for threads to finish...\n"); } // NOI18N
 	waitFinished();
-	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager threads have finished.\n"); // NOI18N
+	if( Stats.queueTrace ) { System.err.printf("RepositoryThreadManager threads have finished.\n"); } // NOI18N
     }
     
     private void waitFinished() {
