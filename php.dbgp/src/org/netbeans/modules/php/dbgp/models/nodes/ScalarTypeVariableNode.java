@@ -79,7 +79,7 @@ class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.Variab
         } else if (FLOAT.equals(type)) {
             bundleKey = TYPE_FLOAT;
         } else {
-            assert false;
+            assert false : type;
             bundleKey = null;
         }
         return NbBundle.getMessage(ScalarTypeVariableNode.class, bundleKey);
