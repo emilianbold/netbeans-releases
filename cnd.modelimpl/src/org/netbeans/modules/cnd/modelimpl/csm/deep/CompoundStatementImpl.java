@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -67,9 +66,8 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         super(ast, file, scope);
     }
 
-    protected CompoundStatementImpl(List<CsmStatement> statements, CsmScope scope, CsmFile file, int start, int end) {
-        super(file, start, end, scope);
-        this.statements = new ArrayList<CsmStatement>(statements);
+    protected CompoundStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);        
     }
     
     public static CompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
@@ -92,6 +90,10 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return statements;
     }
 
+    public void setStatements(List<CsmStatement> statements) {
+        this.statements = statements;
+    }
+    
     @Override
     public void dispose() {
         super.dispose();
@@ -126,10 +128,31 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return out;
     }
 
-    public static class CompoundStatementBuilder extends ScopedDeclarationBuilder {
+    public static class CompoundStatementBuilder extends StatementBuilder {
 
+        private List<StatementBuilder> statements = new ArrayList<StatementBuilder>();
+        
+        public void addStatementBuilder(StatementBuilder statement) {
+            statements.add(statement);
+        }
+
+        protected List<StatementBuilder> getStatements() {
+            return statements;
+        }
+        
+        @Override
         public CompoundStatementImpl create() {
-            CompoundStatementImpl stmt = new CompoundStatementImpl(new ArrayList<CsmStatement>(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            CompoundStatementImpl stmt = new CompoundStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            List<CsmStatement> stmts = new ArrayList<CsmStatement>();
+            for (StatementBuilder statementBuilder : statements) {
+                statementBuilder.setScope(stmt);
+                stmts.add(statementBuilder.create());
+            }
+            if(stmts.isEmpty()) {
+                stmt.statements = Collections.<CsmStatement>emptyList();
+            } else {
+                stmt.statements = stmts;
+            }
             return stmt;
         }
     }      

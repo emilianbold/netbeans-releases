@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -292,8 +293,6 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
     }
     
-        
-    
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
         
         private boolean typedefSpecifier = false;
@@ -400,6 +399,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
             }
             return type;
+        }
+        
+        public CsmDeclaration create() {
+            throw new UnsupportedOperationException("Should not be used."); // NOI18N
         }
         
     }
