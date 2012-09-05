@@ -343,6 +343,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 @Override
                 public void run() {
                     try {
+                        JavaCompletionProvider.JavaCompletionQuery.javadocBreak.set(true);
                         final Set<String> autoImported = imp.getAutoImportedTypes();
                         ModificationResult.runModificationTask(Collections.singleton(cInfo.getSnapshot().getSource()), new UserTask() {
                             @Override
