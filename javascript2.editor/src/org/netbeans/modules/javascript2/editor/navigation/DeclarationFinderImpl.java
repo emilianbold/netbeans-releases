@@ -63,6 +63,8 @@ import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -85,37 +87,37 @@ public class DeclarationFinderImpl implements DeclarationFinder{
             JsObject object = occurrence.getDeclarations().iterator().next();
             JsObject parent = object.getParent();
             Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(caretOffset);
+            Snapshot snapshot = jsResult.getSnapshot();
+            JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
+            List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
-                return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
-            } else {
-                if (parent != null) {
-                    Snapshot snapshot = jsResult.getSnapshot();
-                    JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
-                    TokenSequence ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
-                    if (ts != null) {
-                        ts.move(snapshot.getEmbeddedOffset(caretOffset));
-                        if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
-                            String propertyName = ts.token().text().toString();
-                            List<IndexResult> indexResults = new ArrayList<IndexResult>();
-                            for (Type type : assignments) {
-                                Collection<? extends IndexResult> items = jsIndex.query(
-                                        JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                        JsIndex.TERMS_BASIC_INFO);
-                                indexResults.addAll(items);
-                            }
-                            if (!indexResults.isEmpty()) {
-                                IndexResult iResult = indexResults.get(0);
-                                String value = iResult.getValue(JsIndex.FIELD_OFFSET);
-                                int offset = Integer.parseInt(value);
-                                DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset);
-                                if (indexResults.size() > 1) {
-                                    for (int i = 0; i < indexResults.size(); i++) {
-                                        iResult = indexResults.get(i);
-                                        location.addAlternative(new AlternativeLocationImpl(iResult));
-                                    }
-                                }
-                                return location;
-                            }
+                if (object.isDeclared()) {
+                    return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
+                } else {
+                    Collection<? extends IndexResult> items = jsIndex.query(
+                            JsIndex.FIELD_FQ_NAME, ModelUtils.createFQN(object), QuerySupport.Kind.EXACT,
+                            JsIndex.TERMS_BASIC_INFO);
+                    indexResults.addAll(items);
+                    DeclarationLocation location = processIndexResult(indexResults);
+                    if (location != null) {
+                        return location;
+                    }
+                } 
+            } else {  
+                TokenSequence ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
+                if (ts != null) {
+                    ts.move(snapshot.getEmbeddedOffset(caretOffset));
+                    if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
+                        String propertyName = ts.token().text().toString();
+                        for (Type type : assignments) {
+                            Collection<? extends IndexResult> items = jsIndex.query(
+                                    JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
+                                    JsIndex.TERMS_BASIC_INFO);
+                            indexResults.addAll(items);
+                        }
+                        DeclarationLocation location = processIndexResult(indexResults);
+                        if (location != null) {
+                            return location;
                         }
                     }
                 }
@@ -125,6 +127,23 @@ public class DeclarationFinderImpl implements DeclarationFinder{
         return jQueryFinder.findDeclaration(info, caretOffset);
     }
 
+    private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
+        if (!indexResults.isEmpty()) {
+            IndexResult iResult = indexResults.get(0);
+            String value = iResult.getValue(JsIndex.FIELD_OFFSET);
+            int offset = Integer.parseInt(value);
+            DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset);
+            if (indexResults.size() > 1) {
+                for (int i = 0; i < indexResults.size(); i++) {
+                    iResult = indexResults.get(i);
+                    location.addAlternative(new AlternativeLocationImpl(iResult));
+                }
+            }
+            return location;
+        }
+        return null;
+    }
+    
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         OffsetRange result = OffsetRange.NONE;

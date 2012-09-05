@@ -208,7 +208,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(1, myApp.getProperties().size());
         
         variable = myApp.getProperty("country");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
         assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
@@ -230,11 +230,11 @@ public class ModelTest extends JsTestBase {
         assertEquals(134, object.getOffset());
         
         JsObject variable = object.getProperty("id");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         variable = object.getProperty("test");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         object = object.getProperty("User");
@@ -244,15 +244,15 @@ public class ModelTest extends JsTestBase {
         assertEquals(180, object.getOffset());
 
         variable = object.getProperty("firstName");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         variable = object.getProperty("lastName");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
 
         variable = object.getProperty("session");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         object = object.getProperty("Address");
@@ -262,11 +262,11 @@ public class ModelTest extends JsTestBase {
         assertEquals(278, object.getOffset());
         
         variable = object.getProperty("street");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         variable = object.getProperty("town");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
 
         object = global.getProperty("Ns1");
@@ -285,7 +285,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(1, object.getProperties().size());
         
         variable = object.getProperty("fix");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
     }
     
