@@ -305,6 +305,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue217770.js", "t.r^un();", true);
     }
     
+    public void testIssue176581_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", true);
+    }
+    
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
     }
