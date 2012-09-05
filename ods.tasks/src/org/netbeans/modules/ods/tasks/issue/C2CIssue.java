@@ -97,7 +97,7 @@ public class C2CIssue {
 
     static final String LABEL_NAME_ID           = "c2c.issue.id";               // NOI18N
     static final String LABEL_NAME_SEVERITY     = "c2c.issue.severity";         // NOI18N
-    static final String LABEL_NAME_TASK_TYPE    = "c2c.issue.task_type";       // NOI18N
+    static final String LABEL_NAME_TASK_TYPE    = "c2c.issue.task_type";        // NOI18N
     static final String LABEL_NAME_PRIORITY     = "c2c.issue.priority";         // NOI18N
     static final String LABEL_NAME_STATUS       = "c2c.issue.status";           // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "c2c.issue.resolution";       // NOI18N
