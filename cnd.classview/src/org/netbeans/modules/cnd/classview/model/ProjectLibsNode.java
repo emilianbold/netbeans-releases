@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.classview.model;
 
 import java.awt.Image;
+import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -57,19 +58,33 @@ import org.openide.util.ImageUtilities;
 
 public final class ProjectLibsNode extends BaseNode {
 
+    private final ChildrenUpdater updater;
+
     public ProjectLibsNode(CsmProject project, ChildrenUpdater updater) {
         super(createChildren(project, updater));
+        this.updater = updater;
         setName("dummy"); // NOI18N
         setDisplayName(I18n.getMessage("Libs")); // NOI18N
     }
 
     private static Children createChildren(CsmProject project, ChildrenUpdater updater) {
-        Collection<CsmProject> libs = project.getLibraries();
-        if (libs.isEmpty()) {
-            return Children.LEAF;
-        } else {
-            return new ProjectsKeyArray(project, updater);
+//        Collection<CsmProject> libs = project.getLibraries();
+//        if (libs.isEmpty()) {
+//            return Children.LEAF;
+//        } else {
+            ProjectsKeyArray keys = new ProjectsKeyArray(project, updater);
+            updater.register(keys);
+            return keys;
+//        }
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        Children children = getChildren();
+        if (children instanceof ProjectsKeyArray) {
+            updater.unregister((ProjectsKeyArray) children);
         }
+        super.destroy();
     }
 
     @Override

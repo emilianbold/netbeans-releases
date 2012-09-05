@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -73,7 +74,9 @@ public class ChildrenUpdater {
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
     private Map<CsmProject, Map<PersistentKey, UpdatebleHost>> map =
             new HashMap<CsmProject, Map<PersistentKey, UpdatebleHost>>();
-    
+
+    private Set<ProjectsKeyArray> projectListeners = new HashSet<ProjectsKeyArray>();
+
     public ChildrenUpdater() {
     }
     
@@ -96,12 +99,27 @@ public class ChildrenUpdater {
             System.out.println("Register Children Updater on key "+host.toString()); // NOI18N
         }
     }
-    
+
+    public void register(ProjectsKeyArray keys){
+        projectListeners.add(keys);
+        if (traceEvents) {
+            System.out.println("Register Children Projects Updater "+keys); // NOI18N
+        }
+    }
+
+    public void unregister(ProjectsKeyArray keys){
+        projectListeners.remove(keys);
+        if (traceEvents) {
+            System.out.println("Register Children Projects Updater "+keys); // NOI18N
+        }
+    }
+
     public void unregister(){
         if (traceEvents) {
             System.out.println("Clean Children Updater"); // NOI18N
         }
         map.clear();
+        projectListeners.clear();
         NameCache.getManager().dispose();
     }
     
@@ -121,6 +139,19 @@ public class ChildrenUpdater {
             p.remove(host);
         }
     }
+
+    public void openProject(CsmProject project) {
+        for (ProjectsKeyArray pka : projectListeners) {
+            pka.openProject(project);
+        }
+    }
+
+    public void closeProject(CsmProject project) {
+        for (ProjectsKeyArray pka : projectListeners) {
+            pka.closeProject(project);
+        }
+    }
+
     public void update(SmartChangeEvent e){
         if (map.size() == 0) {
             return;

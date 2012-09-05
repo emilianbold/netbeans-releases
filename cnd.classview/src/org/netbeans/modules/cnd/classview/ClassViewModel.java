@@ -93,23 +93,29 @@ import org.openide.nodes.Node;
             //return;
         }
         ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
-        if (project.isArtificial()) {
-            Node[] childNodes = children.getNodes();
-            for (Node childNode : childNodes) {
-                Children grandChildren = childNode.getChildren();
-                if (grandChildren instanceof ProjectsKeyArray) {
-                    ((ProjectsKeyArray) grandChildren).openProject(project);
-                }
-            }
-        } else {
-            children.openProject(project);
-        }
+        children.openProject(project);
+        childrenUpdater.openProject(project);
+//        if (project.isArtificial()) {
+//            Node[] childNodes = children.getNodes();
+//            for (Node childNode : childNodes) {
+//                Children grandChildren = childNode.getChildren();
+//                if (grandChildren instanceof ProjectsKeyArray) {
+//                    ((ProjectsKeyArray) grandChildren).openProject(project);
+//                }
+//                if (grandChildren instanceof NamespaceKeyArray) {
+//                    ((NamespaceKeyArray) grandChildren).openProject(project);
+//                }
+//            }
+//        } else {
+//            children.openProject(project);
+//        }
     }
     
     /*package local*/ void closeProject(CsmProject project){
         if( root == null ) { // paranoya
             return;
         }
+        childrenUpdater.closeProject(project);
         childrenUpdater.unregister(project);
         ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
         children.closeProject(project);
