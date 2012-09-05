@@ -54,14 +54,16 @@ import org.openide.util.NbBundle;
  */
 public final class ComposerOptionsValidator {
 
+    private static final Pattern VENDOR_REGEX = Pattern.compile("^[a-z0-9-]+$"); // NOI18N
     private static final Pattern EMAIL_REGEX = Pattern.compile("^\\w+[\\.\\w\\-]*@\\w+[\\.\\w\\-]*\\.[a-z]{2,}$", Pattern.CASE_INSENSITIVE); // NOI18N
 
     private final List<Message> errors = new LinkedList<Message>();
     private final List<Message> warnings = new LinkedList<Message>();
 
 
-    public void validate(String composerPath, String authorName, String authorEmail) {
-        validateComposer(composerPath);
+    public void validate(String composerPath, String vendor, String authorName, String authorEmail) {
+        validateComposerPath(composerPath);
+        validateVendor(vendor);
         validateAuthorName(authorName);
         validateAuthorEmail(authorEmail);
     }
@@ -82,10 +84,17 @@ public final class ComposerOptionsValidator {
         return new ArrayList<Message>(warnings);
     }
 
-    private void validateComposer(String composerPath) {
+    private void validateComposerPath(String composerPath) {
         String warning = Composer.validate(composerPath);
         if (warning != null) {
             warnings.add(new Message("composerPath", warning)); // NOI18N
+        }
+    }
+
+    @NbBundle.Messages("ComposerOptionsValidator.error.invalidVendor=Vendor is not valid (only lower-cased letters and \"-\" allowed).")
+    void validateVendor(String vendor) {
+        if (!VENDOR_REGEX.matcher(vendor).matches()) {
+            errors.add(new Message("vendor", Bundle.ComposerOptionsValidator_error_invalidVendor())); // NOI18N
         }
     }
 

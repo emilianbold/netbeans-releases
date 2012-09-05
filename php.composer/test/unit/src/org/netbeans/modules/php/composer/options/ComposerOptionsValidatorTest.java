@@ -49,6 +49,32 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
         super(name);
     }
 
+    public void testValidVendor() {
+        ComposerOptionsValidator validator = new ComposerOptionsValidator();
+        validator.validateVendor("my-company");
+        assertFalse(validator.hasErrors());
+        assertFalse(validator.hasWarnings());
+        validator = new ComposerOptionsValidator();
+        validator.validateVendor("me-09");
+        assertFalse(validator.hasErrors());
+        assertFalse(validator.hasWarnings());
+    }
+
+    public void testInvalidVendor() {
+        ComposerOptionsValidator validator = new ComposerOptionsValidator();
+        validator.validateVendor("MyCompany");
+        assertTrue(validator.hasErrors());
+        validator = new ComposerOptionsValidator();
+        validator.validateVendor("my company");
+        assertTrue(validator.hasErrors());
+        validator = new ComposerOptionsValidator();
+        validator.validateVendor("my.company");
+        assertTrue(validator.hasErrors());
+        validator = new ComposerOptionsValidator();
+        validator.validateVendor("my_company");
+        assertTrue(validator.hasErrors());
+    }
+
     public void testValidAuthorEmail() {
         ComposerOptionsValidator validator = new ComposerOptionsValidator();
         validator.validateAuthorEmail("john.doe@domain.net");
