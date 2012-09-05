@@ -112,10 +112,6 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
             return super.getServiceMethodParameters();
     }
     
-    @Override
-    protected void addImportsToTargetFile() {
-    }
-    
     protected String getCustomMethodBody(String paramDecl, String paramUse, 
             String resultVarName, String indent2) {
         String indent = "             ";
