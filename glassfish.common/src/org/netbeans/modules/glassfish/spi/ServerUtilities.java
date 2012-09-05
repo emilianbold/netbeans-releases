@@ -57,7 +57,6 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
-import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
@@ -187,23 +186,13 @@ public final class ServerUtilities {
 //    }
     
     /**
-     * Returns an instance of the AddServerWizard for this server plugin.
-     * 
-     * @return instance of the AddServerWizard for this server.
+     * Creates an iterator for a wizard to instantiate server objects.
+     * <p/>
+     * @return Server wizard iterator initialized with supported GlassFish
+     * server versions.
      */
     public InstantiatingIterator getAddInstanceIterator() {
-        return new ServerWizardIterator(new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1_1,
-            ServerDetails.GLASSFISH_SERVER_3_1_2,
-            ServerDetails.GLASSFISH_SERVER_4_0,
-            ServerDetails.GLASSFISH_SERVER_3_0_1, 
-            ServerDetails.GLASSFISH_SERVER_3_1,
-            ServerDetails.GLASSFISH_SERVER_3, 
-        },
-                new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1_2,
-            ServerDetails.GLASSFISH_SERVER_3_0_1, 
-        });
+        return ServerDetails.getInstantiatingIterator();
     }
     
     /**

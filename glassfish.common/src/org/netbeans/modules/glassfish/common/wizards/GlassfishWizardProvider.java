@@ -76,21 +76,15 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
         return displayName;
     }
 
+    /**
+     * Creates an iterator for a wizard to instantiate server objects.
+     * <p/>
+     * @return Server wizard iterator initialized with supported GlassFish
+     * server versions.
+     */
     @Override
     public InstantiatingIterator getInstantiatingIterator() {
-        return new ServerWizardIterator(new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1_1, 
-            ServerDetails.GLASSFISH_SERVER_3_1_2_2,
-            ServerDetails.GLASSFISH_SERVER_3_1_2,
-            ServerDetails.GLASSFISH_SERVER_4_0,
-            ServerDetails.GLASSFISH_SERVER_3_0_1, 
-            ServerDetails.GLASSFISH_SERVER_3, 
-            ServerDetails.GLASSFISH_SERVER_3_1,
-        },
-                new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1_2, 
-            ServerDetails.GLASSFISH_SERVER_3_0_1, 
-        });
+        return ServerDetails.getInstantiatingIterator();
     }
 
 }
