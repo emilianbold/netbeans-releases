@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
+ * @author  David Kaspar, Petr Somol
  */
 public class NewProjectIterator implements TemplateWizard.Iterator {
     
@@ -125,17 +125,17 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         boolean create = true;
-        if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) {
+        if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) { // NOI18N
             create = false;
         }
         boolean embedded = true;
-        if (!(Templates.getTemplate(templateWizard).getAttribute("embedded") instanceof Boolean)) {
+        if (!(Templates.getTemplate(templateWizard).getAttribute("embedded") instanceof Boolean)) { // NOI18N
             embedded = false;
         }
         
         final String panelTitle = create ? (
-                embedded ? NbBundle.getMessage(NewProjectIterator.class, "TXT_EmbeddedApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication")
-                ) : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary");
+                embedded ? NbBundle.getMessage(NewProjectIterator.class, "TXT_EmbeddedApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") // NOI18N
+                ) : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"); // NOI18N
         platformInstall =  PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
         if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
