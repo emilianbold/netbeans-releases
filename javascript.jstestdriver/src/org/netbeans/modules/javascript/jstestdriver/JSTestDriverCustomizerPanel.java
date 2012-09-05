@@ -360,27 +360,34 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
             model = createModel();
         }
         
+        @Override
         public int getColumnCount() {
             return 2;
         }
         
+        @Override
         public int getRowCount() {
             return model.size();
         }
         
-        public Class getColumnClass(int columnIndex) {
-            if (columnIndex == 0)
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) {
                 return Boolean.class;
-            else
+            }
+            else {
                 return TableRow.class;
+            }
         }
         
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return (columnIndex == 0);
         }
         
+        @Override
         public Object getValueAt(int row, int column) {
-            TableRow item = getItem(row);
+            TableRow item = model.get(row);
             switch (column) {
                 case 0: return item.isSelected();
                 case 1: return item;
@@ -388,16 +395,13 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
             return "";
         }
         
+        @Override
         public void setValueAt(Object value, int row, int column) {
-            TableRow item = getItem(row);
+            TableRow item = model.get(row);
             switch (column) {
                 case 0: item.setSelected((Boolean) value);break;
             }
             fireTableCellUpdated(row, column);
-        }
-        
-        private TableRow getItem(int index) {
-            return (TableRow) model.get(index);
         }
         
     }
