@@ -905,4 +905,10 @@ public class PrintASTVisitor implements Visitor {
         printNode.addChild("Index", node.getIndex());
         printNode.print(this);
     }
+
+    @Override
+    public void visit(HaltCompiler node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "HaltCompiler");
+        printNode.print(this);
+    }
 }

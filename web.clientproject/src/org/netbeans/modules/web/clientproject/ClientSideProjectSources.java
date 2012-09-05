@@ -105,7 +105,7 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
                 .type(SOURCES_TYPE_HTML5).add(); // adding as typed root
         sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_CONFIG_FOLDER + "}")
                 .displayName("Configuration Files")
-                .add(); // adding as principal root
+                .type(SOURCES_TYPE_HTML5).add(); // adding as principal root
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }

@@ -229,24 +229,6 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
-    public void testDocumentationDescriptionReturns() throws Exception {
-        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "function Shape(){^");
-        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">Construct a new Shape object.</p><h3>Returns:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\" style=\"margin-right:5px;\"><b>Type:</b></td><td valign=\"top\">Shape | Coordinate</td></tr><tr><td valign=\"top\" style=\"margin-right:5px;\"><b>Description:</b></td><td valign=\"top\">A new shape.</td></tr></table>");
-    }
-
-    public void testDocumentationDescription() throws Exception {
-        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "function addReference(){^");
-        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">This is an inner method, just used here as an example</p>");
-    }
-
-    public void testDocumentationDescriptionExamples() throws Exception {
-        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "function Hexagon(sideLength) {^");
-        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">Create a new Hexagon instance.</p><h3>Parameters:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\" style=\"margin-right:5px;\">int</td><td valign=\"top\" style=\"margin-right:5px;\"><b>sideLength</b></td><td>The length of one side for the new Hexagon</td></tr></table>");
-    }
-
     public void testModifiers01() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.^width = 0;");

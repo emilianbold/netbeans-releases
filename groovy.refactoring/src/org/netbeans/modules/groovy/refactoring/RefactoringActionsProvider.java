@@ -57,14 +57,17 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = ActionsImplementationProvider.class, position=100)
 public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
+    private RefactoringTask task;
+
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        return isValid(lookup);
+        initiate(lookup);
+        return isValid(lookup) && task.isValid();
     }
 
     @Override
     public void doFindUsages(Lookup lookup) {
-        RefactoringTask.createRefactoringTask(lookup).run();
+        task.run();
     }
 
     @Override
@@ -76,6 +79,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     @Override
     public void doDelete(Lookup lookup) {
         super.doDelete(lookup);
+    }
+
+    private void initiate(Lookup lookup) {
+        task = RefactoringTaskFactory.createRefactoringTask(lookup);
     }
 
     private boolean isValid(Lookup lookup) {

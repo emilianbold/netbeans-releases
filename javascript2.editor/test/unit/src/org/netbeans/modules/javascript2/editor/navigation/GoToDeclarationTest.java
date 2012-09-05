@@ -69,4 +69,7 @@ public class GoToDeclarationTest extends JsTestBase {
         checkDeclaration("testfiles/model/variables01.js", "formatter.println(\"MyApp.country: \" + MyApp.coun^try);", "    MyApp.^country = state; ");
     }
 
+    public void testIssue176581() throws Exception {
+        checkDeclaration("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", "function ^foo() { }");
+    }
 }
