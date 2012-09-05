@@ -143,6 +143,10 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="700"/>
                 </file>
+                <file name="org-netbeans-modules-project-ui-TestProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+                    <attr name="position" intvalue="720"/>
+                </file>
 
                 <file name="sep-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

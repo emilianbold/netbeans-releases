@@ -1352,6 +1352,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/partialFormat5.js", Collections.<String, Object>emptyMap());
     }
 
+    public void testPartialFormat6() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat6.js", Collections.<String, Object>emptyMap());
+    }
+
     public void testTernary1() throws Exception {
         reformatFileContents("testfiles/formatter/ternary1.js",new IndentPrefs(4, 4));
     }
