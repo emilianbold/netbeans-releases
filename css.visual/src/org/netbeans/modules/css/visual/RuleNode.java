@@ -97,44 +97,7 @@ public class RuleNode extends AbstractNode {
     
     public static String NONE_PROPERTY_NAME = "<none>";
     
-    private static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
-        @Override
-        public int compare(PropertyDefinition pd1, PropertyDefinition pd2) {
-            String pd1name = pd1.getName();
-            String pd2name = pd2.getName();
-
-            //sort the vendor spec. props below the common ones
-            boolean d1vendor = Properties.isVendorSpecificPropertyName(pd1name);
-            boolean d2vendor = Properties.isVendorSpecificPropertyName(pd2name);
-
-            if (d1vendor && !d2vendor) {
-                return +1;
-            } else if (!d1vendor && d2vendor) {
-                return -1;
-            }
-
-            return pd1name.compareTo(pd2name);
-        }
-    };
-    private static final Comparator<Declaration> DECLARATIONS_COMPARATOR = new Comparator<Declaration>() {
-        @Override
-        public int compare(Declaration d1, Declaration d2) {
-            String d1Name = d1.getProperty().getContent().toString();
-            String d2Name = d2.getProperty().getContent().toString();
-
-            //sort the vendor spec. props below the common ones
-            boolean d1vendor = Properties.isVendorSpecificPropertyName(d1Name);
-            boolean d2vendor = Properties.isVendorSpecificPropertyName(d2Name);
-
-            if (d1vendor && !d2vendor) {
-                return +1;
-            } else if (!d1vendor && d2vendor) {
-                return -1;
-            }
-
-            return d1Name.compareTo(d2Name);
-        }
-    };
+    
     private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
 
@@ -240,7 +203,7 @@ public class RuleNode extends AbstractNode {
 
                 List<Declaration> categoryDeclarations = entry.getValue();
                 if (getSortMode() == SortMode.ALPHABETICAL) {
-                    Collections.sort(categoryDeclarations, DECLARATIONS_COMPARATOR);
+                    Collections.sort(categoryDeclarations, PropertyUtils.DECLARATIONS_COMPARATOR);
                 }
 
                 PropertyCategoryPropertySet propertyCategoryPropertySet = new PropertyCategoryPropertySet(entry.getKey());
@@ -262,7 +225,7 @@ public class RuleNode extends AbstractNode {
                     List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(cat.getProperties());
 
 
-                    Collections.sort(allInCat, PROPERTY_DEFINITIONS_COMPARATOR);
+                    Collections.sort(allInCat, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
 
                     //remove already used
                     for (Declaration d : propertySet.getDeclarations()) {
@@ -300,7 +263,7 @@ public class RuleNode extends AbstractNode {
             }
 
             if (getSortMode() == SortMode.ALPHABETICAL) {
-                Collections.sort(filtered, DECLARATIONS_COMPARATOR);
+                Collections.sort(filtered, PropertyUtils.DECLARATIONS_COMPARATOR);
             }
 
             //just create one top level property set for virtual category (the items actually doesn't belong to the category)
@@ -316,7 +279,7 @@ public class RuleNode extends AbstractNode {
             if (isShowAllProperties()) {
                 //Show all properties
                 List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(Properties.getProperties(true));
-                Collections.sort(all, PROPERTY_DEFINITIONS_COMPARATOR);
+                Collections.sort(all, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
 
                 //remove already used
                 for (Declaration d : set.getDeclarations()) {

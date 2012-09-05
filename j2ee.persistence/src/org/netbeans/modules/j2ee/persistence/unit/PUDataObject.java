@@ -204,15 +204,18 @@ public class PUDataObject extends XmlMultiViewDataObject {
                     is.close();
                 }
                 is = getEditorSupport().getInputStream();
-                Persistence newPersistence = null;
+                Persistence newPersistence;
+                Persistence cleanPersistence;
                 try {
                     if(Persistence.VERSION_2_0.equals(version))
                     {
                         newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
+                        cleanPersistence = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence();
                     }
                     else//1.0 - default
                     {
                         newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                        cleanPersistence = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence();
                     }
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
                     LOG.log(Level.INFO, null, ex);
@@ -220,6 +223,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 }
                 if (newPersistence!=null) {
                     try{
+                        ((BaseBean)persistence).merge((BaseBean) cleanPersistence, BaseBean.MERGE_UPDATE);
                         ((BaseBean)persistence).merge((BaseBean) newPersistence, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
                         // see #104180

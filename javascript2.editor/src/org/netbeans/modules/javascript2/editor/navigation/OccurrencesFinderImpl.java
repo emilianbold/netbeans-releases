@@ -107,7 +107,11 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                     for (Type type : types) {
                         JsObject declaration = ModelUtils.findJsObjectByName(model, type.getType());
                         if (declaration != null && !object.getName().equals(declaration.getName())) {
+                            JsObject prototype = declaration.getProperty("prototype");
                             declaration = declaration.getProperty(object.getName());
+                            if (declaration == null && prototype != null) {
+                                declaration = prototype.getProperty(object.getName());
+                            }
                         }
                         if (declaration != null) {
                             range2Attribs.put(declaration.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);

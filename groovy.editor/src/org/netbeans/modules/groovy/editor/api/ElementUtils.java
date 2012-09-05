@@ -104,6 +104,8 @@ public final class ElementUtils {
                 return ElementKind.CLASS;
             }
             return ElementKind.VARIABLE;
+        } else if (node instanceof Parameter) {
+            return ElementKind.VARIABLE;
         } else if (node instanceof DeclarationExpression) {
             return ElementKind.VARIABLE;
         }
