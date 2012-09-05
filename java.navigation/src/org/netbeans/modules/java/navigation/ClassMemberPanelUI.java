@@ -7,6 +7,7 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -44,6 +45,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.annotations.common.NonNull;
@@ -96,6 +99,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
     private static final String CMD_JDOC = "jdoc";  //NOI18N
     private static final String CMD_HISTORY = "history";    //NOI18N
+    private static final String CARD_1 = "EMPTY-CARD";      //NOI18N
+    private static final String CARD_2 = "HISTORY-CARD";    //NOI18N
     private static final int MIN_HISTORY_WIDTH = 50;
 
     private final ExplorerManager manager = new ExplorerManager();
@@ -672,30 +677,22 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             try {
                 final Pair<URI,ElementHandle<TypeElement>> handlePair = becomesHandle.get();
                 if (handlePair != null) {
-                    final FileObject fo = URLMapper.findFileObject(handlePair.first.toURL());
-                    if (fo != null) {
-                        final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
-                        final FileObject target = SourceUtils.getFile(handlePair.second, cpInfo);
-                        if (target != null) {
-                            final JavaSource targetJs = JavaSource.forFileObject(target);
-                            if (targetJs != null) {
-                                history.addToHistory(handlePair);
-                                targetJs.runUserActionTask(this, true);
-                                ((Toolbar)getToolbar()).select(handlePair);
-                            } else {
-                                clearNodes();
-                                StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                    handlePair.second.getQualifiedName()));
-                            }
+                    final FileObject target = URLMapper.findFileObject(handlePair.first.toURL());
+                    if (target != null) {
+                        final JavaSource targetJs = JavaSource.forFileObject(target);
+                        if (targetJs != null) {
+                            history.addToHistory(handlePair);
+                            targetJs.runUserActionTask(this, true);
+                            ((Toolbar)getToolbar()).select(handlePair);
                         } else {
                             clearNodes();
                             StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                    handlePair.second.getQualifiedName()));
+                                handlePair.second.getQualifiedName()));
                         }
                     } else {
                         clearNodes();
                         StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                    handlePair.second.getQualifiedName()));
+                                handlePair.second.getQualifiedName()));
                     }
                 } else {
                     clearNodes();
@@ -718,9 +715,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
     }
 
-    private class Toolbar extends JPanel implements ActionListener {
+    private class Toolbar extends JPanel implements ActionListener, ListDataListener {
 
         private final JComboBox historyCombo;
+        private final JPanel historyHolder;
 
         @NbBundle.Messages({
         "TXT_OpenJDoc=Open Javadoc Window"
@@ -749,15 +747,43 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             historyCombo.setRenderer(HistorySupport.createRenderer(history));
             historyCombo.setActionCommand(CMD_HISTORY);
             historyCombo.addActionListener(this);
-            toolbar.add(historyCombo);
+            historyCombo.getModel().addListDataListener(this);
+            historyHolder = updateBackground(new JPanel(new CardLayout()));
+            historyHolder.add(updateBackground(new JPanel()),CARD_1);
+            historyHolder.add(historyCombo, CARD_2);
+
             final JButton jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
             jdocButton.setActionCommand(CMD_JDOC);
             jdocButton.addActionListener(this);
             jdocButton.setFocusable(false);
             jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
-            toolbar.add(jdocButton);
+            toolbar.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            c.weighty = 0;
+            toolbar.add(historyHolder, c);
+
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = 0;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.gridheight = 1;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.anchor = GridBagConstraints.EAST;
+            c.fill = GridBagConstraints.NONE;
+            c.weightx = 0;
+            c.weighty = 0;
+            toolbar.add(jdocButton, c);
+
             box.add (toolbar);
-            final GridBagConstraints c = new GridBagConstraints();
+            c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 1;
@@ -768,9 +794,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             c.weightx = 1;
             c.weighty = 0;
             add(box,c);
-            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-            }
+            updateBackground(this);
         }
 
         @Override
@@ -796,6 +820,21 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             }
         }
 
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            showHistory();
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
+            showHistory();
+        }
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+            showHistory();
+        }
+
         void select(@NonNull final Pair<URI,ElementHandle<TypeElement>> pair) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -804,5 +843,20 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 }
             });
         }
+
+        private void showHistory() {
+            if (historyCombo.getModel().getSize() > 0) {
+                ((CardLayout)historyHolder.getLayout()).show(historyHolder, CARD_2);
+            }
+        }
+
+        @NonNull
+        private <T extends JComponent> T updateBackground(@NonNull final T comp) {
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+            return comp;
+        }
+
     }
 }

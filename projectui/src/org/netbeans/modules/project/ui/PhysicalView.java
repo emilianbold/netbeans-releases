@@ -68,10 +68,12 @@ import org.netbeans.api.queries.VisibilityQuery;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
@@ -388,20 +390,28 @@ public class PhysicalView {
         }
         
         public @Override Image getIcon(int type) {
-            return swap(super.getIcon(type));
+            return swap(super.getIcon(type), type);
         }
         public @Override Image getOpenedIcon(int type) {
-            return swap(super.getOpenedIcon(type));
+            return swap(super.getOpenedIcon(type), type);
         }
-        private Image swap(Image base) {
+        private Image swap(Image base, int type) {
             if (!root) { // do not use icon on root node in Files tab
                 DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
                 if (folder != null) {
                     ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder.getPrimaryFile());
                     if (r != null) {
                         Icon icon = r.getIcon();
+                        
                         if (icon != null) {
-                            return ImageUtilities.icon2Image(icon);
+                            Image img = ImageUtilities.icon2Image(icon);
+                            try {
+                                //#217008
+                                img = folder.getPrimaryFile().getFileSystem().getStatus().annotateIcon(img, type, folder.files());
+                            } catch (FileStateInvalidException e) {
+                                // no fs, do nothing
+                            }
+                            return img;
                         }
                     }
                 }

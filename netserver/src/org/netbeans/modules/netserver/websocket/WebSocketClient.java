@@ -128,14 +128,6 @@ public class WebSocketClient extends SocketClient {
         return super.getChannel();
     }
     
-    protected void setHandler( WebSocketChanelHandler handler ){
-        innerHandler = handler;
-    }
-    
-    protected WebSocketChanelHandler getHandler(){
-        return innerHandler;
-    }
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.SocketClient#finishConnect(java.nio.channels.SelectionKey)
      */
@@ -162,6 +154,15 @@ public class WebSocketClient extends SocketClient {
         
         private ByteBuffer byteBuffer;
     }
+
+    void setHandler( WebSocketChanelHandler handler ){
+        innerHandler = handler;
+    }
+    
+    WebSocketChanelHandler getHandler(){
+        return innerHandler;
+    }
+
 
     private volatile WebSocketReadHandler handler;
     private URI uri;

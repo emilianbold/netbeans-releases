@@ -233,6 +233,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
     }
 
     private void updateDetails (TeamServer server) {
+        clearStatus();
         loginSupport = getLoginSupport(server);
         loginDetails.removeAll();
         loginDetails.setLayout(new BorderLayout(0, 0));

@@ -135,4 +135,19 @@ public class EqualsMethodHintTest extends NbTestCase {
                 .assertWarnings("2:42-2:48:verifier:ENC");
 
     }
+    
+    public void testClassIsInstance216498() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean equals(Object o) {\n" +
+                       "        if (!getClass().isInstance(o)) return false;" +
+                       "        return true;" +
+                       "    }" +
+                       "}\n")
+                .run(EqualsMethodHint.class)
+                .assertWarnings();
+
+    }
 }

@@ -77,6 +77,7 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
     @Override
     public void update() {
         composerOptionsPanel.setComposerPath(getOptions().getComposerPath());
+        composerOptionsPanel.setVendor(getOptions().getVendor());
         composerOptionsPanel.setAuthorName(getOptions().getAuthorName());
         composerOptionsPanel.setAuthorEmail(getOptions().getAuthorEmail());
 
@@ -86,6 +87,7 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
     @Override
     public void applyChanges() {
         getOptions().setComposerPath(composerOptionsPanel.getComposerPath());
+        getOptions().setVendor(composerOptionsPanel.getVendor());
         getOptions().setAuthorName(composerOptionsPanel.getAuthorName());
         getOptions().setAuthorEmail(composerOptionsPanel.getAuthorEmail());
 
@@ -99,7 +101,8 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
     @Override
     public boolean isValid() {
         ComposerOptionsValidator validator = new ComposerOptionsValidator();
-        validator.validate(composerOptionsPanel.getComposerPath(), composerOptionsPanel.getAuthorName(), composerOptionsPanel.getAuthorEmail());
+        validator.validate(composerOptionsPanel.getComposerPath(), composerOptionsPanel.getVendor(),
+                composerOptionsPanel.getAuthorName(), composerOptionsPanel.getAuthorEmail());
         // errors
         if (validator.hasErrors()) {
             composerOptionsPanel.setError(validator.getErrors().get(0).getMessage());

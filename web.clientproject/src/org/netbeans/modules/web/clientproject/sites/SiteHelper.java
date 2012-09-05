@@ -305,12 +305,13 @@ public final class SiteHelper {
                             if (name.length() == 0 || folder.length() == 0) {
                                 return null;
                             }
+                            folder += "/";
                         } else {
                             return null;
                         }
                     }
                 } else {
-                    if (!entry.getName().startsWith(folder+"/")) {
+                    if (!entry.getName().startsWith(folder)) {
                         return null;
                     }
                 }

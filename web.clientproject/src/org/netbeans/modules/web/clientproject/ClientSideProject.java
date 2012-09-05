@@ -389,7 +389,7 @@ public class ClientSideProject implements Project {
                 "Templates/ClientSide/javascript.js",            // NOI18N
                 "Templates/ClientSide/css.css",            // NOI18N
                 "Templates/ClientSide/json.json",            // NOI18N
-                "Templates/Other/Folder"                   // NOI18N
+                "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator", // NOI18N
             };
         }
 

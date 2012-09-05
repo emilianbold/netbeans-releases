@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointRuntimeSetter;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.filesystems.FileObject;
@@ -186,7 +187,7 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
                 return false;
             }
             if (lb != null) {
-                lb.setLine(line);
+                updateBreakpoint(line);
             } else {
                 lb = new LineBreakpoint(line);
             }
@@ -194,6 +195,15 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
                 DebuggerManager.getDebuggerManager().addBreakpoint(lb);
             }
             return true;
+        }
+        
+        private void updateBreakpoint(final Line line) {
+            BreakpointRuntimeSetter.RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    lb.setLine(line);
+                }
+            });
         }
 
         @Override

@@ -145,15 +145,16 @@ public class MatchedRulesNode extends AbstractNode {
         for (int i=ruleProperties.size()-1; i>=0; i--) {
             org.netbeans.modules.web.webkit.debugging.api.css.Property property = ruleProperties.get(i);
             String name = property.getName();
-            boolean parsedOk = property.isParsedOk();
-            boolean specifiedAlready = properties.contains(name);
-            if (parsedOk && !specifiedAlready && (matched || CSSUtils.isInheritedProperty(name))) {
-                properties.add(name);
-                active.add(name);
-            } else if (!active.contains(name) && (specifiedAlready || parsedOk)) {
-                ruleInfo.markAsOverriden(name);
+            if (property.isParsedOk() && (matched || CSSUtils.isInheritedProperty(name))) {
+                if (!properties.contains(name)) {
+                    properties.add(name);
+                    active.add(name);
+                } else if (!active.contains(name)) {
+                    ruleInfo.markAsOverriden(name);
+                }
             }
         }
+        ruleInfo.setInherited(!matched);
         return new MatchedRuleNode(node, rule, new Resource(project, rule.getSourceURL()), ruleInfo);
     }
 

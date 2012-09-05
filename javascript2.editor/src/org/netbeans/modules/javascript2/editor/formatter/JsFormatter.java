@@ -559,7 +559,7 @@ public class JsFormatter implements Formatter {
                 if (remove || end.getKind() == FormatToken.Kind.EOL) {
                     formatContext.remove(start.getOffset(),
                             end.getOffset() - start.getOffset());
-                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                } else {
                     formatContext.replace(start.getOffset(),
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
@@ -635,12 +635,18 @@ public class JsFormatter implements Formatter {
 
     }
 
+    // FIXME can we movet his to FormatContext ?
     private Indentation checkIndentation(BaseDocument doc, FormatToken token,
             FormatContext formatContext, Context context, int indentationSize) {
 
         assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
-        if (token.getKind() != FormatToken.Kind.SOURCE_START
+        // this: (token.getKind() != FormatToken.Kind.SOURCE_START
+        // && formatContext.getDocumentOffset(token.getOffset()) >= 0)
+        // handles the case when virtual source for embedded code contains
+        // non existing eols we must not do indentation on these
+        if ((token.getKind() != FormatToken.Kind.SOURCE_START && formatContext.getDocumentOffset(token.getOffset()) >= 0)
                 || (context.startOffset() <= 0 && !formatContext.isEmbedded())) {
+
             return Indentation.ALLOWED;
         }
 
@@ -1500,12 +1506,40 @@ public class JsFormatter implements Formatter {
                         if (prevToken.id() != JsTokenId.BRACKET_LEFT_CURLY) {
                             // it must be case or default
                             inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
-                            prevToken = LexUtilities.findPreviousIncluding(inner,
+                            LexUtilities.findPreviousIncluding(inner,
                                     Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT));
-                            int beginLine = Utilities.getLineOffset(doc, inner.offset());
+
+                            int offset = inner.offset();
+                            inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                            prevToken = LexUtilities.findPrevious(inner, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL));
+
+                            int beginLine = Utilities.getLineOffset(doc, offset);
                             int eolLine = Utilities.getLineOffset(doc, ts.offset());
-                            if (beginLine != eolLine) {
-                                return -1;
+
+                            // we need to take care of case like this:
+                            // case 'a':
+                            //      test();
+                            //      break;
+                            //
+                            //      //comment
+                            //
+                            //    case 'b':
+                            //      test();
+                            //      break;
+                            // note the comment - we would get to this block twice
+                            // (eol after break and eol after //comment)
+                            // so indentation level change would be -2 instead of -1
+                            if (prevToken.id() != JsTokenId.BLOCK_COMMENT
+                                    && prevToken.id() != JsTokenId.DOC_COMMENT
+                                    && prevToken.id() != JsTokenId.LINE_COMMENT) {
+                                if (beginLine != eolLine) {
+                                    return -1;
+                                }
+                            } else {
+                                int commentLine = Utilities.getLineOffset(doc, inner.offset());
+                                if (beginLine != eolLine && commentLine == beginLine) {
+                                    return -1;
+                                }
                             }
                         }
                     }
