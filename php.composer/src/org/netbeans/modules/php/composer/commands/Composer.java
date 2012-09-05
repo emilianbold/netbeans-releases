@@ -50,6 +50,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.DialogDescriptor;
@@ -82,6 +83,7 @@ public final class Composer {
     );
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
+    private static final String DESCRIPTION_PARAM = "--description=%s"; // NOI18N
 
     private final String composerPath;
 
@@ -111,7 +113,9 @@ public final class Composer {
 
     @NbBundle.Messages({
         "Composer.run.init=Composer (init)",
-        "Composer.lockFile.exists=Composer lock file already exists - overwrite it?"
+        "Composer.lockFile.exists=Composer lock file already exists - overwrite it?",
+        "# {0} - project name",
+        "Composer.init.description=Description of project {0}."
     })
     public void init(PhpModule phpModule) {
         FileObject lockFile = getLockFile(phpModule);
@@ -123,9 +127,18 @@ public final class Composer {
         // command params
         ComposerOptions options = ComposerOptions.getInstance();
         List<String> params = Arrays.asList(
-                String.format(NAME_PARAM, phpModule.getDisplayName()),
-                String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()));
+                String.format(NAME_PARAM, getInitName(options.getVendor(), phpModule.getName())),
+                String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()),
+                String.format(DESCRIPTION_PARAM, Bundle.Composer_init_description(phpModule.getDisplayName())));
         runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
+    }
+
+    private String getInitName(String vendor, String projectName) {
+        StringBuilder name = new StringBuilder(50);
+        name.append(vendor);
+        name.append('/'); // NOI18N
+        name.append(StringUtils.webalize(projectName));
+        return name.toString();
     }
 
     @NbBundle.Messages("Composer.run.install=Composer (install)")

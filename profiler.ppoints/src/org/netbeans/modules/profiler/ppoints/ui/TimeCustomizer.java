@@ -174,9 +174,9 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
         condition.setRepeats(timeFrequencyRadio.isSelected());
         condition.setPeriodTime(((Integer) timeFrequencySpinner.getValue()).intValue());
 
-        if (timeFrequencyCombo.getSelectedItem() == Bundle.TimeCustomizer_UnitsMinutes()) {
+        if (Bundle.TimeCustomizer_UnitsMinutes().equals(timeFrequencyCombo.getSelectedItem())) {
             condition.setPeriodUnits(TimedGlobalProfilingPoint.TimeCondition.UNITS_MINUTES);
-        } else if (timeFrequencyCombo.getSelectedItem() == Bundle.TimeCustomizer_UnitsHours()) {
+        } else if (Bundle.TimeCustomizer_UnitsHours().equals(timeFrequencyCombo.getSelectedItem())) {
             condition.setPeriodUnits(TimedGlobalProfilingPoint.TimeCondition.UNITS_HOURS);
         }
 
