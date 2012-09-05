@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,23 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.analysis.spi;
 
-package org.netbeans.lib.profiler.heap;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.refactoring.api.Scope;
 
-
-/**
- * represents primitive type or object. Heap does not distinguish different
- * type of objects. All sub classes of java.lang.Object has type "object"
- * @author Tomas Hurka
+/**When placed in a project's lookup, the analysis of the project will be performed
+ * over the returned {@link Scope}.
+ *
+ * @author lahvac
  */
-public interface Type {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    /**
-     * return the human readable name of the type. "object" is returned
-     * for object type.
-     * @return name of the type
+public interface AnalysisScopeProvider {
+    
+    /**Returns a {@link Scope} over which the analysis should run. Note the difference between
+     * returning an empty {@link Scope}, in which case the analysis won't run over
+     * any source, and a null, in which case the engine will try to infer the {@link Scope}
+     * using other means.
+     * 
+     * @return the {@link Scope} over which the analysis should run, or null if it
+     *         should be inferred by other means.
      */
-    String getName();
+    public @CheckForNull Scope getScope();
 }
