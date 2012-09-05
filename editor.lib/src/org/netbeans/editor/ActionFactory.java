@@ -1325,7 +1325,7 @@ public class ActionFactory {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
+            if (target != null && !Boolean.TRUE.equals(target.getClientProperty("AsTextField"))) {
                 boolean newRectSel = !RectangularSelectionUtils.isRectangularSelection(target);
                 RectangularSelectionUtils.setRectangularSelection(target, newRectSel);
             }

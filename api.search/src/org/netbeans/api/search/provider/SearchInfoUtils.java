@@ -241,8 +241,8 @@ public final class SearchInfoUtils {
     /**
      * Create a search info for an array of FileObjects.
      *
-     * @param useDefaultFilters True if default filters should be used, false
-     * otherwise.
+     * @param useDefaultFilters True if default filters (visibility filter and
+     * sharability filter) should be used, false otherwise.
      * @param extraFilters Array of extra custom filters.
      */
     public static @NonNull SearchInfo createSearchInfoForRoots(

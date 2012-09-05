@@ -185,7 +185,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
             runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;
-            if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+            if (runInExternalTerminal && (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null)) {
                 String errmsg;
                 if (Utilities.isMac()) {
                     errmsg = getString("Err_NoTermFoundMacOSX");
@@ -194,6 +194,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 }
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
                 consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                runInExternalTerminal = runInInternalTerminal = false;
             }
 
             if (!conf.getDevelopmentHost().isLocalhost()) {

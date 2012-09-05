@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * macro map is created for each translation unit and
@@ -93,6 +94,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     @Override
     public boolean isDefined(CharSequence token) {
+        token = CharSequences.create(token);
         // check own map
         initCache();
         // no need to check in super, because everything is in cache already

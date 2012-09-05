@@ -199,6 +199,7 @@ CLASS      MagicMethods                    [PUBLIC]   issue196714.php
 CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
+CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php

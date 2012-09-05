@@ -354,18 +354,18 @@ public final class PHPIndexer extends EmbeddingIndexer {
 
                 @Override
                 public void visit(Identifier identifier) {
-                    addSignature(IdentifierSignature.createIdentifier(identifier));
+                    addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
                     super.visit(identifier);
                 }
 
                 @Override
                 public void visit(PHPDocTypeNode node) {
-                    addSignature(IdentifierSignature.create(node));
+                    addSignature(IdentifierSignatureFactory.create(node));
                     super.visit(node);
                 }
 
                 private void addSignature(final IdentifierSignature signature) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER, signature.getSignature(), true, true);
+                    signature.save(identifierDocument, FIELD_IDENTIFIER);
                 }
             };
             program.accept(identifierVisitor);

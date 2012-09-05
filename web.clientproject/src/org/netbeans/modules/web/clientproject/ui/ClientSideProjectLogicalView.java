@@ -61,6 +61,10 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -78,6 +82,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -272,6 +277,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     }
     private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
+        // XXX threading! for all fields
         private ClientSideProject project;
         private FileObject siteRootFolder;
         private FileObject testsFolder;
@@ -446,18 +452,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
-            if (root == null) {
-                if (type == BasicNodes.Sources) {
-                    // when site root is configured to point to non-existent directory:
-                    DataFolder fakeNode = DataFolder.findFolder(project.getProjectDirectory());
-                    return new Node[]{new FolderFilterNode(type, fakeNode.getNodeDelegate(), ignoreList)};
-                }
-            } else {
+            if (root != null && root.isValid()) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
                     return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
                 }
             }
+            // missing root should be solved by project problems
             return new Node[0];
         }
 
@@ -491,8 +492,20 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         @Override
-        public Action[] getActions(boolean arg0) {
-            return new Action[]{CommonProjectActions.newFileAction()};
+        public Action[] getActions(boolean context) {
+            List<Action> actions = new ArrayList<Action>();
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
+            actions.add(SystemAction.get(FindAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(FileSystemAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(PasteAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(ToolsAction.class));
+            actions.add(null);
+            actions.add(CommonProjectActions.customizeProjectAction());
+            return actions.toArray(new Action[actions.size()]);
         }
 
         @Override

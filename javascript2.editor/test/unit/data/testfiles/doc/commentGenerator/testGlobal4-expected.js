@@ -10,7 +10,7 @@ function foo(var1, var2, var3, var4) {
 
 /**
  * 
- * @return {String|Number}^
+ * @returns {String|Number}^
  */
 function foo2() {
     if (true)

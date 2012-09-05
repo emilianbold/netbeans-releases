@@ -574,6 +574,7 @@ public class JavaKit extends NbEditorKit {
 
         @MimeRegistrations({
             @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+            @MimeRegistration(mimeType = "text/x-javadoc", service = TypedBreakInterceptor.Factory.class), //NOI18N
             @MimeRegistration(mimeType = "text/x-java-string", service = TypedBreakInterceptor.Factory.class), //NOI18N
             @MimeRegistration(mimeType = "text/x-java-character", service = TypedBreakInterceptor.Factory.class) //NOI18N
         })
@@ -621,6 +622,7 @@ public class JavaKit extends NbEditorKit {
 
         @MimeRegistrations({
             @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = "text/x-javadoc", service = DeletedTextInterceptor.Factory.class), //NOI18N
             @MimeRegistration(mimeType = "text/x-java-string", service = DeletedTextInterceptor.Factory.class), //NOI18N
             @MimeRegistration(mimeType = "text/x-java-character", service = DeletedTextInterceptor.Factory.class) //NOI18N
         })
@@ -681,6 +683,7 @@ public class JavaKit extends NbEditorKit {
 
         @MimeRegistrations({
             @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = "text/x-javadoc", service = TypedTextInterceptor.Factory.class), //NOI18N
             @MimeRegistration(mimeType = "text/x-java-string", service = TypedTextInterceptor.Factory.class), //NOI18N
             @MimeRegistration(mimeType = "text/x-java-character", service = TypedTextInterceptor.Factory.class) //NOI18N
         })

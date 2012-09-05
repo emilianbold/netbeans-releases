@@ -39,64 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.sites;
+package org.netbeans.modules.editor.lib2.document;
 
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 
-@ServiceProvider(service=SiteTemplateImplementation.class, position=300)
-public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
+/**
+ * Element about a single modification.
+ *
+ * @author Miloslav Metelka
+ */
+public final class ModElement extends AbstractPositionElement {
 
-    private static final Logger LOGGER = Logger.getLogger(SiteHtml5Boilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-301.zip"); // NOI18N
+    public static final String NAME = "mod";
 
+    ModElement(Element parent, Position startPos, Position endPos) {
+        super(parent, startPos, endPos);
+    }
 
-    @NbBundle.Messages("SiteHtml5Boilerplate.name=HTML5 Boilerplate")
+    ModElement(Element parent, int startOffset, int endOffset) {
+        super(parent, startOffset, endOffset);
+    }
+
     @Override
     public String getName() {
-        return Bundle.SiteHtml5Boilerplate_name();
-    }
-
-    @NbBundle.Messages("SiteHtml5Boilerplate.description=Site template from html5boilerplate.com. Version: 3.0.1")
-    @Override
-    public String getDescription() {
-        return Bundle.SiteHtml5Boilerplate_description();
-    }
-
-    @Override
-    public boolean isPrepared() {
-        return LIB_FILE.isFile();
-    }
-
-    @Override
-    public void prepare() throws IOException {
-        assert !EventQueue.isDispatchThread();
-        assert !isPrepared();
-        SiteHelper.download("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", LIB_FILE, null); // NOI18N
-    }
-
-    @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
-        if (!isPrepared()) {
-            // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
-            return;
-        }
-        SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);
-    }
-
-    @Override
-    public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(LIB_FILE);
+        return NAME;
     }
 
 }

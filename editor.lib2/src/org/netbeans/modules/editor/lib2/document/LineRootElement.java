@@ -56,14 +56,14 @@ import org.netbeans.lib.editor.util.swing.GapBranchElement;
  * @since 1.46
  */
 
-public final class LineElementRoot extends GapBranchElement {
+public final class LineRootElement extends GapBranchElement {
     
     private static final String NAME
         = AbstractDocument.SectionElementName;
     
     private Document doc;
     
-    public LineElementRoot(Document doc) {
+    public LineRootElement(Document doc) {
         this.doc = doc;
         assert (doc.getLength() == 0) : "Cannot start with non-empty document"; // NOI18N
         Position startPos = doc.getStartPosition();
