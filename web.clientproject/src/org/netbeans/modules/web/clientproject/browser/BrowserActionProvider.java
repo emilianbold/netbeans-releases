@@ -54,6 +54,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -83,10 +84,9 @@ public class BrowserActionProvider implements ActionProvider {
         } else {
             WebServer.getWebserver().stop(project);
         }
-        FileObject fo = null;
         String startFile = project.getStartFile();
         if (COMMAND_RUN.equals(command)) {
-            fo = project.getSiteRootFolder().getFileObject(startFile);
+            FileObject fo = project.getSiteRootFolder().getFileObject(startFile);
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
                     new DialogDescriptor.Message("Main file "+startFile+" cannot be found and opened."));
@@ -98,29 +98,61 @@ public class BrowserActionProvider implements ActionProvider {
                     return;
                 }
             }
+            if (fo != null) {
+                browseFile(support, fo);
+            }
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
-            fo = getFile(context);
+            FileObject fo = getFile(context);
+            if (fo != null) {
+                browseFile(support, fo);
+            }
         } else if (COMMAND_TEST.equals(command)) {
-            final FileObject configFile = project.getConfigFolder().getFileObject("jsTestDriver.conf");
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
+            runTests(null);
+        }
+    }
+    
+    private void runTests(final String testName) {
+        if (!(project.getConfigFolder() != null && 
+                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null &&
+                    project.getTestsFolder() != null)) {
+            return;
+        }
+
+        final FileObject configFile = project.getConfigFolder().getFileObject("jsTestDriver.conf");
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (testName == null) {
                         RunTests.runAllTests(project, project.getProjectDirectory(), configFile);
-                    } catch (Throwable t) {
-                        LOGGER.log(Level.SEVERE, "cannot execute tests", t);
+                    } else {
+                        // not implemented yet as I do not know how:
+                        //RunTests.runTests(project, project.getProjectDirectory(), configFile, testName);
                     }
+                } catch (Throwable t) {
+                    LOGGER.log(Level.SEVERE, "cannot execute tests", t);
                 }
-            });
-        }
-        if (fo != null) {
-            browseFile(support, fo);
-        }
+            }
+        });
     }
 
     
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        if (COMMAND_TEST.equals(command)) {
+            return (project.getConfigFolder() != null && 
+                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null &&
+                    project.getTestsFolder() != null);
+        }
+        // not sure how to force js-test-driver to run single test; I tried everything according
+        // to their documentation and it always runs all tests
+//        if (COMMAND_TEST_SINGLE.equals(command)) {
+//            FileObject fo = getFile(context);
+//            return (fo != null && "js".equals(fo.getExt()) && project.getConfigFolder() != null && 
+//                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null &&
+//                    project.getTestsFolder() != null &&
+//                    FileUtil.isParentOf(project.getTestsFolder(), fo));
+//        }
 //        Project prj = context.lookup(Project.class);
 //        ClientSideConfigurationProvider provider = prj.getLookup().lookup(ClientSideConfigurationProvider.class);
 //        if (provider.getActiveConfiguration().getBrowser() != null) {
