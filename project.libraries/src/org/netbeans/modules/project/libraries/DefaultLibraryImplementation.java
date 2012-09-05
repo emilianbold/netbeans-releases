@@ -77,11 +77,15 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     /**
      * Create new LibraryImplementation supporting given <tt>library</tt>.
      */
-    public DefaultLibraryImplementation (String libraryType, String[] volumeTypes) {
-        assert libraryType != null && volumeTypes != null;
+    public DefaultLibraryImplementation (
+            @NonNull final String libraryType,
+            @NonNull final String[] volumeTypes) {
+        Parameters.notNull("libraryType", libraryType); //NOI18N
+        Parameters.notNull("volumeTypes", volumeTypes); //NOI18N
         this.libraryType = libraryType;
         this.contents = new HashMap<String,List<URL>>();
         for (String vtype : volumeTypes) {
+            Parameters.notNull("volumeTypes", vtype);   //NOI18N
             this.contents.put(vtype, Collections.<URL>emptyList());
         }
     }
