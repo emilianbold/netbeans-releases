@@ -186,16 +186,6 @@ public final class ServerUtilities {
 //    }
     
     /**
-     * Creates an iterator for a wizard to instantiate server objects.
-     * <p/>
-     * @return Server wizard iterator initialized with supported GlassFish
-     * server versions.
-     */
-    public InstantiatingIterator getAddInstanceIterator() {
-        return ServerDetails.getInstantiatingIterator();
-    }
-    
-    /**
      * Returns the ServerInstanceProvider for this server plugin so we don't 
      * have to look it up via common server SPI.
      * 
