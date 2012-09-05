@@ -44,6 +44,7 @@ package org.netbeans.modules.ods.tasks.tasktop;
 import com.tasktop.c2c.internal.client.tasks.core.C2CRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.client.IC2CClient;
+import com.tasktop.c2c.internal.client.tasks.core.data.C2CTaskAttribute;
 import com.tasktop.c2c.internal.client.tasks.core.util.C2CQueryUtil;
 import com.tasktop.c2c.server.tasks.domain.Component;
 import com.tasktop.c2c.server.tasks.domain.ExternalTaskRelation;
@@ -67,6 +68,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.Exceptions;
@@ -245,5 +247,14 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
     @Override
     protected List<ExternalTaskRelation> spiValues(CfcClientData data, String value) {
         return data.getValues(value);
+    }
+
+    @Override
+    protected void spiResolve(TaskData data, TaskResolution resolution) {
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(C2CTaskAttribute.STATUS.getKey());
+        ta.setValue("RESOLVED");
+        ta = rta.getMappedAttribute(C2CTaskAttribute.RESOLUTION.getKey());
+        ta.setValue(resolution.getValue());
     }
 }
