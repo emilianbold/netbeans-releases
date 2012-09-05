@@ -131,23 +131,25 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         getActionMap().put(FindAction.class.getName(), action(FIND));
         getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, action(COPY));
         applyOptions();
+        initOptionsListener();
     }
 
     private void applyOptions() {
-        Lines lines = getDocument().getLines();
-        OutputOptions opts = io.getOptions();
-        lines.setDefColor(IOColors.OutputType.OUTPUT,
-                opts.getColorStandard());
-        lines.setDefColor(IOColors.OutputType.ERROR,
-                opts.getColorError());
-        lines.setDefColor(IOColors.OutputType.HYPERLINK,
-                opts.getColorLink());
-        lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
-                opts.getColorLinkImportant());
-        Color bg = io.getOptions().getColorBackground();
-        getOutputPane().getTextView().setBackground(bg);
-        getOutputPane().setViewFont(io.getOptions().getFont());
-        initOptionsListener();
+        Lines lines = getDocumentLines();
+        if (lines != null) {
+            OutputOptions opts = io.getOptions();
+            lines.setDefColor(IOColors.OutputType.OUTPUT,
+                    opts.getColorStandard());
+            lines.setDefColor(IOColors.OutputType.ERROR,
+                    opts.getColorError());
+            lines.setDefColor(IOColors.OutputType.HYPERLINK,
+                    opts.getColorLink());
+            lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
+                    opts.getColorLinkImportant());
+            Color bg = io.getOptions().getColorBackground();
+            getOutputPane().getTextView().setBackground(bg);
+            getOutputPane().setViewFont(io.getOptions().getFont());
+        }
     }
 
     private final TabAction action(ACTION a) {
@@ -170,6 +172,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (old != null && old instanceof OutputDocument) {
             ((OutputDocument) old).dispose();
         }
+        applyOptions();
     }
 
     public void reset() {
@@ -728,41 +731,49 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         optionsListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                String pn = evt.getPropertyName();
-                Lines lines = getDocument().getLines();
-                OutputOptions opts = io.getOptions();
-                if (OutputOptions.PROP_COLOR_STANDARD.equals(pn)) {
-                    lines.setDefColor(IOColors.OutputType.OUTPUT,
-                            opts.getColorStandard());
-                } else if (OutputOptions.PROP_COLOR_ERROR.equals(pn)) {
-                    lines.setDefColor(IOColors.OutputType.ERROR,
-                            opts.getColorError());
-                } else if (OutputOptions.PROP_COLOR_LINK.equals(pn)) {
-                    lines.setDefColor(IOColors.OutputType.HYPERLINK,
-                            opts.getColorLink());
-                } else if (OutputOptions.PROP_COLOR_LINK_IMPORTANT.equals(pn)) {
-                    lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
-                            opts.getColorLinkImportant());
-                } else if (OutputOptions.PROP_COLOR_BACKGROUND.equals(pn)) {
-                    Color bg = io.getOptions().getColorBackground();
-                    getOutputPane().getTextView().setBackground(bg);
-                } else if (OutputOptions.PROP_FONT.equals(pn)) {
-                    Font font = io.getOptions().getFont();
-                    if (getOutputPane().isWrapped()
-                            && getIO().getIOContainer() == IOContainer.getDefault()) {
-                        Font dfltFont = OutputOptions.getDefaultFont();
-                        if (!font.getFamily().equals(dfltFont.getFamily())
-                                || font.getStyle() != dfltFont.getStyle()) {
-                            font = Controller.getDefault().getCurrentFontMS();
-                        }
-                    }
-                    getOutputPane().setViewFont(font);
+                Lines lines = getDocumentLines();
+                if (lines != null) {
+                    String pn = evt.getPropertyName();
+                    OutputOptions opts = io.getOptions();
+                    updateOptionsProperty(pn, lines, opts);
+                    OutputTab.this.repaint();
                 }
-                OutputTab.this.repaint();
             }
         };
         this.io.getOptions().addPropertyChangeListener(
                 WeakListeners.propertyChange(optionsListener, io.getOptions()));
+    }
+
+    private void updateOptionsProperty(String pn, Lines lines,
+            OutputOptions opts) {
+
+        if (OutputOptions.PROP_COLOR_STANDARD.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.OUTPUT,
+                    opts.getColorStandard());
+        } else if (OutputOptions.PROP_COLOR_ERROR.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.ERROR,
+                    opts.getColorError());
+        } else if (OutputOptions.PROP_COLOR_LINK.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.HYPERLINK,
+                    opts.getColorLink());
+        } else if (OutputOptions.PROP_COLOR_LINK_IMPORTANT.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
+                    opts.getColorLinkImportant());
+        } else if (OutputOptions.PROP_COLOR_BACKGROUND.equals(pn)) {
+            Color bg = opts.getColorBackground();
+            getOutputPane().getTextView().setBackground(bg);
+        } else if (OutputOptions.PROP_FONT.equals(pn)) {
+            Font font = opts.getFont();
+            if (getOutputPane().isWrapped()
+                    && getIO().getIOContainer() == IOContainer.getDefault()) {
+                Font dfltFont = OutputOptions.getDefaultFont();
+                if (!font.getFamily().equals(dfltFont.getFamily())
+                        || font.getStyle() != dfltFont.getStyle()) {
+                    font = Controller.getDefault().getCurrentFontMS();
+                }
+            }
+            getOutputPane().setViewFont(font);
+        }
     }
 
     static enum ACTION { COPY, WRAP, SAVEAS, CLOSE, NEXT_ERROR, PREV_ERROR,
@@ -1240,5 +1251,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         void dispose() {
             out.dispose();
         }
+    }
+
+    private Lines getDocumentLines() {
+        OutputDocument doc = getDocument();
+        return doc == null ? null : doc.getLines();
     }
 }
