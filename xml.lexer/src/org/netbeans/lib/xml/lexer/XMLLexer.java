@@ -42,6 +42,7 @@
 
 package org.netbeans.lib.xml.lexer;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -340,8 +341,13 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                             state = ISI_PI;
                             return token(XMLTokenId.PI_START);
                         default:
-                            state = ISI_TEXT;  //RELAXED to allow editing in the  middle of document
-                            continue;             // don't eat the char, maybe its '&'
+                            // note: it would be more correct to raise an error here,
+                            // and return TAG PartType=Start, BUT some code already expects
+                            // unfinished tags to be reported as TEXT.
+                            state = INIT;
+                            input.backup(1);
+                            return tokenFactory.createToken(
+                                    XMLTokenId.TEXT, input.readLength());
                     }
                     break;
                     
@@ -448,8 +454,11 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     if( isWS( actChar ) ) break;  // eat all WS
                     state = ISP_ENDTAG_X;
                     input.backup(1);
-                    return token(XMLTokenId.WS);
-                    
+                    if (actChar == '>') {  
+                        return token(XMLTokenId.WS);
+                    }
+                    state = ISI_ERROR;
+                    break;
                     
                 case ISI_TAG:        // DONE
                     if( UnicodeClasses.isXMLNameChar( actChar ) ) break; // Still in tag identifier, eat next char

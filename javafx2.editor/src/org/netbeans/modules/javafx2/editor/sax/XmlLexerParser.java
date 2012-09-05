@@ -349,18 +349,18 @@ public class XmlLexerParser implements ContentLocator {
                     break;
                 case TAG: {
                     CharSequence cs = t.text();
-                    
-                    if (cs.charAt(0) == TAG_START_CHAR && cs.charAt(1) == CLOSE_TAG_CHAR) {
-                        consume();
-                        parseClosingTag(cs.subSequence(2, cs.length()).toString());
-                    } else if (cs.charAt(0) != TAG_START_CHAR) {
-                        // some error, mark it
-                        handleErrorAs(XMLTokenId.TEXT);
-                        break;
+                    if (cs.charAt(0) == TAG_START_CHAR && cs.length() > 1) {
+                        if (cs.charAt(1) == CLOSE_TAG_CHAR) {
+                            consume();
+                            parseClosingTag(cs.subSequence(2, cs.length()).toString());
+                        } else {
+                            parseTag(t);
+                        }
                     } else {
-                        parseTag(t);
+                        markError();
+                        consume();
+                        break;
                     }
-                    
                     whitespacePossible = true;
                     break;
                 }
