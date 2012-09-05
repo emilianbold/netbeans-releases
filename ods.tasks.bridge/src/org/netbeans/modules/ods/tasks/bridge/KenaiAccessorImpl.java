@@ -129,7 +129,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
         CloudServer server = getServer(url);
         if (server == null) {
-            Support.LOG.log(Level.INFO, "no server for url : [{0}]", url);
+            Support.LOG.log(Level.FINEST, "no server for url : [{0}]", url);
             return null;
         }
         return getPasswordAuthentication(server, forceLogin);
@@ -189,7 +189,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     public KenaiProject getKenaiProject(String url, String projectName) throws IOException {
         CloudServer server = getServer(url);
         if (server == null) {
-            Support.LOG.log(Level.INFO, "no server for url : [{0}]", url);
+            Support.LOG.log(Level.FINEST, "no server for url : [{0}]", url);
             return null;
         }
         ODSProject odsProj;
