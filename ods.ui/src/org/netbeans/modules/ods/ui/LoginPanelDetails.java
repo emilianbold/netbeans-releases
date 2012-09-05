@@ -74,15 +74,14 @@ class LoginPanelDetails extends javax.swing.JPanel {
         for (ActionListener l : forgotPassword.getActionListeners()) {
             forgotPassword.removeActionListener(l);
         }
-        forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
-        for (ActionListener l:signUp.getActionListeners()) {
-            signUp.removeActionListener(l);
+        URL forgetUrl = getForgetPasswordUrl();
+        if (forgetUrl == null) {
+            forgotPassword.setVisible(false);
+        } else {
+            forgotPassword.setVisible(true);
+            forgotPassword.setAction(new URLDisplayerAction("", forgetUrl));
+            forgotPassword.setText(NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.forgotPassword.text"));
         }
-        signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
-
-        forgotPassword.setText(NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.forgotPassword.text"));
-        signUp.setText(NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.register.text"));
-
         setUsername(credentials.getUsername(server));
         setPassword(credentials.getPassword(server));
         setChildrenEnabled(true);
@@ -97,11 +96,9 @@ class LoginPanelDetails extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        signUp = new LinkButton(NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.register.text"), new URLDisplayerAction("",getRegisterUrl()));
         lblPassword = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
         lblUserName = new javax.swing.JLabel();
-        lblNoAccount = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
         forgotPassword = new LinkButton(NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.forgotPassword.text"), new URLDisplayerAction("",getForgetPasswordUrl()));
         chkRememberMe = new javax.swing.JCheckBox();
@@ -109,8 +106,6 @@ class LoginPanelDetails extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblPassword, org.openide.util.NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.lblPassword.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lblUserName, org.openide.util.NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.lblUserName.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblNoAccount, org.openide.util.NbBundle.getMessage(LoginPanelDetails.class, "LoginPanelDetails.lblNoAccount.text")); // NOI18N
 
         password.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -138,10 +133,6 @@ class LoginPanelDetails extends javax.swing.JPanel {
                     .addComponent(lblPassword))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblNoAccount)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(signUp))
                     .addComponent(chkRememberMe)
                     .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
                     .addComponent(username)
@@ -163,11 +154,7 @@ class LoginPanelDetails extends javax.swing.JPanel {
                 .addComponent(chkRememberMe)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(forgotPassword)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblNoAccount)
-                    .addComponent(signUp))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -189,33 +176,18 @@ class LoginPanelDetails extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox chkRememberMe;
     private javax.swing.JButton forgotPassword;
-    private javax.swing.JLabel lblNoAccount;
     private javax.swing.JLabel lblPassword;
     private javax.swing.JLabel lblUserName;
     private javax.swing.JPasswordField password;
-    private javax.swing.JButton signUp;
     private javax.swing.JTextField username;
     // End of variables declaration//GEN-END:variables
 
     private URL getForgetPasswordUrl() {
         try {
             if (server != null) {
-                return new URL(server.getUrl().toString() + "/people/forgot_password"); // NOI18N
+                return new URL(server.getUrl().toString() + "/#requestPasswordReset"); //NOI18N
             } else {
-                return new URL("https://netbeans.org/people/forgot_password"); // NOI18N
-            }
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-
-    private URL getRegisterUrl() {
-        try {
-            if (server != null) {
-                return new URL(server.getUrl().toString() + "/people/new"); // NOI18N
-            } else {
-                return new URL("https://netbeans.org/people/new"); // NOI18N
+                return null;
             }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
