@@ -24,7 +24,7 @@
     
     var |>CLASS:test<| = {}
     test["myProperty"] = 20;
-    test.anotherProperty = test.myProperty;
+    test.|>FIELD:anotherProperty<| = test.myProperty;
 });
 
 

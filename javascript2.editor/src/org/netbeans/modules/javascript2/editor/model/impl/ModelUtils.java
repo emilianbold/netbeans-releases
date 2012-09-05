@@ -62,7 +62,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  */
 public class ModelUtils {
       
-    public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName) {
+    public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();
         JsObject tmpObject = null;
         String firstName = fqName.get(0).getName();
@@ -87,7 +87,7 @@ public class ModelUtils {
             Identifier name = fqName.get(index);
             result = tmpObject.getProperty(name.getName());
             if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange());
+                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(), (index < (fqName.size() - 1)) ? false : isLHS );
                 tmpObject.addProperty(name.getName(), result);
             }
             tmpObject = result;
