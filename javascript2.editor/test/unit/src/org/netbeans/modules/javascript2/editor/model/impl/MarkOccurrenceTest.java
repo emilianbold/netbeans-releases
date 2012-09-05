@@ -301,6 +301,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences(getTestPath(), "Pislik.prototype.hum^an = false;", true);
     }
 
+    public void testIssue217770_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue217770.js", "t.r^un();", true);
+    }
+    
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
     }
