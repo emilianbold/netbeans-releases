@@ -79,7 +79,7 @@ public final class LibrariesSupport {
     @NonNull
     public static LibraryImplementation3 createLibraryImplementation3 (
             @NonNull final String libraryType,
-            @NonNull final String[] volumeTypes) {
+            @NonNull final String... volumeTypes) {
         return new DefaultLibraryImplementation (libraryType, volumeTypes);
     }
 
