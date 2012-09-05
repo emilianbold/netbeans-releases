@@ -555,4 +555,8 @@ public class DefaultVisitor implements Visitor {
         scan(node.getIndex());
     }
 
+    @Override
+    public void visit(HaltCompiler node) {
+    }
+
 }
