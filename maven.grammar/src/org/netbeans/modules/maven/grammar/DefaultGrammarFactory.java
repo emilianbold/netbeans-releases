@@ -75,7 +75,7 @@ public class DefaultGrammarFactory extends GrammarFactory {
             return null;
         }
         if (fo.getNameExt().equals("pom.xml") && owner.getProjectDirectory().equals(fo.getParent())) {//NOI18N
-            return new MavenProjectGrammar(env);
+            return new MavenProjectGrammar(env, owner);
         }
         File file = FileUtil.toFile(fo);
         if (owner.getLookup().lookup(NbMavenProject.class) != null) {
