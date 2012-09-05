@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.refactoring;
 
-import java.util.Collection;
+import org.netbeans.modules.groovy.refactoring.RefactoringTask.NodeToElementTask;
+import org.netbeans.modules.groovy.refactoring.RefactoringTask.TextComponentTask;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
-import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
-import org.openide.loaders.DataObject;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Martin Janicek
  */
-@ServiceProvider(service = ActionsImplementationProvider.class, position=100)
-public class RefactoringActionsProvider extends ActionsImplementationProvider {
+public class RefactoringTaskFactory {
 
-    private RefactoringTask task;
+    public static RefactoringTask createRefactoringTask(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        FileObject fileObject = lookup.lookup(FileObject.class);
 
-    @Override
-    public boolean canFindUsages(Lookup lookup) {
-        initiate(lookup);
-        return isValid(lookup) && task.isValid();
-    }
-
-    @Override
-    public void doFindUsages(Lookup lookup) {
-        task.run();
-    }
-
-    @Override
-    public boolean canRename(Lookup lookup) {
-        return false;
-//        return isValid(lookup);
-    }
-
-    @Override
-    public void doDelete(Lookup lookup) {
-        super.doDelete(lookup);
-    }
-
-    private void initiate(Lookup lookup) {
-        task = RefactoringTaskFactory.createRefactoringTask(lookup);
-    }
-
-    private boolean isValid(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        if (nodes.size() != 1) {
-            return false;
+        if (GroovyProjectUtil.isFromEditor(ec)) {
+            return new TextComponentTask(ec, fileObject);
+        } else {
+            return new NodeToElementTask(lookup.lookupAll(Node.class), fileObject);
         }
-
-        Node node = nodes.iterator().next();
-        DataObject dataObject = node.getLookup().lookup(DataObject.class);
-        if (dataObject == null) {
-            return false;
-        }
-
-        if (GroovyProjectUtil.isGroovyFile(dataObject.getPrimaryFile())) {
-            return true;
-        }
-        return false;
     }
 }
