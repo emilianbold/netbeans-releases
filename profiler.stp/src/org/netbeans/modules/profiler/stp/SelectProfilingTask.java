@@ -1027,8 +1027,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
                         
         final boolean hasContext = !projectsChooserPanel.isVisible() ||
-                (projectsChooserCombo.getSelectedItem() !=
-                Bundle.SelectProfilingTask_SelectProjectToAttachString());
+                !Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(projectsChooserCombo.getSelectedItem());
         
         if (!hasContext) {
             // Attach, no project selected
