@@ -113,7 +113,12 @@ public class WebKitPageModel extends PageModel {
         DOM dom = webKit.getDOM();
         dom.addListener(domListener);
 
-        initializePage();
+        try {
+            initializePage();
+        } catch (TransportStateException tsex) {
+            // The underlying transport became invalid
+            // before the page was initialized.
+        }
     }
 
     /**

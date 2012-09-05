@@ -60,6 +60,7 @@ public class ComposerOptions {
 
     // composer
     private static final String COMPOSER_PATH = "composer.path"; // NOI18N
+    private static final String VENDOR = "vendor"; // NOI18N
     private static final String AUTHOR_NAME = "author.name"; // NOI18N
     private static final String AUTHOR_EMAIL = "author.email"; // NOI18N
 
@@ -85,6 +86,14 @@ public class ComposerOptions {
 
     public void setComposerPath(String composerPath) {
         getPreferences().put(COMPOSER_PATH, composerPath);
+    }
+
+    public String getVendor() {
+        return getPreferences().get(VENDOR, "vendor"); // NOI18N
+    }
+
+    public void setVendor(String vendor) {
+        getPreferences().put(VENDOR, vendor);
     }
 
     public String getAuthorName() {

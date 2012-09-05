@@ -162,11 +162,14 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         Project project = Templates.getProject( descriptor );
         Sources sources = ProjectUtils.getSources(project);
         
+        String htmlPanelName = NbBundle.getMessage(JSClientIterator.class, 
+                    "TXT_HtmlFile");        // NOI18N
+        Panel panel = new HtmlPanel( descriptor );
+        panel.getComponent().setName(htmlPanelName);
         myPanels = new WizardDescriptor.Panel[]{new FinishPanelDelegate(
                 Templates.buildSimpleTargetChooser(project, 
                 sources.getSourceGroups(Sources.TYPE_GENERIC)).
-                    bottomPanel(myRestPanel).create()), new HtmlPanel( descriptor )
-                    };
+                    bottomPanel(myRestPanel).create()), panel};
         setSteps();
     }
     

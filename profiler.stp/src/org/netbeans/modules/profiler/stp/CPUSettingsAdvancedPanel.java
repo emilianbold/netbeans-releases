@@ -270,9 +270,9 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     public int getInstrumentationScheme() {
         Object selectedScheme = instrumentationSchemeCombo.getSelectedItem();
 
-        if (selectedScheme == Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy()) {
+        if (selectedScheme.equals(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy())) {
             return CommonConstants.INSTRSCHEME_LAZY;
-        } else if (selectedScheme == Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemEager()) {
+        } else if (selectedScheme.equals(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemEager())) {
             return CommonConstants.INSTRSCHEME_EAGER;
         } else {
             return CommonConstants.INSTRSCHEME_TOTAL;

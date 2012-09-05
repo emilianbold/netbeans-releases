@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-@Messages("LBL_CustomScope=Custom Scope...")
+@Messages({"LBL_CustomScope=Custom Scope...", "TTL_CustomScope=Custom Scope"})
 @ScopeProvider.Registration(id = "custom-scope", displayName = "#LBL_CustomScope", position = 900, iconBase = "org/netbeans/modules/refactoring/java/resources/filter.png")
 @ScopeReference(path="org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
 public final class CustomScopeProvider extends ScopeProvider.CustomScopeProvider {
@@ -85,7 +85,6 @@ public final class CustomScopeProvider extends ScopeProvider.CustomScopeProvider
     }
 
     @Override
-    @Messages("TTL_CustomScope=Custom Scope")
     public boolean showCustomizer() {
         Scope nue = JavaScopeBuilder.open(TTL_CustomScope(), customScope); //NOI18N
         if (nue != null) {
