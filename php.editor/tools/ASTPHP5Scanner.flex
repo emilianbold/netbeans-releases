@@ -92,6 +92,7 @@ import java_cup.runtime.*;
 %state ST_DOCBLOCK
 %state ST_ONE_LINE_COMMENT
 %state ST_IN_SHORT_ECHO
+%state ST_HALTED_COMPILER
 %{
     private final List commentList = new LinkedList();
     private String heredoc = null;
@@ -582,9 +583,15 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createSymbol(ASTPHP5Symbols.T_EMPTY);
 }
 
-<ST_IN_SCRIPTING>"__halt_compiler" {
+<ST_IN_SCRIPTING>"__halt_compiler();" {
+    yybegin(ST_HALTED_COMPILER);
 	return createSymbol(ASTPHP5Symbols.T_HALT_COMPILER);
 }
+
+<ST_HALTED_COMPILER> {ANY_CHAR}+ {
+    return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
+}
+
 <ST_IN_SCRIPTING>"static" {
 	return createSymbol(ASTPHP5Symbols.T_STATIC);
 }

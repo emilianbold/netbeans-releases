@@ -252,4 +252,16 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue213080() throws Exception {
         checkErrors("testfiles/parser/issue213080.php");
     }
+
+    public void testIssue190105_01() throws Exception {
+        checkErrors("testfiles/parser/issue190105_01.php");
+    }
+
+    public void testIssue190105_02() throws Exception {
+        checkErrors("testfiles/parser/issue190105_02.php");
+    }
+
+    public void testIssue190105_03() throws Exception {
+        checkErrors("testfiles/parser/issue190105_03.php");
+    }
 }

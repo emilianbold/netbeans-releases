@@ -364,9 +364,6 @@ public class Utils {
             case ASTPHP5Symbols.T_OPEN_RECT:
                 name = "T_OPEN_RECT";
                 break;
-            case ASTPHP5Symbols.T_OPEN_TAG:
-                name = "T_OPEN_TAG";
-                break;
             case ASTPHP5Symbols.T_OR:
                 name = "T_OR";
                 break;
