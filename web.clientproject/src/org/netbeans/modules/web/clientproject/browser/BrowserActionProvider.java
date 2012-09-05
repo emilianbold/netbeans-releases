@@ -42,6 +42,9 @@
 package org.netbeans.modules.web.clientproject.browser;
 
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
@@ -52,12 +55,15 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 public class BrowserActionProvider implements ActionProvider {
 
     final private ClientSideProject project;
     private final BrowserSupport support;
     private ClientProjectConfigurationImpl cfg;
+    private RequestProcessor RP = new RequestProcessor("js unit testing");
+    private static final Logger LOGGER = Logger.getLogger(BrowserActionProvider.class.getName());
 
     public BrowserActionProvider(ClientSideProject project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
         this.project = project;
@@ -94,6 +100,18 @@ public class BrowserActionProvider implements ActionProvider {
             }
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
             fo = getFile(context);
+        } else if (COMMAND_TEST.equals(command)) {
+            final FileObject configFile = project.getConfigFolder().getFileObject("jsTestDriver.conf");
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        RunTests.runAllTests(project, project.getProjectDirectory(), configFile);
+                    } catch (Throwable t) {
+                        LOGGER.log(Level.SEVERE, "cannot execute tests", t);
+                    }
+                }
+            });
         }
         if (fo != null) {
             browseFile(support, fo);
