@@ -125,19 +125,24 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         boolean create = true;
-        if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) // NOI18N
+        if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) {
             create = false;
+        }
         boolean embedded = true;
-        if (!(Templates.getTemplate(templateWizard).getAttribute("embedded") instanceof Boolean)) // NOI18N
+        if (!(Templates.getTemplate(templateWizard).getAttribute("embedded") instanceof Boolean)) {
             embedded = false;
+        }
         
+        final String panelTitle = create ? (
+                embedded ? NbBundle.getMessage(NewProjectIterator.class, "TXT_EmbeddedApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication")
+                ) : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary");
         platformInstall =  PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
         if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
-            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary")); // NOI18N
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", panelTitle); // NOI18N
         }
         projectPanel = new ProjectPanel.WizardPanel(create);
-        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary")); // NOI18N
+        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", panelTitle); // NOI18N
         
         psPanel = new PlatformSelectionPanel();
         csPanel = new ConfigurationsSelectionPanel();
