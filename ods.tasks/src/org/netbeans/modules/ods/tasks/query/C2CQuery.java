@@ -323,16 +323,23 @@ public class C2CQuery {
                     IRepositoryQuery query;
                     if (predefinedQuery == null) {
                         query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
-                        for (QueryParameter p : parameters) {
-                            String values = p.getValues();
-                            if(values != null) {
-                                query.setAttribute(p.getAttribute(), p.getValues());
+                        
+                        // XXX hacked for now
+                        if(queryString != null) {
+                            query.setAttribute("query_criteria", queryString);
+                        } else {
+                            for (QueryParameter p : parameters) {
+                                String values = p.getValues();
+                                if(values != null) {
+                                    query.setAttribute(p.getAttribute(), p.getValues());
+                                }
                             }
+                            if (query.getAttributes().isEmpty()) {
+                                //TODO remove when query full implemented
+                                query = repository.getPredefinedQuery(PredefinedTaskQuery.ALL).predefinedQuery;
+                            } 
                         }
-                        if (query.getAttributes().isEmpty()) {
-                            //TODO remove when query full implemented
-                            query = repository.getPredefinedQuery(PredefinedTaskQuery.ALL).predefinedQuery;
-                        }
+                        
                     } else {
                         query = predefinedQuery;
                     }
