@@ -57,6 +57,7 @@ public class JumptoAccessor {
     }
     
     public static Result createResult(List<? super TypeDescriptor> r) {
-        return new Result(r, new String[0]);
+        //may cause http://netbeans.org/bugzilla/show_bug.cgi?id=217180
+        return new Result(r, new String[1]);
     }
 }
