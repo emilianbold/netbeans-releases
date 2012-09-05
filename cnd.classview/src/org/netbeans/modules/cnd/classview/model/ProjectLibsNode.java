@@ -42,29 +42,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.classview;
+package org.netbeans.modules.cnd.classview.model;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
+import java.awt.Image;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.classview.ChildrenUpdater;
+import org.netbeans.modules.cnd.classview.ProjectsKeyArray;
+import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
-/**
- *
- * @author Alexander Simon
- */
-public class RootNode extends AbstractNode {
 
-    public RootNode(ChildrenUpdater updater) {
-        super(new ProjectsKeyArray(null, updater));
+public final class ProjectLibsNode extends BaseNode {
+
+    public ProjectLibsNode(CsmProject project, ChildrenUpdater updater) {
+        super(createChildren(project, updater));
+        setName("dummy"); // NOI18N
+        setDisplayName(I18n.getMessage("Libs")); // NOI18N
+    }
+
+    private static Children createChildren(CsmProject project, ChildrenUpdater updater) {
+        Collection<CsmProject> libs = project.getLibraries();
+        if (libs.isEmpty()) {
+            return Children.LEAF;
+        } else {
+            return new ProjectsKeyArray(project, updater);
+        }
     }
 
     @Override
-    public void destroy(){
-        ProjectsKeyArray keys = (ProjectsKeyArray)getChildren();
-        keys.dispose();
+    public CsmObject getCsmObject() {
+	return null;
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[0];
+    public Image getIcon(int param) {
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/classview/resources/libraries_folder.gif"); //NOI18N
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ProjectLibsNode) {
+            return true;
+        }
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
     }
 }

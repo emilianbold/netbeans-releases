@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -66,8 +66,6 @@ import org.openide.nodes.Node;
  * @author Vladimir Kvashin
  */
 /*package-local*/ class ClassViewModel {
-    
-    private static final boolean showLibs = CndUtils.getBoolean("cnd.classview.sys-includes", true); // NOI18N
     
     private ClassViewUpdater updater;
     private ChildrenUpdater childrenUpdater;
@@ -89,20 +87,23 @@ import org.openide.nodes.Node;
         return new RootNode(childrenUpdater);
     }
     
-    public static boolean isShowLibs(){
-        return showLibs;
-    }
-    
     /*package local*/ void openProject(CsmProject project){
         if( root == null ) { // paranoya
             root = createRoot();
             //return;
         }
-        if (!isShowLibs() && project.isArtificial()){
-            return;
-        }
         ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
-        children.openProject(project);
+        if (project.isArtificial()) {
+            Node[] childNodes = children.getNodes();
+            for (Node childNode : childNodes) {
+                Children grandChildren = childNode.getChildren();
+                if (grandChildren instanceof ProjectsKeyArray) {
+                    ((ProjectsKeyArray) grandChildren).openProject(project);
+                }
+            }
+        } else {
+            children.openProject(project);
+        }
     }
     
     /*package local*/ void closeProject(CsmProject project){

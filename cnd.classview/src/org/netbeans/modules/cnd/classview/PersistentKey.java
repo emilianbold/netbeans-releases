@@ -61,19 +61,21 @@ import org.openide.util.CharSequences;
  * @author Alexander Simon
  */
 public final class PersistentKey {
-    private static final byte UID = 1<<0;
+    private static final byte UID = 1;
     private static final byte NAMESPACE = 1<<1;
     private static final byte DECLARATION = 1<<2;
     private static final byte PROJECT = 1<<3;
-    private static final byte STATE = 1<<4;
+    private static final byte PROJECT_LIBS = 1<<4;
+    private static final byte STATE = 1<<5;
     private static final byte MASK = STATE - 1;
-    private Object key;
-    private CsmProject project;
+    private final Object key;
+    private final CsmProject project;
     private byte kind;
 
     private PersistentKey(CsmUID id, boolean state) {
         key = id;
         kind = UID;
+        project = null;
         if (state) {
             kind |= STATE;
         }
@@ -87,7 +89,11 @@ public final class PersistentKey {
             kind |= STATE;
         }
     }
-    
+
+    public static PersistentKey createLibsKey(CsmProject project){
+        return new PersistentKey(CharSequences.empty(), project, PROJECT_LIBS, false); // NOI18N
+    }
+
     public static PersistentKey createGlobalNamespaceKey(CsmProject project){
         return new PersistentKey(CharSequences.empty(), project, NAMESPACE, false); // NOI18N
     }
@@ -147,10 +153,17 @@ public final class PersistentKey {
                 return project.findDeclaration((CharSequence)key);
             case PROJECT:
                 return project;
+            case PROJECT_LIBS:
+                return project;
         }
         return null;
     }
-    
+
+    public boolean isProjectLibs() {
+        int maskKind = kind & MASK;
+        return maskKind == PROJECT_LIBS;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object instanceof PersistentKey){
@@ -169,6 +182,8 @@ public final class PersistentKey {
                     }
                     return false;
                 case PROJECT:
+                    return project.equals(what.project);
+                case PROJECT_LIBS:
                     return project.equals(what.project);
             }
         }
@@ -190,6 +205,8 @@ public final class PersistentKey {
                 return project.hashCode() ^ key.hashCode() + res;
             case PROJECT:
                 return project.hashCode() +  res;
+            case PROJECT_LIBS:
+                return project.hashCode() +  res;
         }
         return 0;
     }
@@ -206,6 +223,8 @@ public final class PersistentKey {
                 return "Declaration "+key; // NOI18N
             case PROJECT:
                 return "Project "+project.getName(); // NOI18N
+            case PROJECT_LIBS:
+                return "Libs "+project.getName(); // NOI18N
         }
         return super.toString();
     }
