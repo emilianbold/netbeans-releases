@@ -128,18 +128,18 @@ public class WebSocketServer extends SocketServer {
         return (WebSocketHandler)super.getReadHandler();
     }
     
-    protected void setHandler( WebSocketChanelHandler handler , SelectionKey key){
-        getContext(key).setHandler(handler);
-    }
-    
-    protected WebSocketChanelHandler getHandler(SelectionKey key ){
-        return getContext(key).getHandler();
-    }
-
     @Override
     public void close(SelectionKey key) throws IOException {
         super.close(key);
         getWebSocketReadHandler().closed(key);
+    }
+    
+    void setHandler( WebSocketChanelHandler handler , SelectionKey key){
+        getContext(key).setHandler(handler);
+    }
+    
+    WebSocketChanelHandler getHandler(SelectionKey key ){
+        return getContext(key).getHandler();
     }
     
     static class SocketContext {

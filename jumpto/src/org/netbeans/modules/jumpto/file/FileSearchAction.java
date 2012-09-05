@@ -115,6 +115,7 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.HtmlRenderer;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -723,7 +724,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         private final HighlightingNameFormatter fileNameFormatter;
 
         private RendererComponent rendererComponent;
-        private JLabel jlName = new JLabel();
+        private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlPath = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 5;
@@ -749,6 +750,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 @NonNull final ButtonModel caseSensitive) {
             jList = list;
             this.caseSensitive = caseSensitive.isSelected();
+            resetName();
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
                 ((JViewport)container).addChangeListener(this);
@@ -762,11 +764,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             rendererComponent.add( jlPrj, BorderLayout.EAST );
 
 
-            jlName.setOpaque(false);
             jlPath.setOpaque(false);
             jlPrj.setOpaque(false);
-
-            jlName.setFont(list.getFont());
             jlPath.setFont(list.getFont());
             jlPrj.setFont(list.getFont());
 
@@ -825,7 +824,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
             rendererComponent.setPreferredSize(size);
-
+            resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlPath.setForeground(fgSelectionColor);
@@ -842,11 +841,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             if ( value instanceof FileDescriptor ) {
                 FileDescriptor fd = (FileDescriptor)value;
                 jlName.setIcon(fd.getIcon());
-                final String formattedTypeName = fileNameFormatter.formatName(
+                final String formattedFileName = fileNameFormatter.formatName(
                     fd.getFileName(),
                     textToFind,
                     caseSensitive);
-                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
+                jlName.setText(formattedFileName);
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
                 jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
@@ -910,6 +909,14 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             } catch (BadLocationException ex) {
                 textToFind = "";    //NOI18N
             }
+        }
+
+        private void resetName() {
+            ((HtmlRenderer.Renderer)jlName).reset();
+            jlName.setFont(jList.getFont());
+            jlName.setOpaque(false);
+            ((HtmlRenderer.Renderer)jlName).setHtml(true);
+            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }
 
      }

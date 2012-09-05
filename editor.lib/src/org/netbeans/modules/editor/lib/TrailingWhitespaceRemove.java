@@ -44,28 +44,16 @@
 
 package org.netbeans.modules.editor.lib;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.ArrayUtilities;
-import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.lib.editor.util.swing.PositionRegion;
+import org.netbeans.modules.editor.lib2.document.ModRootElement;
+import org.netbeans.modules.editor.lib2.document.TrailingWhitespaceRemoveProcessor;
 
 /**
  * Removal of trailing whitespace
@@ -73,412 +61,50 @@ import org.netbeans.lib.editor.util.swing.PositionRegion;
  * @author Miloslav Metelka
  * @since 1.27
  */
-public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, DocumentListener {
+public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task {
 
-    // -J-Dorg.netbeans.modules.editor.lib2.TrailingWhitespaceRemove.level=FINE
+    // -J-Dorg.netbeans.modules.editor.lib.TrailingWhitespaceRemove.level=FINE
     static final Logger LOG = Logger.getLogger(TrailingWhitespaceRemove.class.getName());
 
-    static final int GET_ELEMENT_INDEX_THRESHOLD = 100;
+    private static final TrailingWhitespaceRemove INSTANCE = new TrailingWhitespaceRemove();
 
-    public static synchronized TrailingWhitespaceRemove install(BaseDocument doc) {
-        TrailingWhitespaceRemove twr = (TrailingWhitespaceRemove) doc.getProperty(TrailingWhitespaceRemove.class);
-        if (twr == null) {
-            twr = new TrailingWhitespaceRemove(doc);
-            BeforeSaveTasks beforeSaveTasks = BeforeSaveTasks.get(doc);
-            beforeSaveTasks.addTask(twr);
-            doc.putProperty(TrailingWhitespaceRemove.class, twr);
+    public static void ensureRegistered() {
+        if (BeforeSaveTasks.getTask(TrailingWhitespaceRemove.class) == null) {
+            BeforeSaveTasks.addTask(INSTANCE);
         }
-        return twr;
     }
 
-    Document doc;
-
-    CharSequence docText;
-
-    GapList<MutablePositionRegion> modRegions;
-
-    private int lastRegionIndex;
-    
-    private boolean inWhitespaceRemove;
-
-    @SuppressWarnings("LeakingThisInConstructor")
-    private TrailingWhitespaceRemove(BaseDocument doc) {
-        this.doc = doc;
-        this.docText = DocumentUtilities.getText(doc); // Persists for doc's lifetime
-        this.modRegions = emptyModRegions();
-        doc.addUpdateDocumentListener(this);
+    private TrailingWhitespaceRemove() {
     }
 
     @Override
-    public synchronized void run(UndoableEdit compoundEdit) {
+    public Object lock(Document doc) {
+        return null; // No extra locking
+    }
+
+    @Override
+    public void run(Object lock, Document doc, UndoableEdit compoundEdit) {
         Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+        if (prefs.getBoolean(SimpleValueNames.ON_SAVE_USE_GLOBAL_SETTINGS, Boolean.TRUE)) {
+            prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        }
         String policy = prefs.get(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "never"); //NOI18N
         if (!"never".equals(policy)) { //NOI18N
-            inWhitespaceRemove = true;
-            try {
-                new ModsProcessor("modified-lines".equals(policy)).removeWhitespace(); //NOI18N
-                NewModRegionsEdit edit = new NewModRegionsEdit();
-                compoundEdit.addEdit(edit);
-                edit.run();
-            } finally {
-                inWhitespaceRemove = false;
-            }
-        }
-    }
-
-    public void resetModRegions() {
-        this.modRegions = emptyModRegions();
-    }
-    
-    GapList<MutablePositionRegion> emptyModRegions() {
-        return new GapList<MutablePositionRegion>(3);
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent evt) {
-        UndoableEdit compoundEdit = (UndoableEdit) evt;
-        int offset = evt.getOffset();
-        int length = evt.getLength();
-        boolean covered = false;
-        if (lastRegionIndex >= 0 && lastRegionIndex < modRegions.size()) {
-            covered = isCovered(offset, length);
-        }
-        if (!covered) {
-            // Find by binary search
-            lastRegionIndex = findRegionIndex(offset, false);
-            if (lastRegionIndex >= 0) {
-                covered = isCovered(offset, length);
-            }
-        }
-        if (!covered) {
-            addRegion(compoundEdit, offset, offset + length);
-            // lastRegionIndex populated by index of addition
-        }
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent evt) {
-        // Currently do not handle in any special way but
-        // Since there's a mod on the line there will be a diff
-        // so it should not matter much if the ending WS is removed too.
-        if (inWhitespaceRemove) { // Removals of extra whitespace
-            DocumentUtilities.putEventProperty(evt, "caretIgnore", Boolean.TRUE);
-        }
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent evt) {
-    }
-
-    private boolean isCovered(int offset, int length) {
-        PositionRegion region = modRegions.get(lastRegionIndex);
-        if (region.getStartOffset() <= offset &&
-                offset + length <= region.getEndOffset()) {
-            return true;
-        }
-        return false;
-    }
-
-    private MutablePositionRegion addRegion(UndoableEdit compoundEdit, int startOffset, int endOffset) {
-        try {
-            MutablePositionRegion region = new MutablePositionRegion(doc, startOffset, endOffset);
-            lastRegionIndex = findRegionIndex(startOffset, true);
-            AddRegionEdit edit = new AddRegionEdit(lastRegionIndex, region);
-            edit.run();
-            compoundEdit.addEdit(edit);
-            return region;
-        } catch (BadLocationException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-    
-    void addRegion(int index, MutablePositionRegion region) {
-        modRegions.add(index, region);
-    }
-    
-    private int findRegionIndex(int offset, boolean forInsert) {
-        int low = 0;
-        int high = modRegions.size() - 1;
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            int midStartOffset = modRegions.get(mid).getStartOffset();
-            if (midStartOffset < offset) {
-                low = mid + 1;
-            } else if (midStartOffset > offset) {
-                high = mid - 1;
-            } else {
-                // offset == region.getStartOffset()
-                while (++mid < modRegions.size()) {
-                    if (modRegions.get(mid).getStartOffset() != offset)
-                        break;
-                }
-                mid--;
-                if (forInsert)
-                    low = mid + 1;
-                else
-                    high = mid;
-                break;
-            }
-        }
-        return forInsert ? low : high;
-    }
-
-    public void checkConsistency() {
-        int lastOffset = 0;
-        for (int i = 0; i < modRegions.size(); i++) {
-            PositionRegion region = modRegions.get(i);
-            int offset = region.getStartOffset();
-            if (offset < lastOffset) {
-                throw new IllegalStateException("region[" + i + "].getStartOffset()=" + // NOI18N
-                        offset + " < lastOffset=" + lastOffset); // NOI18N
-            }
-            lastOffset = offset;
-            offset = region.getEndOffset();
-            if (offset < lastOffset) {
-                throw new IllegalStateException("region[" + i + "].getEndOffset()=" + // NOI18N
-                        offset + " < region.getStartOffset()=" + lastOffset); // NOI18N
-            }
-            lastOffset = offset;
-        }
-    }
-
-    @Override
-    public String toString() {
-        int size = modRegions.size();
-        int digitCount = String.valueOf(size).length();
-        StringBuilder sb = new StringBuilder(100);
-        for (int i = 0; i < size; i++) {
-            PositionRegion region = modRegions.get(i);
-            ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            sb.append(region.toString(doc));
-            sb.append('\n');
-        }
-        return sb.toString();
-    }
-
-    private static void removeWhitespaceOnLine(int lineStartOffset, int lineLastOffset, int caretRelativeOffset, int lineIndex, int caretLineIndex, Document doc, CharSequence docText) {
-        int startOffset = lineStartOffset; // lowest offset where WS can be removed
-        if (lineIndex == caretLineIndex) {
-            startOffset += caretRelativeOffset;
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Line index " + lineIndex + " contains caret at relative offset " + // NOI18N
-                        caretRelativeOffset + ".\n"); // NOI18N
-            }
-        }
-        int offset;
-        for (offset = lineLastOffset - 1; offset >= startOffset; offset--) {
-            char c = docText.charAt(offset);
-            // Currently only remove ' ' and '\t' - may be revised
-            if (c != ' ' && c != '\t') {
-                break;
-            }
-        }
-        // Increase offset (either below lineStartOffset or on non-white char)
-        offset++;
-        if (offset < lineLastOffset) {
-            BadLocationException ble = null;
-            try {
-                doc.remove(offset, lineLastOffset - offset);
-            } catch (BadLocationException e) {
-                ble = e;
-            }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Remove between " + DocumentUtilities.debugOffset(doc, offset) + // NOI18N
-                        " and " + DocumentUtilities.debugOffset(doc, lineLastOffset) + // NOI18N
-                        (ble == null ? " succeeded." : " failed.") + // NOI18N
-                        '\n'
-                );
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.log(Level.INFO, "Exception thrown during removal:", ble); // NOI18N
+            ModRootElement modRootElement = ModRootElement.get(doc);
+            if (modRootElement != null) {
+                boolean origEnabled = modRootElement.isEnabled();
+                modRootElement.setEnabled(false);
+                try {
+                    new TrailingWhitespaceRemoveProcessor(doc, "modified-lines".equals(policy)).removeWhitespace(); //NOI18N
+                } finally {
+                    modRootElement.setEnabled(origEnabled);
                 }
             }
         }
     }
 
-    private final class ModsProcessor {
-
-        private final boolean removeFromModifiedLinesOnly;
-        private final Element lineElementRoot;
-
-        /** Index of current region. */
-        private int regionIndex;
-
-        /** Start offset of the current region. */
-        private int regionStartOffset;
-
-        /** End offset of the current region. */
-        private int regionEndOffset;
-
-        /** Index of current line. */
-        private int lineIndex;
-
-        /** Start offset of the current line. */
-        private int lineStartOffset;
-
-        /** Offset of '\n' on the current line. */
-        private int lineLastOffset;
-
-        /**
-         * Line index that should be excluded from whitespace removal (line with caret)
-         * or -1 for none.
-         */
-        private final int caretLineIndex;
-
-        /**
-         * Shift offset of the caret relative to caretLineIndex's line beginning.
-         */
-        private final int caretRelativeOffset;
-
-        ModsProcessor(boolean removeFromModifiedLinesOnly) {
-            this.removeFromModifiedLinesOnly = removeFromModifiedLinesOnly;
-            lineElementRoot = DocumentUtilities.getParagraphRootElement(doc);
-            JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-            if (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc) {
-                int caretOffset = lastFocusedComponent.getCaretPosition();
-                caretLineIndex = lineElementRoot.getElementIndex(caretOffset);
-                // Assign the relativeCaretOffset since the subsequent modifications
-                // done by physical whitespace removal would make the absolute offsets unusable.
-                caretRelativeOffset = caretOffset - lineElementRoot.getElement(caretLineIndex).getStartOffset();
-            } else {
-                caretLineIndex = -1;
-                caretRelativeOffset = 0;
-            }
-        }
-
-        void removeWhitespace() {
-            if (removeFromModifiedLinesOnly) {
-                regionIndex = modRegions.size();
-                lineStartOffset = Integer.MAX_VALUE; // Will cause line's bin-search
-                while (fetchPreviousNonEmptyRegion()) {
-                    // Use last offset since someone may paste "blah \n" so the last offset point to '\n' here
-                    int regionLastOffset = regionEndOffset - 1;
-                    int lastLineIndex = lineIndex;
-                    if (regionLastOffset + GET_ELEMENT_INDEX_THRESHOLD < lineStartOffset) {
-                        // Too below - use binary search
-                        lineIndex = lineElementRoot.getElementIndex(regionEndOffset - 1);
-                        fetchLineElement();
-                    } else { // Within threshold - try to search sequentially
-                        while (lineStartOffset > regionLastOffset) {
-                            lineIndex--;
-                            fetchLineElement();
-                        }
-                    }
-
-                    if (lastLineIndex != lineIndex) {
-                        removeWhitespaceOnLine(lineStartOffset, lineLastOffset, caretRelativeOffset, lineIndex, caretLineIndex, doc, docText);
-                        while (regionStartOffset < lineStartOffset) {
-                            lineIndex--;
-                            fetchLineElement();
-                            removeWhitespaceOnLine(lineStartOffset, lineLastOffset, caretRelativeOffset, lineIndex, caretLineIndex, doc, docText);
-                        }
-                    }
-                }
-            } else {
-                // remove from all lines
-                for(lineIndex = lineElementRoot.getElementCount() - 1; lineIndex >= 0 ; lineIndex--) {
-                    fetchLineElement();
-                    removeWhitespaceOnLine(lineStartOffset, lineLastOffset, caretRelativeOffset, lineIndex, caretLineIndex, doc, docText);
-                }
-            }
-        }
-
-        private boolean fetchPreviousNonEmptyRegion() {
-            while (--regionIndex >= 0) {
-                PositionRegion region = modRegions.get(regionIndex);
-                regionStartOffset = region.getStartOffset();
-                regionEndOffset = region.getEndOffset();
-                if (regionStartOffset == regionEndOffset)// Empty region - continue
-                    continue;
-                return true;
-            }
-            return false;
-        }
-
-        private void fetchLineElement() {
-            Element lineElement = lineElementRoot.getElement(lineIndex);
-            lineStartOffset = lineElement.getStartOffset();
-            lineLastOffset = lineElement.getEndOffset() - 1;
-        }
+    @Override
+    public void unlock(Object lock, Document doc) {
     }
 
-    private final class AddRegionEdit extends AbstractUndoableEdit {
-
-        private int index;
-
-        private MutablePositionRegion region;
-
-        public AddRegionEdit(int index, MutablePositionRegion region) {
-            this.index = index;
-            this.region = region;
-        }
-        
-        public void run() {
-            addRegion(index, region);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Added region " + region + " at index=" + index + '\n'); // NOI18N
-                LOG.fine("Regions:\n" + modRegions + '\n'); // NOI18N
-            }
-        }
-        
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            if (index >= modRegions.size() || modRegions.get(index) != region) {
-                index = findRegionIndex(region.getStartOffset(), false);
-            }
-            if (index >= 0 && modRegions.get(index) == region) { // For valid index
-                modRegions.remove(index);
-            } else { // Safety fallback
-                modRegions.remove(region);
-            }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Removed region " + region + " at index=" + index + '\n'); // NOI18N
-                LOG.fine("Regions:\n" + modRegions + '\n'); // NOI18N
-            }
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            // #145588 - must recompute index according to current modRegions state
-            index = findRegionIndex(region.getStartOffset(), true);
-            run();
-        }
-
-    }
-
-    private final class NewModRegionsEdit extends AbstractUndoableEdit {
-        
-        private GapList<MutablePositionRegion> oldModRegions;
-        
-        private GapList<MutablePositionRegion> newModRegions;
-
-        public NewModRegionsEdit() {
-            this.oldModRegions = modRegions;
-            this.newModRegions = emptyModRegions();
-        }
-
-        public void run() {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Abandoning old regions\n" + modRegions); // NOI18N
-            }
-            modRegions = newModRegions;
-        }    
-        
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            modRegions = oldModRegions;
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Restored old regions\n" + modRegions); // NOI18N
-            }
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            run();
-        }
-        
-    }
 }

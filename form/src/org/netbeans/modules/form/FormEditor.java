@@ -619,11 +619,17 @@ public class FormEditor {
     }
     
     /**
-     * Sets the FormEditor in Read-Only mode
+     * Sets the FormEditor to read-only mode.
      */
     public void setFormReadOnly() {
         formModel.setReadOnly(true);
-        getFormDesigner().getHandleLayer().setViewOnly(true);                                                
+        FormDesigner designer = getFormDesigner();
+        if (designer != null) {
+            HandleLayer handleLayer = designer.getHandleLayer();
+            if (handleLayer != null) {
+                handleLayer.setViewOnly(true);
+            }
+        }
         detachFormListener();
     }
 

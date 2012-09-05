@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.history;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -94,6 +95,26 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 tc.requestActive();
                 tc.setSearchCommitId(commitId);
                 tc.search(true);
+            }
+        });
+    }
+    
+    public static void openSearch (final File repository, final File root, final String contextName, final int lineNumber) {
+        final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, root, new SearchHistoryTopComponent.DiffResultsViewFactory() {
+                    @Override
+                    DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
+                        return new DiffResultsViewForLine(panel, results, lineNumber);
+                    }
+                });
+                tc.setDisplayName(title);
+                tc.open();
+                tc.requestActive();
+                tc.search(true);
+                tc.activateDiffView(true);
             }
         });
     }

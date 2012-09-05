@@ -45,7 +45,7 @@ NetBeans.cleanup();
 
 // Register reload-callback
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
-    if (newUrl != undefined) {
+    if (newUrl !== undefined) {
         chrome.tabs.get(tabId, function(tab) {
             if (tab.url === newUrl) {
                 chrome.tabs.reload(tabId, {bypassCache: true});
@@ -56,11 +56,11 @@ NetBeans.browserReloadCallback = function(tabId, newUrl) {
     } else {
         chrome.tabs.reload(tabId, {bypassCache: true});
     }
-}
+};
 
 NetBeans.browserCloseCallback = function(tabId) {
     chrome.tabs.remove(tabId);
-}
+};
 
 NetBeans.browserAttachDebugger = function(tabId) {
     if (NetBeans.DEBUG) {
@@ -71,23 +71,23 @@ NetBeans.browserAttachDebugger = function(tabId) {
             console.log('debugger attach result code: ' + chrome.extension.lastError);
         }
     });
-}
+};
 
 NetBeans.browserDetachDebugger = function(tabId) {
     if (NetBeans.DEBUG) {
         console.log('debugger detaching from tab ' + tabId);
     }
     chrome.debugger.detach({tabId : tabId});
-}
+};
 
 // display NB icon in URL bar
 NetBeans.showPageIcon = function(tabId) {
     chrome.pageAction.show(tabId);
-}
+};
 // hide NB icon in URL bar
 NetBeans.hidePageIcon = function(tabId) {
     chrome.pageAction.hide(tabId);
-}
+};
 
 // Creates the Select Mode context menu
 NetBeans.createContextMenu = function(tabId, url) {
@@ -104,7 +104,12 @@ NetBeans.createContextMenu = function(tabId, url) {
             }
         });
     });
-}
+};
+
+// Initializes keyboard shortcuts
+NetBeans.initShortcuts = function(tabId) {
+    chrome.tabs.executeScript(tabId, {file: 'js/shortcuts.js'});
+};
 
 // Updates the Select Mode context menu
 NetBeans.updateContextMenu = function() {
@@ -112,13 +117,13 @@ NetBeans.updateContextMenu = function() {
         title: NetBeans.contextMenuName(),
         enabled: NetBeans.getSynchronizeSelection()
     });
-}
+};
 
 // Returns the name of 'Select Mode' context menu
 NetBeans.contextMenuName = function() {
     return (NetBeans.getSynchronizeSelection() && NetBeans.getSelectionMode()) ?
         'Stop Select Mode' : 'Start Select Mode';
-}
+};
 
 // show infobar
 NetBeans.showInfoBar = function(tabId) {
@@ -126,7 +131,7 @@ NetBeans.showInfoBar = function(tabId) {
         tabId : tabId,
         path: 'html/infobar.html'
     });
-}
+};
 NetBeans.resetPageSize = function(callback) {
     chrome.windows.getLastFocused(function(win) {
         var opt = {};
@@ -136,19 +141,19 @@ NetBeans.resetPageSize = function(callback) {
             callback();
         }
     });
-}
+};
 NetBeans.resizePage = function(preset, callback) {
-    if (preset == null) {
+    if (preset === null) {
         this.resetPageSize(callback);
         return;
     }
     var data = NetBeans_Presets.getPreset(preset);
-    if (data == null) {
+    if (data === null) {
         console.error('Preset [' + preset + '] not found.');
         return;
     }
     this._resizePage(data['width'], data['height'], callback);
-}
+};
 // resize actual page
 NetBeans._resizePage = function(width, height, callback) {
     // detect viewport
@@ -165,11 +170,11 @@ NetBeans._resizePage = function(width, height, callback) {
             }
         });
     });
-}
+};
 // show preset customizer
 NetBeans.showPresetCustomizer = function() {
     chrome.tabs.create({'url': 'html/options.html'});
-}
+};
 
 NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
@@ -184,7 +189,7 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
                 NetBeans.sendDebuggingResponse(tabId, {id : id, result : result});
             }
         });
-}
+};
 
 // "fired" when presets changed
 NetBeans_Presets.presetsChanged = function() {
@@ -195,7 +200,7 @@ NetBeans_Presets.presetsChanged = function() {
         var view = views[i];
         view.NetBeans_Infobar.redrawPresets();
     }
-}
+};
 
 // Updates info-bar according to changes of page-inspection properties
 NetBeans.addPageInspectionPropertyListener(function(event) {
@@ -238,11 +243,14 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
-    if (message.type == 'VIEWPORT') {
+    var type = message.type;
+    if (type === 'VIEWPORT') {
         console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
         sendResponse();
+    } else if (type === 'switchSelectionMode') {
+        NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
     }
 });
 

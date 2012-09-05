@@ -39,36 +39,83 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.smarty.editor.utlis;
+package org.netbeans.core.output2.options;
 
-import org.netbeans.modules.php.smarty.editor.parser.TplParserResult;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOContainer.CallBacks;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author jhavlin
  */
-public final class ParserUtils {
+public class PreviewIOProvider implements IOContainer.Provider {
 
-    private ParserUtils() {
+    JPanel panel;
+
+    public PreviewIOProvider(JPanel panel) {
+        this.panel = panel;
     }
 
-    /**
-     * Gets block of tags for given offset.
-     *
-     * @param parserResult tplParserResult
-     * @param offset examined offset
-     * @return {@code TplParserResult.Block} where one of sections contain the offset, {@code null} otherwise - if
-     * no such block was found
-     */
-    public static TplParserResult.Block getBlockForOffset(TplParserResult parserResult, int offset) {
-        for (TplParserResult.Block block : parserResult.getBlocks()) {
-            for (TplParserResult.Section section : block.getSections()) {
-                if (section.getOffset().containsInclusive(offset)) {
-                    return block;
-                }
-            }
-        }
-        return null;
+    @Override
+    public void open() {
     }
 
+    @Override
+    public void requestActive() {
+        panel.requestFocusInWindow();
+    }
+
+    @Override
+    public void requestVisible() {
+        panel.requestFocusInWindow();
+    }
+
+    @Override
+    public boolean isActivated() {
+        return panel.hasFocus();
+    }
+
+    @Override
+    public void add(JComponent comp, CallBacks cb) {
+        panel.add(comp);
+    }
+
+    @Override
+    public void remove(JComponent comp) {
+        panel.remove(comp);
+    }
+
+    @Override
+    public void select(JComponent comp) {
+    }
+
+    @Override
+    public JComponent getSelected() {
+        return (JComponent) panel.getComponent(0);
+    }
+
+    @Override
+    public void setTitle(JComponent comp, String name) {
+    }
+
+    @Override
+    public void setToolTipText(JComponent comp, String text) {
+    }
+
+    @Override
+    public void setIcon(JComponent comp, Icon icon) {
+    }
+
+    @Override
+    public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
+    }
+
+    @Override
+    public boolean isCloseable(JComponent comp) {
+        return false;
+    }
 }
