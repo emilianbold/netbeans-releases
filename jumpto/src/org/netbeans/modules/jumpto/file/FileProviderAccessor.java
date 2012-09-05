@@ -43,6 +43,8 @@
 package org.netbeans.modules.jumpto.file;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
@@ -76,7 +78,11 @@ public abstract class FileProviderAccessor {
         instance = theInstance;
     }
 
-    public abstract FileProvider.Context createContext(String text, SearchType searchType, Project currentProject);
+    public abstract FileProvider.Context createContext(
+            @NonNull String text,
+            @NonNull SearchType searchType,
+            int lineNr,
+            @NullAllowed Project currentProject);
 
     public abstract void setRoot(FileProvider.Context ctx, FileObject root);
 

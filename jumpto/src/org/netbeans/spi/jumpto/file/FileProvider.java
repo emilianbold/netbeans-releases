@@ -43,6 +43,8 @@
 package org.netbeans.spi.jumpto.file;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -99,6 +101,7 @@ public interface FileProvider {
         //<editor-fold defaultstate="collapsed" desc="Private data">
         private final String text;
         private final SearchType type;
+        private final int lineNr;
         private final Project currentProject;
         private FileObject sourceGroupRoot;
         private Project project;
@@ -136,12 +139,24 @@ public interface FileProvider {
          */
         public SearchType getSearchType() { return type; }
 
+        /**
+         * Returns a line number on which the file should be opened.
+         * @return the preferred line number or -1 if no preferred line number is given.
+         * @since 1.30
+         */
+        public int getLineNumber() { return lineNr; }
+
         //<editor-fold defaultstate="collapsed" desc="Private methods">
-        private Context(String text, SearchType type, Project currentProject) {
+        private Context(
+                @NonNull final String text,
+                @NonNull final SearchType type,
+                final int lineNr,
+                @NullAllowed final Project currentProject) {
             Parameters.notNull("text", text);   //NOI18N
             Parameters.notNull("type", type);   //NOI18N
             this.text = text;
             this.type = type;
+            this.lineNr = lineNr;
             this.currentProject = currentProject;
         }
 
@@ -152,8 +167,12 @@ public interface FileProvider {
         static {
             FileProviderAccessor.setInstance(new FileProviderAccessor() {
                 @Override
-                public Context createContext(String text, SearchType searchType, Project currentProject) {
-                    return new Context(text, searchType,currentProject);
+                public Context createContext(
+                        @NonNull final String text,
+                        @NonNull final SearchType searchType,
+                        final int lineNr,
+                        @NullAllowed final Project currentProject) {
+                    return new Context(text, searchType, lineNr, currentProject);
                 }
                 @Override
                 public Result createResult(List<? super FileDescriptor> result, String[] message, Context ctx) {
@@ -222,8 +241,8 @@ public interface FileProvider {
                 path = FileUtil.getFileDisplayName(file);
             }
             final Project prj = ctx.getProject();
-            final Project curPrj = ctx.getCurrentProject();
-            result.add(setFromCurrentProject(new FileDescription(file, path, prj)));
+            final int lineNr = ctx.getLineNumber();
+            result.add(setFromCurrentProject(new FileDescription(file, path, prj, lineNr)));
         }
 
         /**

@@ -44,6 +44,7 @@
  *
  * Contributor(s): Andrei Badea
  *                 Petr Hrebejk
+ *                 markiewb@netbeans.org
  */
 
 package org.netbeans.modules.jumpto.file;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
@@ -138,6 +140,7 @@ import org.openide.windows.TopComponent;
 public class FileSearchAction extends AbstractAction implements FileSearchPanel.ContentProvider {
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
+    private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*):(\\d+)");    //NOI18N
     
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
@@ -227,11 +230,27 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         else {
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         }
+                
+        //Extract linenumber from search text
+        //Pattern is like 'My*Object.java:123'
+        final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
+        int lineNr;
+        if (matcher.matches()) {
+            text = matcher.group(1);
+            try {
+                lineNr = Integer.parseInt(matcher.group(2));
+            } catch (NumberFormatException numberFormatException) {
+                //prevent non convertable numbers
+                lineNr=-1;
+            }
+        } else {
+            lineNr = -1;
+        }
 
         // Compute in other thread
 
         synchronized( this ) {
-            running = new Worker(text , nameKind, panel.getCurrentProject());
+            running = new Worker(text , nameKind, panel.getCurrentProject(), lineNr);
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
                 LOGGER.log( Level.FINE, "Worker posted after {0} ms.",  System.currentTimeMillis() - panel.time );
@@ -410,9 +429,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         private final QuerySupport.Kind searchType;
         private final Project currentProject;
         private final long createTime;
+        private final int lineNr;
 
-        public Worker(String text, QuerySupport.Kind searchType, Project currentProject) {
+        public Worker(String text, QuerySupport.Kind searchType, Project currentProject, int lineNr) {
             this.text = text;
+            this.lineNr = lineNr;
             this.searchType = searchType;
             this.currentProject = currentProject;
             this.createTime = System.currentTimeMillis();
@@ -433,7 +454,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         System.currentTimeMillis() - createTime
             });
             
-            final List<? extends FileDescriptor> files = getFileNames( text );
+            final List<? extends FileDescriptor> files = getFileNames();
             if ( isCanceled ) {
                 LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",
                         new Object[]{
@@ -490,7 +511,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             }
         }
 
-        private List<? extends FileDescriptor> getFileNames(final String text) {
+        private List<? extends FileDescriptor> getFileNames() {
             final Collection<FileObject> roots = new ArrayList<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
             try {
                 String searchField;
@@ -531,7 +552,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     FileDescriptor fd = new FileDescription(
                         file,
                         r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
-                        project);
+                        project,
+                        lineNr);
                     FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
                     files.add(fd);
                     LOGGER.log(Level.FINER, "Found: {0}, project={1}, currentProject={2}, preferred={3}",
@@ -557,7 +579,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 }
                 //Ask GTF providers
                 final SearchType jumpToSearchType = toJumpToSearchType(searchType);
-                final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, jumpToSearchType, currentProject);
+                final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, jumpToSearchType, lineNr, currentProject);
                 final FileProvider.Result fpR = FileProviderAccessor.getInstance().createResult(files,new String[1], ctx);
                 for (FileProvider provider : getProviders()) {
                     currentProvider = provider;
@@ -614,8 +636,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                             FileDescriptor fd = new FileDescription(
                                 file,
                                 relativePath,
-                                project
-                            );
+                                project,
+                                lineNr);
                             FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
                             files.add(fd);
                         }

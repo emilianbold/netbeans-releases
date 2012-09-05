@@ -78,7 +78,7 @@ public class FileProviderTest extends NbTestCase {
     }
 
     public void testFileInSourceGroup() {
-        final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext("foo", SearchType.EXACT_NAME, null);  //NOI18N
+        final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext("foo", SearchType.EXACT_NAME, -1, null);  //NOI18N
         final List<FileDescriptor> data = new LinkedList<FileDescriptor>();
         final String[] msg = new String[1];
         final FileProvider.Result result = FileProviderAccessor.getInstance().createResult(data, msg, ctx);
@@ -95,7 +95,7 @@ public class FileProviderTest extends NbTestCase {
     }
 
     public void testExternalFile() {
-        final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext("foo", SearchType.EXACT_NAME, null);  //NOI18N
+        final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext("foo", SearchType.EXACT_NAME, -1, null);  //NOI18N
         final List<FileDescriptor> data = new LinkedList<FileDescriptor>();
         final String[] msg = new String[1];
         final FileProvider.Result result = FileProviderAccessor.getInstance().createResult(data, msg, ctx);
@@ -111,7 +111,7 @@ public class FileProviderTest extends NbTestCase {
     }
 
     public void testCustomFileDescription() {
-        final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext("foo", SearchType.EXACT_NAME, null);  //NOI18N
+        final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext("foo", SearchType.EXACT_NAME, -1, null);  //NOI18N
         final List<FileDescriptor> data = new LinkedList<FileDescriptor>();
         final String[] msg = new String[1];
         final FileProvider.Result result = FileProviderAccessor.getInstance().createResult(data, msg, ctx);

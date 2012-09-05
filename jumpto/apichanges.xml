@@ -108,6 +108,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="FileProvider-Context-lineNumber">
+            <api name="general"/>
+            <summary>Added <code>FileProvider.Context.getLineNumber</code> method to return the preferred line</summary>
+            <version major="1" minor="30"/>
+            <date day="27" month="8" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added <code>FileProvider.Context.getLineNumber</code> method to return the preferred line on which the document
+                should be opened. The <code>FileProvider</code>s which are using custom <code>FileDescription</code> should use
+                this method to open the selected file on preferred line. The <code>FileProvider</code>s which are using
+                <code>FileObject</code>s are handled automatically.
+            </description>
+            <class package="org.netbeans.spi.jumpto.file" name="FileProvider"/>
+            <issue number="217050"/>
+        </change>
         <change id="Prefill-initial-text-in-type-broser">
             <api name="general"/>
             <summary>Overloading TypeBrowser.browse method to allow prefilling of initial type name</summary>
