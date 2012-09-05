@@ -196,10 +196,15 @@
                                               <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="resolutionLabel" min="-2" max="-2" attributes="0"/>
-                                          <Component id="severityLabel" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                                              <Component id="severityLabel" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Component id="resolutionLabel" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -268,11 +273,6 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="issueTypeWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -289,15 +289,20 @@
                           </Group>
                           <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                           <Component id="duplicateField" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="duplicateButton" min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="resolutionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="duplicateButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="resolutionCombo" min="-2" max="-2" attributes="0"/>
                           <Component id="resolutionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                           <Component id="duplicateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="103" alignment="0" groupAlignment="0" attributes="0">
                               <Group type="103" alignment="1" groupAlignment="3" attributes="0">
@@ -442,6 +447,7 @@
                           <Component id="tagsWarning" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">

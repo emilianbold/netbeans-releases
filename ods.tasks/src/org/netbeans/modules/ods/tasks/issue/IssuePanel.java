@@ -294,6 +294,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //        ccField.setPreferredSize(new Dimension(2*Math.max(width1,width2)+gap,dim.height));
     }
     
+    void reloadFormInAWT(final boolean force) {
+        if (EventQueue.isDispatchThread()) {
+            reloadForm(force);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    reloadForm(force);
+                }
+            });
+        }
+    }
+    
     private void selectProduct() {
         // XXX
 //        if (ownerInfo != null) {
@@ -417,7 +430,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, releaseCombo, IssueField.MILESTONE, releaseWarning, releaseLabel);
             reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
             reloadField(force, descriptionPanel, IssueField.DESCRIPTION, descriptionPanel.getWarningLabel(), descriptionLabel); // NOI18N
-            String status = reloadField(force, statusCombo, IssueField.STATUS, resolutionWarning, statusLabel);
+            String status = reloadField(force, statusCombo, IssueField.STATUS, statusWarning, statusLabel);
             initStatusCombo(status);
             String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
             if (RESOLUTION_DUPLICATE.equals(initialResolution)) { // NOI18N // XXX no string gvalues
@@ -633,34 +646,35 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (value == null) {
             return false;
         }
-        
-        for (int i = 0; i < combo.getItemCount(); i++) {
-            Object item = combo.getItemAt(i);
-            
-            String itemValue = null;
-            if(item instanceof Priority) {
-                itemValue = ((Priority) item).getValue();
-            } else if(item instanceof TaskSeverity) {
-                itemValue = ((TaskSeverity) item).getValue();
-            } else if(item instanceof TaskResolution) {
-                itemValue = ((TaskResolution) item).getValue();
-            } else if(item instanceof Product) {
-                itemValue = ((Product) item).getName();
-            } else if(item instanceof TaskUserProfile) {
-                itemValue = ((TaskUserProfile) item).getRealname();
-            } else if(value instanceof TaskStatus) {
-                itemValue = ((TaskStatus) value).getValue();
-            } else if(value instanceof com.tasktop.c2c.server.tasks.domain.Component) {
-                itemValue = ((com.tasktop.c2c.server.tasks.domain.Component) value).getName();
-            } else {
-                assert value instanceof String : "Wrong value";                 // NOI18N
-            }
-            
-            if(value.equals(itemValue)) {
-                combo.setSelectedItem(item);
-                break;
-            }
-        }
+  
+        // XXX looks like we do not need this
+//        for (int i = 0; i < combo.getItemCount(); i++) {
+//            Object item = combo.getItemAt(i);
+//            
+//            String itemValue = null;
+//            if(item instanceof Priority) {
+//                itemValue = ((Priority) item).getValue();
+//            } else if(item instanceof TaskSeverity) {
+//                itemValue = ((TaskSeverity) item).getValue();
+//            } else if(item instanceof TaskResolution) {
+//                itemValue = ((TaskResolution) item).getValue();
+//            } else if(item instanceof Product) {
+//                itemValue = ((Product) item).getName();
+//            } else if(item instanceof TaskUserProfile) {
+//                itemValue = ((TaskUserProfile) item).getRealname();
+//            } else if(value instanceof TaskStatus) {
+//                itemValue = ((TaskStatus) value).getValue();
+//            } else if(value instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+//                itemValue = ((com.tasktop.c2c.server.tasks.domain.Component) value).getName();
+//            } else {
+//                assert value instanceof String : "Wrong value";                 // NOI18N
+//            }
+//            
+//            if(value.equals(itemValue)) {
+//                break;
+//            }
+//        }
+        combo.setSelectedItem(value);
         
         if (forceInModel && !value.equals("") && !value.equals(getSelectedValue(combo))) { // NOI18N
             // Reload of server attributes is needed - workarounding it
@@ -1604,10 +1618,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                                 .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(resolutionLabel)
-                                            .addComponent(severityLabel))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(24, 24, 24)
+                                                .addComponent(severityLabel))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(resolutionLabel)))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(layout.createSequentialGroup()
@@ -1661,10 +1678,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(issueTypeLabel)
@@ -1679,13 +1692,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addComponent(statusLabel))
                             .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(duplicateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(duplicateButton)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(resolutionLabel)
-                                .addComponent(duplicateButton))
-                            .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(resolutionLabel))
                             .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(duplicateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(duplicateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1791,7 +1807,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(descriptionLabel)
                                     .addComponent(dummyDescriptionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addCommentLabel)
