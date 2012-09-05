@@ -109,12 +109,10 @@ public class ScopeAnnotationProcessor extends LayerGeneratingProcessor {
             f.stringvalue("iconBase", ar.iconBase());
             f.intvalue("position", ar.position());
             f.newvalue("delegate", getFQN((TypeElement) annotated));
-            
+            f.stringvalue("instanceClass", "org.netbeans.modules.refactoring.spi.ui.ScopeProvider");
             if (custom) {
-                f.stringvalue("instanceClass", "org.netbeans.modules.refactoring.spi.ui.CustomScopeProvider");
                 f.methodvalue("instanceCreate", "org.netbeans.modules.refactoring.spi.impl.DelegatingCustomScopeProvider", "create");
             } else {
-                f.stringvalue("instanceClass", "org.netbeans.modules.refactoring.spi.ui.ScopeProvider");
                 f.methodvalue("instanceCreate", "org.netbeans.modules.refactoring.spi.impl.DelegatingScopeProvider", "create");
             }
             f.write();
