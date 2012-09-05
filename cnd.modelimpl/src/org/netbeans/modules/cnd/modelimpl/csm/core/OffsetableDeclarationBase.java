@@ -263,6 +263,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         public void setParent(CsmObjectBuilder parent) {
             this.parent = parent;
         }        
+
+        public CsmObjectBuilder getParent() {
+            return parent;
+        }
         
         public CsmScope getScope() {
             if(scope != null) {
@@ -282,7 +286,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             if(parent != null) {
                 if(parent instanceof NamespaceBuilder) {
                     ((NamespaceBuilder)parent).addDeclaration(decl);
-                }
+                }          
             } else {
                 getFileContent().addDeclaration(decl);
             }                

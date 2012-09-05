@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl.MethodDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
@@ -1430,25 +1431,46 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override public void function_definition_after_declarator(Token token) {
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
-            
-        FunctionDDBuilder builder = new FunctionDDBuilder();
 
         CsmObjectBuilder parent = builderContext.top(1);
-        builder.setParent(parent);
-        builder.setFile(currentContext.file);
-        builder.setStartOffset(declBuilder.getStartOffset());
+        if(parent instanceof ClassBuilder) {
+            MethodDDBuilder builder = new MethodDDBuilder();
+                
+            builder.setParent(parent);
+            builder.setFile(currentContext.file);
+            builder.setStartOffset(declBuilder.getStartOffset());
 
-        builder.setName(declBuilder.getDeclaratorBuilder().getName());
-        builder.setTypeBuilder(declBuilder.getTypeBuilder());
-        builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
-        builderContext.push(builder);
+            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+            builder.setTypeBuilder(declBuilder.getTypeBuilder());
+            builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+            builderContext.push(builder);            
+        } else {
+            FunctionDDBuilder builder = new FunctionDDBuilder();
+                
+            builder.setParent(parent);
+            builder.setFile(currentContext.file);
+            builder.setStartOffset(declBuilder.getStartOffset());
+
+            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+            builder.setTypeBuilder(declBuilder.getTypeBuilder());
+            builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+            builderContext.push(builder);
+        }
     }
     @Override public void function_definition_after_declarator(int kind, Token token) {}
     @Override public void end_function_definition_after_declarator(Token token) {
-        FunctionDDBuilder builder = (FunctionDDBuilder)builderContext.top();
-        builder.setEndOffset(((APTToken)token).getEndOffset());
-        builderContext.pop();
-        builder.create();                
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof FunctionDDBuilder) {
+            FunctionDDBuilder builder = (FunctionDDBuilder)top;
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            builder.create();                
+        } else if(top instanceof MethodDDBuilder) {
+            MethodDDBuilder builder = (MethodDDBuilder)top;
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            ((ClassBuilder)builderContext.top(1)).addChild(builder);
+        }
     }
     @Override public void function_declaration(Token token) {}
     @Override public void end_function_declaration(Token token) {}
@@ -1490,7 +1512,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         if(kind == MEMBER_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
             if(declBuilder.isFunction()) {
-                MethodBuilder builder = new MethodBuilder(currentContext.file.getParsingFileContent());
+                MethodBuilder builder = new MethodBuilder();
 
                 CsmObjectBuilder parent = builderContext.top(1);
                 
