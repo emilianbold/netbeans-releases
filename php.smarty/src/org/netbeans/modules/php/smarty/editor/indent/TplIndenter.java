@@ -102,6 +102,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
     @Override
     protected void reset() {
         stack = new Stack<TplStackItem>();
+        preservedLineIndentation = -1;
     }
 
     @Override

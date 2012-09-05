@@ -165,7 +165,7 @@ public class JsFormatter implements Formatter {
                                 && token.getKind() != FormatToken.Kind.EOL) {
                             lastOffsetDiff = formatContext.getOffsetDiff();
                         }
-                        initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
+                        initialIndent = formatContext.getEmbeddingIndent(tokenStream, token)
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
@@ -229,7 +229,7 @@ public class JsFormatter implements Formatter {
                         // following code handles the indentation
                         // do not do indentation for line comments starting
                         // at the beginning of the line to support comment/uncomment
-                        FormatToken next = getNextNonVirtual(token);
+                        FormatToken next = FormatTokenStream.getNextNonVirtual(token);
                         if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
                             continue;
                         }
@@ -542,7 +542,7 @@ public class JsFormatter implements Formatter {
             boolean remove = !isSpace(token, formatContext, true, false);
 
             // we fetch the space or next token to start
-            start = getNextNonVirtual(start);
+            start = FormatTokenStream.getNextNonVirtual(start);
 
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
@@ -587,10 +587,10 @@ public class JsFormatter implements Formatter {
         }
 
         // this may happen when curly bracket is on new line
-        FormatToken nonVirtualNext = getNextNonVirtual(next);
+        FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
         if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
             String nextText = nonVirtualNext.getText().toString();
-            if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
+            if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
                 FormatToken previous = nonVirtualNext.previous();
                 if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
                     return false;
@@ -1735,14 +1735,6 @@ public class JsFormatter implements Formatter {
                 formatContext.setLastLineWrap(null);
             }
         }
-    }
-
-    private static FormatToken getNextNonVirtual(FormatToken token) {
-        FormatToken current = token.next();
-        while (current != null && current.isVirtual()) {
-            current = current.next();
-        }
-        return current;
     }
 
     private static boolean isWhitespace(CharSequence charSequence) {
