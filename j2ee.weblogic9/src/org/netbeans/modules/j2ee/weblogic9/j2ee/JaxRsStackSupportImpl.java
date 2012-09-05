@@ -69,6 +69,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -146,7 +147,7 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     @Override
     public boolean extendsJerseyProjectClasspath(Project project) {
         if ( hasJee6Profile() ){
-            /*try {
+            try {
                 List<URL> urls = getJerseyJars();
                 return addJars(project,  urls );
             }
@@ -155,8 +156,7 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
                 log(Level.WARNING, 
                         "Exception during extending a project classpath", e); //NOI18N
                 return false;
-            }*/
-            return true;
+            }
         }
         return extendsJerseyServerLibraries(project);
     }
@@ -581,9 +581,16 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
            return false;
         }
         FileObject sourceRoot = sourceGroups[0].getRootFolder();
+        String classPathType;
+        if ( hasJee6Profile() ){
+            classPathType = JavaClassPathConstants.COMPILE_ONLY;
+        }
+        else {
+            classPathType = ClassPath.COMPILE;
+        }
         try {
             ProjectClassPathModifier.addRoots(urls.toArray( new URL[ urls.size()]), 
-                    sourceRoot, ClassPath.COMPILE);
+                    sourceRoot, classPathType);
         } 
         catch(UnsupportedOperationException ex) {
             return false;
