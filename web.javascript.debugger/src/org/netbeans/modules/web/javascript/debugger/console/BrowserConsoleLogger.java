@@ -92,6 +92,9 @@ public class BrowserConsoleLogger implements Console.Listener {
             Color colorStd = IOColors.getColor(io, IOColors.OutputType.OUTPUT);
             //Color colorErr = IOColors.getColor(io, IOColors.OutputType.ERROR);
             Color background = UIManager.getDefaults().getColor("nb.output.background");    // NOI18N
+            if (background == null) {
+                background = SystemColor.window;
+            }
             colorStdBrighter = shiftTowards(colorStd, background);
             //colorErrBrighter = shiftTowards(colorErr, background);
         }
