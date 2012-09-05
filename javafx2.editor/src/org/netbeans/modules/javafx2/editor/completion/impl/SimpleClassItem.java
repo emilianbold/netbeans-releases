@@ -180,7 +180,12 @@ public class SimpleClassItem extends AbstractCompletionItem {
             if (!ok) {
                 // last chance - try to find a Builder 
                 FxBean bean = ctx.getBeanInfo(fqn);
-                if (bean != null && !bean.isFxInstance() && bean.getBuilder() != null) {
+                if (bean != null && !bean.isFxInstance() 
+                        // not entirely correct, since Builder can create a non-abstract subclass,
+                        // but eliminates abominations like Node and Parent. Next step will be a 
+                        // blacklist for classes.
+                        && !elem.getModifiers().contains(Modifier.ABSTRACT)
+                        && bean.getBuilder() != null) {
                     ok = true;
                 }
             }
