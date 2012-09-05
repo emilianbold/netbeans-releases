@@ -45,12 +45,15 @@ package org.netbeans.modules.maven.indexer.api;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -199,6 +202,7 @@ public class PluginIndexManager {
                     return o1.getName().compareTo(o2.getName());
                 }
             });
+            Map<String, ParameterDetail> details = new HashMap<String, ParameterDetail>();
             for (Element mojoEl : XMLUtil.findSubElements(mojos)) {
                 if (!mojoEl.getTagName().equals("mojo")) {
                     continue;
@@ -248,7 +252,21 @@ public class PluginIndexManager {
                                 }
                             }
                         }
-                        params.add(new ParameterDetail(XMLUtil.findText(name), expression, defaultValue, Boolean.parseBoolean(XMLUtil.findText(required)), XMLUtil.findText(description)));
+                        String nameString = XMLUtil.findText(name);
+                        ParameterDetail detail = new ParameterDetail(nameString, expression, defaultValue, Boolean.parseBoolean(XMLUtil.findText(required)), XMLUtil.findText(description));
+                        if (mojo == null) {
+                            //collect across multiple mojos
+                            ParameterDetail det = details.get(nameString);
+                            if (det != null) {
+                                detail = det;
+                            } else {
+                                details.put(nameString, detail);
+                                params.add(detail);
+                            }
+                            detail.addMojo(XMLUtil.findText(goal));
+                        } else {
+                            params.add(detail);
+                        }
                     }
                 }
             }
@@ -406,6 +424,7 @@ public class PluginIndexManager {
         private @NullAllowed String defaultValue;
         private boolean required;
         private String description;
+        private SortedSet<String> mojos = new TreeSet<String>();
 
         private ParameterDetail(String name, @NullAllowed String expression, @NullAllowed String defaultValue, boolean required, String description) {
             this.name = name;
@@ -413,6 +432,10 @@ public class PluginIndexManager {
             this.defaultValue = defaultValue;
             this.required = required;
             this.description = description;
+        }
+        
+        void addMojo(String mojo) {
+            mojos.add(mojo);
         }
 
         /**
@@ -445,9 +468,14 @@ public class PluginIndexManager {
         }
 
         public String getHtmlDetails(boolean includeName) {
+            String m = mojos.size() > 0 ? Arrays.toString(mojos.toArray()) : null;
+            if (m != null) {
+                m = m.substring(1, m.length() - 1);
+            }
             return "<html><body>" + (includeName ? ("<h4>" + NbBundle.getMessage(PluginIndexManager.class, "TXT_LBL_PARAMETER") + getName() + "</h4>") : "") +
             "<b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_Expression") + "</b>" +  (getExpression() != null ? ("${" + getExpression() + "}") : NbBundle.getMessage(PluginIndexManager.class, "LBL_Undefined")) + "<br>" +
             "<b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_DefaultValue") + "</b>" + (getDefaultValue() != null ? getDefaultValue() : NbBundle.getMessage(PluginIndexManager.class, "LBL_Undefined"))  +
+            (m != null ? "<br/><b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_Mojos") + "</b>" + m : "")  +
             "<br><b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_Description") + "</b><br>"+ getDescription() + "</body></html>";
         }
 
