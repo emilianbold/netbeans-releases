@@ -88,6 +88,16 @@ public final class LineRootElement extends GapBranchElement {
         return super.getElement(index);
     }
     
+    @Override
+    public int getElementIndex(int offset) {
+        if (offset == 0) {
+            // Optimization of a frequent pattern in NB sources:
+            // LineRootElement root = styledDocument.getParagraphElement(0).getParentElement()
+            return 0;
+        }
+        return super.getElementIndex(offset);
+    }
+
     public void insertUpdate(AbstractDocument.DefaultDocumentEvent evt, AttributeSet attr) {
         int insertOffset = evt.getOffset();
         int insertEndOffset = insertOffset + evt.getLength();
