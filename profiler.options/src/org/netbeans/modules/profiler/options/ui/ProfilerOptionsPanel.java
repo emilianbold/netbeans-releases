@@ -235,20 +235,20 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         pis.setDisplayLiveResultsMemory(memoryLiveResultsCheckbox.isSelected());
 
         Object takingSnapshotSelected = takingSnapshotCombo.getSelectedItem();
-        pis.setAutoOpenSnapshot((takingSnapshotSelected == Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText())
-                                || (takingSnapshotSelected == Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText()));
-        pis.setAutoSaveSnapshot((takingSnapshotSelected == Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText())
-                                || (takingSnapshotSelected == Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText()));
+        pis.setAutoOpenSnapshot((Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText().equals(takingSnapshotSelected))
+                                || (Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText().equals(takingSnapshotSelected)));
+        pis.setAutoSaveSnapshot((Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText().equals(takingSnapshotSelected))
+                                || (Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText().equals(takingSnapshotSelected)));
 
         Object oomeSelected = oomeCombo.getSelectedItem();
 
-        if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeNothingText()) {
+        if (Bundle.ProfilerOptionsPanel_OomeNothingText().equals(oomeSelected)) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_NONE);
-        } else if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeProjectText()) {
+        } else if (Bundle.ProfilerOptionsPanel_OomeProjectText().equals(oomeSelected)) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_PROJECTDIR);
-        } else if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeTempText()) {
+        } else if (Bundle.ProfilerOptionsPanel_OomeTempText().equals(oomeSelected)) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_TEMPDIR);
-        } else if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeCustomText()) {
+        } else if (Bundle.ProfilerOptionsPanel_OomeCustomText().equals(oomeSelected)) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_CUSTOMDIR);
         }
 
@@ -256,17 +256,17 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         pis.setHeapWalkerAnalysisEnabled(enableHeapWalkerAnalysisCheckbox.isSelected());
 
-        if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
+        if (Bundle.ProfilerOptionsPanel_KeyOpenAlways().equals(telemetryOverviewCombo.getSelectedItem())) {
             pis.setTelemetryOverviewBehavior(ProfilerIDESettings.OPEN_ALWAYS);
-        } else if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenMonitoring().equals(telemetryOverviewCombo.getSelectedItem())) {
             pis.setTelemetryOverviewBehavior(ProfilerIDESettings.OPEN_MONITORING);
         } else {
             pis.setTelemetryOverviewBehavior(ProfilerIDESettings.OPEN_NEVER);
         }
 
-        if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
+        if (Bundle.ProfilerOptionsPanel_KeyOpenAlways().equals(openThreadsViewCombo.getSelectedItem())) {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_ALWAYS);
-        } else if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenMonitoring().equals(openThreadsViewCombo.getSelectedItem())) {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_MONITORING);
         } else {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_NEVER);
@@ -287,35 +287,35 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         }
 
         if (settings.getAutoOpenSnapshot() && settings.getAutoSaveSnapshot()
-                && (takingSnapshotCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText())) {
+                && (!Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText().equals(takingSnapshotCombo.getSelectedItem()))) {
             return false;
         }
 
-        if (settings.getAutoOpenSnapshot() && (takingSnapshotCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText())) {
+        if (settings.getAutoOpenSnapshot() && (!Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText().equals(takingSnapshotCombo.getSelectedItem()))) {
             return false;
         }
 
-        if (settings.getAutoSaveSnapshot() && (takingSnapshotCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText())) {
+        if (settings.getAutoSaveSnapshot() && (!Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText().equals(takingSnapshotCombo.getSelectedItem()))) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_NONE)
-                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeNothingText())) {
+                && (!Bundle.ProfilerOptionsPanel_OomeNothingText().equals(oomeCombo.getSelectedItem()))) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_PROJECTDIR)
-                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeProjectText())) {
+                && (!Bundle.ProfilerOptionsPanel_OomeProjectText().equals(oomeCombo.getSelectedItem()))) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_TEMPDIR)
-                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeTempText())) {
+                && (!Bundle.ProfilerOptionsPanel_OomeTempText().equals(oomeCombo.getSelectedItem()))) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_CUSTOMDIR)
-                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeCustomText())) {
+                && (!Bundle.ProfilerOptionsPanel_OomeCustomText().equals(oomeCombo.getSelectedItem()))) {
             return false;
         }
 
@@ -323,29 +323,29 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             return false;
         }
 
-        if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
+        if (Bundle.ProfilerOptionsPanel_KeyOpenAlways().equals(telemetryOverviewCombo.getSelectedItem())) {
             if (settings.getTelemetryOverviewBehavior() != ProfilerIDESettings.OPEN_ALWAYS) {
                 return false;
             }
-        } else if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenMonitoring().equals(telemetryOverviewCombo.getSelectedItem())) {
             if (settings.getTelemetryOverviewBehavior() != ProfilerIDESettings.OPEN_MONITORING) {
                 return false;
             }
-        } else if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenNever()) {
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenNever().equals(telemetryOverviewCombo.getSelectedItem())) {
             if (settings.getTelemetryOverviewBehavior() != ProfilerIDESettings.OPEN_NEVER) {
                 return false;
             }
         }
 
-        if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
+        if (Bundle.ProfilerOptionsPanel_KeyOpenAlways().equals(openThreadsViewCombo.getSelectedItem())) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_ALWAYS) {
                 return false;
             }
-        } else if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenMonitoring().equals(openThreadsViewCombo.getSelectedItem())) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_MONITORING) {
                 return false;
             }
-        } else if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenNever()) {
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenNever().equals(openThreadsViewCombo.getSelectedItem())) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_NEVER) {
                 return false;
             }
@@ -882,7 +882,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
     }
 
     private void updateEnabling() {
-        boolean customOOMEdirSelected = oomeCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_OomeCustomText();
+        boolean customOOMEdirSelected = Bundle.ProfilerOptionsPanel_OomeCustomText().equals(oomeCombo.getSelectedItem());
         oomeDetectionDirTextField.setEnabled(customOOMEdirSelected);
         oomeDetectionChooseDirButton.setEnabled(customOOMEdirSelected);
     }
