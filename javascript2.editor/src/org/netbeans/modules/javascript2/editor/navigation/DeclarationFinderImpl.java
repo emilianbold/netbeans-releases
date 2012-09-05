@@ -113,6 +113,11 @@ public class DeclarationFinderImpl implements DeclarationFinder{
                             Collection<? extends IndexResult> items = jsIndex.query(
                                     JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
                                     JsIndex.TERMS_BASIC_INFO);
+                            if(items.isEmpty()) {
+                                items = jsIndex.query(
+                                    JsIndex.FIELD_FQ_NAME, type.getType() + ".prototype." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
+                                    JsIndex.TERMS_BASIC_INFO);
+                            }
                             indexResults.addAll(items);
                         }
                         DeclarationLocation location = processIndexResult(indexResults);
