@@ -107,7 +107,9 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             }
         }
         for (WebKitBreakpointManager bm : toAdd) {
-            bm.add();
+            if (bm.canAdd()) {
+                bm.add();
+            }
         }
     }
     

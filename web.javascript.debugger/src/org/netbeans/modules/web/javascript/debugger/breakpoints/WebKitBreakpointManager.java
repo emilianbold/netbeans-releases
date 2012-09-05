@@ -99,6 +99,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         return new WebKitXHRBreakpointManager(d, xb);
     }
     
+    public boolean canAdd() {
+        return ab.isEnabled();
+    }
+    
     public abstract void add();
 
     public abstract void remove();
