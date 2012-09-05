@@ -60,6 +60,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
@@ -68,6 +69,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.html"/>
@@ -76,6 +78,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
@@ -85,6 +88,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/json.html"/>
