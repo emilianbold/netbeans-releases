@@ -101,6 +101,8 @@ public final class Model {
 
     //property names:
     public static final String CHANGES_APPLIED_TO_DOCUMENT = "changes.applied"; //NOI18N
+    public static final String MODEL_WRITE_TASK_FINISHED = "model.write.task.finished"; //NOI18N
+    
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
     private final Mutex MODEL_MUTEX = new Mutex();
@@ -230,6 +232,7 @@ public final class Model {
                 runnable.run(Model.this.getStyleSheet());
             }
         });
+        support.firePropertyChange(MODEL_WRITE_TASK_FINISHED, null, null);
     }
 
     public CharSequence getOriginalSource() {
