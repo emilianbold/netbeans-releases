@@ -1179,7 +1179,20 @@ public class SemanticHighlighter extends JavaParserResultTask {
         @Override
         public Void visitUnary(UnaryTree tree, EnumSet<UseTypes> d) {
             if (tree.getExpression() instanceof IdentifierTree) {
-                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+                switch (tree.getKind()) {
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
+                    case POSTFIX_INCREMENT:
+                    case POSTFIX_DECREMENT:
+                        Set<UseTypes> useTypes = EnumSet.of(UseTypes.WRITE);
+                        if (d != null) {
+                            useTypes.addAll(d);
+                        }
+                        handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), useTypes);
+                        break;
+                    default:
+                        handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+                }
             }
             super.visitUnary(tree, d);
             return null;
