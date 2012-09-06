@@ -280,6 +280,16 @@ public class MarkOccurrenceTest extends JsTestBase {
         // should return name occurences only from associated method and its comment
         checkOccurrences(getTestPath(), " * @param {String} co^untry my country", true);
     }
+    
+    public void testDocumentation_9() throws Exception {
+        // return types
+        checkOccurrences(getTestPath(), " * @return {Add^ress} address", true);
+    }
+    
+    public void testDocumentation_10() throws Exception {
+        // return types
+        checkOccurrences(getTestPath(), "function Add^ress (street, town, country) {", true);
+    }
 
     public void testCorrectPrototype_1() throws Exception {
         checkOccurrences(getTestPath(), "Car.pr^ototype.a = 5;", true);
