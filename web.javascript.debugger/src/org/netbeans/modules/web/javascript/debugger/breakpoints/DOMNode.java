@@ -611,6 +611,11 @@ public final class DOMNode {
         public int hashCode() {
             return childNumber + (name.hashCode() >> 4);
         }
+
+        @Override
+        public String toString() {
+            return name+"<"+childNumber+">";
+        }
         
     }
     
