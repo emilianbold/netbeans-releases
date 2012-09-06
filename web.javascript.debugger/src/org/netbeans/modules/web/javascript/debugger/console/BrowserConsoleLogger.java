@@ -198,7 +198,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             String file = getProjectPath(url);
             sb = new StringBuilder(file);
             int line = msg.getLine();
-            if (line != -1) {
+            if (line != -1 && line != 0) {
                 sb.append(":");
                 sb.append(line);
             }        
