@@ -177,6 +177,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 if (visitedName.equals(((Variable) leaf).getName())) {
                     occurrences.add(variableExpression);
                 }
+            } else if (leaf instanceof ForStatement) {
+                if (visitedName.equals(((ForStatement) leaf).getVariable().getName())) {
+                    occurrences.add(variableExpression);
+                }
             } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
                 PropertyExpression property = (PropertyExpression) leafParent;
                 if (variableExpression.getName().equals(property.getPropertyAsString())) {
@@ -424,6 +428,19 @@ public final class VariableScopeVisitor extends TypeVisitor {
     public void visitForLoop(ForStatement forLoop) {
         if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
             addOccurrences(forLoop.getVariableType(), (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
+        } else {
+            final Parameter forLoopVar = forLoop.getVariable();
+            final String varName = forLoopVar.getName();
+            
+            if (leaf instanceof Variable) {
+                if (varName.equals(((Variable) leaf).getName())) {
+                    occurrences.add(forLoopVar);
+                }
+            } else if (leaf instanceof ForStatement) {
+                if (varName.equals(((ForStatement) leaf).getVariable().getName())) {
+                    occurrences.add(forLoopVar);
+                }
+            }
         }
         super.visitForLoop(forLoop);
     }
