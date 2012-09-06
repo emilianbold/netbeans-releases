@@ -90,7 +90,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private boolean                 dividerSet;
     protected List<RepositoryRevision> results;
     private static final RequestProcessor rp = new RequestProcessor("GitDiff", 1, true);  // NOI18N
-    private static final Logger LOG = Logger.getLogger(DiffResultsView.class.getName());
+    protected static final Logger LOG = Logger.getLogger(DiffResultsView.class.getName());
     private final PropertyChangeListener list;
     private Node[] selectedNodes;
     private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);

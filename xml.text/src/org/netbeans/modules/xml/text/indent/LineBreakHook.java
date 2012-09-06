@@ -224,9 +224,12 @@ public class LineBreakHook implements TypedBreakInterceptor {
         int spacesPerTab = IndentUtils.indentLevelSize(baseDoc);
         int col = Utilities.getVisualColumn(baseDoc, openOffset);
         String blankLine = "\n" + 
-                IndentUtils.createIndentString(baseDoc, col + spacesPerTab) + "\n" + 
+                IndentUtils.createIndentString(baseDoc, col + spacesPerTab);
+        // must count the actually generated characters - #215134
+        int caretOffset = blankLine.length();
+        blankLine = blankLine + "\n" + 
                 IndentUtils.createIndentString(baseDoc, col);
-        context.setText(blankLine, -1, col + spacesPerTab + 1, 1, blankLine.length());
+        context.setText(blankLine, -1, caretOffset, 1, blankLine.length());
     }
     
     @MimeRegistration(mimeType="text/xml", service=TypedBreakInterceptor.Factory.class)

@@ -196,13 +196,15 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
-        if(!settings.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
+        if(!WizardDescriptor.CANCEL_OPTION.equals(settings.getValue()) && isValid()) {
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            
+            if ( gui == null ) {
+                getComponent();
+            }
             String name = gui.getTargetName ();
-            if (name.indexOf ('/') > 0) { // NOI18N
+            if (name != null && name.indexOf ('/') > 0) { // NOI18N
                 name = name.substring (name.lastIndexOf ('/') + 1);
             }
             

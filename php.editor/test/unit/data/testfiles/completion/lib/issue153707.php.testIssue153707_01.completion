@@ -218,6 +218,7 @@ CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
+CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php

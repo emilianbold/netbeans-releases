@@ -752,6 +752,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 newVariable.getOccurrences().addAll(variable.getOccurrences());
                 variable = newVariable;
             }
+            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            variable.setDocumentation(docHolder.getDocumentation(varNode));
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit(), false);

@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,44 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-var listener = function(port) {
-    port.onDisconnect.addListener(function() {
-        chrome.extension.onConnect.removeListener(listener);
-    });
-    port.onMessage.addListener(function(message) {
-        var result = new Object();
-        result.message = 'eval';
-        result.id = message.id;
-        var type = message.message;
-        if (type === 'eval') {
-            // Do not remove this variable - it serves as an API.
-            // Scripts that want to send some message back to IDE call this method.
-            var postMessageToNetBeans = function(message) {
-                port.postMessage(message);
-            };
-            try {
-                result.result = eval(message.script);
-                result.status = 'ok';
-                postMessageToNetBeans(result);
-            } catch (err) {
-                result.status = 'error';
-                console.log('Problem during script evaluation!');
-                console.log(message);
-                console.log(err);
-                if (err instanceof Error) {
-                    result.result = err.name + ':' + err.message;
-                    console.log(result.result);
-                } else {
-                    result.result = err;
-                }
-                postMessageToNetBeans(result);
-            }
-        } else {
-            console.log('Ignoring unexpected message from the background page!');
-            console.log(message);
-        }
-    });
-};
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-chrome.extension.onConnect.addListener(listener);
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion217330Test extends PHPCodeCompletionTestBase {
+
+    public PHPCodeCompletion217330Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests217330/tests217330.php", "$my->^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests217330/"))
+            })
+        );
+    }
+
+}

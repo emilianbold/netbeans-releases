@@ -104,7 +104,9 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
                     dl.getAlternativeLocations().clear();
                 }
 
-                return dl;
+                if (dl != null) {
+                    return dl;
+                }
             }
             
         }
@@ -184,7 +186,7 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
     
     //useless class just because we need to put something into the AlternativeLocation to be
     //able to get some icon from it
-    private static CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
+    private static final CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
     
     private static class AlternativeLocationImpl implements AlternativeLocation {
 
