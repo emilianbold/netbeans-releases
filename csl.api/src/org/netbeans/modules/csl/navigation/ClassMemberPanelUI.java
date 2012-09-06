@@ -51,11 +51,15 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.StructureItem;
@@ -189,7 +193,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         return new ElementScanningTask() {
             public @Override int getPriority() {
-                return Integer.MAX_VALUE;
+                return 20000;
             }
             public @Override Class<? extends Scheduler> getSchedulerClass() {
                 return CSLNavigatorScheduler.class;
@@ -197,11 +201,14 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             @Override public void run(ParserResult result, SchedulerEvent event) {
                 resume();
                 
+                System.err.println("result: " + result);
                 StructureItem root = computeStructureRoot(result.getSnapshot().getSource());
                 FileObject file = result.getSnapshot().getSource().getFileObject();
 
                 if (root != null && file != null) {
-                    refresh(root, file);
+                    Document doc = result.getSnapshot().getSource().getDocument(false);
+                    BaseDocument bd = doc instanceof BaseDocument ? (BaseDocument)doc : null;
+                    refresh(root, file, bd);
                 }
             }
         };
@@ -217,13 +224,32 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             } 
         });
     }
+    
+    /**
+     * For a FileObject/source, holds a position/offset of the caret; the position should be selected
+     * after parse.
+     */
+    private Map<FileObject, Integer> positionRequests = new WeakHashMap<FileObject, Integer>();
 
     public void selectElementNode(final ParserResult info, final int offset) {
         ElementNode root = getRootNode();
         if ( root == null ) {
             return;
         }
-        final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
+        FileObject rootFo = root.getFileObject();
+        FileObject sourceFo = info.getSnapshot().getSource().getFileObject();
+        if (sourceFo != null && !sourceFo.equals(rootFo)) {
+            // switching files; refresh should be fired by periodic scheduler
+            synchronized (this) {
+                positionRequests.put(sourceFo, offset);
+            }
+        } else {
+            ElementNode node = root.getMimeRootNodeForOffset(info, offset);
+            doSelectNodes(node);
+        }
+    }
+    
+    private void doSelectNodes(final ElementNode node) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Node[] selectedNodes = manager.getSelectedNodes();
@@ -238,7 +264,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         });
     }
 
-    public void refresh( final StructureItem description, final FileObject fileObject) {
+    public void refresh( final StructureItem description, final FileObject fileObject, 
+            final BaseDocument bd) {
         final ElementNode rootNode = getRootNode();
         
         if ( rootNode != null && rootNode.getFileObject().equals( fileObject) ) {
@@ -290,6 +317,16 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
+
+                    ElementNode root = getRootNode();
+                    Integer offset;
+                    synchronized (ClassMemberPanelUI.this) {
+                        offset = positionRequests.remove(fileObject);    
+                    }
+                    if (offset != null) {
+                        ElementNode node = root.getMimeRootNodeForOffset(bd, offset);
+                        doSelectNodes(node);
+                    }
                 }
 
             };
