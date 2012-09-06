@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         <api name="explorer"/>
         <summary>PropertySheet extensions</summary>
         <version major="6" minor="47"/>
-        <date day="ž" month="í" year="2012"/>
+        <date day="6" month="9" year="2012"/>
         <author login="saubrecht"/>
         <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
         <description>
