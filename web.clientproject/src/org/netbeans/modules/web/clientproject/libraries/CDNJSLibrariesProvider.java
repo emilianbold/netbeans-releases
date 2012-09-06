@@ -69,7 +69,7 @@ import org.openide.util.lookup.ServiceProvider;
  * Snapshot can be updated by running "ant -f web.clientproject/build.xml get-cdnjs-jar"
  * and is stored in resources/cdnjs.zip file.
  */
-@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
+//@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementation> {
 
     @Override
