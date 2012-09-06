@@ -74,7 +74,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
         super(cfg);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
-        port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
+        port = readNumber(SftpConnectionProvider.PORT, SftpConnectionProvider.DEFAULT_PORT);
         userName = cfg.getValue(SftpConnectionProvider.USER);
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
