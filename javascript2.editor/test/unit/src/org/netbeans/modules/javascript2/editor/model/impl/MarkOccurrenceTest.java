@@ -302,8 +302,7 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
 
     public void testIssue217770_01() throws Exception {
-        //TODO - temporary disabling symetric testing, which doesn't work in this case
-        checkOccurrences("testfiles/coloring/issue217770.js", "t.r^un();", false);
+        checkOccurrences("testfiles/coloring/issue217770.js", "t.r^un();", true);
     }
     
     public void testIssue176581_01() throws Exception {
