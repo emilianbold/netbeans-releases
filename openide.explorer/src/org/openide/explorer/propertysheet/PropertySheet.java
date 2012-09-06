@@ -924,7 +924,7 @@ public class PropertySheet extends JPanel {
     protected final void toggleExpanded( FeatureDescriptor fd ) {
         int index = table.getPropertySetModel().indexOf( fd );
         if( index >= 0 ) {
-            table.getPropertySetModel().toggleExpanded( WIDTH );
+            table.getPropertySetModel().toggleExpanded( index );
         }
     }
 
