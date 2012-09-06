@@ -106,7 +106,8 @@ public class PanelConfigureProjectVisual extends JPanel {
 
         locationContainer.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(locationContainer, gridBagConstraints);
@@ -115,7 +116,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         locationContainer.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_locationContainer")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
@@ -123,8 +125,8 @@ public class PanelConfigureProjectVisual extends JPanel {
 
         optionsContainer.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
