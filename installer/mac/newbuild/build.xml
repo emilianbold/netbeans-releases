@@ -231,7 +231,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>
             <property name="module.builddir" value="${basedir}/netBeans/baseide/build"/>
-        </ant>            
+        </ant>
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
     </target>
@@ -603,8 +603,15 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
-        </exec>                                            
+        </exec>
         
+        <condition property="do.sign-app">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>
+        <antcall target="sign-installer"/>
+
         <condition property="output.dir" value="${output.jdk7.dir}" else="">
 	     <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
@@ -614,5 +621,17 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
-    </target>             
-</project>          
+    </target>
+
+    <target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
+        <echo message="Sign an OS X Installer '${mpkg.file}'"/>
+        <property name="signed.mpkg.file" value="${basedir}/dist_dmg/signed-${mpkg.name}.mpkg"/>   
+        <exec executable="sh" failonerror="no">
+            <arg value="-cv"/>
+            <arg value="productsign --sign '${signing_identity}' '${mpkg.file}' '${signed.mpkg.file}'"/>
+        </exec>
+        <move file="${signed.mpkg.file}" tofile="${mpkg.file}" failonerror="no"/>
+        <delete file="${signed.mpkg.file}" failonerror="no"/>
+    </target>
+    
+</project>

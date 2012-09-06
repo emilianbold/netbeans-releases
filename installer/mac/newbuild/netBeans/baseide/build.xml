@@ -36,7 +36,9 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${scriptsdir}"/>
     </target>
 
-    <target name="build-app" description="Builds Mac OS X application bundle">
+    <target name="build-app" depends="do-build-app, sign-app"/>
+    
+    <target name="do-build-app" description="Builds Mac OS X application bundle">
         <echo>Creating ${appname}.app bundle using build/netbeans as master</echo>
                
         <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
@@ -69,6 +71,20 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
+        </exec>
+        <condition property="do.sign-app">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>
+        <antcall target="sign-app"/>
+    </target>
+    
+    <target name="sign-app" description="Singing Mac OS X Application" if="do.sign-app">
+        <echo message="Signing application ${appdir}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-cv"/>
+            <arg value="codesign -fs '${signing_identity}' -vvvv '${appdir}'"/>
         </exec>
     </target>
     
