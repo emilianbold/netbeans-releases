@@ -255,6 +255,17 @@ public final class FormatContext {
                 boolean nonEmpty = false;
                 FormatToken startToken = stream.getToken(
                         snapshot.getEmbeddedOffset(start.getOriginalStart()));
+                // in case we have different regions and space
+                // between those regions is not empty (more precisely
+                // there is __UNKNOWN__ marker from embedding provider
+                // it means there is some other language fragment included
+                // in that case we continue with indentation from previous
+                // region
+                // sample <script>
+                // function foo() {
+                //     var x = 1 + ${some_other_lang};
+                // }
+                // </script>
                 if (startToken != null) {
                     FormatToken previous = startToken.previous();
                     while (previous != null) {
