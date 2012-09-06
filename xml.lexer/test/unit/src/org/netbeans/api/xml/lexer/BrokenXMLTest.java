@@ -66,7 +66,7 @@ public class BrokenXMLTest extends AbstractTestCase {
      */
     public void testTokens() throws Exception {
         XMLTokenId[] expectedIds = {XMLTokenId.PI_START, XMLTokenId.PI_TARGET, XMLTokenId.WS, XMLTokenId.PI_CONTENT,
-            XMLTokenId.PI_END, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT, XMLTokenId.TEXT,
+            XMLTokenId.PI_END, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT, XMLTokenId.TEXT, XMLTokenId.TEXT,
             XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.ERROR, 
             XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.TAG, XMLTokenId.TEXT  };
         javax.swing.text.Document document = getDocument("resources/broken.xml");
