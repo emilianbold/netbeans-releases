@@ -112,6 +112,20 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forConstructor() {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                boolean result = false;
+                if (element instanceof MethodElement) {
+                    result = ((MethodElement) element).isConstructor();
+                }
+                return result;
+            }
+        };
+    }
+
     public static ElementFilter forIncludedNames(final Collection<String> includedNames, final PhpElementKind kind) {
         return new ElementFilter() {
 
@@ -198,7 +212,9 @@ public abstract class ElementFilter {
                 boolean retval = true;
                 for (FileObject fileObject : files) {
                     //if file is deleted
-                    if (fileObject == null) continue;
+                    if (fileObject == null) {
+                        continue;
+                    }
                     String nameExt = fileObject.getNameExt();
                     String elementURL = element.getFilenameUrl();
                     if ((elementURL != null && elementURL.indexOf(nameExt) < 0) || element.getFileObject() != fileObject) {

@@ -1116,6 +1116,18 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "} catch (B^S\\MyException $ex) {", true);
     }
 
+    public void testIssue216876_01() throws Exception {
+        checkOccurrences(getTestPath(), "class MyNewCl^ass123 {", true);
+    }
+
+    public void testIssue216876_02() throws Exception {
+        checkOccurrences(getTestPath(), "public function MyNewCl^ass123($foo) {", true);
+    }
+
+    public void testIssue216876_03() throws Exception {
+        checkOccurrences(getTestPath(), "$c = new \\Foo\\MyNewCl^ass123();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

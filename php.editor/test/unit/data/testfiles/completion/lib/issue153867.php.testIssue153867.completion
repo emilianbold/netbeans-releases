@@ -5,7 +5,6 @@ PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
-PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Baz                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
@@ -46,6 +45,7 @@ PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
@@ -216,6 +216,7 @@ CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
+CLASS      MyNewClass123                   [PUBLIC]   Foo
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
