@@ -219,6 +219,10 @@ public class ElementNode extends AbstractNode {
             return null;
         }
         BaseDocument doc = (BaseDocument)document;
+        return getMimeRootNodeForOffset(doc, offset);
+    }
+    
+    ElementNode getMimeRootNodeForOffset(BaseDocument doc, int offset) {
         List<Language> languages = LanguageRegistry.getInstance().getEmbeddedLanguages(doc, offset);
 
         // Look specifically within the

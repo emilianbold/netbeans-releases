@@ -77,7 +77,7 @@ public class GenerateCodePanel extends javax.swing.JPanel {
         jScrollPane1.setBackground(jList1.getBackground());
         jList1.setModel(createModel(generators));
         jList1.setSelectedIndex(0);
-        jList1.setVisibleRowCount(generators.size() > 8 ? 8 : generators.size());
+        jList1.setVisibleRowCount(generators.size() > 16 ? 16 : generators.size());
         jList1.setCellRenderer(new Renderer(jList1));
         jList1.grabFocus();
         jList1.addFocusListener(new FocusAdapter() {
