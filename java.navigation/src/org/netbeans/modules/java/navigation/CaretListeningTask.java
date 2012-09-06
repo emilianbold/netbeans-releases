@@ -44,19 +44,13 @@
 
 package org.netbeans.modules.java.navigation;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
@@ -65,20 +59,17 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * This task is called every time the caret position changes in a Java editor.
  * <p>
  * The task finds the TreePath of the Tree under the caret, converts it to
- * an Element and then shows the declartion of the element in Declaration window
- * and javadoc in the Javadoc window.
+ * an Element and then shows the javadoc in the Javadoc window.
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
 public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
-    private CaretListeningFactory caretListeningFactory;
     private FileObject fileObject;
     private boolean canceled;
     
@@ -91,8 +82,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                                   JavaTokenId.JAVADOC_COMMENT);
     
     
-    CaretListeningTask(CaretListeningFactory whichElementJavaSourceTaskFactory,FileObject fileObject) {
-        this.caretListeningFactory = whichElementJavaSourceTaskFactory;
+    CaretListeningTask(FileObject fileObject) {
         this.fileObject = fileObject;
     }
     
@@ -106,9 +96,8 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
         boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
         boolean javadocShouldUpdate = JavadocTopComponent.shouldUpdate();
-        boolean declarationShouldUpdate = DeclarationTopComponent.shouldUpdate();
         
-        if ( isCancelled() || ( !navigatorShouldUpdate && !javadocShouldUpdate && !declarationShouldUpdate ) ) {
+        if ( isCancelled() || ( !navigatorShouldUpdate && !javadocShouldUpdate ) ) {
             return;
         }
                         
@@ -194,23 +183,19 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             case ENUM_CONSTANT:
                 lastEh = ElementHandle.create(element);
                 // Different element clear data
-                setDeclaration(""); // NOI18N
                 setJavadoc(null); // NOI18N
                 break;
             case PARAMETER:
                 element = element.getEnclosingElement(); // Take the enclosing method
                 lastEh = ElementHandle.create(element);
-                setDeclaration(""); // NOI18N
                 setJavadoc(null); // NOI18N
                 break;
             case LOCAL_VARIABLE:
                 lastEh = null; // ElementHandle not supported 
-                setDeclaration(Utils.format(element)); // NOI18N
                 setJavadoc(null); // NOI18N
                 return;
             default:
                 // clear
-                setDeclaration(""); // NOI18N
                 setJavadoc(null); // NOI18N
                 return;
             }
@@ -227,25 +212,8 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         
-        // Compute and set declaration
-        if ( declarationShouldUpdate ) {
-            // System.out.println("Updating DECL");
-            computeAndSetDeclaration(compilationInfo, element);
-        }
+    }
         
-    }
-    
-    private void setDeclaration(final String declaration) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                DeclarationTopComponent declarationTopComponent = DeclarationTopComponent.findDefault();
-                if (declarationTopComponent != null && declarationTopComponent.isOpened()) {
-                    declarationTopComponent.setDeclaration(declaration);
-                }
-            }
-        });
-    }
-    
     private void setJavadoc(final ElementJavadoc javadoc) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -280,74 +248,6 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         setJavadoc(ElementJavadoc.create(compilationInfo, element));
-    }
-    
-    private void computeAndSetDeclaration(CompilationInfo compilationInfo, Element element ) {
-            
-        if ( element.getKind() == ElementKind.PACKAGE ) { 
-            setDeclaration("package " + element.toString() + ";");
-            return;
-        }
-            
-        if ( isCancelled() ) {
-            return;
-        }
-        
-        final TreePath treePath = compilationInfo.getTrees().getPath(element);
-
-        if ( isCancelled()) {
-            return;
-        }
-
-        if ( treePath != null ) {
-            try {
-                final CompilationUnitTree cu = treePath.getCompilationUnit();
-                final CharSequence text = cu.getSourceFile().getCharContent(true);
-                final SourcePositions pos = compilationInfo.getTrees().getSourcePositions();
-                long startPos = pos.getStartPosition(treePath.getCompilationUnit(), treePath.getLeaf());
-                long endPos = pos.getEndPosition(treePath.getCompilationUnit(), treePath.getLeaf());
-                if (startPos < 0 || endPos < 0) {
-                    return;
-                }
-                long shift = cu.getLineMap().getColumnNumber(startPos) - 1;
-                int tabSize = CodeStyle.getDefault(fileObject).getTabSize();
-                final CharSequence declaration = text.subSequence((int)startPos, (int)endPos);
-                setDeclaration(shift(declaration,(int)shift,tabSize));
-            } catch(IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-    }
-
-    private String shift (final CharSequence content, int shift, int tabSize) {
-        int j = 0;
-        boolean trim = true;
-        final StringBuilder result = new StringBuilder();
-        for (int i=0; i< content.length(); i++) {
-            char c = content.charAt(i);
-            if (trim) {
-                if (Character.isWhitespace(c)) {
-                    j+= c == '\t' ? tabSize : 1;    //NOI18N
-                    while (j>shift) {
-                        result.append(' ');         //NOI18N
-                        j--;
-                    }
-                    if (j == shift) {
-                        trim = false;
-                    }
-                } else {
-                    result.append(c);
-                    trim = false;
-                }
-            } else {
-                result.append(c);
-                if (c == '\n') {        //NOI18N
-                    trim = true;
-                    j = 0;
-                }
-            }
-        }
-        return result.toString();
     }
     
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {
