@@ -104,7 +104,15 @@ public class CallFrame extends AbstractObject {
         params.put("objectGroup", TransportHelper.OBJECT_GROUP_NAME);
         params.put("includeCommandLineAPI", true);
         Response response = transport.sendBlockingCommand(new Command("Debugger.evaluateOnCallFrame", params));
-        JSONObject result = (JSONObject)((JSONObject)response.getResponse().get("result")).get("result");
-        return new RemoteObject(result, getWebkit());
+        if (response != null) {
+            JSONObject result = (JSONObject)response.getResponse().get("result");
+            if (result != null) {
+                result = (JSONObject) result.get("result");
+                if (result != null) {
+                    return new RemoteObject(result, getWebkit());
+                }
+            }
+        }
+        return null; // Evaluation failed
     }
 }

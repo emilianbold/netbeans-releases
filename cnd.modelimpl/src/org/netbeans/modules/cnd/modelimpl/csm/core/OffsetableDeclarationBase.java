@@ -47,18 +47,25 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -244,7 +251,53 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return null;
     }
     
-    public static class SimpleDeclarationBuilder implements CsmObjectBuilder {
+    public static abstract class ScopedDeclarationBuilder extends OffsetableIdentifiableBuilder {
+
+        private CsmObjectBuilder parent;
+        private CsmScope scope;
+        
+        public void setScope(CsmScope scope) {
+            this.scope = scope;
+        }
+        
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }        
+
+        public CsmObjectBuilder getParent() {
+            return parent;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if (parent == null) {
+                scope = (NamespaceImpl) getFile().getProject().getGlobalNamespace();
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                }
+            }
+            return scope;
+        }
+        
+        protected void addDeclaration(CsmOffsetableDeclaration decl) {
+            if(parent != null) {
+                if(parent instanceof NamespaceBuilder) {
+                    ((NamespaceBuilder)parent).addDeclaration(decl);
+                }          
+            } else {
+                getFileContent().addDeclaration(decl);
+            }                
+            if(getScope() instanceof CsmNamespace) {
+                ((NamespaceImpl)getScope()).addDeclaration(decl);
+            }
+        }        
+        
+    }
+    
+    public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
         
         private boolean typedefSpecifier = false;
         private boolean typeSpecifier = false;
@@ -252,25 +305,36 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private DeclaratorBuilder declaratorBuilder;
         private TypeBuilder typeBuilder;
         private CsmObjectBuilder parametersListBuilder;
-        private int startOffset;
-        private int endOffset;
-
-        public int getStartOffset() {
-            return startOffset;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }
-
-        public void setStartOffset(int startOffset) {
-            this.startOffset = startOffset;
-        }
-
-        public void setEndOffset(int endOffset) {
-            this.endOffset = endOffset;
-        }
         
+        
+        private boolean _static = false;
+        private boolean _extern = false;
+        private boolean _const = false;
+
+        public void setStatic() {
+            this._static = true;
+        }
+
+        public void setExtern() {
+            this._extern = true;
+        }
+
+        public void setConst() {
+            this._const = true;
+        }
+
+        public boolean isStatic() {
+            return _static;
+        }
+
+        public boolean isExtern() {
+            return _extern;
+        }
+
+        public boolean isConst() {
+            return _const;
+        }
+
         
         public void setTypedefSpecifier() {
             this.typedefSpecifier = true;
@@ -327,6 +391,22 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         public boolean isFunction() {
             return parametersListBuilder != null;
+        }
+        
+        protected CsmType getType() {
+            CsmType type = null;
+            if (getTypeBuilder() != null) {
+                getTypeBuilder().setScope(getScope());
+                type = getTypeBuilder().create();
+            }
+            if (type == null) {
+                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+            }
+            return type;
+        }
+        
+        public CsmDeclaration create() {
+            throw new UnsupportedOperationException("Should not be used."); // NOI18N
         }
         
     }

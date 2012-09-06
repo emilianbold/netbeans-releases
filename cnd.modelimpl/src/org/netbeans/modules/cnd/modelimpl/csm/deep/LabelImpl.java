@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -65,6 +66,11 @@ public final class LabelImpl extends StatementBase implements CsmStatement, CsmL
         super(ast, file, scope);
         label = NameCache.getManager().getString(AstUtil.getText(ast.getFirstChild()));
     }
+    
+    private LabelImpl(CharSequence label, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+        this.label = label;
+    }    
 
     public static LabelImpl create(AST ast, CsmFile file, CsmScope scope) {
         return new LabelImpl(ast, file, scope);
@@ -84,5 +90,24 @@ public final class LabelImpl extends StatementBase implements CsmStatement, CsmL
     public CharSequence getName() {
         return getLabel();
     }
+    
+    
+    public static class LabelBuilder extends StatementBuilder {
+
+        CharSequence label;
+
+        public void setLabel(CharSequence label) {
+            this.label = label;
+        }
+
+        private CharSequence getLabel() {
+            return NameCache.getManager().getString(label);
+        }
+        
+        public LabelImpl create() {
+            LabelImpl stmt = new LabelImpl(getLabel(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            return stmt;
+        }
+    }     
     
 }

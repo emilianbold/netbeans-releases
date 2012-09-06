@@ -487,6 +487,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.children.add(builder);
         }
         
+        public void addMember(CsmMember member) {
+            this.instance.addMember(member, true);
+        }        
+        
         public ClassImpl getClassDefinitionInstance() {
             if(instance != null) {
                 return instance;

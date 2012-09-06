@@ -87,52 +87,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
     static public String EE6WC_DEFAULT_NAME = "GlassFish_Server_3.1"; // NOI18N
 
-    /** GlassFish user account instance key ring name space. */
-    static final String KEYRING_NAME_SPACE="GlassFish.admin";
-    
-    /**
-     * GlassFish user account instance key ring field separator.
-     * <p/>
-     * Key ring name is constructed in following form:
-     * <field>{'.'<field>}':'<identifier>
-     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
-     */
-    static final String KEYRING_NAME_SEPARATOR=".";
-
-    /**
-     * GlassFish user account instance key ring identifier separator.
-     * <p/>
-     * Key ring name is constructed in following form:
-     * <field>{'.'<field>}':'<identifier>
-     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
-     */
-    static final String KEYRING_IDENT_SEPARATOR=":";
-
-    /**
-     * Build key ring identifier for password related to given user name.
-     * <p/>
-     * @param serverName Name of server to add into password key.
-     * @param userName User name of account user who's password will be stored.
-     * @return Key ring identifier for password related to given user name
-     */
-    private static String passwordKey(String serverName, String userName) {
-        StringBuilder pwKey = new StringBuilder(
-                KEYRING_NAME_SPACE.length() + KEYRING_NAME_SEPARATOR.length()
-                + GlassfishModule.PASSWORD_ATTR.length()
-                + KEYRING_IDENT_SEPARATOR.length()
-                + (serverName != null ? serverName.length() : 0)
-                + KEYRING_IDENT_SEPARATOR.length()
-                + (userName != null ? userName.length() : 0));
-        pwKey.append(KEYRING_NAME_SPACE);
-        pwKey.append(KEYRING_NAME_SEPARATOR);
-        pwKey.append(GlassfishModule.PASSWORD_ATTR);
-        pwKey.append(KEYRING_IDENT_SEPARATOR);
-        pwKey.append(serverName != null ? serverName : "");
-        pwKey.append(KEYRING_IDENT_SEPARATOR);
-        pwKey.append(userName != null ? userName : "");
-        return pwKey.toString();
-    }
-
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
@@ -537,6 +491,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
+    // Password from keyring (GlassfishModule.PASSWORD_ATTR) is read on demand
+    // using code in GlassfishInstance.Props class.
     private GlassfishInstance readInstanceFromFile(FileObject instanceFO, String uriFragment) throws IOException {
         GlassfishInstance instance = null;
 
@@ -559,12 +515,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
-            String serverName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-            String userName = ip.get(GlassfishModule.USERNAME_ATTR);
-            char[] password = Keyring.read(passwordKey(serverName, userName));
-            String userPassword = password != null
-                    ? new String(password) : "";
-            ip.put(GlassfishModule.PASSWORD_ATTR, userPassword);
             instance = GlassfishInstance.create(ip,this,false);
         } else {
             getLogger().log(Level.FINER, "GlassFish folder {0} is not a valid install.", instanceFO.getPath()); // NOI18N
@@ -611,7 +561,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                         if (key.equals(GlassfishModule.PASSWORD_ATTR)) {
                             String serverName = attrMap.get(GlassfishModule.DISPLAY_NAME_ATTR);
                             String userName = attrMap.get(GlassfishModule.USERNAME_ATTR);
-                            Keyring.save(passwordKey(serverName, userName),
+                            Keyring.save(GlassfishInstance.passwordKey(
+                                    serverName, userName),
                                     entry.getValue().toCharArray(),
                                     "GlassFish administrator user password");
                         } else {

@@ -52,13 +52,12 @@ import org.json.simple.JSONObject;
  */
 public final class ConsoleMessage {
 
-    private JSONObject msg;
+    private final JSONObject msg;
     private List<StackFrame> stackTrace;
+    private boolean stackTraceLoaded;
 
     ConsoleMessage(JSONObject msg) {
         this.msg = msg;
-        Number line = (Number)msg.get("line");
-        JSONArray stackTrace = (JSONArray)msg.get("stackTrace");
     }
 
     public String getSource() {
@@ -90,7 +89,7 @@ public final class ConsoleMessage {
     }
 
     public List<StackFrame> getStackTrace() {
-        if (stackTrace == null) {
+        if (!stackTraceLoaded) {
             JSONArray stack = (JSONArray)msg.get("stackTrace");
             if (stack != null && stack.size() > 0) {
                 stackTrace = new ArrayList<StackFrame>();
@@ -99,6 +98,7 @@ public final class ConsoleMessage {
                     stackTrace.add(new StackFrame(json));
                 }
             }
+            stackTraceLoaded = true;
         }
         return stackTrace;
     }

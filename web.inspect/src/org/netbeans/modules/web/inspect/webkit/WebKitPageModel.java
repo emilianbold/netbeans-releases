@@ -310,7 +310,7 @@ public class WebKitPageModel extends PageModel {
                                 if (selected) {
                                     setSelectedNodes(selection);
                                 } else {
-                                    setHighlightedNodes(selection);
+                                    setHighlightedNodesImpl(selection);
                                 }
                             }
                         });
@@ -440,6 +440,12 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void setHighlightedNodes(List<? extends org.openide.nodes.Node> nodes) {
+        if (isSynchronizeSelection()) {
+            setHighlightedNodesImpl(nodes);
+        }
+    }
+
+    void setHighlightedNodesImpl(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
             if (highlightedNodes.equals(nodes)) {
                 return;
@@ -465,6 +471,10 @@ public class WebKitPageModel extends PageModel {
             this.selectionMode = selectionMode;
         }
         firePropertyChange(PROP_SELECTION_MODE, !selectionMode, selectionMode);
+        // Reset highlighted nodes
+        if (!selectionMode) {
+            setHighlightedNodesImpl(Collections.EMPTY_LIST);
+        }
     }
 
     @Override
@@ -581,11 +591,11 @@ public class WebKitPageModel extends PageModel {
         }
 
         private boolean shouldSynchronizeSelection() {
-            return isSynchronizeSelection() && isSelectionMode();
+            return isSelectionMode();
         }
 
         private boolean shouldSynchronizeHighlight() {
-            return isSynchronizeSelection();
+            return true;
         }
 
         private void updateSynchronization() {
@@ -652,7 +662,7 @@ public class WebKitPageModel extends PageModel {
         }
 
         private synchronized void updateSelectionMode() {
-            boolean selectionMode = isSelectionMode() && isSynchronizeSelection();
+            boolean selectionMode = isSelectionMode();
             
             // PENDING notify Chrome extension that the selection mode has changed
 
