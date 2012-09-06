@@ -84,8 +84,10 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     }
 
     void removeBuildListeners() {
-        for (JobHandle jobHandle : builds) {
-            jobHandle.removePropertyChangeListener(buildPropertyListener);
+        if (builds != null) { // can be uninitialized yet, see bug 217353
+            for (JobHandle jobHandle : builds) {
+                jobHandle.removePropertyChangeListener(buildPropertyListener);
+            }
         }
     }
 
