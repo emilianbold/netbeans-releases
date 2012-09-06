@@ -54,7 +54,9 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.Action;
@@ -91,6 +93,7 @@ public class CompletionLayoutPopup {
     private ChSelectionListener chSelectionListener= new ChSelectionListener();
     private final ChAWTEventListener chAWTEventListener = new ChAWTEventListener();
     private ChKeyListener chKeyListener = new ChKeyListener();
+    private MouseListener mouseListener = new ChMouseAdapter();
 
     public final boolean isVisible() {
         return (popup != null);
@@ -141,7 +144,7 @@ public class CompletionLayoutPopup {
         }
 
         if (!isVisible()) { // documentation already visible
-            ScrollCompletionPane scrollCompletionPane = new ScrollCompletionPane(editorComponent, ClipboardHistory.getInstance(), null, chSelectionListener);
+            ScrollCompletionPane scrollCompletionPane = new ScrollCompletionPane(editorComponent, ClipboardHistory.getInstance(), null, chSelectionListener, mouseListener);
             scrollCompletionPane.setName(POPUP_NAME);
             setContentComponent(scrollCompletionPane);
             setLayout(scrollCompletionPane);   
@@ -542,6 +545,20 @@ public class CompletionLayoutPopup {
                     if (par1 == null) {
                         hide();
                     }
+                }
+            }
+        }
+    }
+
+    private class ChMouseAdapter extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent evt) {
+            JTextComponent c = getEditorComponent();
+            if (SwingUtilities.isLeftMouseButton(evt)) {
+                if (c != null && evt.getClickCount() == 2) {
+                    getEditorComponent().replaceSelection(layout.getSelectedValue().getFullText());
+                    hide();
                 }
             }
         }
