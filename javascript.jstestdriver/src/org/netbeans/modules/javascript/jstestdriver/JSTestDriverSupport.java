@@ -65,12 +65,17 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
-/**
- *
- */
+@Messages("JsTestDriverResolver=js-test-driver Conf Files")
+@MIMEResolver.Registration(
+    displayName="#JsTestDriverResolver",
+    position=117, // has to be before languages.apachecon resolver
+    resource="resources/mime-resolver.xml"
+)
 public class JSTestDriverSupport {
 
     private static JSTestDriverSupport def;
