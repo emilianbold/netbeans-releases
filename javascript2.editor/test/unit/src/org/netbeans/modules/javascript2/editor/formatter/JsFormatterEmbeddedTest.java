@@ -125,8 +125,11 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
     }
 
-//    @RandomlyFails
-//    public void testEmbeddedMultipleSections3() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedMultipleSections3.tpl", new IndentPrefs(4,4));
-//    }
+    public void testEmbeddedMultipleSections3() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedMultipleSections3.tpl", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedMultipleSections4() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedMultipleSections4.php", new IndentPrefs(4,4));
+    }
 }

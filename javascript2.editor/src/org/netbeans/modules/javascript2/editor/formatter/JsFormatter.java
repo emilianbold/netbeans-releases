@@ -64,6 +64,7 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -266,7 +267,7 @@ public class JsFormatter implements Formatter {
                             }
                             formatContext.indentLine(
                                     indentationStart.getOffset(), indentationSize,
-                                    checkIndentation(doc, token, formatContext, context, indentationSize));
+                                    checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize));
                         }
                     }
                 }
@@ -636,9 +637,10 @@ public class JsFormatter implements Formatter {
     }
 
     // FIXME can we movet his to FormatContext ?
-    private Indentation checkIndentation(BaseDocument doc, FormatToken token,
+    private Indentation checkIndentation(BaseDocument doc, FormatToken token, FormatToken indentationEnd,
             FormatContext formatContext, Context context, int indentationSize) {
 
+        assert indentationEnd != null && !indentationEnd.isVirtual() : indentationEnd;
         assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
         // this: (token.getKind() != FormatToken.Kind.SOURCE_START
         // && formatContext.getDocumentOffset(token.getOffset()) >= 0)
@@ -647,10 +649,16 @@ public class JsFormatter implements Formatter {
         if ((token.getKind() != FormatToken.Kind.SOURCE_START && formatContext.getDocumentOffset(token.getOffset()) >= 0)
                 || (context.startOffset() <= 0 && !formatContext.isEmbedded())) {
 
+            // we don't want to touch lines starting with other language
+            // it is a bit heuristic but we can't do much
+            // see embeddedMultipleSections3.tpl and embeddedMultipleSections4.php
+            if (formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(indentationEnd.getText().toString())) {
+                return Indentation.FORBIDDEN;
+            }
             return Indentation.ALLOWED;
         }
 
-        // no source start indentation in embedded code
+        // we are sure this is SOURCE_START - no source start indentation in embedded code
         if (formatContext.isEmbedded()) {
             return Indentation.FORBIDDEN;
         }
