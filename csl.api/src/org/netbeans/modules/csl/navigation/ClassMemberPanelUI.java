@@ -231,12 +231,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private Map<FileObject, Integer> positionRequests = new WeakHashMap<FileObject, Integer>();
 
     public void selectElementNode(final ParserResult info, final int offset) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ElementNode root = getRootNode();
-                if ( root == null ) {
-                    return;
-                }
+        final ElementNode root = getRootNode();
+        if ( root == null ) {
+            return;
+        }
         FileObject rootFo = root.getFileObject();
         FileObject sourceFo = info.getSnapshot().getSource().getFileObject();
         if (sourceFo != null && !sourceFo.equals(rootFo)) {
@@ -245,24 +243,35 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 positionRequests.put(sourceFo, offset);
             }
         } else {
-            ElementNode node = root.getMimeRootNodeForOffset(info, offset);
-            doSelectNodes(node);
+            doSelectNodes(info, null, offset);
         }
     }
     
-    private void doSelectNodes(final ElementNode node) {
+    private void doSelectNodes(final ParserResult info, final BaseDocument bd, final int offset) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Node[] selectedNodes = manager.getSelectedNodes();
-                if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
-                    try {
-                        manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
-                    } catch (PropertyVetoException propertyVetoException) {
-                        Exceptions.printStackTrace(propertyVetoException);
-                    }
-                }
+                doSelectNodes0(info, bd, offset);
             }
         });
+    }
+    
+    private void doSelectNodes0(ParserResult info, BaseDocument bd, int offset) {
+        ElementNode node;
+        if (info != null) {
+            node = getRootNode().getMimeRootNodeForOffset(info, offset);
+        } else if (bd != null) {
+            node = getRootNode().getMimeRootNodeForOffset(bd, offset);
+        } else {
+            return;
+        }
+        Node[] selectedNodes = manager.getSelectedNodes();
+        if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
+            try {
+                manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
+            } catch (PropertyVetoException propertyVetoException) {
+                Exceptions.printStackTrace(propertyVetoException);
+            }
+        }
     }
 
     public void refresh( final StructureItem description, final FileObject fileObject, 
@@ -319,14 +328,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
 
-                    ElementNode root = getRootNode();
-                    Integer offset;
+                    final ElementNode root = getRootNode();
+                    final Integer offset;
                     synchronized (ClassMemberPanelUI.this) {
                         offset = positionRequests.remove(fileObject);    
                     }
                     if (offset != null) {
-                        ElementNode node = root.getMimeRootNodeForOffset(bd, offset);
-                        doSelectNodes(node);
+                        doSelectNodes(null, bd, offset);
                     }
                 }
 
