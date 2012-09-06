@@ -95,8 +95,8 @@ public final class FormatContext {
 
         regions = new ArrayList<Region>(context.indentRegions().size());
         for (Context.Region region : context.indentRegions()) {
-            regions.add(new Region(region.getStartOffset(), region.getEndOffset()));
-        }
+            regions.add(new Region(region));
+            }
 
         dumpRegions();
 
@@ -230,58 +230,64 @@ public final class FormatContext {
         return embedded;
     }
 
-    public int getEmbeddingIndent(int offset) {
+    public int getEmbeddingIndent(FormatTokenStream stream, FormatToken token) {
         if (!embedded) {
             return 0;
         }
 
-        int docOffset = snapshot.getOriginalOffset(offset);
+        int docOffset = snapshot.getOriginalOffset(token.getOffset());
         if (docOffset < 0) {
             return 0;
         }
 
         Region start = null;
+        int i = 0;
         for (Region region : regions) {
             if (docOffset >= region.getOriginalStart() && docOffset < region.getOriginalEnd()) {
                 start = region;
                 break;
             }
+            i++;
         }
-        if (start != null) {
+        if (start != null && start.getInitialIndentation() < 0) {
             try {
-                /*
-                 * If the lineStart is going to be in different region (this
-                 * might happen when another embedding in JS) we move to that
-                 * region and we're getting the indent from the start of that
-                 * region.
-                 */
-                int lineStart = context.lineStartOffset(start.getOriginalStart());
-                while (start != null && lineStart < start.getOriginalStart()) {
-
-                    Region previousStart = null;
-                    for (Region region : regions) {
-                        if (lineStart >= region.getOriginalStart() && lineStart < region.getOriginalEnd()) {
-                            previousStart = region;
+                // this is bit hacky
+                boolean nonEmpty = false;
+                FormatToken startToken = stream.getToken(
+                        snapshot.getEmbeddedOffset(start.getOriginalStart()));
+                if (startToken != null) {
+                    FormatToken previous = startToken.previous();
+                    while (previous != null) {
+                        if (!previous.isVirtual()) {
+                            if (getDocumentOffset(previous.getOffset()) >= 0) {
+                                // there might be zero real tokens between regions
+                                // in case these are not joined
+                                nonEmpty = startToken == FormatTokenStream.getNextNonVirtual(previous);
+                                break;
+                            }
+                            nonEmpty = previous.getKind() != FormatToken.Kind.WHITESPACE
+                                    && previous.getKind() != FormatToken.Kind.EOL;
+                        }
+                        if (nonEmpty) {
                             break;
                         }
+                        previous = previous.previous();
                     }
-                    if (previousStart != null) {
-                        lineStart = context.lineStartOffset(previousStart.getOriginalStart());
-                    }
-                    start = previousStart;
                 }
-                return context.lineIndent(lineStart)
-                        + IndentUtils.indentLevelSize(getDocument());
+                if (nonEmpty && i > 0) {
+                    start.setInitialIndentation(regions.get(i - 1).getInitialIndentation());
+                } else {
+                    // for case like <script>\nfoo();\n</script>
+                    // we get the inital indentation from already indented
+                    // <script> line
+                    start.setInitialIndentation(context.lineIndent(context.lineStartOffset(start.getContextRegion().getStartOffset()))
+                            + IndentUtils.indentLevelSize(getDocument()));
+                }
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
         }
-        try {
-            return context.lineIndent(context.lineStartOffset(docOffset));
-        } catch (BadLocationException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        return 0;
+        return start != null ? start.getInitialIndentation() : 0;
     }
 
     public BaseDocument getDocument() {
@@ -342,9 +348,14 @@ public final class FormatContext {
         replace(voffset, oldString.length(), newString);
     }
 
-    public void replace(int voffset, int length, String newString) {
+    public void replace(int voffset, int vlength, String newString) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
+            return;
+        }
+        int length = computeLength(voffset, vlength);
+        if (length <= 0) {
+            insert(voffset, newString);
             return;
         }
 
@@ -367,9 +378,13 @@ public final class FormatContext {
         }
     }
 
-    public void remove(int voffset, int length) {
+    public void remove(int voffset, int vlength) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
+            return;
+        }
+        int length = computeLength(voffset, vlength);
+        if (length <= 0) {
             return;
         }
 
@@ -385,6 +400,20 @@ public final class FormatContext {
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
+    }
+
+    // TODO would be better to hadle on upper levels
+    private int computeLength(int voffset, int length) {
+        if (!embedded) {
+            return length;
+        }
+
+        for (int i = 0; i < length; i++) {
+            if (getDocumentOffset(voffset + i) < 0) {
+                return i;
+            }
+        }
+        return length;
     }
 
     public static class LineWrap {
@@ -416,13 +445,22 @@ public final class FormatContext {
 
     private static class Region {
 
+        private final Context.Region contextRegion;
+
         private final int originalStart;
 
         private int originalEnd;
 
-        public Region(int originalStart, int originalEnd) {
-            this.originalStart = originalStart;
-            this.originalEnd = originalEnd;
+        private int initialIndentation = -1;
+
+        public Region(Context.Region contextRegion) {
+            this.contextRegion = contextRegion;
+            this.originalStart = contextRegion.getStartOffset();
+            this.originalEnd = contextRegion.getEndOffset();
+        }
+
+        public Context.Region getContextRegion() {
+            return contextRegion;
         }
 
         public int getOriginalStart() {
@@ -435,6 +473,14 @@ public final class FormatContext {
 
         public void setOriginalEnd(int originalEnd) {
             this.originalEnd = originalEnd;
+        }
+
+        public int getInitialIndentation() {
+            return initialIndentation;
+        }
+
+        public void setInitialIndentation(int initialIndentation) {
+            this.initialIndentation = initialIndentation;
         }
     }
 }
