@@ -62,7 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
  * Returns libraries from http://code.google.com/apis/libraries/devguide.html#Libraries
  * Hand written snapshot of these files is stored in resources/googlecdn.txt
  */
-@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
+//@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class GoogleLibrariesProvider implements LibraryProvider<LibraryImplementation> {
 
     @Override

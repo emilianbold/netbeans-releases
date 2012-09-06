@@ -120,7 +120,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         </folder>
     </folder>
 
-    <folder name="org-netbeans-api-project-libraries">
+    <!--<folder name="org-netbeans-api-project-libraries">
         <folder name="LibraryTypeProviders">
             <file name="javascript_library_provider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
@@ -128,7 +128,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="345"/>
             </file>
         </folder>
-    </folder>
+    </folder> -->
 
     <folder name="Projects">
         <folder name="org.netbeans.modules.web.clientproject">
