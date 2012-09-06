@@ -105,7 +105,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
     @Override
     public void visitArrayExpression(ArrayExpression visitedArray) {
         final ClassNode visitedType = visitedArray.getElementType();
-        final String visitedName = removeParentheses(visitedType.getName());
+        final String visitedName = ElementUtils.getTypeName(visitedType);
 
         if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
             ASTNode currentNode = FindTypeUtils.findCurrentNode(path, doc, cursorOffset);
@@ -281,22 +281,22 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     @Override
     public void visitConstructor(ConstructorNode constructor) {
-        VariableScope variableScope = constructor.getVariableScope();
-        if (leaf instanceof Variable) {
-            String name = ((Variable) leaf).getName();
-            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
-                return;
-            }
-        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
-            String name = ((ConstantExpression) leaf).getText();
-            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
-                return;
-            }
-        }
-
         if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
             addConstructorOccurrences(constructor, (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
         } else {
+            final VariableScope variableScope = constructor.getVariableScope();
+            if (leaf instanceof Variable) {
+                String name = ((Variable) leaf).getName();
+                if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                    return;
+                }
+            } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+                String name = ((ConstantExpression) leaf).getText();
+                if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                    return;
+                }
+            }
+
             if (leaf instanceof ConstructorNode) {
                 if (Methods.isSameConstructor(constructor, (ConstructorNode) leaf)) {
                     occurrences.add(constructor);
@@ -340,7 +340,9 @@ public final class VariableScopeVisitor extends TypeVisitor {
         // is on "String" type, but not if the caret location is on ArrayList
          if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
              ClassNode findingNode = (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset);
-             if (!ElementUtils.getNameWithoutPackage(call).equals(findingNode.getNameWithoutPackage())) {
+             final String callName = ElementUtils.getNameWithoutPackage(call);
+             final String findingNodeName = ElementUtils.getNameWithoutPackage(findingNode);
+             if (!callName.equals(findingNodeName)) {
                 addOccurrences(call.getType(), findingNode);
              }
         } else {
@@ -367,8 +369,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
     }
 
     private void addClassExpressionOccurrences(ClassExpression clazz, ClassNode findingNode) {
-        final String visitedName = removeParentheses(clazz.getType().getName());
-        final String findingName = removeParentheses(findingNode.getName());
+        final String visitedName = ElementUtils.getTypeName(clazz);
+        final String findingName = ElementUtils.getTypeName(findingNode);
         if (visitedName.equals(findingName)) {
             occurrences.add(clazz);
         }
@@ -383,7 +385,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
     }
 
     private void addClassNodeOccurrences(ClassNode visitedNode, ClassNode findingNode) {
-        final String findingName = findingNode.getName();
+        final String findingName = ElementUtils.getTypeName(findingNode);
         final ClassNode superClass = visitedNode.getUnresolvedSuperClass(false);
         final ClassNode[] interfaces = visitedNode.getInterfaces();
 
@@ -464,9 +466,9 @@ public final class VariableScopeVisitor extends TypeVisitor {
     }
 
     private void addOccurrences(ClassNode visitedType, ClassNode findingType) {
-        final String visitedTypeName = removeParentheses(visitedType.getName());
-        final String findingName = removeParentheses(findingType.getName());
-        final String findingNameWithoutPkg = removeParentheses(findingType.getNameWithoutPackage());
+        final String visitedTypeName = ElementUtils.getTypeName(visitedType);
+        final String findingName = ElementUtils.getTypeName(findingType);
+        final String findingNameWithoutPkg = ElementUtils.getTypeNameWithoutPackage(findingType);
 
         if (visitedTypeName.equals(findingName)) {
             occurrences.add(new FakeASTNode(visitedType, findingNameWithoutPkg));
@@ -475,7 +477,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
     }
 
     private void addGenericsOccurrences(ClassNode visitedType, ClassNode findingNode) {
-        final String findingTypeName = removeParentheses(findingNode.getName());
+        final String findingTypeName = ElementUtils.getTypeName(findingNode);
         final GenericsType[] genericsTypes = visitedType.getGenericsTypes();
 
         if (genericsTypes != null && genericsTypes.length > 0) {
