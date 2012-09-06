@@ -85,7 +85,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         TIMEOUT,
         KEEP_ALIVE_INTERVAL
     ));
-    private static final int DEFAULT_PORT = 22;
+    static final int DEFAULT_PORT = 22;
     static final int DEFAULT_TIMEOUT = 30;
     static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/var/www"; // NOI18N

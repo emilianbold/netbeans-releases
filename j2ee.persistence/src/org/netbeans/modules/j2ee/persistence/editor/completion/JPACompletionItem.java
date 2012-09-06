@@ -1041,6 +1041,7 @@ public abstract class JPACompletionItem implements CompletionItem {
 
                         js.runUserActionTask(new Task<CompilationController>() {
 
+                            @Override
                             public void run(CompilationController cc) throws Exception {
                                 cc.toPhase(JavaSource.Phase.RESOLVED);
                                 Element element = elemHandle.resolve(cc);
@@ -1130,6 +1131,7 @@ public abstract class JPACompletionItem implements CompletionItem {
             this.displayText = displayText;
         }
 
+        @Override
         public int getSortPriority() {
             if (displayText.startsWith("--")) // NOI18N
             // The entry such as "--Enter your custom class--" should be the last 
@@ -1149,14 +1151,17 @@ public abstract class JPACompletionItem implements CompletionItem {
             }
         }
 
+        @Override
         public CharSequence getSortText() {
             return displayText;
         }
 
+        @Override
         public CharSequence getInsertPrefix() {
             return displayText;
         }
 
+        @Override
         public String getDisplayText() {
             return displayText;
         }

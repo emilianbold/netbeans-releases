@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@ServiceProvider(service=SiteTemplateImplementation.class, position=400)
+@ServiceProvider(service=SiteTemplateImplementation.class, position=500)
 public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());

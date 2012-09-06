@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.Type;
+
 
 /**
  * Represents simple jsDoc elements without any additional type, description etc.
@@ -49,7 +54,7 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SimpleElement extends JsDocElementImpl {
+public class SimpleElement extends JsDocElementImpl implements DocParameter {
 
     private SimpleElement(JsDocElementType type) {
         super(type);
@@ -61,6 +66,31 @@ public class SimpleElement extends JsDocElementImpl {
      */
     public static SimpleElement create(JsDocElementType type) {
         return new SimpleElement(type);
+    }
+
+    @Override
+    public DocIdentifier getParamName() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return false;
+    }
+
+    @Override
+    public String getParamDescription() {
+        return "";
+    }
+
+    @Override
+    public List<Type> getParamTypes() {
+        return getParamTypes();
     }
 
 }

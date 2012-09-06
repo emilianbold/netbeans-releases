@@ -155,7 +155,7 @@ public abstract class JsDocumentationHolder {
     public boolean isDeprecated(Node node) {
         JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
         if (comment != null) {
-            return comment.isDeprecated();
+            return comment.getDeprecated() != null;
         }
         return false;
     }

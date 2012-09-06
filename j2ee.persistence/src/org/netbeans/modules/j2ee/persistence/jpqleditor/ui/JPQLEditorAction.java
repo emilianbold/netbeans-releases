@@ -76,7 +76,7 @@ public class JPQLEditorAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         if ((activatedNodes != null) && (activatedNodes.length == 1)) {
             if (activatedNodes[0] != null) {
-                DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+                DataObject data = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
                 if (data != null) {
                     FileObject pXml = data.getPrimaryFile();
                     Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
@@ -88,10 +88,12 @@ public class JPQLEditorAction extends NodeAction {
         return false;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(JPQLEditorAction.class, "CTL_JPQLEditorAction");
     }

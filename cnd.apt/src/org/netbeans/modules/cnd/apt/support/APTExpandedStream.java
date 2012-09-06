@@ -57,6 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
 import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
@@ -204,6 +205,16 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         paramsRParen = null;
         
         if (!macro.isFunctionLike()) {
+            TokenStream body = macro.getBody();
+            Token toCheck = body.nextToken();
+            boolean needsSubstitution = false;
+            while (!APTUtils.isEOF(toCheck)) {
+                if (toCheck.getType() == APTTokenTypes.DBL_SHARP) {
+                    needsSubstitution = true;
+                    break;
+                }
+                toCheck = body.nextToken();
+            }
             // for object-like macro the body doesn't need any parameter expandings
             // use it as is in macro
             out = new APTCommentsFilter(macro.getBody());
@@ -217,6 +228,10 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     // has body => restore original eaten by the nextToken call above
                     out = new APTCommentsFilter(macro.getBody());
                 }
+            }
+            if (needsSubstitution) {
+                List<APTToken> substParamsList = subsituteParams(macro, Collections.<List<APTToken>>emptyList(), callback, isExpandingPPExpression());
+                out = new ListBasedTokenStream(substParamsList);
             }
         } else {
             // create wrapper for function-like macro:
@@ -508,6 +523,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
     }
 
     private static Map<CharSequence, List<APTToken>> createParamsMap(APTMacro macro, List<List<APTToken>> params) {
+        if (!macro.isFunctionLike()) {
+            return Collections.emptyMap();
+        }
         Map<CharSequence, List<APTToken>> map = new HashMap<CharSequence, List<APTToken>>();
         Collection<APTToken> macroParams = macro.getParams();
         int numInList = params.size();

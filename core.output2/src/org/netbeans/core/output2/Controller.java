@@ -64,7 +64,9 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
@@ -188,6 +190,15 @@ public class Controller {
     }
 
     void changeFont(Font font) {
+        updateFontPreferences(font);
+        for (OutputTab tab : getAllTabs()) {
+            if (allMonospaced || !tab.getOutputPane().isWrapped()) {
+                tab.getOutputPane().setViewFont(currentFont);
+            }
+        }
+    }
+
+    private void updateFontPreferences(Font font) {
         currentFont = font == null ? getDefaultFont() : font;
         allMonospaced = isDefaultFontType(currentFont);
         if (allMonospaced) {
@@ -198,9 +209,13 @@ public class Controller {
         NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE, currentFont.getSize());
         NbPreferences.forModule(Controller.class).putInt(KEY_FONTSTYLE, currentFont.getStyle());
         NbPreferences.forModule(Controller.class).put(KEY_FONTNAME, currentFont.getName());
-        for (OutputTab tab : getAllTabs()) {
-            if (allMonospaced || !tab.getOutputPane().isWrapped()) {
-                tab.getOutputPane().setViewFont(currentFont);
+    }
+
+    public void updateOptions(OutputOptions options) {
+        updateFontPreferences(options.getFont());
+        for (OutputTab ot : getAllTabs()) {
+            if (ot.getIO().getIOContainer().equals(IOContainer.getDefault())) {
+                ot.getIO().getOptions().assign(options);
             }
         }
     }

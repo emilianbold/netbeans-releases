@@ -59,38 +59,36 @@ NetBeans_PresetMenu.show = function(presets) {
     this._initSelectionMode();
     this._presets = presets;
     this._putPresets(this._presets);
-}
+};
 NetBeans_PresetMenu.hide = function() {
     window.close();
-}
+};
 NetBeans_PresetMenu.resetPage = function() {
     var that = this;
     NetBeans.resetPageSize(function() {
         that.hide();
     });
-}
+};
 NetBeans_PresetMenu.resizePage = function(preset) {
     var that = this;
     NetBeans.resizePage(preset, function() {
         that.hide();
     });
-}
+};
 /*** ~Private ***/
 // menu init
 NetBeans_PresetMenu._init = function() {
-    if (this._container != null) {
+    if (this._container !== null) {
         return;
     }
     this._container = document.getElementById('presetMenu');
     this._registerEvents();
-}
+};
 // selection mode init
 NetBeans_PresetMenu._initSelectionMode = function() {
-    var selectionDiv = document.getElementById('selectionModeDiv');
-    selectionDiv.style.display = NetBeans.getSynchronizeSelection() ? 'block' : 'none';
     var selectionMode = document.getElementById('selectionModeCheckBox');
     selectionMode.checked = NetBeans.getSelectionMode();
-}
+};
 // register events
 NetBeans_PresetMenu._registerEvents = function() {
     var that = this;
@@ -106,7 +104,7 @@ NetBeans_PresetMenu._registerEvents = function() {
     document.getElementById('selectionModeMenu').addEventListener('click', function() {
         that._updateSelectionMode(true);
     }, false);
-}
+};
 // clean and put presets to the menu
 NetBeans_PresetMenu._putPresets = function() {
     var menu = document.getElementById('menuPresets');
@@ -148,12 +146,12 @@ NetBeans_PresetMenu._putPresets = function() {
         menu.appendChild(item);
         menu.appendChild(document.createElement('hr'));
     }
-}
+};
 // show preset customizer
 NetBeans_PresetMenu._showPresetCustomizer = function() {
     NetBeans.showPresetCustomizer();
     this.hide();
-}
+};
 
 NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
     var checkbox = document.getElementById('selectionModeCheckBox');
@@ -163,7 +161,7 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
     var selectionMode = checkbox.checked;
     NetBeans.setSelectionMode(selectionMode);
     this.hide();
-}
+};
 
 // run!
 window.addEventListener('load', function() {

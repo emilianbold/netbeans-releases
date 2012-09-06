@@ -47,9 +47,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
+import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress2;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -139,6 +141,87 @@ public final class ProgressUtils {
         }
     }
 
+    /**
+     * Runs operation out of the event thread, blocking the whole UI. When
+     * operation takes more than 1s, the method first displays wait cursor.
+     * If operation will not end in 3s interval, modal dialog with
+     * progress is shown up.
+     * If operation is marked with {@link org.openide.util.Cancellable}
+     * interface, cancel button is part of dialog and can be used 
+     * to interrupt the operation.
+     * 
+     * @param operation  task to perform in the background
+     * @param dialogTitle dialog title
+     * @param progress  progress handle. Do not invoke any methods before
+     *                  passing to this method. Start/progress/finish it
+     *                  only in {@code operation}
+     * @param includeDetailLabel  show progress detail label in the dialog
+     * @param waitCursorAfter amount of time, in milliseconds, after which wait
+     *                        cursor is shown
+     * @param dialogAfter amount of time, in milliseconds, after which dialog
+     *                    is shown
+     * 
+     * @since 1.30
+     */
+    public static void runOffEventThreadWithProgressDialog(
+            final Runnable operation,
+            final String dialogTitle, 
+            final ProgressHandle progress, 
+            final boolean includeDetailLabel,
+            int waitCursorAfter,
+            int dialogAfter)
+    {
+        if (PROVIDER instanceof Progress2) {
+            Progress2 p = (Progress2) PROVIDER;
+            p.runOffEventThreadWithProgressDialog(operation, dialogTitle, progress, includeDetailLabel, waitCursorAfter, dialogAfter);
+        } else {
+            PROVIDER.runOffEventDispatchThread(operation, progress.getDisplayName(),
+                    new AtomicBoolean(false),
+                    true,
+                    DISPLAY_WAIT_CURSOR_MS,
+                    DISPLAY_DIALOG_MS);
+        }
+    }
+
+    /**
+     * Runs operation out of the event thread, blocking the whole UI. When
+     * operation takes more than 1s, the method first displays wait cursor.
+     * If operation will not end up in 3s interval, modal dialog with
+     * {@code content} panel is shown.
+     * If operation is marked with {@link org.openide.util.Cancellable} 
+     * interface, cancel button is part of dialog and can be used to 
+     * interrupt the operation.
+     * 
+     * @param operation  task to perform in the background
+     * @param dialogTitle dialog title
+     * @param content  panel to be shown in the dialog
+     * @param waitCursorAfter amount of time, in milliseconds, after which wait
+     *                        cursor is shown
+     * @param dialogAfter amount of time, in milliseconds, after which dialog
+     *                    is shown
+     * 
+     * @since 1.30
+     */
+    public static void runOffEventThreadWithCustomDialogContent(
+            final Runnable operation,
+            final String dialogTitle,
+            final JPanel content,
+            int waitCursorAfter,
+            int dialogAfter)
+    {
+        if (PROVIDER instanceof Progress2) {
+            Progress2 p = (Progress2) PROVIDER;
+            p.runOffEventThreadWithCustomDialogContent(operation, dialogTitle, content, waitCursorAfter, dialogAfter);
+        } else {
+            PROVIDER.runOffEventDispatchThread(operation, 
+                    dialogTitle, 
+                    new AtomicBoolean(false),
+                    true, 
+                    DISPLAY_WAIT_CURSOR_MS,
+                    DISPLAY_DIALOG_MS);
+        }
+    }
+    
     /**
      * Show a modal progress dialog that blocks the main window, while running
      * the passed runnable on a background thread.
@@ -249,6 +332,7 @@ public final class ProgressUtils {
     private static class Trivial implements RunOffEDTProvider {
         private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
 
+        @Override
         public void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter) {
             if (SwingUtilities.isEventDispatchThread()) {
                 Task t = WORKER.post(operation);

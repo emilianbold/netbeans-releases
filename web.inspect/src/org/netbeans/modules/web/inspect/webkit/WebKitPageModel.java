@@ -113,7 +113,12 @@ public class WebKitPageModel extends PageModel {
         DOM dom = webKit.getDOM();
         dom.addListener(domListener);
 
-        initializePage();
+        try {
+            initializePage();
+        } catch (TransportStateException tsex) {
+            // The underlying transport became invalid
+            // before the page was initialized.
+        }
     }
 
     /**
@@ -278,14 +283,26 @@ public class WebKitPageModel extends PageModel {
                             return;
                         }
                         Node.Attribute attr = node.getAttribute(attrName);
-                        String attrValue = attr.getValue();
                         DOMNode n = getNode(node.getNodeId());
                         final List<? extends org.openide.nodes.Node> selection;
-                        // attrValue == "false" is sent when the selection should be cleared only
-                        if (n == null || "false".equals(attrValue)) { // NOI18N
+                        if (n == null) {
                             selection = Collections.EMPTY_LIST;
                         } else {
-                            selection = Collections.singletonList(n);
+                            String attrValue = attr.getValue();
+                            if ("set".equals(attrValue)) { // NOI18N
+                                selection = Collections.singletonList(n);
+                            } else if ("clear".equals(attrValue)) { // NOI18N
+                                selection = Collections.EMPTY_LIST;
+                            } else {
+                                List<org.openide.nodes.Node> newSelection = new ArrayList<org.openide.nodes.Node>();
+                                newSelection.addAll(selectedNodes);
+                                if ("add".equals(attrValue)) { // NOI18N
+                                    newSelection.add(n);
+                                } else if ("remove".equals(attrValue)) { // NOI18N
+                                    newSelection.remove(n);
+                                }
+                                selection = newSelection;
+                            }
                         }
                         RP.post(new Runnable() {
                             @Override
@@ -293,7 +310,7 @@ public class WebKitPageModel extends PageModel {
                                 if (selected) {
                                     setSelectedNodes(selection);
                                 } else {
-                                    setHighlightedNodes(selection);
+                                    setHighlightedNodesImpl(selection);
                                 }
                             }
                         });
@@ -423,6 +440,12 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void setHighlightedNodes(List<? extends org.openide.nodes.Node> nodes) {
+        if (isSynchronizeSelection()) {
+            setHighlightedNodesImpl(nodes);
+        }
+    }
+
+    void setHighlightedNodesImpl(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
             if (highlightedNodes.equals(nodes)) {
                 return;
@@ -448,6 +471,10 @@ public class WebKitPageModel extends PageModel {
             this.selectionMode = selectionMode;
         }
         firePropertyChange(PROP_SELECTION_MODE, !selectionMode, selectionMode);
+        // Reset highlighted nodes
+        if (!selectionMode) {
+            setHighlightedNodesImpl(Collections.EMPTY_LIST);
+        }
     }
 
     @Override
@@ -564,11 +591,11 @@ public class WebKitPageModel extends PageModel {
         }
 
         private boolean shouldSynchronizeSelection() {
-            return isSynchronizeSelection() && isSelectionMode();
+            return isSelectionMode();
         }
 
         private boolean shouldSynchronizeHighlight() {
-            return isSynchronizeSelection();
+            return true;
         }
 
         private void updateSynchronization() {
@@ -635,7 +662,7 @@ public class WebKitPageModel extends PageModel {
         }
 
         private synchronized void updateSelectionMode() {
-            boolean selectionMode = isSelectionMode() && isSynchronizeSelection();
+            boolean selectionMode = isSelectionMode();
             
             // PENDING notify Chrome extension that the selection mode has changed
 

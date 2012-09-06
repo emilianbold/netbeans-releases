@@ -56,4 +56,20 @@ public class GoToDeclarationTest extends JsTestBase {
     public void testIssue209941_01() throws Exception {
         checkDeclaration("testfiles/coloring/issue209941.js", "this.globalNot^ify();", "    this.^globalNotify = function() {");
     }
+    
+    public void testBasicNavigation_01() throws Exception {
+        checkDeclaration("testfiles/model/variables01.js", "var address = new A^ddress(\"Prague\", \"Czech Republic\", 15000)", "function ^Address (town, state, number) {");
+    }
+    
+    public void testBasicNavigation_02() throws Exception {
+        checkDeclaration("testfiles/model/variables01.js", "formatter.println(addr^ess.print());", "var ^address = new Address(\"Prague\", \"Czech Republic\", 15000)");
+    }
+    
+    public void testBasicNavigation_03() throws Exception {
+        checkDeclaration("testfiles/model/variables01.js", "formatter.println(\"MyApp.country: \" + MyApp.coun^try);", "    MyApp.^country = state; ");
+    }
+
+    public void testIssue176581() throws Exception {
+        checkDeclaration("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", "function ^foo() { }");
+    }
 }

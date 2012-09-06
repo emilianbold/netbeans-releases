@@ -78,6 +78,8 @@ public class BrowserConsoleLogger implements Console.Listener {
     private Project project;
     private InputOutput io;
     private Color colorStdBrighter;
+    /** The last logged message. */
+    private ConsoleMessage lastMessage;
     //private Color colorErrBrighter;
 
     public BrowserConsoleLogger(Project project) {
@@ -107,6 +109,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     @Override
     public void messageAdded(ConsoleMessage message) {
         try {
+            lastMessage = message;
             logMessage(message);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -125,7 +128,11 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     @Override
     public void messageRepeatCountUpdated(int count) {
-        // TODO
+        try {
+            logMessage(lastMessage);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");

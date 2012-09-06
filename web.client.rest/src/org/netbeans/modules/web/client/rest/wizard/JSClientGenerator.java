@@ -535,7 +535,7 @@ class JSClientGenerator {
                 }
                 String nameAttribute = modelGenerator.getDisplayNameAlias();
                 if ( !generator.useUi()){
-                    if ( !nameAttribute.equals( idAttribute )){
+                    if ( nameAttribute != null && !nameAttribute.equals( idAttribute )){
                         myTmplDetails.append("<label>Name:</label>\n");                 // NOI18N
                         myTmplDetails.append("<input type='text' id='");                // NOI18N
                         myTmplDetails.append(nameAttribute);

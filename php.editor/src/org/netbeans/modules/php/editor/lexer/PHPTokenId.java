@@ -139,7 +139,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_MINUS(null, "php"),
     //	PHP_IS_EQUAL(null, "php"),
     //	PHP_UNSET_CAST(null, "php"),
-    PHP_HALT_COMPILER(null, "php"), //NOI18N
+    PHP_HALT_COMPILER(null, "phpopenclose"), //NOI18N
     PHP_INCLUDE_ONCE(null, "keyword"), //NOI18N
     //	PHP_BAD_CHARACTER(null, "php"),
     //	PHP_OBJECT_CAST(null, "php"),

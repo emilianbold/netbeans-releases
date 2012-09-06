@@ -147,17 +147,6 @@ public class Model {
         prefs.putBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, show);
     }
     
-
-    String getRemoveTrailingWhitespace() {
-        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        return prefs.get(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "never");
-    }
-
-    void setRemoveTrailingWhitespace(String value) {
-        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, value);
-    }
-    
     String getEditorSearchType() {
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         return prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default");

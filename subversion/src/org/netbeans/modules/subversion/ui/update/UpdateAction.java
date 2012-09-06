@@ -245,10 +245,11 @@ public class UpdateAction extends ContextAction {
     }
 
     private static void openResults(final List<FileUpdateInfo> resultsList, final SVNUrl url, final String contextDisplayName) {
+        final UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
+        final VersioningOutputManager vom = VersioningOutputManager.getInstance();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
-                VersioningOutputManager vom = VersioningOutputManager.getInstance();
                 vom.addComponent(url.toString() + "-UpdateExecutor", results); // NOI18N
             }
         });

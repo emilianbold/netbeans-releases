@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.javascript2.editor.navigation;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -102,12 +107,16 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                     }
                 }
                 JsObject parent = object.getParent();
-                if (parent != null) {
+                if (parent != null && parent.getJSKind() != Kind.FILE && object.getJSKind() != Kind.PARAMETER) {
                     Collection<? extends Type> types = parent.getAssignmentForOffset(caretPosition);
                     for (Type type : types) {
                         JsObject declaration = ModelUtils.findJsObjectByName(model, type.getType());
                         if (declaration != null && !object.getName().equals(declaration.getName())) {
+                            JsObject prototype = declaration.getProperty("prototype");
                             declaration = declaration.getProperty(object.getName());
+                            if (declaration == null && prototype != null) {
+                                declaration = prototype.getProperty(object.getName());
+                            }
                         }
                         if (declaration != null) {
                             range2Attribs.put(declaration.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
@@ -118,6 +127,12 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                                     return;
                                 }
                             }
+                        }
+                    }
+                    if(types.isEmpty()) {
+                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), ModelUtils.createFQN(parent), object.getName(), caretPosition);
+                        for(OffsetRange range: usages) {
+                            range2Attribs.put(range, ColoringAttributes.MARK_OCCURRENCES);
                         }
                     }
                 }
@@ -141,4 +156,30 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         cancelled = true;
     }
     
+    private List<OffsetRange> findMemberUsage(JsObject object, String fqnType, String property, int offset) {
+        List<OffsetRange> result = new ArrayList<OffsetRange>();
+        String fqn = fqnType;
+        if (fqn.endsWith(".prototype")) { // NOI18N
+            fqn = fqn.substring(0, fqn.length() - 10);
+        }
+        Collection<? extends TypeUsage> assignments = object.getAssignments();
+        if(!assignments.isEmpty()) {
+            for(TypeUsage type : assignments) {
+                if(type.getType().equals(fqn)) {
+                    JsObject member = object.getProperty(property);
+                    if(member != null) {
+                        result.add(member.getDeclarationName().getOffsetRange());
+                        List<Occurrence> occurrences = member.getOccurrences();
+                        for (Occurrence occurence : occurrences) {
+                            result.add(occurence.getOffsetRange());
+                        }
+                    }
+                }
+            }
+        }
+        for(JsObject child : object.getProperties().values()) {
+            result.addAll(findMemberUsage(child, fqn, property, offset));
+        }
+        return result;
+    }
 }

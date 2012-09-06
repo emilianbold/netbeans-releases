@@ -5,7 +5,6 @@ PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
-PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Baz                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
@@ -46,6 +45,7 @@ PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 ------------------------------------
@@ -199,7 +199,9 @@ CLASS      MagicMethods                    [PUBLIC]   issue196714.php
 CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
+CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
+CLASS      MyNewClass123                   [PUBLIC]   Foo
 CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
 CLASS      NewClass                        [PUBLIC]   issue171232_01.php
@@ -224,6 +226,7 @@ CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
+CLASS      Test                            [PUBLIC]   test216119.php
 CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php

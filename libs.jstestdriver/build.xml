@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="libs.jstestdriver">
+    <description>Builds, tests, and runs the project libs.jstestdriver</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="ext-compile">
+        <mkdir dir="build/extclasses"/>
+        <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6">
+            <classpath>
+                <path path="${module.classpath}"/>
+                <path location="${cluster}/${module.jar}"/>
+                <path path="${extsrc.cp.extra}"/>
+            </classpath>
+        </javac>
+        <copy todir="build/extclasses">
+          <fileset dir="extsrc" excludes="${jar-excludes}"/>
+        </copy>
+    </target>
+
+    <target name="ext-jar" depends="ext-compile">
+        <mkdir dir="build/external"/>
+        <jar jarfile="build/external/libs.jstestdriver-ext.jar" compress="false">
+            <fileset dir="build/extclasses"/>
+        </jar>
+    </target>
+
+    <target name="build-wrapper" depends="netbeans,ext-jar"/>
+
+
+</project>

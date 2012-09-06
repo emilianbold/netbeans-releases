@@ -225,9 +225,6 @@ public class PageInspectorImpl extends PageInspector {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (!selectionMode) {
-                                pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
-                            }
                             pageModel.setSelectionMode(selectionMode);
                         }
                     });
@@ -391,9 +388,6 @@ public class PageInspectorImpl extends PageInspector {
                     if (MESSAGE_SELECTION_MODE.equals(type)) {
                         boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
                         pageModel.setSelectionMode(selectionMode);
-                        if (!selectionMode) {
-                            pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
-                        }
                     }
                 } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())

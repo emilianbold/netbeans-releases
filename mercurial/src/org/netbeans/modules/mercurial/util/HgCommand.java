@@ -2079,7 +2079,7 @@ public class HgCommand {
                         handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
                     } else if (isErrorNoResponse(list.get(list.size() - 1))) {
                         handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_RESPONSE_ERR"), logger);
-                    } else if (isErrorAbort(list.get(list.size() - 1))) {
+                    } else if (isErrorAbort(list.get(0)) || isErrorAbort(list.get(list.size() - 1))) {
                         if ((credentials = handleAuthenticationError(list, target, rawUrl, credentials == null ? "" : credentials.getUserName(), new UserCredentialsSupport(), HG_CLONE_CMD)) != null) { //NOI18N
                             // try again with new credentials
                             retry = true;

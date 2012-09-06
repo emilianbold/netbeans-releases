@@ -93,7 +93,7 @@ public class WebClientLibraryManager {
     /**
      * Default relative path for libraries folder
      */
-    public static final String LIBS = "js/libs";       // NOI18N
+    public static final String LIBS = "public_html/js/libs";       // NOI18N
     
     /**
      * Library version.
