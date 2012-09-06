@@ -86,8 +86,6 @@ NetBeans_PresetMenu._init = function() {
 };
 // selection mode init
 NetBeans_PresetMenu._initSelectionMode = function() {
-    var selectionDiv = document.getElementById('selectionModeDiv');
-    selectionDiv.style.display = NetBeans.getSynchronizeSelection() ? 'block' : 'none';
     var selectionMode = document.getElementById('selectionModeCheckBox');
     selectionMode.checked = NetBeans.getSelectionMode();
 };
