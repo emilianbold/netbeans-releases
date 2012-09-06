@@ -133,7 +133,12 @@ public final class ElementUtils {
      */
     public static ClassNode getType(ASTNode node) {
         if (node instanceof ClassNode) {
-            return ((ClassNode) node);
+            ClassNode clazz = ((ClassNode) node);
+            if (clazz.getComponentType() != null) {
+                return clazz.getComponentType();
+            } else {
+                return clazz;
+            }
         } else if (node instanceof FieldNode) {
             return ((FieldNode) node).getType();
         } else if (node instanceof PropertyNode) {
@@ -278,6 +283,10 @@ public final class ElementUtils {
         // This will happened with all arrays except primitive type arrays
         if (typeName.endsWith("[]")) { // NOI18N
             typeName = typeName.substring(0, typeName.length() - 2);
+        }
+
+        if (typeName.endsWith(";")) { // NOI18N
+            typeName = typeName.substring(0, typeName.length() - 1);
         }
         return typeName;
     }
