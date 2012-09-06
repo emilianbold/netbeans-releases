@@ -250,7 +250,6 @@ public class JsCompletionItem implements CompletionProposal {
 
     static class KeywordItem extends JsCompletionItem {
         private static  ImageIcon keywordIcon = null;
-        private String description = null;
         private String keyword = null;
 
         public KeywordItem(String keyword, CompletionRequest request) {
@@ -278,13 +277,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                formatter.appendHtml(description);
-                return formatter.getText();
-
-            } else {
-                return null;
-            }
+            return null;
         }
 
         @Override

@@ -457,9 +457,9 @@ public abstract class PUCompletor {
         private String[] getMappingFilesFromProject(CompletionContext context) {
             Project enclosingProject = FileOwnerQuery.getOwner(
                     NbEditorUtilities.getFileObject(context.getDocument()));
-            //HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+            //use persistence environment when will be supported
             if (null != null) {
-                return null;//env.getAllHibernateMappings().toArray(new String[]{});
+                return null;
             } else {
                 return new String[0];
             }

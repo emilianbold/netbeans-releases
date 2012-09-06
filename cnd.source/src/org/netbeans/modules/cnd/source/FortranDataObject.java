@@ -58,8 +58,8 @@ import org.openide.windows.TopComponent;
 /** Represents a Fortran object in the Repository.
  *
  */
-@MIMEResolver.Registration(displayName="#FortranExtResolver", position=219, resource="resources/mime-resolver-ext-based-fortran.xml",
-        showInFileChooser={"#FILECHOOSER_FORTRAN_SOURCES_FILEFILTER"})
+@MIMEResolver.Registration(displayName="#FortranExtResolver", position=219, resource="resources/mime-resolver-ext-based-fortran.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_FORTRAN_SOURCES_FILEFILTER"}) // NOI18N
 public class FortranDataObject extends SourceDataObject {
 
     /** Serial version number */

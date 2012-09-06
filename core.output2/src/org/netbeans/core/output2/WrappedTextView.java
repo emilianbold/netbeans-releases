@@ -470,6 +470,9 @@ public class WrappedTextView extends View implements TabExpander {
     }
 
     private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int x, int y) {
+        if (!ExtPlainView.isLinkUndeliningEnabled(this)) {
+            return;
+        }
         int underlineStart = margin() + x;
         FontMetrics fm = g.getFontMetrics();
         int underlineEnd = underlineStart + fm.charsWidth(seg.array, charpos, lenToDraw);

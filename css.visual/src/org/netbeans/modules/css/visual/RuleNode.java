@@ -92,6 +92,9 @@ import org.openide.util.NbBundle;
 })
 public class RuleNode extends AbstractNode {
 
+    private static String COLOR_CODE_GRAY = "777777";
+    private static String COLOR_CODE_RED = "ff7777";
+    
     public static String NONE_PROPERTY_NAME = "<none>";
     
     private static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
@@ -523,25 +526,64 @@ public class RuleNode extends AbstractNode {
         private boolean isOverridden() {
             return info != null && info == DeclarationInfo.OVERRIDDEN;
         }
+        
+        private boolean isInactive() {
+            return info != null && info == DeclarationInfo.INACTIVE;
+        }
+
+        private boolean isErroneous() {
+            return info != null && info == DeclarationInfo.ERRONEOUS;
+        }
 
         @Override
         public String getHtmlDisplayName() {
             StringBuilder b = new StringBuilder();
+            
+            String color = null;
+            boolean bold = false;
+            boolean strike = false;
 
             if (isShowAllProperties()) {
-                b.append(isAddPropertyMode() ? "<font color=777777>" : "<b>"); //NOI18N
+                if(isAddPropertyMode()) {
+                    color = COLOR_CODE_GRAY;
+                } else {
+                    bold = true;
+                }
             }
-            if (isOverridden()) {
+            if(isOverridden()) {
+                strike = true;
+            }
+            if(isInactive()) {
+                color = COLOR_CODE_GRAY;
+                strike = true;
+            }
+            if(isErroneous()) {
+                color = COLOR_CODE_RED;
+            }
+
+            //render
+            if(bold) {
+                b.append("<b>");//NOI18N
+            }
+            if (strike) {
                 b.append("<s>"); //use <del>?
             }
-
+            if(color != null) {
+                b.append("<font color="); //NOI18N
+                b.append(color);
+                b.append(">"); //NOI18N
+            }
+            
             b.append(declaration.getProperty().getContent());
-
-            if (isOverridden()) {
+            
+            if(color != null) {
+                b.append("</font>"); //NOI18N
+            }
+            if (strike) {
                 b.append("</s>"); //use <del>?
             }
-            if (isShowAllProperties()) {
-                b.append(isAddPropertyMode() ? "</font>" : "</b>"); //NOI18N
+            if(bold) {
+                b.append("</b>");//NOI18N
             }
 
             return b.toString();

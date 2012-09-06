@@ -148,6 +148,9 @@ class ModelGenerator {
             myCommonModels.append(" // So isNew() is rediefined here\n");   // NOI18N
             myCommonModels.append("return this.notSynced;\n}");          // NOI18N
         }
+        else if ( myIdAttribute != null){
+            myDisplayNameAlias = myIdAttribute.getName();
+        }
           
         String sync = overrideSync( url, httpPaths , useIds); 
         if ( sync != null && sync.length()>0 ){

@@ -64,7 +64,10 @@ import org.openide.util.Parameters;
  * @author lahvac
  */
 public class BreadcrumbsController {
-    
+
+    private BreadcrumbsController() {
+    }
+
     public static void setBreadcrumbs(@NonNull Document doc, @NonNull Node root, @NonNull Node selected) {
         Parameters.notNull("doc", doc);
         Parameters.notNull("root", root);

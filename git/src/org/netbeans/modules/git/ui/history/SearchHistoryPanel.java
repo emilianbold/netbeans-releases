@@ -85,6 +85,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
 import org.netbeans.modules.git.ui.history.SummaryView.GitLogEntry;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
@@ -118,6 +119,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private int showingResults;
     private Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap;
     private List<GitLogEntry> logEntries;
+    private boolean selectFirstRevision;
+    private DiffResultsViewFactory diffViewFactory;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -145,6 +148,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.roots = roots;
         this.repository = repository;
         this.criteria = criteria;
+        this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
@@ -287,9 +291,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     summaryView.requestFocusInWindow();
                 } else {
                     if (diffView == null) {
-                        diffView = new DiffResultsView(this, filter(results));
+                        diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
+                    if (selectFirstRevision) {
+                        selectFirstRevision();
+                    }
                 }
             }
             resultsPanel.revalidate();
@@ -306,6 +313,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         enableFilters(results != null);
         revalidate();
         repaint();
+    }
+
+    private void selectFirstRevision () {
+        if (diffView != null && results != null && !results.isEmpty()) {
+            diffView.select(results.get(0));
+        }
     }
  
     final void updateActions () {
@@ -793,5 +806,21 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             ret.add(new SummaryView.GitLogEntry(repositoryRevision, this));
         }
         return ret;
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        tbDiff.setSelected(true);
+        this.selectFirstRevision = selectFirstRevision;
+        selectFirstRevision();
+    }
+
+    /**
+     * Sets the factory creating the appropriate DiffResultsView to display.
+     * @param fac factory creating the appropriate DiffResultsView to display. If null then a default factory will be created.
+     */
+    void setDiffResultsViewFactory(SearchHistoryTopComponent.DiffResultsViewFactory fac) {
+        if (fac != null) {
+            this.diffViewFactory = fac;
+        }
     }
 }

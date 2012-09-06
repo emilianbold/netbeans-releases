@@ -759,10 +759,12 @@ public class ToolTipSupport {
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
                 toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
-                toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
-                        toolTip.getBounds(),
-                        SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
-                ));
+                if (toolTip.getParent() != null) {
+                    toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
+                            toolTip.getBounds(),
+                            SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
+                    ));
+                }
                 toolTip.setVisible(true);
             }
         }

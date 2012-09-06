@@ -98,6 +98,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -540,7 +541,7 @@ class Nodes {
                 List<Node> childNodes = new ArrayList<Node>(subclasses.size());
                 
                 for (TypeDescription subclass : subclasses) {
-                    Node subNode = type2Node.get(subclass);
+                    Node subNode = new FilterNode(type2Node.get(subclass));
                     
                     assert subNode != null;
                     

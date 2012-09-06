@@ -144,13 +144,15 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         String file = (String)desc.get("filename"); // NOI18N
         String homepage = (String)desc.get("homepage"); // NOI18N
         String description = (String)desc.get("description"); // NOI18N
-        libs.add(createLibrary(name, version, file, homepage, description));
+        if (version != null) {
+            libs.add(createLibrary(name, version, file, homepage, description));
+        }
         List<String> vers = versions.get(name);
         if (vers == null) {
             return;
         }
         for (String v : vers) {
-            if (v.equals(version)) {
+            if (v.equals(version) || v == null) {
                 continue;
             }
             libs.add(createLibrary(name, v, file, homepage, description));

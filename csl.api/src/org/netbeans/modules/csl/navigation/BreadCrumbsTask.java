@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -68,6 +69,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -76,6 +78,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class BreadCrumbsTask extends ElementScanningTask {
 
+    private static final RequestProcessor WORKER = new RequestProcessor(BreadCrumbsTask.class.getName(), 1, false, false);
+    
     @Override
     public int getPriority() {
         return Integer.MAX_VALUE;
@@ -86,13 +90,17 @@ public class BreadCrumbsTask extends ElementScanningTask {
         return BreadcrumbsController.BREADCRUMBS_SCHEDULER;
     }
 
+    private final AtomicLong requestId = new AtomicLong();
+    
     @Override
     public void run(ParserResult result, SchedulerEvent event) {
-        Document doc = result.getSnapshot().getSource().getDocument(false);
+        final long id = requestId.incrementAndGet();
+        
+        final Document doc = result.getSnapshot().getSource().getDocument(false);
         
         if (doc == null || !BreadcrumbsController.areBreadCrumsEnabled(doc)) return ;
         
-        int caret = -1;
+        final int caret;
         
         if (event instanceof CursorMovedSchedulerEvent) {
             caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
@@ -102,18 +110,28 @@ public class BreadCrumbsTask extends ElementScanningTask {
             
             if (c.getDocument() == doc)
                 caret = c.getCaretPosition();
+            else
+                caret = (-1);
         }
         
         if (caret == (-1)) return ;
         
-        StructureItem structureRoot = computeStructureRoot(result.getSnapshot().getSource());
+        final StructureItem structureRoot = computeStructureRoot(result.getSnapshot().getSource());
         
         if (structureRoot == null) return ;
         
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                selectNode(doc, structureRoot, id, caret);
+            }
+        });
+    }
+    
+    private void selectNode(Document doc, StructureItem structureRoot, long id, int caret) {
         StructureItemNode root = new StructureItemNode(structureRoot);
         StructureItemNode toSelect = root;
         
-        OUTER: while (!isCancelled()) {
+        OUTER: while (requestId.get() == id) {
             for (Node n : toSelect.getChildren().getNodes(true)) {
                 StructureItemNode sin = (StructureItemNode) n;
                 
@@ -126,9 +144,15 @@ public class BreadCrumbsTask extends ElementScanningTask {
             break;
         }
         
-        if (!isCancelled()) {
+        if (requestId.get() == id) {
             BreadcrumbsController.setBreadcrumbs(doc, root, toSelect);
         }
+    }
+
+    @Override
+    public synchronized void cancel() {
+        super.cancel();
+        requestId.incrementAndGet();
     }
     
     private static final class StructureItemNode extends AbstractNode {

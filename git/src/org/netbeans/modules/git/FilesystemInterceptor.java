@@ -809,9 +809,8 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
         @Override
         protected boolean searchHistoryImpl(final int line) throws IOException {
-            assert line < 0 : "Search History a for specific not supported yet!"; // NOI18N
             File file = getFile();
-            SearchHistoryAction.openSearch(Git.getInstance().getRepositoryRoot(file), new File[] {file}, file.getName());
+            SearchHistoryAction.openSearch(Git.getInstance().getRepositoryRoot(file), file, file.getName(), line);
             return true;
         }
 
