@@ -100,9 +100,11 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             for (Breakpoint breakpoint : breakpoints) {
                 if (breakpoint instanceof AbstractBreakpoint) {
                     AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
-                    WebKitBreakpointManager bm = createWebKitBreakpointManager(ab);
-                    breakpointImpls.put(ab, bm);
-                    toAdd.add(bm);
+                    if (!breakpointImpls.containsKey(ab)) {
+                        WebKitBreakpointManager bm = createWebKitBreakpointManager(ab);
+                        breakpointImpls.put(ab, bm);
+                        toAdd.add(bm);
+                    }
                 }
             }
         }
@@ -146,8 +148,18 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             return;
         }
         final AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
+        synchronized (breakpointImpls) {
+            if (breakpointImpls.containsKey(ab)) {
+                return ;
+            }
+        }
         final WebKitBreakpointManager bm = createWebKitBreakpointManager(ab);
         synchronized (breakpointImpls) {
+            if (breakpointImpls.containsKey(ab)) {
+                // Added in between, destroy the one created redundantly.
+                bm.destroy();
+                return ;
+            }
             breakpointImpls.put(ab, bm);
         }
         RP.post(new Runnable() {
