@@ -433,7 +433,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
             }
-            methods.addAll(ElementFilter.forName(NameKind.exact(MethodElementImpl.CONSTRUCTOR_NAME)).filter(methodsForResult));
+            methods.addAll(ElementFilter.forConstructor().filter(methodsForResult));
             if (methods.isEmpty()) {
                 for (TypeElement typeElement : getDirectInheritedTypes(inheritedClass, true, false)) {
                     if (typeElement instanceof ClassElement) {

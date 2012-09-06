@@ -112,6 +112,20 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forConstructor() {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                boolean result = false;
+                if (element instanceof MethodElement) {
+                    result = ((MethodElement) element).isConstructor();
+                }
+                return result;
+            }
+        };
+    }
+
     public static ElementFilter forIncludedNames(final Collection<String> includedNames, final PhpElementKind kind) {
         return new ElementFilter() {
 
