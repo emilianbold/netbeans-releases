@@ -272,12 +272,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             if(scope != null) {
                 return scope;
             }
-            if (parent == null) {
-                scope = (NamespaceImpl) getFile().getProject().getGlobalNamespace();
+            if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
             } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
-                }
+                scope = (NamespaceImpl) getFile().getProject().getGlobalNamespace();
             }
             return scope;
         }

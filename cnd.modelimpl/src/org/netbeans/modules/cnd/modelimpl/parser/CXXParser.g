@@ -260,9 +260,11 @@ expression_statement
 
 expression_or_declaration_statement
     :
-        (expression SEMICOLON) => expression SEMICOLON
+        (declaration_statement) => declaration_statement
     |
-        declaration_statement
+        {action.expression_statement(input.LT(1));}
+        expression SEMICOLON
+        {action.end_expression_statement(input.LT(0));}
     ;
 
 
@@ -558,6 +560,7 @@ simle_declaration
  *
  */
 simple_declaration [decl_kind kind]
+scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
 @after                                                                          {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :
@@ -596,7 +599,7 @@ simple_declaration [decl_kind kind]
  * (see different init_declarator_list continuation sequences).
  */
 simple_declaration_or_function_definition [decl_kind kind]
-//scope Declaration;
+scope Declaration;
 @init {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
 @after {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :

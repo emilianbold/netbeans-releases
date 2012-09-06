@@ -663,8 +663,10 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof NameBuilder) {
             builderContext.pop();
-            TypeBuilder builder = (TypeBuilder)builderContext.top();
-            builder.setNameBuilder((NameBuilder)top);
+            if(builderContext.top() instanceof TypeBuilder) {
+                TypeBuilder builder = (TypeBuilder)builderContext.top();
+                builder.setNameBuilder((NameBuilder)top);
+            }
         }
     }    
 
@@ -711,7 +713,14 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void simple_template_id_or_ident(Token token) {
         CsmObjectBuilder top = builderContext.top();
-        if(top instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)top).hasTypedefSpecifier() && !((SimpleDeclarationBuilder)top).isInDeclSpecifiers()) {
+        if(top instanceof NameBuilder) {
+            NameBuilder nameBuilder = (NameBuilder) top;
+            APTToken aToken = (APTToken) token;
+            CharSequence part = aToken.getTextID();
+            nameBuilder.addNamePart(part);
+        }
+        CsmObjectBuilder top2 = builderContext.top(2);
+        if(top2 instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)top2).hasTypedefSpecifier() && !((SimpleDeclarationBuilder)top2).isInDeclSpecifiers()) {
             APTToken aToken = (APTToken) token;
             final CharSequence name = aToken.getTextID();
             SymTabEntry classEntry = globalSymTab.lookup(name);
@@ -719,12 +728,6 @@ public class CppParserActionImpl implements CppParserActionEx {
                 classEntry = globalSymTab.enterLocal(name);
                 classEntry.setAttribute(CppAttributes.TYPE, true);
             }
-        }
-        if(top instanceof NameBuilder) {
-            NameBuilder nameBuilder = (NameBuilder) top;
-            APTToken aToken = (APTToken) token;
-            CharSequence part = aToken.getTextID();
-            nameBuilder.addNamePart(part);
         }
     }
 
@@ -1284,11 +1287,13 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void end_type_specifier(Token token) {
-        TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
-        typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
-        builderContext.pop();
-        SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
-        declarationBuilder.setTypeBuilder(typeBuilder);
+        if(builderContext.top() instanceof TypeBuilder) {
+            TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
+            typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            declarationBuilder.setTypeBuilder(typeBuilder);
+        }
     }
     
     @Override public void trailing_type_specifier(Token token) {}
@@ -1330,31 +1335,59 @@ public class CppParserActionImpl implements CppParserActionEx {
         }      
     }
     
-    @Override public void noptr_declarator(Token token) {}
+    @Override public void noptr_declarator(Token token) {
+        declarator(token);
+    }
     @Override public void noptr_declarator(int kind, Token token) {}
-    @Override public void end_noptr_declarator(Token token) {}
-    @Override public void function_declarator(Token token) {}
-    @Override public void end_function_declarator(Token token) {}
-    @Override public void constructor_declarator(Token token) {}
-    @Override public void end_constructor_declarator(Token token) {}
-    @Override public void function_declarator(int kind, Token token) {}
-    @Override public void noptr_abstract_declarator(Token token) {}
-    @Override public void noptr_abstract_declarator(int kind, Token token) {}
-    @Override public void end_noptr_abstract_declarator(Token token) {}
-    @Override public void universal_declarator(Token token) {}
-    @Override public void end_universal_declarator(Token token) {}
-
+    @Override public void end_noptr_declarator(Token token) {
+        end_declarator(token);
+    }
+    @Override public void function_declarator(Token token) {
+        declarator(token);
+    }
+    @Override public void function_declarator(int kind, Token token) {
+    }
+    @Override public void end_function_declarator(Token token) {
+        end_declarator(token);
+    }
+    @Override public void constructor_declarator(Token token) {
+        declarator(token);
+        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
+        declaratorBuilder.setName(declBuilder.getTypeBuilder().getName());
+        declBuilder.setTypeBuilder(null);
+                
+    }
+    @Override public void end_constructor_declarator(Token token) {
+        end_declarator(token);
+    }
+    @Override public void noptr_abstract_declarator(Token token) {
+        end_declarator(token);
+    }
+    @Override public void noptr_abstract_declarator(int kind, Token token) {
+    }
+    @Override public void end_noptr_abstract_declarator(Token token) {
+        end_declarator(token);
+    }
+    @Override public void universal_declarator(Token token) {
+        declarator(token);
+    }
+    @Override public void end_universal_declarator(Token token) {
+        end_declarator(token);
+    }
     @Override public void greedy_declarator(Token token) {
         declarator(token);
     }
-    
     @Override public void end_greedy_declarator(Token token) {
         end_declarator(token);
     }
-    
-    @Override public void greedy_nonptr_declarator(Token token) {}
+    @Override public void greedy_nonptr_declarator(Token token) {
+        declarator(token);
+    }
     @Override public void greedy_nonptr_declarator(int kind, Token token) {}
-    @Override public void end_greedy_nonptr_declarator(Token token) {}
+    @Override public void end_greedy_nonptr_declarator(Token token) {
+        end_declarator(token);
+    }
     @Override public void ptr_operator(Token token) {}
     @Override public void ptr_operator(int kind, Token token) {}
     @Override public void end_ptr_operator(Token token) {}
@@ -1424,9 +1457,15 @@ public class CppParserActionImpl implements CppParserActionEx {
         ParameterBuilder builder = (ParameterBuilder) builderContext.top();
         builder.setEndOffset(((APTToken)token).getEndOffset());
         builder.setTypeBuilder(declBuilder.getTypeBuilder());
-        builder.setName(declBuilder.getDeclaratorBuilder().getName());
+        if(declBuilder.getDeclaratorBuilder() == null || declBuilder.getDeclaratorBuilder().getName() == null) {
+            builder.setName(""); // NOI18N
+        } else {
+            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+        }
         builderContext.pop();
-        ((FunctionParameterListBuilder)builderContext.top()).addParameterBuilder(builder);
+        if(builderContext.top() instanceof FunctionParameterListBuilder) {
+            ((FunctionParameterListBuilder)builderContext.top()).addParameterBuilder(builder);
+        }
     }    
     
     @Override public void function_definition_after_declarator(Token token) {
