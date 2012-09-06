@@ -144,8 +144,8 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     public static abstract class OffsetableIdentifiableBuilder extends OffsetableBuilder implements CsmObjectBuilder {
         
         private CharSequence name;
-        private int nameStartOffset = 0;
-        private int nameEndOffset = 0;
+        private int nameStartOffset = -1;
+        private int nameEndOffset = -1;
         private boolean isMacroExpanded = false;
 
         public void setName(CharSequence name) {
@@ -173,7 +173,11 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         }
         
         public NameHolder getNameHolder() {
-            return NameHolder.createName(name, nameStartOffset, nameEndOffset, isMacroExpanded);
+            if(nameStartOffset != -1 && nameEndOffset != -1) {
+                return NameHolder.createName(name, nameStartOffset, nameEndOffset, isMacroExpanded);
+            } else {
+                return NameHolder.createName(name);
+            }
         }
 
     }    

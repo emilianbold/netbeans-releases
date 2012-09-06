@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * Representation of a node in a DOM document.
@@ -384,12 +385,25 @@ public final class DOMNode {
         pchs.firePropertyChange(PROP_NODE_PATH_FAILED, null, pex);
     }
     
-    
-    private class DOMListener implements DOM.Listener {
+    // Belongs to DOMListener only
+    private enum NOTIFY_TYPE {
+        DOC_UPDATE,
+        CHILDREN_SET,
+        CHILD_REMOVED,
+        CHILD_INSERTED,
+    }
 
+    private class DOMListener implements DOM.Listener {
+        
+        private RequestProcessor RP = new RequestProcessor(DOMListener.class.getName());
+        
         @Override
         public void documentUpdated() {
             LOG.fine("DOM documentUpdated()");
+            RP.post(new Notify(NOTIFY_TYPE.DOC_UPDATE));
+        }
+        
+        private void documentUpdatedNotify() {
             PathNotFoundException pnfex = null;
             Node oldNode;
             Node newNode;
@@ -415,6 +429,10 @@ public final class DOMNode {
         @Override
         public void childNodesSet(Node parent) {
             LOG.fine("DOM childNodesSet("+parent+")");
+            RP.post(new Notify(NOTIFY_TYPE.CHILDREN_SET, parent));
+        }
+        
+        private void childNodesSetNotify(Node parent) {
             PathNotFoundException pnfex = null;
             Node oldNode;
             Node newNode;
@@ -454,6 +472,10 @@ public final class DOMNode {
         @Override
         public void childNodeRemoved(Node parent, Node child) {
             LOG.fine("DOM childNodesRemoved("+parent+", "+child+")");
+            RP.post(new Notify(NOTIFY_TYPE.CHILD_REMOVED, parent, child));
+        }
+        
+        private void childNodeRemovedNotify(Node parent, Node child) {
             PathNotFoundException pnfex = null;
             Node oldNode;
             Node newNode;
@@ -485,6 +507,10 @@ public final class DOMNode {
         @Override
         public void childNodeInserted(Node parent, Node child) {
             LOG.fine("DOM childNodesInserted("+parent+", "+child+")");
+            RP.post(new Notify(NOTIFY_TYPE.CHILD_INSERTED, parent, child));
+        }
+        
+        private void childNodeInsertedNotify(Node parent, Node child) {
             PathNotFoundException pnfex = null;
             Node oldNode;
             Node newNode;
@@ -523,6 +549,36 @@ public final class DOMNode {
             // Ignored
         }
         
+        private class Notify implements Runnable {
+            
+            private final NOTIFY_TYPE type;
+            private final Node[] args;
+            
+            Notify(NOTIFY_TYPE type, Node... args) {
+                this.type = type;
+                this.args = args;
+            }
+
+            @Override
+            public void run() {
+                switch(type) {
+                    case DOC_UPDATE:
+                        documentUpdatedNotify();
+                        break;
+                    case CHILDREN_SET:
+                        childNodesSetNotify(args[0]);
+                        break;
+                    case CHILD_INSERTED:
+                        childNodeInsertedNotify(args[0], args[1]);
+                        break;
+                    case CHILD_REMOVED:
+                        childNodeRemovedNotify(args[0], args[1]);
+                        break;
+                }
+            }
+            
+        }
+        
     }
     
     public static final class NodeId {
@@ -554,6 +610,11 @@ public final class DOMNode {
         @Override
         public int hashCode() {
             return childNumber + (name.hashCode() >> 4);
+        }
+
+        @Override
+        public String toString() {
+            return name+"<"+childNumber+">";
         }
         
     }
