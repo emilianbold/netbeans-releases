@@ -54,6 +54,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -206,7 +207,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         private ServerUtilities su;
 
         public J2eeInstantiatingIterator(ServerUtilities su) {
-            this.delegate = su.getAddInstanceIterator();
+            this.delegate = ServerDetails.getInstantiatingIterator();
             this.su = su;
         }
 
