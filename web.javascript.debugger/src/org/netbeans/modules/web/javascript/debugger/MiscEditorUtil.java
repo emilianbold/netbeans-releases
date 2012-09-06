@@ -368,11 +368,12 @@ public final class MiscEditorUtil {
         }
         boolean adjustContext = true;
         Context c;
-        if (cf != null) {
+        Script script;
+        if (cf != null && (script = cf.getScript()) != null) {
             Session session = en.lookupFirst(null, Session.class);
             String language = session.getCurrentLanguage();
             c = new Context();
-            c.url = cf.getScript().getURL();
+            c.url = script.getURL();
             c.line = cf.getLineNumber();
             c.debugger = d;
             if (c.line > 0) {

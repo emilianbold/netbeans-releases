@@ -48,6 +48,7 @@ package org.netbeans.modules.editor.impl.actions.clipboardhistory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -96,11 +97,11 @@ public class ScrollCompletionPane extends JScrollPane {
     private Dimension maxSize;
     private Dimension scrollBarSize;
 
-    public ScrollCompletionPane(JTextComponent component, ClipboardHistory data, String title, ListSelectionListener listener) {
-        this( component, data, title, listener, null );
+    public ScrollCompletionPane(JTextComponent component, ClipboardHistory data, String title, ListSelectionListener listener, MouseListener mouseListener) {
+        this( component, data, title, listener, mouseListener, null );
     }
 
-    public ScrollCompletionPane(JTextComponent component, ClipboardHistory data, String title, ListSelectionListener listener, Dimension maxSize ) {
+    public ScrollCompletionPane(JTextComponent component, ClipboardHistory data, String title, ListSelectionListener listener, MouseListener mouseListener, Dimension maxSize ) {
         
         // Compute size of the scrollbars
         Dimension smallSize = super.getPreferredSize();
@@ -130,7 +131,7 @@ public class ScrollCompletionPane extends JScrollPane {
         }
 
         // Add the completion view
-        view = new ListCompletionView();
+        view = new ListCompletionView(mouseListener);
         setBackground(view.getBackground());
         view.addListSelectionListener(listener);
         view.setResult(data);

@@ -47,6 +47,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.websvc.rest.client.RESTExplorerPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
@@ -208,7 +209,8 @@ public final class RestPanelVisual extends JPanel  {
         myBackbone = null;
         Project project = Templates.getProject(wizardDescriptor);
         FileObject projectDirectory = project.getProjectDirectory();
-        FileObject libs = projectDirectory.getFileObject("js/libs");        // NOI18N
+        // XXX : plublic_html should not be hardcoded
+        FileObject libs = projectDirectory.getFileObject(WebClientLibraryManager.LIBS); 
         boolean backboneExists = false; 
         if ( libs != null ){
             FileObject[] children = libs.getChildren();

@@ -57,7 +57,6 @@ NetBeans_Infobar.show = function(presets) {
     this._presets = presets;
     this._init();
     this.setSelectionMode(NetBeans.getSelectionMode());
-    this.setSynchronizeSelection(NetBeans.getSynchronizeSelection());
     this._showPresets();
 };
 // redraw presets
@@ -121,13 +120,6 @@ NetBeans_Infobar._updateSelectionMode = function(switchCheckBoxValue) {
 NetBeans_Infobar.setSelectionMode = function(selectionMode) {
     var checkbox = document.getElementById('selectionModeCheckBox');
     checkbox.checked = selectionMode;
-};
-
-// Hides/shows Selection Mode checkbox according to the given value
-// (Selection Mode cannot be switched on when synchronization is turned off)
-NetBeans_Infobar.setSynchronizeSelection = function(synchronizeSelection) {
-    var div = document.getElementById('selectionModeDiv');
-    div.style.display = synchronizeSelection ? 'block' : 'none';
 };
 
 // run!

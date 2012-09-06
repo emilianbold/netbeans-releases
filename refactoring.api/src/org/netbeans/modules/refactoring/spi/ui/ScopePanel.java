@@ -188,7 +188,8 @@ public final class ScopePanel extends javax.swing.JPanel {
      */
     @CheckForNull
     public Scope getSelectedScope() {
-        return ((ScopeProvider) scopeCombobox.getSelectedItem()).getScope();
+        final ScopeProvider selectedScope = (ScopeProvider) scopeCombobox.getSelectedItem();
+        return selectedScope != null ? selectedScope.getScope() : null;
     }
 
     /**

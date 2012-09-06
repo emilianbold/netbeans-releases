@@ -120,8 +120,11 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
         if (Debugger.PROP_CURRENT_FRAME.equals(propertyName)) {
             CallFrame cf = (CallFrame) evt.getNewValue();
             if (cf != null) {
-                Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
-                MiscEditorUtil.showLine(line, true);
+                Script script = cf.getScript();
+                if (script != null) {
+                    Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
+                    MiscEditorUtil.showLine(line, true);
+                }
             }
         }
     }
@@ -137,7 +140,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             if (script == null) {
                 continue;
             }
-            final Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
+            final Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
             if (line == null) {
                 first = false;
                 continue;
