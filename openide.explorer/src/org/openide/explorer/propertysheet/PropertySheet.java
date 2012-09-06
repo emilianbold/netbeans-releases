@@ -859,36 +859,84 @@ public class PropertySheet extends JPanel {
     final void showPopup(Point p) {
         if( !popupEnabled )
             return;
-        JMenuItem helpItem = new JMenuItem();
-        JRadioButtonMenuItem sortNamesItem = new JRadioButtonMenuItem();
-        JRadioButtonMenuItem unsortedItem = new JRadioButtonMenuItem();
-        JCheckBoxMenuItem descriptionItem = new JCheckBoxMenuItem();
-        JMenuItem defaultValueItem = new JMenuItem();
-        JPopupMenu popup = new JPopupMenu();
 
-        unsortedItem.setSelected(getSortingMode() == UNSORTED);
-        sortNamesItem.setSelected(getSortingMode() == SORTED_BY_NAMES);
-        helpAction.checkContext();
-        helpItem.setAction(helpAction);
-        sortNamesItem.setAction(new MutableAction(MutableAction.SORT_NAMES, this));
-        unsortedItem.setAction(new MutableAction(MutableAction.UNSORT, this));
-        descriptionItem.setAction(new MutableAction(MutableAction.SHOW_DESCRIPTION, this));
-        descriptionItem.setSelected(isDescriptionVisible());
-        defaultValueItem.setAction(new MutableAction(MutableAction.RESTORE_DEFAULT, this));
+        JPopupMenu popup = createPopupMenu();
 
-        FeatureDescriptor fd = table.getSelection();
-        defaultValueItem.setEnabled(PropUtils.shallBeRDVEnabled(fd));
+        if( null == popup ) {
+            JMenuItem helpItem = new JMenuItem();
+            JRadioButtonMenuItem sortNamesItem = new JRadioButtonMenuItem();
+            JRadioButtonMenuItem unsortedItem = new JRadioButtonMenuItem();
+            JCheckBoxMenuItem descriptionItem = new JCheckBoxMenuItem();
+            JMenuItem defaultValueItem = new JMenuItem();
+            popup = new JPopupMenu();
 
-        popup.add(unsortedItem);
-        popup.add(sortNamesItem);
-        popup.add(new JSeparator());
-        popup.add(descriptionItem);
-        popup.add(new JSeparator());
-        popup.add(defaultValueItem);
-        popup.add(new JSeparator());
-        popup.add(helpItem);
+            unsortedItem.setSelected(getSortingMode() == UNSORTED);
+            sortNamesItem.setSelected(getSortingMode() == SORTED_BY_NAMES);
+            helpAction.checkContext();
+            helpItem.setAction(helpAction);
+            sortNamesItem.setAction(new MutableAction(MutableAction.SORT_NAMES, this));
+            unsortedItem.setAction(new MutableAction(MutableAction.UNSORT, this));
+            descriptionItem.setAction(new MutableAction(MutableAction.SHOW_DESCRIPTION, this));
+            descriptionItem.setSelected(isDescriptionVisible());
+            defaultValueItem.setAction(new MutableAction(MutableAction.RESTORE_DEFAULT, this));
+
+            FeatureDescriptor fd = table.getSelection();
+            defaultValueItem.setEnabled(PropUtils.shallBeRDVEnabled(fd));
+
+            popup.add(unsortedItem);
+            popup.add(sortNamesItem);
+            popup.add(new JSeparator());
+            popup.add(descriptionItem);
+            popup.add(new JSeparator());
+            popup.add(defaultValueItem);
+            popup.add(new JSeparator());
+            popup.add(helpItem);
+        }
         popup.show(psheet, p.x, p.y);
     }
+
+    /**
+     * Subclasses may override this method to create a custom popup menu that will
+     * show on right-click in the property sheet.
+     * @return Custom popup menu or null to use the default popup menu provided
+     * by this class.
+     * @since 6.47
+     */
+    protected JPopupMenu createPopupMenu() {
+        return null;
+    }
+
+    /**
+     * Check if the PropertySet the given property belongs to is expanded or not.
+     * @param fd Property or PropertySet to check.
+     * @return True if the PropertySet the given property belongs is expanded.
+     * @since 6.47
+     */
+    protected final boolean isExpanded( FeatureDescriptor fd ) {
+        return table.getPropertySetModel().isExpanded( fd );
+    }
+
+    /**
+     * Expand or collapse the PropertySet the given property belongs to.
+     * @param fd 
+     * @since 6.47
+     */
+    protected final void toggleExpanded( FeatureDescriptor fd ) {
+        int index = table.getPropertySetModel().indexOf( fd );
+        if( index >= 0 ) {
+            table.getPropertySetModel().toggleExpanded( WIDTH );
+        }
+    }
+
+    /**
+     * Retrieve currently selected property or PropertySet.
+     * @return Selected property or PropertySet or null if there is no selection.
+     * @since 6.47
+     */
+    protected final FeatureDescriptor getSelection() {
+        return table.getSelection();
+    }
+
 
     Node[] getCurrentNodes() {
         Node n = pclistener.getNode();
