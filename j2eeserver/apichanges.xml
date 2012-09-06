@@ -117,6 +117,7 @@ is the proper place.
 
     <changes>
     
+        <!-- not used for 7.3
         <change id="deployOnSaveListeners">
     	    <api name="devmodules"/>
             <summary>
@@ -134,7 +135,7 @@ is the proper place.
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <issue number="207724"/>
-       </change>
+       </change> -->
        <change id="commonServerBridge">
     	    <api name="j2eeserver"/>
             <summary>
