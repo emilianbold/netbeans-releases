@@ -52,6 +52,9 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionDeclarationImpl.ConditionDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionExpressionImpl.ConditionExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -68,6 +71,11 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
         super(ast, file, scope);
         this.postCheck = postCheck;
     }
+    
+    private LoopStatementImpl(boolean postCheck, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+        this.postCheck = postCheck;
+    }    
 
     public static LoopStatementImpl create(AST ast, CsmFile file, boolean postCheck, CsmScope scope) {
         LoopStatementImpl stmt = new LoopStatementImpl(ast, file, postCheck, scope);
@@ -130,5 +138,48 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
     public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }
-    
+ 
+    public static class LoopStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
+
+        boolean postCheck;
+        ConditionExpressionBuilder conditionExpression;
+        ConditionDeclarationBuilder conditionDeclaration;
+        StatementBuilder body;
+
+        public void setPostCheck() {
+            this.postCheck = true;
+        }
+
+        public void setConditionExpression(ConditionExpressionBuilder conditionExpression) {
+            this.conditionExpression = conditionExpression;
+        }
+
+        public void setConditionDeclaration(ConditionDeclarationBuilder conditionDeclaration) {
+            this.conditionDeclaration = conditionDeclaration;
+        }
+
+        public void setBody(StatementBuilder body) {
+            this.body = body;
+        }
+        
+        @Override
+        public LoopStatementImpl create() {
+            LoopStatementImpl stmt = new LoopStatementImpl(postCheck, getScope(), getFile(), getStartOffset(), getEndOffset());
+            body.setScope(stmt);
+            stmt.body = body.create();
+            if(conditionDeclaration != null) {
+                conditionDeclaration.setScope(stmt);
+                stmt.condition = conditionDeclaration.create();
+            } else {
+                conditionExpression.setScope(stmt);
+                stmt.condition = conditionExpression.create();
+            }
+            return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            body = builder;
+        }
+    }       
 }

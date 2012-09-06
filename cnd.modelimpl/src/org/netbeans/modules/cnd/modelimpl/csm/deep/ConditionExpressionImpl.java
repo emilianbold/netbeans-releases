@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
 
 /**
  * Implements condition of kind CsmCondition.Kind.EXPRESSION
@@ -64,6 +66,11 @@ public final class ConditionExpressionImpl extends OffsetableBase implements Csm
         expression = new AstRenderer((FileImpl)getContainingFile()).renderExpression(ast, scope);
     }
 
+    private ConditionExpressionImpl(CsmExpression expression, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end);
+        this.expression = expression;
+    }
+    
     public static ConditionExpressionImpl create(AST ast, CsmFile file, CsmScope scope) {
         return new ConditionExpressionImpl(ast, file, scope);
     }
@@ -87,4 +94,21 @@ public final class ConditionExpressionImpl extends OffsetableBase implements Csm
     public CsmScope getScope() {
         return expression.getScope();
     }
+    
+    public static class ConditionExpressionBuilder extends ScopedDeclarationBuilder {
+
+        ExpressionBuilder expression;
+
+        public void setExpressionBuilder(ExpressionBuilder expression) {
+            this.expression = expression;
+        }
+        
+        public ConditionExpressionImpl create() {
+            expression.setScope(getScope());
+            ConditionExpressionImpl expr = new ConditionExpressionImpl(expression.create(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            return expr;
+        }
+    }         
+    
+    
 }

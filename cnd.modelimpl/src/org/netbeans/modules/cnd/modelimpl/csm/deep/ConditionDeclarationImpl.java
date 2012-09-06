@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl.VariableBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 
 /**
  * Implements condition of kind CsmCondition.Kind.DECLARATION
@@ -66,6 +68,11 @@ public final class ConditionDeclarationImpl extends OffsetableBase implements Cs
         initDeclaration(ast, scope);
     }
 
+    private ConditionDeclarationImpl(VariableImpl<?> declaration, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end);
+        this.declaration = declaration;
+    }
+    
     public static ConditionDeclarationImpl create(AST ast, CsmFile file, CsmScope scope) {
         return new ConditionDeclarationImpl(ast, file, scope);
     }
@@ -110,5 +117,20 @@ public final class ConditionDeclarationImpl extends OffsetableBase implements Cs
     public CsmScope getScope() {
         return (declaration == null) ? getContainingFile() : declaration.getScope();
     }
+    
+    public static class ConditionDeclarationBuilder extends ScopedDeclarationBuilder {
+
+        VariableBuilder declaration;
+
+        public void setDeclarationBuilder(VariableBuilder builder) {
+            this.declaration = builder;
+        }
+        
+        public ConditionDeclarationImpl create() {
+            declaration.setScope(getScope());
+            ConditionDeclarationImpl decl = new ConditionDeclarationImpl(declaration.create(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            return decl;
+        }
+    }         
     
 }
