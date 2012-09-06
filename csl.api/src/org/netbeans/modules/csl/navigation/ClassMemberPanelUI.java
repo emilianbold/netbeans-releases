@@ -201,7 +201,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             @Override public void run(ParserResult result, SchedulerEvent event) {
                 resume();
                 
-                System.err.println("result: " + result);
                 StructureItem root = computeStructureRoot(result.getSnapshot().getSource());
                 FileObject file = result.getSnapshot().getSource().getFileObject();
 
