@@ -196,8 +196,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
-                FileObject libs = FileUtil.createFolder(project.
-                        getProjectDirectory(),WebClientLibraryManager.LIBS);
+                FileObject libs = FileUtil.createFolder(project.getProjectDirectory(),
+                        WebClientLibraryManager.LIBS);
                 handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                         "TXT_CreateLibs"));                                 // NOI18N
                 existedBackbone = addLibrary( libs , "backbone.js");        // NOI18N
