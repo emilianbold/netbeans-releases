@@ -67,36 +67,36 @@ import org.netbeans.modules.php.api.editor.PhpClass.Field;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.api.AbstractElementQuery;
 import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.AliasedClass;
+import org.netbeans.modules.php.editor.api.elements.AliasedConstant;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.AliasedFunction;
+import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
+import org.netbeans.modules.php.editor.api.elements.AliasedNamespace;
+import org.netbeans.modules.php.editor.api.elements.AliasedType;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TreeElement;
-import org.netbeans.modules.php.editor.api.elements.VariableElement;
-import org.netbeans.modules.php.editor.index.PHPIndexer;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.AliasedClass;
-import org.netbeans.modules.php.editor.api.elements.AliasedConstant;
-import org.netbeans.modules.php.editor.api.elements.AliasedElement;
-import org.netbeans.modules.php.editor.api.elements.AliasedFunction;
-import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
-import org.netbeans.modules.php.editor.api.elements.AliasedNamespace;
-import org.netbeans.modules.php.editor.api.elements.AliasedType;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TraitedElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -107,6 +107,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -279,7 +280,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return MethodElementImpl.getMagicMethods(type);
     }
 
-    private final Set<FunctionElement> getFunctionsImpl(final NameKind query) {
+    private Set<FunctionElement> getFunctionsImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<FunctionElement> functions = new HashSet<FunctionElement>();
         final Collection<? extends IndexResult> result = results(FunctionElementImpl.IDX_FIELD, query);
@@ -416,7 +417,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retval;
     }
 
-    private final Set<MethodElement> getConstructorsImpl(final ClassElement originalClass, final ClassElement inheritedClass, final LinkedHashSet<ClassElement> check) {
+    private Set<MethodElement> getConstructorsImpl(final ClassElement originalClass, final ClassElement inheritedClass, final LinkedHashSet<ClassElement> check) {
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         if (!check.contains(inheritedClass)) {
             check.add(inheritedClass);
@@ -655,7 +656,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE, PhpElementKind.TRAIT));
     }
 
-    private final Set<MethodElement> getMethodsImpl(final NameKind.Exact typeQuery, final NameKind methodQuery, EnumSet<PhpElementKind> typeKinds) {
+    private Set<MethodElement> getMethodsImpl(final NameKind.Exact typeQuery, final NameKind methodQuery, EnumSet<PhpElementKind> typeKinds) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         //two queries: once for classes, second for ifaces
@@ -707,7 +708,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     FileObject fo = null;
                     try {
                         fo = "file".equals(url.getProtocol()) ? //NOI18N
-                                FileUtil.toFileObject(new java.io.File(url.toURI())) : URLMapper.findFileObject(url);
+                                FileUtil.toFileObject(Utilities.toFile(url.toURI())) : URLMapper.findFileObject(url);
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -1549,11 +1550,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 }
 
                 for (IndexResult r : results) {
-                    LOG.finer("Fields in " + r + " (" + r.getFile().getPath() + "):"); //NOI18N
+                    LOG.log(Level.FINER, "Fields in {0} ({1}):", new Object[]{r, r.getFile().getPath()}); //NOI18N
                     for (String field : PHPIndexer.ALL_FIELDS) {
                         String value = r.getValue(field);
                         if (value != null) {
-                            LOG.finest(" <" + field + "> = <" + value + ">"); //NOI18N
+                            LOG.log(Level.FINEST, " <{0}> = <{1}>", new Object[]{field, value}); //NOI18N
                         }
                     }
                     LOG.finer("----"); //NOI18N
