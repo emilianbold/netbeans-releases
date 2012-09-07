@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -398,6 +399,9 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         );
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DocumentsDialog"));
+        if( dlg instanceof JDialog ) {
+            HelpCtx.setHelpIDString(((JDialog)dlg).getRootPane(), documentsPanel.getHelpCtx().getHelpID());
+        }
         getDefault().updateNodes();
         dlg.setVisible(true);
         getDefault().clearNodes();

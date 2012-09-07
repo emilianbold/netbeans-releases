@@ -106,7 +106,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setParameters(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, false, false, false, false, false);
         
         doRefactoring("FindUsagesTest", wuq, 7);
     }
@@ -126,7 +126,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setParameters(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, false, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
             @Override
             public FileObject getFolder() {
@@ -156,7 +156,7 @@ public class FindUsagesTest extends NbTestCase {
             }
         }, false).get();
 
-        setParameters(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, false, false, false, false, false);
         
         Scope customScope = Scope.create(Arrays.asList(projectDir.getFileObject("/test")), null, null);
         wuq[0].getContext().add(customScope);
@@ -180,7 +180,7 @@ public class FindUsagesTest extends NbTestCase {
             }
         }, false).get();
 
-        setParameters(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, false, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
             @Override
             public FileObject getFolder() {
@@ -234,7 +234,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0].getContext().add(RefactoringUtils.getClasspathInfoFor(element));
             }
         }, false).get();
-        setParameters(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, false, false, false, false, false);
 
         doRefactoring("test200230", wuq, 9);
     }
