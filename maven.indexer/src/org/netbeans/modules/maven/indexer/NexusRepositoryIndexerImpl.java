@@ -1404,15 +1404,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         //if I got it right, we need an exact match of class name, which the query doesn't provide? why?
         String pattStr = ".*/" + classname + "$.*";
         Pattern patt = Pattern.compile(pattStr, patter);
-        Iterator<ArtifactInfo> it = artifactInfos.iterator();
+        //#217932 for some reason IteratorResultSet implementation decided
+        //not to implemenent Iterator.remove().
+        //we need to copy to our own list instead of removing from original.
+        ArrayList<ArtifactInfo> altArtifactInfos = new ArrayList<ArtifactInfo>();
+        Iterator<ArtifactInfo> it = artifactInfos.iterator();        
         while (it.hasNext()) {
             ArtifactInfo ai = it.next();
             Matcher m = patt.matcher(ai.classNames);
-            if (!m.matches()) {
-                it.remove();
+            if (m.matches()) {
+                altArtifactInfos.add(ai);
             }
         }
-        for (ArtifactInfo i : artifactInfos) {
+        for (ArtifactInfo i : altArtifactInfos) {
             toRet.add(convertToNBVersionInfo(i));
         }
         return toRet;
