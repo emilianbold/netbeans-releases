@@ -42,9 +42,7 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -73,8 +71,6 @@ public final class FormatContext {
 
     private final Snapshot snapshot;
 
-    private final Set<Integer> continuationBracketEndLevel = new HashSet<Integer>();
-
     private final int initialStart;
 
     private final int initialEnd;
@@ -88,8 +84,6 @@ public final class FormatContext {
     private int indentationLevel;
 
     private int continuationLevel;
-
-    private int continuationBracketLevel;
 
     private int offsetDiff;
 
@@ -190,29 +184,12 @@ public final class FormatContext {
         return continuationLevel;
     }
 
-    public int checkStartContinuationLevel(FormatToken token) {
-        FormatToken next = FormatTokenStream.getNextImportant(token);
-        if (next.getKind() == FormatToken.Kind.TEXT
-                && JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(next.getText().toString())) {
-            continuationBracketEndLevel.add(continuationBracketLevel);
-            continuationBracketLevel++;
-            continuationLevel++;
-            return continuationLevel;
-        }
-        return continuationLevel + 1;
+    public void incContinuationLevel() {
+        this.continuationLevel++;
     }
 
-    public void checkEndContinuationLevel(FormatToken token) {
-        if (!token.isVirtual() && token.getKind() == FormatToken.Kind.TEXT
-                && JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(token.getText().toString())) {
-            if (continuationLevel > 0) {
-                continuationBracketLevel--;
-                boolean present = continuationBracketEndLevel.remove(continuationBracketLevel);
-                if (present) {
-                    continuationLevel--;
-                }
-            }
-        }
+    public void decContinuationLevel() {
+        this.continuationLevel--;
     }
 
     public int getOffsetDiff() {
@@ -488,6 +465,35 @@ public final class FormatContext {
 
         public int getIndentationLevel() {
             return indentationLevel;
+        }
+    }
+
+    public static class ContinuationBlock {
+
+        public enum Type {
+
+            CURLY,
+
+            BRACKET,
+
+            PAREN
+        }
+
+        private final ContinuationBlock.Type type;
+
+        private final boolean change;
+
+        public ContinuationBlock(ContinuationBlock.Type type, boolean change) {
+            this.type = type;
+            this.change = change;
+        }
+
+        public ContinuationBlock.Type getType() {
+            return type;
+        }
+
+        public boolean isChange() {
+            return change;
         }
     }
 

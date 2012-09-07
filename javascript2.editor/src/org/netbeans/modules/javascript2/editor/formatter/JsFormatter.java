@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -150,13 +151,56 @@ public class JsFormatter implements Formatter {
                     }
                 }
                 boolean firstTokenFound = false;
+                Stack<FormatContext.ContinuationBlock> continuations = new Stack<FormatContext.ContinuationBlock>();
 
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
 
+                    if (processed.contains(token)) {
+                        continue;
+                    }
+
                     // FIXME optimize performance
                     if (!token.isVirtual()) {
-                        formatContext.checkEndContinuationLevel(token);
+                        if (!continuations.isEmpty()) {
+                            if (token.getKind() == FormatToken.Kind.TEXT) {
+                                if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(token.getText().toString())) {
+                                    continuations.push(new FormatContext.ContinuationBlock(
+                                            FormatContext.ContinuationBlock.Type.CURLY, false));
+                                } else if (JsTokenId.BRACKET_LEFT_BRACKET.fixedText().equals(token.getText().toString())) {
+                                    continuations.push(new FormatContext.ContinuationBlock(
+                                            FormatContext.ContinuationBlock.Type.BRACKET, false));
+                                } else if (JsTokenId.BRACKET_LEFT_PAREN.fixedText().equals(token.getText().toString())) {
+                                    continuations.push(new FormatContext.ContinuationBlock(
+                                            FormatContext.ContinuationBlock.Type.PAREN, false));
+                                } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(token.getText().toString())) {
+                                    FormatContext.ContinuationBlock block = continuations.peek();
+                                    if (block.getType() == FormatContext.ContinuationBlock.Type.CURLY) {
+                                        continuations.pop();
+                                        if (block.isChange()) {
+                                            formatContext.decContinuationLevel();
+                                        }
+                                    }
+                                } else if (JsTokenId.BRACKET_RIGHT_BRACKET.fixedText().equals(token.getText().toString())) {
+                                    FormatContext.ContinuationBlock block = continuations.peek();
+                                    if (block.getType() == FormatContext.ContinuationBlock.Type.BRACKET) {
+                                        continuations.pop();
+                                        if (block.isChange()) {
+                                            formatContext.decContinuationLevel();
+                                        }
+                                    }
+                                } else if (JsTokenId.BRACKET_RIGHT_PAREN.fixedText().equals(token.getText().toString())) {
+                                    FormatContext.ContinuationBlock block = continuations.peek();
+                                    if (block.getType() == FormatContext.ContinuationBlock.Type.PAREN) {
+                                        continuations.pop();
+                                        if (block.isChange()) {
+                                            formatContext.decContinuationLevel();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
 
                         if (!firstTokenFound) {
                             firstTokenFound = true;
@@ -170,10 +214,6 @@ public class JsFormatter implements Formatter {
                         }
                         initialIndent = formatContext.getEmbeddingIndent(tokenStream, token)
                                 + CodeStyle.get(formatContext).getInitialIndent();
-                    }
-
-                    if (processed.contains(token)) {
-                        continue;
                     }
 
                     if (token.getKind().isSpaceMarker()) {
@@ -266,7 +306,26 @@ public class JsFormatter implements Formatter {
                             int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
                             int continuationLevel = formatContext.getContinuationLevel();
                             if (isContinuation(token, false)) {
-                                continuationLevel = formatContext.checkStartContinuationLevel(token);
+                                continuationLevel++;
+                                FormatToken nextImportant = FormatTokenStream.getNextImportant(token);
+                                if (nextImportant.getKind() == FormatToken.Kind.TEXT) {
+                                    if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextImportant.getText().toString())) {
+                                        continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.CURLY, true));
+                                        formatContext.incContinuationLevel();
+                                        processed.add(nextImportant);
+                                    } else if (JsTokenId.BRACKET_LEFT_BRACKET.fixedText().equals(nextImportant.getText().toString())) {
+                                        continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.BRACKET, true));
+                                        formatContext.incContinuationLevel();
+                                        processed.add(nextImportant);
+                                    } else if (JsTokenId.BRACKET_LEFT_PAREN.fixedText().equals(nextImportant.getText().toString())) {
+                                        continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.PAREN, true));
+                                        formatContext.incContinuationLevel();
+                                        processed.add(nextImportant);
+                                    }
+                                }
                             }
                             indentationSize += continuationIndent * continuationLevel;
                             formatContext.indentLine(
