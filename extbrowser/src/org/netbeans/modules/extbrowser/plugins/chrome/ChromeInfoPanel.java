@@ -42,6 +42,10 @@
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -50,6 +54,7 @@ import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatu
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -80,7 +85,19 @@ class ChromeInfoPanel extends javax.swing.JPanel {
             @Override
             public void hyperlinkUpdate( HyperlinkEvent e ) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+                    URL url = e.getURL();
+                    if ( url.getProtocol().contains("file") && Utilities.isWindows()){//  NOI18N
+                        try {
+                            Runtime.getRuntime().exec( "explorer.exe "+url.toString());
+                        }
+                        catch(IOException ex){
+                            Logger.getLogger(ChromeInfoPanel.class.getName()).
+                                log(Level.INFO, null , ex);
+                        }
+                    }
+                    else {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+                    }
                 }
             }
         };
