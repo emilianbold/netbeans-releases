@@ -186,7 +186,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         dependeciesComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                System.err.println("selection "+e);
                 validateController();
             }
         });
