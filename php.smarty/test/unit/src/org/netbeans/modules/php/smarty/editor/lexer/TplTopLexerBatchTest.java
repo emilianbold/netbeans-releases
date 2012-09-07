@@ -40,11 +40,11 @@
  */
 package org.netbeans.modules.php.smarty.editor.lexer;
 
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework.Version;
+import org.netbeans.modules.php.smarty.TplTestBase;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 
 /**
@@ -52,7 +52,7 @@ import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
  *
  * @author Martin Fousek
  */
-public class TplTopLexerBatchTest extends TestCase {
+public class TplTopLexerBatchTest extends TplTestBase {
 
     public TplTopLexerBatchTest(String testName) {
         super(testName);
@@ -300,18 +300,6 @@ public class TplTopLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}]");
-    }
-
-    private void setupSmartyOptions(String openDelimiter, String closeDelimiter, Version version) {
-        SmartyOptions.getInstance().setDefaultOpenDelimiter(openDelimiter);
-        SmartyOptions.getInstance().setDefaultCloseDelimiter(closeDelimiter);
-        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
-    }
-
-    private void resetSmartyOptions() {
-        SmartyOptions.getInstance().setDefaultOpenDelimiter("{");
-        SmartyOptions.getInstance().setDefaultCloseDelimiter("}");
-        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
     }
 
     private TokenSequence createTokenSequence(String text) {

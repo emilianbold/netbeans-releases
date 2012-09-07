@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,60 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.rest.codegen.model;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package org.netbeans.modules.web.clientproject.api;
 
 /**
  *
- * @author PeterLiu
- * @author ads
  */
-public class EntityResourceBeanModel {
-    private EntityResourceModelBuilder builder;
-    private Map<String, EntityClassInfo> entityInfos;
-    private boolean valid;
+public class WebClientProjectConstants {
     
+    /**
+     * Constant for Site Root sources group.
+     */
+    public static final String SOURCES_TYPE_HTML5_CONFIG = "HTML5-Config"; // NOI18N
     
-    /** Creates a new instance of ResourceBeanModel */
-    public EntityResourceBeanModel(EntityResourceModelBuilder builder) {
-        this.builder = builder;
-        entityInfos = new HashMap<String, EntityClassInfo>();
-    }
+    /**
+     * Constant for Tests sources group.
+     */
+    public static final String SOURCES_TYPE_HTML5 = "HTML5-Sources"; // NOI18N
     
-    public EntityClassInfo getEntityInfo(String fqn ){
-        return entityInfos.get( fqn );
-    }
-    
-    public Collection<EntityClassInfo> getEntityInfos() {
-        List<EntityClassInfo> infos = new ArrayList<EntityClassInfo>();
-        
-        infos.addAll( entityInfos.values());
-        return infos;
-    }
-    
-    public boolean isValid() {
-        return valid;
-    }
+    /**
+     * Constant for Configuration Files sources group.
+     */
+    public static final String SOURCES_TYPE_HTML5_TEST = "HTML5-Tests"; // NOI18N
 
-    public void setValid(boolean v) {
-        valid = v;
-    }
-    
-    public EntityResourceModelBuilder getBuilder() {
-        return builder;
-    }
-    
-    void addEntityInfo( String fqn , EntityClassInfo info ){
-        if ( info == null ){
-            return;
-        }
-        entityInfos.put( fqn , info );
-    }
 }

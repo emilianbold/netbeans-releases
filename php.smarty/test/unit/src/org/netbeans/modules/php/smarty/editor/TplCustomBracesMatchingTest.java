@@ -34,16 +34,17 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
+import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.TplTestBase;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
- * Based on Marek's HtmlMatcherTest.
+ * Braces matching tests for tags with custom delimiters.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TplBracesMatchingTest extends TplTestBase {
+public class TplCustomBracesMatchingTest extends TplTestBase {
 
     private static final TplBracesMatching MATCHER_FACTORY;
 
@@ -53,9 +54,14 @@ public class TplBracesMatchingTest extends TplTestBase {
     }
     private Document document;
 
-    public TplBracesMatchingTest(String name) {
+    public TplCustomBracesMatchingTest(String name) {
         super(name);
-        resetSmartyOptions();
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        setupSmartyOptions("{[", "]}", SmartyFramework.Version.SMARTY3);
     }
 
     public void testCreateMatcher() throws BadLocationException {
@@ -72,10 +78,10 @@ public class TplBracesMatchingTest extends TplTestBase {
     }
 
     public void testNoOrigin() throws Exception {
-        setDocumentText("{if}  {while} nazdar {/while} {/if}");
+        setDocumentText("{[if]}  {[while]} nazdar {[/while]} {[/if]}");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(5, false, 1);
+        BracesMatcher matcher = createMatcher(7, false, 1);
         assertNull(matcher.findOrigin());
         assertNull(matcher.findMatches());
 
@@ -85,121 +91,121 @@ public class TplBracesMatchingTest extends TplTestBase {
     }
 
     public void testForward() throws Exception {
-        setDocumentText("{if}  {while} nazdar {/while} {/if}");
-        //               0123456789012345678901234567890123456789
+        setDocumentText("{[if]}  {[while]} nazdar {[/while]} {[/if]}");
+        //               01234567890123456789012345678901234567890123
         //               0         1         2         3
         BracesMatcher matcher = createMatcher(0, false, 1);
-        assertOrigin(0, 4, matcher);
-        assertMatch(30, 34, 34, 35, matcher);
+        assertOrigin(0, 6, matcher);
+        assertMatch(36, 41, 41, 43, matcher);
 
-        matcher = createMatcher(7, false, 1);
-        assertOrigin(6, 13, matcher);
-        assertMatch(21, 28, 28, 29, matcher);
+        matcher = createMatcher(10, false, 1);
+        assertOrigin(8, 17, matcher);
+        assertMatch(25, 33, 33, 35, matcher);
 
     }
 
     public void testBackward() throws Exception {
-        setDocumentText("{if}  {while} nazdar {/while} {/if}");
+        setDocumentText("{[if]}  {[while]} nazdar {[/while]} {[/if]}");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(22, false, 1);
-        assertOrigin(21, 29, matcher);
-        assertMatch(6, 12, 12, 13, matcher);
+        BracesMatcher matcher = createMatcher(26, false, 1);
+        assertOrigin(25, 35, matcher);
+        assertMatch(8, 15, 15, 17, matcher);
 
-        matcher = createMatcher(31, false, 1);
-        assertOrigin(30, 35, matcher);
-        assertMatch(0, 3, 3, 4, matcher);
+        matcher = createMatcher(37, false, 1);
+        assertOrigin(36, 43, matcher);
+        assertMatch(0, 4, 4, 6, matcher);
 
     }
 
     public void testBoundaries() throws Exception {
-        setDocumentText("{if}{while}{/while}{/if}");
+        setDocumentText("{[if]}{[while]}{[/while]}{[/if]}");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
 
         //forward search
-        BracesMatcher matcher = createMatcher(19, false, 1);
-        assertOrigin(19, 24, matcher);
-        assertMatch(0, 3, 3, 4, matcher);
+        BracesMatcher matcher = createMatcher(25, false, 1);
+        assertOrigin(25, 32, matcher);
+        assertMatch(0, 4, 4, 6, matcher);
 
-        matcher = createMatcher(11, false, 1);
-        assertOrigin(11, 19, matcher);
-        assertMatch(4, 10, 10, 11, matcher);
+        matcher = createMatcher(15, false, 1);
+        assertOrigin(15, 25, matcher);
+        assertMatch(6, 13, 13, 15, matcher);
 
         //backward search
-        matcher = createMatcher(19, true, 1);
-        assertOrigin(11, 19, matcher);
-        assertMatch(4, 10, 10, 11, matcher);
+        matcher = createMatcher(25, true, 1);
+        assertOrigin(15, 25, matcher);
+        assertMatch(6, 13, 13, 15, matcher);
 
-        matcher = createMatcher(11, true, 1);
-        assertOrigin(4, 11, matcher);
-        assertMatch(11, 18, 18, 19, matcher);
+        matcher = createMatcher(15, true, 1);
+        assertOrigin(6, 15, matcher);
+        assertMatch(15, 23, 23, 25, matcher);
     }
 
     public void testNoMatch() throws Exception {
-        setDocumentText("{if}{section}{/capture}{/if}");
+        setDocumentText("{[if]}{[section]}{[/capture]}{[/if]}");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(14, false, 1);
-        assertOrigin(13, 23, matcher);
+        BracesMatcher matcher = createMatcher(19, false, 1);
+        assertOrigin(17, 29, matcher);
         assertNull(matcher.findMatches()); // parser issues
 
-        matcher = createMatcher(5, false, 1);
-        assertOrigin(4, 13, matcher);
+        matcher = createMatcher(8, false, 1);
+        assertOrigin(6, 17, matcher);
         assertNull(matcher.findMatches()); // parser issues
     }
 
     public void testMatchSingleTag() throws Exception {
-        setDocumentText("{eval} {assign var=var value=value} {include file=\"myfile.tpl\"}");
-        //               01234567890123456789012345678901234567890123456789012345678901234567890
-        //               0         1         2         3         4         5         6         7
-        BracesMatcher matcher = createMatcher(2, false, 1);
-        assertOrigin(0, 6, matcher);
-        assertMatch(2, 2, matcher);
-
-        matcher = createMatcher(8, false, 1);
-        assertOrigin(7, 35, matcher);
-        assertMatch(8, 8, matcher);
-    }
-
-    public void testMatchSimpleTag() throws Exception {
-        setDocumentText("{$var} {$anotherVar}");
-        //               01234567890123456789012345678901234567890123456789012345678901234567890
-        //               0         1         2         3         4         5         6         7
-        BracesMatcher matcher = createMatcher(2, false, 1);
-        assertOrigin(0, 6, matcher);
-        assertMatch(2, 2, matcher);
-
-        matcher = createMatcher(19, false, 1);
-        assertOrigin(7, 20, matcher);
-        assertMatch(19, 19, matcher);
-    }
-
-    public void testCommentTag() throws Exception {
-        setDocumentText("{* any comment *}");
-        //               01234567890123456789012345678901234567890123456789012345678901234567890
-        //               0         1         2         3         4         5         6         7
-        BracesMatcher matcher = createMatcher(5, false, 1);
-        assertOrigin(0, 17, matcher);
-        assertMatch(5, 5, matcher);
-    }
-
-    public void testUnfinishedTag() throws Exception {
-        setDocumentText("{writing");
-        //               01234567890123456789012345678901234567890123456789012345678901234567890
-        //               0         1         2         3         4         5         6         7
-        BracesMatcher matcher = createMatcher(7, false, 1);
-        assertNull(matcher.findOrigin());
-        assertMatch(7, 7, matcher);
-    }
-
-    public void testMoreMatchedTag() throws Exception {
-        setDocumentText("{if}{else}{/if}");
+        setDocumentText("{[eval]} {[assign var=var value=value]} {[include file=\"myfile.tpl\"]}");
         //               01234567890123456789012345678901234567890123456789012345678901234567890
         //               0         1         2         3         4         5         6         7
         BracesMatcher matcher = createMatcher(3, false, 1);
-        assertOrigin(0, 4, matcher);
-        assertMatch(new int []{4, 9, 9, 10, 10, 14, 14, 15}, matcher);
+        assertOrigin(0, 8, matcher);
+        assertMatch(3, 3, matcher);
+
+        matcher = createMatcher(11, false, 1);
+        assertOrigin(9, 39, matcher);
+        assertMatch(11, 11, matcher);
+    }
+
+    public void testMatchSimpleTag() throws Exception {
+        setDocumentText("{[$var]} {[$anotherVar]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(3, false, 1);
+        assertOrigin(0, 8, matcher);
+        assertMatch(3, 3, matcher);
+
+        matcher = createMatcher(23, false, 1);
+        assertOrigin(9, 24, matcher);
+        assertMatch(23, 23, matcher);
+    }
+
+    public void testCommentTag() throws Exception {
+        setDocumentText("{[* any comment *]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(6, false, 1);
+        assertOrigin(0, 19, matcher);
+        assertMatch(6, 6, matcher);
+    }
+
+    public void testUnfinishedTag() throws Exception {
+        setDocumentText("{[writing");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(8, false, 1);
+        assertNull(matcher.findOrigin());
+        assertMatch(8, 8, matcher);
+    }
+
+    public void testMoreMatchedTag() throws Exception {
+        setDocumentText("{[if]}{[else]}{[/if]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(4, false, 1);
+        assertOrigin(0, 6, matcher);
+        assertMatch(new int[]{6, 12, 12, 14, 14, 19, 19, 21}, matcher);
     }
 
     //--------------------------------------------------------------------------
@@ -235,7 +241,7 @@ public class TplBracesMatchingTest extends TplTestBase {
         assertNotNull(match);
         for (int i = 0; i < match.length; i++) {
             assertEquals(expected[i], match[i]);
-            
+
         }
     }
 

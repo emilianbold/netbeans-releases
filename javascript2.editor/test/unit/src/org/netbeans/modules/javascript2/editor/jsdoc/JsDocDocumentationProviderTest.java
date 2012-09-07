@@ -218,7 +218,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 348), null, "", false,
-                Arrays.<Type>asList(new TypeImpl("", -1)));
+                Collections.<Type>emptyList());
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 

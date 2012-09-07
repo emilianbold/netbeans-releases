@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
@@ -59,8 +60,6 @@ import org.openide.util.ChangeSupport;
  *
  */
 public class ClientSideProjectSources implements Sources, ChangeListener {
-
-    public static final String SOURCES_TYPE_HTML5 = "HTML5-Sources"; // NOI18N
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ClientSideProject project;
@@ -98,14 +97,14 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
         sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER + "}")
                 .displayName("Site Root")
                 .add() // adding as principal root, continuing configuration
-                .type(SOURCES_TYPE_HTML5).add(); // adding as typed root
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5).add(); // adding as typed root
         sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_TEST_FOLDER + "}")
                 .displayName("Unit Tests")
                 .add() // adding as principal root, continuing configuration
-                .type(SOURCES_TYPE_HTML5).add(); // adding as typed root
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST).add(); // adding as typed root
         sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_CONFIG_FOLDER + "}")
                 .displayName("Configuration Files")
-                .type(SOURCES_TYPE_HTML5).add(); // adding as principal root
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG).add(); // adding as principal root
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }
