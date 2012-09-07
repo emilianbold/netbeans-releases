@@ -398,7 +398,16 @@ public class XMLLexerFormatter {
         int lastNewline = lastIndexOf(image, '\n');
         int currentOffset = tokenSequence.offset();
 
-        if (lastNewline == -1 || preserveWhitespace || !tokenInSelectionRange) {
+        boolean intersectsWithRange;
+        
+        int tokenStart = tokenSequence.offset();
+        int tokenEnd = tokenStart + image.length();
+        
+        intersectsWithRange = ((tokenStart <= startOffset && tokenEnd > startOffset) ||
+            (tokenEnd >= endOffset && tokenStart < endOffset) ||
+            (tokenStart >= startOffset && tokenEnd <= endOffset));
+
+        if (lastNewline == -1 || preserveWhitespace || !intersectsWithRange) {
             // even if outside selection range, we do not update indent; text will not affect following tags
             // we have to set the 'newLine' flag, if the last text line only contains whitespaces. 
             int nonWhitePos = Utilities.getFirstNonWhiteFwd(basedoc, currentOffset + Math.max(0, lastNewline), currentOffset + image.length());
