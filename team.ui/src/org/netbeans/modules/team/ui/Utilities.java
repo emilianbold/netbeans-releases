@@ -46,12 +46,14 @@ import java.util.Collection;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Milan Kubec
  */
 public class Utilities {
+    private static RequestProcessor RP;
 
     public static void assertJid(String name) {
         assert name!=null;
@@ -93,6 +95,13 @@ public class Utilities {
             return;
         Preferences prefs = NbPreferences.forModule(Utilities.class);
         prefs.put("dashboard.last.selected.teamserver", k.getUrl().toString()); //NOI18N
+    }
+    
+    public static RequestProcessor getRequestProcessor () {
+        if (RP == null) {
+            RP = new RequestProcessor("Team tasks", 1); //NOI18N
+        }
+        return RP;
     }
 
 }

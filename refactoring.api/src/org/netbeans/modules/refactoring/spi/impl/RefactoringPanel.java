@@ -779,7 +779,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                             for (Iterator it = elements.iterator(); it.hasNext();i++) {
                                 final RefactoringElement e = (RefactoringElement) it.next();
                                 TreeElement treeElement = null;
-                                if(e.include(filtersManager)) {
+                                if(callback != null || // #217986, not really nice
+                                        e.include(filtersManager)) {
                                     treeElement = TreeElementFactory.getTreeElement(e);
                                     createNode(treeElement, nodes, root);
                                 } else {
@@ -1115,7 +1116,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
     }
 
     private void updateFilters() {
-        if(!ui.isQuery()) {
+        if(!ui.isQuery() || callback != null) {
             if(filterBar != null) {
                 toolbars.remove(filterBar);
                 filterBar = null;

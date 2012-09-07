@@ -274,7 +274,12 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
             }
             for (Element member : enclosedElements) {
                 if(element.getSimpleName().contentEquals(member.getSimpleName())) {
-                    p = JavaPluginUtils.chainProblems(p, new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", element.getSimpleName())));
+                    Problem p2;
+                    if(member.getKind() != ElementKind.METHOD) {
+                        p = JavaPluginUtils.chainProblems(p, new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", element.getSimpleName())));
+                    } else if((p2 = compareMethodSignatures((ExecutableElement)element, (ExecutableElement)member, targetElement, javac)) != null) {
+                        p = JavaPluginUtils.chainProblems(p, p2);
+                    }
                 }
             }
         }
@@ -378,5 +383,67 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
             }
         }
         return null;
+    }
+
+    private Problem compareMethodSignatures(ExecutableElement method, ExecutableElement exMethod, Element targetElement, CompilationInfo javac) {
+        Problem p = null;
+        if (!exMethod.equals(method)) {
+            if (exMethod.getSimpleName().equals(method.getSimpleName())
+                    && exMethod.getParameters().size() == method.getParameters().size()) {
+                boolean sameParameters = true;
+                boolean wideningConversion = true;
+                for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                    TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
+                    TypeMirror paramType = method.getParameters().get(j).asType();
+                    if (!javac.getTypes().isSameType(exType, paramType)) {
+                        sameParameters = false;
+                        if (exType.getKind().isPrimitive() && paramType.getKind().isPrimitive()) {
+                            /*
+                             * byte to short, int, long, float, or double
+                             * short to int, long, float, or double
+                             * char to int, long, float, or double
+                             * int to long, float, or double
+                             * long to float or double
+                             * float to double
+                             */
+                            switch (exType.getKind()) {
+                                case DOUBLE:
+                                    if (paramType.getKind().equals(TypeKind.FLOAT)) {
+                                        break;
+                                    }
+                                case FLOAT:
+                                    if (paramType.getKind().equals(TypeKind.LONG)) {
+                                        break;
+                                    }
+                                case LONG:
+                                    if (paramType.getKind().equals(TypeKind.INT)) {
+                                        break;
+                                    }
+                                case INT:
+                                    if (paramType.getKind().equals(TypeKind.SHORT)) {
+                                        break;
+                                    }
+                                case SHORT:
+                                    if (paramType.getKind().equals(TypeKind.BYTE)) {
+                                        break;
+                                    }
+                                case BYTE:
+                                    wideningConversion = false;
+                                    break;
+                            }
+                        } else {
+                            wideningConversion = false;
+                        }
+                    }
+                }
+                if (sameParameters) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), ((TypeElement)targetElement).getQualifiedName())); // NOI18N
+                } else if (wideningConversion) {
+                    p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_wideningConversion", exMethod.toString(), ((TypeElement)targetElement).getQualifiedName())); // NOI18N
+                }
+            }
+        }
+        
+        return p;
     }
 }
