@@ -63,6 +63,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -153,9 +154,9 @@ public final class ClientSideProjectUtilities {
         assert project instanceof ClientSideProject;
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> res= new ArrayList<SourceGroup>();
-        res.addAll(Arrays.asList(sources.getSourceGroups(ClientSideProjectSources.SOURCES_TYPE_HTML5)));
-        res.addAll(Arrays.asList(sources.getSourceGroups(ClientSideProjectSources.SOURCES_TYPE_HTML5_TEST)));
-        res.addAll(Arrays.asList(sources.getSourceGroups(ClientSideProjectSources.SOURCES_TYPE_HTML5_CONFIG)));
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST)));
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG)));
         return res.toArray(new SourceGroup[res.size()]);
     }
 

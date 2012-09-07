@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -180,7 +181,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             // no client side project
             return groups;
         } else {
-            return ClientSideProjectUtilities.getSourceGroups(project, ClientSideProjectSources.SOURCES_TYPE_HTML5);
+            return ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
         }
     }
 
