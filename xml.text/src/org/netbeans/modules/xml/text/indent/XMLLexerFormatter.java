@@ -203,12 +203,19 @@ public class XMLLexerFormatter {
         settingSpaceValue = false;
     }
     
+    /**
+     * The indent of the most recent start/end tagname, so that closing > is indented properly,
+     * if alone on newline.
+     */
+    private int tagIndent;
+    
     private void startTag(CharSequence image) throws BadLocationException {
         CharSequence tagName = image.subSequence(1, image.length());
         int begin = currentTokensSize;
         int end = begin + image.length();
         updateIndent(true, -1, preserveWhitespace);
         TokenIndent indent = new TokenIndent(tagName, preserveWhitespace, begin, indentLevel);
+        tagIndent = indentLevel;
         stack.push(indent);
         if (tokenInSelectionRange) {
             if (wasNewline || onlyTags) {
@@ -221,7 +228,7 @@ public class XMLLexerFormatter {
     private void tagClose(CharSequence image) {
         if (wasNewline && tokenInSelectionRange) {
             // 1st item on a new line, will indent according to the opening tag
-            tags.add(new TokenIndent(false, tokenSequence.offset(), indentLevel));
+            tags.add(new TokenIndent(false, tokenSequence.offset(), tagIndent));
         }
         // reset
         contentPresent = false;
@@ -231,11 +238,11 @@ public class XMLLexerFormatter {
         if (preserveAfter) {
             return indentLevel;
         }
+        int save = this.indentLevel;
         if (tokenInSelectionRange) {
             if (targetLevel != -1) {
-                indentLevel = targetLevel;
+                indentLevel = save = targetLevel;
             }
-            int save = this.indentLevel;
             if (increase) {
                 indentLevel += spacesPerTab;
             } else {
@@ -251,7 +258,7 @@ public class XMLLexerFormatter {
                 if (!increase) {
                     indentLevel = Math.max(- spacesPerTab, indentLevel - spacesPerTab);
                 }
-                return indentLevel;
+                return save;
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
                 return indentLevel;
@@ -302,6 +309,7 @@ public class XMLLexerFormatter {
             }
         }
         int tagLevel = updateIndent(false, newIndentLevel, preservingWhitespaceOnClose);
+        tagIndent = tagLevel;
         if (tokenInSelectionRange && !preserveThis) {
             // self-closing tag end does not indent unless it starts a new line
             boolean indent = wasNewline;
@@ -350,7 +358,7 @@ public class XMLLexerFormatter {
         // fall through !
         if (firstAttributeIndent == -1) {
             firstAttributeIndent = wasNewline ? 
-                    indentLevel + spacesPerTab : 
+                    tagIndent + spacesPerTab : 
                     Utilities.getVisualColumn(basedoc, tokenSequence.offset());
         }
         if (wasNewline) {
@@ -569,10 +577,10 @@ public class XMLLexerFormatter {
                         break;
                     }
                     case PI_END: {
-                        updateIndent(false, -1, preserveWhitespace);
+                        int l = updateIndent(false, -1, preserveWhitespace);
                         if (wasNewline && tokenInSelectionRange) {
                             // 1st item on a new line, will indent according to the opening tag
-                            tags.add(new TokenIndent(false, tokenSequence.offset(), indentLevel));
+                            tags.add(new TokenIndent(false, tokenSequence.offset(), l));
                         }
                         break;
                     }
@@ -678,7 +686,7 @@ public class XMLLexerFormatter {
                                 + "Please use the text editor to resolve the issues...");
                 }
                 currentTokensSize += image.length();
-                if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT) {
+                if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT && tokenId != XMLTokenId.PI_CONTENT) {
                     // clear indicator of the newline
                     wasNewline = false;
                 }
