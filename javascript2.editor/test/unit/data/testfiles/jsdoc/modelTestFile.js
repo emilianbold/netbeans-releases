@@ -183,3 +183,10 @@ var line36;
  * @version versionDescription
  */
 var line37;
+
+/**
+ * @param p1 textA
+ * @param {Cislo} p2 text2
+ */
+function test(p1, p2) {
+}

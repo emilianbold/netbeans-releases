@@ -97,7 +97,9 @@ public class JsDocElementUtils {
         List<Type> types = new LinkedList<Type>();
         String[] typesArray = textToParse.split("[|]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+            if (!string.trim().isEmpty()) {
+                types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+            }
         }
         return types;
     }
