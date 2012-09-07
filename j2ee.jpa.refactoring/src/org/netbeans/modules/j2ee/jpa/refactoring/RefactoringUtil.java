@@ -163,13 +163,14 @@ public abstract class RefactoringUtil {
         }
         final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
+        final CompilationInfo[] ci = {null};
         try{
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
                 @Override
                 public void run(CompilationController co) throws Exception {
                     co.toPhase(JavaSource.Phase.RESOLVED);
-                    refactoring.getContext().add(co);
+                    ci[0]=co;
                 }
                 
                 @Override
@@ -180,7 +181,7 @@ public abstract class RefactoringUtil {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return refactoring.getContext().lookup(CompilationInfo.class);
+        return ci[0];
     }
     
     /**
