@@ -333,7 +333,7 @@ public class RuleNode extends AbstractNode {
         });
     }
 
-    private class PropertyCategoryPropertySet extends PropertySet {
+    class PropertyCategoryPropertySet extends PropertySet {
 
         private List<Property> properties = new ArrayList<Property>();
         private Map<Declaration, DeclarationProperty> declaration2PropertyMap = new HashMap<Declaration, DeclarationProperty>();
@@ -467,7 +467,7 @@ public class RuleNode extends AbstractNode {
         return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
     }
 
-    class DeclarationProperty extends PropertySupport {
+    public class DeclarationProperty extends PropertySupport {
 
         private Declaration declaration;
         private DeclarationInfo info;
@@ -482,6 +482,10 @@ public class RuleNode extends AbstractNode {
             this.editor = editor;
         }
 
+        public Declaration getDeclaration() {
+            return declaration;
+        }
+        
         @Override
         public PropertyEditor getPropertyEditor() {
             return editor;
