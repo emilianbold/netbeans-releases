@@ -185,9 +185,11 @@ class PopupActionsProvider implements PopupMenuProvider {
 
     class LazyOpenTeamProjectAction extends LazyProjectAction {
 
-        @NbBundle.Messages("LBL_OpenTeamProjectName=Open Corresponding Team Server Project ...")
+        @NbBundle.Messages({ "LBL_OpenTeamProjectName=Open Corresponding Team Server Project ...",
+            "MSG_OpeningProject=Open Team Project..."
+        })
         public LazyOpenTeamProjectAction (final Project proj, final String repositoryUrl) {
-            super(Bundle.LBL_OpenTeamProjectName(), repositoryUrl, MSG_OpeningProject());
+            super(Bundle.LBL_OpenTeamProjectName(), repositoryUrl, Bundle.MSG_OpeningProject());
         }
 
         @Override
