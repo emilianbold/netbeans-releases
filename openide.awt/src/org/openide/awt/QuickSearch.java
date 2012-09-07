@@ -265,6 +265,9 @@ public class QuickSearch {
      * @param ke a key event to process.
      */
     public void processKeyEvent(KeyEvent ke) {
+        if (!isEnabled()) {
+            return ;
+        }
         if (searchPanel != null) {
             searchTextField.setCaretPosition(searchTextField.getText().length());
             searchTextField.processKeyEvent(ke);
