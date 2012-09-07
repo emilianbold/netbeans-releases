@@ -139,13 +139,20 @@ public class RuleNode extends AbstractNode {
     }
 
     void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo declarationInfo) {
+        DeclarationProperty dp = getDeclarationProperty(declaration);
+        if(dp != null) {
+            dp.setDeclarationInfo(declarationInfo);
+        }
+    }
+    
+    DeclarationProperty getDeclarationProperty(Declaration declaration) {
         for (PropertyCategoryPropertySet set : getCachedPropertySets()) {
             DeclarationProperty declarationProperty = set.getDeclarationProperty(declaration);
             if (declarationProperty != null) {
-                declarationProperty.setDeclarationInfo(declarationInfo);
-                break;
+                return declarationProperty;
             }
         }
+        return null;
     }
 
     @Override
@@ -460,7 +467,7 @@ public class RuleNode extends AbstractNode {
         return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
     }
 
-    private class DeclarationProperty extends PropertySupport {
+    class DeclarationProperty extends PropertySupport {
 
         private Declaration declaration;
         private DeclarationInfo info;
