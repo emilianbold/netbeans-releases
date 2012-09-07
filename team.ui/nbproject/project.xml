@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.team.ui</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.core.ide</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -162,12 +171,13 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.ods.ui</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
-                <friend>org.netbeans.modules.versioning.kenai</friend>
+                <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.ods.hudson</friend>
+                <friend>org.netbeans.modules.ods.tasks.bridge</friend>
+                <friend>org.netbeans.modules.ods.ui</friend>
                 <friend>org.netbeans.modules.ods.versioning</friend>
+                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <package>org.netbeans.modules.team.ui.common</package>
                 <package>org.netbeans.modules.team.ui.spi</package>
                 <package>org.netbeans.modules.team.ui.treelist</package>
