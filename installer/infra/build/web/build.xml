@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -46,7 +46,7 @@
 	<antcall target="prepare-netbeans-web-page"/>
     </target>
 
-    <target name="prepare-netbeans-web-page" depends="init-web-page,init-web-page-ml,build-web-page,release-web-page"/>
+    <target name="prepare-netbeans-web-page" depends="init-web-page,build-web-page,release-web-page"/>
 
     <target name="init-web-page">
         <taskdef 
@@ -67,9 +67,7 @@
 	<set property="locales" value=""/>
         <set property="enable.languages.redirect" value="0"/>
 	<set property="redirect.page.type"        value="community"/>
-    </target>
-
-   <target name="init-web-page-ml" if="ml.build">
+        
 	<condition property="nb.locales.notzero.length">
  	     <not>
  	     	<equals arg1="${nb.locales}" arg2=""/>
@@ -78,7 +76,7 @@
  
 
  	<if property="nb.locales.notzero.length"> 
- 		<set property="locales" value=",${nb.locales}"/>
+            <set property="locales" value=",${nb.locales}"/>
  	</if>
 
 	<copy todir="${web.page.dir}" failonerror="false">
