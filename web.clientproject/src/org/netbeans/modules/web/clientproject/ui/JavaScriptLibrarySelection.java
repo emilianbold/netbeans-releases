@@ -89,13 +89,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
-import org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider;
-import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
-import org.netbeans.spi.project.libraries.LibraryFactory;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -459,7 +453,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
             }
             Library library = libraryVersion.getLibrary();
-            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
@@ -691,7 +685,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         public LibrariesTableModel() {
             assert EventQueue.isDispatchThread();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/getLibraries()) {
+            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
                             WebClientLibraryManager.PROPERTY_REAL_NAME);
@@ -781,19 +775,6 @@ public class JavaScriptLibrarySelection extends JPanel {
         List<ModelItem> getItems() {
             assert EventQueue.isDispatchThread();
             return items;
-        }
-
-        private List<Library> getLibraries() {
-            List<Library> libs = new ArrayList<Library>();
-            addLibraries(libs, new CDNJSLibrariesProvider());
-            addLibraries(libs, new GoogleLibrariesProvider());
-            return libs;
-        }
-
-        private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
-            for (LibraryImplementation li : provider.getLibraries()) {
-                libs.add(LibraryFactory.createLibrary(li));
-            }
         }
 
     }
@@ -914,7 +895,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         public String getSimpleDisplayName() {
-            return getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
+            return getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
         }
 
         public String getDescription() {

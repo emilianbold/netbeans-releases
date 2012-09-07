@@ -47,13 +47,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
+import org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider;
+import org.netbeans.spi.project.libraries.LibraryFactory;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -91,6 +95,21 @@ public class WebClientLibraryManager {
     public static final String PROPERTY_REAL_NAME = "name"; // NOI18N
     
     /**
+     * Real display name of the library, that is without CND source prefix and without version in the name.
+     */
+    public static final String PROPERTY_REAL_DISPLAY_NAME = "displayname"; // NOI18N
+    
+    /**
+     * Name of CDN this library is comming from.
+     */
+    public static final String PROPERTY_CDN = "cdn"; // NOI18N
+
+    /**
+     * Homepage of the library.
+     */
+    public static final String PROPERTY_SITE = "site"; // NOI18N
+
+    /**
      * Default relative path for libraries folder
      */
     public static final String LIBS = "public_html/js/libs";       // NOI18N
@@ -99,6 +118,28 @@ public class WebClientLibraryManager {
      * Library version.
      */
     public static final String PROPERTY_VERSION = "version"; // NOI18N
+    
+    private static List<Library> libs;
+    
+    /**
+     * Returns all JavaScript libraries. They are not registered in global libraries
+     * repository for now.
+     */
+    public static synchronized List<Library> getLibraries() {
+        if (libs == null) {
+            List<Library> libs2 = new ArrayList<Library>();
+            addLibraries(libs2, new CDNJSLibrariesProvider());
+            addLibraries(libs2, new GoogleLibrariesProvider());
+            libs = libs2;
+        }
+        return libs;
+    }
+
+    private static void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
+        for (LibraryImplementation li : provider.getLibraries()) {
+            libs.add(LibraryFactory.createLibrary(li));
+        }
+    }
     
     /**
      * Finds library with the specified <code>name</code> and <code>version</code>.
@@ -109,10 +150,9 @@ public class WebClientLibraryManager {
      * @return library 
      */
     public static Library findLibrary( String name , String version ){
-        Library[] libraries = LibraryManager.getDefault().getLibraries();
         SpecificationVersion lastVersion=null;
         Library lib = null;
-        for (Library library : libraries) {
+        for (Library library : getLibraries()) {
             if ( library.getType().equals(TYPE)){
                 String libName = library.getProperties().get(PROPERTY_REAL_NAME);
                 String libVersion = library.getProperties().get(PROPERTY_VERSION);
@@ -149,9 +189,8 @@ public class WebClientLibraryManager {
      * @return all version of library
      */
     public static String[] getVersions( String libraryName ){
-        Library[] libraries = LibraryManager.getDefault().getLibraries();
         List<String> result = new LinkedList<String>();
-        for (Library library : libraries) {
+        for (Library library : getLibraries()) {
             if ( library.getType().equals(TYPE)){
                 String libName = library.getProperties().get(PROPERTY_REAL_NAME);
                 if ( libName.equals(libraryName)){

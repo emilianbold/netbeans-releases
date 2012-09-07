@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.clientproject.libraries;
 
 import java.beans.Customizer;
-
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -55,21 +54,6 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({"JavaScriptLibraryType_Name=JavaScript Libraries"})
 public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
-    
-    /**
-     * Name of CDN this library is comming from.
-     */
-    public static final String PROPERTY_CDN = "cdn"; // NOI18N
-
-    /**
-     * Homepage of the library.
-     */
-    public static final String PROPERTY_SITE = "site"; // NOI18N
-
-    /**
-     * Real display name of the library, that is without CND source prefix and without version in the name.
-     */
-    public static final String PROPERTY_REAL_DISPLAY_NAME = "displayname"; // NOI18N
     
     /**
      * Supported volumes.
