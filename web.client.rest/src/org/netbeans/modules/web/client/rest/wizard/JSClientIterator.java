@@ -57,11 +57,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -196,8 +198,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
-                FileObject libs = FileUtil.createFolder(project.
-                        getProjectDirectory(),WebClientLibraryManager.LIBS);
+                FileObject libs = FileUtil.createFolder(getLibFolder(project),
+                        WebClientLibraryManager.LIBS);
                 handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                         "TXT_CreateLibs"));                                 // NOI18N
                 existedBackbone = addLibrary( libs , "backbone.js");        // NOI18N
@@ -254,6 +256,17 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     @Override
     public void uninitialize( WizardDescriptor descriptor ) {
         myPanels = null;
+    }
+    
+    static FileObject getLibFolder(Project project){
+        SourceGroup[] groups =  ProjectUtils.getSources(project).getSourceGroups(
+                WebClientProjectConstants.SOURCES_TYPE_HTML5);
+        if ( groups!= null && groups.length >0 ){
+            return groups[0].getRootFolder();
+        }
+        else {
+            return project.getProjectDirectory();
+        }
     }
     
     private FileObject createHtml( File htmlFile, FileObject appFile, 

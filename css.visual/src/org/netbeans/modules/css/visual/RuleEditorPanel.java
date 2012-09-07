@@ -43,12 +43,16 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -66,6 +70,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
@@ -73,13 +80,17 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
@@ -162,6 +173,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
+    private Declaration createdDeclaration;
+    
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
@@ -210,13 +223,24 @@ public class RuleEditorPanel extends JPanel {
                         }
                     }
                 });
+            } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
+                //refresh the PS content
+                node.fireContextChanged();
+                
+                if(createdDeclaration != null) {
+                    //select & edit the property corresponding to the created declaration
+                    editCreatedDeclaration();
+                }
             }
         }
     };
+    private final ActionListener addPropertyCBActionListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            addPropertyCBValueEntered();
+        }
+    };
 
-    /**
-     * Creates new form RuleEditorPanel
-     */
     public RuleEditorPanel() {
         this(false);
     }
@@ -299,18 +323,43 @@ public class RuleEditorPanel extends JPanel {
         ADD_PROPERTY_CB_MODEL.addInitialText();
         AutoCompleteDecorator.decorate(addPropertyCB, new AddPropertyCBObjectToStringConverter());
 
+        //nasty workaround for the enter key being consumed by the popup
+        addPropertyCB.addPopupMenuListener(new PopupMenuListener() {
+            private boolean cancelled;
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                cancelled = false;
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if (!cancelled) {
+                    addPropertyCBValueEntered();
+                }
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                cancelled = true;
+            }
+        });
+
+
         addPropertyCB.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.removeInitialText();
+                addPropertyCB.getEditor().addActionListener(addPropertyCBActionListener);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.addInitialText();
+                addPropertyCB.getEditor().removeActionListener(addPropertyCBActionListener);
             }
         });
-        
+
 
         if (!addPropertyMode) {
             northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
@@ -322,13 +371,13 @@ public class RuleEditorPanel extends JPanel {
         titleLabel.setText(null);
 
         //add the property sheet to the center
-        sheet = new PropertySheet();
+        sheet = new REPropertySheet(popupMenu);
         try {
             sheet.setSortingMode(PropertySheet.UNSORTED);
         } catch (PropertyVetoException ex) {
             //no-op
         }
-        sheet.setPopupEnabled(false);
+        sheet.setPopupEnabled(true);
         sheet.setDescriptionAreaVisible(false);
         sheet.setNodes(new Node[]{node});
 
@@ -338,6 +387,71 @@ public class RuleEditorPanel extends JPanel {
 
         updateFiltersPresenters();
 
+    }
+
+    private void addPropertyCBValueEntered() {
+        Object selected = ADD_PROPERTY_CB_MODEL.getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+
+        final String propertyName;
+        if (selected instanceof PropertyDefinition) {
+            PropertyDefinition pd = (PropertyDefinition) selected;
+            propertyName = pd.getName();
+        } else if (selected instanceof String) {
+            String val = (String) selected;
+            if (!val.trim().isEmpty()) {
+                propertyName = val;
+            } else {
+                propertyName = null;
+            }
+        } else {
+            propertyName = null;
+        }
+
+        if (propertyName != null) {
+            //1.create the property
+            //2.select the corresponding row in the PS
+
+            model.runWriteTask(new Model.ModelTask() {
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    //add the new declaration to the model.
+                    //the declaration is not complete - the value is missing and it is necessary to 
+                    //enter in the PS otherwise the model become invalid.
+                    ModelUtils utils = new ModelUtils(model);
+                    Declarations decls = rule.getDeclarations();
+                    if (decls == null) {
+                        decls = model.getElementFactory().createDeclarations();
+                        rule.setDeclarations(decls);
+                    }
+
+                    Declaration declaration = utils.createDeclaration(propertyName + ":");
+                    decls.addDeclaration(declaration);
+                    
+                    //do not save the model (apply changes) - once the write task finishes
+                    //the embedded property sheet will be refreshed from the modified model.
+                    
+                    //remember the created declaration so once the model change is fired
+                    //and the property sheet is refreshed, we can find and select the corresponding
+                    //FeatureDescriptor
+                    createdDeclaration = declaration;
+                }
+            });
+
+        }
+    }
+    
+    
+    private void editCreatedDeclaration() {
+        DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
+        assert descriptor != null;
+        
+        sheet.requestFocus();
+//        sheet.select(descriptor, true);
+        
+        createdDeclaration = null;
     }
 
     public final void updateFiltersPresenters() {
@@ -505,11 +619,11 @@ public class RuleEditorPanel extends JPanel {
         if (!rule.isValid()) {
             northWestPanel.add(ERROR_LABEL);
             addPropertyButton.setEnabled(false);
-//            addPropertyCB.setEnabled(false);
+            addPropertyCB.setEnabled(false);
         } else {
             northWestPanel.remove(ERROR_LABEL);
             addPropertyButton.setEnabled(true);
-//            addPropertyCB.setEnabled(true);
+            addPropertyCB.setEnabled(true);
         }
         northWestPanel.revalidate();
 
@@ -536,7 +650,7 @@ public class RuleEditorPanel extends JPanel {
 
         titleLabel.setText(null);
         addPropertyButton.setEnabled(false);
-//        addPropertyCB.setEnabled(false);
+        addPropertyCB.setEnabled(false);
         node.fireContextChanged();
     }
 
@@ -627,11 +741,6 @@ public class RuleEditorPanel extends JPanel {
         addPropertyCB.setModel(ADD_PROPERTY_CB_MODEL);
         addPropertyCB.setEnabled(false);
         addPropertyCB.setRenderer(new AddPropertyCBRendeder());
-        addPropertyCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addPropertyCBActionPerformed(evt);
-            }
-        });
         southPanel.add(addPropertyCB, java.awt.BorderLayout.CENTER);
 
         add(southPanel, java.awt.BorderLayout.SOUTH);
@@ -641,31 +750,6 @@ public class RuleEditorPanel extends JPanel {
         //just invoke popup as if right-clicked
         popupMenu.show(menuLabel, 0, 0);
     }//GEN-LAST:event_menuLabelMouseClicked
-
-    private void addPropertyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPropertyCBActionPerformed
-        Object selected = ADD_PROPERTY_CB_MODEL.getSelectedItem();
-        if (selected == null) {
-            return;
-        }
-        
-        String propertyName = null;
-        if (selected instanceof PropertyDefinition) {
-            PropertyDefinition pd = (PropertyDefinition) selected;
-            propertyName = pd.getName();
-        }
-        if (selected instanceof String) {
-            String val = (String) selected;
-            if (!val.trim().isEmpty()) {
-                propertyName = val;
-            }
-        }
-        
-        if(propertyName != null) {
-            //1.create the property
-            //2.select the corresponding row in the PS
-        }
-
-    }//GEN-LAST:event_addPropertyCBActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
     private javax.swing.JComboBox addPropertyCB;
@@ -746,6 +830,44 @@ public class RuleEditorPanel extends JPanel {
                     }
                 }
             }
+        }
+    }
+    
+    private class REPropertySheet extends PropertySheet {
+
+        private final JPopupMenu genericPopupMenu;
+
+        public REPropertySheet(JPopupMenu genericPopupMenu) {
+            this.genericPopupMenu = genericPopupMenu;
+        }
+        
+        @Override
+        protected JPopupMenu createPopupMenu() {
+            FeatureDescriptor fd = getSelection();
+            if(fd != null) {
+                if(fd instanceof RuleNode.DeclarationProperty) {
+                    //property
+                    //
+                    //actions:
+                    //remove
+                    //hide
+                    //????
+                    //custom popop for the whole panel
+                    JPopupMenu pm = new JPopupMenu();
+                    
+                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+
+                    return pm;
+                    
+                } else if(fd instanceof RuleNode.PropertyCategoryPropertySet) {
+                    //property category
+                    //TODO possibly add "add property" action which would
+                    //preselect the css category in the "add property dialog".
+                }
+            }            
+            
+            //no context popup - create the generic popup
+            return genericPopupMenu;
         }
         
     }

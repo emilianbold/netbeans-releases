@@ -139,13 +139,20 @@ public class RuleNode extends AbstractNode {
     }
 
     void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo declarationInfo) {
+        DeclarationProperty dp = getDeclarationProperty(declaration);
+        if(dp != null) {
+            dp.setDeclarationInfo(declarationInfo);
+        }
+    }
+    
+    DeclarationProperty getDeclarationProperty(Declaration declaration) {
         for (PropertyCategoryPropertySet set : getCachedPropertySets()) {
             DeclarationProperty declarationProperty = set.getDeclarationProperty(declaration);
             if (declarationProperty != null) {
-                declarationProperty.setDeclarationInfo(declarationInfo);
-                break;
+                return declarationProperty;
             }
         }
+        return null;
     }
 
     @Override
@@ -326,7 +333,7 @@ public class RuleNode extends AbstractNode {
         });
     }
 
-    private class PropertyCategoryPropertySet extends PropertySet {
+    class PropertyCategoryPropertySet extends PropertySet {
 
         private List<Property> properties = new ArrayList<Property>();
         private Map<Declaration, DeclarationProperty> declaration2PropertyMap = new HashMap<Declaration, DeclarationProperty>();
@@ -460,7 +467,7 @@ public class RuleNode extends AbstractNode {
         return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
     }
 
-    private class DeclarationProperty extends PropertySupport {
+    public class DeclarationProperty extends PropertySupport {
 
         private Declaration declaration;
         private DeclarationInfo info;
@@ -475,6 +482,10 @@ public class RuleNode extends AbstractNode {
             this.editor = editor;
         }
 
+        public Declaration getDeclaration() {
+            return declaration;
+        }
+        
         @Override
         public PropertyEditor getPropertyEditor() {
             return editor;

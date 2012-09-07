@@ -54,7 +54,6 @@ import java.util.zip.ZipInputStream;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
@@ -62,14 +61,13 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Returns libraries from http://cdnjs.com based on the snapshot of their sources.
  * Snapshot can be updated by running "ant -f web.clientproject/build.xml get-cdnjs-jar"
  * and is stored in resources/cdnjs.zip file.
  */
-@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
+//@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementation> {
 
     @Override
@@ -77,7 +75,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
         Map<String, List<String>> versions = new HashMap<String, List<String>>();
         ZipInputStream str = new ZipInputStream(new BufferedInputStream(
-                ClientSideProject.class.getResourceAsStream("resources/cdnjs.zip"))); // NOI18N
+                CDNJSLibrariesProvider.class.getResourceAsStream("resources/cdnjs.zip"))); // NOI18N
         ZipEntry entry;
         try {
             while ((entry = str.getNextEntry()) != null) {
@@ -169,9 +167,9 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         Map<String, String> p = new HashMap<String, String>();
         p.put(WebClientLibraryManager.PROPERTY_VERSION, version);
         p.put(WebClientLibraryManager.PROPERTY_REAL_NAME, name);
-        p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, name);
-        p.put(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "CDNJS"); // NOI18N
-        p.put(JavaScriptLibraryTypeProvider.PROPERTY_SITE, homepage);
+        p.put(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME, name);
+        p.put(WebClientLibraryManager.PROPERTY_CDN, "CDNJS"); // NOI18N
+        p.put(WebClientLibraryManager.PROPERTY_SITE, homepage);
         l1.setProperties(p);
         l1.setDescription(description);
         try {

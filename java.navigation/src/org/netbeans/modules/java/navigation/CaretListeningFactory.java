@@ -69,7 +69,7 @@ public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
-        return new CaretListeningTask(this, fileObject);
+        return new CaretListeningTask(fileObject);
     }
     
     static void runAgain() {

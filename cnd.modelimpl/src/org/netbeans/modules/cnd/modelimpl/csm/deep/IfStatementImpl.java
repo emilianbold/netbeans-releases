@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionDeclarationImpl.ConditionDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionExpressionImpl.ConditionExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -67,6 +69,10 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
     private IfStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
+    
+    private IfStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+    }    
 
     public static IfStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         IfStatementImpl stmt = new IfStatementImpl(ast, file, scope);
@@ -144,5 +150,57 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
         return DeepUtil.merge(getCondition(), getThen(), getElse());
     }
     
+    
+    public static class IfStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
+
+        ConditionDeclarationBuilder conditionDeclaration;
+        ConditionExpressionBuilder conditionExpression;
+        StatementBuilder thenStatement;
+        StatementBuilder elseStatement;
+
+        public void setThenStatement(StatementBuilder thenStatement) {
+            this.thenStatement = thenStatement;
+        }
+
+        public void setElseStatement(StatementBuilder elseStatement) {
+            this.elseStatement = elseStatement;
+        }
+
+        public void setConditionExpression(ConditionExpressionBuilder conditionExpression) {
+            this.conditionExpression = conditionExpression;
+        }
+
+        public void setConditionDeclaration(ConditionDeclarationBuilder conditionDeclaration) {
+            this.conditionDeclaration = conditionDeclaration;
+        }
+
+        @Override
+        public IfStatementImpl create() {
+            IfStatementImpl stmt = new IfStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            thenStatement.setScope(stmt);
+            stmt.thenStmt = thenStatement.create();
+            if(conditionDeclaration != null) {
+                conditionDeclaration.setScope(stmt);
+                stmt.condition = conditionDeclaration.create();
+            } else if(conditionExpression != null) {
+                conditionExpression.setScope(stmt);
+                stmt.condition = conditionExpression.create();
+            }
+            if(elseStatement != null) {
+                elseStatement.setScope(stmt);
+                stmt.elseStmt = elseStatement.create();
+            }
+            return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            if(thenStatement == null) {
+                thenStatement = builder;
+            } else {
+                elseStatement = builder;
+            }
+        }
+    }  
     
 }

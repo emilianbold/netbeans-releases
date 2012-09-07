@@ -491,7 +491,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
                         if(param != null) {
                             for(Type type : docParameter.getParamTypes()) {
-                                param.addAssignment(new TypeUsageImpl(type.getType(), param.getOffset(), true), param.getOffset());
+                                param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
                             }
                             // param occurence in the doc
                             addDocNameOccurence(param);

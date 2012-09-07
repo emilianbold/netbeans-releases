@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -468,7 +469,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     
-    public static class VariableBuilder implements CsmObjectBuilder {
+    public static class VariableBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
         
         private CharSequence name;// = CharSequences.empty();
         private boolean _static = false;
@@ -576,6 +577,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             return scope;
         }
         
+        @Override
         public VariableImpl create() {
             VariableImpl var = getVariableInstance();
             CsmScope s = getScope();
@@ -591,10 +593,13 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 
                 var = new VariableImpl(type, name, scope, _static, _extern, null, file, startOffset, endOffset);
                 
-                postObjectCreateRegistration(true, var);
+                boolean global = !(scope instanceof CompoundStatementImpl);
+                postObjectCreateRegistration(global, var);
                 
                 if(parent != null) {
-                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(var);
+                    if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(var);
+                    }
                 } else {
                     fileContent.addDeclaration(var);
                 }

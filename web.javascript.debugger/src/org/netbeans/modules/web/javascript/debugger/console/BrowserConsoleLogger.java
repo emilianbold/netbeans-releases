@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.web.javascript.debugger.console;
 
+import java.awt.Color;
+import java.awt.SystemColor;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
@@ -57,6 +60,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -71,16 +76,34 @@ public class BrowserConsoleLogger implements Console.Listener {
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
 
     private Project project;
+    private InputOutput io;
+    private Color colorStdBrighter;
     /** The last logged message. */
     private ConsoleMessage lastMessage;
+    //private Color colorErrBrighter;
 
     public BrowserConsoleLogger(Project project) {
         this.project = project;
+        initIO();
     }
     
     @NbBundle.Messages({"BrowserConsoleLoggerTitle=Browser Log"})
-    public InputOutput getOutputLogger() {
-       return IOProvider.getDefault().getIO(Bundle.BrowserConsoleLoggerTitle(), false); 
+    private void initIO() {
+        io = IOProvider.getDefault().getIO(Bundle.BrowserConsoleLoggerTitle(), false);
+        if (IOColors.isSupported(io) && IOColorPrint.isSupported(io)) {
+            Color colorStd = IOColors.getColor(io, IOColors.OutputType.OUTPUT);
+            //Color colorErr = IOColors.getColor(io, IOColors.OutputType.ERROR);
+            Color background = UIManager.getDefaults().getColor("nb.output.background");    // NOI18N
+            if (background == null) {
+                background = SystemColor.window;
+            }
+            colorStdBrighter = shiftTowards(colorStd, background);
+            //colorErrBrighter = shiftTowards(colorErr, background);
+        }
+    }
+    
+    private static Color shiftTowards(Color c, Color b) {
+        return new Color((c.getRed() + b.getRed())/2, (c.getGreen() + b.getGreen())/2, (c.getBlue() + b.getBlue())/2);
     }
     
     @Override
@@ -120,15 +143,26 @@ public class BrowserConsoleLogger implements Console.Listener {
     private void logMessage(ConsoleMessage msg) throws IOException {
         StringBuilder sb = new StringBuilder();
         String level = msg.getLevel();
-        sb.append(getCurrentTime());
-        sb.append(" ");
-        sb.append(msg.getText());
-        sb.append(" ("+level+","+msg.getSource()+","+msg.getType()+")");
         boolean isErr = LEVEL_ERROR.equals(level);
+        String time = getCurrentTime();
+        sb.append(msg.getText());
+        
+        String logInfo = createLogInfo(time, level, msg.getSource(), msg.getType());
+        
+        if (colorStdBrighter == null) {
+            sb.append(logInfo);
+        }
         if (isErr) {
-            getOutputLogger().getErr().println(sb.toString());
+            io.getErr().print(sb.toString());
         } else {
-            getOutputLogger().getOut().println(sb.toString());
+            io.getOut().print(sb.toString());
+        }
+        if (colorStdBrighter != null) {
+            //if (isErr) {
+            //    IOColorPrint.print(io, logInfo, colorErrBrighter);
+            //} else {
+                IOColorPrint.print(io, logInfo, colorStdBrighter);
+            //}
         }
         
         boolean doPrintStackTrace = LEVEL_ERROR.equals(level) ||
@@ -144,7 +178,7 @@ public class BrowserConsoleLogger implements Console.Listener {
                 } else {
                     indent = "  ";
                 }
-                getOutputLogger().getOut().print(indent);
+                io.getOut().print(indent);
                 sb = new StringBuilder();
                 
                 String urlStr = sf.getURLString();
@@ -152,29 +186,65 @@ public class BrowserConsoleLogger implements Console.Listener {
                 sb.append(urlStr+":"+sf.getLine()+":"+sf.getColumn()+" ("+sf.getFunctionName()+")");
                 MyListener l = new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn());
                 if (l.isValidHyperlink()) {
-                    getOutputLogger().getOut().println(sb.toString(), l);
+                    io.getOut().println(sb.toString(), l);
                 } else {
-                    getOutputLogger().getOut().println(sb.toString());
+                    io.getOut().println(sb.toString());
                 }
             }
         }
         if (first && msg.getURLString() != null && msg.getURLString().length() > 0) {
-            getOutputLogger().getOut().print("  at ");
+            io.getOut().print("  at ");
             String url = msg.getURLString();
             String file = getProjectPath(url);
             sb = new StringBuilder(file);
             int line = msg.getLine();
-            if (line != -1) {
+            if (line != -1 && line != 0) {
                 sb.append(":");
                 sb.append(line);
             }        
             MyListener l = new MyListener(url, line, -1);
             if (l.isValidHyperlink()) {
-                getOutputLogger().getOut().println(sb.toString(), l);
+                io.getOut().println(sb.toString(), l);
             } else {
-                getOutputLogger().getOut().println(sb.toString());
+                io.getOut().println(sb.toString());
             }
         }
+        if (io.isClosed() || isErr) {
+            io.select();
+        }
+    }
+    
+    private static final String LOG_IGNORED = "log";    // NOI18N
+    private static final String CONSOLE_API = "console-api";    // NOI18N
+    private static final String TIME_SEPARATOR = " | "; // NOI18N
+    private static String createLogInfo(String time, String level, String source, String type) {
+        //String logInfo = " ("+time+" | "+level+","+msg.getSource()+","+msg.getType()+")\n";
+        StringBuilder logInfoBuilder = new StringBuilder(" (");
+        logInfoBuilder.append(time);
+        boolean separator = false;
+        if (!LOG_IGNORED.equals(level)) {
+            separator = true;
+            logInfoBuilder.append(TIME_SEPARATOR);
+            logInfoBuilder.append(level);
+        }
+        if (!CONSOLE_API.equals(source)) {
+            if (separator) {
+                logInfoBuilder.append(", ");
+            } else {
+                logInfoBuilder.append(TIME_SEPARATOR);
+            }
+            logInfoBuilder.append(source);
+        }
+        if (!LOG_IGNORED.equals(type)) {
+            if (separator) {
+                logInfoBuilder.append(", ");
+            } else {
+                logInfoBuilder.append(TIME_SEPARATOR);
+            }
+            logInfoBuilder.append(type);
+        }
+        logInfoBuilder.append(")\n");
+        return logInfoBuilder.toString();
     }
     
     /**

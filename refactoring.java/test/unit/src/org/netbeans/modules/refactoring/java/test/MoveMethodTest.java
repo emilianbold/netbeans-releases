@@ -455,6 +455,42 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "    }\n"
                 + "}\n"));
     }
+    
+    public void test216700() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static void method() {\n"
+                + "        A.method();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A.method();\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public static void method() {\n"
+                + "        B.method();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        B.method();\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void testMoveNoAccessor() throws Exception {
         writeFilesAndWaitForScan(src,

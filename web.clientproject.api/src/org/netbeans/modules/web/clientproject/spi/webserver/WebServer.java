@@ -52,6 +52,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -274,6 +275,7 @@ public final class WebServer {
                     StringTokenizer st = new StringTokenizer(line, " ");
                     st.nextToken();
                     String file = st.nextToken();
+                    file = URLDecoder.decode(file, "UTF-8");
                     FileObject fo = getWebserver().fromServer(file);
                     if (fo != null && fo.isFolder()) {
                         fo = fo.getFileObject("index", "html");

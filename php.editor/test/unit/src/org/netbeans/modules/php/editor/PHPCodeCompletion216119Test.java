@@ -39,81 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
+package org.netbeans.modules.php.editor;
 
-import java.beans.Customizer;
-
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@NbBundle.Messages({"JavaScriptLibraryType_Name=JavaScript Libraries"})
-public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
-    
-    /**
-     * Name of CDN this library is comming from.
-     */
-    public static final String PROPERTY_CDN = "cdn"; // NOI18N
+public class PHPCodeCompletion216119Test extends PHPCodeCompletionTestBase {
 
-    /**
-     * Homepage of the library.
-     */
-    public static final String PROPERTY_SITE = "site"; // NOI18N
+    public PHPCodeCompletion216119Test(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Real display name of the library, that is without CND source prefix and without version in the name.
-     */
-    public static final String PROPERTY_REAL_DISPLAY_NAME = "displayname"; // NOI18N
-    
-    /**
-     * Supported volumes.
-     */
-    static String[] VOLUMES = new String[]{WebClientLibraryManager.VOL_REGULAR, 
-        WebClientLibraryManager.VOL_MINIFIED, WebClientLibraryManager.VOL_DOCUMENTED};
-
-    @Override
-    public String getDisplayName() {
-        return Bundle.JavaScriptLibraryType_Name();
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test216119/test216119.php", "$this->more_example()->^", false);
     }
 
     @Override
-    public String getLibraryType() {
-        return WebClientLibraryManager.TYPE;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test216119/"))
+            })
+        );
     }
 
-    @Override
-    public String[] getSupportedVolumeTypes() {
-        return VOLUMES;
-    }
-
-    @Override
-    public LibraryImplementation createLibrary() {
-        return LibrariesSupport.createLibraryImplementation(
-                WebClientLibraryManager.TYPE, VOLUMES);
-    }
-
-    @Override
-    public void libraryDeleted(LibraryImplementation libraryImpl) {
-    }
-
-    @Override
-    public void libraryCreated(LibraryImplementation libraryImpl) {
-    }
-
-    @Override
-    public Customizer getCustomizer(String volumeType) {
-        return new JavaScriptLibraryCustomizer(volumeType);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-    
 }

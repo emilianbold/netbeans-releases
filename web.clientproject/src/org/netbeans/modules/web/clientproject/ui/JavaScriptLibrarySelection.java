@@ -87,10 +87,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableRowSorter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -455,7 +453,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
             }
             Library library = libraryVersion.getLibrary();
-            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
@@ -687,7 +685,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         public LibrariesTableModel() {
             assert EventQueue.isDispatchThread();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : LibraryManager.getDefault().getLibraries()) {
+            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
                             WebClientLibraryManager.PROPERTY_REAL_NAME);
@@ -897,7 +895,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         public String getSimpleDisplayName() {
-            return getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
+            return getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
         }
 
         public String getDescription() {

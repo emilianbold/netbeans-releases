@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,21 +51,11 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
@@ -206,7 +193,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         private ServerUtilities su;
 
         public J2eeInstantiatingIterator(ServerUtilities su) {
-            this.delegate = su.getAddInstanceIterator();
+            this.delegate = ServerDetails.getInstantiatingIterator();
             this.su = su;
         }
 

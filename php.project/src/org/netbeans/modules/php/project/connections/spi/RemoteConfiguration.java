@@ -236,7 +236,7 @@ public abstract class RemoteConfiguration {
             try {
                 return Integer.parseInt(currentValue);
             } catch (NumberFormatException nfe) {
-                LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+                LOGGER.log(Level.INFO, "Exception while parsing number of '" + key + "'", nfe);
             }
         }
         cfg.putValue(key, String.valueOf(defaultValue));

@@ -53,6 +53,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.MouseListener;
 import java.util.Map;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
@@ -77,7 +78,8 @@ public class ListCompletionView extends JList {
     private Font font;
     private final RenderComponent renderComponent;
                 
-    public ListCompletionView() {
+    public ListCompletionView(MouseListener mouseListener) {
+        addMouseListener(mouseListener);
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         font = getFont();
         if (font.getSize() < 15 ) {
