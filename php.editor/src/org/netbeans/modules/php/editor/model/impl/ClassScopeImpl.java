@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.Signature;
@@ -248,6 +249,19 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                     allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
                 } else {
                     allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                }
+            }
+        }
+        Set<TraitScope> traitScopes = new HashSet<TraitScope>(getTraits());
+        for (TraitScope traitScope : traitScopes) {
+            Set<MethodElement> indexedMethods =
+                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(traitScope));
+            for (MethodElement methodElement : indexedMethods) {
+                TypeElement type = methodElement.getType();
+                if (type.isTrait()) {
+                    allMethods.add(new MethodScopeImpl(new TraitScopeImpl(indexScope, (TraitElement) type), methodElement));
+                } else {
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), methodElement));
                 }
             }
         }

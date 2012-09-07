@@ -71,6 +71,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
+import org.netbeans.modules.analysis.spi.AnalysisScopeProvider;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
@@ -267,6 +268,12 @@ public class RunAnalysis {
     static Scope addProjectToScope(Project p, Scope target, AtomicBoolean cancel, Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent) {
         Scope projectScope = p.getLookup().lookup(Scope.class);
 
+        if (projectScope == null) {
+            AnalysisScopeProvider scopeProvider = p.getLookup().lookup(AnalysisScopeProvider.class);
+            
+            projectScope = scopeProvider != null ? scopeProvider.getScope() : null;
+        }
+        
         if (projectScope != null) {
             return augment(target, projectScope.getSourceRoots(), projectScope.getFolders(), projectScope.getFiles());
         }

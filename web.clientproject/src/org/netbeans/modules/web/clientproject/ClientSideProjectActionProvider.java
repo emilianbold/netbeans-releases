@@ -72,6 +72,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                     COMMAND_MOVE,
                     COMMAND_COPY,
                     COMMAND_DELETE,
+                    COMMAND_TEST,
                 };
     }
 

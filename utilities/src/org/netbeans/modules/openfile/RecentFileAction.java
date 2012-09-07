@@ -47,6 +47,7 @@ package org.netbeans.modules.openfile;
 import java.awt.Component;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -229,8 +230,11 @@ public class RecentFileAction extends AbstractAction
         if (!(first instanceof JMenuItem)) {
             return;
         }
-        
-        Point loc = MouseInfo.getPointerInfo().getLocation();
+        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+        if (pointerInfo == null) {
+            return; // probably a mouseless computer
+        }
+        Point loc = pointerInfo.getLocation();
         SwingUtilities.convertPointFromScreen(loc, menu);
         MenuElement[] selPath =
                 MenuSelectionManager.defaultManager().getSelectedPath();

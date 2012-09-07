@@ -64,6 +64,7 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -154,7 +155,7 @@ public class JsFormatter implements Formatter {
                     FormatToken token = tokens.get(i);
 
                     // FIXME optimize performance
-                    if (token.getOffset() >= 0) {
+                    if (!token.isVirtual()) {
                         if (!firstTokenFound) {
                             firstTokenFound = true;
                             formatContext.setCurrentLineStart(token.getOffset());
@@ -165,7 +166,7 @@ public class JsFormatter implements Formatter {
                                 && token.getKind() != FormatToken.Kind.EOL) {
                             lastOffsetDiff = formatContext.getOffsetDiff();
                         }
-                        initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
+                        initialIndent = formatContext.getEmbeddingIndent(tokenStream, token)
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
@@ -229,7 +230,7 @@ public class JsFormatter implements Formatter {
                         // following code handles the indentation
                         // do not do indentation for line comments starting
                         // at the beginning of the line to support comment/uncomment
-                        FormatToken next = getNextNonVirtual(token);
+                        FormatToken next = FormatTokenStream.getNextNonVirtual(token);
                         if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
                             continue;
                         }
@@ -266,7 +267,7 @@ public class JsFormatter implements Formatter {
                             }
                             formatContext.indentLine(
                                     indentationStart.getOffset(), indentationSize,
-                                    checkIndentation(doc, token, formatContext, context, indentationSize));
+                                    checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize));
                         }
                     }
                 }
@@ -542,7 +543,7 @@ public class JsFormatter implements Formatter {
             boolean remove = !isSpace(token, formatContext, true, false);
 
             // we fetch the space or next token to start
-            start = getNextNonVirtual(start);
+            start = FormatTokenStream.getNextNonVirtual(start);
 
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
@@ -559,7 +560,7 @@ public class JsFormatter implements Formatter {
                 if (remove || end.getKind() == FormatToken.Kind.EOL) {
                     formatContext.remove(start.getOffset(),
                             end.getOffset() - start.getOffset());
-                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                } else {
                     formatContext.replace(start.getOffset(),
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
@@ -587,10 +588,10 @@ public class JsFormatter implements Formatter {
         }
 
         // this may happen when curly bracket is on new line
-        FormatToken nonVirtualNext = getNextNonVirtual(next);
+        FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
         if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
             String nextText = nonVirtualNext.getText().toString();
-            if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
+            if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
                 FormatToken previous = nonVirtualNext.previous();
                 if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
                     return false;
@@ -635,16 +636,29 @@ public class JsFormatter implements Formatter {
 
     }
 
-    private Indentation checkIndentation(BaseDocument doc, FormatToken token,
+    // FIXME can we movet his to FormatContext ?
+    private Indentation checkIndentation(BaseDocument doc, FormatToken token, FormatToken indentationEnd,
             FormatContext formatContext, Context context, int indentationSize) {
 
+        assert indentationEnd != null && !indentationEnd.isVirtual() : indentationEnd;
         assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
-        if (token.getKind() != FormatToken.Kind.SOURCE_START
+        // this: (token.getKind() != FormatToken.Kind.SOURCE_START
+        // && formatContext.getDocumentOffset(token.getOffset()) >= 0)
+        // handles the case when virtual source for embedded code contains
+        // non existing eols we must not do indentation on these
+        if ((token.getKind() != FormatToken.Kind.SOURCE_START && formatContext.getDocumentOffset(token.getOffset()) >= 0)
                 || (context.startOffset() <= 0 && !formatContext.isEmbedded())) {
+
+            // we don't want to touch lines starting with other language
+            // it is a bit heuristic but we can't do much
+            // see embeddedMultipleSections3.tpl and embeddedMultipleSections4.php
+            if (formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(indentationEnd.getText().toString())) {
+                return Indentation.FORBIDDEN;
+            }
             return Indentation.ALLOWED;
         }
 
-        // no source start indentation in embedded code
+        // we are sure this is SOURCE_START - no source start indentation in embedded code
         if (formatContext.isEmbedded()) {
             return Indentation.FORBIDDEN;
         }
@@ -993,17 +1007,20 @@ public class JsFormatter implements Formatter {
 
         if (ts != null && token != null) {
             int index = ts.index();
-            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
-            JsTokenId previousId = previous != null ? previous.id() : null;
+            JsTokenId previousId = null;
+            if (ts.movePrevious()) {
+                Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                if (previous != null) {
+                    previousId = previous.id();
+                }
 
-            ts.moveIndex(index);
-            ts.moveNext();
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
 
             JsTokenId id = token.id();
 
-            // http://www.netbeans.org/issues/show_bug.cgi?id=115279
-            boolean isContinuationOperator = isBinaryOperator(id, previousId)
-                    || id == JsTokenId.OPERATOR_DOT;
+            boolean isContinuationOperator = isBinaryOperator(id, previousId);
 
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
@@ -1243,12 +1260,16 @@ public class JsFormatter implements Formatter {
                     if (ts != null) {
                         JsTokenId id = ts.token().id();
                         int index = ts.index();
-                        Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
-                        JsTokenId previousId = previous != null ? previous.id() : null;
+                        JsTokenId previousId = null;
+                        if (ts.movePrevious()) {
+                            Token<? extends JsTokenId> previous = LexUtilities.findPreviousNonWsNonComment(ts);
+                            if (previous != null) {
+                                previousId = previous.id();
+                            }
 
-                        ts.moveIndex(index);
-                        ts.moveNext();
-
+                            ts.moveIndex(index);
+                            ts.moveNext();
+                        }
                         // We don't have multiline string literals in JavaScript!
                         if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT) {
                             if (ts.offset() == pos) {
@@ -1257,7 +1278,7 @@ public class JsFormatter implements Formatter {
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }
-                        } else if (isBinaryOperator(id, previousId) || id == JsTokenId.OPERATOR_DOT) {
+                        } else if (isBinaryOperator(id, previousId)) {
                             // If a line starts with a non unary operator we can
                             // assume it's a continuation from a previous line
                             continued = true;
@@ -1493,12 +1514,40 @@ public class JsFormatter implements Formatter {
                         if (prevToken.id() != JsTokenId.BRACKET_LEFT_CURLY) {
                             // it must be case or default
                             inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
-                            prevToken = LexUtilities.findPreviousIncluding(inner,
+                            LexUtilities.findPreviousIncluding(inner,
                                     Arrays.asList(JsTokenId.KEYWORD_CASE, JsTokenId.KEYWORD_DEFAULT));
-                            int beginLine = Utilities.getLineOffset(doc, inner.offset());
+
+                            int offset = inner.offset();
+                            inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
+                            prevToken = LexUtilities.findPrevious(inner, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL));
+
+                            int beginLine = Utilities.getLineOffset(doc, offset);
                             int eolLine = Utilities.getLineOffset(doc, ts.offset());
-                            if (beginLine != eolLine) {
-                                return -1;
+
+                            // we need to take care of case like this:
+                            // case 'a':
+                            //      test();
+                            //      break;
+                            //
+                            //      //comment
+                            //
+                            //    case 'b':
+                            //      test();
+                            //      break;
+                            // note the comment - we would get to this block twice
+                            // (eol after break and eol after //comment)
+                            // so indentation level change would be -2 instead of -1
+                            if (prevToken.id() != JsTokenId.BLOCK_COMMENT
+                                    && prevToken.id() != JsTokenId.DOC_COMMENT
+                                    && prevToken.id() != JsTokenId.LINE_COMMENT) {
+                                if (beginLine != eolLine) {
+                                    return -1;
+                                }
+                            } else {
+                                int commentLine = Utilities.getLineOffset(doc, inner.offset());
+                                if (beginLine != eolLine && commentLine == beginLine) {
+                                    return -1;
+                                }
                             }
                         }
                     }
@@ -1648,6 +1697,7 @@ public class JsFormatter implements Formatter {
             case OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT:
             case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
             case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
+            case OPERATOR_DOT:
                 return true;
             case OPERATOR_PLUS:
             case OPERATOR_MINUS:
@@ -1693,14 +1743,6 @@ public class JsFormatter implements Formatter {
                 formatContext.setLastLineWrap(null);
             }
         }
-    }
-
-    private static FormatToken getNextNonVirtual(FormatToken token) {
-        FormatToken current = token.next();
-        while (current != null && current.isVirtual()) {
-            current = current.next();
-        }
-        return current;
     }
 
     private static boolean isWhitespace(CharSequence charSequence) {

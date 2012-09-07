@@ -183,6 +183,10 @@ public final class Console {
             l.messageRepeatCountUpdated(count);
         }
     }
+
+    public void reset() {
+        listeners.clear();
+    }
     
     /**
      * Console listener.

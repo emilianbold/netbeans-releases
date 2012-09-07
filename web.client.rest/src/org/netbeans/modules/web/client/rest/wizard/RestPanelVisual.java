@@ -47,6 +47,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.websvc.rest.client.RESTExplorerPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
@@ -80,7 +81,6 @@ public final class RestPanelVisual extends JPanel  {
         initComponents();
         String jsName = suggestJsName(panel.getDescriptor());
         Templates.setTargetName(panel.getDescriptor(), jsName);
-        
         ui.setModel( new DefaultComboBoxModel( RestPanel.JsUi.values()));
     }
 
@@ -209,7 +209,8 @@ public final class RestPanelVisual extends JPanel  {
         myBackbone = null;
         Project project = Templates.getProject(wizardDescriptor);
         FileObject projectDirectory = project.getProjectDirectory();
-        FileObject libs = projectDirectory.getFileObject("js/libs");        // NOI18N
+        // XXX : plublic_html should not be hardcoded
+        FileObject libs = projectDirectory.getFileObject(WebClientLibraryManager.LIBS); 
         boolean backboneExists = false; 
         if ( libs != null ){
             FileObject[] children = libs.getChildren();
@@ -275,7 +276,10 @@ public final class RestPanelVisual extends JPanel  {
     private String suggestJsName(  WizardDescriptor descriptor ) {
         FileObject targetFolder = Templates.getTargetFolder(descriptor);
         
-        String suggestName = REST_CLIENT;          
+        String suggestName = REST_CLIENT;       
+        if ( targetFolder == null ){
+            return suggestName;
+        }
         FileObject restClient = null;
         int count =0;
         String result = null;

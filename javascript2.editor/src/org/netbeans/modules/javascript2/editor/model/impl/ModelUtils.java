@@ -53,6 +53,7 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -62,7 +63,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  */
 public class ModelUtils {
       
-    public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName) {
+    public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();
         JsObject tmpObject = null;
         String firstName = fqName.get(0).getName();
@@ -87,7 +88,7 @@ public class ModelUtils {
             Identifier name = fqName.get(index);
             result = tmpObject.getProperty(name.getName());
             if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange());
+                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(), (index < (fqName.size() - 1)) ? false : isLHS );
                 tmpObject.addProperty(name.getName(), result);
             }
             tmpObject = result;
@@ -329,6 +330,21 @@ public class ModelUtils {
                     break;
                 }
                 
+            }
+        } else if(type.getType().startsWith("@var;")){
+            String name = type.getType().substring(5);
+            JsObject parent = object.getParent();
+            if(parent != null && parent.getJSKind().isFunction()) {
+                Collection<? extends JsObject> parameters = ((JsFunction)parent).getParameters();
+                for (JsObject parameter : parameters) {
+                    if(name.equals(parameter.getName())) {
+                        Collection<? extends TypeUsage> assignments = parameter.getAssignmentForOffset(parameter.getOffset());
+                        result.addAll(assignments);
+                        break;
+                    }
+                }
+            } else {
+                result.add(new TypeUsageImpl(name, type.getOffset(), false));
             }
         } else {
             result.add(type);
@@ -669,7 +685,7 @@ public class ModelUtils {
                     if (iNode.getName().equals("this")) {   //NOI18N
                         result.add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
                     } else {
-                        result.add(new TypeUsageImpl(iNode.getName(), iNode.getStart(), false));
+                        result.add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
                     }
                 }
                 return null;

@@ -119,7 +119,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getBase());
                     List<Identifier> fqname = new ArrayList<Identifier>();
                     fqname.add(name);
-                    fromAN = ModelUtils.getJsObject(modelBuilder, fqname);
+                    fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
                     fromAN.addOccurrence(name.getOffsetRange());
                 } else {
                     JsObject current = modelBuilder.getCurrentDeclarationScope();
@@ -202,7 +202,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     } else {
                         // probably a property of an object
                         List<Identifier> fqName = getName(aNode);
-                        property = ModelUtils.getJsObject(modelBuilder, fqName);
+                        property = ModelUtils.getJsObject(modelBuilder, fqName, true);
                         if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
                             property.getModifiers().add(Modifier.STATIC);
                         }
@@ -323,7 +323,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 Identifier parentName = ModelElementFactory.create(parserResult, (IdentNode)base);
                 List<Identifier> fqName = new ArrayList<Identifier>();
                 fqName.add(parentName);
-                parent = ModelUtils.getJsObject(modelBuilder, fqName);
+                parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
                 parent.addOccurrence(parentName.getOffsetRange());
             }
             if (parent != null) {
@@ -491,7 +491,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
                         if(param != null) {
                             for(Type type : docParameter.getParamTypes()) {
-                                param.addAssignment(new TypeUsageImpl(type.getType(), param.getOffset(), true), param.getOffset());
+                                param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
                             }
                             // param occurence in the doc
                             addDocNameOccurence(param);
@@ -745,13 +745,14 @@ public class ModelVisitor extends PathNodeVisitor {
                 parent.addProperty(name.getName(), newVariable);
                 for(TypeUsage type : variable.getAssignments()) {
                     newVariable.addAssignment(type, type.getOffset());
-                }
+                } 
                 for(Occurrence occurrence: variable.getOccurrences()){
                     newVariable.addOccurrence(occurrence.getOffsetRange());
                 }
-                newVariable.getOccurrences().addAll(variable.getOccurrences());
                 variable = newVariable;
             }
+            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            variable.setDocumentation(docHolder.getDocumentation(varNode));
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit(), false);

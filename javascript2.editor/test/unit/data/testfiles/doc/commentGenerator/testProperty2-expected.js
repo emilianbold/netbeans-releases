@@ -10,7 +10,7 @@ ShapeFactory.prototype = {
     /**
      * 
      * @param {type} sdd
-     * @return {Shape}^
+     * @returns {Shape}^
      */
     createShape: function(sdd) {
         return new Shape();

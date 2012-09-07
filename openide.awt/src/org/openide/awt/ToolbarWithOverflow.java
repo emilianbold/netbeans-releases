@@ -138,18 +138,6 @@ public class ToolbarWithOverflow extends JToolBar {
                 maybeAddOverflow();
             }
         });
-        addContainerListener( new ContainerListener() {
-
-            @Override
-            public void componentAdded( ContainerEvent e ) {
-                System.err.println( e );
-            }
-
-            @Override
-            public void componentRemoved( ContainerEvent e ) {
-                System.err.println( e );
-            }
-        });
         overflowToolbar.addMouseListener(new MouseAdapter() {
 
             @Override

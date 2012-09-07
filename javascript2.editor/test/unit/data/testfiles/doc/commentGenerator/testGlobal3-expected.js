@@ -9,7 +9,7 @@ var cokoliv = 10;
  * @param {type} var2
  * @param {type} var3
  * @param {type} var4
- * @return {Number}^
+ * @returns {Number}^
  */
 function foo(var1, var2, var3, var4) {
     return 5;

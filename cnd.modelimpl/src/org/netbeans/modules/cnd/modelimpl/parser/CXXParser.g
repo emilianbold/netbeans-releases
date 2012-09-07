@@ -219,8 +219,9 @@ translation_unit:
  * we should try find something else)
  */
 statement
-    :                                                                           {action.statement(input.LT(1));}
-    (
+@init                                                                           {if(state.backtracking == 0){action.statement(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_statement(input.LT(0));}}
+    :
         labeled_statement
     |
         expression_or_declaration_statement
@@ -234,7 +235,6 @@ statement
         jump_statement
     |
         try_block
-    )                                                                           {action.end_statement(input.LT(0));}
     ;
 
 labeled_statement
@@ -260,15 +260,17 @@ expression_statement
 
 expression_or_declaration_statement
     :
-        (declaration_statement)=> declaration_statement
+        (expression SEMICOLON) => expression SEMICOLON
     |
-        expression SEMICOLON
+        declaration_statement
     ;
 
 
 compound_statement
-    :                                                                           {action.compound_statement(input.LT(1));}
-        LCURLY statement* RCURLY                                                {action.end_compound_statement(input.LT(0));}
+@init                                                                           {if(state.backtracking == 0){action.compound_statement(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_compound_statement(input.LT(0));}}
+    :
+        LCURLY statement* RCURLY
     ;
 
 selection_statement
@@ -397,12 +399,12 @@ jump_statement
  * an easier view of simple_declaration vs function_definition major conflict.
  */
 declaration_statement
-    :                                                                           {action.declaration_statement(input.LT(1));}
-    (
+@init                                                                           {if(state.backtracking == 0){action.declaration_statement(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_declaration_statement(input.LT(0));}}
+    :
         simple_declaration[blockscope_decl]
     |
         block_declaration
-    )                                                                           {action.end_declaration_statement(input.LT(0));}
     ;
 
 //[gram.dcl] 
@@ -556,10 +558,9 @@ simle_declaration
  *
  */
 simple_declaration [decl_kind kind]
-scope Declaration;
-@init { init_declaration(CTX, kind); }
+@init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :
-                                                                                {action.simple_declaration(input.LT(1));}
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
@@ -576,7 +577,7 @@ scope Declaration;
                 init_declarator
             )* 
             SEMICOLON                                                           {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
-        )                                                                       {action.end_simple_declaration(input.LT(0));}
+        )
     ;
 
 
@@ -700,8 +701,8 @@ type_specifier:
  */
 
 type_specifier returns [type_specifier_t ts]
-@init {if(state.backtracking == 0){action.type_specifier(input.LT(1));}}
-@after {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
+@init                                                                           {if(state.backtracking == 0){action.type_specifier(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
     :
         // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
         (LITERAL_class SCOPE)=>
@@ -1388,8 +1389,9 @@ function_definition:
  * function_definition conflicts because of decl_specifier
  */
 function_definition_after_declarator
-    :                                                                           {action.function_definition_after_declarator(input.LT(1));}                                                                           
-    (
+@init                                                                           {if(state.backtracking == 0){action.function_definition_after_declarator(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_function_definition_after_declarator(input.LT(0));}}
+    :
         ctor_initializer? function_body
     |
         function_try_block
@@ -1401,7 +1403,6 @@ function_definition_after_declarator
             LITERAL_default                                                     {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__DEFAULT, input.LT(0));}
         ) 
         SEMICOLON
-    )                                                                           {action.end_function_definition_after_declarator(input.LT(0));}
     ;
 
 /*
@@ -1430,8 +1431,10 @@ function_definition [decl_kind kind]
     ;
 
 function_body
-    :                                                                           {action.function_body(input.LT(1));}
-        compound_statement                                                      {action.end_function_body(input.LT(0));}
+@init                                                                           {if(state.backtracking == 0){action.function_body(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
+    :
+        compound_statement
     ;
 
 initializer
@@ -1487,13 +1490,14 @@ class_name
         simple_template_id_or_IDENT                                             {action.end_class_name(input.LT(0));}
     ;
 
-class_specifier:
-                                {action.class_declaration(input.LT(1));}
+class_specifier
+@init                                                                           {if(state.backtracking == 0){action.class_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
+    :
         class_head 
         LCURLY                  {action.class_body($LCURLY);}
         member_specification? 
         RCURLY                  {action.end_class_body($RCURLY);}
-                                {action.end_class_declaration(input.LT(1));}
     ;
 
 /*
@@ -1540,14 +1544,14 @@ class_key:
     ;
 
 member_specification 
-    :                                                                           {action.member_specification(input.LT(1));}
-    (
+@init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
+    :
         member_declaration[field_decl] member_specification?
     |
         access_specifier 
         COLON                                                                   {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
         member_specification?
-    )                                                                           {action.end_member_specification(input.LT(0));}
     ;
 
 
@@ -1579,11 +1583,9 @@ member_declarator:
  * There needs to be a special semantic check for "access declaration" when handling results of member declaration.
  */
 member_declaration [decl_kind kind]
-scope Declaration;
-@init { init_declaration(CTX, kind); }
+@init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
     :
-                                                                                {action.member_declaration(input.LT(1));}
-    (
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
@@ -1628,8 +1630,6 @@ scope Declaration;
         static_assert_declaration
     |
         alias_declaration
-    )
-                                                                                {action.end_member_declaration(input.LT(0));}
     ;
 
 member_bitfield_declarator

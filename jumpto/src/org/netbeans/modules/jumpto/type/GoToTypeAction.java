@@ -102,6 +102,7 @@ import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.awt.HtmlRenderer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -641,7 +642,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener, ActionListener {
          
         private MyPanel rendererComponent;
-        private JLabel jlName = new JLabel();
+        private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlPkg = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 5;
@@ -666,7 +667,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             jList = list;
             this.caseSensitive = caseSensitive.isSelected();
-            
+            resetName();
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
                 ((JViewport)container).addChangeListener(this);
@@ -681,7 +682,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;            
+            c.weightx = 0;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlName, c);
@@ -692,7 +693,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.1;            
+            c.weightx = 0.1;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlPkg, c);
@@ -703,20 +704,18 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;            
+            c.weightx = 0;
             c.anchor = GridBagConstraints.EAST;
             rendererComponent.add( jlPrj, c);
             
             
-            jlName.setOpaque(false);
             jlPkg.setOpaque(false);
-            jlPrj.setOpaque(false);
-            
-            jlName.setFont(list.getFont());
+            jlPrj.setOpaque(false);                        
+
             jlPkg.setFont(list.getFont());
             jlPrj.setFont(list.getFont());
-            
-            
+
+
             jlPrj.setHorizontalAlignment(RIGHT);
             jlPrj.setHorizontalTextPosition(LEFT);
             
@@ -758,8 +757,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-                        
+            rendererComponent.setPreferredSize(size);            
+            resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlPkg.setForeground(fgSelectionColor);
@@ -779,11 +778,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 jlName.setIcon(td.getIcon());
                 //highlight matching search text patterns in type
                 final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText, caseSensitive);
-                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
+                jlName.setText(formattedTypeName);
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
-		rendererComponent.setDescriptor(td);
+		rendererComponent.setDescriptor(td);                
                 LOGGER.log(Level.FINE, "  Time in paint {0} ms.", System.currentTimeMillis() - time);   //NOI18N
             }
             else {
@@ -828,6 +827,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         @Override
         public void actionPerformed(@NonNull final ActionEvent e) {
             caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        }
+
+        private void resetName() {
+            ((HtmlRenderer.Renderer)jlName).reset();
+            jlName.setFont(jList.getFont());
+            jlName.setOpaque(false);
+            ((HtmlRenderer.Renderer)jlName).setHtml(true);
+            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }
 
      } // Renderer

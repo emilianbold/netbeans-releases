@@ -53,9 +53,14 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocIdentifierElement;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeDescribedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeNamedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeSimpleElement;
 
@@ -107,8 +112,12 @@ public class SDocComment extends JsComment {
     }
 
     @Override
-    public boolean isDeprecated() {
-        return !getTagsForType(SDocElementType.DEPRECATED).isEmpty();
+    public String getDeprecated() {
+        if (getTagsForType(SDocElementType.DEPRECATED).isEmpty()) {
+            return null;
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -118,6 +127,75 @@ public class SDocComment extends JsComment {
             modifiers.add(JsModifier.fromString(jsDocElement.getType().toString().substring(1)));
         }
         return modifiers;
+    }
+
+    @Override
+    public List<DocParameter> getThrows() {
+        List<DocParameter> throwsEntries = new LinkedList<DocParameter>();
+        for (SDocElement exceptionTag : getTagsForType(SDocElementType.EXCEPTION)) {
+            throwsEntries.add((SDocTypeDescribedElement) exceptionTag);
+        }
+        return throwsEntries;
+    }
+
+    @Override
+    public List<Type> getExtends() {
+        List<Type> extendsEntries = new LinkedList<Type>();
+        for (SDocElement extend : getTagsForType(SDocElementType.INHERITS)) {
+            SDocIdentifierElement ident = (SDocIdentifierElement) extend;
+            extendsEntries.add(new TypeImpl(ident.getIdentifier(), -1));
+        }
+        return extendsEntries;
+    }
+
+    @Override
+    public List<String> getSee() {
+        List<String> sees = new LinkedList<String>();
+        for (SDocElement extend : getTagsForType(SDocElementType.SEE)) {
+            SDocDescriptionElement element = (SDocDescriptionElement) extend;
+            sees.add(element.getDescription());
+        }
+        return sees;
+    }
+
+    @Override
+    public String getSince() {
+        List<? extends SDocElement> since = getTagsForType(SDocElementType.SINCE);
+        if (since.isEmpty()) {
+            return null;
+        } else {
+            return ((SDocDescriptionElement) since.get(0)).getDescription();
+        }
+    }
+
+//    @Override
+//    public List<String> getAuthor() {
+//        List<String> authors = new LinkedList<String>();
+//        for (SDocElement extend : getTagsForType(SDocElementType.AUTHOR)) {
+//            SDocDescriptionElement element = (SDocDescriptionElement) extend;
+//            authors.add(element.getDescription());
+//        }
+//        return authors;
+//    }
+//
+//    @Override
+//    public String getVersion() {
+//        List<? extends SDocElement> version = getTagsForType(SDocElementType.VERSION);
+//        if (version.isEmpty()) {
+//            return null;
+//        } else {
+//            return ((SDocDescriptionElement) version.get(0)).getDescription();
+//        }
+//    }
+
+    @Override
+    public List<String> getExamples() {
+        List<String> examples = new LinkedList<String>();
+        for (SDocElement extend : getTagsForType(SDocElementType.EXAMPLE)) {
+            SDocDescriptionElement element = (SDocDescriptionElement) extend;
+            examples.add(element.getDescription());
+        }
+        return examples;
     }
 
     private void initComment(List<SDocElement> elements) {

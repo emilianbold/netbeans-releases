@@ -45,6 +45,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -54,6 +61,11 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -74,6 +86,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -277,6 +290,7 @@ public class ClientSideProject implements Project {
                new Info(),
                new ClientSideProjectXmlSavedHook(),
                new ProjectOperations(this),
+               ProjectSearchInfo.create(this),
                new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
                new ServerURLMappingImpl(this),
                configuration,
@@ -375,7 +389,7 @@ public class ClientSideProject implements Project {
                 "Templates/ClientSide/javascript.js",            // NOI18N
                 "Templates/ClientSide/css.css",            // NOI18N
                 "Templates/ClientSide/json.json",            // NOI18N
-                "Templates/Other/Folder"                   // NOI18N
+                "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator", // NOI18N
             };
         }
 
@@ -460,6 +474,83 @@ public class ClientSideProject implements Project {
         public FileObject getWebRoot(FileObject file) {
             return getSiteRootFolder();
         }
+    }
+
+    private static final class ProjectSearchInfo extends SearchInfoDefinition {
+
+        private static final Set<String> WATCHED_PROPERTIES = new HashSet<String>(Arrays.asList(
+                ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
+                ClientSideProjectConstants.PROJECT_TEST_FOLDER,
+                ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+
+        private final ClientSideProject project;
+        // @GuardedBy("this")
+        private SearchInfo delegate = null;
+
+
+        public ProjectSearchInfo(ClientSideProject project) {
+            this.project = project;
+        }
+
+        public static SearchInfoDefinition create(ClientSideProject project) {
+            final ProjectSearchInfo searchInfo = new ProjectSearchInfo(project);
+            project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (WATCHED_PROPERTIES.contains(evt.getPropertyName())) {
+                        searchInfo.resetDelegate();
+                    }
+                }
+            });
+            return searchInfo;
+        }
+
+        @Override
+        public boolean canSearch() {
+            return true;
+        }
+
+        @Override
+        public Iterator<FileObject> filesToSearch(SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
+            return getDelegate().getFilesToSearch(options, listener, terminated).iterator();
+        }
+
+        @Override
+        public List<SearchRoot> getSearchRoots() {
+            return getDelegate().getSearchRoots();
+        }
+
+        private synchronized SearchInfo getDelegate() {
+            assert Thread.holdsLock(this);
+            if (delegate == null) {
+                delegate = createDelegate();
+            }
+            return delegate;
+        }
+
+        private SearchInfo createDelegate() {
+            return SearchInfoUtils.createSearchInfoForRoots(getRoots(), true);
+        }
+
+        synchronized void resetDelegate() {
+            assert Thread.holdsLock(this);
+            delegate = null;
+        }
+
+        private FileObject[] getRoots() {
+            List<FileObject> roots = new ArrayList<FileObject>();
+            addRoots(roots, project.getSiteRootFolder(), project.getConfigFolder(), project.getTestsFolder());
+            return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        private void addRoots(List<FileObject> result, FileObject... roots) {
+            for (FileObject root : roots) {
+                if (root != null) {
+                    result.add(root);
+                }
+            }
+        }
+
     }
 
 }

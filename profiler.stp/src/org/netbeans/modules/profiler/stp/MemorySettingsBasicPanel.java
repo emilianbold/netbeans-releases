@@ -73,8 +73,9 @@ import org.openide.util.Lookup;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "MemorySettingsBasicPanel_AllocRadioText=&Record object creation only",
-    "MemorySettingsBasicPanel_LivenessRadioText=Record &both object creation and garbage collection",
+    "MemorySettingsBasicPanel_AllocRadioText=&Quick (sampled)",
+    "MemorySettingsBasicPanel_LivenessRadioText=&Advanced (instrumented)",
+    "StpFullLifecycleText=&Record full object lifecycle",
     "MemorySettingsBasicPanel_TrackEveryLabelText=&Track every",
 //# Used as Track every [JSpinner] object allocations
     "MemorySettingsBasicPanel_AllocLabelText=object allocations",
@@ -94,15 +95,20 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     private HyperlinkLabel profilingPointsLink;
     private JCheckBox profilingPointsCheckbox;
     private JCheckBox recordStackTraceCheckbox;
-    private JLabel trackEveryLabel1;
-    private JLabel trackEveryLabel2;
+    private JCheckBox fullDataCheckbox;
 
     // --- UI components declaration ---------------------------------------------
-    private JRadioButton allocationsRadio;
-    private JRadioButton livenessRadio;
-    private JSpinner trackEverySpinner;
+    private JRadioButton sampleAppRadio;
+    private JRadioButton profileAppRadio;
     private Lookup.Provider project; // TODO: implement reset or remove!!!
     private Runnable profilingPointsDisplayer;
+    
+    private boolean lastFullDataState;
+    private boolean fullDataStateCache;
+    private boolean lastStackTracesState;
+    private boolean stackTracesStateCache;
+    private boolean lastProfilingPointsState;
+    private boolean profilingPointsStateCache;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -117,7 +123,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     public void setContext(Lookup.Provider project, Runnable profilingPointsDisplayer) {
         this.project = project;
         this.profilingPointsDisplayer = profilingPointsDisplayer;
-        updateProject(project);
+        updateControls();
     }
 
     public HelpCtx getHelpCtx() {
@@ -125,15 +131,18 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     }
 
     public void setProfilingType(int profilingType) {
-        allocationsRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS);
-        livenessRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
+        sampleAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_SAMPLING);
+        profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS ||
+                                    profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
     }
 
     public int getProfilingType() {
-        if (allocationsRadio.isSelected()) {
-            return ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS;
-        } else {
+        if (sampleAppRadio.isSelected()) {
+            return ProfilingSettings.PROFILE_MEMORY_SAMPLING;
+        } else if (fullDataCheckbox.isSelected()) {
             return ProfilingSettings.PROFILE_MEMORY_LIVENESS;
+        } else {
+            return ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS;
         }
     }
 
@@ -145,17 +154,9 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         return recordStackTraceCheckbox.isSelected();
     }
 
-    public void setTrackEvery(int trackEvery) {
-        trackEverySpinner.setValue(Integer.valueOf(trackEvery));
-    }
-
-    public int getTrackEvery() {
-        return ((Integer) trackEverySpinner.getValue()).intValue();
-    }
-
     public void setUseProfilingPoints(boolean use) {
-        profilingPointsCheckbox.setSelected(use);
-        updateEnabling();
+        profilingPointsCheckbox.setSelected(use && profilingPointsCheckbox.isEnabled());
+        updateControls();
     }
 
     public boolean getUseProfilingPoints() {
@@ -195,18 +196,19 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
         ButtonGroup memoryModeRadios = new ButtonGroup();
 
-        // allocationsRadio
-        allocationsRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(allocationsRadio, Bundle.MemorySettingsBasicPanel_AllocRadioText());
-        allocationsRadio.setToolTipText(Bundle.StpAllocTooltip());
-        allocationsRadio.setOpaque(false);
-        allocationsRadio.setSelected(true);
-        memoryModeRadios.add(allocationsRadio);
-        allocationsRadio.addChangeListener(new ChangeListener() {
+        // sampleAppRadio
+        sampleAppRadio = new JRadioButton();
+        org.openide.awt.Mnemonics.setLocalizedText(sampleAppRadio, Bundle.MemorySettingsBasicPanel_AllocRadioText());
+        sampleAppRadio.setToolTipText(Bundle.StpAllocTooltip());
+        sampleAppRadio.setOpaque(false);
+        sampleAppRadio.setSelected(true);
+        memoryModeRadios.add(sampleAppRadio);
+        sampleAppRadio.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
+                    updateControls();
                 }
             });
-        allocationsRadio.addActionListener(getSettingsChangeListener());
+        sampleAppRadio.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -214,20 +216,21 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(15, 30, 0, 0);
-        add(allocationsRadio, constraints);
+        add(sampleAppRadio, constraints);
 
-        // livenessRadio
-        livenessRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(livenessRadio, Bundle.MemorySettingsBasicPanel_LivenessRadioText());
-        livenessRadio.setToolTipText(Bundle.StpLivenessTooltip());
-        livenessRadio.setOpaque(false);
-        livenessRadio.setSelected(true);
-        memoryModeRadios.add(livenessRadio);
-        livenessRadio.addChangeListener(new ChangeListener() {
+        // profileAppRadio
+        profileAppRadio = new JRadioButton();
+        org.openide.awt.Mnemonics.setLocalizedText(profileAppRadio, Bundle.MemorySettingsBasicPanel_LivenessRadioText());
+        profileAppRadio.setToolTipText(Bundle.StpLivenessTooltip());
+        profileAppRadio.setOpaque(false);
+        profileAppRadio.setSelected(false);
+        memoryModeRadios.add(profileAppRadio);
+        profileAppRadio.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
+                    updateControls();
                 }
             });
-        livenessRadio.addActionListener(getSettingsChangeListener());
+        profileAppRadio.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -235,71 +238,24 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(3, 30, 0, 0);
-        add(livenessRadio, constraints);
-
-        // trackEveryContainer - definition
-        JPanel trackEveryContainer = new JPanel(new GridBagLayout());
-
-        // trackEveryLabel1
-        trackEveryLabel1 = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(trackEveryLabel1, Bundle.MemorySettingsBasicPanel_TrackEveryLabelText());
-        trackEveryLabel1.setToolTipText(Bundle.StpTrackEveryTooltip());
-        trackEveryLabel1.setOpaque(false);
-        constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 0, 0, 5);
-        trackEveryContainer.add(trackEveryLabel1, constraints);
-
-        // trackEverySpinner
-        trackEverySpinner = new JExtendedSpinner(new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1)) {
-                public Dimension getPreferredSize() {
-                    return new Dimension(55, getDefaultSpinnerHeight());
-                }
-
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-            };
-        trackEveryLabel1.setLabelFor(trackEverySpinner);
-        trackEverySpinner.setToolTipText(Bundle.StpTrackEveryTooltip());
-        trackEverySpinner.addChangeListener(getSettingsChangeListener());
-        constraints = new GridBagConstraints();
-        constraints.gridx = 1;
-        constraints.gridy = 0;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 0, 0, 0);
-        trackEveryContainer.add(trackEverySpinner, constraints);
-
-        // trackEveryLabel2
-        trackEveryLabel2 = new JLabel(Bundle.MemorySettingsBasicPanel_AllocLabelText());
-        trackEveryLabel2.setToolTipText(Bundle.StpTrackEveryTooltip());
-        trackEveryLabel2.setOpaque(false);
-        constraints = new GridBagConstraints();
-        constraints.gridx = 2;
-        constraints.gridy = 0;
-        constraints.weightx = 1;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 5, 0, 0);
-        trackEveryContainer.add(trackEveryLabel2, constraints);
-
-        // trackEveryContainer - customization
-        trackEveryContainer.setOpaque(false);
+        add(profileAppRadio, constraints);        
+        
+        //
+        fullDataCheckbox = new JCheckBox();
+        org.openide.awt.Mnemonics.setLocalizedText(fullDataCheckbox, Bundle.StpFullLifecycleText());
+        fullDataCheckbox.setToolTipText(Bundle.StpFullLifecycleTooltip());
+        fullDataCheckbox.setOpaque(false);
+        fullDataCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 2;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(20, 25, 0, 0);
-        add(trackEveryContainer, constraints);
+        constraints.insets = new Insets(25, 25, 0, 0);
+        add(fullDataCheckbox, constraints);
+        //
+        
 
         // recordStackTraceCheckbox
         recordStackTraceCheckbox = new JCheckBox();
@@ -313,7 +269,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(20, 25, 0, 0);
+        constraints.insets = new Insets(3, 25, 0, 0);
         add(recordStackTraceCheckbox, constraints);
 
         // fillerPanel
@@ -337,6 +293,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         profilingPointsCheckbox.setToolTipText(Bundle.StpUsePpsTooltip());
         profilingPointsCheckbox.setOpaque(false);
         profilingPointsCheckbox.setSelected(true);
+        profilingPointsStateCache = profilingPointsCheckbox.isSelected();
         profilingPointsCheckbox.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     updateEnabling();
@@ -393,9 +350,46 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     private void updateEnabling() {
         profilingPointsLink.setEnabled(profilingPointsCheckbox.isSelected() && profilingPointsCheckbox.isEnabled());
     }
-
-    // --- Private implementation ------------------------------------------------
-    private void updateProject(final Lookup.Provider project) {
-        profilingPointsCheckbox.setEnabled(project != null);
+    
+    private void updateControls() {
+        if (sampleAppRadio.isSelected()) {
+            if (!lastFullDataState) {
+                fullDataStateCache = fullDataCheckbox.isSelected();
+                fullDataCheckbox.setEnabled(false);
+                fullDataCheckbox.setSelected(false);
+                lastFullDataState = true;
+            }
+            if (!lastStackTracesState) {
+                stackTracesStateCache = recordStackTraceCheckbox.isSelected();
+                recordStackTraceCheckbox.setEnabled(false);
+                recordStackTraceCheckbox.setSelected(false);
+                lastStackTracesState = true;
+            }
+            profilingPointsCheckbox.setEnabled(false);
+            if (project == null) return;
+            if (!lastProfilingPointsState) {
+                profilingPointsStateCache = profilingPointsCheckbox.isSelected();
+                profilingPointsCheckbox.setSelected(false);
+                lastProfilingPointsState = true;
+            }
+        } else {
+            if (lastFullDataState) {
+                fullDataCheckbox.setEnabled(true);
+                fullDataCheckbox.setSelected(fullDataStateCache);
+                lastFullDataState = false;
+            }
+            if (lastStackTracesState) {
+                recordStackTraceCheckbox.setEnabled(true);
+                recordStackTraceCheckbox.setSelected(stackTracesStateCache);
+                lastStackTracesState = false;
+            }
+            profilingPointsCheckbox.setEnabled(project != null);
+            if (project == null) return;
+            if (lastProfilingPointsState) {
+                profilingPointsCheckbox.setSelected(profilingPointsStateCache);
+                lastProfilingPointsState = false;
+            }
+        }
     }
+    
 }

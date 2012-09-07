@@ -42,18 +42,18 @@
 
 package org.netbeans.modules.web.clientproject.api;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * Provides mapping between project's source file and its location on server
@@ -111,7 +111,13 @@ public final class ServerURLMapping {
             }
         }
         if ("file".equals(serverURL.getProtocol())) {
-            return URLMapper.findFileObject(serverURL);
+            try {
+                File f = FileUtil.normalizeFile(Utilities.toFile(serverURL.toURI()));
+                return FileUtil.toFileObject(f);
+                //FileObject fo = URLMapper.findFileObject(serverURL);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }

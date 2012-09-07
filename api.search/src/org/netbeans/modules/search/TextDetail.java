@@ -601,7 +601,8 @@ public final class TextDetail implements Selectable {
                 text.append(escape(txtDetail.getLineTextPart(
                         matchEnd - off, matchEnd)));
             } else {
-                text.append(txtDetail.getLineTextPart(matchStart, matchEnd));
+                text.append(escape(
+                        txtDetail.getLineTextPart(matchStart, matchEnd)));
             }
             int markEnd = matchStart + txtDetail.getMarkLength();
             text.append("</b>"); // NOI18N

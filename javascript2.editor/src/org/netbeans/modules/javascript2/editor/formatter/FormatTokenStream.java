@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -200,6 +205,14 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
             }
         }
         return ret;
+    }
+
+    public static FormatToken getNextNonVirtual(FormatToken token) {
+        FormatToken current = token.next();
+        while (current != null && current.isVirtual()) {
+            current = current.next();
+        }
+        return current;
     }
 
     public FormatToken getToken(int offset) {

@@ -535,37 +535,38 @@ public class FormatVisitor extends NodeVisitor {
                 } else {
                     FormatToken formatToken = getNextToken(getStart(unaryNode), null);
 
-                    // remove around binary operator tokens added during token
-                    // stream creation
-                    if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                        assert formatToken != null && formatToken.getText() != null
-                                && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
-                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
-                        // we remove blindly inserted binary op markers
-                        FormatToken toRemove = findVirtualToken(formatToken,
-                                FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
-                        assert toRemove != null
-                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
-                        tokenStream.removeToken(toRemove);
-                        toRemove = findVirtualToken(formatToken,
-                                FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP, true);
-                        assert toRemove != null
-                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
-                        tokenStream.removeToken(toRemove);
-
-                        toRemove = findVirtualToken(formatToken,
-                                FormatToken.Kind.AFTER_BINARY_OPERATOR, false);
-                        assert toRemove != null
-                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
-                        tokenStream.removeToken(toRemove);
-                        toRemove = findVirtualToken(formatToken,
-                                FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP, false);
-                        assert toRemove != null
-                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP : toRemove;
-                        tokenStream.removeToken(toRemove);
-                    }
-
+                    // may be null when we are out of formatted area
                     if (formatToken != null) {
+                        // remove around binary operator tokens added during token
+                        // stream creation
+                        if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
+                            assert formatToken != null && formatToken.getText() != null
+                                    && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
+                                        || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
+                            // we remove blindly inserted binary op markers
+                            FormatToken toRemove = findVirtualToken(formatToken,
+                                    FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
+                            assert toRemove != null
+                                    && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
+                            tokenStream.removeToken(toRemove);
+                            toRemove = findVirtualToken(formatToken,
+                                    FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP, true);
+                            assert toRemove != null
+                                    && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
+                            tokenStream.removeToken(toRemove);
+
+                            toRemove = findVirtualToken(formatToken,
+                                    FormatToken.Kind.AFTER_BINARY_OPERATOR, false);
+                            assert toRemove != null
+                                    && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
+                            tokenStream.removeToken(toRemove);
+                            toRemove = findVirtualToken(formatToken,
+                                    FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP, false);
+                            assert toRemove != null
+                                    && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP : toRemove;
+                            tokenStream.removeToken(toRemove);
+                        }
+
                         appendToken(formatToken,
                                 FormatToken.forFormat(FormatToken.Kind.AFTER_UNARY_OPERATOR));
                     }

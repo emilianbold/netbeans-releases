@@ -38,6 +38,8 @@
 package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -62,7 +64,9 @@ import org.openide.windows.OutputListener;
 public class OutputTabTest extends NbTestCase {
 
     public static Test suite() {
-        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(IOExtensionsTest.class);
+        return GraphicsEnvironment.isHeadless()
+                ? new TestSuite()
+                : new TestSuite(OutputTabTest.class);
     }
 
     public OutputTabTest(String name) {
@@ -77,7 +81,6 @@ public class OutputTabTest extends NbTestCase {
     @Override
     protected void setUp() throws java.lang.Exception {
         SwingUtilities.invokeAndWait(new Runnable() {
-
             @Override
             public void run() {
                 container = IOContainer.getDefault();
@@ -137,7 +140,6 @@ public class OutputTabTest extends NbTestCase {
 
         // click the link
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 try {
@@ -159,6 +161,22 @@ public class OutputTabTest extends NbTestCase {
         });
         s.acquire();
         assertFalse("No error should be logged", result.isErrorLogged());
+    }
+
+    /**
+     * Test for bug 217784.
+     */
+    public void testOptionsListener() throws InvocationTargetException,
+            InterruptedException {
+
+        final NbIO nbio = (NbIO) io;
+        nbio.closeInputOutput();
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                nbio.getOptions().setColorError(Color.WHITE);
+            }
+        });
     }
 
     /**

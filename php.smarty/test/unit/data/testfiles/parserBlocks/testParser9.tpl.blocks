@@ -40,6 +40,56 @@ Detected parser blocks in the file:
  |
  -- {/capture <1378:1386> - }
 
+{null <1597:1633> - $smarty.capture.href_informace_right}
+
+{null <1640:1673> - $smarty.capture.href_vybava_right}
+
+{null <1680:1713> - $smarty.capture.href_odkazy_right}
+
+{null <1720:1753> - $smarty.capture.href_vzkazy_right}
+
+{null <1760:1793> - $smarty.capture.href_vzhled_right}
+
+{null <1943:1978> - $smarty.capture.href_informace_left}
+
+{null <1985:2018> - $smarty.capture.href_vybava_right}
+
+{null <2025:2058> - $smarty.capture.href_odkazy_right}
+
+{null <2065:2098> - $smarty.capture.href_vzkazy_right}
+
+{null <2105:2138> - $smarty.capture.href_vzhled_right}
+
+{null <2288:2323> - $smarty.capture.href_informace_left}
+
+{null <2330:2362> - $smarty.capture.href_vybava_left}
+
+{null <2369:2402> - $smarty.capture.href_odkazy_right}
+
+{null <2409:2442> - $smarty.capture.href_vzkazy_right}
+
+{null <2449:2482> - $smarty.capture.href_vzhled_right}
+
+{null <2632:2667> - $smarty.capture.href_informace_left}
+
+{null <2674:2706> - $smarty.capture.href_vybava_left}
+
+{null <2713:2745> - $smarty.capture.href_odkazy_left}
+
+{null <2752:2785> - $smarty.capture.href_vzkazy_right}
+
+{null <2792:2825> - $smarty.capture.href_vzhled_right}
+
+{null <2975:3010> - $smarty.capture.href_informace_left}
+
+{null <3017:3049> - $smarty.capture.href_vybava_left}
+
+{null <3056:3088> - $smarty.capture.href_odkazy_left}
+
+{null <3095:3127> - $smarty.capture.href_vzkazy_left}
+
+{null <3134:3167> - $smarty.capture.href_vzhled_right}
+
 {if <1455:1504> -  ($smarty.request.action eq "edit_pokoje_info")}
  |
  -- {elseif <1798:1853> -  ($smarty.request.action eq "edit_pokoje_vybava")}

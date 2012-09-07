@@ -148,6 +148,9 @@ class ModelGenerator {
             myCommonModels.append(" // So isNew() is rediefined here\n");   // NOI18N
             myCommonModels.append("return this.notSynced;\n}");          // NOI18N
         }
+        else if ( myIdAttribute != null){
+            myDisplayNameAlias = myIdAttribute.getName();
+        }
           
         String sync = overrideSync( url, httpPaths , useIds); 
         if ( sync != null && sync.length()>0 ){
@@ -160,7 +163,7 @@ class ModelGenerator {
         if ( collectionPath == null){
             return;
         }
-        myCommonModels.append("\n// Collection class for ");          // NOI18N
+        myCommonModels.append("\n // Collection class for ");          // NOI18N
         if ( name.equals(myModelName)){
             myCommonModels.append( name );
         }

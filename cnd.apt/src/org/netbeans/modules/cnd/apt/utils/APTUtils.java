@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -111,8 +112,16 @@ public class APTUtils {
         }
     }
 
-    public static String getFileOnceMacroName(APTFile apt) {
-        return "\"" + apt.getPath().toString() + "\""; //NOI18N
+    public static CharSequence getFileOnceMacroName(APTFile apt) {
+        // use Unix like separators to be the same on Win/Unix
+        String path = apt.getPath().toString().replace("\\", "/");//NOI18N
+        if (CndUtils.isUnitTestMode()) {
+            String TEST_DATA_DIR = "/unit/data/";//NOI18N
+            int idx = path.indexOf(TEST_DATA_DIR);
+            assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
+            path = path.substring(idx + TEST_DATA_DIR.length());
+        }
+        return CharSequences.create("\"" + path + "\""); //NOI18N
     }
 
     public static String getAPTTokenName(int type) {
@@ -197,10 +206,10 @@ public class APTUtils {
 
     private static final String DEFINE_PREFIX = "#define "; // NOI18N
 
-    public static APTDefine createAPTDefineOnce(String filePath) {
+    public static APTDefine createAPTDefineOnce(CharSequence filePath) {
         APTDefineNode defNode = null;
-        filePath = DEFINE_PREFIX + filePath;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(filePath, APTLanguageSupport.UNKNOWN);
+        String text = DEFINE_PREFIX + filePath;
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(text, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream

@@ -614,7 +614,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         chs.firePropertyChange(ProjectProblemsProvider.PROP_PROBLEMS, null, null);
     }
 
-    private static class MavenProblemResolver implements ProjectProblemResolver {
+    public static class MavenProblemResolver implements ProjectProblemResolver {
         private final Action action;
         private final String id;
 

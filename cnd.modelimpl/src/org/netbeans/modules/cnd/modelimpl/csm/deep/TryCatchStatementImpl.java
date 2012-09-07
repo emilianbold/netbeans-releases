@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExceptionHandlerImpl.ExceptionHandlerBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -67,6 +68,10 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         super(ast, file, scope);
         render(ast, global);
     }
+    
+    private TryCatchStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);        
+    }    
 
     public static TryCatchStatementImpl create(AST ast, CsmFile file, CsmScope scope, boolean global) {
         return new TryCatchStatementImpl(ast, file, scope, global);
@@ -123,5 +128,46 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         }
 	return elements;
     }
+ 
+    public static class TryCatchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
+
+        private List<ExceptionHandlerBuilder> handlers = new ArrayList<ExceptionHandlerBuilder>();
+        private StatementBuilder tryStatement;
+        
+        public void addHandlerBuilder(ExceptionHandlerBuilder statement) {
+            handlers.add(statement);
+        }
+
+        public void setTryStatementBuilder(StatementBuilder tryStatement) {
+            this.tryStatement = tryStatement;
+        }
+        
+        @Override
+        public TryCatchStatementImpl create() {
+            TryCatchStatementImpl stmt = new TryCatchStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            List<CsmExceptionHandler> stmts = new ArrayList<CsmExceptionHandler>();
+            for (ExceptionHandlerBuilder statementBuilder : handlers) {
+                statementBuilder.setScope(stmt);
+                stmts.add(statementBuilder.create());
+            }
+            if(stmts.isEmpty()) {
+                stmt.handlers = Collections.<CsmExceptionHandler>emptyList();
+            } else {
+                stmt.handlers = stmts;
+            }
+            
+            if(tryStatement != null) {
+                tryStatement.setScope(stmt);
+                stmt.tryStatement = tryStatement.create();
+            }
+                    
+            return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            tryStatement = builder;
+        }
+    }       
     
 }

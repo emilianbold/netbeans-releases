@@ -373,7 +373,7 @@ public abstract class SanitizingParser extends Parser {
         }
 
         public int getCaretOffset() {
-            return caretOffset;
+            return snapshot.getEmbeddedOffset(caretOffset);
         }
 
         public String getSource() {

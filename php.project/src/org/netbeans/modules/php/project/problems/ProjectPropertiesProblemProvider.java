@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
@@ -202,7 +203,12 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         "ProjectPropertiesProblemProvider.invalidWebRoot.description=The directory \"{0}\" does not exist and cannot be used for Web Root."
     })
     private void checkWebRoot(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(FileUtil.toFileObject(getWebRoot()), PhpProjectProperties.WEB_ROOT);
+        File webRoot = getWebRoot();
+        if (webRoot == null) {
+            // project fatally broken => do not validate web root
+            return;
+        }
+        File invalidDirectory = getInvalidDirectory(FileUtil.toFileObject(webRoot), PhpProjectProperties.WEB_ROOT);
         if (invalidDirectory != null) {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_title(),
@@ -233,9 +239,14 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
     private File getInvalidDirectory(FileObject directory, String propertyName) {
         assert WATCHED_PROPERTIES.contains(propertyName) : "Property '" + propertyName + "' should be watched for changes";
-        if (directory != null && directory.isValid()) {
-            // ok
-            return null;
+        if (directory != null) {
+            if (directory.isValid()) {
+                // ok
+                return null;
+            } else {
+                // invalid fo
+                return FileUtil.toFile(directory);
+            }
         }
         String propValue = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(propertyName);
         if (propValue == null) {
@@ -248,6 +259,9 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
     // XXX put somewhere and use everywhere (copied to more places)
     private File getWebRoot() {
+        if (PhpProjectValidator.isFatallyBroken(project)) {
+            return null;
+        }
         // ProjectPropertiesSupport.getWebRootDirectory(project) cannot be used since it always returns a valid fileobject (even if webroot is invalid, then sources are returned)
         return ProjectPropertiesSupport.getSourceSubdirectory(project, ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.WEB_ROOT));
     }

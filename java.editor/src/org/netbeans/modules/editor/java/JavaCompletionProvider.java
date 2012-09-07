@@ -52,6 +52,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.SourceVersion;
@@ -135,6 +136,8 @@ public class JavaCompletionProvider implements CompletionProvider {
     }
     
     static final class JavaCompletionQuery extends AsyncCompletionQuery {
+        
+        static final AtomicBoolean javadocBreak = new AtomicBoolean();
         
         private static final String ERROR = "<error>"; //NOI18N
         private static final String INIT = "<init>"; //NOI18N
@@ -308,6 +311,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (documentation instanceof JavaCompletionDoc) {
                                 while (!isTaskCancelled()) {
                                     try {
+                                        if (javadocBreak.getAndSet(false)) {
+                                            Completion c = Completion.get();
+                                            c.hideDocumentation();
+                                            c.showDocumentation();
+                                        }
                                         ((JavaCompletionDoc)documentation).getFutureText().get(250, TimeUnit.MILLISECONDS);
                                         resultSet.setDocumentation(documentation);
                                         break;
@@ -581,7 +589,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case METHOD:
                     documentation = JavaCompletionDoc.create(controller, el, new Callable<Boolean>() {
                         public Boolean call() {
-                            return isTaskCancelled();
+                            if (isTaskCancelled()) {
+                                return true;
+                            }
+                            if (javadocBreak.getAndSet(false)) {
+                                Completion c = Completion.get();
+                                c.hideDocumentation();
+                                c.showDocumentation();
+                            }
+                            return false;
                         }
                     });
                 }
