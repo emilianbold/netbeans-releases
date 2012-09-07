@@ -90,6 +90,7 @@ import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
@@ -370,13 +371,13 @@ public class RuleEditorPanel extends JPanel {
         titleLabel.setText(null);
 
         //add the property sheet to the center
-        sheet = new PropertySheet();
+        sheet = new REPropertySheet(popupMenu);
         try {
             sheet.setSortingMode(PropertySheet.UNSORTED);
         } catch (PropertyVetoException ex) {
             //no-op
         }
-        sheet.setPopupEnabled(false);
+        sheet.setPopupEnabled(true);
         sheet.setDescriptionAreaVisible(false);
         sheet.setNodes(new Node[]{node});
 
@@ -830,5 +831,44 @@ public class RuleEditorPanel extends JPanel {
                 }
             }
         }
+    }
+    
+    private class REPropertySheet extends PropertySheet {
+
+        private final JPopupMenu genericPopupMenu;
+
+        public REPropertySheet(JPopupMenu genericPopupMenu) {
+            this.genericPopupMenu = genericPopupMenu;
+        }
+        
+        @Override
+        protected JPopupMenu createPopupMenu() {
+            FeatureDescriptor fd = getSelection();
+            if(fd != null) {
+                if(fd instanceof RuleNode.DeclarationProperty) {
+                    //property
+                    //
+                    //actions:
+                    //remove
+                    //hide
+                    //????
+                    //custom popop for the whole panel
+                    JPopupMenu pm = new JPopupMenu();
+                    
+                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+
+                    return pm;
+                    
+                } else if(fd instanceof RuleNode.PropertyCategoryPropertySet) {
+                    //property category
+                    //TODO possibly add "add property" action which would
+                    //preselect the css category in the "add property dialog".
+                }
+            }            
+            
+            //no context popup - create the generic popup
+            return genericPopupMenu;
+        }
+        
     }
 }
