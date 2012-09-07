@@ -1503,6 +1503,35 @@ final class PropUtils {
     }
 
     /**
+     * @return True if Windows Vista Look and Feel is active.
+     */
+    static boolean isWindowsVistaLaF() {
+        if( !"Windows".equals( UIManager.getLookAndFeel().getID() ) )
+            return false;
+        if( !isXPTheme() )
+            return false;
+        return isWindowsVista() || isWindows7() || isWindows8();
+    }
+
+    private static boolean isWindowsVista() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Vista") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows7() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 7") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.1".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows8() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 8") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.2".equals( System.getProperty("os.version") ));
+    }
+
+    /**
      * Just a helper method which delegates to shallBeRDVEnabled(Node.Property).
      */
     static final boolean shallBeRDVEnabled(FeatureDescriptor fd) {
