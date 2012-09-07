@@ -208,7 +208,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 scrollRectToVisible(scrollPane1.getBounds());
             }
         });
-        attachmentsPanel = new AttachmentsPanel();
+        attachmentsPanel = new AttachmentsPanel(this);
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
@@ -626,8 +626,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             commentsPanel.setIssue(issue, attachments);
         }
         attachmentsPanel.setAttachments(attachments, isNetbeans);
-        UIUtils.keepFocusedComponentVisible(commentsPanel);
-        UIUtils.keepFocusedComponentVisible(attachmentsPanel);
+        UIUtils.keepFocusedComponentVisible(commentsPanel, this);
+        UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
         if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }

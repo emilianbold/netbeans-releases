@@ -370,31 +370,31 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="productLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane7" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="productScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="componentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane6" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="componentScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="versionScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="statusScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                      <Component id="jScrollPane5" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="resolutionScrollPane" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="jScrollPane4" max="32767" attributes="1"/>
+                      <Component id="priorityScrollPane" max="32767" attributes="1"/>
                       <Component id="priorityLabel" alignment="0" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -443,12 +443,12 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane4" max="32767" attributes="1"/>
-                              <Component id="jScrollPane7" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jScrollPane6" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jScrollPane2" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jScrollPane3" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jScrollPane5" alignment="0" max="32767" attributes="1"/>
+                              <Component id="priorityScrollPane" max="32767" attributes="1"/>
+                              <Component id="productScrollPane" alignment="0" max="32767" attributes="1"/>
+                              <Component id="componentScrollPane" alignment="0" max="32767" attributes="1"/>
+                              <Component id="versionScrollPane" alignment="0" max="32767" attributes="1"/>
+                              <Component id="statusScrollPane" alignment="0" max="32767" attributes="1"/>
+                              <Component id="resolutionScrollPane" alignment="0" max="32767" attributes="1"/>
                               <Component id="severityScrollPane" alignment="0" max="32767" attributes="1"/>
                           </Group>
                       </Group>
@@ -495,7 +495,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+        <Container class="javax.swing.JScrollPane" name="versionScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -513,9 +513,6 @@
                   <StringArray count="1">
                     <StringItem index="0" value=""/>
                   </StringArray>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
                 </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
@@ -548,7 +545,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+        <Container class="javax.swing.JScrollPane" name="statusScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -566,9 +563,6 @@
                   <StringArray count="1">
                     <StringItem index="0" value=""/>
                   </StringArray>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
                 </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
@@ -601,7 +595,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane4">
+        <Container class="javax.swing.JScrollPane" name="priorityScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -619,9 +613,6 @@
                   <StringArray count="1">
                     <StringItem index="0" value=""/>
                   </StringArray>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
                 </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
@@ -654,7 +645,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane5">
+        <Container class="javax.swing.JScrollPane" name="resolutionScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -672,9 +663,6 @@
                   <StringArray count="1">
                     <StringItem index="0" value=""/>
                   </StringArray>
-                </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
                 </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
@@ -707,7 +695,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane6">
+        <Container class="javax.swing.JScrollPane" name="componentScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -726,9 +714,6 @@
                     <StringItem index="0" value=""/>
                   </StringArray>
                 </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
-                </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
@@ -742,7 +727,7 @@
             </Component>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane7">
+        <Container class="javax.swing.JScrollPane" name="productScrollPane">
           <Properties>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
           </Properties>
@@ -759,9 +744,6 @@
                   <StringArray count="1">
                     <StringItem index="0" value=""/>
                   </StringArray>
-                </Property>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
                 </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
@@ -813,9 +795,6 @@
                     <StringItem index="0" value=""/>
                   </StringArray>
                 </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
-                </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
@@ -866,9 +845,6 @@
                     <StringItem index="0" value=""/>
                   </StringArray>
                 </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
-                </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AuxValues>
@@ -914,9 +890,6 @@
                     <StringItem index="0" value=""/>
                   </StringArray>
                 </Property>
-                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[100, 2]"/>
-                </Property>
                 <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AuxValues>
@@ -938,39 +911,34 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="commentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="whiteboardLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="keywordsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="commentComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="3"/>
-                      <Component id="summaryComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="3"/>
+                      <Component id="commentComboBox" alignment="0" min="-2" max="-2" attributes="3"/>
+                      <Component id="summaryComboBox" alignment="0" min="-2" max="-2" attributes="3"/>
                       <Component id="whiteboardComboBox" alignment="0" min="-2" max="-2" attributes="3"/>
-                      <Component id="keywordsComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="2"/>
+                      <Component id="keywordsComboBox" alignment="0" min="-2" max="-2" attributes="2"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="commentTextField" alignment="0" pref="0" max="32767" attributes="2"/>
+                      <Component id="summaryTextField" alignment="0" pref="0" max="32767" attributes="2"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="commentTextField" alignment="0" max="32767" attributes="2"/>
-                              <Component id="summaryTextField" alignment="0" max="32767" attributes="2"/>
-                          </Group>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="keywordsTextField" alignment="0" max="32767" attributes="2"/>
-                              <Component id="whiteboardTextField" alignment="0" max="32767" attributes="2"/>
+                              <Component id="keywordsTextField" alignment="0" pref="82" max="32767" attributes="2"/>
+                              <Component id="whiteboardTextField" alignment="0" pref="0" max="32767" attributes="2"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1238,7 +1206,7 @@
               <Component id="tableFieldsPanel" max="32767" attributes="2"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="noContentPanel" alignment="0" pref="1024" max="32767" attributes="0"/>
+          <Component id="noContentPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -1270,7 +1238,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="tablePanel" alignment="0" pref="1000" max="32767" attributes="2"/>
+                      <Component id="tablePanel" alignment="0" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
               </Group>
@@ -1320,7 +1288,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="821" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1512,11 +1480,11 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="byLastChangeContainer" alignment="0" pref="1024" max="32767" attributes="1"/>
+                  <Component id="byLastChangeContainer" alignment="0" max="32767" attributes="1"/>
                   <Component id="urlPanel" alignment="0" max="32767" attributes="3"/>
-                  <Component id="byTextContainer" alignment="0" pref="1024" max="32767" attributes="2"/>
-                  <Component id="byDetailsContainer" alignment="0" pref="1024" max="32767" attributes="1"/>
-                  <Component id="byPeopleContainer" alignment="0" pref="1024" max="32767" attributes="1"/>
+                  <Component id="byTextContainer" alignment="0" max="32767" attributes="2"/>
+                  <Component id="byDetailsContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -1658,7 +1626,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlTextField" pref="916" max="32767" attributes="0"/>
+                          <Component id="urlTextField" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1768,7 +1736,7 @@
                       <Component id="idTextField" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="gotoIssueButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="746" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1894,7 +1862,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="606" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                           <Component id="refreshCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="lastRefreshLabel" min="-2" max="-2" attributes="0"/>
