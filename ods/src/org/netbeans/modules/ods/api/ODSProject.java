@@ -49,7 +49,11 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.ods.client.api.ODSException;
@@ -200,6 +204,10 @@ public final class ODSProject {
         return hasService(ServiceType.SCM);
     }
 
+    public boolean hasTasks () {
+        return hasService(ServiceType.TASKS);
+    }
+
     public synchronized String getBuildUrl() {
         List<ProjectService> s = project.getProjectServicesOfType(ServiceType.BUILD);
         if(s != null) {
@@ -267,6 +275,15 @@ public final class ODSProject {
     public synchronized String getWikiLanguage () {
         WikiMarkupLanguage wikiLanguage = project.getProjectPreferences().getWikiLanguage();
         return wikiLanguage == null ? null : wikiLanguage.toString();
+    }
+
+    public static ODSProject findProjectForRepository (String uri) throws ODSException {
+        Map.Entry<CloudServer, String> pair = CloudServer.findServerAndProjectForRepository(uri);
+        if (pair == null || pair.getValue() == null) {
+            return null;
+        } else {
+            return pair.getKey().getProject(pair.getValue(), true);
+        }
     }
 
     private synchronized boolean hasService(ServiceType type) {

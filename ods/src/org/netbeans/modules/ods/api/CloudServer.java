@@ -48,16 +48,20 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.netbeans.modules.ods.client.api.ODSClient;
@@ -321,6 +325,40 @@ public final class CloudServer {
                 return watchedProjs == null ? Collections.<ODSProject>emptyList() : new ArrayList<ODSProject>(watchedProjs);
             }
         }
+    }
+
+    public static CloudServer findServerForRepository (String uri) {
+        Map.Entry<CloudServer, String> pair = findServerAndProjectForRepository(uri);
+        if (pair == null) {
+            return null;
+        } else {
+            return pair.getKey();
+        }
+    }
+    
+    static Map.Entry<CloudServer, String> findServerAndProjectForRepository (String uri) {
+        if (uri == null) {
+            return null;
+        }
+        for (CloudServer k : CloudServerManager.getDefault().getServers()) {
+            for (Map.Entry<Pattern, Integer> e : getRepositoryPatterns(k).entrySet()) {
+                Matcher m = e.getKey().matcher(uri);
+                if (m.matches()) {
+                    return new AbstractMap.SimpleImmutableEntry(k, m.group(e.getValue()));
+                }
+            }
+            // what about external repositories??
+        }
+        return null;
+    }
+    
+    private static Map<Pattern, Integer> getRepositoryPatterns (CloudServer server) {
+        Map<Pattern, Integer> patterns = new LinkedHashMap<Pattern, Integer>(2);
+        patterns.put(Pattern.compile("(http|https)://" + (server.getUrl().getHost() + server.getUrl().getPath()).replace(".", "\\.") + "/s/(\\S*)/scm/.*"), //NOI18N
+                2);
+        patterns.put(Pattern.compile("ssh://" + server.getUrl().getHost().replace(".", "\\.") + "(:[0-9]+)?/(\\S*)/.*"), //NOI18N
+                2);
+        return patterns;
     }
 
     private Project getProject(String projectId) throws ODSException {

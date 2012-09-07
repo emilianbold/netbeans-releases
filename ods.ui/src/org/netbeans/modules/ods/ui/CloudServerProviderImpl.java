@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ods.ui;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -51,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import org.netbeans.modules.ods.api.CloudServer;
 import org.netbeans.modules.ods.api.CloudServerManager;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -60,6 +62,8 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import static org.netbeans.modules.ods.ui.Bundle.*;
+import org.netbeans.modules.ods.ui.dashboard.NotYetAction;
+import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -193,6 +197,20 @@ public class CloudServerProviderImpl implements TeamServerProvider {
             return Bundle.ERR_UrlNotValid();
         }
         return null;
+    }
+
+    @Override
+    public PopupMenuProvider getPopupMenuProvider (String repositoryUrl) {
+        assert !EventQueue.isDispatchThread();
+        if (CloudServer.findServerForRepository(repositoryUrl) != null) {
+            return PopupActionsProvider.getDefault();
+        }
+        return null;
+    }
+
+    @Override
+    public Action getShareAction () {
+        return new NotYetAction();
     }
     
 }

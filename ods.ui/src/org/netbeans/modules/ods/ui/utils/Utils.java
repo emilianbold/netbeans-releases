@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.ods.ui.utils.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -74,6 +75,7 @@ public class Utils {
     public static final Icon COLLAPSE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/arrow-up.png", true);
     private final static int VISIBLE_START_CHARS = 20;
     private static final Logger LOG = Logger.getLogger("ODS ui"); // NOI18N
+    private static RequestProcessor RP;
 
     public static String computeFitText(JComponent component, int maxWidth, String text, boolean bold) {
         if (text == null) {
@@ -168,6 +170,13 @@ public class Utils {
                 annotate(msg);
             }
         }
+    }
+    
+    public static RequestProcessor getRequestProcessor () {
+        if (RP == null) {
+            RP = new RequestProcessor("ODS tasks", 1); //NOI18N
+        }
+        return RP;
     }
 
     @Messages({
