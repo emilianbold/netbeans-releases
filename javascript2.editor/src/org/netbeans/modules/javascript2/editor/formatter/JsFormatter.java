@@ -156,6 +156,8 @@ public class JsFormatter implements Formatter {
 
                     // FIXME optimize performance
                     if (!token.isVirtual()) {
+                        formatContext.checkEndContinuationLevel(token);
+
                         if (!firstTokenFound) {
                             firstTokenFound = true;
                             formatContext.setCurrentLineStart(token.getOffset());
@@ -262,9 +264,11 @@ public class JsFormatter implements Formatter {
                         if (indentationEnd != null
                                 && indentationEnd.getKind() != FormatToken.Kind.EOL) {
                             int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
+                            int continuationLevel = formatContext.getContinuationLevel();
                             if (isContinuation(token, false)) {
-                                indentationSize += continuationIndent;
+                                continuationLevel = formatContext.checkStartContinuationLevel(token);
                             }
+                            indentationSize += continuationIndent * continuationLevel;
                             formatContext.indentLine(
                                     indentationStart.getOffset(), indentationSize,
                                     checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize));

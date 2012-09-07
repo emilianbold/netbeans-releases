@@ -42,7 +42,9 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -71,6 +73,8 @@ public final class FormatContext {
 
     private final Snapshot snapshot;
 
+    private final Set<Integer> continuationBracketEndLevel = new HashSet<Integer>();
+
     private final int initialStart;
 
     private final int initialEnd;
@@ -82,6 +86,10 @@ public final class FormatContext {
     private LineWrap lastLineWrap;
 
     private int indentationLevel;
+
+    private int continuationLevel;
+
+    private int continuationBracketLevel;
 
     private int offsetDiff;
 
@@ -176,6 +184,35 @@ public final class FormatContext {
 
     public void decIndentationLevel() {
         this.indentationLevel--;
+    }
+
+    public int getContinuationLevel() {
+        return continuationLevel;
+    }
+
+    public int checkStartContinuationLevel(FormatToken token) {
+        FormatToken next = FormatTokenStream.getNextImportant(token);
+        if (next.getKind() == FormatToken.Kind.TEXT
+                && JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(next.getText().toString())) {
+            continuationBracketEndLevel.add(continuationBracketLevel);
+            continuationBracketLevel++;
+            continuationLevel++;
+            return continuationLevel;
+        }
+        return continuationLevel + 1;
+    }
+
+    public void checkEndContinuationLevel(FormatToken token) {
+        if (!token.isVirtual() && token.getKind() == FormatToken.Kind.TEXT
+                && JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(token.getText().toString())) {
+            if (continuationLevel > 0) {
+                continuationBracketLevel--;
+                boolean present = continuationBracketEndLevel.remove(continuationBracketLevel);
+                if (present) {
+                    continuationLevel--;
+                }
+            }
+        }
     }
 
     public int getOffsetDiff() {

@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -207,9 +208,24 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         return ret;
     }
 
+    @CheckForNull
     public static FormatToken getNextNonVirtual(FormatToken token) {
         FormatToken current = token.next();
         while (current != null && current.isVirtual()) {
+            current = current.next();
+        }
+        return current;
+    }
+
+    @CheckForNull
+    public static FormatToken getNextImportant(FormatToken token) {
+        FormatToken current = token.next();
+        while (current != null && (current.isVirtual()
+                || current.getKind() == FormatToken.Kind.WHITESPACE
+                || current.getKind() == FormatToken.Kind.EOL
+                || current.getKind() == FormatToken.Kind.DOC_COMMENT
+                || current.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                || current.getKind() == FormatToken.Kind.LINE_COMMENT)) {
             current = current.next();
         }
         return current;
