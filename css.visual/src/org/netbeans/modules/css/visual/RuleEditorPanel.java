@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -85,6 +86,7 @@ import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
@@ -170,6 +172,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
+    private Declaration createdDeclaration;
+    
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
@@ -221,6 +225,11 @@ public class RuleEditorPanel extends JPanel {
             } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
                 //refresh the PS content
                 node.fireContextChanged();
+                
+                if(createdDeclaration != null) {
+                    //select & edit the property corresponding to the created declaration
+                    editCreatedDeclaration();
+                }
             }
         }
     };
@@ -423,14 +432,25 @@ public class RuleEditorPanel extends JPanel {
                     //do not save the model (apply changes) - once the write task finishes
                     //the embedded property sheet will be refreshed from the modified model.
                     
+                    //remember the created declaration so once the model change is fired
+                    //and the property sheet is refreshed, we can find and select the corresponding
+                    //FeatureDescriptor
+                    createdDeclaration = declaration;
                 }
             });
 
-            //TODO - once Standa add to the propertySheet - select the new property in the PS in edit mode 
-            //so the user can smoothlesly enter the value
-
-
         }
+    }
+    
+    
+    private void editCreatedDeclaration() {
+        DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
+        assert descriptor != null;
+        
+        sheet.requestFocus();
+//        sheet.select(descriptor, true);
+        
+        createdDeclaration = null;
     }
 
     public final void updateFiltersPresenters() {
