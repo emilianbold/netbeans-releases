@@ -105,6 +105,11 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         return browserIntegration;
     }
     
+    public boolean canBeDefaultConfiguration() {
+        return Boolean.TRUE.equals(browserIntegration) && 
+            (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM);
+    }
+    
     public boolean isAutoRefresh() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId());
         if (val != null) {

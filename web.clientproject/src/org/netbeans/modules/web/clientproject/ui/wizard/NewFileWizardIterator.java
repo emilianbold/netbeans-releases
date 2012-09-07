@@ -53,6 +53,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -158,7 +160,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project project = Templates.getProject(descriptor);
-        SourceGroup[] groups = filterSourceGroups(project, Templates.getTemplate(descriptor), ClientSideProjectUtilities.getSourceGroups(project));
+        SourceGroup[] groups = getSourceGroups(project, Templates.getTemplate(descriptor));
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(project, groups).create();
 
         @SuppressWarnings("unchecked")
@@ -166,7 +168,8 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         return panels;
     }
 
-    private SourceGroup[] filterSourceGroups(Project project, FileObject file, SourceGroup[] groups) {
+    private SourceGroup[] getSourceGroups(Project project, FileObject file) {
+        SourceGroup[] groups = ClientSideProjectUtilities.getSourceGroups(project);
         if (!FileUtilities.isHtmlFile(file)
                 && !FileUtilities.isCssFile(file)) {
             // not html or css -> return all source groups
@@ -177,15 +180,9 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         if (clientSideProject == null) {
             // no client side project
             return groups;
+        } else {
+            return ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
         }
-        FileObject siteRootFolder = clientSideProject.getSiteRootFolder();
-        for (SourceGroup sourceGroup : groups) {
-            if (sourceGroup.getRootFolder().equals(siteRootFolder)) {
-                return new SourceGroup[] {sourceGroup};
-            }
-        }
-        assert false : "Source group for site root not found";
-        return groups;
     }
 
     private void setTargetFolder() {

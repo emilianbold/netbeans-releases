@@ -163,7 +163,7 @@ class ModelGenerator {
         if ( collectionPath == null){
             return;
         }
-        myCommonModels.append("\n// Collection class for ");          // NOI18N
+        myCommonModels.append("\n // Collection class for ");          // NOI18N
         if ( name.equals(myModelName)){
             myCommonModels.append( name );
         }

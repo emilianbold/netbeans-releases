@@ -937,6 +937,14 @@ public class PropertySheet extends JPanel {
         return table.getSelection();
     }
 
+    /**
+     * Select the given property.
+     * @param fd Property to select
+     * @param startEditing True to start editing of that property.
+     */
+    private void select( FeatureDescriptor fd, boolean startEditing ) {
+        table.select( fd, startEditing );
+    }
 
     Node[] getCurrentNodes() {
         Node n = pclistener.getNode();

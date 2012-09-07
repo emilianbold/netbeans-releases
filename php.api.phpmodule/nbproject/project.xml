@@ -133,6 +133,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.php.api.annotation</friend>
                 <friend>org.netbeans.modules.php.api.documentation</friend>

@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.editor.gsf.TplLanguage;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -98,6 +99,19 @@ public abstract class TplTestBase extends CslTestBase {
     @Override
     protected String getPreferredMimeType() {
         return TplDataLoader.MIME_TYPE;
+    }
+
+
+    protected void setupSmartyOptions(String openDelimiter, String closeDelimiter, SmartyFramework.Version version) {
+        SmartyOptions.getInstance().setDefaultOpenDelimiter(openDelimiter);
+        SmartyOptions.getInstance().setDefaultCloseDelimiter(closeDelimiter);
+        SmartyOptions.getInstance().setSmartyVersion(version);
+    }
+
+    protected void resetSmartyOptions() {
+        SmartyOptions.getInstance().setDefaultOpenDelimiter("{");
+        SmartyOptions.getInstance().setDefaultCloseDelimiter("}");
+        SmartyOptions.getInstance().setSmartyVersion(SmartyFramework.Version.SMARTY3);
     }
 
 }

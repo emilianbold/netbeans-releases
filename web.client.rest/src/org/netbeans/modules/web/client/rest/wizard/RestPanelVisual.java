@@ -209,8 +209,8 @@ public final class RestPanelVisual extends JPanel  {
         myBackbone = null;
         Project project = Templates.getProject(wizardDescriptor);
         FileObject projectDirectory = project.getProjectDirectory();
-        // XXX : plublic_html should not be hardcoded
-        FileObject libs = projectDirectory.getFileObject(WebClientLibraryManager.LIBS); 
+        FileObject libs = JSClientIterator.getLibFolder(project).
+                getFileObject(WebClientLibraryManager.LIBS); 
         boolean backboneExists = false; 
         if ( libs != null ){
             FileObject[] children = libs.getChildren();

@@ -43,6 +43,8 @@ package org.netbeans.modules.web.clientproject.util;
 
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,12 +57,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -148,8 +151,18 @@ public final class ClientSideProjectUtilities {
     }
 
     public static SourceGroup[] getSourceGroups(Project project) {
+        assert project instanceof ClientSideProject;
         Sources sources = ProjectUtils.getSources(project);
-        return sources.getSourceGroups(ClientSideProjectSources.SOURCES_TYPE_HTML5);
+        List<SourceGroup> res= new ArrayList<SourceGroup>();
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST)));
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG)));
+        return res.toArray(new SourceGroup[res.size()]);
+    }
+
+    public static SourceGroup[] getSourceGroups(Project project, String type) {
+        Sources sources = ProjectUtils.getSources(project);
+        return sources.getSourceGroups(type);
     }
 
     public static FileObject[] getSourceObjects(Project project) {
@@ -192,7 +205,7 @@ public final class ClientSideProjectUtilities {
             JavaScriptLibrarySelection.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
             Library library = libraryVersion.getLibrary();
             if (handle != null) {
-                handle.progress(Bundle.ClientSideProjectUtilities_msg_downloadingJsLib(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+                handle.progress(Bundle.ClientSideProjectUtilities_msg_downloadingJsLib(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
             }
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());

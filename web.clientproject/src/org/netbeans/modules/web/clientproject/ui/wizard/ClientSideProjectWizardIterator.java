@@ -264,7 +264,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @NbBundle.Messages({
             "NewProjectWizard.step.createProject=Name and Location",
             "NewProjectWizard.step.chooseSite=Site Template",
-            "NewProjectWizard.step.selectJsLibrary=JavaScript Libraries"
+            "NewProjectWizard.step.selectJsLibrary=JavaScript Files"
         })
         @Override
         public String[] createSteps() {

@@ -280,6 +280,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         boolean useClean = tableUI && (lf instanceof MetalLookAndFeel 
                 || "GTK".equals(id) //NOI18N
                 || ("Aqua".equals(id) && "10.5".compareTo(System.getProperty("os.version")) <= 0) //NOI18N
+                || PropUtils.isWindowsVistaLaF() //#217957
                 || "Kunststoff".equals(id)); //NOI18N
 
         if (useClean) {
