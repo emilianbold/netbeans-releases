@@ -223,6 +223,7 @@ FormattingToken{kind=WHITESPACE, offset=222, text=      }
 FormattingToken{kind=TEXT, offset=228, text=!}
 FormattingToken{kind=AFTER_UNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=229, text=[}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=230, text='}
 FormattingToken{kind=TEXT, offset=231, text=button}
@@ -243,6 +244,7 @@ FormattingToken{kind=WHITESPACE, offset=248, text= }
 FormattingToken{kind=TEXT, offset=249, text='}
 FormattingToken{kind=TEXT, offset=250, text=submit}
 FormattingToken{kind=TEXT, offset=256, text='}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=257, text=]}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}

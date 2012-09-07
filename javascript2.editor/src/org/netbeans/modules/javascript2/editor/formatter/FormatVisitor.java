@@ -644,11 +644,13 @@ public class FormatVisitor extends NodeVisitor {
                 FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
                 if (leftBracket != null) {
                     appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
+                    appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
                     FormatToken rightBracket = getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
                     if (rightBracket != null) {
                         FormatToken previous = rightBracket.previous();
                         if (previous != null) {
                             appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
+                            appendToken(previous, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                         }
                     }
                 }

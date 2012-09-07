@@ -1,21 +1,21 @@
 var test = [1,
-        2,
-        3]
+    2,
+    3]
 
 test2 = ["a",
-        "b"][0];
+    "b"][0];
 
 test3 = [1,
-        2,
-        [1,
+    2,
+    [1,
         2]];
 
 test4 = ["aaaaa",
-        "bbbbb",
-        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]
+    "bbbbb",
+    "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]
 
 test5 = ["aaaaa",
-        "bbbbb",
-        ["xxx",
+    "bbbbb",
+    ["xxx",
         "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]]
 

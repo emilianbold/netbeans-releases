@@ -643,6 +643,7 @@ public class JsFormatter implements Formatter {
         for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
             if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                    || current.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL
                     || current.getKind() == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
                     || current.getKind().isIndentationMarker()) {
@@ -674,6 +675,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
+                    || kind == FormatToken.Kind.AFTER_ARRAY_LITERAL
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
                     || kind.isIndentationMarker()) {
@@ -685,6 +687,7 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
                 || result.getKind().isIndentationMarker()) {

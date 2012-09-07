@@ -1,10 +1,10 @@
 {
     "types":
             [
-                    {
-                        "property": "Slide: Importance",
-                        "shortName": "Slide_Importance",
-                        "type": "value",
-                    }
+                {
+                    "property": "Slide: Importance",
+                    "shortName": "Slide_Importance",
+                    "type": "value",
+                }
             ]
 }
