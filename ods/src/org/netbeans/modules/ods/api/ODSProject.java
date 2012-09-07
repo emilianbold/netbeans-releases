@@ -249,7 +249,7 @@ public final class ODSProject {
     }
 
     public synchronized String getMavenUrl() {
-        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.WIKI);
+        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.MAVEN);
         if (s != null) {
             for (ProjectService ps : s) {
                 if (ps.isAvailable()) {
