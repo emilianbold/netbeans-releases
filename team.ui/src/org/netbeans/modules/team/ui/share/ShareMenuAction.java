@@ -39,18 +39,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.team.ui.share;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.WindowManager;
 
 /**
  * @author Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.team.ui.ShareMenuAction", category = "Team")
+@ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-team-ui-ShareMenuAction.instance")
+@Messages("Actions/Team/org-netbeans-modules-team-ui-ShareMenuAction.instance=Share Local Project on Team Server...")
 public final class ShareMenuAction implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
         if (n.length > 0) {

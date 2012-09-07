@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.team.ui.spi;
 
-package org.netbeans.modules.team.ui;
-
-import java.awt.Component;
-import java.awt.Font;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.team.ui.common.ColorManager;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
 
 /**
  *
- * @author Jan Becicka
+ * @author Ondrej Vrabec
  */
-public class TeamServerListRenderer implements ListCellRenderer {
+public interface PopupMenuProvider {
 
-    public TeamServerListRenderer() {
-    }
-
-    /*
-     * This method finds the image and text corresponding
-     * to the selected value and returns the label, set up
-     * to display the text and image.
-     */
-    @Override
-    public Component getListCellRendererComponent(
-                                       JList list,
-                                       Object value,
-                                       int index,
-                                       boolean isSelected,
-                                       boolean cellHasFocus) {
-
-        JLabel ret = new JLabel();
-        ret.setBorder(new EmptyBorder(1,1,1,1));
-        ret.setOpaque(true);
-
-        if (value instanceof TeamServer) {
-            ret.setFont(ret.getFont().deriveFont(Font.BOLD));
-            final TeamServer server = (TeamServer) value;
-            ret.setText(server.getDisplayName());
-            ret.setIcon(server.getIcon());
-            ret.setToolTipText(server.getUrl().toString());
-        } else {
-            ret.setIcon(null);
-            ret.setText(value==null?null:value.toString());
-        }
-
-        if (isSelected) {
-            ret.setBackground(list.getSelectionBackground());
-            ret.setForeground(list.getSelectionForeground());
-        } else {
-            ret.setBackground(ColorManager.getDefault().getDefaultBackground());
-            ret.setForeground(list.getForeground());
-        }
-        return ret;
-    }
+    public Action[] getPopupMenuActions (Project proj, String repoUrl);
+    
 }
