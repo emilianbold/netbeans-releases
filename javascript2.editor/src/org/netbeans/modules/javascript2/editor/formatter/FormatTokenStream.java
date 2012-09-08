@@ -58,7 +58,7 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
  */
 public final class FormatTokenStream implements Iterable<FormatToken> {
 
-    private final Map<Integer, FormatToken> tokenPosition = new TreeMap<Integer, FormatToken>();
+    private final TreeMap<Integer, FormatToken> tokenPosition = new TreeMap<Integer, FormatToken>();
 
     private FormatToken firstToken;
 
@@ -233,6 +233,27 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
 
     public FormatToken getToken(int offset) {
         return tokenPosition.get(offset);
+    }
+
+    /**
+     * Returns token containing the offset if any. Returned token does not
+     * have to start at the offset but it has to cover it.
+     * @param offset the give offset
+     * @return token containing the offset or <code>null</code>
+     */
+    public FormatToken getCoveringToken(int offset) {
+        Map.Entry<Integer, FormatToken> entry = tokenPosition.floorEntry(offset);
+        FormatToken token = entry.getValue();
+        if (!token.isVirtual()) {
+            if (token.getOffset() == offset) {
+                return token;
+            }
+            int endPos = token.getOffset() + token.getText().length();
+            if (offset >= token.getOffset() && offset < endPos) {
+                return token;
+            }
+        }
+        return null;
     }
 
     @Override

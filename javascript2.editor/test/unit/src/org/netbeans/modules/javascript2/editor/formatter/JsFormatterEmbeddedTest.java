@@ -120,7 +120,15 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
     public void testEmbeddedSimple5() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedSimple5.php", new IndentPrefs(4,4));
     }
-    
+
+    public void testEmbeddedSimple6() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple6.php", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple7() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple7.php", new IndentPrefs(4,4));
+    }
+
     public void testEmbeddedTrimmed1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedTrimmed1.html", new IndentPrefs(4,4));
     }
