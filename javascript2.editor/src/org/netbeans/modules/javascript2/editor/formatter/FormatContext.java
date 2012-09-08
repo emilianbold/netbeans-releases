@@ -267,7 +267,10 @@ public final class FormatContext {
             try {
                 // this is bit hacky
                 boolean nonEmpty = false;
-                FormatToken startToken = stream.getToken(
+                // the region may unfortunately start in the middle of region
+                // so we have to query for token containing the offset
+                // covered by embeddedSimple6.php
+                FormatToken startToken = stream.getCoveringToken(
                         snapshot.getEmbeddedOffset(start.getOriginalStart()));
                 // in case we have different regions and space
                 // between those regions is not empty (more precisely
@@ -300,7 +303,22 @@ public final class FormatContext {
                     }
                 }
                 if (nonEmpty && i > 0) {
-                    start.setInitialIndentation(regions.get(i - 1).getInitialIndentation());
+                    // some regions may have been skipped (no indentation
+                    // query - call to this method) so we have to find
+                    // the right one rolling back
+                    // covered by embeddedSimple7.php
+                    Region regionWithIndentation = null;
+                    for (int j = i - 1; j >= 0; j--) {
+                        if (regions.get(j).getInitialIndentation() >= 0) {
+                            regionWithIndentation = regions.get(j);
+                            break;
+                        }
+                    }
+                    if (regionWithIndentation != null) {
+                        start.setInitialIndentation(regionWithIndentation.getInitialIndentation());
+                    } else {
+                        start.setInitialIndentation(0);
+                    }
                 } else {
                     // for case like <script>\nfoo();\n</script>
                     // we get the inital indentation from already indented
