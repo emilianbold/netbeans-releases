@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -268,6 +269,58 @@ public abstract class SanitizingParser extends Parser {
                     }
                 }
             }
+        } else if (sanitizing == Sanitize.MISSING_PAREN) {
+            List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            if (!errors.isEmpty()) {
+                org.netbeans.modules.csl.api.Error error = errors.get(0);
+                int offset = error.getStartPosition();
+                String source = context.getOriginalSource();
+                int balance = 0;
+                for (int i = 0; i < source.length(); i++) {
+                    char current = source.charAt(i);
+                    if (current == '(') { // NOI18N
+                        balance++;
+                    } else if (current == ')') { // NOI18N
+                        balance--;
+                    }
+                }
+                if (balance != 0) {
+                    StringBuilder builder = new StringBuilder(source);
+                    if (balance < 0) {
+                        while (balance < 0) {
+                            int index = builder.lastIndexOf(")"); // NOI18N
+                            if (index < 0) {
+                                break;
+                            }
+                            erase(builder, index, index + 1);
+                            balance++;
+                        }
+                    } else if (balance > 0) {
+                        if (offset >= source.length()) {
+                            while (balance > 0) {
+                                builder.append(')'); // NOI18N
+                                balance--;
+                            }
+                        } else {
+                            while (balance > 0 && offset - balance >= 0) {
+                                char current = source.charAt(offset - balance);
+                                if (Character.isWhitespace(current)) {
+                                    builder.replace(offset - balance, offset - balance + 1, ")");
+                                    balance--;
+                                } else {
+                                    return false;
+                                }
+                            }
+                            if (balance > 0) {
+                                return false;
+                            }
+                        }
+                    }
+                    context.setSanitizedSource(builder.toString());
+                    context.setSanitization(sanitizing);
+                    return true;
+                }
+            }
         } else if (sanitizing == Sanitize.ERROR_LINE) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
             if (!errors.isEmpty()) {
@@ -463,10 +516,18 @@ public abstract class SanitizingParser extends Parser {
 
             @Override
             public Sanitize next() {
+                return MISSING_PAREN;
+            }
+        },
+
+        MISSING_PAREN {
+
+            @Override
+            public Sanitize next() {
                 return SYNTAX_ERROR_PREVIOUS_LINE;
             }
         },
-        
+
         /** remove line with error */
         SYNTAX_ERROR_PREVIOUS_LINE {
 

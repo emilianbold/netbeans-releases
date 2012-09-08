@@ -285,6 +285,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
     }
 
     public void removeToken(FormatToken token) {
+        assert token.isVirtual() : token;
         FormatToken previous = token.previous();
         FormatToken next = token.next();
 

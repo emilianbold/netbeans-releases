@@ -71,6 +71,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -406,9 +407,11 @@ public class FormatVisitor extends NodeVisitor {
                 if (rightBrace != null) {
                     previous = findVirtualToken(rightBrace,
                             FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS, true);
-                    assert previous != null
-                            && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
-                    tokenStream.removeToken(previous);
+
+                    // this might happen for sanitization inserted paren
+                    if (previous != null) {
+                        tokenStream.removeToken(previous);
+                    }
                 }
 
                 // place the new marks
@@ -1203,12 +1206,16 @@ public class FormatVisitor extends NodeVisitor {
                 && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
     }
 
+    @CheckForNull
     private static FormatToken findVirtualToken(FormatToken token, FormatToken.Kind kind,
             boolean backwards) {
         FormatToken result = backwards ? token.previous() : token.next();
         while (result != null && result.isVirtual()
                 && result.getKind() != kind) {
             result = backwards ? result.previous() : result.next();;
+        }
+        if (result != null && result.getKind() != kind) {
+            return null;
         }
         return result;
     }
