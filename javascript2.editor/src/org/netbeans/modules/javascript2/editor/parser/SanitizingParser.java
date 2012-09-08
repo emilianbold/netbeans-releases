@@ -154,42 +154,13 @@ public abstract class SanitizingParser extends Parser {
         }
         return new JsParserResult(context.getSnapshot(), node);
     }
-    
+
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
         if (sanitizing == Sanitize.MISSING_CURLY) {
             org.netbeans.modules.csl.api.Error error = errorManager.getMissingCurlyError();
             if (error != null) {
-                String source = context.getOriginalSource();
-                int balance = 0;
-                for (int i = 0; i < source.length(); i++) {
-                    char current = source.charAt(i);
-                    if (current == '{') { // NOI18N
-                        balance++;
-                    } else if (current == '}') { // NOI18N
-                        balance--;
-                    }
-                }
-                if (balance != 0) {
-                    StringBuilder builder = new StringBuilder(source);
-                    if (balance < 0) {
-                        while (balance < 0) {
-                            int index = builder.lastIndexOf("}"); // NOI18N
-                            if (index < 0) {
-                                break;
-                            }
-                            erase(builder, index, index + 1);
-                            balance++;
-                        }
-                    } else if (balance > 0 && error.getStartPosition() >= source.length()) {
-                        while (balance > 0) {
-                            builder.append('}'); // NOI18N
-                            balance--;
-                        }
-                    }
-                    context.setSanitizedSource(builder.toString());
-                    context.setSanitization(sanitizing);
-                    return true;
-                }
+                int offset = error.getStartPosition();
+                return sanitizeBrackets(sanitizing, context, offset, '{', '}'); // NOI18N
             }
         } else if (sanitizing == Sanitize.MISSING_SEMICOLON) {
             org.netbeans.modules.csl.api.Error error = errorManager.getMissingSemicolonError();
@@ -274,52 +245,7 @@ public abstract class SanitizingParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                String source = context.getOriginalSource();
-                int balance = 0;
-                for (int i = 0; i < source.length(); i++) {
-                    char current = source.charAt(i);
-                    if (current == '(') { // NOI18N
-                        balance++;
-                    } else if (current == ')') { // NOI18N
-                        balance--;
-                    }
-                }
-                if (balance != 0) {
-                    StringBuilder builder = new StringBuilder(source);
-                    if (balance < 0) {
-                        while (balance < 0) {
-                            int index = builder.lastIndexOf(")"); // NOI18N
-                            if (index < 0) {
-                                break;
-                            }
-                            erase(builder, index, index + 1);
-                            balance++;
-                        }
-                    } else if (balance > 0) {
-                        if (offset >= source.length()) {
-                            while (balance > 0) {
-                                builder.append(')'); // NOI18N
-                                balance--;
-                            }
-                        } else {
-                            while (balance > 0 && offset - balance >= 0) {
-                                char current = source.charAt(offset - balance);
-                                if (Character.isWhitespace(current)) {
-                                    builder.replace(offset - balance, offset - balance + 1, ")");
-                                    balance--;
-                                } else {
-                                    return false;
-                                }
-                            }
-                            if (balance > 0) {
-                                return false;
-                            }
-                        }
-                    }
-                    context.setSanitizedSource(builder.toString());
-                    context.setSanitization(sanitizing);
-                    return true;
-                }
+                return sanitizeBrackets(sanitizing, context, offset, '(', ')'); // NOI18N
             }
         } else if (sanitizing == Sanitize.ERROR_LINE) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
@@ -359,6 +285,59 @@ public abstract class SanitizingParser extends Parser {
 
             StringBuilder builder = new StringBuilder(context.getOriginalSource());
             erase(builder, start, end - 1);
+            context.setSanitizedSource(builder.toString());
+            context.setSanitization(sanitizing);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean sanitizeBrackets(Sanitize sanitizing, Context context, int offset,
+            char left, char right) {
+        String source = context.getOriginalSource();
+        int balance = 0;
+        for (int i = 0; i < source.length(); i++) {
+            char current = source.charAt(i);
+            if (current == left) {
+                balance++;
+            } else if (current == right) {
+                balance--;
+            }
+        }
+        if (balance != 0) {
+            StringBuilder builder = new StringBuilder(source);
+            if (balance < 0) {
+                while (balance < 0) {
+                    int index = builder.lastIndexOf(Character.toString(right));
+                    if (index < 0) {
+                        break;
+                    }
+                    erase(builder, index, index + 1);
+                    balance++;
+                }
+            } else if (balance > 0) {
+                if (offset >= source.length()) {
+                    while (balance > 0) {
+                        builder.append(right);
+                        balance--;
+                    }
+                } else {
+                    while (balance > 0 && offset - balance >= 0) {
+                        // we try to insert them if there are enough whitespaces
+                        char current = source.charAt(offset - balance);
+                        if (Character.isWhitespace(current)) {
+                            builder.replace(offset - balance,
+                                    offset - balance + 1, Character.toString(right));
+                            balance--;
+                        } else {
+                            return false;
+                        }
+                    }
+                    if (balance > 0) {
+                        return false;
+                    }
+                }
+            }
             context.setSanitizedSource(builder.toString());
             context.setSanitization(sanitizing);
             return true;
