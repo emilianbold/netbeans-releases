@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -59,10 +60,12 @@ public abstract class SanitizingParser extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(JsParser.class.getName());
 
+    private final Language<JsTokenId> language;
+
     private JsParserResult lastResult = null;
 
-    public SanitizingParser() {
-        super();
+    public SanitizingParser(Language<JsTokenId> language) {
+        this.language = language;
     }
 
     public abstract String getDefaultScriptName();
@@ -217,8 +220,8 @@ public abstract class SanitizingParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
-                        context.getSnapshot(), 0);
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        context.getSnapshot(), 0, language);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext()) {
@@ -239,8 +242,8 @@ public abstract class SanitizingParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
-                        context.getSnapshot(), 0);
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        context.getSnapshot(), 0, language);
                 if (ts != null) {
                     ts.move(offset);
                     int start = -1;

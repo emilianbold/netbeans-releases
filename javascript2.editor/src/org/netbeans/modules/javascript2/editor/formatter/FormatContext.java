@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -71,6 +72,8 @@ public final class FormatContext {
 
     private final Snapshot snapshot;
 
+    private final Language<JsTokenId> languange;
+
     private final int initialStart;
 
     private final int initialEnd;
@@ -89,9 +92,10 @@ public final class FormatContext {
 
     private int currentLineStart;
 
-    public FormatContext(Context context, Snapshot snapshot) {
+    public FormatContext(Context context, Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
         this.snapshot = snapshot;
+        this.languange = language;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
 
@@ -125,8 +129,8 @@ public final class FormatContext {
                 int endOffset = region.getOriginalEnd();
                 try {
                     int lineOffset = context.lineStartOffset(endOffset);
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
-                        snapshot, region.getOriginalStart());
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        snapshot, region.getOriginalStart(), language);
                     if (ts != null) {
                         int embeddedOffset = snapshot.getEmbeddedOffset(lineOffset);
                         if (embeddedOffset >= 0) {

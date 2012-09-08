@@ -82,7 +82,14 @@ public final class LexUtilities {
         return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
     
-    public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Snapshot snapshot, int offset) {
+    public static TokenSequence<? extends JsTokenId> getTokenSequence(Snapshot snapshot,
+            int offset, Language<JsTokenId> language) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        return getTokenSequence(th, offset, language);
+    }
+
+    public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Snapshot snapshot,
+            int offset) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }

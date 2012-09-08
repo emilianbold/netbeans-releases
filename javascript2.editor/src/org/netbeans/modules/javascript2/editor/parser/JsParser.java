@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -48,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class JsParser extends SanitizingParser {
 
     public JsParser() {
-        super();
+        super(JsTokenId.javascriptLanguage());
     }
 
     @Override

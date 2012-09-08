@@ -118,7 +118,7 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
-                FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
+                FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot(), language);
 
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
