@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.ir.visitor.NodeVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,307 +64,378 @@ public class PathNodeVisitor extends NodeVisitor {
     public void removeFromPathTheLast() {
         treePath.remove(treePath.size() - 1);
     }
-    
+
     @Override
-    public Node visit(AccessNode accessNode, boolean onset) {
-        if (onset) {
-            addToPath(accessNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(accessNode, onset);
+    public Node enter(AccessNode accessNode) {
+        addToPath(accessNode);
+        return super.enter(accessNode);
     }
 
     @Override
-    public Node visit(BinaryNode binaryNode, boolean onset) {
-        if (onset) {
-            addToPath(binaryNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(binaryNode, onset);
+    public Node leave(AccessNode accessNode) {
+        removeFromPathTheLast();
+        return super.leave(accessNode);
     }
 
     @Override
-    public Node visit(Block block, boolean onset) {
-        if (onset) {
-            addToPath(block);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(block, onset);
+    public Node enter(BinaryNode binaryNode) {
+        addToPath(binaryNode);
+        return super.enter(binaryNode);
     }
 
     @Override
-    public Node visit(BreakNode breakNode, boolean onset) {
-        if (onset) {
-            addToPath(breakNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(breakNode, onset);
+    public Node leave(BinaryNode binaryNode) {
+        removeFromPathTheLast();
+        return super.leave(binaryNode);
     }
 
     @Override
-    public Node visit(CallNode callNode, boolean onset) {
-        if (onset) {
-            addToPath(callNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(callNode, onset);
+    public Node enter(Block block) {
+        addToPath(block);
+        return super.enter(block);
     }
 
     @Override
-    public Node visit(CaseNode caseNode, boolean onset) {
-        if (onset) {
-            addToPath(caseNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(caseNode, onset);
+    public Node leave(Block block) {
+        removeFromPathTheLast();
+        return super.leave(block);
     }
 
     @Override
-    public Node visit(CatchNode catchNode, boolean onset) {
-        if (onset) {
-            addToPath(catchNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(catchNode, onset);
+    public Node enter(BreakNode breakNode) {
+        addToPath(breakNode);
+        return super.enter(breakNode);
     }
 
     @Override
-    public Node visit(ContinueNode continueNode, boolean onset) {
-        if (onset) {
-            addToPath(continueNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(continueNode, onset);
+    public Node leave(BreakNode breakNode) {
+        removeFromPathTheLast();
+        return super.leave(breakNode);
     }
 
     @Override
-    public Node visit(ExecuteNode executeNode, boolean onset) {
-        if (onset) {
-            addToPath(executeNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(executeNode, onset);
+    public Node enter(CallNode callNode) {
+        addToPath(callNode);
+        return super.enter(callNode);
     }
 
     @Override
-    public Node visit(ForNode forNode, boolean onset) {
-        if (onset) {
-            addToPath(forNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(forNode, onset);
+    public Node leave(CallNode callNode) {
+        removeFromPathTheLast();
+        return super.leave(callNode);
     }
 
     @Override
-    public Node visit(FunctionNode functionNode, boolean onset) {
-        if (onset) {
-            addToPath(functionNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(functionNode, onset);
+    public Node enter(CaseNode caseNode) {
+        addToPath(caseNode);
+        return super.enter(caseNode);
     }
 
     @Override
-    public Node visit(IdentNode identNode, boolean onset) {
-        if (onset) {
-            addToPath(identNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(identNode, onset);
+    public Node leave(CaseNode caseNode) {
+        removeFromPathTheLast();
+        return super.leave(caseNode);
     }
 
     @Override
-    public Node visit(IfNode ifNode, boolean onset) {
-        if (onset) {
-            addToPath(ifNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(ifNode, onset);
+    public Node enter(CatchNode catchNode) {
+        addToPath(catchNode);
+        return super.enter(catchNode);
     }
 
     @Override
-    public Node visit(IndexNode indexNode, boolean onset) {
-        if (onset) {
-            addToPath(indexNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(indexNode, onset);
+    public Node leave(CatchNode catchNode) {
+        removeFromPathTheLast();
+        return super.leave(catchNode);
     }
 
     @Override
-    public Node visit(LabelNode labeledNode, boolean onset) {
-        if (onset) {
-            addToPath(labeledNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(labeledNode, onset);
+    public Node enter(ContinueNode continueNode) {
+        addToPath(continueNode);
+        return super.enter(continueNode);
     }
 
     @Override
-    public Node visit(LineNumberNode lineNumberNode, boolean onset) {
-        if (onset) {
-            addToPath(lineNumberNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(lineNumberNode, onset);
+    public Node leave(ContinueNode continueNode) {
+        removeFromPathTheLast();
+        return super.leave(continueNode);
     }
 
     @Override
-    public Node visit(LiteralNode literalNode, boolean onset) {
-        if (onset) {
-            addToPath(literalNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(literalNode, onset);
+    public Node enter(DoWhileNode doWhileNode) {
+        addToPath(doWhileNode);
+        return super.enter(doWhileNode);
     }
 
     @Override
-    public Node visit(ObjectNode objectNode, boolean onset) {
-        if (onset) {
-            addToPath(objectNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(objectNode, onset);
+    public Node leave(DoWhileNode doWhileNode) {
+        removeFromPathTheLast();
+        return super.leave(doWhileNode);
+    }
+
+
+    @Override
+    public Node enter(ExecuteNode executeNode) {
+        addToPath(executeNode);
+        return super.enter(executeNode);
     }
 
     @Override
-    public Node visit(PropertyNode propertyNode, boolean onset) {
-        if (onset) {
-            addToPath(propertyNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(propertyNode, onset);
+    public Node leave(ExecuteNode executeNode) {
+        removeFromPathTheLast();
+        return super.leave(executeNode);
     }
 
     @Override
-    public Node visit(ReferenceNode referenceNode, boolean onset) {
-        if (onset) {
-            addToPath(referenceNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(referenceNode, onset);
+    public Node enter(ForNode forNode) {
+        addToPath(forNode);
+        return super.enter(forNode);
     }
 
     @Override
-    public Node visit(ReturnNode returnNode, boolean onset) {
-        if (onset) {
-            addToPath(returnNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(returnNode, onset);
+    public Node leave(ForNode forNode) {
+        removeFromPathTheLast();
+        return super.leave(forNode);
     }
 
     @Override
-    public Node visit(RuntimeNode runtimeNode, boolean onset) {
-        if (onset) {
-            addToPath(runtimeNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(runtimeNode, onset);
+    public Node enter(FunctionNode functionNode) {
+        addToPath(functionNode);
+        return super.enter(functionNode);
     }
 
     @Override
-    public Node visit(SwitchNode switchNode, boolean onset) {
-        if (onset) {
-            addToPath(switchNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(switchNode, onset);
+    public Node leave(FunctionNode functionNode) {
+        removeFromPathTheLast();
+        return super.leave(functionNode);
     }
 
     @Override
-    public Node visit(TernaryNode ternaryNode, boolean onset) {
-        if (onset) {
-            addToPath(ternaryNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(ternaryNode, onset);
+    public Node enter(IdentNode identNode) {
+        addToPath(identNode);
+        return super.enter(identNode);
     }
 
     @Override
-    public Node visit(ThrowNode throwNode, boolean onset) {
-        if (onset) {
-            addToPath(throwNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(throwNode, onset);
+    public Node leave(IdentNode identNode) {
+        removeFromPathTheLast();
+        return super.leave(identNode);
     }
 
     @Override
-    public Node visit(TryNode tryNode, boolean onset) {
-        if (onset) {
-            addToPath(tryNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(tryNode, onset);
+    public Node enter(IfNode ifNode) {
+        addToPath(ifNode);
+        return super.enter(ifNode);
     }
 
     @Override
-    public Node visit(UnaryNode unaryNode, boolean onset) {
-        if (onset) {
-            addToPath(unaryNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(unaryNode, onset);
+    public Node leave(IfNode ifNode) {
+        removeFromPathTheLast();
+        return super.leave(ifNode);
     }
 
     @Override
-    public Node visit(VarNode varNode, boolean onset) {
-        if (onset) {
-            addToPath(varNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(varNode, onset);
+    public Node enter(IndexNode indexNode) {
+        addToPath(indexNode);
+        return super.enter(indexNode);
     }
 
     @Override
-    public Node visit(WhileNode whileNode, boolean onset) {
-        if (onset) {
-            addToPath(whileNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(whileNode, onset);
+    public Node leave(IndexNode indexNode) {
+        removeFromPathTheLast();
+        return super.leave(indexNode);
     }
 
     @Override
-    public Node visit(WithNode withNode, boolean onset) {
-        if (onset) {
-            addToPath(withNode);
-        } else {
-            removeFromPathTheLast();
-        }
-        return super.visit(withNode, onset);
+    public Node enter(LabelNode labeledNode) {
+        addToPath(labeledNode);
+        return super.enter(labeledNode);
     }
-    
-    
+
+    @Override
+    public Node leave(LabelNode labeledNode) {
+        removeFromPathTheLast();
+        return super.leave(labeledNode);
+    }
+
+    @Override
+    public Node enter(LineNumberNode lineNumberNode) {
+        addToPath(lineNumberNode);
+        return super.enter(lineNumberNode);
+    }
+
+    @Override
+    public Node leave(LineNumberNode lineNumberNode) {
+        removeFromPathTheLast();
+        return super.leave(lineNumberNode);
+    }
+
+    @Override
+    public Node enter(LiteralNode literalNode) {
+        addToPath(literalNode);
+        return super.enter(literalNode);
+    }
+
+    @Override
+    public Node leave(LiteralNode literalNode) {
+        removeFromPathTheLast();
+        return super.leave(literalNode);
+    }
+
+    @Override
+    public Node enter(ObjectNode objectNode) {
+        addToPath(objectNode);
+        return super.enter(objectNode);
+    }
+
+    @Override
+    public Node leave(ObjectNode objectNode) {
+        removeFromPathTheLast();
+        return super.leave(objectNode);
+    }
+
+    @Override
+    public Node enter(PropertyNode propertyNode) {
+        addToPath(propertyNode);
+        return super.enter(propertyNode);
+    }
+
+    @Override
+    public Node leave(PropertyNode propertyNode) {
+        removeFromPathTheLast();
+        return super.leave(propertyNode);
+    }
+
+    @Override
+    public Node enter(ReferenceNode referenceNode) {
+        addToPath(referenceNode);
+        return super.enter(referenceNode);
+    }
+
+    @Override
+    public Node leave(ReferenceNode referenceNode) {
+        removeFromPathTheLast();
+        return super.leave(referenceNode);
+    }
+
+    @Override
+    public Node enter(ReturnNode returnNode) {
+        addToPath(returnNode);
+        return super.enter(returnNode);
+    }
+
+    @Override
+    public Node leave(ReturnNode returnNode) {
+        removeFromPathTheLast();
+        return super.leave(returnNode);
+    }
+
+    @Override
+    public Node enter(RuntimeNode runtimeNode) {
+        addToPath(runtimeNode);
+        return super.enter(runtimeNode);
+    }
+
+    @Override
+    public Node leave(RuntimeNode runtimeNode) {
+        removeFromPathTheLast();
+        return super.leave(runtimeNode);
+    }
+
+    @Override
+    public Node enter(SwitchNode switchNode) {
+        addToPath(switchNode);
+        return super.enter(switchNode);
+    }
+
+    @Override
+    public Node leave(SwitchNode switchNode) {
+        removeFromPathTheLast();
+        return super.leave(switchNode);
+    }
+
+    @Override
+    public Node enter(TernaryNode ternaryNode) {
+        addToPath(ternaryNode);
+        return super.enter(ternaryNode);
+    }
+
+    @Override
+    public Node leave(TernaryNode ternaryNode) {
+        removeFromPathTheLast();
+        return super.leave(ternaryNode);
+    }
+
+    @Override
+    public Node enter(ThrowNode throwNode) {
+        addToPath(throwNode);
+        return super.enter(throwNode);
+    }
+
+    @Override
+    public Node leave(ThrowNode throwNode) {
+        removeFromPathTheLast();
+        return super.leave(throwNode);
+    }
+
+    @Override
+    public Node enter(TryNode tryNode) {
+        addToPath(tryNode);
+        return super.enter(tryNode);
+    }
+
+    @Override
+    public Node leave(TryNode tryNode) {
+        removeFromPathTheLast();
+        return super.leave(tryNode);
+    }
+
+    @Override
+    public Node enter(UnaryNode unaryNode) {
+        addToPath(unaryNode);
+        return super.enter(unaryNode);
+    }
+
+    @Override
+    public Node leave(UnaryNode unaryNode) {
+        removeFromPathTheLast();
+        return super.leave(unaryNode);
+    }
+
+    @Override
+    public Node enter(VarNode varNode) {
+        addToPath(varNode);
+        return super.enter(varNode);
+    }
+
+    @Override
+    public Node leave(VarNode varNode) {
+        removeFromPathTheLast();
+        return super.leave(varNode);
+    }
+
+    @Override
+    public Node enter(WhileNode whileNode) {
+        addToPath(whileNode);
+        return super.enter(whileNode);
+    }
+
+    @Override
+    public Node leave(WhileNode whileNode) {
+        removeFromPathTheLast();
+        return super.leave(whileNode);
+    }
+
+    @Override
+    public Node enter(WithNode withNode) {
+        addToPath(withNode);
+        return super.enter(withNode);
+    }
+
+    @Override
+    public Node leave(WithNode withNode) {
+        removeFromPathTheLast();
+        return super.leave(withNode);
+    }
     
 }
