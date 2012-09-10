@@ -124,6 +124,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        ActionProvider ap = getActionProvider();
+        if (ap != null) {
+            return ap.isActionEnabled(command, context);
+        }
         return true;
     }
 
