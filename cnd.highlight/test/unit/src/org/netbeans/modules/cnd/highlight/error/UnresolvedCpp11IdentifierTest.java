@@ -78,6 +78,11 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 217067 - Unable to resolver identifier function
         performStaticTest("bug217067.cpp");
     }        
+
+    public void testBug217052() throws Exception {
+        // Bug 217052 - unexpected token: override in editor
+        performStaticTest("bug217052.cpp");
+    }        
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
