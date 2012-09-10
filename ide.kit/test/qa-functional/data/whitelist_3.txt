@@ -1,5 +1,18 @@
 #include whitelist_2.txt
 
+#218043
+org.netbeans.lib.nbjavac.services.CancelService
+org.netbeans.lib.nbjavac.services.NBAttr
+org.netbeans.lib.nbjavac.services.NBClassReader
+org.netbeans.lib.nbjavac.services.NBClassWriter
+org.netbeans.lib.nbjavac.services.NBJavacTrees
+org.netbeans.lib.nbjavac.services.NBJavadocEnter
+org.netbeans.lib.nbjavac.services.NBJavadocMemberEnter
+org.netbeans.lib.nbjavac.services.NBNames
+org.netbeans.lib.nbjavac.services.NBParserFactory
+org.netbeans.lib.nbjavac.services.NBTreeMaker
+org.netbeans.lib.nbjavac.services.NBTreeMaker$IndexedClassDecl
+
 #218039
 org.netbeans.modules.project.ui.actions.ActionsUtil$Wrapper
 org.netbeans.modules.project.ui.actions.ShortcutManager
