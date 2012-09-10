@@ -112,6 +112,14 @@ public class JsDocParserTest extends JsTestBase {
         assertTrue(!iterator.hasNext());
     }
 
+    public void testIssue188091() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue188091.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
+        assertEquals("Placing container.  Extends {@link goog.ui.Container} by adding\n" +
+                "  the ability to place children at different content nodes.", ((DescriptionElement) tags.get(0)).getDescription());
+    }
+
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
