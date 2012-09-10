@@ -369,6 +369,7 @@ public class RuleEditorPanel extends JPanel {
         }
 
         addPropertyButton.setVisible(!addPropertyMode);
+        addPropertyCB.setVisible(!addPropertyMode);
 
         titleLabel.setText(null);
 
