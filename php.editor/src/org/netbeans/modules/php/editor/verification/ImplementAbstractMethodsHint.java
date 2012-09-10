@@ -204,6 +204,11 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
             declaredSuperMethods.addAll(index.getDeclaredMethods(interfaceScope));
             accessibleSuperMethods.addAll(index.getAccessibleMethods(interfaceScope, classScope));
         }
+        Collection<? extends TraitScope> traits = classScope.getTraits();
+        for (TraitScope traitScope : traits) {
+            declaredSuperMethods.addAll(index.getDeclaredMethods(traitScope));
+            accessibleSuperMethods.addAll(index.getAccessibleMethods(traitScope, classScope));
+        }
         inheritedMethods.addAll(declaredSuperMethods);
         inheritedMethods.addAll(accessibleSuperMethods);
         return inheritedMethods;

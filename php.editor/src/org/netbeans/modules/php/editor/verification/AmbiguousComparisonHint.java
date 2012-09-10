@@ -118,7 +118,7 @@ public class AmbiguousComparisonHint extends AbstractRule {
         private boolean isValidContext(final List<ASTNode> path) {
             boolean result = false;
             for (ASTNode node : path) {
-                if (isConditionalNode(node) || node instanceof Assignment) {
+                if (isConditionalNode(node) || node instanceof Assignment || node instanceof ReturnStatement) {
                     result = true;
                     break;
                 } else if (node instanceof Block) {

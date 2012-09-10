@@ -145,6 +145,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         this.blockRange = new OffsetRange(program.getStartOffset(), program.getEndOffset());
     }
 
+    @Override
     public OffsetRange getBlockRange() {
         //assert blockRange != null;
         return blockRange;

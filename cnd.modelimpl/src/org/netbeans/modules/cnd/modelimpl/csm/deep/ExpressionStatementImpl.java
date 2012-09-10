@@ -93,9 +93,10 @@ public final class ExpressionStatementImpl extends StatementBase implements CsmE
             this.expression = expression;
         }
         
+        @Override
         public ExpressionStatementImpl create() {
-            expression.setScope(getScope());
-            ExpressionStatementImpl stmt = new ExpressionStatementImpl(expression.create(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            //expression.setScope(getScope());
+            ExpressionStatementImpl stmt = new ExpressionStatementImpl(ExpressionBase.create(0, 0, getFile(), getScope()), getScope(), getFile(), getStartOffset(), getEndOffset());
             return stmt;
         }
     }

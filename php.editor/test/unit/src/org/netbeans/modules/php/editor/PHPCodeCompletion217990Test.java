@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,66 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.parsing.api.Snapshot;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CssNodeElement extends CssElement {
+public class PHPCodeCompletion217990Test extends PHPCodeCompletionTestBase {
 
-    private int from, to;
-
-    public static CssNodeElement createElement(FileObject file, Node node) {
-        return new CssNodeElement(file, node);
-    }
-    
-    CssNodeElement(FileObject file, Node node) {
-        super(file, node.image());
-        this.from = node.from();
-        this.to = node.to();
+    public PHPCodeCompletion217990Test(String testName) {
+        super(testName);
     }
 
-    public int from() {
-        return from;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test217990/test217990.php", "Url::^", false);
     }
 
-    public int to() {
-        return to;
-    }
-    
     @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        Snapshot s = result.getSnapshot();
-
-        if(s.getText().length() == 0) {
-            return null;
-        }
-
-        //check the boundaries bacause of (I)
-        int origFrom = from > s.getText().length() ? 0 : s.getOriginalOffset(from);
-        int origTo = to > s.getText().length() ? 0 : s.getOriginalOffset(to);
-
-        if(origFrom == -1 || origTo == -1 || origFrom == origTo || origTo == 0) {
-            return null;
-        }
-        
-        return new OffsetRange(origFrom, origTo);
-                
-                
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test217990/"))
+            })
+        );
     }
-
-
 
 }

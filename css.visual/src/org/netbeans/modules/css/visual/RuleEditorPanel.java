@@ -53,6 +53,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -367,6 +369,7 @@ public class RuleEditorPanel extends JPanel {
         }
 
         addPropertyButton.setVisible(!addPropertyMode);
+        addPropertyCB.setVisible(!addPropertyMode);
 
         titleLabel.setText(null);
 
@@ -450,8 +453,21 @@ public class RuleEditorPanel extends JPanel {
         
         sheet.requestFocus();
 //        sheet.select(descriptor, true);
+        try {
+            call_PropertySheet_select(sheet, descriptor, showCategories);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
         createdDeclaration = null;
+    }
+    
+    private void call_PropertySheet_select(PropertySheet sheet, FeatureDescriptor descriptor, boolean edit) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        //private so far, will be public later
+        Class clz = PropertySheet.class;
+        Method select_method = clz.getDeclaredMethod("select", FeatureDescriptor.class, boolean.class); //NOI18N
+        select_method.setAccessible(true);
+        select_method.invoke(sheet, descriptor, edit);
     }
 
     public final void updateFiltersPresenters() {
