@@ -126,7 +126,8 @@ public class JsDocParser {
                 continue;
             }
 
-            if (token.id() == JsDocumentationTokenId.KEYWORD || token.id() == JsDocumentationTokenId.COMMENT_END) {
+            if (token.id() == JsDocumentationTokenId.KEYWORD && !CharSequenceUtilities.equals(token.text(), "@link") //NOI18N
+                    || token.id() == JsDocumentationTokenId.COMMENT_END) {
                 if (sb.toString().trim().isEmpty()) {
                     // simple tag
                     if (type != null) {

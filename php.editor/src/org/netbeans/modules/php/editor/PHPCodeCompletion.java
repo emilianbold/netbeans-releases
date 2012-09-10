@@ -67,10 +67,10 @@ import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
 import org.netbeans.modules.php.editor.PHPCompletionItem.TypeConstantItem;
 import org.netbeans.modules.php.editor.api.*;
 import org.netbeans.modules.php.editor.api.NameKind.CaseInsensitivePrefix;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
@@ -1060,7 +1060,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String fName = mElem.getFileObject().getNameExt();
             String tooltip = null;
             if (parentElem instanceof TypeScope) {
-                 tooltip = mElem.getPhpElementKind()+": "+parentElem.getName()+"<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+                tooltip = mElem.getPhpElementKind()+": "+parentElem.getName()+"<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
             } else {
                 tooltip = mElem.getPhpElementKind()+":<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
             }
