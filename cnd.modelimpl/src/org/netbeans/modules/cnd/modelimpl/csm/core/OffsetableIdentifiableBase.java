@@ -165,10 +165,16 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         }
 
         public CharSequence getName() {
+            if(name== null) {
+                return NameCache.getManager().getString("error"); //NOI18N
+            } 
             return NameCache.getManager().getString(name);
         }
         
         public CharSequence getRawName() {
+            if(name== null) {
+                return NameCache.getManager().getString("error"); //NOI18N
+            } 
             return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
         }
         

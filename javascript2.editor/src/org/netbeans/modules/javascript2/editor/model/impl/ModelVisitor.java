@@ -46,6 +46,7 @@ import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -53,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -117,10 +119,14 @@ public class ModelVisitor extends PathNodeVisitor {
                 IdentNode base = (IdentNode)accessNode.getBase();
                 if (!"this".equals(base.getName())) {
                     Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getBase());
-                    List<Identifier> fqname = new ArrayList<Identifier>();
-                    fqname.add(name);
-                    fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
-                    fromAN.addOccurrence(name.getOffsetRange());
+                    if (!JsEmbeddingProvider.containsGeneratedIdentifier(name.getName())) {
+                        List<Identifier> fqname = new ArrayList<Identifier>();
+                        fqname.add(name);
+                        fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
+                        fromAN.addOccurrence(name.getOffsetRange());
+                    } else {
+                        fromAN = null;
+                    }
                 } else {
                     JsObject current = modelBuilder.getCurrentDeclarationScope();
                     JsObject property = current.getProperty(accessNode.getProperty().getName());
@@ -181,8 +187,6 @@ public class ModelVisitor extends PathNodeVisitor {
                 // TODO probably not only assign
                 JsObjectImpl parent = modelBuilder.getCurrentDeclarationScope();
                 if (binaryNode.lhs() instanceof AccessNode) {
-                    List<Identifier> name = getName(binaryNode);
-//                    System.out.println("in binarynode: " + binaryNode.lhs());
                     AccessNode aNode = (AccessNode)binaryNode.lhs();
                     JsObjectImpl property = null;
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
@@ -202,9 +206,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     } else {
                         // probably a property of an object
                         List<Identifier> fqName = getName(aNode);
-                        property = ModelUtils.getJsObject(modelBuilder, fqName, true);
-                        if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
-                            property.getModifiers().add(Modifier.STATIC);
+                        if (fqName != null) {
+                            property = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
+                                property.getModifiers().add(Modifier.STATIC);
+                            }
                         }
                     }
                     if (property != null) {
@@ -711,12 +717,17 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(VarNode varNode, boolean onset) {
         if (onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
+            String varName = varNode.getName().getName();
+            if(JsEmbeddingProvider.containsGeneratedIdentifier(varName)) {
+                // don't work with virtual sources
+                return null;
+            }
             JsObject parent = modelBuilder.getCurrentObject();
-            JsObjectImpl variable = (JsObjectImpl)parent.getProperty(varNode.getName().getName());
+            JsObjectImpl variable = (JsObjectImpl)parent.getProperty(varName);
             if (variable == null) {
                 // variable si not defined, so it has to be from global scope
                 // or from a code structure like for cycle
-                Identifier name = new IdentifierImpl(varNode.getName().getName(),
+                Identifier name = new IdentifierImpl(varName,
                         ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
 //                if (varNode.getInit() != null && varNode.getInit() instanceof IdentNode) {
 //                    JsObjectImpl init = (JsObjectImpl)parent.getProperty(((IdentNode)varNode.getInit()).getName());
@@ -735,7 +746,7 @@ public class ModelVisitor extends PathNodeVisitor {
             } else {
                 // the variable was probably created as temporary before, now we
                 // need to replace it with the real one
-                Identifier name = new IdentifierImpl(varNode.getName().getName(),
+                Identifier name = new IdentifierImpl(varName,
                         ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
                 JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
                 if (parent.getJSKind() != JsElement.Kind.FILE) {
@@ -819,7 +830,11 @@ public class ModelVisitor extends PathNodeVisitor {
         } else if (lhs instanceof IndexNode) {
             IndexNode indexNode = (IndexNode)lhs;
             if (indexNode.getBase() instanceof AccessNode) {
-                name.addAll(getName((AccessNode)indexNode.getBase()));
+                List<Identifier> aName = getName((AccessNode)indexNode.getBase());
+                if (aName == null) {
+                    return null;
+                }
+                name.addAll(aName);
             }
             if (indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode lNode = (LiteralNode)indexNode.getIndex();
@@ -830,18 +845,33 @@ public class ModelVisitor extends PathNodeVisitor {
         return name;
     }
 
+    /**
+     * 
+     * @param aNode
+     * @return It can returns null, if a part of name is generated through the virtual source
+     */
+    @CheckForNull
     private List<Identifier> getName(AccessNode aNode) {
         List<Identifier> name = new ArrayList();
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(aNode.getProperty().getName())) {
+            return null;
+        }
         name.add(new IdentifierImpl(aNode.getProperty().getName(),
                 ModelUtils.documentOffsetRange(parserResult, aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
         while (aNode.getBase() instanceof AccessNode) {
             aNode = (AccessNode) aNode.getBase();
+            if (JsEmbeddingProvider.containsGeneratedIdentifier(aNode.getProperty().getName())) {
+                return null;
+            }
             name.add(new IdentifierImpl(aNode.getProperty().getName(),
                     ModelUtils.documentOffsetRange(parserResult, aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
         }
         if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
             IdentNode ident = (IdentNode) aNode.getBase();
             if (!"this".equals(ident.getName())) {
+                if (JsEmbeddingProvider.containsGeneratedIdentifier(ident.getName())) {
+                    return null;
+                }
                 name.add(new IdentifierImpl(ident.getName(),
                         ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
             }
@@ -856,6 +886,7 @@ public class ModelVisitor extends PathNodeVisitor {
      * @param node examined node for getting its name
      * @return name of the node if it supports it
      */
+    @CheckForNull
     public List<Identifier> getNodeName(Node node) {
         if (node instanceof AccessNode) {
             return getName((AccessNode) node);

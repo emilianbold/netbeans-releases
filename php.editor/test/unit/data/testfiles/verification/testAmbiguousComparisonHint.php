@@ -18,5 +18,16 @@ $f == "";
 
 $ok = $another === true;
 
+/**
+ * Test argument against 10.
+ *
+ * @param int $a
+ * @return bool
+ */
+function is10($a)
+{
+    return $a == 10;
+}
+
 //END
 ?>

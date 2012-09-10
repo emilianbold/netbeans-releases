@@ -260,9 +260,11 @@ expression_statement
 
 expression_or_declaration_statement
     :
-        (expression SEMICOLON) => expression SEMICOLON
+        (declaration_statement) => declaration_statement
     |
-        declaration_statement
+        {action.expression_statement(input.LT(1));}
+        expression SEMICOLON
+        {action.end_expression_statement(input.LT(0));}
     ;
 
 
@@ -558,6 +560,7 @@ simle_declaration
  *
  */
 simple_declaration [decl_kind kind]
+scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
 @after                                                                          {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :
@@ -596,7 +599,7 @@ simple_declaration [decl_kind kind]
  * (see different init_declarator_list continuation sequences).
  */
 simple_declaration_or_function_definition [decl_kind kind]
-//scope Declaration;
+scope Declaration;
 @init {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
 @after {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :
@@ -658,24 +661,24 @@ decl_specifier
 storage_class_specifier:
 //        LITERAL_auto 
 //    |
-        LITERAL_register                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__REGISTER, input.LT(0));}
+        LITERAL_register 
     |
-        LITERAL_static                                                          {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__STATIC, input.LT(0));}
+        LITERAL_static 
     |
-        LITERAL_extern                                                          {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__EXTERN, input.LT(0));}
+        LITERAL_extern 
     |
-        LITERAL_mutable                                                         {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__MUTABLE, input.LT(0));}
+        LITERAL_mutable 
     |
-        LITERAL___thread                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER____THREAD, input.LT(0));}
+        LITERAL___thread
     |
-        LITERAL_thread_local                                                    {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__THREAD_LOCAL, input.LT(0));}
+        LITERAL_thread_local
     ;
 function_specifier:
-        LITERAL_inline                                                          {action.function_specifier(action.FUNCTION_SPECIFIER__INLINE, input.LT(0));}
+        LITERAL_inline 
     |
-        LITERAL_virtual                                                         {action.function_specifier(action.FUNCTION_SPECIFIER__VIRTUAL, input.LT(0));}
+        LITERAL_virtual 
     |
-        LITERAL_explicit                                                        {action.function_specifier(action.FUNCTION_SPECIFIER__EXPLICIT, input.LT(0));}
+        LITERAL_explicit 
     ;
 
 /*
@@ -1031,7 +1034,7 @@ linkage_specification [decl_kind kind]:
             LCURLY                                                              {action.linkage_specification(action.LINKAGE_SPECIFICATION__LCURLY, input.LT(0));}
             declaration[kind] * 
             RCURLY                                                              {action.linkage_specification(action.LINKAGE_SPECIFICATION__RCURLY, input.LT(0));}
-        |
+    |
             declaration[kind]
         )                                                                       {action.end_linkage_specification(input.LT(0));}
     ;
@@ -1115,7 +1118,7 @@ noptr_declarator returns [declarator_type_t type]
         (
             parameters_and_qualifiers
 //                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
-        |
+         |
             LSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__LSQUARE, input.LT(0));}
             constant_expression? 
             RSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__RSQUARE, input.LT(0));}
@@ -1191,7 +1194,7 @@ noptr_abstract_declarator returns [declarator_type_t type]
     (
         ( 
             parameters_and_qualifiers 
-        |   
+    |
             LSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LSQUARE, input.LT(0));}
             constant_expression? 
             RSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
@@ -1211,7 +1214,7 @@ noptr_abstract_declarator returns [declarator_type_t type]
     )                                                                           {action.end_noptr_abstract_declarator(input.LT(0));}
     ;
 
-universal_declarator returns [declarator_type_t type]    
+universal_declarator returns [declarator_type_t type]
     :                                                                           {action.universal_declarator(input.LT(1));}
     (options { backtrack = true; }:
         declarator //{ type = $declarator.type; }
@@ -1434,7 +1437,7 @@ function_body
 @init                                                                           {if(state.backtracking == 0){action.function_body(input.LT(1));}}
 @after                                                                          {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
     :
-        compound_statement
+        compound_statement 
     ;
 
 initializer

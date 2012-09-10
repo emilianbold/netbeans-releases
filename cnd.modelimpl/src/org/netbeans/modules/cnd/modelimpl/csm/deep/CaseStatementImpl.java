@@ -112,8 +112,8 @@ public final class CaseStatementImpl extends StatementBase implements CsmCaseSta
         }
         
         public CaseStatementImpl create() {
-            expression.setScope(getScope());
-            CaseStatementImpl expr = new CaseStatementImpl(expression.create(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            //expression.setScope(getScope());
+            CaseStatementImpl expr = new CaseStatementImpl(ExpressionBase.create(0, 0, getFile(), getScope()), getScope(), getFile(), getStartOffset(), getEndOffset());
             return expr;
         }
     }

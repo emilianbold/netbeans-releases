@@ -170,7 +170,7 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
             if(conditionDeclaration != null) {
                 conditionDeclaration.setScope(stmt);
                 stmt.condition = conditionDeclaration.create();
-            } else {
+            } else if(conditionExpression != null) {
                 conditionExpression.setScope(stmt);
                 stmt.condition = conditionExpression.create();
             }
