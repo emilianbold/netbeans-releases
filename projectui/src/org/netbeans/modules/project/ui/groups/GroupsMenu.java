@@ -63,6 +63,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -136,6 +137,12 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         @Override public JComponent[] getMenuPresenters() {
             // XXX can it wait to add menu items until it is posted?
             removeAll();
+            if (!OpenProjectList.getDefault().openProjectsAPI().isDone()) {
+                //#214891 only show the groups when we have finishes opening the initial set of projects upon startup
+                this.setEnabled(false);
+                return new JComponent[] {this};
+            }
+            this.setEnabled(true);
             final Group active = Group.getActiveGroup();
             int counter = 0;
             // Create one menu item per group.
