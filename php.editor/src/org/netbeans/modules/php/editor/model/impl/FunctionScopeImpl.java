@@ -42,25 +42,24 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.LambdaFunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -162,7 +161,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
                             } else {
                                 String modifiedTypeName = typeName;
-                                if (typeName.indexOf("[") != -1) {
+                                if (typeName.indexOf("[") != -1) { //NOI18N
                                     modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
                                 }
                                 retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
@@ -192,7 +191,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         }
         // this is a solution for issue #188107
         // The method is defined that returns type 'object'.
-        if(returnType!= null && retval.isEmpty() && returnType.equals("object") && getInScope() instanceof ClassScope) {
+        if(returnType!= null && retval.isEmpty() && returnType.equals("object") && getInScope() instanceof ClassScope) { //NOI18N
             retval.add((TypeScope)getInScope());
         }
         return retval;
@@ -222,19 +221,21 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         sb.append('[');
         for (TypeScope typeScope : returnTypes) {
             if (sb.length() == 1) {
-                sb.append("|");
+                sb.append("|"); //NOI18N
             }
             sb.append(typeScope.getName());
         }
-        sb.append("] ");
-        sb.append(super.toString()).append("(");
+        sb.append("] "); //NOI18N
+        sb.append(super.toString()).append("("); //NOI18N
         List<? extends String> parameters = getParameterNames();
         for (int i = 0; i < parameters.size(); i++) {
             String param = parameters.get(i);
-            if (i > 0) sb.append(",");
+            if (i > 0) {
+                sb.append(","); //NOI18N
+            }
             sb.append(param);
         }
-        sb.append(")");
+        sb.append(")"); //NOI18N
 
         return sb.toString();
     }

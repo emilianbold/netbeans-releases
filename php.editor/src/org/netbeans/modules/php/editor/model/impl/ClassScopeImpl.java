@@ -472,8 +472,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                         scope.scan();
                     }
                 }
-                boolean value = element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
-                return value;
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
