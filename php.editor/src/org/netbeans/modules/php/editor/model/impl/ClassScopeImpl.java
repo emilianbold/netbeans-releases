@@ -465,7 +465,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         return filter(getElements(), new ElementFilter() {
             @Override
             public boolean isAccepted(ModelElement element) {
-                if (element instanceof MethodScope && ((MethodScope) element).isConstructor()
+                if (element instanceof MethodScope && ((MethodScope) element).isInitiator()
                         && element instanceof LazyBuild) {
                     LazyBuild scope = (LazyBuild)element;
                     if (!scope.isScanned()) {

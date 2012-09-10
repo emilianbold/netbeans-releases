@@ -141,6 +141,11 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     @Override
+    public boolean isInitiator() {
+        return isConstructor() || getName().contains("setUp"); //NOI18N
+    }
+
+    @Override
     public boolean isConstructor() {
         return isMagic() ? getName().contains("__construct") : false;
     }
