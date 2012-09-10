@@ -1,5 +1,16 @@
 #include whitelist_2.txt
 
+#218039
+org.netbeans.modules.project.ui.actions.ActionsUtil$Wrapper
+org.netbeans.modules.project.ui.actions.ShortcutManager
+org.netbeans.modules.project.ui.problems.BrokenProjectAnnotator
+org.netbeans.modules.project.ui.problems.BrokenProjectNotifier
+org.netbeans.modules.project.uiapi.Utilities$ProjectGroupAccessor
+org.netbeans.spi.project.ui.PathFinder
+org.netbeans.spi.project.ui.ProjectProblemsProvider
+org.netbeans.spi.project.ui.support.UILookupMergerSupport$ProjectProblemsProviderImpl
+org.netbeans.spi.project.ui.support.UILookupMergerSupport$ProjectProblemsProviderMerger
+
 #204449
 org.netbeans.modules.web.api.webmodule.WebModule
 org.netbeans.modules.web.beans.CdiOpenHook
