@@ -1,5 +1,10 @@
 #include whitelist_2.txt
 
+#218045
+org.netbeans.modules.php.project.PhpPreferences
+org.netbeans.modules.php.project.api.PhpOptions
+org.netbeans.modules.php.twig.editor.gsf.TwigLanguage
+
 #218044
 org.netbeans.modules.javascript2.editor.JsLanguage
 org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl
