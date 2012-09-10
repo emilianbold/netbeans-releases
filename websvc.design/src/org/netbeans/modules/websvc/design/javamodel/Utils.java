@@ -168,39 +168,6 @@ public class Utils {
         }
     }
     
-    public static boolean isService( FileObject fileObject ){
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        if(project==null) {
-            return false;
-        }
-        JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
-        if ( model == null ){
-            JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(
-                    fileObject);
-            if ( support == null ){
-                return false;
-            }
-            List<JaxWsService> services = support.getServices();
-            for (JaxWsService service : services) {
-                String implementationClass = service.getImplementationClass();
-                String implClass = getImplClass(fileObject);
-                if ( implClass!= null && implClass.equals( implementationClass )){
-                    return service.isServiceProvider();
-                }
-            }
-            return false;
-        }
-        else {
-            if ( fileObject.getAttribute("jax-ws-service")!=null && 
-                    fileObject.getAttribute("jax-ws-service-provider")==null)       // NOI18N
-            {
-                
-                return true;
-            }
-            return false;
-        }
-    }
-    
     private static String getImplClass( FileObject fileObject ){
         Project project = FileOwnerQuery.getOwner(fileObject);
         if(project==null) {

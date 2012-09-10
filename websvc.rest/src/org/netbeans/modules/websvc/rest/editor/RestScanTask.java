@@ -277,7 +277,9 @@ class RestScanTask {
         Set<TypeElement> result = new HashSet<TypeElement>();
         for(String fqn : fqns ){
             TypeElement typeElement = info.getElements().getTypeElement(fqn);
-            result.add( typeElement );
+            if ( typeElement != null){
+                result.add( typeElement );
+            }
         }
         return result;
     }
