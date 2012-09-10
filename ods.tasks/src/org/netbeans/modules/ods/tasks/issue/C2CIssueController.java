@@ -56,9 +56,10 @@ import org.openide.util.HelpCtx;
  */
 public class C2CIssueController extends BugtrackingController {
     private JComponent component;
+    private final IssuePanel panel;
 
     public C2CIssueController(C2CIssue issue) {
-        IssuePanel panel = new IssuePanel();
+        panel = new IssuePanel();
         panel.setIssue(issue);
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.getViewport().setBackground(panel.getBackground());
@@ -111,7 +112,7 @@ public class C2CIssueController extends BugtrackingController {
     }
 
     void refreshViewData(boolean force) {
-//        issuePanel.reloadFormInAWT(force);
+        panel.reloadFormInAWT(force);
     }
 
 }

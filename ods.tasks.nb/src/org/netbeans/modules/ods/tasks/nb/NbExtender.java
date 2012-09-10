@@ -62,6 +62,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.lookup.ServiceProvider;
@@ -226,6 +227,11 @@ public final class NbExtender extends C2CExtender<NbExtender.Env> {
     @Override
     protected String spiProductKey(String component, String product) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void spiResolve(TaskData data, TaskResolution resolution) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     protected static final class Env {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ods.tasks.issue;
 
+import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -53,14 +54,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.diff.PatchUtils;
@@ -72,8 +76,11 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
+import org.netbeans.modules.ods.tasks.spi.C2CData;
+import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -90,7 +97,7 @@ public class C2CIssue {
 
     static final String LABEL_NAME_ID           = "c2c.issue.id";               // NOI18N
     static final String LABEL_NAME_SEVERITY     = "c2c.issue.severity";         // NOI18N
-    static final String LABEL_NAME_TASK_TYPE    = "c2c.issue.task_type";       // NOI18N
+    static final String LABEL_NAME_TASK_TYPE    = "c2c.issue.task_type";        // NOI18N
     static final String LABEL_NAME_PRIORITY     = "c2c.issue.priority";         // NOI18N
     static final String LABEL_NAME_STATUS       = "c2c.issue.status";           // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "c2c.issue.resolution";       // NOI18N
@@ -215,7 +222,7 @@ public class C2CIssue {
             public void run() {
 //        XXX        ((C2CIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
-//             XXX   refreshViewData(false);
+                refreshViewData(false);
             }
         });
     }
@@ -280,12 +287,114 @@ public class C2CIssue {
         return refresh(getID(), false);
     }
 
+    public static final String RESOLVE_FIXED = "FIXED";    
     public void addComment(String comment, boolean closeAsFixed) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        if(comment == null && !closeAsFixed) {
+            return;
+        }
+        refresh();
+
+        // resolved attrs
+        if(closeAsFixed) {
+            C2C.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
+            resolve(RESOLVE_FIXED); // XXX constant?
+        }
+        if(comment != null) {
+            addComment(comment);
+        }        
+
+        submitAndRefresh();
+    }
+
+    public void addComment(String comment) {
+        if(comment != null) {
+            C2C.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
+            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+            ta.setValue(comment);
+        }
+    }
+    
+    void resolve(String resolution) {
+        assert !data.isNew();
+
+        String value = getFieldValue(IssueField.STATUS);
+        if(!value.equals("RESOLVED")) {                                         // NOI18N
+            // XXX hacked!
+            // see https://q.tasktop.com/alm/#projects/netbeanssupport/wiki/p/C2C+Mylyn+connector+usage+in+NetBeans-Query 
+            // and implement appropriatelly
+            final C2CData clientData = C2C.getInstance().getClientData(repository);
+            List<TaskResolution> resolutions = clientData.getResolutions(); 
+            for (TaskResolution r : resolutions) {
+                if(r.getValue().equals(resolution)) {
+                    C2CExtender.resolve(data, r);
+                }
+            }
+        }
+    }   
+    
+    public void attachPatch(File file, String description) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public void attachPatch(File file, String description) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    boolean submitAndRefresh() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+//        prepareSubmit(); XXX
+        final boolean wasNew = data.isNew();
+        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
+        
+        SubmitCommand submitCmd = 
+            new SubmitCommand(
+                C2C.getInstance().getRepositoryConnector(),
+                getRepository().getTaskRepository(), 
+                data);
+        repository.getExecutor().execute(submitCmd);
+
+        if (!wasNew) {
+            refresh();
+        } else {
+            RepositoryResponse rr = submitCmd.getRepositoryResponse();
+            if(!submitCmd.hasFailed()) {
+                assert rr != null;
+                String id = rr.getTaskId();
+                C2C.LOG.log(Level.FINE, "created issue #{0}", id);
+                refresh(id, true);
+            } else {
+                C2C.LOG.log(Level.FINE, "submiting failed");
+                if(rr != null) {
+                    C2C.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
+                } else {
+                    C2C.LOG.log(Level.FINE, "no repository response available");
+                }
+            }
+        }
+
+        if(submitCmd.hasFailed()) {
+            return false;
+        }
+
+        // it was the user who made the changes, so preserve the seen status if seen already
+        if (wasSeenAlready) {
+            try {
+                repository.getIssueCache().setSeen(getID(), true);
+                // it was the user who made the changes, so preserve the seen status if seen already
+            } catch (IOException ex) {
+                C2C.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        if(wasNew) {
+            // a new issue was created -> refresh all queries
+            // XXX repository.refreshAllQueries();
+        }
+
+        try {
+            // XXX seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            C2C.LOG.log(Level.SEVERE, null, ex);
+        }
+        return true;
     }
 
     public BugtrackingController getController() {
@@ -432,7 +541,7 @@ public class C2CIssue {
 //        if(f == IssueField.PRODUCT) {
 //            handleProductChange(a);
 //        }
-//        Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
+//        C2C.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
 //        a.setValue(value);
 //    }
 //
@@ -486,13 +595,20 @@ public class C2CIssue {
             }
             getRepository().getIssueCache().setIssueData(this, td); // XXX
 //            getRepository().ensureConfigurationUptodate(this);
-//            refreshViewData(afterSubmitRefresh);
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             C2C.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
     }
 
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
+    }
+    
     void setFieldValue(IssueField f, String value) {
 //        if(f.isReadOnly()) { XXX
 //            assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
@@ -741,9 +857,9 @@ public class C2CIssue {
 //                            }
 //                        }
 //                    } catch (DataObjectNotFoundException dnfex) {
-//                        Bugzilla.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
+//                        C2C.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
 //                    } catch (IOException ioex) {
-//                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+//                        C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
 //                    } finally {
 //                        handle.finish();
 //                    }
@@ -768,7 +884,7 @@ public class C2CIssue {
 //                        try {
 //                            getAttachementData(new FileOutputStream(file));
 //                        } catch (IOException ioex) {
-//                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+//                            C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
 //                        } finally {
 //                            handle.finish();
 //                        }

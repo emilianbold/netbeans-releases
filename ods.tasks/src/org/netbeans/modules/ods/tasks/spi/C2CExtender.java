@@ -61,6 +61,8 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.ods.tasks.C2C;
 import org.openide.util.Lookup;
 
 /** Provides access to extended methods not available on {@link AbstractRepositoryConnector}
@@ -112,6 +114,10 @@ public abstract class C2CExtender<Data> {
         return C2CData.create(data, this);
     }
     
+    public static void resolve(TaskData data, TaskResolution resolution) {
+        getDefault().spiResolve(data, resolution);
+    }
+    
     //
     // implemented in separate modules
     //
@@ -123,6 +129,10 @@ public abstract class C2CExtender<Data> {
     protected abstract C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository);
     protected abstract void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r);
     protected abstract IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String string, String connectorKind);
+
+    protected abstract void spiResolve(TaskData data, TaskResolution resolution);
+    
+    
     
     //
     // operations on individual data
