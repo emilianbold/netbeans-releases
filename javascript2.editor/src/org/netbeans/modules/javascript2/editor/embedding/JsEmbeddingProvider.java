@@ -135,6 +135,10 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     public static boolean isGeneratedIdentifier(String ident) {
         return GENERATED_IDENTIFIER.trim().equals(ident);
     }
+    
+    public static boolean containsGeneratedIdentifier(String ident) {
+        return ident.contains(GENERATED_IDENTIFIER);
+    }
     // ------------------------------------------------------------------------
     // Private implementation
     // ------------------------------------------------------------------------
