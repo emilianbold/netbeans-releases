@@ -146,7 +146,7 @@ public class JsDocumentationCompleter {
     
     private static boolean isWrapperObject(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode) {
         List<Identifier> nodeName = jsParserResult.getModel().getNodeName(nearestNode);
-        if (nodeName.isEmpty()) {
+        if (nodeName == null || nodeName.isEmpty()) {
             return false;
         }
         return jsObject.getProperties().containsKey(nodeName.get(nodeName.size() - 1).getName());
@@ -166,8 +166,10 @@ public class JsDocumentationCompleter {
         StringBuilder fqn = new StringBuilder();
         for (Node currentNode : ptnv.getFinalPath()) {
             List<Identifier> name = parserResult.getModel().getNodeName(currentNode);
-            for (Identifier identifier : name) {
-                fqn.append(".").append(identifier.getName()); //NOI18N
+            if (name != null) {
+                for (Identifier identifier : name) {
+                    fqn.append(".").append(identifier.getName()); //NOI18N
+                }
             }
         }
         return fqn.toString().substring(1);
