@@ -203,7 +203,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         final CharSequence name = aToken.getTextID();
         SymTabEntry entry = globalSymTab.lookup(name);
         if (entry != null) {
-            return entry.getAttribute(CppAttributes.TYPE) != null;
+            if(entry.getAttribute(CppAttributes.TYPE) != null) {
+                return true;
+            } else {
+                return false;
+            }            
         }
         return false;
 //        return true;
@@ -212,6 +216,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public boolean top_level_of_template_arguments() {
         if(builderContext.getSimpleDeclarationBuilderIfExist() != null && builderContext.getSimpleDeclarationBuilderIfExist().isInDeclSpecifiers()) {
+            return true;
+        }        
+        if(builderContext.top(1) instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)builderContext.top(1)).isInDeclSpecifiers()) {
             return true;
         }        
         return templateLevel != 0;
@@ -247,7 +254,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
         
         EnumBuilder enumBuilder = new EnumBuilder(currentContext.file.getParsingFileContent());
-        CsmObjectBuilder parent = builderContext.top(1);
+        CsmObjectBuilder parent = builderContext.top(2);
         if(parent instanceof ClassBuilder) {
             ((ClassBuilder)parent).addChild(enumBuilder);
         }        
@@ -339,7 +346,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof EnumBuilder) {
             EnumBuilder enumBuilder = builderContext.getEnumBuilder();
-            CsmObjectBuilder parent = builderContext.top(2);
+            CsmObjectBuilder parent = builderContext.top(3);
             if(parent == null || parent instanceof NamespaceBuilder) {
                 EnumImpl e = enumBuilder.create(true);
                 if(e != null) {
@@ -604,8 +611,10 @@ public class CppParserActionImpl implements CppParserActionEx {
         builderContext.pop();
         builder.setEndOffset(((APTToken)token).getEndOffset());
         
-        StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
-        container.addStatementBuilder(builder);
+        if(builderContext.top() instanceof StatementBuilderContainer) {
+            StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
+            container.addStatementBuilder(builder);
+        }
 
         globalSymTab.pop();
     }
@@ -627,47 +636,47 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void simple_type_specifier(int kind, Token token) {        
-        if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
-            builderContext.getSimpleDeclarationBuilderIfExist().setTypeSpecifier();
-        }
-        
-        if(kind == SIMPLE_TYPE_SPECIFIER__ID) {
-            builderContext.push(new NameBuilder());
-        }
-        
-        
-        if (kind == SIMPLE_TYPE_SPECIFIER__CHAR
-                || kind == SIMPLE_TYPE_SPECIFIER__WCHAR_T
-                || kind == SIMPLE_TYPE_SPECIFIER__CHAR16_T
-                || kind == SIMPLE_TYPE_SPECIFIER__CHAR32_T
-                || kind == SIMPLE_TYPE_SPECIFIER__BOOL
-                || kind == SIMPLE_TYPE_SPECIFIER__SHORT
-                || kind == SIMPLE_TYPE_SPECIFIER__INT
-                || kind == SIMPLE_TYPE_SPECIFIER__LONG
-                || kind == SIMPLE_TYPE_SPECIFIER__SIGNED
-                || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
-                || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
-                || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
-                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
-            CsmObjectBuilder top = builderContext.top();
-            if(top instanceof TypeBuilder) {
-                ((TypeBuilder)top).setSimpleTypeSpecifier(((APTToken)token).getTextID());
-            }
-            
-        }
+//        if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
+//            builderContext.getSimpleDeclarationBuilderIfExist().setTypeSpecifier();
+//        }
+//        
+//        if(kind == SIMPLE_TYPE_SPECIFIER__ID) {
+//            builderContext.push(new NameBuilder());
+//        }
+//        
+//        
+//        if (kind == SIMPLE_TYPE_SPECIFIER__CHAR
+//                || kind == SIMPLE_TYPE_SPECIFIER__WCHAR_T
+//                || kind == SIMPLE_TYPE_SPECIFIER__CHAR16_T
+//                || kind == SIMPLE_TYPE_SPECIFIER__CHAR32_T
+//                || kind == SIMPLE_TYPE_SPECIFIER__BOOL
+//                || kind == SIMPLE_TYPE_SPECIFIER__SHORT
+//                || kind == SIMPLE_TYPE_SPECIFIER__INT
+//                || kind == SIMPLE_TYPE_SPECIFIER__LONG
+//                || kind == SIMPLE_TYPE_SPECIFIER__SIGNED
+//                || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
+//                || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
+//                || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
+//                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
+//            CsmObjectBuilder top = builderContext.top();
+//            if(top instanceof TypeBuilder) {
+//                ((TypeBuilder)top).setSimpleTypeSpecifier(((APTToken)token).getTextID());
+//            }
+//            
+//        }
         
     }
 
     @Override
     public void end_simple_type_specifier(Token token) {
-        CsmObjectBuilder top = builderContext.top();
-        if(top instanceof NameBuilder) {
-            builderContext.pop();
-            if(builderContext.top() instanceof TypeBuilder) {
-                TypeBuilder builder = (TypeBuilder)builderContext.top();
-                builder.setNameBuilder((NameBuilder)top);
-            }
-        }
+//        CsmObjectBuilder top = builderContext.top();
+//        if(top instanceof NameBuilder) {
+//            builderContext.pop();
+//            if(builderContext.top() instanceof TypeBuilder) {
+//                TypeBuilder builder = (TypeBuilder)builderContext.top();
+//                builder.setNameBuilder((NameBuilder)top);
+//            }
+//        }
     }    
 
     @Override
@@ -1287,7 +1296,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void end_type_specifier(Token token) {
-        if(builderContext.top() instanceof TypeBuilder) {
+        if(builderContext.top() instanceof TypeBuilder && builderContext.top(1) instanceof SimpleDeclarationBuilder) {
             TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
             typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
@@ -1352,10 +1361,10 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     @Override public void constructor_declarator(Token token) {
         declarator(token);
-        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
-        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
-        declaratorBuilder.setName(declBuilder.getTypeBuilder().getName());
-        declBuilder.setTypeBuilder(null);
+//        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+//        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
+//        declaratorBuilder.setName(declBuilder.getTypeBuilder().getName());
+//        declBuilder.setTypeBuilder(null);
                 
     }
     @Override public void end_constructor_declarator(Token token) {
@@ -1425,7 +1434,9 @@ public class CppParserActionImpl implements CppParserActionEx {
             FunctionParameterListBuilder builder = (FunctionParameterListBuilder) builderContext.top();
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            ((SimpleDeclarationBuilder)builderContext.top(1)).setParametersListBuilder(builder);
+            if(builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+                ((SimpleDeclarationBuilder)builderContext.top(1)).setParametersListBuilder(builder);
+            }
         }
     }
     
