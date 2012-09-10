@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +50,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
@@ -59,9 +59,6 @@ import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.php.editor.model.ClassConstantElement;
-import org.netbeans.modules.php.editor.model.IndexScope;
-import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -167,7 +164,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
         if (implementedInterfaces.size() > 0) {
-            sb.append(" implements ");
+            sb.append(" implements "); //NOI18N
             for (InterfaceScope interfaceScope : implementedInterfaces) {
                 sb.append(interfaceScope.getName()).append(" ");
             }
@@ -327,9 +324,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @NonNull
     @Override
     public QualifiedName getSuperClassName() {
-        List<? extends ClassScope> retval = null;
         if (superClass != null) {
-            retval = superClass.hasSecond() ? superClass.second() : null;//this
+            List<? extends ClassScope> retval = superClass.hasSecond() ? superClass.second() : null;//this
             if (retval == null) {
                 assert superClass.hasFirst();
                 String superClasName = superClass.first();
@@ -344,7 +340,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             }
         }
-        return null;//NOI18N
+        return null;
     }
 
     @Override
