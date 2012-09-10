@@ -115,36 +115,43 @@ NetBeans_PresetMenu._putPresets = function() {
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
+        item.setAttribute('tabindex', '-1');
         item.setAttribute('title', I18n.message('_PresetTitle', [preset.displayName, preset.width, preset.height]));
         item.setAttribute('onclick', 'NetBeans_PresetMenu.resizePage(' + p + ');');
-        // type
-        var typeDiv = document.createElement('div');
-        typeDiv.setAttribute('class', 'type');
+        // formitem
+        var formItemDiv = document.createElement('div');
+        formItemDiv.setAttribute('class', 'form-item');
+        var radio = document.createElement('input')
+        radio.setAttribute('type', 'radio');
+        radio.setAttribute('tabindex', '-1');
+        formItemDiv.appendChild(radio);
+        item.appendChild(formItemDiv);
+        // icon
         var presetType = NetBeans_Preset.typeForIdent(preset.type);
-        // type - image
+        var iconDiv = document.createElement('div');
+        iconDiv.setAttribute('class', 'icon');
         var img = document.createElement('img');
         img.setAttribute('src', '../img/presets/' + presetType.ident + '.png');
         img.setAttribute('alt', presetType.title);
         img.setAttribute('title', presetType.title);
-        typeDiv.appendChild(img);
-        item.appendChild(typeDiv);
+        iconDiv.appendChild(img);
+        item.appendChild(iconDiv);
         // label
         var labelDiv = document.createElement('div');
         labelDiv.setAttribute('class', 'label');
-        // label - size
-        var sizeDiv = document.createElement('div');
-        sizeDiv.setAttribute('class', 'size');
-        sizeDiv.appendChild(document.createTextNode(I18n.message('_PresetWidthHeight', [preset.width, preset.height])));
-        labelDiv.appendChild(sizeDiv);
-        // label - title
-        var titleDiv = document.createElement('div');
-        titleDiv.setAttribute('class', 'title');
-        titleDiv.appendChild(document.createTextNode(preset.displayName));
-        labelDiv.appendChild(titleDiv);
+        // label - main
+        var mainLabelDiv = document.createElement('div');
+        mainLabelDiv.setAttribute('class', 'main');
+        mainLabelDiv.appendChild(document.createTextNode(preset.displayName));
+        labelDiv.appendChild(mainLabelDiv);
+        // label - info
+        var infoLabelDiv = document.createElement('div');
+        infoLabelDiv.setAttribute('class', 'info');
+        infoLabelDiv.appendChild(document.createTextNode(I18n.message('_PresetWidthHeight', [preset.width, preset.height])));
+        labelDiv.appendChild(infoLabelDiv);
         item.appendChild(labelDiv);
         // append item
         menu.appendChild(item);
-        menu.appendChild(document.createElement('hr'));
     }
 };
 // show preset customizer

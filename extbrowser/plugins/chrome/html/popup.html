@@ -52,22 +52,42 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     </head>
     <body>
         <div id="presetMenu">
-            <div id="menuPresets"></div>
-            <a href="#" id="autoPresetMenu" title="_ActualWindowSize">
-                <div class="type"><img src="../img/presets/sizeToFit.png" id="sizeToFitIcon" alt="_SizeToFit" title="_SizeToFit"></div>
-                <div id="sizeToFit" class="label size">_SizeToFit</div>
-            </a>
-            <a href="#" id="customizePresetsMenu" title="_CustomizeWindowSettings_hellip" class="clear">
-                <div class="type"><img src="../img/presets/customize.png" id="customizeIcon" alt="_Customize_hellip" title="_Customize_hellip"></div>
-                <div id="customize" class="label size">_Customize_hellip</div>
-            </a>
-            <div class="clear" id="selectionModeDiv">
-                <div class="type">
-                    <img src="../img/presets/selectionMode.png" id="selectModeIcon" alt="_SelectMode" title="_SelectMode">
-                    <input class="right" type="checkbox" id="selectionModeCheckBox">
+            <a href="#" id="selectionModeMenu" title="_SwitchSelectionMode" tabindex="-1">
+                <div class="form-item">
+                    <input type="checkbox" id="selectionModeCheckBox" tabindex="1">
                 </div>
-                <a href="#" id="selectionModeMenu"><div id="selectMode" class="label size">_SelectMode</div></a>
-            </div>
+                <div class="icon">
+                    <img src="../img/presets/selectionMode.png" id="selectModeIcon" alt="_SelectMode" title="_SelectMode">
+                </div>
+                <div  class="label">
+                    <div id="selectMode" class="main">_SelectMode</div>
+                </div>
+            </a>
+            <hr>
+            <div id="menuPresets" class="clear"></div>
+            <a href="#" id="autoPresetMenu" title="_ActualWindowSize" tabindex="-1">
+                <div class="form-item">
+                    <input type="checkbox" class="hidden" tabindex="-1">
+                </div>
+                <div class="icon">
+                    <img src="../img/presets/sizeToFit.png" id="sizeToFitIcon" alt="_SizeToFit" title="_SizeToFit">
+                </div>
+                <div  class="label">
+                    <div id="sizeToFit" class="main">_SizeToFit</div>
+                </div>
+            </a>
+            <hr>
+            <a href="#" id="customizePresetsMenu" title="_CustomizeWindowSettings_hellip" tabindex="-1">
+                <div class="form-item">
+                    <input type="checkbox" class="hidden" tabindex="-1">
+                </div>
+                <div class="icon">
+                    <img src="../img/presets/customize.png" id="customizeIcon" alt="_Customize_hellip" title="_Customize_hellip">
+                </div>
+                <div  class="label">
+                    <div id="customize" class="main">_Customize_hellip</div>
+                </div>
+            </a>
             <div class="clear"></div>
         </div>
 
