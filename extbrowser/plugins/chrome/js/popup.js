@@ -44,6 +44,7 @@
 var NetBeans = chrome.extension.getBackgroundPage().NetBeans;
 var NetBeans_Presets = chrome.extension.getBackgroundPage().NetBeans_Presets;
 var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
+var NetBeans_ViewPort = chrome.extension.getBackgroundPage().NetBeans_ViewPort;
 
 /**
  * Window presets menu.
@@ -75,6 +76,10 @@ NetBeans_PresetMenu.resizePage = function(preset) {
         that.hide();
     });
 };
+NetBeans_PresetMenu.setAutoPresetActive = function() {
+    document.getElementById('autoPresetMenu').setAttribute('class', 'active');
+    document.getElementById('autoPresetRadio').setAttribute('checked', 'checked');
+}
 /*** ~Private ***/
 // menu init
 NetBeans_PresetMenu._init = function() {
@@ -112,18 +117,25 @@ NetBeans_PresetMenu._putPresets = function() {
     menu.innerHTML = '';
     for (p in this._presets) {
         var preset = this._presets[p];
+        var activePreset = NetBeans_ViewPort.width == preset.width && NetBeans_ViewPort.height == preset.height;
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
         item.setAttribute('tabindex', '-1');
         item.setAttribute('title', I18n.message('_PresetTitle', [preset.displayName, preset.width, preset.height]));
         item.setAttribute('onclick', 'NetBeans_PresetMenu.resizePage(' + p + ');');
+        if (activePreset) {
+            item.setAttribute('class', 'active');
+        }
         // formitem
         var formItemDiv = document.createElement('div');
         formItemDiv.setAttribute('class', 'form-item');
         var radio = document.createElement('input')
         radio.setAttribute('type', 'radio');
         radio.setAttribute('tabindex', '-1');
+        if (activePreset) {
+            radio.setAttribute('checked', 'checked');
+        }
         formItemDiv.appendChild(radio);
         item.appendChild(formItemDiv);
         // icon
@@ -172,5 +184,12 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
 
 // run!
 window.addEventListener('load', function() {
-    NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
+    NetBeans.detectViewPort(function() {
+        NetBeans.getWindowInfo(function(window) {
+            if (window.state == 'maximized') {
+                NetBeans_PresetMenu.setAutoPresetActive();
+            }
+        });
+        NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
+    });
 }, false);
