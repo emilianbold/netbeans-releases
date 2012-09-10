@@ -2010,48 +2010,50 @@ class JavaCodeGenerator extends CodeGenerator {
             // generate size code according to form size policy
             int formPolicy = visualForm.getFormSizePolicy();
             boolean genSize = visualForm.getGenerateSize();
-            boolean genPosition = visualForm.getGeneratePosition();
             boolean genCenter = visualForm.getGenerateCenter();
+            boolean genPosition = !genCenter && visualForm.getGeneratePosition();
             Dimension formSize = visualForm.getFormSize();
             Point formPosition = visualForm.getFormPosition();
 
-            String sizeText = ""; // NOI18N
-
-            if (formPolicy == RADVisualFormContainer.GEN_PACK)
-                sizeText = "pack();\n"; // NOI18N
-            else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
-                if (genCenter) {
-                    StringBuilder sizeBuffer = new StringBuilder();
-                    if (genSize) {
-//                                sizeBuffer.append("pack();\n"); // NOI18N
-                        sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                        sizeBuffer.append("setBounds((screenSize.width-").append(formSize.width).append(")/2, (screenSize.height-").append(formSize.height).append(")/2, ").append(formSize.width).append(", ").append(formSize.height).append(");\n"); // NOI18N
-//                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
-//                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
-                    }
-                    else {
-                        sizeBuffer.append("pack();\n"); // NOI18N
-                        sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                        sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
-                        sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
-                    }
-                    sizeText = sizeBuffer.toString();
+            StringBuilder buf = new StringBuilder();
+            if (formPolicy == RADVisualFormContainer.GEN_PACK) {
+                buf.append("pack();\n"); // NOI18N
+            } else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
+                if (genPosition && genSize) { // both position and size
+                    buf.append("setBounds("); // NOI18N
+                    buf.append(formPosition.x);
+                    buf.append(", "); // NOI18N
+                    buf.append(formPosition.y);
+                    buf.append(", "); // NOI18N
+                    buf.append(formSize.width);
+                    buf.append(", "); // NOI18N
+                    buf.append(formSize.height);
+                    buf.append(");\n"); // NOI18N
+                } else if (genPosition) { // only position
+                    buf.append("setLocation(new java.awt.Point("); // NOI18N
+                    buf.append(formPosition.x);
+                    buf.append(", "); // NOI18N
+                    buf.append(formPosition.y);
+                    buf.append("));\n"); // NOI18N
+                } else if (genSize) { // only size
+                    buf.append("setSize(new java.awt.Dimension("); // NOI18N
+                    buf.append(formSize.width);
+                    buf.append(", "); // NOI18N
+                    buf.append(formSize.height);
+                    buf.append("));\n"); // NOI18N
                 }
-                else if (genPosition && genSize) // both size and position
-                    sizeText = "setBounds("+formPosition.x + ", " // NOI18N
-                               + formPosition.y +", " // NOI18N
-                               + formSize.width + ", " // NOI18N
-                               + formSize.height + ");\n"; // NOI18N
-                else if (genPosition) // position only
-                    sizeText = "setLocation(new java.awt.Point(" // NOI18N
-                               + formPosition.x + ", " // NOI18N
-                               + formPosition.y + "));\n"; // NOI18N
-                else if (genSize) // size only
-                    sizeText = "setSize(new java.awt.Dimension(" // NOI18N
-                               + formSize.width + ", " // NOI18N
-                               + formSize.height + "));\n"; // NOI18N
             }
-
+            if (genCenter && formPolicy != RADVisualFormContainer.GEN_NOTHING) {
+                if (formPolicy == RADVisualFormContainer.GEN_BOUNDS && !genSize) {
+                    // Before fixing bug 192435 centering could not be specified when "Generate pack()"
+                    // was chosen. The combination of pack and center could be achieved by selecting
+                    // "Generate Resize Code" and unchecking "Generate Size". It does not have much
+                    // sense now, but we need to keep this behavior for existing forms.
+                    buf.append("pack();\n"); // NOI18N
+                }
+                buf.append("setLocationRelativeTo(null);\n"); // NOI18N
+            }
+            String sizeText = buf.toString();
             if (!sizeText.equals("")) { // NOI18N
                 emptyLineRequest++;
                 generateEmptyLineIfNeeded(writer);

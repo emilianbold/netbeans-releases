@@ -39,65 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger.annotation;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.ExtendedNodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
-import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Martin
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@DebuggerServiceRegistration(path="javascript-debuggerengine/ToolTipView", types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class, TreeExpansionModelFilter.class })
-public class ToolTipModel extends VariablesModel implements TreeExpansionModelFilter {
-    
-    public ToolTipModel(ContextProvider contextProvider) {
-        super(contextProvider);
+public class PHPCodeCompletion217990Test extends PHPCodeCompletionTestBase {
+
+    public PHPCodeCompletion217990Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test217990/test217990.php", "Url::^", false);
     }
 
     @Override
-    public int getChildrenCount(Object parent) throws UnknownTypeException {
-        if (parent == ROOT) {
-            return 1;
-        } else {
-            return super.getChildrenCount(parent);
-        }
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test217990/"))
+            })
+        );
     }
 
-    @Override
-    public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
-        if (parent == ROOT) {
-            ScopedRemoteObject ttv = ToolTipView.getVariable();
-            if (ttv != null) {
-                return new Object[] { ttv };
-            } else {
-                return new Object[] { };
-            }
-        } else {
-            return super.getChildren(parent, from, to);
-        }
-    }
-
-    @Override
-    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
-        if (node == ToolTipView.getVariable()) {
-            return true;
-        } else {
-            return original.isExpanded(node);
-        }
-    }
-
-    @Override
-    public void nodeExpanded(Object node) {}
-
-    @Override
-    public void nodeCollapsed(Object node) {}
-    
 }

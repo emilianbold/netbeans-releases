@@ -75,7 +75,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     private Point formPosition;
     private boolean generatePosition = true;
     private boolean generateSize = true;
-    private boolean generateCenter = true;
+    private boolean generateCenter = false;
     private int formSizePolicy = GEN_NOTHING;
 
     // ------------------------------------------------------------------------------
@@ -210,6 +210,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public void setGenerateSize(boolean value) {
         boolean old = generateSize;
         generateSize = value;
+        if (!old && generateSize && getFormSizePolicy() == GEN_BOUNDS
+                && getFormSize() == null && getDesignerSize() != null) {
+            setDesignerSize(getDesignerSize()); // force recalculation of formSize
+        }
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_SIZE,
                                         old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
@@ -359,6 +363,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (getFormSizePolicy() != GEN_BOUNDS || getGenerateCenter()) {
+                    return Boolean.FALSE;
+                }
                 return getGeneratePosition() ? Boolean.TRUE : Boolean.FALSE;
             }
 
@@ -388,6 +395,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (getFormSizePolicy() != GEN_BOUNDS) {
+                    return Boolean.FALSE;
+                }
                 return getGenerateSize() ? Boolean.TRUE : Boolean.FALSE;
             }
 
@@ -415,6 +425,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (getFormSizePolicy() == GEN_NOTHING) {
+                    return Boolean.FALSE;
+                }
                 return getGenerateCenter() ? Boolean.TRUE : Boolean.FALSE;
             }
 
@@ -429,7 +442,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
             @Override
             public boolean canWrite() {
-                return !isReadOnly() && getFormSizePolicy() == GEN_BOUNDS;
+                return !isReadOnly() && getFormSizePolicy() != GEN_NOTHING;
             }
         };
 

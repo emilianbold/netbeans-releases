@@ -447,7 +447,12 @@ public class ModelUtils {
                                     newResolvedTypes.addAll(resovledTypes);
                                 }
                             } else {
-                                newResolvedObjects.add(property);
+                                Collection<? extends TypeUsage> lastTypeAssignment = property.getAssignmentForOffset(offset);
+                                if (lastTypeAssignment.isEmpty()) {
+                                    newResolvedObjects.add(property);
+                                } else {
+                                    newResolvedTypes.addAll(lastTypeAssignment);
+                                }
                             }
                         }
                     }
@@ -595,150 +600,126 @@ public class ModelUtils {
         }
 
         @Override
-        public Node visit(AccessNode aNode, boolean onset) {
-            if (onset) {
-                if (aNode.getBase() instanceof IdentNode) {
-                    IdentNode iNode = (IdentNode)aNode.getBase();
-                    if (iNode.getName().equals("this")) {
-                        List<? extends Node> path = getPath();
-                        if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
-                            sb.append("@this."); //NOI18N
-                            sb.append(aNode.getProperty().getName());
-                            result.add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));                //NOI18N
-                            // plus five due to this.
-                        }
-                    } else {
-                        if (sb.length() > 5) {
-                            sb.insert(6, aNode.getProperty().getName());
-                        } else {
-                            sb.append(aNode.getProperty().getName());
-                        }
-                        sb.insert(0, ((IdentNode)aNode.getBase()).getName());
-                        sb.insert(0, "@exp;");
-                        result.add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
+        public Node enter(AccessNode aNode) {
+            if (aNode.getBase() instanceof IdentNode) {
+                IdentNode iNode = (IdentNode)aNode.getBase();
+                if (iNode.getName().equals("this")) {
+                    List<? extends Node> path = getPath();
+                    if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
+                        sb.append("@this."); //NOI18N
+                        sb.append(aNode.getProperty().getName());
+                        result.add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));                //NOI18N
+                        // plus five due to this.
                     }
-                    return null;
                 } else {
-                    if(sb.length() > 5) {
+                    if (sb.length() > 5) {
                         sb.insert(6, aNode.getProperty().getName());
                     } else {
                         sb.append(aNode.getProperty().getName());
                     }
+                    sb.insert(0, ((IdentNode)aNode.getBase()).getName());
+                    sb.insert(0, "@exp;");
+                    result.add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
+                }
+                return null;
+            } else {
+                if(sb.length() > 5) {
+                    sb.insert(6, aNode.getProperty().getName());
+                } else {
+                    sb.append(aNode.getProperty().getName());
                 }
             }
-            return super.visit(aNode, onset);
+            return super.enter(aNode);
         }
 
 //        @Override
-//        public Node visit(BinaryNode binaryNode, boolean onset) {
-//            if (onset) {
-//                if (!binaryNode.isAssignment()) {
-//                    if(binaryNode.rhs() instanceof LiteralNode) {
-//                        LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                        Object value = lNode.getObject();
-//                        if (value instanceof String) {
-//                            result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                            return null;
-//                        }
+//        public Node enter(BinaryNode binaryNode) {
+//            if (!binaryNode.isAssignment()) {
+//                if(binaryNode.rhs() instanceof LiteralNode) {
+//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
+//                    Object value = lNode.getObject();
+//                    if (value instanceof String) {
+//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
+//                        return null;
 //                    }
-//                    if (binaryNode.lhs() instanceof LiteralNode) {
-//                        LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                        Object value = lNode.getObject();
-//                        if (value instanceof String) {
-//                            result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                            return null;
-//                        }
+//                }
+//                if (binaryNode.lhs() instanceof LiteralNode) {
+//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
+//                    Object value = lNode.getObject();
+//                    if (value instanceof String) {
+//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
+//                        return null;
 //                    }
 //                }
 //            }
-//            return super.visit(binaryNode, onset);
+//            return super.enter(binaryNode);
 //        }
-        
+
         @Override
-        public Node visit(CallNode callNode, boolean onset) {
-            if (onset) {
-                if (callNode.getFunction() instanceof ReferenceNode) {
-                    FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
-                    String name = function.getIdent().getName();
-                    result.add(new TypeUsageImpl("@call;" + name, function.getStart(), false)); //NOI18N
-                    return null;
+        public Node enter(CallNode callNode) {
+            if (callNode.getFunction() instanceof ReferenceNode) {
+                FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
+                String name = function.getIdent().getName();
+                result.add(new TypeUsageImpl("@call;" + name, function.getStart(), false)); //NOI18N
+            } else {
+                if (sb.length() < 6) {
+                    sb.append("@call;");    //NOI18N
                 } else {
-                    if (sb.length() < 6) {
-                        sb.append("@call;");    //NOI18N
-                    } else {
-                        sb.insert(6, "@call;"); //NOI18N
-                    }
-                    // don't visit arguments, just name the name of function.
-                    callNode.getFunction().accept(this);
-                    return null;
+                    sb.insert(6, "@call;"); //NOI18N
                 }
+                // don't visit arguments, just name the name of function.
+                callNode.getFunction().accept(this);
             }
-            return super.visit(callNode, onset);
-        }
-
-        
-        
-        @Override
-        public Node visit(IdentNode iNode, boolean onset) {
-            if (onset) {
-                if (getPath().isEmpty()) {
-                    if (iNode.getName().equals("this")) {   //NOI18N
-                        result.add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
-                    } else {
-                        result.add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
-                    }
-                }
-                return null;
-            }
-            return super.visit(iNode, onset);
-        }
-
-        
-        @Override
-        public Node visit(LiteralNode lNode, boolean onset) {
-            if (onset) {
-                Object value = lNode.getObject();
-                if (value instanceof Boolean) {
-                    result.add(new TypeUsageImpl(Type.BOOLEAN, lNode.getStart(), true));
-                } else if (value instanceof String) {
-                    result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-                } else if (value instanceof Integer
-                        || value instanceof Float
-                        || value instanceof Double) {
-                    result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
-                } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                    // offset is set to -1, to prevent coloring, etc 
-                    result.add(new TypeUsageImpl("Array", -1, true));
-                }
-                return null;
-            }
-            return super.visit(lNode, onset);
+            return null;
         }
 
         @Override
-        public Node visit(ObjectNode objectNode, boolean onset) {
-            if (onset) {
-                result.add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
-                return null;
-            }
-            return super.visit(objectNode, onset);
-        }
-
-        
-        @Override
-        public Node visit(UnaryNode uNode, boolean onset) {
-            if (onset) {
-                if (com.oracle.nashorn.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
-                    if (uNode.rhs() instanceof CallNode
-                        && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
-                            IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                            result.add(new TypeUsageImpl("@new;" + iNode.getName(), iNode.getStart(), false));
-                            return null;
-                    }
+        public Node enter(IdentNode iNode) {
+            if (getPath().isEmpty()) {
+                if (iNode.getName().equals("this")) {   //NOI18N
+                    result.add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
+                } else {
+                    result.add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
                 }
             }
-            return super.visit(uNode, onset);
+            return null;
         }
-        
+
+        @Override
+        public Node enter(LiteralNode lNode) {
+            Object value = lNode.getObject();
+            if (value instanceof Boolean) {
+                result.add(new TypeUsageImpl(Type.BOOLEAN, lNode.getStart(), true));
+            } else if (value instanceof String) {
+                result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
+            } else if (value instanceof Integer
+                    || value instanceof Float
+                    || value instanceof Double) {
+                result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
+            } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
+                // offset is set to -1, to prevent coloring, etc
+                result.add(new TypeUsageImpl("Array", -1, true));
+            }
+            return null;
+        }
+
+        @Override
+        public Node enter(ObjectNode objectNode) {
+            result.add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
+            return null;
+        }
+
+        @Override
+        public Node enter(UnaryNode uNode) {
+            if (com.oracle.nashorn.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
+                if (uNode.rhs() instanceof CallNode
+                    && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
+                        IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
+                        result.add(new TypeUsageImpl("@new;" + iNode.getName(), iNode.getStart(), false));
+                        return null;
+                }
+            }
+            return super.enter(uNode);
+        }        
     }
 }

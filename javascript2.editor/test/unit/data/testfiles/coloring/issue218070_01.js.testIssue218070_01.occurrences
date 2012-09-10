@@ -1,0 +1,3 @@
+var |>MARK_OCCURRENCES:MartinFousek<| = {};
+|>MARK_OCCURRENCES:Martin^Fousek<|.E;
+ * @type |>MARK_OCCURRENCES:MartinFousek<|

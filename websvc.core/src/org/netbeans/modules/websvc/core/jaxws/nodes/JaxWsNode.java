@@ -68,6 +68,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
+
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -120,6 +122,7 @@ import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -129,6 +132,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -182,9 +186,29 @@ public class JaxWsNode extends AbstractNode implements
                 if (service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null) {
                     implBeanClass.setAttribute("jax-ws-service-provider", Boolean.TRUE);
                 }
-                getDataObject().setValid(false);
-            } catch (PropertyVetoException ex) {
-                ErrorManager.getDefault().notify(ex);
+                //getDataObject().setValid(false);
+                Mutex.EVENT.writeAccess( new Runnable(){
+                    /* (non-Javadoc)
+                     * @see java.lang.Runnable#run()
+                     */
+                    @Override
+                    public void run() {
+                        try {
+                            EditorCookie cookie = getDataObject().getCookie(EditorCookie.class);
+                            JEditorPane[] panes = cookie.getOpenedPanes();
+                            getDataObject().setValid(false);
+                            if ( panes != null && panes.length >0 ){
+                                getDataObject().getCookie(EditorCookie.class).open();
+                            }
+                        }
+                        catch (PropertyVetoException ex) {
+                            Logger.getLogger(JaxWsNode.class.getName()).log( 
+                                    Level.WARNING, null , ex);
+                        } 
+                    }
+                });
+            /*} catch (PropertyVetoException ex) {
+                ErrorManager.getDefault().notify(ex);*/
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
