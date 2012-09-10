@@ -97,53 +97,53 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
     static {
-        PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("namespace", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("class", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("function", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("new", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("static", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("var", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("final", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("interface", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("instanceof", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("implements", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("extends", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("public", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("private", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("protected", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("abstract", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("clone", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("global", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("goto", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("throw", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("if", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("switch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("for", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("array", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("foreach", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("while", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("catch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("try", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
-        PHP_KEYWORDS.put("default", KeywordCompletionType.ENDS_WITH_COLON);
-        PHP_KEYWORDS.put("break", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("endif", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("endfor", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("endforeach", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("endwhile", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("endswitch", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("case", KeywordCompletionType.ENDS_WITH_COLON);
-        PHP_KEYWORDS.put("and", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("as", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("declare", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("do", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
-        PHP_KEYWORDS.put("else", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
-        PHP_KEYWORDS.put("elseif", KeywordCompletionType.ENDS_WITH_BRACKETS_AND_CURLY_BRACKETS);
-        PHP_KEYWORDS.put("enddeclare", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-        PHP_KEYWORDS.put("or", KeywordCompletionType.ENDS_WITH_SPACE);
-        PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE); //NOI18N
+        PHP_KEYWORDS.put("namespace", KeywordCompletionType.SIMPLE); //NOI18N
+        PHP_KEYWORDS.put("class", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("function", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("new", KeywordCompletionType.SIMPLE); //NOI18N
+        PHP_KEYWORDS.put("static", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("var", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("final", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("interface", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("instanceof", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("implements", KeywordCompletionType.SIMPLE); //NOI18N
+        PHP_KEYWORDS.put("extends", KeywordCompletionType.SIMPLE); //NOI18N
+        PHP_KEYWORDS.put("public", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("private", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("protected", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("abstract", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("clone", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("global", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("goto", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("throw", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("if", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("switch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("for", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("array", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("foreach", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("while", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("catch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("try", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("default", KeywordCompletionType.ENDS_WITH_COLON); //NOI18N
+        PHP_KEYWORDS.put("break", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("endif", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("endfor", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("endforeach", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("endwhile", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("endswitch", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("case", KeywordCompletionType.ENDS_WITH_COLON); //NOI18N
+        PHP_KEYWORDS.put("and", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("as", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("declare", KeywordCompletionType.CURSOR_INSIDE_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("do", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("else", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("elseif", KeywordCompletionType.ENDS_WITH_BRACKETS_AND_CURLY_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("enddeclare", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("or", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
     }
 
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES = {
