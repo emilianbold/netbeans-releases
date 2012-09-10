@@ -145,6 +145,9 @@ import org.openide.util.actions.Presenter;
  */
 @NbBundle.Messages({
     "titleLabel.text={0} properties",
+    "titleLabel.text.no.selected.rule=No Rule Selected",
+    "titleLabel.tooltip.no.selected.rule=Select a css rule in editor or CSS Styles Window to activate the Rule Editor",
+    "titleLabel.no.selected.rule=No Rule Selected",
     "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only"
 })
 public class RuleEditorPanel extends JPanel {
@@ -653,6 +656,8 @@ public class RuleEditorPanel extends JPanel {
             }
         });
         titleLabel.setText(Bundle.titleLabel_text(ruleNameRef.get()));
+        titleLabel.setToolTipText(null);
+        titleLabel.setEnabled(true);
 
     }
 
@@ -663,8 +668,11 @@ public class RuleEditorPanel extends JPanel {
         Rule old = this.rule;
         this.rule = null;
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, null);
-
-        titleLabel.setText(null);
+ 
+        titleLabel.setText(Bundle.titleLabel_no_selected_rule());
+        titleLabel.setToolTipText(Bundle.titleLabel_tooltip_no_selected_rule());
+        titleLabel.setEnabled(false);
+        
         addPropertyButton.setEnabled(false);
         addPropertyCB.setEnabled(false);
         node.fireContextChanged();
