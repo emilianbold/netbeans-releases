@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -54,8 +55,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
+import static org.netbeans.modules.maven.api.output.Bundle.*;
 
 /**
  *
@@ -63,7 +66,7 @@ import org.openide.windows.OutputListener;
  */
 public final class OutputUtils {
     private static final Pattern linePattern = Pattern.compile("(?:\\[catch\\])?\\sat (.*)\\((.*)\\.java\\:(\\d+)\\)"); //NOI18N
-    
+ 
     /** Creates a new instance of OutputUtils */
     private OutputUtils() {
     }
@@ -77,32 +80,7 @@ public final class OutputUtils {
             String lineNum = match.group(3);
             int index = method.indexOf(file);
             if (index > -1) {
-                String packageName = method.substring(0, index).replace('.', '/'); //NOI18N
-                String resourceName = packageName  + file + ".class"; //NOI18N
-                FileObject resource = classPath.findResource(resourceName);
-                if (resource != null) {
-                    FileObject root = classPath.findOwnerRoot(resource);
-                    if (root != null) {
-                    URL url = URLMapper.findURL(root, URLMapper.INTERNAL);
-                    SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(url);
-                    FileObject[] rootz = res.getRoots();
-                    for (int i = 0; i < rootz.length; i++) {
-                        String path = packageName + file + ".java"; //NOI18N
-                        FileObject javaFo = rootz[i].getFileObject(path);
-                        if (javaFo != null) {
-                            try {
-                                DataObject obj = DataObject.find(javaFo);
-                                EditorCookie cook = obj.getCookie(EditorCookie.class);
-                                int lineInt = Integer.parseInt(lineNum);
-                                list = new OutputUtils.StacktraceOutputListener(cook, lineInt);
-                            }
-                            catch (DataObjectNotFoundException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    }
-                    }
-                }
+                return new StacktraceOutputListener(method, file, lineNum, classPath);
             }
         }
         return list;
@@ -110,12 +88,16 @@ public final class OutputUtils {
     
     
     private static class StacktraceOutputListener implements OutputListener {
+        private final String method;
+        private final String file;
+        private final String lineNum;
+        private final ClassPath classPath;
         
-        private EditorCookie cookie;
-        private int line;
-        public StacktraceOutputListener(EditorCookie cook, int ln) {
-            cookie = cook;
-            line = ln - 1;
+        private StacktraceOutputListener(String method, String file, String lineNum, ClassPath classPath) {
+            this.method = method;
+            this.file = file;
+            this.lineNum = lineNum;
+            this.classPath = classPath;
         }
         @Override
         public void outputLineSelected(OutputEvent ev) {
@@ -126,11 +108,44 @@ public final class OutputUtils {
          * @param ev the event describing the line
          */
         @Override
+        @NbBundle.Messages({
+            "OutputUtils_NotFound=Class \"{0}\" not found on classpath", 
+            "OutputUtils_NoSource=Source file not found for \"{0}\""
+        })
         public void outputLineAction(OutputEvent ev) {
-            try {
-                cookie.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-            } catch (IndexOutOfBoundsException x) { // #155880
-                cookie.open();
+            int index = method.indexOf(file);
+            String packageName = method.substring(0, index).replace('.', '/'); //NOI18N
+            String resourceName = packageName + file + ".class"; //NOI18N
+            FileObject resource = classPath.findResource(resourceName);
+            if (resource != null) {
+                FileObject root = classPath.findOwnerRoot(resource);
+                if (root != null) {
+                    URL url = URLMapper.findURL(root, URLMapper.INTERNAL);
+                    SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(url);
+                    FileObject[] rootz = res.getRoots();
+                    for (int i = 0; i < rootz.length; i++) {
+                        String path = packageName + file + ".java"; //NOI18N
+                        FileObject javaFo = rootz[i].getFileObject(path);
+                        if (javaFo != null) {
+                            try {
+                                DataObject obj = DataObject.find(javaFo);
+                                EditorCookie cookie = obj.getLookup().lookup(EditorCookie.class);
+                                int lineInt = Integer.parseInt(lineNum);
+                                try {
+                                    cookie.getLineSet().getCurrent(lineInt).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                } catch (IndexOutOfBoundsException x) { // #155880
+                                    cookie.open();
+                                }
+                                return;
+                            } catch (DataObjectNotFoundException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                    StatusDisplayer.getDefault().setStatusText(OutputUtils_NoSource(file));
+                }
+            } else {
+                StatusDisplayer.getDefault().setStatusText(OutputUtils_NotFound(file));
             }
         }
         
