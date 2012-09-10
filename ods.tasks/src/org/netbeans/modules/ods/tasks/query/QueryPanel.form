@@ -831,7 +831,7 @@
                       <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                       <Component id="jScrollPane11" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="210" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1113,7 +1113,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="590" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1194,11 +1194,11 @@
                       <Component id="criteriaPanel" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Component id="searchButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="saveChangesButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="cancelChangesButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="49" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                           <Component id="saveButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="separatorLabel1" min="-2" max="-2" attributes="0"/>

@@ -44,10 +44,13 @@ package org.netbeans.modules.ods.tasks.query;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
@@ -61,9 +64,13 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 
 /**
  *
@@ -138,36 +145,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         filterComboBox.setRenderer(new FilterCellRenderer());
 
-        cancelChangesButton.addFocusListener(this);
-        searchBySummaryCheckBox.addFocusListener(this);
-        searchByDescriptionCheckBox.addFocusListener(this);
-        componentList.addFocusListener(this);
-        filterComboBox.addFocusListener(this);
-        gotoIssueButton.addFocusListener(this);
-        idTextField.addFocusListener(this);
-        modifyButton.addFocusListener(this);
-        priorityList.addFocusListener(this);
-        productList.addFocusListener(this);
-        seenButton.addFocusListener(this);
-        removeButton.addFocusListener(this);
-        ownerCheckBox.addFocusListener(this);
-        commenterCheckBox.addFocusListener(this);
-        ownerCheckBox.addFocusListener(this);
-        ccCheckBox.addFocusListener(this);
-        resolutionList.addFocusListener(this);
-        saveButton.addFocusListener(this);
-        saveChangesButton.addFocusListener(this);
-        searchButton.addFocusListener(this);
-        refreshButton.addFocusListener(this);
-        severityList.addFocusListener(this);
-        issueTypeList.addFocusListener(this);
-        statusList.addFocusListener(this);
-        byTextTextField.addFocusListener(this);
-        tablePanel.addFocusListener(this);
-        tableSummaryLabel.addFocusListener(this);
-        releaseList.addFocusListener(this);
-        webButton.addFocusListener(this);
-        refreshConfigurationButton.addFocusListener(this);
+        UIUtils.keepFocusedComponentVisible(this);
 
         validate();
         repaint();
@@ -605,7 +583,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(byWorkflowPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(resolutionLabel)
                     .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(210, Short.MAX_VALUE))
         );
         byWorkflowPanelLayout.setVerticalGroup(
             byWorkflowPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -672,7 +650,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             tableHeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(tableHeaderPanelLayout.createSequentialGroup()
                 .addComponent(tableSummaryLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 590, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(filterLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -883,11 +861,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addComponent(criteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(searchPanelLayout.createSequentialGroup()
                         .addComponent(searchButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(saveChangesButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelChangesButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(separatorLabel1)

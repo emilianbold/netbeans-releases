@@ -69,7 +69,7 @@ public class C2CIssueController extends BugtrackingController {
             scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
             scrollPane.getVerticalScrollBar().setUnitIncrement(size);
         }
-        UIUtils.keepFocusedComponentVisible(scrollPane);
+        UIUtils.keepFocusedComponentVisible(panel);
         component = scrollPane;
     }
 

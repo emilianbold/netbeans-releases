@@ -92,8 +92,10 @@ public class AttachmentsPanel extends JPanel {
     private JLabel dummyCreateLabel = new JLabel();
     private JLabel dummyAttachLabel = new JLabel();
     private Method maxMethod;
-
-    public AttachmentsPanel() {
+    private IssuePanel issuePanel;
+    
+    public AttachmentsPanel(IssuePanel issuePanel) {
+        this.issuePanel = issuePanel;
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
@@ -445,7 +447,7 @@ public class AttachmentsPanel extends JPanel {
             }
             
             newAttachments.add(attachment);
-            UIUtils.keepFocusedComponentVisible(attachment);
+            UIUtils.keepFocusedComponentVisible(attachment, issuePanel);
             revalidate();
         }
 
