@@ -54,7 +54,6 @@ import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.NodeVisitor;
 import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.SwitchNode;
 import com.oracle.nashorn.ir.TernaryNode;
@@ -63,6 +62,7 @@ import com.oracle.nashorn.ir.UnaryNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
 import com.oracle.nashorn.ir.WithNode;
+import com.oracle.nashorn.ir.visitor.NodeVisitor;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,8 +106,8 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(Block block, boolean onset) {
-        if (onset && (block instanceof FunctionNode || isScript(block)
+    public Node enter(Block block) {
+        if ((block instanceof FunctionNode || isScript(block)
                 || block.getStart() < block.getFinish())) {
 
             if (caseNodes.contains(block)) {
@@ -126,152 +126,157 @@ public class FormatVisitor extends NodeVisitor {
                 || block.getStart() != block.getFinish()) {
             return null;
         } else {
-            return super.visit(block, onset);
+            return super.enter(block);
         }
     }
 
     @Override
-    public Node visit(CaseNode caseNode, boolean onset) {
+    public Node leave(Block block) {
+        if (block instanceof FunctionNode || isScript(block)
+                || block.getStart() != block.getFinish()) {
+            return null;
+        } else {
+            return super.leave(block);
+        }
+    }
+
+    @Override
+    public Node enter(CaseNode caseNode) {
         // we need to mark if block is case body as block itself has
         // no reference to case node
-        if (onset) {
-            caseNodes.add(caseNode.getBody());
+        caseNodes.add(caseNode.getBody());
+        return super.enter(caseNode);
+    }
+
+    @Override
+    public Node leave(CaseNode caseNode) {
+        // we are removing mark
+        caseNodes.remove(caseNode.getBody());
+        return super.leave(caseNode);
+    }
+
+    @Override
+    public Node enter(WhileNode whileNode) {
+        // within parens spaces
+        markSpacesWithinParentheses(whileNode, getStart(whileNode), getStart(whileNode.getBody()),
+                FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
+
+        // mark space before left brace
+        markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
+
+        if (handleWhile(whileNode, FormatToken.Kind.AFTER_WHILE_START)) {
+            return null;
+        }
+
+        return super.enter(whileNode);
+    }
+
+    @Override
+    public Node enter(DoWhileNode doWhileNode) {
+        // within parens spaces
+        markSpacesWithinParentheses(doWhileNode, getFinish(doWhileNode.getBody()), getFinish(doWhileNode),
+                FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
+
+        // mark space before left brace
+        markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
+
+        FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
+        if (whileToken != null) {
+            FormatToken beforeWhile = whileToken.previous();
+            if (beforeWhile != null) {
+                appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+            }
+        }
+        if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
+            return null;
+        }
+
+        return super.enter(doWhileNode);
+    }
+
+    @Override
+    public Node enter(ForNode forNode) {
+        // within parens spaces
+        markSpacesWithinParentheses(forNode, getStart(forNode), getStart(forNode.getBody()),
+                FormatToken.Kind.AFTER_FOR_PARENTHESIS, FormatToken.Kind.BEFORE_FOR_PARENTHESIS);
+
+        // mark space before left brace
+        markSpacesBeforeBrace(forNode.getBody(), FormatToken.Kind.BEFORE_FOR_BRACE);
+
+        if (!forNode.isForEach() && !forNode.isForIn()) {
+            Node init = forNode.getInit();
+            Node test = forNode.getTest();
+
+            FormatToken formatToken = null;
+
+            // unfortunately init and test may be null
+            if (init != null) {
+                formatToken = getNextToken(getFinish(init), JsTokenId.OPERATOR_SEMICOLON);
+            } else {
+                formatToken = getNextToken(getStart(forNode), JsTokenId.OPERATOR_SEMICOLON,
+                        getStart(forNode.getBody()));
+            }
+            if (formatToken != null && test != null) {
+                appendTokenAfterLastVirtual(formatToken,
+                        FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_TEST));
+            }
+
+            if (test != null) {
+                formatToken = getNextToken(getFinish(forNode.getTest()), JsTokenId.OPERATOR_SEMICOLON);
+            } else {
+                // we use the position of init semicolon
+                int start = formatToken != null ? formatToken.getOffset() + 1 : getStart(forNode);
+                formatToken = getNextToken(start, JsTokenId.OPERATOR_SEMICOLON,
+                                            getStart(forNode.getBody()));
+            }
+            if (formatToken != null && forNode.getModify() != null) {
+                appendTokenAfterLastVirtual(formatToken,
+                        FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_MODIFY));
+            }
+        }
+        if (handleWhile(forNode, FormatToken.Kind.AFTER_FOR_START)) {
+            return null;
+        }
+
+        return super.enter(forNode);
+    }
+
+    @Override
+    public Node enter(IfNode ifNode) {
+        ifNode.getTest().accept(this);
+
+        // within parens spaces
+        markSpacesWithinParentheses(ifNode, getStart(ifNode), getStart(ifNode.getPass()),
+                FormatToken.Kind.AFTER_IF_PARENTHESIS, FormatToken.Kind.BEFORE_IF_PARENTHESIS);
+
+        // pass block
+        Block body = ifNode.getPass();
+        // mark space before left brace
+        markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
+
+        if (body.getStart() == body.getFinish()) {
+            handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
         } else {
-            caseNodes.remove(caseNode.getBody());
-        }
-        return super.visit(caseNode, onset);
-    }
-
-    @Override
-    public Node visit(WhileNode whileNode, boolean onset) {
-        if (onset) {
-            // within parens spaces
-            markSpacesWithinParentheses(whileNode, getStart(whileNode), getStart(whileNode.getBody()),
-                    FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
-
-            // mark space before left brace
-            markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
-
-            if (handleWhile(whileNode, FormatToken.Kind.AFTER_WHILE_START)) {
-                return null;
-            }
+            enter(body);
         }
 
-        return super.visit(whileNode, onset);
-    }
-
-    @Override
-    public Node visit(DoWhileNode doWhileNode, boolean onset) {
-        if (onset) {
-            // within parens spaces
-            markSpacesWithinParentheses(doWhileNode, getFinish(doWhileNode.getBody()), getFinish(doWhileNode),
-                    FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
-
+        // fail block
+        body = ifNode.getFail();
+        if (body != null) {
             // mark space before left brace
-            markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
-
-            FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
-            if (whileToken != null) {
-                FormatToken beforeWhile = whileToken.previous();
-                if (beforeWhile != null) {
-                    appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
-                }
-            }
-            if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
-                return null;
-            }
-        }
-
-        return super.visit(doWhileNode, onset);
-    }
-
-    @Override
-    public Node visit(ForNode forNode, boolean onset) {
-        if (onset) {
-            // within parens spaces
-            markSpacesWithinParentheses(forNode, getStart(forNode), getStart(forNode.getBody()),
-                    FormatToken.Kind.AFTER_FOR_PARENTHESIS, FormatToken.Kind.BEFORE_FOR_PARENTHESIS);
-
-            // mark space before left brace
-            markSpacesBeforeBrace(forNode.getBody(), FormatToken.Kind.BEFORE_FOR_BRACE);
-
-            if (!forNode.isForEach() && !forNode.isForIn()) {
-                Node init = forNode.getInit();
-                Node test = forNode.getTest();
-
-                FormatToken formatToken = null;
-
-                // unfortunately init and test may be null
-                if (init != null) {
-                    formatToken = getNextToken(getFinish(init), JsTokenId.OPERATOR_SEMICOLON);
-                } else {
-                    formatToken = getNextToken(getStart(forNode), JsTokenId.OPERATOR_SEMICOLON,
-                            getStart(forNode.getBody()));
-                }
-                if (formatToken != null && test != null) {
-                    appendTokenAfterLastVirtual(formatToken,
-                            FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_TEST));
-                }
-
-                if (test != null) {
-                    formatToken = getNextToken(getFinish(forNode.getTest()), JsTokenId.OPERATOR_SEMICOLON);
-                } else {
-                    // we use the position of init semicolon
-                    int start = formatToken != null ? formatToken.getOffset() + 1 : getStart(forNode);
-                    formatToken = getNextToken(start, JsTokenId.OPERATOR_SEMICOLON,
-                                                getStart(forNode.getBody()));
-                }
-                if (formatToken != null && forNode.getModify() != null) {
-                    appendTokenAfterLastVirtual(formatToken,
-                            FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_MODIFY));
-                }
-            }
-            if (handleWhile(forNode, FormatToken.Kind.AFTER_FOR_START)) {
-                return null;
-            }
-        }
-
-        return super.visit(forNode, onset);
-    }
-
-    @Override
-    public Node visit(IfNode ifNode, boolean onset) {
-        if (onset) {
-            ifNode.getTest().accept(this);
-
-            // within parens spaces
-            markSpacesWithinParentheses(ifNode, getStart(ifNode), getStart(ifNode.getPass()),
-                    FormatToken.Kind.AFTER_IF_PARENTHESIS, FormatToken.Kind.BEFORE_IF_PARENTHESIS);
-
-            // pass block
-            Block body = ifNode.getPass();
-            // mark space before left brace
-            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
+            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
             if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
-            } else {
-                visit(body, onset);
-            }
-
-            // fail block
-            body = ifNode.getFail();
-            if (body != null) {
-                // mark space before left brace
-                markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
-
-                if (body.getStart() == body.getFinish()) {
-                    // do the standard block related things
-                    if (body.getStatements().get(0) instanceof IfNode) {
-                        // we mark else if statement here
-                        handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
-                                FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
-                    } else {
-                        handleVirtualBlock(body, FormatToken.Kind.AFTER_ELSE_START);
-                    }
+                // do the standard block related things
+                if (body.getStatements().get(0) instanceof IfNode) {
+                    // we mark else if statement here
+                    handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
+                            FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
                 } else {
-                    visit(body, onset);
+                    handleVirtualBlock(body, FormatToken.Kind.AFTER_ELSE_START);
                 }
+            } else {
+                enter(body);
             }
         }
 
@@ -279,32 +284,34 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(WithNode withNode, boolean onset) {
-        if (onset) {
-            // within parens spaces
-            markSpacesWithinParentheses(withNode, getStart(withNode), getStart(withNode.getBody()),
-                    FormatToken.Kind.AFTER_WITH_PARENTHESIS, FormatToken.Kind.BEFORE_WITH_PARENTHESIS);
-
-            Block body = withNode.getBody();
-
-            // mark space before left brace
-            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_WITH_BRACE);
-
-            if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
-                return null;
-            }
-        }
-
-        return super.visit(withNode, onset);
+    public Node leave(IfNode ifNode) {
+        return null;
     }
 
+    @Override
+    public Node enter(WithNode withNode) {
+        // within parens spaces
+        markSpacesWithinParentheses(withNode, getStart(withNode), getStart(withNode.getBody()),
+                FormatToken.Kind.AFTER_WITH_PARENTHESIS, FormatToken.Kind.BEFORE_WITH_PARENTHESIS);
+
+        Block body = withNode.getBody();
+
+        // mark space before left brace
+        markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_WITH_BRACE);
+
+        if (body.getStart() == body.getFinish()) {
+            handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
+            return null;
+        }
+
+        return super.enter(withNode);
+    }
 
     @Override
-    public Node visit(FunctionNode functionNode, boolean onset) {
-        visit((Block) functionNode, onset);
+    public Node enter(FunctionNode functionNode) {
+        enter((Block) functionNode);
 
-        if (onset && !isScript(functionNode)) {
+        if (!isScript(functionNode)) {
             int start = getFunctionStart(functionNode);
 
             FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
@@ -383,317 +390,317 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(CallNode callNode, boolean onset) {
-        if (onset) {
-            FormatToken leftBrace = getNextToken(getFinish(callNode.getFunction()),
-                    JsTokenId.BRACKET_LEFT_PAREN, getFinish(callNode));
-            if (leftBrace != null) {
-                FormatToken previous = leftBrace.previous();
-                if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
-                }
+    public Node leave(FunctionNode functionNode) {
+        leave((Block) functionNode);
 
-                // mark the within parenthesis places
-
-                // remove original paren marks
-                FormatToken mark = leftBrace.next();
-                assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
-                tokenStream.removeToken(mark);
-
-                // there is -1 as on the finish position may be some outer paren
-                // so we really need the position precisely
-                FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
-                        JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
-                if (rightBrace != null) {
-                    previous = findVirtualToken(rightBrace,
-                            FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS, true);
-
-                    // this might happen for sanitization inserted paren
-                    if (previous != null) {
-                        tokenStream.removeToken(previous);
-                    }
-                }
-
-                // place the new marks
-                if (!callNode.getArgs().isEmpty()) {
-                    appendToken(leftBrace, FormatToken.forFormat(
-                            FormatToken.Kind.AFTER_FUNCTION_CALL_PARENTHESIS));
-
-                    if (rightBrace != null) {
-                        previous = rightBrace.previous();
-                        if (previous != null) {
-                            appendToken(previous, FormatToken.forFormat(
-                                    FormatToken.Kind.BEFORE_FUNCTION_CALL_PARENTHESIS));
-                        }
-                    }
-                }
-
-                // place function arguments marks
-                for (Node arg : callNode.getArgs()) {
-                    FormatToken argToken = getNextToken(getStart(arg), null);
-                    if (argToken != null) {
-                        FormatToken beforeArg = argToken.previous();
-                        if (beforeArg != null) {
-                            appendToken(beforeArg,
-                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT));
-                        }
-                    }
-                }
-            }
-            handleFunctionCallChain(callNode);
-        }
-        return super.visit(callNode, onset);
+        return null;
     }
 
     @Override
-    public Node visit(ObjectNode objectNode, boolean onset) {
-        if (onset) {
-            // indentation mark
-            FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-                FormatToken previous = formatToken.previous();
+    public Node enter(CallNode callNode) {
+        FormatToken leftBrace = getNextToken(getFinish(callNode.getFunction()),
+                JsTokenId.BRACKET_LEFT_PAREN, getFinish(callNode));
+        if (leftBrace != null) {
+            FormatToken previous = leftBrace.previous();
+            if (previous != null) {
+                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
+            }
+
+            // mark the within parenthesis places
+
+            // remove original paren marks
+            FormatToken mark = leftBrace.next();
+            assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
+            tokenStream.removeToken(mark);
+
+            // there is -1 as on the finish position may be some outer paren
+            // so we really need the position precisely
+            FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
+                    JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
+            if (rightBrace != null) {
+                previous = findVirtualToken(rightBrace,
+                        FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS, true);
+
+                // this might happen for sanitization inserted paren
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
+                    tokenStream.removeToken(previous);
                 }
             }
 
-            for (Node property : objectNode.getElements()) {
-                int finish = getFinish(property);
+            // place the new marks
+            if (!callNode.getArgs().isEmpty()) {
+                appendToken(leftBrace, FormatToken.forFormat(
+                        FormatToken.Kind.AFTER_FUNCTION_CALL_PARENTHESIS));
 
-                property.accept(this);
-
-                formatToken = getPreviousToken(finish, null);
-                if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
+                if (rightBrace != null) {
+                    previous = rightBrace.previous();
+                    if (previous != null) {
+                        appendToken(previous, FormatToken.forFormat(
+                                FormatToken.Kind.BEFORE_FUNCTION_CALL_PARENTHESIS));
+                    }
                 }
             }
 
-            // put indentation mark after non white token preceeding curly bracket
-            formatToken = getPreviousNonWhiteToken(getFinish(objectNode) - 1,
-                    getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
+            // place function arguments marks
+            for (Node arg : callNode.getArgs()) {
+                FormatToken argToken = getNextToken(getStart(arg), null);
+                if (argToken != null) {
+                    FormatToken beforeArg = argToken.previous();
+                    if (beforeArg != null) {
+                        appendToken(beforeArg,
+                                FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT));
+                    }
+                }
+            }
+        }
+        handleFunctionCallChain(callNode);
+
+        return super.enter(callNode);
+    }
+
+    @Override
+    public Node enter(ObjectNode objectNode) {
+        // indentation mark
+        FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            FormatToken previous = formatToken.previous();
+            if (previous != null) {
+                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
+            }
+        }
+
+        for (Node property : objectNode.getElements()) {
+            int finish = getFinish(property);
+
+            property.accept(this);
+
+            formatToken = getPreviousToken(finish, null);
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
             }
+        }
+
+        // put indentation mark after non white token preceeding curly bracket
+        formatToken = getPreviousNonWhiteToken(getFinish(objectNode) - 1,
+                getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
         return null;
     }
 
     @Override
-    public Node visit(SwitchNode switchNode, boolean onset) {
-        if (onset) {
-            // within parens spaces
-            markSpacesWithinParentheses(switchNode);
+    public Node leave(ObjectNode objectNode) {
+        return null;
+    }
 
-            // mark space before left brace
-            markSpacesBeforeBrace(switchNode);
+    @Override
+    public Node enter(SwitchNode switchNode) {
+        // within parens spaces
+        markSpacesWithinParentheses(switchNode);
 
-            FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        // mark space before left brace
+        markSpacesBeforeBrace(switchNode);
+
+        FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
+        }
+
+        List<CaseNode> nodes = new ArrayList<CaseNode>(switchNode.getCases());
+        if (switchNode.getDefaultCase() != null) {
+            nodes.add(switchNode.getDefaultCase());
+        }
+
+        for (CaseNode caseNode : nodes) {
+            int start = getStart(caseNode.getBody());
+
+            formatToken = getPreviousToken(start, JsTokenId.OPERATOR_COLON);
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
             }
+        }
 
-            List<CaseNode> nodes = new ArrayList<CaseNode>(switchNode.getCases());
-            if (switchNode.getDefaultCase() != null) {
-                nodes.add(switchNode.getDefaultCase());
-            }
+        // put indentation mark after non white token preceeding curly bracket
+        formatToken = getPreviousNonWhiteToken(getFinish(switchNode),
+                getStart(switchNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+        }
 
-            for (CaseNode caseNode : nodes) {
-                int start = getStart(caseNode.getBody());
+        return super.enter(switchNode);
+    }
 
-                formatToken = getPreviousToken(start, JsTokenId.OPERATOR_COLON);
+    @Override
+    public Node enter(UnaryNode unaryNode) {
+        TokenType type = unaryNode.tokenType();
+        if (UNARY_TYPES.contains(type)) {
+            if (TokenType.DECPOSTFIX.equals(type) || TokenType.INCPOSTFIX.equals(type)) {
+                FormatToken formatToken = getPreviousToken(getFinish(unaryNode),
+                        TokenType.DECPOSTFIX.equals(type) ? JsTokenId.OPERATOR_DECREMENT : JsTokenId.OPERATOR_INCREMENT);
+
                 if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
-                }
-            }
-
-            // put indentation mark after non white token preceeding curly bracket
-            formatToken = getPreviousNonWhiteToken(getFinish(switchNode),
-                    getStart(switchNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-            }
-        }
-        return super.visit(switchNode, onset);
-    }
-
-    @Override
-    public Node visit(UnaryNode unaryNode, boolean onset) {
-        if (onset) {
-            TokenType type = unaryNode.tokenType();
-            if (UNARY_TYPES.contains(type)) {
-                if (TokenType.DECPOSTFIX.equals(type) || TokenType.INCPOSTFIX.equals(type)) {
-                    FormatToken formatToken = getPreviousToken(getFinish(unaryNode),
-                            TokenType.DECPOSTFIX.equals(type) ? JsTokenId.OPERATOR_DECREMENT : JsTokenId.OPERATOR_INCREMENT);
-
+                    formatToken = formatToken.previous();
                     if (formatToken != null) {
-                        formatToken = formatToken.previous();
-                        if (formatToken != null) {
-                            appendToken(formatToken,
-                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_UNARY_OPERATOR));
-                        }
-                    }
-                } else {
-                    FormatToken formatToken = getNextToken(getStart(unaryNode), null);
-
-                    // may be null when we are out of formatted area
-                    if (formatToken != null) {
-                        // remove around binary operator tokens added during token
-                        // stream creation
-                        if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                            assert formatToken != null && formatToken.getText() != null
-                                    && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
-                                        || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
-                            // we remove blindly inserted binary op markers
-                            FormatToken toRemove = findVirtualToken(formatToken,
-                                    FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
-                            assert toRemove != null
-                                    && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
-                            tokenStream.removeToken(toRemove);
-                            toRemove = findVirtualToken(formatToken,
-                                    FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP, true);
-                            assert toRemove != null
-                                    && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
-                            tokenStream.removeToken(toRemove);
-
-                            toRemove = findVirtualToken(formatToken,
-                                    FormatToken.Kind.AFTER_BINARY_OPERATOR, false);
-                            assert toRemove != null
-                                    && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
-                            tokenStream.removeToken(toRemove);
-                            toRemove = findVirtualToken(formatToken,
-                                    FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP, false);
-                            assert toRemove != null
-                                    && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP : toRemove;
-                            tokenStream.removeToken(toRemove);
-                        }
-
                         appendToken(formatToken,
-                                FormatToken.forFormat(FormatToken.Kind.AFTER_UNARY_OPERATOR));
+                                FormatToken.forFormat(FormatToken.Kind.BEFORE_UNARY_OPERATOR));
                     }
+                }
+            } else {
+                FormatToken formatToken = getNextToken(getStart(unaryNode), null);
+
+                // may be null when we are out of formatted area
+                if (formatToken != null) {
+                    // remove around binary operator tokens added during token
+                    // stream creation
+                    if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
+                        assert formatToken != null && formatToken.getText() != null
+                                && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
+                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
+                        // we remove blindly inserted binary op markers
+                        FormatToken toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
+                        tokenStream.removeToken(toRemove);
+                        toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP, true);
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
+                        tokenStream.removeToken(toRemove);
+
+                        toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.AFTER_BINARY_OPERATOR, false);
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
+                        tokenStream.removeToken(toRemove);
+                        toRemove = findVirtualToken(formatToken,
+                                FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP, false);
+                        assert toRemove != null
+                                && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP : toRemove;
+                        tokenStream.removeToken(toRemove);
+                    }
+
+                    appendToken(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.AFTER_UNARY_OPERATOR));
                 }
             }
         }
-        return super.visit(unaryNode, onset);
+
+        return super.enter(unaryNode);
     }
 
     @Override
-    public Node visit(TernaryNode ternaryNode, boolean onset) {
-        if (onset) {
-            int start = getStart(ternaryNode.rhs());
-            FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
-            if (question != null) {
-                FormatToken previous = question.previous();
+    public Node enter(TernaryNode ternaryNode) {
+        int start = getStart(ternaryNode.rhs());
+        FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
+        if (question != null) {
+            FormatToken previous = question.previous();
+            if (previous != null) {
+                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
+            }
+            appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+            appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
+            FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
+            if (colon != null) {
+                previous = colon.previous();
                 if (previous != null) {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
                 }
-                appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
-                FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
-                if (colon != null) {
-                    previous = colon.previous();
+                appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+                appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
+            }
+        }
+
+        return super.enter(ternaryNode);
+    }
+
+    @Override
+    public Node enter(CatchNode catchNode) {
+        // within parens spaces
+        markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
+                FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
+
+        // mark space before left brace
+        markSpacesBeforeBrace(catchNode.getBody(), FormatToken.Kind.BEFORE_CATCH_BRACE);
+
+        return super.enter(catchNode);
+    }
+
+    @Override
+    public Node enter(TryNode tryNode) {
+        // mark space before left brace
+        markSpacesBeforeBrace(tryNode.getBody(), FormatToken.Kind.BEFORE_TRY_BRACE);
+
+        Block finallyBody = tryNode.getFinallyBody();
+        if (finallyBody != null) {
+            // mark space before finally left brace
+            markSpacesBeforeBrace(tryNode.getFinallyBody(), FormatToken.Kind.BEFORE_FINALLY_BRACE);
+        }
+
+        return super.enter(tryNode);
+    }
+
+    @Override
+    public Node enter(LiteralNode literalNode) {
+        Object value = literalNode.getValue();
+        if (value instanceof Node[]) {
+            int start = getStart(literalNode);
+            int finish = getFinish(literalNode);
+            FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
+            if (leftBracket != null) {
+                appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
+                appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                FormatToken rightBracket = getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
+                if (rightBracket != null) {
+                    FormatToken previous = rightBracket.previous();
                     if (previous != null) {
-                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
-                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
-                    }
-                    appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                    appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
-                }
-            }
-        }
-        return super.visit(ternaryNode, onset);
-    }
-
-    @Override
-    public Node visit(CatchNode catchNode, boolean onset) {
-        if (onset) {
-            // within parens spaces
-            markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
-                    FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
-
-            // mark space before left brace
-            markSpacesBeforeBrace(catchNode.getBody(), FormatToken.Kind.BEFORE_CATCH_BRACE);
-        }
-
-        return super.visit(catchNode, onset);
-    }
-
-    @Override
-    public Node visit(TryNode tryNode, boolean onset) {
-        if (onset) {
-            // mark space before left brace
-            markSpacesBeforeBrace(tryNode.getBody(), FormatToken.Kind.BEFORE_TRY_BRACE);
-
-            Block finallyBody = tryNode.getFinallyBody();
-            if (finallyBody != null) {
-                // mark space before finally left brace
-                markSpacesBeforeBrace(tryNode.getFinallyBody(), FormatToken.Kind.BEFORE_FINALLY_BRACE);
-            }
-        }
-
-        return super.visit(tryNode, onset);
-    }
-
-    @Override
-    public Node visit(LiteralNode literalNode, boolean onset) {
-        if (onset) {
-            Object value = literalNode.getValue();
-            if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
-                int start = getStart(literalNode);
-                int finish = getFinish(literalNode);
-                FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
-                if (leftBracket != null) {
-                    appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
-                    appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-                    FormatToken rightBracket = getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
-                    if (rightBracket != null) {
-                        FormatToken previous = rightBracket.previous();
-                        if (previous != null) {
-                            appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
-                            appendToken(previous, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-                        }
+                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
+                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                     }
                 }
+            }
 
-                Node[] items = literalNode.getArray();
-                if (items != null && items.length > 0) {
-                    int prevItemFinish = start;
-                    for (int i = 1; i < items.length; i++) {
-                        Node prevItem = items[i - 1];
-                        if (prevItem != null) {
-                            prevItemFinish = getFinish(prevItem);
-                        }
-                        FormatToken comma = getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
-                        if (comma != null) {
-                            prevItemFinish = comma.getOffset();
-                            appendTokenAfterLastVirtual(comma,
-                                    FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
-                        }
+            Node[] items = literalNode.getArray();
+            if (items != null && items.length > 0) {
+                int prevItemFinish = start;
+                for (int i = 1; i < items.length; i++) {
+                    Node prevItem = items[i - 1];
+                    if (prevItem != null) {
+                        prevItemFinish = getFinish(prevItem);
+                    }
+                    FormatToken comma = getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
+                    if (comma != null) {
+                        prevItemFinish = comma.getOffset();
+                        appendTokenAfterLastVirtual(comma,
+                                FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
                     }
                 }
             }
         }
-        return super.visit(literalNode, onset);
+
+        return super.enter(literalNode);
     }
 
     @Override
-    public Node visit(VarNode varNode, boolean onset) {
-        if (onset) {
-            int finish = getFinish(varNode) - 1;
-            Token nextToken = getNextNonEmptyToken(finish);
-            if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
-                FormatToken formatToken = tokenStream.getToken(ts.offset());
-                if (formatToken != null) {
-                    FormatToken next = formatToken.next();
-                    assert next != null && next.getKind() == FormatToken.Kind.AFTER_COMMA : next;
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_DECLARATION));
-                }
+    public Node enter(VarNode varNode) {
+        int finish = getFinish(varNode) - 1;
+        Token nextToken = getNextNonEmptyToken(finish);
+        if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
+            FormatToken formatToken = tokenStream.getToken(ts.offset());
+            if (formatToken != null) {
+                FormatToken next = formatToken.next();
+                assert next != null && next.getKind() == FormatToken.Kind.AFTER_COMMA : next;
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_DECLARATION));
             }
         }
-        return super.visit(varNode, onset);
+
+        return super.enter(varNode);
     }
 
     private void handleFunctionCallChain(CallNode callNode) {

@@ -319,97 +319,81 @@ public class JsConventionRule extends JsAstRule {
                 }
             }
         }   
-       
+
         @Override
-        public Node visit(DoWhileNode doWhileNode, boolean onset) {
-            if (onset) {
-                checkCondition(doWhileNode.getTest());
-            }
-            return super.visit(doWhileNode, onset);
+        public Node enter(DoWhileNode doWhileNode) {
+            checkCondition(doWhileNode.getTest());
+            return super.enter(doWhileNode);
         }
-        
-        
+
         @Override
-        public Node visit(ExecuteNode executeNode, boolean onset) {
-            if (onset && !(executeNode.getExpression() instanceof Block)) {
+        public Node enter(ExecuteNode executeNode) {
+            if (!(executeNode.getExpression() instanceof Block)) {
                 checkSemicolon(executeNode.getFinish());
             }
-            return super.visit(executeNode, onset);
+            return super.enter(executeNode);
         }
 
         @Override
-        public Node visit(ForNode forNode, boolean onset) {
-            if (onset) {
-                checkCondition(forNode.getTest());
-            }
-            return super.visit(forNode, onset);
+        public Node enter(ForNode forNode) {
+            checkCondition(forNode.getTest());
+            return super.enter(forNode);
         }
 
         @Override
-        public Node visit(IfNode ifNode, boolean onset) {
-            if (onset) {
-                checkCondition(ifNode.getTest());
-            }
-            return super.visit(ifNode, onset);
+        public Node enter(IfNode ifNode) {
+            checkCondition(ifNode.getTest());
+            return super.enter(ifNode);
         }
-        
-        
 
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
             "Unexpected=Unexpected \"{0}\"."})
-        public Node visit(ObjectNode objectNode, boolean onset) {
-            if (onset) {
-                checkDuplicateLabels(objectNode);
-                if (unexpectedCommaInOL != null) {
-                    int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                    if (offset > -1) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                        ts.move(offset);
-                        if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
-                            LexUtilities.findPrevious(ts, Arrays.asList(
-                                    JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                                    JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                                    JsTokenId.BLOCK_COMMENT));
-                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()), 
-                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
+        public Node enter(ObjectNode objectNode) {
+            checkDuplicateLabels(objectNode);
+            if (unexpectedCommaInOL != null) {
+                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+                if (offset > -1) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
+                    ts.move(offset);
+                    if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                        LexUtilities.findPrevious(ts, Arrays.asList(
+                                JsTokenId.EOL, JsTokenId.WHITESPACE,
+                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                JsTokenId.BLOCK_COMMENT));
+                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                            hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()),
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                                     new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
-                            }
                         }
                     }
                 }
             }
-            return super.visit(objectNode, onset);
+            return super.enter(objectNode);
         }
 
         @Override
-        public Node visit(VarNode varNode, boolean onset) {
-            if (onset) {
-                boolean check = true;
-                Node previous = getPath().get(getPath().size() - 1);
-                if (previous instanceof Block) {
-                    Block block = (Block)previous;
-                    if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
-                        check = false;
-                    }
-                } else if (previous instanceof ForNode) {
+        public Node enter(VarNode varNode) {
+            boolean check = true;
+            Node previous = getPath().get(getPath().size() - 1);
+            if (previous instanceof Block) {
+                Block block = (Block)previous;
+                if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
                     check = false;
                 }
-                if (check) {
-                    checkSemicolon(varNode.getFinish());
-                }
+            } else if (previous instanceof ForNode) {
+                check = false;
             }
-            return super.visit(varNode, onset);
+            if (check) {
+                checkSemicolon(varNode.getFinish());
+            }
+            return super.enter(varNode);
         }
 
         @Override
-        public Node visit(WhileNode whileNode, boolean onset) {
-            if (onset) {
-                checkCondition(whileNode.getTest());
-            }
-            return super.visit(whileNode, onset);
+        public Node enter(WhileNode whileNode) {
+            checkCondition(whileNode.getTest());
+            return super.enter(whileNode);
         }
-        
     }
 }
