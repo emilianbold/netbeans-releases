@@ -6,7 +6,7 @@
             <folder name="Team">
                 <folder name="ODS">
                     <attr name="displayName" bundlevalue="org.netbeans.modules.ods.ui.Bundle#Menu/Versioning/Team/ODS"/>
-                    <attr name="position" intvalue="220"/>
+                    <attr name="position" intvalue="210"/>
                 </folder>
             </folder>
         </folder>
