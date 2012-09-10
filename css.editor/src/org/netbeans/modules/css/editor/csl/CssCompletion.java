@@ -203,17 +203,17 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private List<? extends CompletionProposal> completeImport(FileObject base, int offset, String prefix, boolean addQuotes, boolean addSemicolon) {
-        FileReferenceCompletion<CssCompletionItem> fileCompletion = new CssLinkCompletion(addQuotes, addSemicolon);
+        FileReferenceCompletion<CssCompletionItem> fileCompletion = new CssLinkCompletion(base, addQuotes, addSemicolon);
         return fileCompletion.getItems(base, offset - prefix.length(), prefix);
     }
 
-    private List<CompletionProposal> completeHtmlSelectors(String prefix, int offset) {
+    private List<CompletionProposal> completeHtmlSelectors(CompletionContext context, String prefix, int offset) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(20);
         Collection<String> items = new ArrayList(Arrays.asList(HtmlTags.getTags()));
         items.add(UNIVERSAL_SELECTOR);
         for (String tagName : items) {
             if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
-                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(tagName),
+                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getSource().getFileObject(), tagName),
                         tagName,
                         offset,
                         true));
@@ -702,7 +702,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //lets create the completion items
                     List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
                     for (String clazz : allclasses) {
-                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(clazz),
+                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), clazz),
                                 clazz,
                                 offset,
                                 refclasses.contains(clazz)));
@@ -758,7 +758,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //lets create the completion items
                     List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
                     for (String id : allids) {
-                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(id),
+                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), id),
                                 id,
                                 offset,
                                 refids.contains(id)));
@@ -785,7 +785,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //complete at keywords without prefix
             all.addAll(Utilities.createRAWCompletionProposals(AT_RULES, ElementKind.FIELD, offset));
             //complete html selector names
-            all.addAll(completeHtmlSelectors(prefix, offset));
+            all.addAll(completeHtmlSelectors(context, prefix, offset));
             completionProposals.addAll(all);
 
         }
@@ -798,24 +798,24 @@ public class CssCompletion implements CodeCompletionHandler {
 
         switch (nodeType) {
             case media:
-                completionProposals.addAll(completeHtmlSelectors(completionContext.getPrefix(), completionContext.getCaretOffset()));
+                completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
                 break;
             case elementName:
                 //complete selector's element name - with a prefix
-                completionProposals.addAll(completeHtmlSelectors(prefix, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
                 break;
 
             case elementSubsequent:
             case typeSelector:
                 //complete element name - without a or with a prefix
-                completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
+                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
             case selectorsGroup:
             case combinator:
             case selector:
             case body:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
-                completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
+                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
 
             case error:
@@ -830,7 +830,7 @@ public class CssCompletion implements CodeCompletionHandler {
                             case typeSelector:
                             case simpleSelectorSequence:
                                 //complete selector list in selector list with an error
-                                completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
+                                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                                 break;
                         }
                         break;
@@ -1228,20 +1228,22 @@ public class CssCompletion implements CodeCompletionHandler {
         private static final String GO_UP_TEXT = "../"; //NOI18N
         private boolean addQuotes;
         private boolean addSemicolon;
+        private FileObject file;
 
-        public CssLinkCompletion(boolean addQuotes, boolean addSemicolon) {
+        public CssLinkCompletion(FileObject file, boolean addQuotes, boolean addSemicolon) {
+            this.file = file;
             this.addQuotes = addQuotes;
             this.addSemicolon = addSemicolon;
         }
 
         @Override
         public CssCompletionItem createFileItem(int anchor, String name, Color color, ImageIcon icon) {
-            return CssCompletionItem.createFileCompletionItem(new CssElement(name), name, anchor, color, icon, addQuotes, addSemicolon);
+            return CssCompletionItem.createFileCompletionItem(new CssElement(file, name), name, anchor, color, icon, addQuotes, addSemicolon);
         }
 
         @Override
         public CssCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
-            return CssCompletionItem.createFileCompletionItem(new CssElement(GO_UP_TEXT), GO_UP_TEXT, anchor, color, icon, addQuotes, addSemicolon);
+            return CssCompletionItem.createFileCompletionItem(new CssElement(file, GO_UP_TEXT), GO_UP_TEXT, anchor, color, icon, addQuotes, addSemicolon);
         }
     }
 }

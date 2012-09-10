@@ -159,9 +159,8 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(TPL_MIME_TYPE, new TplTranslator());
     }
     // If you change this, update the testcase reference
-    // in javascript.hints/test/unit/data/testfiles/generated.js
-    // Also sync Rhino's Parser.java patched class
-    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
+    private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
+
     /** PHPTokenId's T_INLINE_HTML name */
     private static final String T_INLINE_HTML = "T_INLINE_HTML";
     private final String sourceMimeType;
