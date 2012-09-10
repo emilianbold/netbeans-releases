@@ -159,7 +159,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         || element.getModifiers().contains(Modifier.PRIVATE)) {
                     enableScope = false;
                 } else {
-                    enableScope = scope.initialize(Lookups.fixed(WhereUsedPanel.this.element.getFileObject(), WhereUsedPanel.this.element.resolve(info)), new AtomicBoolean());
+                    enableScope = scope.initialize(Lookups.fixed(WhereUsedPanel.this.element.getFileObject(), WhereUsedPanel.this.element), new AtomicBoolean());
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
