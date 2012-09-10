@@ -41,8 +41,13 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,12 +61,26 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
+import javax.swing.text.Style;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.editor.AtomicLockEvent;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -85,9 +104,26 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.ExtensionList;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.UniFileLoader;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
+import org.openide.text.DataEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -100,8 +136,6 @@ public class EmbeddedIndexerTest extends NbTestCase {
     private static final String MIME_TOP = "text/x-top";        //NOI18N
     private static final String MIME_INNER = "text/x-inner";    //NOI18N
     private static final String PATH_TOP_SOURCES = "top-src";   //NOI18N
-
-    private static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
 
     private FileObject srcRoot;
     private FileObject srcFile;
@@ -131,7 +165,8 @@ public class EmbeddedIndexerTest extends NbTestCase {
                 new InnerIndexer.Factory());
         MockServices.setServices(
                 TopPathRecognizer.class,
-                ClassPathProviderImpl.class);
+                ClassPathProviderImpl.class,
+                TopLoader.class);
         srcRoot = wd.createFolder("src");   //NOI18N
         srcFile = FileUtil.toFileObject(
             TestFileUtils.writeFile(
@@ -184,6 +219,46 @@ public class EmbeddedIndexerTest extends NbTestCase {
         assertEquals(Integer.valueOf(1), count.get(0));
         assertEquals(Integer.valueOf(2), count.get(1));
         assertEquals(Integer.valueOf(1), count.get(2));
+
+        //Symulate EditorRegistry
+        final DataObject dobj = DataObject.find(srcFile);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                final JEditorPane jp = new JEditorPane();
+                jp.setDocument(doc);
+                RepositoryUpdater.getDefault().propertyChange(new PropertyChangeEvent(jp, EditorRegistry.FOCUS_GAINED_PROPERTY, null, jp));
+            }
+        });
+
+        //Do modification
+        NbDocument.runAtomic(doc, new Runnable() {
+            @Override
+            public void run() {
+                try {                    
+                    doc.insertString(doc.getLength(), "<C>", null); //NOI18N
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        });
+
+        //Query should be updated
+//        sup = QuerySupport.forRoots(TopIndexer.NAME, TopIndexer.VERSION, srcRoot);
+//        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+//        assertEquals(1,res.size());
+//        assertEquals(Boolean.TRUE.toString(), res.iterator().next().getValue("valid")); //NOI18N
+//
+//        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
+//        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+//        assertEquals(5,res.size());
+//        count = countModes(res);
+//        assertEquals(Integer.valueOf(1), count.get(0));
+//        assertEquals(Integer.valueOf(2), count.get(1));
+//        assertEquals(Integer.valueOf(1), count.get(2));
+//        assertEquals(Integer.valueOf(1), count.get(3));
     }
 
     private static Map<? extends Integer, ? extends Integer> countModes(@NonNull final Collection<? extends IndexResult> docs)  {
@@ -434,6 +509,15 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
             @Override
             public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+                System.out.println("FILES DIRTY!");
+                try {
+                    final IndexingSupport is = IndexingSupport.getInstance(context);
+                    for (Indexable df : dirty) {
+                        is.markDirtyDocuments(df);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
 
             @Override
@@ -491,6 +575,21 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
             @Override
             public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+                System.out.println("INNER DIRTY");
+                try {
+                    final IndexingSupport is = IndexingSupport.getInstance(context);
+                    for (Indexable df : dirty) {
+                        is.markDirtyDocuments(df);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            @Override
+            public boolean scanStarted(Context context) {
+                lastIndexable = null;
+                return true;
             }
 
             @Override
@@ -555,20 +654,87 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
     }
 
-    private static final class AwaitWork extends RepositoryUpdater.Work {
+    public static class TopEditor extends DataEditorSupport implements OpenCookie, EditorCookie {
 
-        private final CountDownLatch latch;
-
-        private AwaitWork(final CountDownLatch latch) {
-            super(false,false,false,false,SuspendSupport.NOP,null);
-            assert latch != null;
-            this.latch = latch;
+        public TopEditor(DataObject dobj) {
+            super(dobj, new Env(dobj));
         }
 
         @Override
-        protected boolean getDone() {
-            latch.countDown();
-            return true;
+        protected EditorKit createEditorKit() {
+            return new Kit();
+        }
+
+
+
+        public static class Env extends DataEditorSupport.Env {
+
+            public Env(DataObject dobj) {
+                super(dobj);
+            }
+
+            @Override
+            protected FileObject getFile() {
+                return getDataObject().getPrimaryFile();
+            }
+
+            @Override
+            protected FileLock takeLock() throws IOException {
+                return getFile().lock();
+            }
+
+        }
+
+        public static class Kit extends DefaultEditorKit {
+
+            @Override
+            public Document createDefaultDocument() {
+                return new GuardedDocument(Kit.class);
+            }
+        }
+
+    }
+    
+    public static class TopDataObject extends MultiDataObject {
+        public TopDataObject(FileObject file, MultiFileLoader loader) throws DataObjectExistsException {
+            super(file, loader);
+            getCookieSet().add(new TopEditor(this));
+        }
+
+        @Override
+        protected Node createNodeDelegate() {
+            final Node n = new AbstractNode(
+                    Children.LEAF,
+                    Lookup.EMPTY);
+            return n;
+        }
+
+        @Override
+        protected int associateLookup() {
+            return 1;
+        }        
+        
+        
+        
+        
+    }
+
+    public static class TopLoader extends UniFileLoader {
+
+        public TopLoader() {
+            super(TopDataObject.class);
+            final ExtensionList el = new ExtensionList();
+            el.addExtension(EXT_TOP);
+            setExtensions(el);
+        }
+
+
+        @Override
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            if (getExtensions().isRegistered(primaryFile)) {
+                return new TopDataObject(primaryFile, this);
+            }
+            return null;
         }
 
     }
