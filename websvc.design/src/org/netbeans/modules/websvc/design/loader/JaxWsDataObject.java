@@ -129,7 +129,9 @@ public final class JaxWsDataObject extends MultiDataObject {
     @Override
     protected void handleDelete() throws java.io.IOException {
         super.handleDelete();
-        service.cleanup();
+        if ( service != null ){
+            service.cleanup();
+        }
     }
 
     @Override
