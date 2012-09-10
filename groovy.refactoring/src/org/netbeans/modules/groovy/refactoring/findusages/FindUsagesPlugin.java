@@ -56,6 +56,7 @@ import org.netbeans.modules.groovy.refactoring.findusages.impl.FindOverridingMet
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindTypeUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindVariableUsages;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -74,23 +75,28 @@ import org.openide.filesystems.FileObject;
 public class FindUsagesPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
     
     private final GroovyRefactoringElement element;
-    private final WhereUsedQuery whereUsedQuery;
     private final FileObject fileObject;
+    protected final AbstractRefactoring refactoring;
 
     
-    public FindUsagesPlugin(FileObject fileObject, GroovyRefactoringElement element, WhereUsedQuery whereUsedQuery) {
+    public FindUsagesPlugin(FileObject fileObject, GroovyRefactoringElement element, AbstractRefactoring whereUsedQuery) {
         this.element = element;
         this.fileObject = fileObject;
-        this.whereUsedQuery = whereUsedQuery;
+        this.refactoring = whereUsedQuery;
     }
     
     @Override
     public Problem prepare(final RefactoringElementsBag elementsBag) {
-        for (final FindUsagesElement usage : collectUsages()) {
-            elementsBag.add(whereUsedQuery, usage);
-        }
+        refactorResults(elementsBag, collectUsages());
         fireProgressListenerStop();
         return null;
+    }
+
+
+    protected void refactorResults(final RefactoringElementsBag elementsBag, final List<FindUsagesElement> usages) {
+        for (FindUsagesElement usage : usages) {
+            elementsBag.add(refactoring, usage);
+        }
     }
 
     private List<FindUsagesElement> collectUsages() {
@@ -158,7 +164,9 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
         } else if (isFindUsages()) {
             return new FindMethodUsages(element);
         }
-        return null;
+
+        // This also happen in all other refactorings (rename, move etc.)
+        return new FindMethodUsages(element);
     }
 
     private AbstractFindUsages getClassStrategy() {
@@ -169,7 +177,9 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
         } else if (isFindUsages()) {
             return new FindTypeUsages(element);
         }
-        return null;
+
+        // This also happen in all other refactorings (rename, move etc.)
+        return new FindTypeUsages(element);
     }
 
     private AbstractFindUsages getVariableStrategy() {
@@ -194,11 +204,17 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
     }
 
     private boolean isFindUsages() {
-        return whereUsedQuery.getBooleanValue(WhereUsedQuery.FIND_REFERENCES);
+        if (refactoring instanceof WhereUsedQuery) {
+            return ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQuery.FIND_REFERENCES);
+        }
+        return false;
     }
 
     private boolean isSet(final WhereUsedQueryConstants constant) {
-        return whereUsedQuery.getBooleanValue(constant);
+        if (refactoring instanceof WhereUsedQuery) {
+            return ((WhereUsedQuery) refactoring).getBooleanValue(constant);
+        }
+        return false;
     }
 
     @Override

@@ -53,7 +53,6 @@ import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -67,7 +66,7 @@ import org.openide.windows.TopComponent;
 
 /**
  * Abstract groovy refactoring task. In the current state it is always either
- * TextComponent task (which means refactoring called from the editor) or
+ * TextComponentTask (which means refactoring called from the editor) or
  * NodeToElementTask (refactoring called on the concrete node)
  *
  * @author Martin Janicek
@@ -81,14 +80,14 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
     public abstract boolean isValid();
 
 
-    static class TextComponentTask extends RefactoringTask {
+    protected static abstract class TextComponentTask extends RefactoringTask {
 
         private final FileObject fileObject;
         private JTextComponent textC;
         private RefactoringUI ui;
 
         
-        TextComponentTask(EditorCookie ec, FileObject fileObject) {
+        protected TextComponentTask(EditorCookie ec, FileObject fileObject) {
             this.textC = ec.getOpenedPanes()[0];
             this.fileObject = fileObject;
 
@@ -147,18 +146,16 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui, TopComponent.getRegistry().getActivated());
         }
 
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info) {
-            return new WhereUsedQueryUI(selectedElement);
-        }
+        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
     }
 
-    static class NodeToElementTask extends RefactoringTask {
+    protected static abstract class NodeToElementTask extends RefactoringTask {
 
         private final FileObject fileObject;
         private RefactoringUI ui;
 
 
-        NodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
+        protected NodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
             assert nodes.size() == 1;
             this.fileObject = fileObject;
         }
@@ -192,8 +189,6 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui);
         }
 
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
-            return new WhereUsedQueryUI(selectedElement);
-        }
+        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info);
     }
 }

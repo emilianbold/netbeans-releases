@@ -40,57 +40,83 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.findusages;
+package org.netbeans.modules.groovy.refactoring;
 
-import javax.swing.text.Position;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.Line;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Martin Janicek
+ * @todo Copied from php module. Should be a part of either CSL or better
+ * the refactoring API.
+ *
+ * @author Jan Becicka
  */
-public class FindUsagesElement extends SimpleRefactoringElementImplementation implements Comparable<FindUsagesElement> {
+public class DiffElement extends SimpleRefactoringElementImplementation {
 
-    private final GroovyRefactoringElement element;
-    private final BaseDocument doc;
-    private final Line line;
-    private final int lineNumber;
+    private Difference diff;
+    private PositionBounds bounds;
+    private FileObject parentFile;
+    private ModificationResult modification;
+    private String displayText;
+    private WeakReference<String> newFileContent;
 
 
-    public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
-        this.element = element;
-        this.doc = doc;
-        this.line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
-        this.lineNumber = line.getLineNumber();
+    private DiffElement(Difference diff, PositionBounds bounds, FileObject parentFile, ModificationResult modification) {
+        this.diff = diff;
+        this.bounds = bounds;
+        this.parentFile = parentFile;
+        this.modification = modification;
+        this.displayText = diff.getDescription();
     }
 
-    public int getLineNumber() {
-        return lineNumber;
-    }
+    public static DiffElement create(Difference diff, FileObject fileObject, ModificationResult modification) {
+        PositionRef start = diff.getStartPosition();
+        PositionRef end = diff.getEndPosition();
+        PositionBounds bounds = new PositionBounds(start, end);
 
-    @Override
-    public String getText() {
-        return element.getName() + " -";
+        return new DiffElement(diff, bounds, fileObject, modification);
     }
 
     @Override
     public String getDisplayText() {
-        return FindUsagesPainter.colorASTNode(element.getNode(), line);
+        return displayText;
     }
 
-    public String getName() {
-        return element.getName();
+    @Override
+    public Lookup getLookup() {
+        return Lookups.fixed(diff);
+    }
+
+    @Override
+    public FileObject getParentFile() {
+        return parentFile;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        diff.exclude(!enabled);
+        newFileContent = null;
+        super.setEnabled(enabled);
+    }
+
+    @Override
+    public PositionBounds getPosition() {
+        return bounds;
+    }
+
+    @Override
+    public String getText() {
+        return displayText;
     }
 
     @Override
@@ -98,30 +124,21 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
     }
 
     @Override
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-
-    @Override
-    public FileObject getParentFile() {
-        return element.getFileObject();
-    }
-
-    @Override
-    public PositionBounds getPosition() {
-        OffsetRange range = ASTUtils.getRange(element.getNode(), doc);
-        if (range == OffsetRange.NONE) {
+    protected String getNewFileContent() {
+        String result;
+        if (newFileContent != null) {
+            result = newFileContent.get();
+            if (result != null) {
+                return result;
+            }
+        }
+        try {
+            result = modification.getResultingSource(parentFile);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
             return null;
         }
-
-        CloneableEditorSupport ces = GroovyProjectUtil.findCloneableEditorSupport(element.getFileObject());
-        PositionRef ref1 = ces.createPositionRef(range.getStart(), Position.Bias.Forward);
-        PositionRef ref2 = ces.createPositionRef(range.getEnd(), Position.Bias.Forward);
-        return new PositionBounds(ref1, ref2);
-    }
-
-    @Override
-    public int compareTo(FindUsagesElement comparedElement) {
-        return this.lineNumber - comparedElement.lineNumber;
+        newFileContent = new WeakReference<String>(result);
+        return result;
     }
 }
