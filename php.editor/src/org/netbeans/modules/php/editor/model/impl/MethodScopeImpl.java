@@ -147,7 +147,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     @Override
     public boolean isConstructor() {
-        return isMagic() ? getName().contains("__construct") : false;
+        return isMagic() ? getName().contains("__construct") : false; //NOI18N
     }
 
     @Override
@@ -170,7 +170,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
                 if (i > 0) {
-                    sb.append(", ");
+                    sb.append(", "); //NOI18N
                 }
                 final ParameterElement param = parameterList.get(i);
                     if (param.hasDeclaredType()) {
@@ -194,7 +194,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             }
         }
 
-        sb.append(")");
+        sb.append(")"); //NOI18N
         sb.append("{\n}");//NOI18N
         return sb.toString();
     }
@@ -213,7 +213,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             }
             sb.append(param);
         }
-        sb.append(")");
+        sb.append(")"); //NOI18N
         sb.append(";\n");//NOI18N
         return sb.toString();
     }
