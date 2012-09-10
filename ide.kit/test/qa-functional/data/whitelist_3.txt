@@ -1,5 +1,10 @@
 #include whitelist_2.txt
 
+#218044
+org.netbeans.modules.javascript2.editor.JsLanguage
+org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl
+org.netbeans.modules.javascript2.editor.index.JsIndexer$Factory
+
 #218043
 org.netbeans.lib.nbjavac.services.CancelService
 org.netbeans.lib.nbjavac.services.NBAttr
