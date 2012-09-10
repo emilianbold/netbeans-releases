@@ -1,5 +1,10 @@
 #include whitelist_2.txt
 
+#218046
+org.netbeans.spi.debugger.ui.MethodChooser
+org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener
+org.netbeans.spi.debugger.ui.MethodChooser$Segment
+
 #218045
 org.netbeans.modules.php.project.PhpPreferences
 org.netbeans.modules.php.project.api.PhpOptions
