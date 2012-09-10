@@ -289,6 +289,16 @@ public abstract class FileObject extends Object implements Serializable {
         int myLen = lengthSoFar + myName.length();
 
         FileObject parent = getParent();
+        
+        if (parent == this) {
+            Object fs;
+            try {
+                fs = getFileSystem();
+            } catch (IOException ex) {
+                fs = "unknown"; // NOI18N
+            }
+            throw new IllegalStateException("Dangerous self-reproductive parentship: " + this + " type: " + getClass() + " fs: " + fs); // NOI18N
+        }
 
         if ((parent != null) && !parent.isRoot()) {
             parent.constructName(arr, sepChar, myLen + 1);
