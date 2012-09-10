@@ -649,7 +649,7 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node enter(LiteralNode literalNode) {
         Object value = literalNode.getValue();
-        if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
+        if (value instanceof Node[]) {
             int start = getStart(literalNode);
             int finish = getFinish(literalNode);
             FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
