@@ -48,7 +48,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
@@ -56,20 +55,19 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Returns libraries from http://code.google.com/apis/libraries/devguide.html#Libraries
  * Hand written snapshot of these files is stored in resources/googlecdn.txt
  */
-@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
+//@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class GoogleLibrariesProvider implements LibraryProvider<LibraryImplementation> {
 
     @Override
     public LibraryImplementation[] getLibraries() {
         List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
         BufferedReader is = new BufferedReader(new InputStreamReader(
-                ClientSideProject.class.getResourceAsStream("resources/googlecdn.txt"))); // NOI18N
+                GoogleLibrariesProvider.class.getResourceAsStream("resources/googlecdn.txt"))); // NOI18N
         try {
             String line;
             String dispName = "", name = "", versions = "", path = "", pathu = "", site = ""; // NOI18N
@@ -123,9 +121,9 @@ public class GoogleLibrariesProvider implements LibraryProvider<LibraryImplement
             Map<String, String> p = new HashMap<String, String>();
             p.put(WebClientLibraryManager.PROPERTY_VERSION, version);
             p.put(WebClientLibraryManager.PROPERTY_REAL_NAME, name);
-            p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, dispName);
-            p.put(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "Google"); // NOI18N
-            p.put(JavaScriptLibraryTypeProvider.PROPERTY_SITE, site);
+            p.put(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME, dispName);
+            p.put(WebClientLibraryManager.PROPERTY_CDN, "Google"); // NOI18N
+            p.put(WebClientLibraryManager.PROPERTY_SITE, site);
             l1.setProperties(p);
         try {
                 l1.setContent(WebClientLibraryManager.VOL_MINIFIED, 

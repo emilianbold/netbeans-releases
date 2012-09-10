@@ -483,6 +483,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/objects4.js");
     }
 
+    public void testObjects5() throws Exception {
+        reformatFileContents("testfiles/formatter/objects5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testObjects6() throws Exception {
+        reformatFileContents("testfiles/formatter/objects6.js",new IndentPrefs(4, 4));
+    }
+
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
     }
@@ -1440,6 +1448,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testVar4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/var4.js");
+    }
+
+    public void testBroken1() throws Exception {
+        reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));
     }
 
     // test from original formatter

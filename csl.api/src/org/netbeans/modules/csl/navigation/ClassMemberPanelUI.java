@@ -51,11 +51,15 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.StructureItem;
@@ -189,7 +193,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         return new ElementScanningTask() {
             public @Override int getPriority() {
-                return Integer.MAX_VALUE;
+                return 20000;
             }
             public @Override Class<? extends Scheduler> getSchedulerClass() {
                 return CSLNavigatorScheduler.class;
@@ -201,7 +205,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 FileObject file = result.getSnapshot().getSource().getFileObject();
 
                 if (root != null && file != null) {
-                    refresh(root, file);
+                    Document doc = result.getSnapshot().getSource().getDocument(false);
+                    BaseDocument bd = doc instanceof BaseDocument ? (BaseDocument)doc : null;
+                    refresh(root, file, bd);
                 }
             }
         };
@@ -217,28 +223,59 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             } 
         });
     }
+    
+    /**
+     * For a FileObject/source, holds a position/offset of the caret; the position should be selected
+     * after parse.
+     */
+    private Map<FileObject, Integer> positionRequests = new WeakHashMap<FileObject, Integer>();
 
     public void selectElementNode(final ParserResult info, final int offset) {
+        final ElementNode root = getRootNode();
+        if ( root == null ) {
+            return;
+        }
+        FileObject rootFo = root.getFileObject();
+        FileObject sourceFo = info.getSnapshot().getSource().getFileObject();
+        if (sourceFo != null && !sourceFo.equals(rootFo)) {
+            // switching files; refresh should be fired by periodic scheduler
+            synchronized (this) {
+                positionRequests.put(sourceFo, offset);
+            }
+        } else {
+            doSelectNodes(info, null, offset);
+        }
+    }
+    
+    private void doSelectNodes(final ParserResult info, final BaseDocument bd, final int offset) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ElementNode root = getRootNode();
-                if ( root == null ) {
-                    return;
-                }
-                final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
-                Node[] selectedNodes = manager.getSelectedNodes();
-                if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
-                    try {
-                        manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
-                    } catch (PropertyVetoException propertyVetoException) {
-                        Exceptions.printStackTrace(propertyVetoException);
-                    }
-                }
+                doSelectNodes0(info, bd, offset);
             }
         });
     }
+    
+    private void doSelectNodes0(ParserResult info, BaseDocument bd, int offset) {
+        ElementNode node;
+        if (info != null) {
+            node = getRootNode().getMimeRootNodeForOffset(info, offset);
+        } else if (bd != null) {
+            node = getRootNode().getMimeRootNodeForOffset(bd, offset);
+        } else {
+            return;
+        }
+        Node[] selectedNodes = manager.getSelectedNodes();
+        if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
+            try {
+                manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
+            } catch (PropertyVetoException propertyVetoException) {
+                Exceptions.printStackTrace(propertyVetoException);
+            }
+        }
+    }
 
-    public void refresh( final StructureItem description, final FileObject fileObject) {
+    public void refresh( final StructureItem description, final FileObject fileObject, 
+            final BaseDocument bd) {
         final ElementNode rootNode = getRootNode();
         
         if ( rootNode != null && rootNode.getFileObject().equals( fileObject) ) {
@@ -290,6 +327,15 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
+
+                    final ElementNode root = getRootNode();
+                    final Integer offset;
+                    synchronized (ClassMemberPanelUI.this) {
+                        offset = positionRequests.remove(fileObject);    
+                    }
+                    if (offset != null) {
+                        doSelectNodes(null, bd, offset);
+                    }
                 }
 
             };

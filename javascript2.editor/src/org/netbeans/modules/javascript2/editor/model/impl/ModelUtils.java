@@ -447,7 +447,12 @@ public class ModelUtils {
                                     newResolvedTypes.addAll(resovledTypes);
                                 }
                             } else {
-                                newResolvedObjects.add(property);
+                                Collection<? extends TypeUsage> lastTypeAssignment = property.getAssignmentForOffset(offset);
+                                if (lastTypeAssignment.isEmpty()) {
+                                    newResolvedObjects.add(property);
+                                } else {
+                                    newResolvedTypes.addAll(lastTypeAssignment);
+                                }
                             }
                         }
                     }

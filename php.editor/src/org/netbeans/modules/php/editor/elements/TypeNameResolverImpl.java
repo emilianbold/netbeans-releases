@@ -207,7 +207,8 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
                             continue;
                         }
                     } else {
-                        if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
+                        if (lastOffset < useElement.getOffset() && (useElement.getName().equals(firstSegmentName)
+                                || useElement.getName().endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR + firstSegmentName))) {
                             matchedUseScope = useElement;
                             lastOffset = useElement.getOffset();
                         }

@@ -119,14 +119,14 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
-            position = 200)
+            position = 300)
     public static CompositePanelProviderImpl createRunConfigs() {
         return new CompositePanelProviderImpl(RUN);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
-            position = 300)
+            position = 200)
     public static CompositePanelProviderImpl createJavaScriptFiles() {
         return new CompositePanelProviderImpl(JS_FILES);
     }

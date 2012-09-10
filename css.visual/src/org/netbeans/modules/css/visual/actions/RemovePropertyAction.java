@@ -39,81 +39,60 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
+package org.netbeans.modules.css.visual.actions;
 
-import java.beans.Customizer;
-
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.openide.util.Lookup;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import javax.swing.AbstractAction;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.netbeans.modules.css.visual.RuleNode;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
+ * @author marekfukala
  */
-@NbBundle.Messages({"JavaScriptLibraryType_Name=JavaScript Libraries"})
-public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
-    
-    /**
-     * Name of CDN this library is comming from.
-     */
-    public static final String PROPERTY_CDN = "cdn"; // NOI18N
+@NbBundle.Messages({
+    "label.remove.property=Remove Property"
+})
+public class RemovePropertyAction extends AbstractAction {
 
-    /**
-     * Homepage of the library.
-     */
-    public static final String PROPERTY_SITE = "site"; // NOI18N
+    private RuleEditorPanel panel;
+    private RuleNode.DeclarationProperty propertyDescriptor;
 
-    /**
-     * Real display name of the library, that is without CND source prefix and without version in the name.
-     */
-    public static final String PROPERTY_REAL_DISPLAY_NAME = "displayname"; // NOI18N
-    
-    /**
-     * Supported volumes.
-     */
-    static String[] VOLUMES = new String[]{WebClientLibraryManager.VOL_REGULAR, 
-        WebClientLibraryManager.VOL_MINIFIED, WebClientLibraryManager.VOL_DOCUMENTED};
-
-    @Override
-    public String getDisplayName() {
-        return Bundle.JavaScriptLibraryType_Name();
+    public RemovePropertyAction(RuleEditorPanel panel, RuleNode.DeclarationProperty propertyDescriptor) {
+        super(Bundle.label_remove_property());
+        this.panel = panel;
+        this.propertyDescriptor = propertyDescriptor;
     }
 
     @Override
-    public String getLibraryType() {
-        return WebClientLibraryManager.TYPE;
+    public void actionPerformed(ActionEvent e) {
+        final Model model = panel.getModel();
+        model.runWriteTask(new Model.ModelTask() {
+
+            @Override
+            public void run(StyleSheet styleSheet) {
+                Declaration toremove = propertyDescriptor.getDeclaration();
+                Declarations declarations = (Declarations)toremove.getParent();
+                declarations.removeDeclaration(toremove);
+                try {
+                    model.applyChanges();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
-    @Override
-    public String[] getSupportedVolumeTypes() {
-        return VOLUMES;
-    }
-
-    @Override
-    public LibraryImplementation createLibrary() {
-        return LibrariesSupport.createLibraryImplementation(
-                WebClientLibraryManager.TYPE, VOLUMES);
-    }
-
-    @Override
-    public void libraryDeleted(LibraryImplementation libraryImpl) {
-    }
-
-    @Override
-    public void libraryCreated(LibraryImplementation libraryImpl) {
-    }
-
-    @Override
-    public Customizer getCustomizer(String volumeType) {
-        return new JavaScriptLibraryCustomizer(volumeType);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
     
 }

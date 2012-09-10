@@ -47,11 +47,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -85,9 +88,11 @@ import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
@@ -170,6 +175,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
+    private Declaration createdDeclaration;
+    
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
@@ -221,6 +228,11 @@ public class RuleEditorPanel extends JPanel {
             } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
                 //refresh the PS content
                 node.fireContextChanged();
+                
+                if(createdDeclaration != null) {
+                    //select & edit the property corresponding to the created declaration
+                    editCreatedDeclaration();
+                }
             }
         }
     };
@@ -357,17 +369,18 @@ public class RuleEditorPanel extends JPanel {
         }
 
         addPropertyButton.setVisible(!addPropertyMode);
+        addPropertyCB.setVisible(!addPropertyMode);
 
         titleLabel.setText(null);
 
         //add the property sheet to the center
-        sheet = new PropertySheet();
+        sheet = new REPropertySheet(popupMenu);
         try {
             sheet.setSortingMode(PropertySheet.UNSORTED);
         } catch (PropertyVetoException ex) {
             //no-op
         }
-        sheet.setPopupEnabled(false);
+        sheet.setPopupEnabled(true);
         sheet.setDescriptionAreaVisible(false);
         sheet.setNodes(new Node[]{node});
 
@@ -423,14 +436,38 @@ public class RuleEditorPanel extends JPanel {
                     //do not save the model (apply changes) - once the write task finishes
                     //the embedded property sheet will be refreshed from the modified model.
                     
+                    //remember the created declaration so once the model change is fired
+                    //and the property sheet is refreshed, we can find and select the corresponding
+                    //FeatureDescriptor
+                    createdDeclaration = declaration;
                 }
             });
 
-            //TODO - once Standa add to the propertySheet - select the new property in the PS in edit mode 
-            //so the user can smoothlesly enter the value
-
-
         }
+    }
+    
+    
+    private void editCreatedDeclaration() {
+        DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
+        assert descriptor != null;
+        
+        sheet.requestFocus();
+//        sheet.select(descriptor, true);
+        try {
+            call_PropertySheet_select(sheet, descriptor, showCategories);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        createdDeclaration = null;
+    }
+    
+    private void call_PropertySheet_select(PropertySheet sheet, FeatureDescriptor descriptor, boolean edit) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        //private so far, will be public later
+        Class clz = PropertySheet.class;
+        Method select_method = clz.getDeclaredMethod("select", FeatureDescriptor.class, boolean.class); //NOI18N
+        select_method.setAccessible(true);
+        select_method.invoke(sheet, descriptor, edit);
     }
 
     public final void updateFiltersPresenters() {
@@ -810,5 +847,44 @@ public class RuleEditorPanel extends JPanel {
                 }
             }
         }
+    }
+    
+    private class REPropertySheet extends PropertySheet {
+
+        private final JPopupMenu genericPopupMenu;
+
+        public REPropertySheet(JPopupMenu genericPopupMenu) {
+            this.genericPopupMenu = genericPopupMenu;
+        }
+        
+        @Override
+        protected JPopupMenu createPopupMenu() {
+            FeatureDescriptor fd = getSelection();
+            if(fd != null) {
+                if(fd instanceof RuleNode.DeclarationProperty) {
+                    //property
+                    //
+                    //actions:
+                    //remove
+                    //hide
+                    //????
+                    //custom popop for the whole panel
+                    JPopupMenu pm = new JPopupMenu();
+                    
+                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+
+                    return pm;
+                    
+                } else if(fd instanceof RuleNode.PropertyCategoryPropertySet) {
+                    //property category
+                    //TODO possibly add "add property" action which would
+                    //preselect the css category in the "add property dialog".
+                }
+            }            
+            
+            //no context popup - create the generic popup
+            return genericPopupMenu;
+        }
+        
     }
 }

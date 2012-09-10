@@ -27,5 +27,17 @@ class ImplementC extends ImplementA implements ImplementB {
 
 }
 
+interface B {
+    function example();
+}
+
+trait X {
+    function example() { }
+}
+
+class A implements B {
+    use X;
+}
+
 //END
 ?>

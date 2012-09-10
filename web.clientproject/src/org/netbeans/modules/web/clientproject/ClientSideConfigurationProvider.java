@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
@@ -140,11 +141,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         if (config != null && configs.containsKey(config)) {
             return configs.get(config);
         }
-        // return first in the list:
-        if (orderedConfigurations.isEmpty()) {
-            return null;
-        }
-        return orderedConfigurations.iterator().next();
+        return getDefaultConfiguration(orderedConfigurations);
     }
 
     @Override
@@ -232,5 +229,16 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         }
         assert false : "should never happen: no platform can create configuration of type "+type+" and name it "+newName;
         return null;
+    }
+
+    private ClientProjectConfigurationImplementation getDefaultConfiguration(List<ClientProjectConfigurationImplementation> cfgs) {
+        for (ClientProjectConfigurationImplementation cfg : cfgs) {
+            if (cfg instanceof ClientProjectConfigurationImpl && 
+                    ((ClientProjectConfigurationImpl)cfg).canBeDefaultConfiguration()) {
+                return cfg;
+            }
+        }
+        // fallback on first one:
+        return cfgs.get(0);
     }
 }

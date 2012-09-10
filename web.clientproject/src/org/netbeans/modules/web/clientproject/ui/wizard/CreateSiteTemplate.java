@@ -460,6 +460,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         @Override
         protected Node[] createNodes(Node key) {
             FileObject fo = key.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                return new Node[0];
+            }
             if ("nbproject".equals(fo.getName())) {
                 return new Node[0];
             }
