@@ -56,9 +56,10 @@ import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
+import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
@@ -164,14 +165,16 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
     }
 
     @Override
-    public BuildAccessor<KenaiProject> getBuildAccessor() {
-        return new BuildAccessor() {
+    public BuilderAccessor<KenaiProject> getBuilderAccessor() {
+        return new BuilderAccessor() {
+            @Override
             public boolean isEnabled(ProjectHandle project) {
                 return false;
             }
             public List<BuildHandle> getBuilds(ProjectHandle project) {
                 return Collections.emptyList();
             }
+            @Override
             public Action getNewBuildAction(ProjectHandle project) {
                 return null;
             };
@@ -179,6 +182,16 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
             @Override
             public Class type() {
                 return Object.class;
+            }
+
+            @Override
+            public JobHandle getJob(ProjectHandle project, String jobName) {
+                return null;
+            }
+
+            @Override
+            public List getJobs(ProjectHandle project) {
+                return Collections.emptyList();
             }
         };
     }
