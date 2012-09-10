@@ -2666,6 +2666,7 @@ trailing_type
         POINTERTO 
         (tq=cv_qualifier)*
         ts=trailing_type_specifier
+        (options {greedy=true;} : tq=cv_qualifier)*
         (options {greedy=true;} : ptr_operator)*
         (LSQUARE (constant_expression)? RSQUARE)*
     ;
