@@ -834,7 +834,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (aName == null) {
                     return null;
                 }
-                name.addAll(getName((AccessNode)indexNode.getBase()));
+                name.addAll(aName);
             }
             if (indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode lNode = (LiteralNode)indexNode.getIndex();
