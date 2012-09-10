@@ -736,6 +736,12 @@ public class ModelVisitor extends PathNodeVisitor {
                     variable.addAssignment(type, varNode.getName().getFinish());
                 }
             }
+            List<Type> returnTypes = docHolder.getReturnType(varNode);
+            if (returnTypes != null && !returnTypes.isEmpty()) {
+                for (Type type : returnTypes) {
+                    variable.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), varNode.getName().getFinish());
+                }
+            }
         }
         return super.enter(varNode);
     }
