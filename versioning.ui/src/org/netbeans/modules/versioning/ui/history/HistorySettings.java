@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -65,12 +67,13 @@ public class HistorySettings {
     public static final String PROP_ALL_MODE = "history.AllMode";                               // NOI18N  
     public static final String PROP_VCS_MODE = "history.VCSMode";                               // NOI18N  
     public static final String PROP_LH_MODE = "history.LHMode";                               // NOI18N  
-            
+
     /** Creates a new instance of HistorySettings */
     private HistorySettings() {
     }
     
     public static HistorySettings getInstance() {        
+        migrate();
         return INSTANCE;
     }
     
@@ -154,5 +157,27 @@ public class HistorySettings {
     String getLHMode(String def) {
         return getPreferences().get(PROP_LH_MODE, def);
     }
-    
+
+    private static void migrate() { 
+        // migrate pre 7.2 settings 
+        String prevPath = "org/netbeans/modules/localhistory"; // NOI18N
+        try {
+            if(!NbPreferences.root().nodeExists(prevPath)) {
+                return;
+            }
+            Preferences prev = NbPreferences.root().node(prevPath);
+            Preferences cur =  NbPreferences.forModule(HistorySettings.class);
+            String[] keys = prev.keys();
+            for (String key : keys) {
+                String value = prev.get(key, null);
+                if(value != null && cur.get(key, null) == null) {
+                    cur.put(key, value);
+                }
+            }
+            prev.removeNode();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }    
 }
