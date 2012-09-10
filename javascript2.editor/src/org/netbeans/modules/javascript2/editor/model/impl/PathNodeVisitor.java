@@ -162,6 +162,19 @@ public class PathNodeVisitor extends NodeVisitor {
     }
 
     @Override
+    public Node enter(DoWhileNode doWhileNode) {
+        addToPath(doWhileNode);
+        return super.enter(doWhileNode);
+    }
+
+    @Override
+    public Node leave(DoWhileNode doWhileNode) {
+        removeFromPathTheLast();
+        return super.leave(doWhileNode);
+    }
+
+
+    @Override
     public Node enter(ExecuteNode executeNode) {
         addToPath(executeNode);
         return super.enter(executeNode);
