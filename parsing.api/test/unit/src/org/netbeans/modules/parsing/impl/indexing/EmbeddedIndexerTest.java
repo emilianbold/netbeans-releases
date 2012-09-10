@@ -83,9 +83,14 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -221,15 +226,26 @@ public class EmbeddedIndexerTest extends NbTestCase {
         assertEquals(Integer.valueOf(1), count.get(2));
 
         //Symulate EditorRegistry
+        final Source src = Source.create(srcFile);
+        ParserManager.parse(Collections.<Source>singleton(src), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
         final DataObject dobj = DataObject.find(srcFile);
         final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         final StyledDocument doc = ec.openDocument();
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                final JEditorPane jp = new JEditorPane();
+                final JEditorPane jp = new JEditorPane() {
+                    @Override
+                    public boolean isFocusOwner() {
+                        return true;
+                    }
+                };
                 jp.setDocument(doc);
-                RepositoryUpdater.getDefault().propertyChange(new PropertyChangeEvent(jp, EditorRegistry.FOCUS_GAINED_PROPERTY, null, jp));
+                EditorApiPackageAccessor.get().register(jp);
             }
         });
 
@@ -246,11 +262,11 @@ public class EmbeddedIndexerTest extends NbTestCase {
         });
 
         //Query should be updated
-//        sup = QuerySupport.forRoots(TopIndexer.NAME, TopIndexer.VERSION, srcRoot);
-//        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
-//        assertEquals(1,res.size());
-//        assertEquals(Boolean.TRUE.toString(), res.iterator().next().getValue("valid")); //NOI18N
-//
+        sup = QuerySupport.forRoots(TopIndexer.NAME, TopIndexer.VERSION, srcRoot);
+        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+        assertEquals(1,res.size());
+        assertEquals(Boolean.TRUE.toString(), res.iterator().next().getValue("valid")); //NOI18N
+
 //        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
 //        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
 //        assertEquals(5,res.size());
