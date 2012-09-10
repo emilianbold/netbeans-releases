@@ -980,8 +980,9 @@
                               <Component id="environmentCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="descriptionCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
-                      <Component id="queryTextField" pref="229" max="32767" attributes="1"/>
+                      <Component id="queryTextField" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -1357,7 +1358,6 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="byTextContainer" alignment="0" pref="758" max="32767" attributes="2"/>
                   <Component id="byOtherContainer" alignment="0" pref="758" max="32767" attributes="1"/>
                   <Component id="byDetailsContainer" alignment="0" pref="758" max="32767" attributes="1"/>
                   <Component id="byPeopleContainer" alignment="0" pref="758" max="32767" attributes="1"/>
@@ -1368,7 +1368,11 @@
                           <Component id="byDetailsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="byPeopleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="byTextContainer" min="-2" max="-2" attributes="2"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1376,11 +1380,10 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Component id="byTextContainer" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       <Component id="byDetailsContainer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
