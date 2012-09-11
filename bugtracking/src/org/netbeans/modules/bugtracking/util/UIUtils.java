@@ -49,6 +49,8 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -59,10 +61,12 @@ import java.awt.event.MouseWheelListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -91,23 +95,43 @@ public class UIUtils {
             EventQueue.invokeLater(r);
         }
     }
-
-    public static void keepFocusedComponentVisible(JScrollPane scrollPane) {
-        keepFocusedComponentVisible(scrollPane.getViewport().getView());
+    
+    public static void keepFocusedComponentVisible(JComponent component) {
+        keepFocusedComponentVisible(component, component);
     }
-
-    public static void keepFocusedComponentVisible(Component component) {
-        FocusListener listener= getScrollingFocusListener();
-        component.removeFocusListener(listener); // Making sure that it is not added twice
-        component.addFocusListener(listener);
+    
+    public static void keepFocusedComponentVisible(Component component, JComponent container) {
+        FocusListener listener;
+        if(component instanceof JComponent ) {
+            listener = getNotShowingFieldsFocusListener(container);
+        } else {
+            listener = getScrollingFocusListener(); // legacy fallback
+        }
+        keepFocusedComponentVisible(component, listener);
+    }
+    
+    private static void keepFocusedComponentVisible(Component component, FocusListener l) {
+        component.removeFocusListener(l); // Making sure that it is not added twice
+        component.addFocusListener(l);
         if (component instanceof Container) {
             for (Component subComponent : ((Container)component).getComponents()) {
-                keepFocusedComponentVisible(subComponent);
+                keepFocusedComponentVisible(subComponent, l);
             }
         }
     }
 
     private static FocusListener scrollingFocusListener;
+    
+    private static FocusListener getNotShowingFieldsFocusListener(JComponent container) {
+        String key = "notShowingFieldFocusListener";                            // NOI18N
+        Object l = container.getClientProperty(key);
+        if (l == null) {
+            l = new NotShowingFieldsFocusListener(container);
+            container.putClientProperty(key, l);
+        }
+        return (FocusListener) l;
+    }
+    
     private static FocusListener getScrollingFocusListener() {
         if (scrollingFocusListener == null) {
             scrollingFocusListener = new FocusAdapter() {
@@ -130,6 +154,48 @@ public class UIUtils {
             };
         }
         return scrollingFocusListener;
+    }
+    
+    private static class NotShowingFieldsFocusListener implements FocusListener {
+        private final JComponent container;
+        
+        public NotShowingFieldsFocusListener(JComponent container) {
+            this.container = container;
+        }
+        
+        @Override
+        public void focusGained(FocusEvent e) {
+            if (e.isTemporary()) {
+                return;
+            }
+            Component cmp = e.getComponent();
+            if(cmp instanceof JComponent) {
+                JViewport vp = getViewport(cmp.getParent());
+                
+                Rectangle vr = vp.getViewRect();
+                
+                Point p = SwingUtilities.convertPoint(cmp.getParent(), cmp.getLocation(), container);
+                final Rectangle r = new Rectangle(p, cmp.getSize());
+                if(vr.intersects(r)) {
+                    return; 
+                }
+                container.scrollRectToVisible(r);
+            }
+        }
+
+        private JViewport getViewport(Container c) {
+            if(c == null) {
+                return null;
+            }
+            if(c instanceof JScrollPane) {
+                return ((JScrollPane) c).getViewport();
+            }
+            return getViewport(c.getParent());
+        }
+        
+        @Override
+        public void focusLost(FocusEvent e) { }
+
     }
 
     // A11Y - Issues 163597 and 163598
