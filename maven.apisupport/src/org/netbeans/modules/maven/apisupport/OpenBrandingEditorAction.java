@@ -108,7 +108,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
             @Override public void run() {
                 final Project project = context.lookup(Project.class);
                 final MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-                final BrandingModel model = createBrandingModel(project, brandingPath(mavenProject));
+                final BrandingModel model = createBrandingModel(project, brandingPath(project));
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
                         BrandingUtils.openBrandingEditor(mavenProject.getName(), project, model);
@@ -132,10 +132,10 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         if (mproject == null) {
             return false;
         }
-        return project.getProjectDirectory().getFileObject(brandingPath(mproject.getMavenProject())) != null;
+        return project.getProjectDirectory().getFileObject(brandingPath(project)) != null;
     }
 
-    private String brandingPath(MavenProject mavenProject) {
+    private String brandingPath(Project mavenProject) {
         String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding"); //NOI18N
         return brandingPath != null ? brandingPath : "src/main/nbm-branding"; //NOI18N
     }
