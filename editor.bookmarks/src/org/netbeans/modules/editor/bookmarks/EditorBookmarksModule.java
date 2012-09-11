@@ -47,7 +47,6 @@ package org.netbeans.modules.editor.bookmarks;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -73,11 +72,13 @@ class EditorBookmarksModule extends ModuleInstall {
     private BookmarksInitializer        bookmarksInitializer;
     private PropertyChangeListener      annotationTypesListener;
 
+    @Override
     public void restored () {
         BookmarksPersistence.get().initProjectsListening();
 
         bookmarksInitializer = new BookmarksInitializer ();
         RequestProcessor.getDefault().post(new Runnable () {
+            @Override
             public void run () {
                 final Iterator<? extends JTextComponent> it = 
                     EditorRegistry.componentList ().iterator ();
@@ -89,6 +90,7 @@ class EditorBookmarksModule extends ModuleInstall {
                 if (type == null) {
                     // bookmark type was not added into AnnotationTypes yet, wait for event
                     annotationTypesListener = new PropertyChangeListener () {
+                        @Override
                         public void propertyChange (PropertyChangeEvent evt) {
                             AnnotationType type = AnnotationTypes.getTypes ().getType (Bookmark.BOOKMARK_ANNOTATION_TYPE);
                             if (type != null) {
@@ -103,8 +105,9 @@ class EditorBookmarksModule extends ModuleInstall {
                     AnnotationTypes.getTypes ().addPropertyChangeListener
                         (annotationTypesListener);
                 } else {
-                    while (it.hasNext ())
+                    while (it.hasNext ()) {
                         BookmarkList.get (it.next ().getDocument ()); // Initialize the bookmark list
+                    }
                 }
             }
         });
@@ -113,6 +116,7 @@ class EditorBookmarksModule extends ModuleInstall {
     /**
      * Called when all modules agreed with closing and the IDE will be closed.
      */
+    @Override
     public boolean closing () {
         // this used to be called from close(), but didn't save properly on JDK6,
         // no idea why, see #120880
@@ -123,6 +127,7 @@ class EditorBookmarksModule extends ModuleInstall {
     /**
      * Called when module is uninstalled.
      */
+    @Override
     public void uninstalled () {
         finish ();
     }
@@ -146,6 +151,7 @@ class EditorBookmarksModule extends ModuleInstall {
             documentListener = WeakListeners.propertyChange (this, null);
         }
 
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             // event for the editors tracker
             if (evt.getSource () == EditorRegistry.class) {
@@ -174,7 +180,6 @@ class EditorBookmarksModule extends ModuleInstall {
                         BookmarkList.get (newDoc); // ask for the list to initialize it
                     }
                 }
-                return;
             }
         }
 

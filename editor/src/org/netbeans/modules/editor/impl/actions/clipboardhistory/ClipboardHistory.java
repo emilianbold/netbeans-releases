@@ -65,9 +65,19 @@ public final class ClipboardHistory implements ClipboardListener {
     /** Name of preferences node where we persist history */
     private static final String PREFS_NODE = "ClipboardHistory";  //NOI18N
     private static final String PROP_ITEM_PREFIX = "item_";  //NOI18N
-    private static final boolean PERSISTENT_STATE = Boolean.getBoolean("netbeans.clipboard.history.persistent");
+    private static final boolean PERSISTENT_STATE = Boolean.getBoolean("netbeans.clipboard.history.persistent"); //NOI18N
 
-    public static ClipboardHistory getInstance() {
+    static {
+        Integer maxsize = Integer.getInteger("netbeans.clipboard.history.maxsize"); //NOI18N
+        if (maxsize != null) {
+            MAXSIZE = maxsize;
+        }
+        if (PERSISTENT_STATE) {
+            prefs = NbPreferences.forModule(ClipboardHistory.class).node(PREFS_NODE);
+        }
+    }
+
+    public synchronized static ClipboardHistory getInstance() {
         if (instance == null) {
             instance = new ClipboardHistory();
         }
@@ -76,12 +86,7 @@ public final class ClipboardHistory implements ClipboardListener {
 
     private ClipboardHistory() {
         data = new LinkedList<ClipboardHistoryElement>();
-        Integer maxsize = Integer.getInteger("netbeans.clipboard.history.maxsize");
-        if (maxsize != null) {
-            MAXSIZE = maxsize;
-        }
         if (PERSISTENT_STATE) {
-            prefs = NbPreferences.forModule(ClipboardHistory.class).node(PREFS_NODE);
             load();
         }
     }
