@@ -339,6 +339,11 @@ public class JSTestDriverSupport {
         @Override
         public void onTestingFinished() {
             manager.sessionFinished(testSession);
+            if (report == null) {
+                // no tests were run; generate empty report:
+                testSession.addSuite(TestSuite.ANONYMOUS_TEST_SUITE);
+                report = testSession.getReport(0);
+            }
             manager.displayReport(testSession, report, true);
         }
         
