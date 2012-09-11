@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
