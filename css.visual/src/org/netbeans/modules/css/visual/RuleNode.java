@@ -97,6 +97,7 @@ public class RuleNode extends AbstractNode {
     
     public static String NONE_PROPERTY_NAME = "<none>";
     
+    private String filterPrefix;
     
     private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
@@ -128,6 +129,12 @@ public class RuleNode extends AbstractNode {
 
     public boolean isAddPropertyMode() {
         return panel.isAddPropertyMode();
+    }
+    
+    //called by the RuleEditorPanel when user types into the filter text field
+    void setFilterPrefix(String prefix) {
+        this.filterPrefix = prefix;
+        fireContextChanged(); //recreate the property sets
     }
 
     //called by the RuleEditorPanel when any of the properties affecting 
@@ -166,6 +173,24 @@ public class RuleNode extends AbstractNode {
         }
         return propertySets;
     }
+    
+    private boolean matchesFilterPrefix(PropertyDefinition pd) {
+        if(filterPrefix == null) {
+            return true;
+        } else {
+            return pd.getName().startsWith(filterPrefix);
+        }
+    }
+    
+    private Collection<PropertyDefinition> filterByPrefix(Collection<PropertyDefinition> defs) {
+        Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
+        for(PropertyDefinition pd : defs) {
+            if(matchesFilterPrefix(pd)) {
+                filtered.add(pd);
+            }
+        }
+        return filtered;
+    }
 
     /**
      * Creates property sets of the node.
@@ -192,7 +217,7 @@ public class RuleNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     PropertyDefinition def = Properties.getProperty(property.getContent().toString());
-                    if (def != null) {
+                    if (def != null && matchesFilterPrefix(def)) {
                         PropertyCategory category = def.getPropertyCategory();
 
                         List<Declaration> values = categoryToDeclarationsMap.get(category);
@@ -223,17 +248,19 @@ public class RuleNode extends AbstractNode {
             if (isShowAllProperties()) {
                 //Show all properties
                 for (PropertyCategory cat : PropertyCategory.values()) {
+                    //now add all the remaining properties
+                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(cat.getProperties()));
+                    if(allInCat.isEmpty()) {
+                        continue; //skip empty categories (when filtering)
+                    }
+                    Collections.sort(allInCat, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
+
                     PropertyCategoryPropertySet propertySet = propertySetsMap.get(cat);
                     if (propertySet == null) {
                         propertySet = new PropertyCategoryPropertySet(cat);
                         sets.add(propertySet);
                     }
-                    //now add all the remaining properties
-                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(cat.getProperties());
-
-
-                    Collections.sort(allInCat, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
-
+                    
                     //remove already used
                     for (Declaration d : propertySet.getDeclarations()) {
                         PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
@@ -263,7 +290,7 @@ public class RuleNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     PropertyDefinition def = Properties.getProperty(property.getContent().toString());
-                    if (def != null) {
+                    if (def != null && matchesFilterPrefix(def)) {
                         filtered.add(d);
                     }
                 }
@@ -273,7 +300,7 @@ public class RuleNode extends AbstractNode {
                 Collections.sort(filtered, PropertyUtils.DECLARATIONS_COMPARATOR);
             }
 
-            //just create one top level property set for virtual category (the items actually doesn't belong to the category)
+            //just create one top level property set for virtual category (the items actually don't belong to the category)
             PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT);
             set.addAll(filtered);
 
@@ -285,7 +312,7 @@ public class RuleNode extends AbstractNode {
 
             if (isShowAllProperties()) {
                 //Show all properties
-                List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(Properties.getProperties(true));
+                List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(filterByPrefix(Properties.getProperties(true)));
                 Collections.sort(all, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
 
                 //remove already used
