@@ -96,7 +96,7 @@ class ChromeInfoPanel extends javax.swing.JPanel {
             public void hyperlinkUpdate( HyperlinkEvent e ) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = e.getURL();
-                    if (url.getProtocol().equals("file")) {
+                    if (url.getProtocol().equals("file")) { // NOI18N
                         // first, try java api
                         Desktop desktop = Desktop.getDesktop();
                         if (desktop.isSupported(Desktop.Action.OPEN)) {
