@@ -114,7 +114,7 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         public void operationStateChanged(
                 TaskState newState, TaskEvent event,
                 String[] args) {
-            String message = args[0];
+            String message = args.length > 0 ? args[0] : null;
             synchronized (css) {
                 long lastDisplayed = css.getLatestWarningDisplayTime();
                 long currentTime = System.currentTimeMillis();
