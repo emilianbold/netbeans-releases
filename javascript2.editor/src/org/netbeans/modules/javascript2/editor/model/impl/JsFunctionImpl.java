@@ -56,7 +56,6 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private HashMap <String, JsObject> parametersByName;
     final private List<JsObject> parameters;
     final private Set<TypeUsage> returnTypes;
-    private boolean areReturnTypesResolved;
     private boolean isAnonymous;
     
     
@@ -72,7 +71,6 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.isAnonymous = false;
         this.returnTypes = new HashSet<TypeUsage>();
         setDeclared(true);
-        this.areReturnTypesResolved = false;
         if (parentObject != null) {
             // creating arguments variable
             JsObjectImpl arguments = new JsObjectImpl(this, 

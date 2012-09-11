@@ -475,7 +475,7 @@ public class JQueryCodeCompletion {
         return allAttributes;
     }
 
-    private void initAllAttributes(HtmlModel htmlModel) {
+    private synchronized void initAllAttributes(HtmlModel htmlModel) {
         assert allAttributes == null;
         Map<String, HtmlTagAttribute> result = new HashMap<String, HtmlTagAttribute>();
         for (HtmlTag htmlTag : htmlModel.getAllTags()) {
