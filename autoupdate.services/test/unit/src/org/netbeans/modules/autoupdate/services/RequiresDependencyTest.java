@@ -149,6 +149,7 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         
         // install wants module
         installUpdateUnit (wantsUU);
+        providerUU = UpdateManagerImpl.getInstance ().getUpdateUnit (providerModule);
 
         // check states installed units, should be both wants and provides are installed
         assertNotNull (wantsModule + " is installed.", wantsUU.getInstalled ());
