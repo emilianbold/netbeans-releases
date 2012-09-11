@@ -3129,6 +3129,7 @@ public class BaseKit extends DefaultEditorKit {
 
         public void addComponent(JTextComponent c) {
             synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                assert c != null;
                 components.add(c);
             }            
         }
