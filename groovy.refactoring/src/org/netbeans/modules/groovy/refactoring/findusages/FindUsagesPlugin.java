@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.AbstractFindUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllSubtypes;
+import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindDirectSubtypesOnly;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindMethodUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindOverridingMethods;
@@ -166,7 +167,7 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
         }
 
         // This also happen in all other refactorings (rename, move etc.)
-        return new FindMethodUsages(element);
+        return new FindAllUsages(element);
     }
 
     private AbstractFindUsages getClassStrategy() {
@@ -179,7 +180,7 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
         }
 
         // This also happen in all other refactorings (rename, move etc.)
-        return new FindTypeUsages(element);
+        return new FindAllUsages(element);
     }
 
     private AbstractFindUsages getVariableStrategy() {
