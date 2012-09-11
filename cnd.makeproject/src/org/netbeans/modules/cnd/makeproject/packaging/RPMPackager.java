@@ -231,7 +231,7 @@ public class RPMPackager implements PackagerDescriptor {
                     }
                     bw.write("echo " + " >> ${SPEC_FILE}\n"); // NOI18N 
                 } else {
-                    bw.write("echo " + elem.getName() + ": " + packagingConfiguration.expandMacros(elem.getValue()) + " >> ${SPEC_FILE}\n"); // NOI18N
+                    bw.write("echo \'" + elem.getName() + ": " + packagingConfiguration.expandMacros(elem.getValue()) + "\' >> ${SPEC_FILE}\n"); // NOI18N
                 }
             }
             bw.write("echo \'%files\' >> ${SPEC_FILE}\n"); // NOI18N 
