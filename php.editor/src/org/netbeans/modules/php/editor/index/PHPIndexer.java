@@ -79,6 +79,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.Model.Type;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.TraitScope;
@@ -231,7 +232,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
-            Model model = r.getModel(false);
+            Model model = r.getModel(Type.COMMON);
             final FileScope fileScope = model.getFileScope();
             IndexDocument reverseIdxDocument = support.createDocument(indexable);
             documents.add(reverseIdxDocument);

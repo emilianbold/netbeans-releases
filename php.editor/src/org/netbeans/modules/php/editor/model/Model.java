@@ -56,6 +56,22 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
  */
 public final class Model {
 
+    public enum Type {
+        COMMON {
+            @Override
+            public void process(Model model) {
+            }
+        },
+        EXTENDED {
+            @Override
+            public void process(Model model) {
+                model.getExtendedElements();
+            }
+        };
+
+        public abstract void process(Model model);
+    }
+
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
 
     private ModelVisitor modelVisitor;
