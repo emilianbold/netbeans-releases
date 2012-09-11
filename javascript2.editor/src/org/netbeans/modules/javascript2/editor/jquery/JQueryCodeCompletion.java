@@ -88,6 +88,12 @@ public class JQueryCodeCompletion {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
+            // can be for the dot in selectors - (.|)
+            case OBJECT_PROPERTY:
+                if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
+                    addSelectors(result, parserResult, prefix, lastTsOffset);
+                }
+                break;
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));
@@ -289,19 +295,22 @@ public class JQueryCodeCompletion {
         if (!(ts.moveNext() && ts.movePrevious())) {
             return;
         }
-        String wrapup = "";
+        String wrapup = ""; //NOI18N
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
         if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
-            wrapup = "'";
+            wrapup = "'"; //NOI18N
             if (ts.token().id() == JsTokenId.IDENTIFIER) {
                 ts.movePrevious();
             }
             if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
-                prefixText = ":" + prefixText;
+                prefixText = ":" + prefixText; //NOI18N
+                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
+            } else if (ts.token().id() == JsTokenId.OPERATOR_DOT) {
+                prefixText = "." + prefixText; //NOI18N
                 anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
             } else {
-                anchorOffsetDelta = prefix.isEmpty() ? 1 : 0;
+                anchorOffsetDelta = 0;
             }
 //            if (prefix.isEmpty()) {
 //                anchorOffsetDelta = 1;
@@ -318,7 +327,7 @@ public class JQueryCodeCompletion {
         SelectorContext context = findSelectorContext(prefixText);
         
         if (context != null) {
-            int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefix.length();
+            int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefixText.length();
             for (SelectorKind selectorKind : context.kinds) {
                 switch (selectorKind) {
                     case TAG:
@@ -356,7 +365,7 @@ public class JQueryCodeCompletion {
                         }
                         for (SelectorItem selector : afterColonList) {
                             if (selector.getDisplayText().startsWith(context.prefix)) {
-                                anchorOffset = docOffset + anchorOffsetDelta + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
+                                anchorOffset = docOffset + anchorOffsetDelta;
                                 result.add(JQueryCompletionItem.createJQueryItem(":" + selector.displayText, anchorOffset, wrapup, selector.getInsertTemplate()));
                             }
                         }
