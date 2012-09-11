@@ -269,7 +269,9 @@ public class ASTUtils {
         } else if (node instanceof ConstructorCallExpression) {
             ConstructorCallExpression methodCall = (ConstructorCallExpression) node;
             String name = methodCall.getType().getNameWithoutPackage();
-            int start = getOffset(doc, lineNumber, columnNumber);
+            // +4 because we don't want to have "new " in the offset
+            // would be good to do this in more sofisticated way than this shit
+            int start = getOffset(doc, lineNumber, columnNumber + 4);
             return getNextIdentifierByName(doc, name, start);
         } else if (node instanceof ClassExpression) {
             ClassExpression clazz = (ClassExpression) node;

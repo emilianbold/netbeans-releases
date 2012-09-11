@@ -42,7 +42,6 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.net.URI;
-import org.netbeans.api.project.Project;
 
 /**
  * Change of a particular bookmark.

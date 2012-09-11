@@ -682,22 +682,43 @@ public final class GeneratorUtilities {
         List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         for (ImportTree imp : imports) {
             Element e = getImportedElement(cut, imp);
-            Element el = imp.isStatic()
-                    ? e.getKind().isClass() || e.getKind().isInterface() ? e : elementUtilities.enclosingTypeElement(e)
-                    : e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
-            if (el != null) {
-                Integer cnt = imp.isStatic() ? typeCounts.get((TypeElement)el) : pkgCounts.get((PackageElement)el);
-                if (cnt != null) {
-                    if (el == e) {
-                        cnt = -2;
-                    } else if (cnt >= 0) {
-                        cnt++;
-                        if (imp.isStatic() ? cnt >= staticTreshold : cnt >= treshold)
-                            cnt = -1;
+            if (imp.isStatic()) {
+                if (e.getKind().isClass() || e.getKind().isInterface()) {
+                    Element el = e;
+                    while (el != null) {
+                        Integer cnt = typeCounts.get((TypeElement)el);
+                        if (cnt != null) {
+                            typeCounts.put((TypeElement)el, -2);
+                        }
+                        TypeMirror tm = ((TypeElement)el).getSuperclass();
+                        el = tm.getKind() == TypeKind.DECLARED ? ((DeclaredType)tm).asElement() : null;
                     }
-                    if (imp.isStatic()) {
-                        typeCounts.put((TypeElement)el, cnt);
-                    } else {
+                } else {
+                    Element el = elementUtilities.enclosingTypeElement(e);
+                    if (el != null) {
+                        Integer cnt = typeCounts.get((TypeElement)el);
+                        if (cnt != null) {
+                            if (cnt >= 0) {
+                                cnt++;
+                                if (cnt >= staticTreshold)
+                                    cnt = -1;
+                            }
+                            typeCounts.put((TypeElement)el, cnt);
+                        }
+                    }
+                }
+            } else {
+                Element el = e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
+                if (el != null) {
+                    Integer cnt = pkgCounts.get((PackageElement)el);
+                    if (cnt != null) {
+                        if (el == e) {
+                            cnt = -2;
+                        } else if (cnt >= 0) {
+                            cnt++;
+                            if (cnt >= treshold)
+                                cnt = -1;
+                        }
                         pkgCounts.put((PackageElement)el, cnt);
                     }
                 }
@@ -1478,7 +1499,7 @@ public final class GeneratorUtilities {
     }
     
     private static boolean containsErrors(Tree tree) {
-        return new TreeScanner<Boolean, Boolean>() {
+        Boolean b = new TreeScanner<Boolean, Boolean>() {
             @Override
             public Boolean visitErroneous(ErroneousTree node, Boolean p) {
                 return true;
@@ -1498,5 +1519,6 @@ public final class GeneratorUtilities {
                 return p ? p : super.scan(node, p);
             }
         }.scan(tree, false);
+        return b != null ? b : false;
     }
 }

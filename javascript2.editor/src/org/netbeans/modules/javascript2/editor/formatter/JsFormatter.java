@@ -77,6 +77,9 @@ import org.openide.util.Exceptions;
  */
 public class JsFormatter implements Formatter {
 
+    // only for tests
+    static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
     private static final boolean ELSE_IF_SINGLE_LINE = true;
@@ -111,6 +114,7 @@ public class JsFormatter implements Formatter {
         processed.clear();
         lastOffsetDiff = 0;
         final BaseDocument doc = (BaseDocument) context.document();
+        final boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
 
         doc.runAtomic(new Runnable() {
 
@@ -261,7 +265,7 @@ public class JsFormatter implements Formatter {
                         }
 
                         // remove trailing spaces
-                        removeTrailingSpaces(tokens, i, formatContext, token);
+                        removeTrailingSpaces(tokens, i, formatContext, token, templateEdit);
 
                         if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                             formatContext.setCurrentLineStart(token.getOffset()
@@ -301,8 +305,11 @@ public class JsFormatter implements Formatter {
                             }
                             i++;
                         }
+
+                        // if it is code template formatting we want to do
+                        // proper indentation even on a blank line
                         if (indentationEnd != null
-                                && indentationEnd.getKind() != FormatToken.Kind.EOL) {
+                                && (indentationEnd.getKind() != FormatToken.Kind.EOL || templateEdit)) {
                             int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
                             int continuationLevel = formatContext.getContinuationLevel();
                             if (isContinuation(token, false)) {
@@ -361,7 +368,12 @@ public class JsFormatter implements Formatter {
     }
 
     private void removeTrailingSpaces(List<FormatToken> tokens, int index,
-            FormatContext formatContext, FormatToken limit) {
+            FormatContext formatContext, FormatToken limit, boolean templateEdit) {
+
+        // if it is code template we are doing indentation even on a blank line
+        if (templateEdit && limit.getKind() == FormatToken.Kind.EOL) {
+            return;
+        }
 
         FormatToken start = null;
         for (int j = index - 1; j >= 0; j--) {
