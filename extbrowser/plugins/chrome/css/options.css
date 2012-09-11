@@ -46,7 +46,7 @@
 }
 body {
     font-family: Arial, Tahoma, Helvetica;
-    font-size: 10px;
+    font-size: 10pt;
     font-weight: normal;
     color: #303942;
     background-color: #fff;
@@ -61,11 +61,12 @@ a {
 }
 
 button, .button {
-    font-size: 10px;
+    font-size: 9pt;
+    color: #444444;
     cursor: pointer;
     text-align: center;
     position: relative;
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0.00, #f0f0f0), color-stop(1.00, #dddddd));
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #ededed), color-stop(1.00, #dddddd));
     border-width: 1px;
     border-style: solid;
     border-radius: 2px;
@@ -73,10 +74,12 @@ button, .button {
 }
 button:hover, .button:hover {
     color: #000000;
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #f5f5f5), color-stop(1.00, #e2e2e2));
 }
 button.disabled, button[disabled=disabled], .button.disabled {
     cursor: not-allowed;
     color: #aaaaaa;
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #f0f0f0), color-stop(1.00, #dddddd));
 }
 
 #presetCustomizer {
@@ -96,7 +99,7 @@ button.disabled, button[disabled=disabled], .button.disabled {
 #title {
     clear: both;
     margin-top: 35px;
-    font-size: 13px;
+    font-size: 14pt;
     font-weight: bold;
 }
 #perex {
@@ -132,7 +135,10 @@ button.disabled, button[disabled=disabled], .button.disabled {
     height: 25px;
 }
 #presetCustomizerTable tr.active {
-    background-color: lightgreen;
+    background-color: #bbcee9;
+}
+#presetCustomizerTable tr:hover {
+    background-color: #e4ecf7;
 }
 #presetCustomizerTable th {
     font-weight: bold;
@@ -148,7 +154,7 @@ button.disabled, button[disabled=disabled], .button.disabled {
     border: 1px solid #e2e2e2;
 }
 #presetCustomizerTable input, select {
-    font-size: 10px;
+    font-size: 10pt;
     width: 100%;
 }
 #presetCustomizerTable select, #presetCustomizerTable input[type="checkbox"] {
@@ -180,7 +186,7 @@ button.disabled, button[disabled=disabled], .button.disabled {
 }
 #presetButtons button {
     display: block;
-    width: 95px;
+    min-width: 95px;
     margin-bottom: 5px;
 }
 

@@ -50,6 +50,7 @@ window.addEventListener('load', function() {
     I18n.attribute('customizeIcon', 'alt');
     I18n.attribute('customizeIcon', 'title');
     I18n.element('customize');
+    I18n.attribute('selectionModeMenu', 'title');
     I18n.attribute('selectModeIcon', 'alt');
     I18n.attribute('selectModeIcon', 'title');
     I18n.element('selectMode');

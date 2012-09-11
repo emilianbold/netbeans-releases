@@ -66,6 +66,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -76,11 +77,13 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.analysis.spi.AnalysisScopeProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
@@ -92,6 +95,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.FileObjectNameMatcher;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
@@ -110,6 +114,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -328,7 +333,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
-                    new CPPImpl(sources)
+                    new CPPImpl(sources),
+                    new AnalysisScopeProviderImpl(this)
                 };
         
         MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
@@ -1679,6 +1685,33 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (FullFileIndexer.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
                 registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
             }
+        }
+    }
+    
+    private final class AnalysisScopeProviderImpl implements AnalysisScopeProvider  {
+        private final MakeProject project;
+        
+        AnalysisScopeProviderImpl(MakeProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public Scope getScope() {
+            Collection<FileObject> sourceRoots = null;
+            Collection<NonRecursiveFolder> folders = null;
+            Collection<FileObject> files = null;
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp.gotDescriptor()) {
+                MakeConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+                files = new ArrayList<FileObject>();
+                for (Item item : configurationDescriptor.getProjectItems()) {
+                    PredefinedToolKind defaultTool = item.getDefaultTool();
+                    if (defaultTool == PredefinedToolKind.CCompiler || defaultTool == PredefinedToolKind.CCCompiler) {
+                        files.add(item.getFileObject());
+                    }
+                }
+            }
+            return Scope.create(sourceRoots, folders, files);
         }
     }
 }

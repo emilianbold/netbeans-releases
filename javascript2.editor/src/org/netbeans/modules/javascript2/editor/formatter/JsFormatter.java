@@ -324,6 +324,27 @@ public class JsFormatter implements Formatter {
                                                 FormatContext.ContinuationBlock.Type.PAREN, true));
                                         formatContext.incContinuationLevel();
                                         processed.add(nextImportant);
+                                    } else if (JsTokenId.KEYWORD_FUNCTION.fixedText().equals(nextImportant.getText().toString())) {
+                                        FormatToken curly = nextImportant;
+                                        while (curly != null) {
+                                            if (!curly.isVirtual()) {
+                                                if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(curly.getText().toString())) {
+                                                    // safety catch - something wrong
+                                                    curly = null;
+                                                    break;
+                                                }
+                                                if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(curly.getText().toString())) {
+                                                    break;
+                                                }
+                                            }
+                                            curly = curly.next();
+                                        }
+                                        if (curly != null) {
+                                            continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.CURLY, true));
+                                            formatContext.incContinuationLevel();
+                                            processed.add(curly);
+                                        }
                                     }
                                 }
                             }
