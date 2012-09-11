@@ -231,7 +231,7 @@ public class PhpStructureScanner implements StructureScanner {
                 }
             }
             PHPParseResult result = (PHPParseResult) info;
-            final Model model = result.getModel();
+            final Model model = result.getModel(false);
             FileScope fileScope = model.getFileScope();
             List<Scope> scopes = getEmbededScopes(fileScope, null);
             for (Scope scope : scopes) {
@@ -868,7 +868,7 @@ public class PhpStructureScanner implements StructureScanner {
         public ElementKind getKind() {
             return ElementKind.CONSTRUCTOR;
         }
- 
+
         public MethodScope getMethodScope() {
             return (MethodScope) getModelElement();
         }
