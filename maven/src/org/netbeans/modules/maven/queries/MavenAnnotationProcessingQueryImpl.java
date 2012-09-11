@@ -99,7 +99,7 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                     generatedSourcesDirectory = tests ? /* XXX MCOMPILER-167 */"${project.build.directory}/generated-sources/test-annotations" : "${project.build.directory}/generated-sources/annotations";
                 }
                 try {
-                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate(generatedSourcesDirectory)));
+                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj).evaluate(generatedSourcesDirectory)));
                 } catch (ExpressionEvaluationException ex) {
                     return null;
                 }
