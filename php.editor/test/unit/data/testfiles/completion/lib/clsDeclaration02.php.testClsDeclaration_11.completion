@@ -14,8 +14,8 @@ PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
-PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
+PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
@@ -47,6 +47,7 @@ PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
+PACKAGE    foo                             [PUBLIC]   null
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
@@ -80,6 +81,8 @@ PACKAGE    e                               [PUBLIC]   Test204925_08_C\d
 PACKAGE    f                               [PUBLIC]   Test204925_06_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
+PACKAGE    lib                             [PUBLIC]   foo
+PACKAGE    url                             [PUBLIC]   foo\lib
 CLASS      CIface1                         [PUBLIC]   First
 CLASS      CIface2                         [PUBLIC]   Second
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
