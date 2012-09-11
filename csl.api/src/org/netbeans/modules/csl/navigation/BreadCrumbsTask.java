@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -172,7 +173,10 @@ public class BreadCrumbsTask extends ElementScanningTask {
                 
             }, false), Lookups.fixed(new OpenCookie() {
                 @Override public void open() {
-                    UiUtils.open(item.getElementHandle().getFileObject(), (int) item.getPosition());
+                    FileObject file = item.getElementHandle().getFileObject();
+                    if (file != null) {
+                        UiUtils.open(file, (int) item.getPosition());
+                    }
                 }
             }));
             this.item = item;
