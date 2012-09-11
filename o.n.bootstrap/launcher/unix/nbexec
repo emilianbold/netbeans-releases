@@ -444,7 +444,7 @@ EOF
 
     if /usr/bin/grep "ProxyAuto.*: *1" ${scutil_out} >/dev/null 2>&1; then
         if  /usr/bin/grep "ProxyAutoConfigEnable.*: *1" ${scutil_out} >/dev/null 2>&1; then
-            http_proxy_tmp="PAC `/usr/bin/grep ProxyAutoConfigURLString ${scutil_out} | /usr/bin/awk '{print $3}'`"
+            http_proxy_tmp="PAC `/usr/bin/grep ProxyAutoConfigURLString ${scutil_out} | /usr/bin/awk 'END{print $3}'`"
             rm ${scutil_out}
             return 0
         fi
@@ -454,8 +454,8 @@ EOF
     fi
 
     if /usr/bin/grep "HTTPEnable *: *1" ${scutil_out} >/dev/null 2>&1; then
-	http_proxy_host=`/usr/bin/grep HTTPProxy ${scutil_out} | /usr/bin/awk '{print $3}'`
-	http_proxy_port=`/usr/bin/grep HTTPPort ${scutil_out} | /usr/bin/awk '{print $3} '`
+	http_proxy_host=`/usr/bin/grep HTTPProxy ${scutil_out} | /usr/bin/awk 'END{print $3}'`
+	http_proxy_port=`/usr/bin/grep HTTPPort ${scutil_out} | /usr/bin/awk 'END{print $3} '`
         http_proxy_tmp=$http_proxy_host:$http_proxy_port
         rm ${scutil_out}
         return 0
