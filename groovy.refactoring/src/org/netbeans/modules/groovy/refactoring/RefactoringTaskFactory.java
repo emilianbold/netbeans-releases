@@ -42,11 +42,17 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
+import java.util.Collection;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.refactoring.RefactoringTask.NodeToElementTask;
 import org.netbeans.modules.groovy.refactoring.RefactoringTask.TextComponentTask;
+import org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringUI;
+import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -56,14 +62,107 @@ import org.openide.util.Lookup;
  */
 public class RefactoringTaskFactory {
 
-    public static RefactoringTask createRefactoringTask(Lookup lookup) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        FileObject fileObject = lookup.lookup(FileObject.class);
+    public enum RefactoringType {
+        FIND_USAGES, RENAME
+    }
+
+    public static RefactoringTask createRefactoringTask(Lookup lookup, RefactoringType type) {
+        final EditorCookie ec = lookup.lookup(EditorCookie.class);
 
         if (GroovyProjectUtil.isFromEditor(ec)) {
-            return new TextComponentTask(ec, fileObject);
+            return getTextComponentTask(lookup, type);
         } else {
-            return new NodeToElementTask(lookup.lookupAll(Node.class), fileObject);
+            return getNodeToElementTask(lookup, type);
+        }
+    }
+    
+    private static RefactoringTask getTextComponentTask(Lookup lookup, RefactoringType type) {
+        final EditorCookie ec = lookup.lookup(EditorCookie.class);
+        final FileObject fileObject = getFileObject(lookup);
+
+        switch (type) {
+            case FIND_USAGES: 
+                return new FindUsagesTextComponentTask(ec, fileObject);
+            case RENAME:
+                return new RenameRefactoringTextComponentTask(ec, fileObject);
+        }
+        return null;
+    }
+
+    private static RefactoringTask getNodeToElementTask(Lookup lookup, RefactoringType type) {
+        final FileObject fileObject = lookup.lookup(FileObject.class);
+
+        switch (type) {
+            case FIND_USAGES:
+                return new FindUsagesNodeToElementTask(lookup.lookupAll(Node.class), fileObject);
+            case RENAME:
+                // TODO: Implement as well
+        }
+        return null;
+    }
+
+    private static FileObject getFileObject(Lookup lookup) {
+        final Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        final Node node;
+        if (nodes.size() == 1) {
+            node = nodes.iterator().next();
+        } else {
+            node = null;
+        }
+
+        final DataObject dataObject;
+        if (node != null) {
+            dataObject = node.getLookup().lookup(DataObject.class);
+        } else {
+            dataObject = null;
+        }
+
+        return (dataObject != null) ? dataObject.getPrimaryFile() : null;
+    }
+
+    
+    private static class FindUsagesTextComponentTask extends TextComponentTask {
+
+        public FindUsagesTextComponentTask(EditorCookie ec, FileObject fileObject) {
+            super(ec, fileObject);
+        }
+
+        @Override
+        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+            if (selectedElement != null && selectedElement.getName() != null) {
+                return new WhereUsedQueryUI(selectedElement);
+            }
+            return null;
+        }
+    }
+
+    private static class FindUsagesNodeToElementTask extends NodeToElementTask {
+
+        public FindUsagesNodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
+            super(nodes, fileObject);
+        }
+
+        @Override
+        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
+            if (selectedElement != null && selectedElement.getName() != null) {
+                return new WhereUsedQueryUI(selectedElement);
+            }
+            return null;
+        }
+    }
+
+    private static class RenameRefactoringTextComponentTask extends TextComponentTask {
+
+        public RenameRefactoringTextComponentTask(EditorCookie ec, FileObject fileObject) {
+            super(ec, fileObject);
+        }
+
+        @Override
+        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+            if (selectedElement != null && selectedElement.getName() != null) {
+                return new RenameRefactoringUI(selectedElement);
+            }
+            return null;
         }
     }
 }

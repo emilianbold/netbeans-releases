@@ -42,29 +42,33 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
-import java.util.List;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 
 /**
  *
  * @author Martin Janicek
  */
-public class FindOverridingMethods extends AbstractFindUsages {
+public class FindClassDeclarationVisitor extends AbstractFindUsagesVisitor {
 
-    public FindOverridingMethods(GroovyRefactoringElement element) {
-        super(element);
-    }
+    private final String findingFqn;
+    
 
-
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.METHOD;
+    public FindClassDeclarationVisitor(ModuleNode moduleNode, String findingFqn) {
+        super(moduleNode);
+        this.findingFqn = ElementUtils.normalizeTypeName(findingFqn, null);
     }
 
     @Override
-    protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visitClass(ClassNode clazz) {
+        final ClassNode type = ElementUtils.getType(clazz);
+        final String typeName = ElementUtils.getTypeName(type);
+
+        if (findingFqn.equals(typeName)) {
+            usages.add(new FakeASTNode(type, typeName));
+        }
+        super.visitClass(clazz);
     }
 }

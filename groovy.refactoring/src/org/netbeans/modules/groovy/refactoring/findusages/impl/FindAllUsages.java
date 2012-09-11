@@ -42,29 +42,44 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
+ * This strategy is used in refactoring other then Find Usages. 
  *
+ * {@link FindTypeUsages} doesn't find all usages in all files (e.g. if finding
+ * usages for a specific class type, we don't want to see constructor in the find
+ * results, but on the other hand these are pretty important for rename refactoring).
+ *
+ * Because of that we need to have two different implementation. One for FindUsages
+ * itself and the second one as a base used by other refactoring types.
+ * 
  * @author Martin Janicek
  */
-public class FindOverridingMethods extends AbstractFindUsages {
+public class FindAllUsages extends AbstractFindUsages {
 
-    public FindOverridingMethods(GroovyRefactoringElement element) {
+    public FindAllUsages(GroovyRefactoringElement element) {
         super(element);
     }
 
 
     @Override
     protected ElementKind getElementKind() {
-        return ElementKind.METHOD;
+        return ElementKind.CLASS;
     }
 
     @Override
     protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<AbstractFindUsagesVisitor> visitors = new ArrayList<AbstractFindUsagesVisitor>();
+
+        visitors.add(new FindTypeUsagesVisitor(moduleNode, defClass));
+        visitors.add(new FindMethodUsagesVisitor(moduleNode, element));
+        visitors.add(new FindClassDeclarationVisitor(moduleNode, defClass));
+
+        return visitors;
     }
 }
