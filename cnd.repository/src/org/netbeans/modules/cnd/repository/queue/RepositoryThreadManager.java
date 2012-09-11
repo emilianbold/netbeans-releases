@@ -54,7 +54,7 @@ import org.openide.util.RequestProcessor;
  * Manages repository writing threads
  * @author Vladimir Kvashin
  */
-public class RepositoryThreadManager {
+public final class RepositoryThreadManager {
     
 //    private static final RepositoryThreadManager instance = new RepositoryThreadManager();
     
@@ -67,8 +67,8 @@ public class RepositoryThreadManager {
     private boolean finished = false;
     
     private int currThread = 0;
-    private RepositoryWriter writer;
-    private RepositoryQueue queue;
+    private final RepositoryWriter writer;
+    private final RepositoryQueue queue;
     private static boolean proceed = true;
 
     private ReadWriteLock rwLock;
@@ -103,10 +103,13 @@ public class RepositoryThreadManager {
 	this.writer = writer;
         this.rwLock = rwLock;
         queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
-        queue.start();
     }
 
-    public RepositoryQueue startup() {
+    public RepositoryQueue getQueue() {
+        return queue;
+    }
+
+    public void startup() {
 	if( Stats.queueTrace ) { System.err.printf("RepositoryThreadManager.startup\n"); } // NOI18N
 	int threadCount = Integer.getInteger("cnd.repository.writer.threads", 1).intValue(); // NOI18N
         if (threadCount < 1) {
@@ -118,12 +121,12 @@ public class RepositoryThreadManager {
             Runnable r = new Wrapper(new RepositoryWritingThread(writer, queue, rwLock));
                 processor.post(r);
         }
-	return queue;
+        queue.startup();
     }
 
-	public int getCurrThread() {
-		return currThread;
-	}
+    public int getCurrThread() {
+            return currThread;
+    }
 
     public void shutdown() {
 	if( Stats.queueTrace ) { System.err.printf("RepositoryThreadManager.shutdown\n"); } // NOI18N

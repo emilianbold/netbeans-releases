@@ -98,7 +98,7 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
         removedObject = new RemovedPersistent();
         queueLock = new ReentrantReadWriteLock(true);
         threadManager = new RepositoryThreadManager(this, queueLock);
-        queue = threadManager.startup();
+        queue = threadManager.getQueue();
         units = new ConcurrentHashMap<Integer, Unit>();
     }
 
@@ -413,6 +413,7 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
 
     @Override
     public void startup(int persistMechanismVersion) {
+        threadManager.startup();
     }
 
     @Override

@@ -172,6 +172,9 @@ public final class DelegateRepository implements Repository {
     @Override
     public void startup(int persistMechanismVersion) {
         this.persistMechanismVersion = persistMechanismVersion;
+        for (BaseRepository delegate : getDelegates()) {
+            delegate.startup(persistMechanismVersion);
+        }
     }
 
     private BaseRepository createRepository(int id, CacheLocation cacheLocation) {
@@ -293,7 +296,6 @@ public final class DelegateRepository implements Repository {
 
         @Override
         public void startup(int persistMechanismVersion) {
-            throw new IllegalArgumentException(exceptionText);
         }
 
         @Override
