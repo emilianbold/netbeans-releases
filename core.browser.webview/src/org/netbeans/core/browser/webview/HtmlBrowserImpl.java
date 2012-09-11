@@ -105,6 +105,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     
     @Override
     public void reloadDocument() {
+        init();
         getBrowser().reloadDocument();
     }
 

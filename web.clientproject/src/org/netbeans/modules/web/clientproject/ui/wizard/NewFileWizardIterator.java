@@ -221,7 +221,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
     private ClientSideProject getClientSideProject(Project project) {
         if (!(project instanceof ClientSideProject)) {
-            LOGGER.log(Level.WARNING, "ClientSideProject expected but found {0}", project.getClass().getName());
+            LOGGER.log(Level.WARNING, "ClientSideProject expected but found {0}", project.getClass().getName()); //NOI18N
             return null;
         }
         return (ClientSideProject) project;

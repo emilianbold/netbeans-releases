@@ -91,7 +91,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
         SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);

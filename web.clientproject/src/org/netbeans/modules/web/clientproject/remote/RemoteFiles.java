@@ -91,7 +91,7 @@ public class RemoteFiles {
     
     private void update() {
         try {
-            ParserManager.parseWhenScanFinished("text/html", new UserTask() {
+            ParserManager.parseWhenScanFinished("text/html", new UserTask() { //NOI18N
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     updateRemoteFiles();
@@ -159,7 +159,7 @@ public class RemoteFiles {
         List<URL> res = new ArrayList<URL>();
         for (URL u : allRemoteDependencies) {
             String uu = u.toExternalForm();
-            if (uu.toLowerCase().endsWith(".js")) {
+            if (uu.toLowerCase().endsWith(".js")) { //NOI18N
                 res.add(u);
             }
         }
