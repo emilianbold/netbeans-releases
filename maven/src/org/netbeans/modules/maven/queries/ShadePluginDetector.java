@@ -81,7 +81,7 @@ public class ShadePluginDetector implements ForeignClassBundler { // #155091
         if (PluginPropertyUtils.getPluginVersion(nbmp.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-shade-plugin") == null) {
             return true;
         }
-        Boolean toret = Boolean.valueOf(PluginPropertyUtils.getPluginProperty(nbmp.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-shade-plugin", "shadedArtifactAttached", "shade"));
+        Boolean toret = Boolean.valueOf(PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, "maven-shade-plugin", "shadedArtifactAttached", "shade"));
         if (toret == Boolean.FALSE) {
             if (pr != null) {
                 pr.addReport(PROBLEM_REPORT);

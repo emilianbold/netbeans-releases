@@ -774,6 +774,37 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     }
 
     /**
+     * Update data object. Can be called when a module is enabled and new data
+     * loader produces new data object.
+     */
+    public void updateDataObject(DataObject updatedDataObject) {
+        FileObject updatedPF = updatedDataObject.getPrimaryFile();
+        if (dataObject == null
+                || dataObject.getPrimaryFile().equals(updatedPF)) {
+            if (updatedPF.isValid()) {
+                this.invalidityStatus = null;
+                if (fileListener == null) {
+                    this.fileListener = new FileListener();
+                    updatedPF.addFileChangeListener(fileListener);
+                } else if (updatedPF != dataObject.getPrimaryFile()) {
+                    dataObject.getPrimaryFile().removeFileChangeListener(
+                            fileListener);
+                    updatedPF.addFileChangeListener(fileListener);
+                }
+                this.dataObject = updatedDataObject;
+                this.nodeDelegate = updatedDataObject.getNodeDelegate();
+                this.valid = true;
+                for (TextDetail td : textDetails) {
+                    td.updateDataObject(updatedDataObject);
+                }
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Expected data object for the same file");          //NOI18N
+        }
+    }
+
+    /**
      */
     public InvalidityStatus replace() throws IOException {
         assert !EventQueue.isDispatchThread();

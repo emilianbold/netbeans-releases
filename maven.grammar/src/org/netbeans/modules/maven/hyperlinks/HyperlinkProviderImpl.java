@@ -217,11 +217,11 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                     String urlText = text;
                     if (urlText.contains("${")) {//NOI18N
                         //special case, need to evaluate expression
-                        NbMavenProject nbprj = getNbMavenProject(doc);
+                        Project nbprj = getProject(doc);
                         if (nbprj != null) {
                             Object exRes;
                             try {
-                                exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(urlText);
+                                exRes = PluginPropertyUtils.createEvaluator(nbprj).evaluate(urlText);
                                 if (exRes != null) {
                                     urlText = exRes.toString();
                                 }
@@ -299,9 +299,9 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             if (tup != null) {
                String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets
                 try {
-                    NbMavenProject nbprj = getNbMavenProject(doc);
+                    Project nbprj = getProject(doc);
                     if (nbprj != null) {
-                        Object exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(tup.value);
+                        Object exRes = PluginPropertyUtils.createEvaluator(nbprj).evaluate(tup.value);
                         if (exRes != null) {
                             return Hint_prop_resolution(prop, exRes);
                         } else {
@@ -383,16 +383,20 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     }
     
     private NbMavenProject getNbMavenProject(Document doc) {
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        if (dobj != null) {
-            Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
-            if (prj != null) {
-                return prj.getLookup().lookup(NbMavenProject.class);
-            }
+        Project prj = getProject(doc);
+        if (prj != null) {
+            return prj.getLookup().lookup(NbMavenProject.class);
         }
         return null;
-    } 
-    
+    }
+
+    private Project getProject(Document doc) {
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        if (dobj != null) {
+            return FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+        }
+        return null;
+    }
     private FileObject getPath(FileObject parent, String path) {
         // TODO more substitutions necessary probably..
         if (path.startsWith("${basedir}/")) { //NOI18N

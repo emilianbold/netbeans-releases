@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -62,6 +63,7 @@ import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.netbeans.modules.search.ui.UiUtils;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -117,6 +119,8 @@ public final class TextDetail implements Selectable {
     private boolean selected = true;
     /** Line number indent */
     private String lineNumberIndent = "";                               //NOI18N
+    /** Show the text detail after the data object is updated */
+    private boolean showAfterDataObjectUpdated = false;
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
     /** Constructor using data object. 
@@ -140,6 +144,11 @@ public final class TextDetail implements Selectable {
         prepareLine();
         if (lineObj == null) {
             Toolkit.getDefaultToolkit().beep();
+            EditCookie ed = dobj.getLookup().lookup(EditCookie.class);
+            if (ed != null) {
+                ed.edit();
+                showAfterDataObjectUpdated = true; // show correct line later
+            }
             return;
         }
         if (how == DH_HIDE) {
@@ -381,6 +390,31 @@ public final class TextDetail implements Selectable {
 
     public void fireChange() {
         changeSupport.fireChange();
+    }
+
+    /**
+     * Update data object. Can be called when a module is enabled and new data
+     * loader produces new data object. The new data object can provide new
+     * features, e.g. LineCookie.
+     */
+    public void updateDataObject(DataObject dataObject) {
+        if (this.dobj.getPrimaryFile().equals(
+                dataObject.getPrimaryFile())) {
+            this.dobj = dataObject;
+            this.lineObj = null;
+            if (showAfterDataObjectUpdated) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showDetail(TextDetail.DH_GOTO);
+                    }
+                });
+                showAfterDataObjectUpdated = false;
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Expected data object for the same file");          //NOI18N
+        }
     }
 
     /**
