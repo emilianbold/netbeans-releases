@@ -214,16 +214,18 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             if (node instanceof CallFrame) {
                 frame = (CallFrame) node;
                 file = frame.getScript().getURL();
-                FileObject fo = null;
-                try {
-                    URL url = URI.create(file).toURL();
-                    if (project != null) {
-                        fo = ServerURLMapping.fromServer(project, url);
+                if (!file.isEmpty()) {
+                    FileObject fo = null;
+                    try {
+                        URL url = URI.create(file).toURL();
+                        if (project != null) {
+                            fo = ServerURLMapping.fromServer(project, url);
+                        }
+                    } catch (MalformedURLException ex) {
                     }
-                } catch (MalformedURLException ex) {
-                }
-                if (fo != null) {
-                    file = fo.getNameExt();
+                    if (fo != null) {
+                        file = fo.getNameExt();
+                    }
                 }
             } else if (node instanceof JToolTip) {
                 JToolTip tooltip = (JToolTip) node;
@@ -231,15 +233,17 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
                 if (node instanceof CallFrame) {
                     frame = (CallFrame) node;
                     file = frame.getScript().getURL();
-                    try {
-                        URL url = URI.create(file).toURL();
-                        if (project != null) {
-                            FileObject fo = ServerURLMapping.fromServer(project, url);
-                            if (fo != null) {
-                                file = FileUtil.getFileDisplayName(fo);
+                    if (!file.isEmpty()) {
+                        try {
+                            URL url = URI.create(file).toURL();
+                            if (project != null) {
+                                FileObject fo = ServerURLMapping.fromServer(project, url);
+                                if (fo != null) {
+                                    file = FileUtil.getFileDisplayName(fo);
+                                }
                             }
+                        } catch (MalformedURLException ex) {
                         }
-                    } catch (MalformedURLException ex) {
                     }
                 } else {
                     throw new UnknownTypeException("Unknown Type Node: " + node);   // NOI18N
