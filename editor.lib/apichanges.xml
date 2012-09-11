@@ -107,6 +107,28 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="programmatic.tooltips.visible">
+            <summary>Support to show tooltips not tied to the view hierarchy</summary>
+            <version major="3" minor="28"/>
+            <date day="11" month="9" year="2012"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"
+                addition="yes"/>
+            <description>
+                <p>
+                    When the tooltip is being shown (<code>setTooltipVisible(true)</code>),
+                    the ToolTipSupport attempts to build the tooltip from the view hierarchy,
+                    based on mouse position. This may fail, if the tooltip was initiated in
+                    other way, than mouse hover, or even programmatically.
+                </p>
+                <p>
+                    The new <code>setTooltipVisible</code> overload allows to skip the step
+                    during the process of showing the tooltip.
+                </p>
+            </description>
+            <class name="ToolTipSupport" package="org.netbeans.editor.ext"/>
+            <issue number="216245"/>
+        </change>
         <change id="absolute-positioned-tooltips">
             <summary>Tooltips can be positioned at absolute position, not relative to the caret</summary>
             <version major="3" minor="26"/>

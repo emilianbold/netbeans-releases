@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -561,14 +562,6 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSwitch6Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch6.js");
-    }
-
-    public void testSwitch189745() throws Exception {
-        reformatFileContents("testfiles/formatter/switch189745.js",new IndentPrefs(4, 4));
-    }
-
-    public void testSwitch189745Indented() throws Exception {
-        reindentFileContents("testfiles/formatter/switch189745.js", null);
     }
 
     public void testIf1() throws Exception {
@@ -1454,6 +1447,19 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));
     }
 
+    public void testCodeTemplate1() throws Exception {
+        reformatFileContents("testfiles/formatter/codeTemplate1.js",
+                Collections.<String, Object>emptyMap(), null, true);
+    }
+
+    public void testIssue189745() throws Exception {
+        reformatFileContents("testfiles/formatter/issue189745.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue189745Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/issue189745.js", null);
+    }
+
     public void testIssue218090() throws Exception {
         reformatFileContents("testfiles/formatter/issue218090.js",new IndentPrefs(4, 4));
     }
@@ -1584,10 +1590,14 @@ public class JsFormatterTest extends JsTestBase {
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
-        reformatFileContents(file, options, null);
+        reformatFileContents(file, options, null, false);
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options, String suffix) throws Exception {
+        reformatFileContents(file, options, suffix, false);
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options, String suffix, boolean template) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
 
@@ -1611,6 +1621,10 @@ public class JsFormatterTest extends JsTestBase {
         BaseDocument doc = getDocument(text);
         assertNotNull(doc);
 
+        if (template) {
+            Dictionary<Object, Object> dict = doc.getDocumentProperties();
+            dict.put(JsFormatter.CT_HANDLER_DOC_PROPERTY, "test");
+        }
 
         IndentPrefs preferences = new IndentPrefs(4, 4);
         Formatter formatter = getFormatter(preferences);

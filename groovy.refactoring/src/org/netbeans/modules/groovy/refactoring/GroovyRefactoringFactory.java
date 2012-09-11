@@ -46,8 +46,10 @@ package org.netbeans.modules.groovy.refactoring;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
+import org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringPlugin;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -85,8 +87,13 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
         boolean supportedFile = GroovyProjectUtil.isInGroovyProject(sourceFO) && GroovyProjectUtil.isGroovyFile(sourceFO);
 
-        if (refactoring instanceof WhereUsedQuery && supportedFile){
-            return new FindUsagesPlugin(sourceFO, element, (WhereUsedQuery) refactoring);
+        if (supportedFile) {
+            if (refactoring instanceof WhereUsedQuery){
+                return new FindUsagesPlugin(sourceFO, element, (WhereUsedQuery) refactoring);
+            }
+            if (refactoring instanceof RenameRefactoring) {
+                return new RenameRefactoringPlugin(sourceFO, element, (RenameRefactoring) refactoring);
+            }
         }
         return null;
     }

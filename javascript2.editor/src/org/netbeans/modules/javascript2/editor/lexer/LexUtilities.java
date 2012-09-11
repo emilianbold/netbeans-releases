@@ -48,6 +48,7 @@ import java.util.List;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Language;
 
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -81,7 +82,8 @@ public final class LexUtilities {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
-    
+
+    @CheckForNull
     public static TokenSequence<? extends JsTokenId> getTokenSequence(Snapshot snapshot,
             int offset, Language<JsTokenId> language) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
@@ -103,6 +105,7 @@ public final class LexUtilities {
     }
 
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
+    @CheckForNull
     public static <K> TokenSequence<? extends K> getTokenSequence(TokenHierarchy<?> th,
             int offset, Language<? extends K> language) {
         TokenSequence<? extends K> ts = th.tokenSequence(language);

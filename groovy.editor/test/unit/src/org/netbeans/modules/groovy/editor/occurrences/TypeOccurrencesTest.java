@@ -177,6 +177,6 @@ public class TypeOccurrencesTest extends GroovyTestBase {
 
 
     private void testCaretLine(String caretLine) throws Exception {
-        checkOccurrences("testfiles/TypeOccurrencesTester.groovy", caretLine, true);
+        checkOccurrences("testfiles/TypeOccurrencesTester.groovy", caretLine, false);
     }
 }

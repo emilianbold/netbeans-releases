@@ -574,7 +574,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         //y += visible.y;
         
         ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
-        tts.setToolTipVisible(true);
+        tts.setToolTipVisible(true, false);
         tts.setToolTip(tooltip, 
                 PopupManager.ScrollBarBounds, 
                 new Point(-x, -y),
