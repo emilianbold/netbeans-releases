@@ -286,8 +286,10 @@ public class HtmlElementNode extends AbstractNode {
                     @Override
                     public void run(HtmlParserResult result) {
                         OpenTag openTag = (OpenTag) htmlD.resolve(result);
-                        HtmlElementProperties.PropertiesPropertySet pset = new HtmlElementProperties.PropertiesPropertySet(result, openTag);
-                        pset_ref.set(pset);
+                        if(openTag != null) {
+                            HtmlElementProperties.PropertiesPropertySet pset = new HtmlElementProperties.PropertiesPropertySet(result, openTag);
+                            pset_ref.set(pset);
+                        }
                     }
                 });
             } catch (ParseException ex) {
