@@ -101,6 +101,8 @@ public class RuleNode extends AbstractNode {
     
     private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
+    
+    private Map<PropertyDefinition, Declaration> addedDeclarations = new HashMap<PropertyDefinition, Declaration>();
 
     public RuleNode(RuleEditorPanel panel) {
         super(new RuleChildren());
@@ -212,6 +214,9 @@ public class RuleNode extends AbstractNode {
 
             Map<PropertyCategory, List<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, List<Declaration>>(PropertyCategory.class);
             for (Declaration d : declarations) {
+                if(addedDeclarations.containsValue(d)) {
+                    continue; //skip those added declarations
+                }
                 //check the declaration
                 org.netbeans.modules.css.model.api.Property property = d.getProperty();
                 PropertyValue propertyValue = d.getPropertyValue();
@@ -269,7 +274,12 @@ public class RuleNode extends AbstractNode {
 
                     //add the rest of unused properties to the property set
                     for (PropertyDefinition pd : allInCat) {
-                        propertySet.add(pd);
+                        Declaration alreadyAdded = addedDeclarations.get(pd);
+                        if(alreadyAdded != null) {
+                            propertySet.add(alreadyAdded, true);
+                        } else {
+                            propertySet.add(pd);
+                        }
                     }
 
                 }
@@ -285,6 +295,9 @@ public class RuleNode extends AbstractNode {
 
             List<Declaration> filtered = new ArrayList<Declaration>();
             for (Declaration d : declarations) {
+                if(addedDeclarations.containsValue(d)) {
+                    continue; //skip those added declarations
+                }
                 //check the declaration
                 org.netbeans.modules.css.model.api.Property property = d.getProperty();
                 PropertyValue propertyValue = d.getPropertyValue();
@@ -321,9 +334,14 @@ public class RuleNode extends AbstractNode {
                     all.remove(def);
                 }
 
-                //add the rest of unused properties to the property set
+                 //add the rest of unused properties to the property set
                 for (PropertyDefinition pd : all) {
-                    set.add(pd);
+                    Declaration alreadyAdded = addedDeclarations.get(pd);
+                    if (alreadyAdded != null) {
+                        set.add(alreadyAdded, true);
+                    } else {
+                        set.add(pd);
+                    }
                 }
 
             }
@@ -371,15 +389,15 @@ public class RuleNode extends AbstractNode {
                     propertyCategory.getShortDescription());
         }
 
-        public void add(Declaration declaration) {
-            DeclarationProperty property = createDeclarationProperty(declaration);
+        public void add(Declaration declaration, boolean markAsModified) {
+            DeclarationProperty property = createDeclarationProperty(declaration, markAsModified);
             declaration2PropertyMap.put(declaration, property);
             properties.add(property);
         }
 
         public void addAll(Collection<Declaration> declarations) {
             for (Declaration d : declarations) {
-                add(d);
+                add(d, false);
             }
         }
 
@@ -484,14 +502,16 @@ public class RuleNode extends AbstractNode {
             if (!isAddPropertyMode()) {
                 applyModelChanges();
             } else {
+                //add property mode - just refresh the content
+                addedDeclarations.put(def, newDeclaration); //remember what we've added during this dialog cycle
                 fireContextChanged();
             }
         }
     }
 
-    private DeclarationProperty createDeclarationProperty(Declaration declaration) {
+    private DeclarationProperty createDeclarationProperty(Declaration declaration, boolean markAsModified) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
-        return new DeclarationProperty(declaration, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
+        return new DeclarationProperty(declaration, markAsModified, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
     }
 
     public class DeclarationProperty extends PropertySupport {
@@ -499,13 +519,15 @@ public class RuleNode extends AbstractNode {
         private Declaration declaration;
         private DeclarationInfo info;
         private PropertyEditor editor;
+        private boolean markAsModified;
 
-        public DeclarationProperty(Declaration declaration, PropertyEditor editor) {
+        public DeclarationProperty(Declaration declaration, boolean markAsModified, PropertyEditor editor) {
             super(declaration.getProperty().getContent().toString(),
                     String.class,
                     declaration.getProperty().getContent().toString(),
                     null, true, getRule().isValid() && !isAddPropertyMode());
             this.declaration = declaration;
+            this.markAsModified = markAsModified;
             this.editor = editor;
         }
 
@@ -545,7 +567,7 @@ public class RuleNode extends AbstractNode {
             boolean strike = false;
 
             if (isShowAllProperties()) {
-                if(isAddPropertyMode()) {
+                if(isAddPropertyMode() && !markAsModified) {
                     color = COLOR_CODE_GRAY;
                 } else {
                     bold = true;
