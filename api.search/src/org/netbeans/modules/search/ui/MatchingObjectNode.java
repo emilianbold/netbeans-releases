@@ -220,11 +220,12 @@ public class MatchingObjectNode extends AbstractNode {
             fireIconChange();
             return; // already invalid
         }
-        if (origNodeListener != null) {
+        if (origNodeListener != null && original != null) {
             original.removeNodeListener(origNodeListener);
             origNodeListener = null;
         }
-        String oldDisplayName = original.getDisplayName();
+        String oldDisplayName = original == null
+                ? null : original.getDisplayName();
         original = new AbstractNode(Children.LEAF);
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
