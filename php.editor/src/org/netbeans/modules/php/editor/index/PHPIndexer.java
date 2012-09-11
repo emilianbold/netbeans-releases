@@ -94,6 +94,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Index Ruby structure into the persistent store for retrieval by
@@ -192,7 +193,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     public String getPersistentUrl(File file) {
         String url;
         try {
-            url = file.toURI().toURL().toExternalForm();
+            url = Utilities.toURI(file).toURL().toExternalForm();
             // Make relative URLs for urls in the libraries
             return PHPIndex.getPreindexUrl(url);
         } catch (MalformedURLException ex) {

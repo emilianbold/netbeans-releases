@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
@@ -144,7 +145,7 @@ public final class Model {
             modelVisitor = new ModelVisitor(info);
             modelVisitor.scan(Utils.getRoot(info));
             long end = System.currentTimeMillis();
-            LOGGER.fine("Building model took: " + (end - start));
+            LOGGER.log(Level.FINE, "Building model took: {0}", (end - start));
             }
 
         return modelVisitor;
