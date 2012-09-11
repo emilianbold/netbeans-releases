@@ -74,7 +74,7 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
     @Override
     protected void visitConstructorOrMethod(MethodNode node, boolean isConstructor) {
         String className = ElementUtils.getDeclaringClassName(node);
-        if (declaringClassName.equals(className)) {
+        if (!node.hasNoRealSourcePosition() && declaringClassName.equals(className)) {
             if (isConstructor && declaringClassName.endsWith(findingMethod)) {
                 usages.add(node);
             } else if (findingMethod.equals(node.getName())) {
