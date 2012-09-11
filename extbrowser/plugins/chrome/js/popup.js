@@ -44,6 +44,7 @@
 var NetBeans = chrome.extension.getBackgroundPage().NetBeans;
 var NetBeans_Presets = chrome.extension.getBackgroundPage().NetBeans_Presets;
 var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
+var NetBeans_ViewPort = chrome.extension.getBackgroundPage().NetBeans_ViewPort;
 
 /**
  * Window presets menu.
@@ -75,6 +76,10 @@ NetBeans_PresetMenu.resizePage = function(preset) {
         that.hide();
     });
 };
+NetBeans_PresetMenu.setAutoPresetActive = function() {
+    document.getElementById('autoPresetMenu').setAttribute('class', 'active');
+    document.getElementById('autoPresetRadio').setAttribute('checked', 'checked');
+}
 /*** ~Private ***/
 // menu init
 NetBeans_PresetMenu._init = function() {
@@ -112,39 +117,53 @@ NetBeans_PresetMenu._putPresets = function() {
     menu.innerHTML = '';
     for (p in this._presets) {
         var preset = this._presets[p];
+        var activePreset = NetBeans_ViewPort.width == preset.width && NetBeans_ViewPort.height == preset.height;
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
+        item.setAttribute('tabindex', '-1');
         item.setAttribute('title', I18n.message('_PresetTitle', [preset.displayName, preset.width, preset.height]));
         item.setAttribute('onclick', 'NetBeans_PresetMenu.resizePage(' + p + ');');
-        // type
-        var typeDiv = document.createElement('div');
-        typeDiv.setAttribute('class', 'type');
+        if (activePreset) {
+            item.setAttribute('class', 'active');
+        }
+        // formitem
+        var formItemDiv = document.createElement('div');
+        formItemDiv.setAttribute('class', 'form-item');
+        var radio = document.createElement('input')
+        radio.setAttribute('type', 'radio');
+        radio.setAttribute('tabindex', '-1');
+        if (activePreset) {
+            radio.setAttribute('checked', 'checked');
+        }
+        formItemDiv.appendChild(radio);
+        item.appendChild(formItemDiv);
+        // icon
         var presetType = NetBeans_Preset.typeForIdent(preset.type);
-        // type - image
+        var iconDiv = document.createElement('div');
+        iconDiv.setAttribute('class', 'icon');
         var img = document.createElement('img');
         img.setAttribute('src', '../img/presets/' + presetType.ident + '.png');
         img.setAttribute('alt', presetType.title);
         img.setAttribute('title', presetType.title);
-        typeDiv.appendChild(img);
-        item.appendChild(typeDiv);
+        iconDiv.appendChild(img);
+        item.appendChild(iconDiv);
         // label
         var labelDiv = document.createElement('div');
         labelDiv.setAttribute('class', 'label');
-        // label - size
-        var sizeDiv = document.createElement('div');
-        sizeDiv.setAttribute('class', 'size');
-        sizeDiv.appendChild(document.createTextNode(I18n.message('_PresetWidthHeight', [preset.width, preset.height])));
-        labelDiv.appendChild(sizeDiv);
-        // label - title
-        var titleDiv = document.createElement('div');
-        titleDiv.setAttribute('class', 'title');
-        titleDiv.appendChild(document.createTextNode(preset.displayName));
-        labelDiv.appendChild(titleDiv);
+        // label - main
+        var mainLabelDiv = document.createElement('div');
+        mainLabelDiv.setAttribute('class', 'main');
+        mainLabelDiv.appendChild(document.createTextNode(preset.displayName));
+        labelDiv.appendChild(mainLabelDiv);
+        // label - info
+        var infoLabelDiv = document.createElement('div');
+        infoLabelDiv.setAttribute('class', 'info');
+        infoLabelDiv.appendChild(document.createTextNode(I18n.message('_PresetWidthHeight', [preset.width, preset.height])));
+        labelDiv.appendChild(infoLabelDiv);
         item.appendChild(labelDiv);
         // append item
         menu.appendChild(item);
-        menu.appendChild(document.createElement('hr'));
     }
 };
 // show preset customizer
@@ -165,5 +184,12 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
 
 // run!
 window.addEventListener('load', function() {
-    NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
+    NetBeans.detectViewPort(function() {
+        NetBeans.getWindowInfo(function(window) {
+            if (window.state == 'maximized') {
+                NetBeans_PresetMenu.setAutoPresetActive();
+            }
+        });
+        NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
+    });
 }, false);

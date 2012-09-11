@@ -118,6 +118,9 @@
     "_Customize_hellip": {
         "message": "Customize..."
     },
+    "_SwitchSelectionMode": {
+        "message": "Switch Selection Mode"
+    },
     "_SelectMode": {
         "message": "Select Mode"
     },

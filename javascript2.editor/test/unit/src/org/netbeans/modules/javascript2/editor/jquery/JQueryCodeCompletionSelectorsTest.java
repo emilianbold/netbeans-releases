@@ -49,7 +49,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,7 +58,7 @@ import org.openide.filesystems.FileUtil;
  * @author Petr Pisl
  */
 public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
-    
+
     public JQueryCodeCompletionSelectorsTest(String testName) {
         super(testName);
     }
@@ -70,17 +69,15 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         TestLanguageProvider.register(CssTokenId.language());
         TestLanguageProvider.register(HTMLTokenId.language());
     }
-    
-    
-    
+
     public void testSelectorTag01() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$(\"ta^ble\").css(\"border\",\"3px solid red\");", false);
     }
-    
+
     public void testSelectorTag02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$(ta^ska).text(\"fadsfads\");", false);
     }
-    
+
     public void testSelectorId01() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$(my^)", false);
     }
@@ -88,7 +85,7 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
     public void testSelectorId02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('#^myIdTable')", false);
     }
-    
+
     public void testSelectorClass01() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div.^notMe')", false);
     }
@@ -96,31 +93,35 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
     public void testSelectorClass02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('.^notMe')", false);
     }
-    
+
     public void testSelectorTagAttr01() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div[t^itle]')", false);
     }
-    
+
     public void testSelectorTagAttr02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div[t^itle=\"hello\"]')", false);
     }
-    
+
     public void testCodeCompletionSelectorInsert() throws Exception {
         assertComplete("$(':b|')", "$(':button|')", ":button");
         assertComplete("$(h|)", "$(':has(|)')", ":has()");
         assertComplete("$(:|)", "$(':focus|')", ":focus");
         assertComplete("$(|)", "$(':odd|')", ":odd");
     }
-        
+
+    public void testIssue217013_1() throws Exception {
+        // complete $(di|)
+        assertComplete("$(di|)", "$('div'|)", "div");
+        assertComplete("$('di|')", "$('div|')", "div");
+        assertComplete("$('di|)", "$('div|)", "div");
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/jQuery/selectors/basic"))
-            })
-        );
+                JS_SOURCE_ID,
+                ClassPathSupport.createClassPath(new FileObject[]{
+                    FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/jQuery/selectors/basic"))
+                }));
     }
-    
 }
-

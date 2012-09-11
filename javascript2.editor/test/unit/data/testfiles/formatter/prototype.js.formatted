@@ -1868,10 +1868,10 @@ Form.Methods = {
     getElements: function(form) {
         return $A($(form).getElementsByTagName('*')).inject([],
                 function(elements, child) {
-            if (Form.Element.Serializers[child.tagName.toLowerCase()])
-                elements.push(Element.extend(child));
-            return elements;
-        }
+                    if (Form.Element.Serializers[child.tagName.toLowerCase()])
+                        elements.push(Element.extend(child));
+                    return elements;
+                }
         );
     },
     getInputs: function(form, typeName, name) {

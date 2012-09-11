@@ -62,6 +62,7 @@ import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 
 /**
  *
@@ -132,6 +133,10 @@ public final class ElementUtils {
      * @throws IllegalStateException if an implementation is missing for the given ASTNode type
      */
     public static ClassNode getType(ASTNode node) {
+        if (node instanceof FakeASTNode) {
+            node = ((FakeASTNode) node).getOriginalNode();
+        }
+
         if (node instanceof ClassNode) {
             ClassNode clazz = ((ClassNode) node);
             if (clazz.getComponentType() != null) {
@@ -173,6 +178,10 @@ public final class ElementUtils {
     }
 
     public static String getNameWithoutPackage(ASTNode node) {
+        if (node instanceof FakeASTNode) {
+            node = ((FakeASTNode) node).getOriginalNode();
+        }
+
         String name = null;
         if (node instanceof ClassNode) {
             name = ((ClassNode) node).getNameWithoutPackage();

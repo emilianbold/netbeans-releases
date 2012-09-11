@@ -72,6 +72,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.Model.Type;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
@@ -103,9 +104,9 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
 
-    private static final String CLOSE_FONT = "</font>";                   //NOI18N
+    private static final String CLOSE_FONT = "</font>"; //NOI18N
 
-    private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
+    private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY"; //NOI18N
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
@@ -131,11 +132,6 @@ public class PhpStructureScanner implements StructureScanner {
                 }
                 List<StructureItem> variables = new ArrayList<StructureItem>();
                 namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
-                //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
-                /*Collection<? extends VariableName> declaredVariables = fnc.getDeclaredVariables();
-                for (VariableName variableName : declaredVariables) {
-                    variables.add(new PHPSimpleStructureItem(variableName, "var"));
-                }*/
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
             for (ConstantElement constant : declaredConstants) {
@@ -163,13 +159,6 @@ public class PhpStructureScanner implements StructureScanner {
                         } else {
                             children.add(new PHPMethodStructureItem(method, variables));
                         }
-                        //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
-                        /*Collection<? extends VariableName> declaredVariables = method.getDeclaredVariables();
-                        for (VariableName variableName : declaredVariables) {
-                            if (!variableName.representsThis()) {
-                                variables.add(new PHPSimpleStructureItem(variableName, "var"));
-                            }
-                        }*/
                     }
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
@@ -180,14 +169,14 @@ public class PhpStructureScanner implements StructureScanner {
                     ClassScope cls = (ClassScope) type;
                     Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
                     for (FieldElement field : declaredFields) {
-                        children.add(new PHPFieldStructureItem(field));//NOI18N
+                        children.add(new PHPFieldStructureItem(field));
                     }
                 }
                 if (type instanceof TraitScope) {
                     TraitScope trait = (TraitScope) type;
                     Collection<? extends FieldElement> declaredFields = trait.getDeclaredFields();
                     for (FieldElement field : declaredFields) {
-                        children.add(new PHPFieldStructureItem(field));//NOI18N
+                        children.add(new PHPFieldStructureItem(field));
                     }
                 }
             }
@@ -207,7 +196,7 @@ public class PhpStructureScanner implements StructureScanner {
                 // check whether the ast is broken.
                 if (program.getStatements().get(0) instanceof ASTError) {
                     final Document document = info.getSnapshot().getSource().getDocument(false);
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings("unchecked") //NOI18N
                     Map<String, List<OffsetRange>> lastCorrect = document != null ?
                         ((Map<String, List<OffsetRange>>) document.getProperty(LAST_CORRECT_FOLDING_PROPERTY)) : null;
                     if (lastCorrect != null){
@@ -231,7 +220,7 @@ public class PhpStructureScanner implements StructureScanner {
                 }
             }
             PHPParseResult result = (PHPParseResult) info;
-            final Model model = result.getModel();
+            final Model model = result.getModel(Type.COMMON);
             FileScope fileScope = model.getFileScope();
             List<Scope> scopes = getEmbededScopes(fileScope, null);
             for (Scope scope : scopes) {
@@ -242,8 +231,7 @@ public class PhpStructureScanner implements StructureScanner {
                 if (scope instanceof TypeScope) {
                     getRanges(folds, FOLD_CLASS).add(offsetRange);
                 } else {
-                    //NamespaceScope excluded until getBlockRange() return proper vaalues
-                    if (scope instanceof FunctionScope || scope instanceof MethodScope /*|| scope instanceof NamespaceScope*/) {
+                    if (scope instanceof FunctionScope || scope instanceof MethodScope) {
                         getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
                     }
                 }
@@ -538,8 +526,6 @@ public class PhpStructureScanner implements StructureScanner {
             formatter.appendText(function.getName());
             formatter.appendText("(");   //NOI18N
 
-            //NOI18N
-            //NOI18N
             List<? extends ParameterElement> parameters = function.getParameters();
             if (parameters != null && parameters.size() > 0) {
                 boolean first = true;
@@ -828,7 +814,7 @@ public class PhpStructureScanner implements StructureScanner {
         private static final String PHP_TRAIT_ICON = "org/netbeans/modules/php/editor/resources/trait.png"; //NOI18N
 
         public PHPTraitStructureItem(ModelElement elementHandle, List<? extends StructureItem> children) {
-            super(elementHandle, children, "cl");
+            super(elementHandle, children, "cl"); //NOI18N
         }
 
         @Override
@@ -861,14 +847,14 @@ public class PhpStructureScanner implements StructureScanner {
     private class PHPConstructorStructureItem extends PHPStructureItem {
 
         public PHPConstructorStructureItem(MethodScope elementHandle, List<? extends StructureItem> children) {
-            super(elementHandle, children, "con");
+            super(elementHandle, children, "con"); //NOI18N
         }
 
         @Override
         public ElementKind getKind() {
             return ElementKind.CONSTRUCTOR;
         }
- 
+
         public MethodScope getMethodScope() {
             return (MethodScope) getModelElement();
         }
