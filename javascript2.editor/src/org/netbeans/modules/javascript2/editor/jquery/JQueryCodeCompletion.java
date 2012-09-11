@@ -73,6 +73,8 @@ public class JQueryCodeCompletion {
 
     private static final Logger LOGGER = Logger.getLogger(JQueryCodeCompletion.class.getName());
 
+    private static Collection<HtmlTagAttribute> allAttributes;
+
     private int lastTsOffset = 0;
     
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContextFinder.CompletionContext jsCompletionContext, String prefix) {
@@ -173,7 +175,7 @@ public class JQueryCodeCompletion {
         }
         return null;
     }
-    
+
     private enum SelectorKind {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
@@ -423,14 +425,21 @@ public class JQueryCodeCompletion {
     }
 
     private Collection<HtmlTagAttribute> getHtmlAttributes(final String tagName, final String prefix) {
-        Collection<HtmlTagAttribute> result = Collections.emptyList();
+        Collection<HtmlTagAttribute> result = Collections.<HtmlTagAttribute>emptyList();
         HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         HtmlTag htmlTag = htmlModel.getTag(tagName);
         if (htmlTag != null) {
             if (prefix.isEmpty()) {
-                result = htmlTag.getAttributes();
+                if (tagName.isEmpty()) {
+                    result = getAllAttributes(htmlModel);
+                } else {
+                    result = htmlTag.getAttributes();
+                }
             } else {
                 Collection<HtmlTagAttribute> attributes = htmlTag.getAttributes();
+                if (tagName.isEmpty()) {
+                    attributes = allAttributes;
+                }
                 result = new ArrayList<HtmlTagAttribute>();
                 for (HtmlTagAttribute htmlTagAttribute : attributes) {
                     if(htmlTagAttribute.getName().startsWith(prefix)) {
@@ -457,5 +466,27 @@ public class JQueryCodeCompletion {
             }
         }
         return result;
+    }
+
+    private synchronized Collection<HtmlTagAttribute> getAllAttributes(HtmlModel htmlModel) {
+        if (allAttributes == null) {
+            initAllAttributes(htmlModel);
+        }
+        return allAttributes;
+    }
+
+    private void initAllAttributes(HtmlModel htmlModel) {
+        assert allAttributes == null;
+        Map<String, HtmlTagAttribute> result = new HashMap<String, HtmlTagAttribute>();
+        for (HtmlTag htmlTag : htmlModel.getAllTags()) {
+            for (HtmlTagAttribute htmlTagAttribute : htmlTag.getAttributes()) {
+                // attributes can probably differ per tag so we can just offer some of them,
+                // at least for the CC purposes it should be complete list of attributes for unknown tag
+                if (!result.containsKey(htmlTagAttribute.getName())) {
+                    result.put(htmlTagAttribute.getName(), htmlTagAttribute);
+                }
+            }
+        }
+        allAttributes = result.values();
     }
 }
