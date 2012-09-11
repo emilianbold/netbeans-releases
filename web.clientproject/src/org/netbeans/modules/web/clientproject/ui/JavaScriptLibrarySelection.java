@@ -665,7 +665,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion;
+                assert false : "Unknown library type: " + libraryVersion; //NOI18N
                 // fallback
                 type = ""; // NOI18N
             }
@@ -733,7 +733,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (columnIndex == 1) {
                 return Bundle.JavaScriptLibrarySelection_column_version();
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; // NOI18N
             return null;
         }
 
@@ -757,7 +757,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (columnIndex == 1) {
                 return VersionsRenderer.getLabel(modelItem.getSelectedVersion());
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; //NOI18N
             return null;
         }
 
@@ -769,7 +769,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 modelItem.setSelectedVersion((LibraryVersion) aValue);
                 return;
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; //NOI18N
         }
 
         List<ModelItem> getItems() {
@@ -935,7 +935,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                     libraryVersions.add(libraryVersion);
                 }
                 if (libraryVersion == null) {
-                    assert false : "Unknown library version: " + library.getName();
+                    assert false : "Unknown library version: " + library.getName(); //NOI18N
                 }
             }
             return libraryVersions;
@@ -1001,7 +1001,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         @Override
         public String toString() {
-            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; // NOI18N
+            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; //NOI18N
         }
 
     }
@@ -1063,7 +1063,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion;
+                assert false : "Unknown library type: " + libraryVersion; //NOI18N
                 // fallback
                 type = ".???"; // NOI18N
             }

@@ -71,8 +71,8 @@ public final class ServerURLMapping {
      *   not accessible
      */
     public static URL toServer(Project p, FileObject projectFile) {
-        Parameters.notNull("project", p);
-        Parameters.notNull("projectFile", projectFile);
+        Parameters.notNull("project", p); //NOI18N
+        Parameters.notNull("projectFile", projectFile); //NOI18N
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             URL u = impl.toServer(projectFile);
@@ -83,7 +83,7 @@ public final class ServerURLMapping {
         try {
             URL url = projectFile.toURL();
             String urlString = url.toURI().toString();
-            String urlString2 = urlString.replaceAll("file:/", "file:///");
+            String urlString2 = urlString.replaceAll("file:/", "file:///"); //NOI18N
             if (!urlString.equals(urlString2)) {
                 url = new URL(urlString2);
             }
@@ -101,8 +101,8 @@ public final class ServerURLMapping {
      * @return returns null if nothing is known about this server URL
      */
     public static FileObject fromServer(Project p, URL serverURL) {
-        Parameters.notNull("project", p);
-        Parameters.notNull("serverURL", serverURL);
+        Parameters.notNull("project", p); //NOI18N
+        Parameters.notNull("serverURL", serverURL); //NOI18N
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             FileObject fo = impl.fromServer(serverURL);
@@ -110,7 +110,7 @@ public final class ServerURLMapping {
                 return fo;
             }
         }
-        if ("file".equals(serverURL.getProtocol())) {
+        if ("file".equals(serverURL.getProtocol())) { //NOI18N
             try {
                 File f = FileUtil.normalizeFile(Utilities.toFile(serverURL.toURI()));
                 return FileUtil.toFileObject(f);

@@ -167,13 +167,13 @@ public class ClientSideProject implements Project {
     }
 
     public boolean isUsingEmbeddedServer() {
-        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
+        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER)); //NOI18N
     }
 
     public FileObject getSiteRootFolder() {
         String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
         if (s == null) {
-            s = "";
+            s = ""; //NOI18N
         }
         if (s.length() == 0) {
             return getProjectDirectory();
@@ -200,7 +200,7 @@ public class ClientSideProject implements Project {
     public String getStartFile() {
         String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
         if (s == null) {
-            s = "index.html";
+            s = "index.html"; //NOI18N
         }
         return s;
     }
@@ -208,10 +208,10 @@ public class ClientSideProject implements Project {
     public String getWebContextRoot() {
         String ctx = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT);
         if (ctx == null) {
-            ctx = "/"+getProjectDirectory().getName();
+            ctx = "/"+getProjectDirectory().getName(); //NOI18N
         }
-        if (!ctx.startsWith("/")) {
-            ctx = "/" + ctx;
+        if (!ctx.startsWith("/")) { //NOI18N
+            ctx = "/" + ctx; //NOI18N
         }
         return ctx;
     }
@@ -440,7 +440,7 @@ public class ClientSideProject implements Project {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
                 // #217284 - ignore changes in CSS
-                if (!fe.getFile().hasExt("css")) {
+                if (!fe.getFile().hasExt("css")) { //NOI18N
                     r.fileChanged(fe.getFile());
                 }
             }
@@ -451,7 +451,7 @@ public class ClientSideProject implements Project {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
                 // #217284 - ignore changes in CSS
-                if (!fe.getFile().hasExt("css")) {
+                if (!fe.getFile().hasExt("css")) { //NOI18N
                     r.fileDeleted(fe.getFile());
                 }
             }

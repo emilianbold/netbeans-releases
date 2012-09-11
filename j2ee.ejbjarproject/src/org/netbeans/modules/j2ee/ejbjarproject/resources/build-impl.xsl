@@ -741,6 +741,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <property name="run.jvmargs.ide" value=""/>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>

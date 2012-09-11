@@ -120,7 +120,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
         if (!dirF.isDirectory() && !dirF.mkdirs()) {
-            throw new IOException("Cannot create project directory");
+            throw new IOException("Cannot create project directory"); //NOI18N
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
@@ -147,7 +147,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public Set<FileObject> instantiate() throws IOException {
-        throw new UnsupportedOperationException("never implemented - use progress one");
+        throw new UnsupportedOperationException("never implemented - use progress one"); //NOI18N
     }
 
     @Override
@@ -159,7 +159,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         String[] steps = wizard.createSteps();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            assert steps[i] != null : "Missing name for step: " + i;
+            assert steps[i] != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.

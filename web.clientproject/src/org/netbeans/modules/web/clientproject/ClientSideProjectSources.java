@@ -94,16 +94,16 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
 
     private Sources initSources() {
         SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER + "}")
-                .displayName("Site Root")
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SITE_ROOT"))
                 .add() // adding as principal root, continuing configuration
                 .type(WebClientProjectConstants.SOURCES_TYPE_HTML5).add(); // adding as typed root
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_TEST_FOLDER + "}")
-                .displayName("Unit Tests")
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_TEST_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "UNIT_TESTS"))
                 .add() // adding as principal root, continuing configuration
                 .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST).add(); // adding as typed root
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_CONFIG_FOLDER + "}")
-                .displayName("Configuration Files")
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_CONFIG_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "CONFIGURATION_FILES"))
                 .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG).add(); // adding as principal root
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();

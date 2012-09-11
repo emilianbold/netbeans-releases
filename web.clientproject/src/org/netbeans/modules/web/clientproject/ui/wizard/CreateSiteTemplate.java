@@ -239,7 +239,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         if (!new File(getTemplateFolder()).exists()) {
             return Bundle.CreateSiteTemplate_Error3();
         }
-        return "";
+        return ""; //NOI18N
     }
     
     public String getTemplateName() {
@@ -278,15 +278,15 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         public WizardPanel(ClientSideProject p) {
             comp = new CreateSiteTemplate(p.getProjectDirectory(), this);
-            comp.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0));
+            comp.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
             // Sets steps names for a panel
-            comp.putClientProperty("WizardPanel_contentData", new String[]{Bundle.CreateSiteTemplate_Title()});
+            comp.putClientProperty("WizardPanel_contentData", new String[]{Bundle.CreateSiteTemplate_Title()}); //NOI18N
             // Turn on subtitle creation on each step
-            comp.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+            comp.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOI18N
             // Show steps on the left side with the image on the background
-            comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+            comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
             // Turn on numbering of all steps
-            comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+            comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
         }
         
         @Override
@@ -362,8 +362,8 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         @Override
         public Set instantiate() throws IOException {
             String name = panel.comp.getTemplateName();
-            if (!name.endsWith(".zip")) {
-                name += ".zip";
+            if (!name.endsWith(".zip")) { //NOI18N
+                name += ".zip"; //NOI18N
             }
             File f = new File(panel.comp.getTemplateFolder(), name);
             if (f.exists()) {
@@ -426,7 +426,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     
     public static void showWizard(ClientSideProject p) {
         WizardDescriptor wd = new WizardDescriptor(new WizardIterator(p));
-        wd.setTitleFormat(new MessageFormat("{0}"));
+        wd.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wd.setTitle(Bundle.CreateSiteTemplate_WizardTitle());
         DialogDisplayer.getDefault().notify(wd);
     }
@@ -463,7 +463,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             if (fo == null) {
                 return new Node[0];
             }
-            if ("nbproject".equals(fo.getName())) {
+            if ("nbproject".equals(fo.getName())) { //NOI18N
                 return new Node[0];
             }
             return super.createNodes(key);
@@ -566,17 +566,17 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         EditableProperties ep = new EditableProperties(false);
         String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
         if (s == null) {
-            s = "";
+            s = ""; //NOI18N
         }
         ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, s);
         s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (s == null) {
-            s = "";
+            s = ""; //NOI18N
         }
         ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, s);
         s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
         if (s == null) {
-            s = "";
+            s = ""; //NOI18N
         }
         ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, s);
         ep.store(str);
@@ -596,7 +596,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
                 String relPath = FileUtil.getRelativePath(root, fo);
                 if (fo.isFolder()) {
-                    relPath += "/";
+                    relPath += "/"; //NOI18N
                 }
                 ZipEntry ze = new ZipEntry(relPath);
                 str.putNextEntry(ze);

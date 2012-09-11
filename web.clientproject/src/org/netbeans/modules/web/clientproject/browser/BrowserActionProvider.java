@@ -63,7 +63,7 @@ public class BrowserActionProvider implements ActionProvider {
     final private ClientSideProject project;
     private final BrowserSupport support;
     private ClientProjectConfigurationImpl cfg;
-    private RequestProcessor RP = new RequestProcessor("js unit testing");
+    private RequestProcessor RP = new RequestProcessor("js unit testing"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BrowserActionProvider.class.getName());
 
     public BrowserActionProvider(ClientSideProject project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
@@ -89,9 +89,10 @@ public class BrowserActionProvider implements ActionProvider {
             FileObject fo = project.getSiteRootFolder().getFileObject(startFile);
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
-                    new DialogDescriptor.Message("Main file "+startFile+" cannot be found and opened."));
+                    new DialogDescriptor.Message(
+                        org.openide.util.NbBundle.getMessage(BrowserActionProvider.class, "MAIN_FILE", startFile)));
                 CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
-                cust.showCustomizer("buildConfig");
+                cust.showCustomizer("buildConfig"); //NOI18N
                 // try again:
                 fo = project.getSiteRootFolder().getFileObject(startFile);
                 if (fo == null) {
@@ -113,12 +114,12 @@ public class BrowserActionProvider implements ActionProvider {
     
     private void runTests(final String testName) {
         if (!(project.getConfigFolder() != null && 
-                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null &&
+                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null && //NOI18N
                     project.getTestsFolder() != null)) {
             return;
         }
 
-        final FileObject configFile = project.getConfigFolder().getFileObject("jsTestDriver.conf");
+        final FileObject configFile = project.getConfigFolder().getFileObject("jsTestDriver.conf"); //NOI18N
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -130,7 +131,7 @@ public class BrowserActionProvider implements ActionProvider {
                         //RunTests.runTests(project, project.getProjectDirectory(), configFile, testName);
                     }
                 } catch (Throwable t) {
-                    LOGGER.log(Level.SEVERE, "cannot execute tests", t);
+                    LOGGER.log(Level.SEVERE, "cannot execute tests", t); //NOI18N
                 }
             }
         });
@@ -141,7 +142,7 @@ public class BrowserActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (COMMAND_TEST.equals(command)) {
             return (project.getConfigFolder() != null && 
-                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null &&
+                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null && //NOI18N
                     project.getTestsFolder() != null);
         }
         // not sure how to force js-test-driver to run single test; I tried everything according
@@ -167,7 +168,7 @@ public class BrowserActionProvider implements ActionProvider {
     }
 
     private boolean isHTMLFile(FileObject fo) {
-        return (fo != null && "html".equals(fo.getExt()));
+        return (fo != null && "html".equals(fo.getExt())); //NOI18N
     }
     
     private void browseFile(BrowserSupport bs, FileObject fo) {

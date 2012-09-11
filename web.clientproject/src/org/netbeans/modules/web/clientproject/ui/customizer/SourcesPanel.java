@@ -71,12 +71,12 @@ public class SourcesPanel extends javax.swing.JPanel {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
         String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
         if (s == null) {
-            s = "";
+            s = ""; //NOI18N
         }
         jSiteRootFolderTextField.setText(s);
         s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (s == null) {
-            s = "";
+            s = ""; //NOI18N
         }
         jTestFolderTextField.setText(s);
         String originalEncoding = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_ENCODING);
@@ -222,7 +222,7 @@ public class SourcesPanel extends javax.swing.JPanel {
                         tf.setText(FileUtil.getFileDisplayName(fo));
                     } else {
                         DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                            "Selected folder must be located under Project's Folder."));
+                            org.openide.util.NbBundle.getMessage(SourcesPanel.class, "WRONG_FOLDER")));
                     }
                 }
             }
