@@ -145,14 +145,12 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
 
         private Collection<CsmPreprocessorDirectiveCompletionItem> results;
         private int creationCaretOffset;
-        private int resultSetAnchorOffset;
         private int queryAnchorOffset;
         private String filterPrefix;
 
         /*package*/ Query(int caretOffset) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
-            this.resultSetAnchorOffset = creationCaretOffset;
         }
 
         @Override
@@ -167,7 +165,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
                     items = getFilteredData(items, this.filterPrefix);
                     resultSet.estimateItems(items.size(), -1);
                     resultSet.addAllItems(items);
-                    resultSet.setAnchorOffset(resultSetAnchorOffset);
+                    resultSet.setAnchorOffset(queryAnchorOffset);
                 }
                 resultSet.setHasAdditionalItems(false);
             }
@@ -197,7 +195,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
         @Override
         protected void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null && results != null) {
-                resultSet.setAnchorOffset(resultSetAnchorOffset);
+                resultSet.setAnchorOffset(queryAnchorOffset);
                 Collection<? extends CsmPreprocessorDirectiveCompletionItem> items = getFilteredData(results, filterPrefix);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
@@ -221,7 +219,6 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
         }
 
         private boolean init(final BaseDocument doc, final int caretOffset) throws BadLocationException {
-            resultSetAnchorOffset = caretOffset;
             filterPrefix = "";
             queryAnchorOffset = -1;
             if (CompletionSupport.isPreprocessorDirectiveCompletionEnabled(doc, caretOffset)) {
