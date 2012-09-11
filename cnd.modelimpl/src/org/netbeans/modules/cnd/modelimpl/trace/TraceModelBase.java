@@ -59,7 +59,7 @@ public class TraceModelBase {
     private boolean useCSysDefines = Boolean.getBoolean("cnd.modelimpl.c.define"); //NOI18N
     private boolean useCppSysIncludes = Boolean.getBoolean("cnd.modelimpl.cpp.include"); //NOI18N
     private boolean useCppSysDefines = Boolean.getBoolean("cnd.modelimpl.cpp.define"); //NOI18N
-    private ModelImpl model;
+    private final ModelImpl model;
     private CsmUID<CsmProject> projectUID;
     private List<String> quoteIncludePaths = new ArrayList<String>();
     private List<String> systemIncludePaths = new ArrayList<String>();
@@ -79,15 +79,20 @@ public class TraceModelBase {
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
         Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.OFF); // NOI18N
-        model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
-        if (model == null) {
-            model = new ModelImpl();
-        }
+        model = createModel();
         model.startup();
         if (clearCache) {
             RepositoryUtils.cleanCashes();
         }
         currentIncludePaths = quoteIncludePaths;
+    }
+
+    private static ModelImpl createModel() {
+        ModelImpl m = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
+        if (m == null) {
+            m = new ModelImpl();
+        }
+        return m;
     }
 
     protected final void setIncludePaths(List<String> sysIncludes, List<String> usrIncludes, List<String> libProjectsPaths) {
