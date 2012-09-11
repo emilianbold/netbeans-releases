@@ -572,6 +572,8 @@ NetBeans_Presets._savePresets = function() {
  * Viewport (so browser window can be correctly resized).
  */
 NetBeans_ViewPort = {
+    width: -1,
+    height: -1,
     marginWidth: 0,
     marginHeight: 0
 };

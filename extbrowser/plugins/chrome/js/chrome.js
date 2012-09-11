@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -129,6 +129,16 @@ NetBeans.showInfoBar = function(tabId) {
         path: 'html/infobar.html'
     });
 };
+NetBeans.getWindowInfo = function(callback) {
+    chrome.windows.getLastFocused(callback);
+}
+NetBeans.detectViewPort = function(callback) {
+    chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
+        if (callback) {
+            callback();
+        }
+    });
+}
 NetBeans.resetPageSize = function(callback) {
     chrome.windows.getLastFocused(function(win) {
         var opt = {};
@@ -153,8 +163,7 @@ NetBeans.resizePage = function(preset, callback) {
 };
 // resize actual page
 NetBeans._resizePage = function(width, height, callback) {
-    // detect viewport
-    chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
+    this.detectViewPort(function() {
         // resize
         chrome.windows.getLastFocused(function(win) {
             var opt = {};
@@ -177,7 +186,7 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
         console.log('send ['+tabId+","+id+","+method+","+JSON.stringify(params));
     }
-    chrome.debugger.sendCommand({tabId : tabId}, method, params, 
+    chrome.debugger.sendCommand({tabId : tabId}, method, params,
         function(result) {
             if (chrome.extension.lastError) {
                 console.log('debugger send command result code: ' + chrome.extension.lastError);
@@ -242,6 +251,8 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
     var type = message.type;
     if (type === 'VIEWPORT') {
         console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
+        NetBeans_ViewPort.width = message.width;
+        NetBeans_ViewPort.height = message.height;
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
         sendResponse();
@@ -266,5 +277,5 @@ chrome.windows.getAll({populate: true}, function(windows) {
                 NetBeans.tabUpdated(tab);
             }
         }
-    }    
+    }
 });
