@@ -211,6 +211,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         }
         Collections.reverse(entries);
         tableModel = new BookmarksTableModel(true);
+        assert !entries.contains(null);
         tableModel.setEntries(entries);
         return new JTable(tableModel);
     }
