@@ -281,10 +281,10 @@ public class ASTUtils {
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + constantExpression.getText().length());
         } else if (node instanceof FakeASTNode) {
-            int startOffset = ASTUtils.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            int endOffset = ASTUtils.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+            final String typeName = ElementUtils.getTypeNameWithoutPackage(((FakeASTNode) node).getOriginalNode());
+            final int start = getOffset(doc, lineNumber, columnNumber);
             
-            return new OffsetRange(startOffset, endOffset);
+            return getNextIdentifierByName(doc, typeName, start);
         }
         return OffsetRange.NONE;
     }
@@ -737,6 +737,10 @@ public class ASTUtils {
      * For example return type of method definition is not accessible as node,
      * so I am wrapping MethodNode in this FakeASTNode and I also provide
      * text to compute OffsetRange for...
+     *
+     * This class is heavily used across both editor and refactoring module. In
+     * a lot of cases it makes no sense to use it and a lot of those cases should
+     * be removed.
      */
     public static final class FakeASTNode extends ASTNode {
 

@@ -60,11 +60,9 @@ public class JsDocParserTest extends JsTestBase {
     public JsDocParserTest(String name) {
         super(name);
     }
-
-    private static final JsDocElementType[] expectedTypes = new JsDocElementType[] {
+    private static final JsDocElementType[] expectedTypes = new JsDocElementType[]{
         // context sensitive type
         JsDocElementType.CONTEXT_SENSITIVE,
-
         // classic types
         JsDocElementType.ARGUMENT, JsDocElementType.AUGMENTS, JsDocElementType.AUTHOR, JsDocElementType.BORROWS,
         JsDocElementType.CLASS, JsDocElementType.CONSTANT, JsDocElementType.CONSTRUCTOR, JsDocElementType.CONSTRUCTS,
@@ -116,8 +114,17 @@ public class JsDocParserTest extends JsTestBase {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue188091.js"));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElementType.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("Placing container.  Extends {@link goog.ui.Container} by adding\n" +
-                "  the ability to place children at different content nodes.", ((DescriptionElement) tags.get(0)).getDescription());
+        assertEquals("Placing container.  Extends {@link goog.ui.Container} by adding\n"
+                + "  the ability to place children at different content nodes.", ((DescriptionElement) tags.get(0)).getDescription());
+    }
+
+    public void testIssue217857() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue217857.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.DESCRIPTION, tags.get(0).getType());
+        assertEquals("The `angular.module` @stop is a global place for creating and registering Angular modules. All\n"
+                + "  modules (angular core or 3rd party) that should be available to an application must be\n"
+                + "  registered using this mechanism.", ((DescriptionElement) tags.get(0)).getDescription());
     }
 
     private void checkElementTypes(String filePath) {

@@ -910,8 +910,8 @@ public abstract class WebRestSupport extends RestSupport {
     }
     
     protected void reconfigApplicationClass( final String appClassFqn ) {
+        scheduleReconfigAppClass(appClassFqn);
         if ( restModelListener == null ){
-            scheduleReconfigAppClass(appClassFqn);
             restModelListener = new PropertyChangeListener() {
                 
                 @Override

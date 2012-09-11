@@ -79,10 +79,13 @@ public abstract class AbstractFindUsages {
         this.usages = new ArrayList<FindUsagesElement>();
     }
 
-    protected abstract AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass);
+    protected abstract List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass);
 
     protected abstract ElementKind getElementKind();
 
+    protected List<AbstractFindUsagesVisitor> singleVisitor(AbstractFindUsagesVisitor visitor) {
+        return Collections.singletonList(visitor);
+    }
 
     /**
      * Collects find usages for a given <code>FileObject</code>
@@ -124,13 +127,15 @@ public abstract class AbstractFindUsages {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
-            ModuleNode moduleNode = result.getRootElement().getModuleNode();
-            BaseDocument doc = GroovyProjectUtil.getDocument(result, fo);
-
-            for (ASTNode node : getVisitor(moduleNode, defClass).findUsages()) {
-                if (node.getLineNumber() != -1 && node.getColumnNumber() != -1) {
-                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, node, fo, getElementKind()), doc));
+            final GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
+            final ModuleNode moduleNode = result.getRootElement().getModuleNode();
+            final BaseDocument doc = GroovyProjectUtil.getDocument(result, fo);
+            
+            for (AbstractFindUsagesVisitor visitor : getVisitors(moduleNode, defClass)) {
+                for (ASTNode node : visitor.findUsages()) {
+                    if (node.getLineNumber() != -1 && node.getColumnNumber() != -1) {
+                        usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, node, fo, getElementKind()), doc));
+                    }
                 }
             }
             Collections.sort(usages);

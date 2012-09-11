@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,37 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.rest.editor;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 
 /**
- * @author ads
  *
+ * @author Martin Janicek
  */
-class ApplicationConfigurationFix extends BaseRestConfigurationFix {
+public class FindClassDeclarationVisitor extends AbstractFindUsagesVisitor {
+
+    private final String findingFqn;
     
-    ApplicationConfigurationFix(Project project, FileObject fileObject, 
-            RestConfigurationEditorAwareTaskFactory factory, String fqn, 
-            ClasspathInfo cpInfo )
-    {
-        super(project, fileObject, factory , cpInfo );
-        this.fqn = fqn;
+
+    public FindClassDeclarationVisitor(ModuleNode moduleNode, String findingFqn) {
+        super(moduleNode);
+        this.findingFqn = ElementUtils.normalizeTypeName(findingFqn, null);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.editor.hints.Fix#getText()
-     */
     @Override
-    public String getText() {
-        return NbBundle.getMessage( RestConfigHint.class, 
-                "MSG_HintAddResourceClass", fqn );    // NOI18N
-    }
+    public void visitClass(ClassNode clazz) {
+        final ClassNode type = ElementUtils.getType(clazz);
+        final String typeName = ElementUtils.getTypeName(type);
 
-    private String fqn;
+        if (findingFqn.equals(typeName)) {
+            usages.add(new FakeASTNode(type, typeName));
+        }
+        super.visitClass(clazz);
+    }
 }
