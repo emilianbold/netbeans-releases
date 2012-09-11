@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -56,9 +57,10 @@ import org.jdesktop.swingx.JXTable;
  */
 public class JXTableDecorator extends JXTable {
 
-    public static final Color ALTERNATE_ROW_COLOR = new Color(0.92F, 0.95F, 0.99F);
-    public static final Color GRID_COLOR = new Color(14277081);
-    public static final Color ROLLOVER_ROW_COLOR = new Color(0.94F, 0.96F, 0.96F);
+    public static final Color ROW_COLOR = UIManager.getColor("nb.dataview.table.background") != null ? UIManager.getColor("nb.dataview.table.background") : Color.WHITE;
+    public static final Color ALTERNATE_ROW_COLOR = UIManager.getColor("nb.dataview.table.altbackground") != null ? UIManager.getColor("nb.dataview.table.altbackground") : new Color(0.92F, 0.95F, 0.99F);
+    public static final Color GRID_COLOR = UIManager.getColor("nb.dataview.table.gridbackground") != null ? UIManager.getColor("nb.dataview.table.gridbackground") : new Color(14277081);
+    public static final Color ROLLOVER_ROW_COLOR = UIManager.getColor("nb.dataview.table.altbackground") != null ? UIManager.getColor("nb.dataview.table.altbackground") : new Color(0.94F, 0.96F, 0.96F);
 
     JXTableDecorator() {
         super();
@@ -123,6 +125,6 @@ public class JXTableDecorator extends JXTable {
     }
 
     protected Color backgroundColorForRow(int row) {
-        return (row % 2 == 0) ? Color.WHITE : ResultSetJXTable.ALTERNATE_ROW_COLOR;
+        return (row % 2 == 0) ? ResultSetJXTable.ROW_COLOR : ResultSetJXTable.ALTERNATE_ROW_COLOR;
     }
 }
