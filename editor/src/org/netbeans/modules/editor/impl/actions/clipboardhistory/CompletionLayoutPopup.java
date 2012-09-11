@@ -635,7 +635,7 @@ public class CompletionLayoutPopup {
         
         private static FullTextPopup instance;
         
-        public static FullTextPopup getInstance() {
+        public synchronized static FullTextPopup getInstance() {
             if (instance == null) {
                 instance = new FullTextPopup();
             }
@@ -684,7 +684,7 @@ public class CompletionLayoutPopup {
             }
         }
 
-        public static CompletionPopup getInstance() {
+        public synchronized static CompletionPopup getInstance() {
             if (instance == null) {
                 instance = new CompletionPopup();
             }
