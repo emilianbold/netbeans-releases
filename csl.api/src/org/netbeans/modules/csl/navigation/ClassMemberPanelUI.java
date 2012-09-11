@@ -257,10 +257,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     
     private void doSelectNodes0(ParserResult info, BaseDocument bd, int offset) {
         ElementNode node;
-        if (info != null) {
-            node = getRootNode().getMimeRootNodeForOffset(info, offset);
-        } else if (bd != null) {
-            node = getRootNode().getMimeRootNodeForOffset(bd, offset);
+        final ElementNode rootNode = getRootNode();
+        if (info != null && rootNode != null) {
+            node = rootNode.getMimeRootNodeForOffset(info, offset);
+        } else if (bd != null && rootNode != null) {
+            node = rootNode.getMimeRootNodeForOffset(bd, offset);
         } else {
             return;
         }
@@ -328,7 +329,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
 
-                    final ElementNode root = getRootNode();
                     final Integer offset;
                     synchronized (ClassMemberPanelUI.this) {
                         offset = positionRequests.remove(fileObject);    
