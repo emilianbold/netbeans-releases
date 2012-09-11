@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -71,7 +72,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
@@ -145,6 +149,9 @@ import org.openide.util.actions.Presenter;
  */
 @NbBundle.Messages({
     "titleLabel.text={0} properties",
+    "titleLabel.text.no.selected.rule=No Rule Selected",
+    "titleLabel.tooltip.no.selected.rule=Select a css rule in editor or CSS Styles Window to activate the Rule Editor",
+    "titleLabel.no.selected.rule=No Rule Selected",
     "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only"
 })
 public class RuleEditorPanel extends JPanel {
@@ -386,12 +393,45 @@ public class RuleEditorPanel extends JPanel {
 
         add(sheet, BorderLayout.CENTER);
 
+        if(addPropertyMode) {
+            northWestPanel.remove(titleLabel);
+            northWestPanel.add(filterTextField, BorderLayout.CENTER);
+            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,8));
+            northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
+        }
+        
         northEastPanel.add(filters.getComponent(), BorderLayout.WEST);
 
         updateFiltersPresenters();
 
+        //add document listener to the filter text field 
+        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+ 
+            private void contentChanged() {
+                node.setFilterPrefix(filterTextField.getText());
+            }
+            
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                contentChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                contentChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        
     }
 
+    private ComboBoxModel createFilterCBModel() {
+        return new DefaultComboBoxModel(new Object[]{"jedna", "dva"});
+    }
+    
     private void addPropertyCBValueEntered() {
         Object selected = ADD_PROPERTY_CB_MODEL.getSelectedItem();
         if (selected == null) {
@@ -653,6 +693,8 @@ public class RuleEditorPanel extends JPanel {
             }
         });
         titleLabel.setText(Bundle.titleLabel_text(ruleNameRef.get()));
+        titleLabel.setToolTipText(null);
+        titleLabel.setEnabled(true);
 
     }
 
@@ -663,8 +705,11 @@ public class RuleEditorPanel extends JPanel {
         Rule old = this.rule;
         this.rule = null;
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, null);
-
-        titleLabel.setText(null);
+ 
+        titleLabel.setText(Bundle.titleLabel_no_selected_rule());
+        titleLabel.setToolTipText(Bundle.titleLabel_tooltip_no_selected_rule());
+        titleLabel.setEnabled(false);
+        
         addPropertyButton.setEnabled(false);
         addPropertyCB.setEnabled(false);
         node.fireContextChanged();
@@ -707,6 +752,8 @@ public class RuleEditorPanel extends JPanel {
     private void initComponents() {
 
         menuLabel = new javax.swing.JLabel();
+        cancelFilterLabel = new javax.swing.JLabel();
+        filterTextField = new javax.swing.JTextField();
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
@@ -723,6 +770,18 @@ public class RuleEditorPanel extends JPanel {
                 menuLabelMouseClicked(evt);
             }
         });
+
+        cancelFilterLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/cancel.png"))); // NOI18N
+        cancelFilterLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.cancelFilterLabel.text")); // NOI18N
+        cancelFilterLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                cancelFilterLabelMouseClicked(evt);
+            }
+        });
+
+        filterTextField.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.filterTextField.text")); // NOI18N
+        filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
+        filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
         setLayout(new java.awt.BorderLayout());
 
@@ -766,9 +825,16 @@ public class RuleEditorPanel extends JPanel {
         //just invoke popup as if right-clicked
         popupMenu.show(menuLabel, 0, 0);
     }//GEN-LAST:event_menuLabelMouseClicked
+
+    private void cancelFilterLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelFilterLabelMouseClicked
+        filterTextField.setText(null);
+    }//GEN-LAST:event_cancelFilterLabelMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
     private javax.swing.JComboBox addPropertyCB;
+    private javax.swing.JLabel cancelFilterLabel;
+    private javax.swing.JTextField filterTextField;
     private javax.swing.JLabel menuLabel;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;

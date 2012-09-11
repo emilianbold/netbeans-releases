@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.cncppunit.codegeneration.CUnitCodeGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -208,16 +209,17 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
     private void setCUnitOptions(Project project, Folder testFolder) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
-        FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(projectDescriptor.getActiveConfiguration());
-        LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
-        LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-        librariesConfiguration.add(new LibraryItem.StdLibItem("CUnit", "CUnit", new String[]{"cunit"})); // NOI18N
-        linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
-        linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
-        CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
-        CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
-        cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
-        ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+        for (Configuration cfg : projectDescriptor.getConfs().getConfigurations()) {
+            FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(cfg);
+            LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
+            LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
+            librariesConfiguration.add(LibraryItem.StdLibItem.getStandardItem("CUnit")); // NOI18N
+            linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
+            linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
+            CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
+            CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
+            cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+            ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+        }
     }
 }
-
