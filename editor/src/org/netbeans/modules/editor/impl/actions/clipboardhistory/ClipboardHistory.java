@@ -57,7 +57,7 @@ import org.openide.util.datatransfer.ExClipboard;
 public final class ClipboardHistory implements ClipboardListener {
     private final LinkedList<ClipboardHistoryElement> data;
     private static ClipboardHistory instance;
-    private static final int MAXSIZE = 9;
+    private static int MAXSIZE = 9;
 
     public static ClipboardHistory getInstance() {
         if (instance == null) {
@@ -68,6 +68,10 @@ public final class ClipboardHistory implements ClipboardListener {
 
     private ClipboardHistory() {
         data = new LinkedList<ClipboardHistoryElement>();
+        Integer maxsize = Integer.getInteger("netbeans.clipboard.history.maxsize");
+        if (maxsize != null) {
+            MAXSIZE = maxsize;
+        }
     }
 
 
