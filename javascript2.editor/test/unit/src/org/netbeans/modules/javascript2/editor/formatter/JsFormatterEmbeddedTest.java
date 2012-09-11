@@ -117,22 +117,6 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/embeddedSimple4.html", new IndentPrefs(4,4));
     }
 
-//    public void testEmbeddedSimple5() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedSimple5.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple6() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedSimple6.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple7() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedSimple7.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple8() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedSimple8.php", new IndentPrefs(4,4));
-//    }
-
     public void testEmbeddedTrimmed1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedTrimmed1.html", new IndentPrefs(4,4));
     }
@@ -145,11 +129,5 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
     }
 
-//    public void testEmbeddedMultipleSections3() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedMultipleSections3.tpl", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedMultipleSections4() throws Exception {
-//        reformatFileContents("testfiles/formatter/embeddedMultipleSections4.php", new IndentPrefs(4,4));
-//    }
+    // XXX also see org.netbeans.modules.php.editor.js.JsFormatterEmbeddedTest
 }

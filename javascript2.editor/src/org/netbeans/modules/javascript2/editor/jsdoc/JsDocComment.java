@@ -51,13 +51,8 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.SimpleElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
-import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
-import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
-import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeDescribedElement;
 
 /**
  * Represents block of jsDoc comment which contains particular {@link JsDocTag}s.

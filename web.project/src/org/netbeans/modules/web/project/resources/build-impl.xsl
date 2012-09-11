@@ -1793,7 +1793,7 @@ exists or setup the property manually. For example like this:
             <target name="-copy-persistence-xml" if="has.persistence.xml">
                 <mkdir dir="${{build.web.dir}}/WEB-INF/classes/META-INF"/>
                 <copy todir="${{build.web.dir}}/WEB-INF/classes/META-INF">
-                    <fileset dir="${{persistence.xml.dir}}" includes="persistence.xml"/>
+                    <fileset dir="${{persistence.xml.dir}}" includes="persistence.xml orm.xml"/>
                 </copy>
             </target>
             

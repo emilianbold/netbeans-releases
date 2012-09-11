@@ -1792,7 +1792,7 @@ is divided into following sections:
             <target name="-copy-persistence-xml" if="has.persistence.xml"><!-- see eclipselink issue https://bugs.eclipse.org/bugs/show_bug.cgi?id=302450, need to copy persistence.xml before build -->
                 <mkdir dir="${{build.classes.dir}}/META-INF"/>
                 <copy todir="${{build.classes.dir}}/META-INF">
-                    <fileset dir="${{meta.inf.dir}}" includes="persistence.xml"/>
+                    <fileset dir="${{meta.inf.dir}}" includes="persistence.xml orm.xml"/>
                 </copy>
             </target>
             
