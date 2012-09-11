@@ -13,7 +13,7 @@
                     console.error(e);
                 }
         <?php $iteration++ ?>
-    <?php } ?>
+        <?php } ?>
         });
     });
 </script>
