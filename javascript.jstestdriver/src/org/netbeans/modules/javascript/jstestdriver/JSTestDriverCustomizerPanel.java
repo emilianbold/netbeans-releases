@@ -60,12 +60,13 @@ import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 
 /**
  *
  */
-public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements DocumentListener {
+public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider  {
 
     private static final String LOCATION = "location";
     private static final String USE_BROWSER = "use.browser.";
@@ -335,6 +336,11 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     @Override
     public void changedUpdate(DocumentEvent e) {
         updateValidity();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel");
     }
 
     private static class TableRowCellRenderer extends DefaultTableCellRenderer {
