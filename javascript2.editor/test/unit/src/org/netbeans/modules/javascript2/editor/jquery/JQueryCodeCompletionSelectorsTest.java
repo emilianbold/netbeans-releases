@@ -116,6 +116,14 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         assertComplete("$('di|)", "$('div|)", "div");
     }
 
+    public void testIssue217019_1() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('[^]')", false);
+    }
+
+    public void testIssue217019_2() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('[^')", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

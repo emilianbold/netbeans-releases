@@ -47,6 +47,7 @@ package org.netbeans.modules.groovy.refactoring.findusages;
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.AbstractFindUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllSubtypes;
@@ -167,7 +168,11 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
         }
 
         // This also happen in all other refactorings (rename, move etc.)
-        return new FindAllUsages(element);
+        if (element.getKind() == ElementKind.CONSTRUCTOR) {
+            return new FindAllUsages(element);
+        } else {
+            return new FindMethodUsages(element);
+        }
     }
 
     private AbstractFindUsages getClassStrategy() {

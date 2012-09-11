@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
@@ -93,7 +94,7 @@ public abstract class AbstractFindUsages {
      */
     public final void findUsages(FileObject fo) {
         try {
-            SourceUtils.runUserActionTask(fo, new AddFindUsagesElementsTask(fo, element.getDeclaringClass().getName()));
+            SourceUtils.runUserActionTask(fo, new AddFindUsagesElementsTask(fo, element.getDeclaringClassName()));
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
