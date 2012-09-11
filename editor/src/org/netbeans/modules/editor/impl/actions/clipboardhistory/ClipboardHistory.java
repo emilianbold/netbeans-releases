@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.openide.ErrorManager;
+import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
@@ -58,6 +60,12 @@ public final class ClipboardHistory implements ClipboardListener {
     private final LinkedList<ClipboardHistoryElement> data;
     private static ClipboardHistory instance;
     private static int MAXSIZE = 9;
+
+    private static Preferences prefs;
+    /** Name of preferences node where we persist history */
+    private static final String PREFS_NODE = "ClipboardHistory";  //NOI18N
+    private static final String PROP_ITEM_PREFIX = "item_";  //NOI18N
+    private static final boolean PERSISTENT_STATE = Boolean.getBoolean("netbeans.clipboard.history.persistent");
 
     public static ClipboardHistory getInstance() {
         if (instance == null) {
@@ -72,11 +80,25 @@ public final class ClipboardHistory implements ClipboardListener {
         if (maxsize != null) {
             MAXSIZE = maxsize;
         }
+        if (PERSISTENT_STATE) {
+            prefs = NbPreferences.forModule(ClipboardHistory.class).node(PREFS_NODE);
+            load();
+        }
     }
 
-
     private synchronized void addHistory(String text) {
+        if (text == null) {
+            return;
+        }
         ClipboardHistoryElement newHistory = new ClipboardHistoryElement(text);
+        if (PERSISTENT_STATE) {
+            addAndPersist(newHistory);
+        } else {
+            addHistory(newHistory);
+        }
+    }
+
+    private synchronized void addHistory(ClipboardHistoryElement newHistory) {
         if (!data.isEmpty() && newHistory.equals(data.getFirst())) {
             return;
         }
@@ -123,5 +145,36 @@ public final class ClipboardHistory implements ClipboardListener {
 
     public synchronized int getPosition(ClipboardHistoryElement history) {
         return data.indexOf(history);
+    }
+
+    private void load() {
+        for(int i=0; i < MAXSIZE; i++){
+            String item = prefs.get(PROP_ITEM_PREFIX + i, null);
+            if (item != null) {
+                data.add(i, new ClipboardHistoryElement(item));
+            }
+        }
+    }
+
+    public synchronized void addAndPersist(ClipboardHistoryElement newHistoryElement) {
+        if (data.size() > 0 && newHistoryElement.equals(data.get(0))) {
+            return;
+        }
+
+        for (int i = 0; i < data.size(); i++) {
+            if (newHistoryElement.equals(data.get(i))) {
+                data.remove(i);
+                break;
+            }
+        }
+
+        if (data.size() == MAXSIZE){
+            data.remove(MAXSIZE-1);
+        }
+        data.add(0, newHistoryElement);
+
+        for(int i=0;i < data.size();i++){
+            prefs.put(PROP_ITEM_PREFIX + i, data.get(i).getFullText());
+        }
     }
 }
