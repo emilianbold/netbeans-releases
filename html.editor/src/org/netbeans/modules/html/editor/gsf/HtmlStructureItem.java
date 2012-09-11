@@ -197,8 +197,9 @@ final class HtmlStructureItem implements StructureItem {
                     @Override
                     public void run(HtmlParserResult result) {
                         Node node = handle.resolve(result);
+                        // #214628 -- getNestedItems() must not return null
+                        items = new ArrayList<StructureItem>();
                         if (node != null) {
-                            items = new ArrayList<StructureItem>();
                             List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
                             for (OpenTag child : nonVirtualChildren) {
                                 HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
