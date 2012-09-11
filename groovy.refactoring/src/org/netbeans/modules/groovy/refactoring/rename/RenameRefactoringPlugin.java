@@ -55,6 +55,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionRef;
 
 /**
  * Implementation of the rename refactoring for groovy.
@@ -94,6 +95,10 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
     }
 
     private void addModificationToResult(ModificationResult modificationResult, FindUsagesElement whereUsedElement) {
+        if (isAlreadyInResult(modificationResult, whereUsedElement)) {
+            return;
+        }
+
         List<Difference> diffs = new ArrayList<Difference>();
         diffs.add(new Difference(
                 Difference.Kind.CHANGE,
@@ -105,6 +110,24 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
         if (!diffs.isEmpty()) {
             modificationResult.addDifferences(whereUsedElement.getParentFile(), diffs);
         }
+    }
 
+    private boolean isAlreadyInResult(ModificationResult modificationResult, FindUsagesElement whereUsedElement) {
+        final FileObject file = whereUsedElement.getParentFile();
+        final int start = whereUsedElement.getPosition().getBegin().getOffset();
+        final int end = whereUsedElement.getPosition().getEnd().getOffset();
+        
+        List<? extends Difference> differences = modificationResult.getDifferences(file);
+        if (differences != null && !differences.isEmpty()) {
+            for (Difference diff : differences) {
+                int startOffset = diff.getStartPosition().getOffset();
+                int endOffset = diff.getEndPosition().getOffset();
+
+                if (startOffset == start && endOffset == end) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
