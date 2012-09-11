@@ -58,7 +58,6 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,6 +70,8 @@ public class CopyResourcesIndexer extends CustomIndexer {
     private static final String MIME_JAVA = "text/x-java";  //NOI18N
     private static final String JAVA_NAME = "java"; //NOI18N
     private static final String PATH_TEMPLATE = "%s/%d/classes/META-INF";    //NOI18N
+    private static final String PERSISTENCE_XML = "persistence.xml";//NOI18N
+    private static final String ORM_XML = "orm.xml";//NOI18N
 
     private final Factory factory;
 
@@ -87,8 +88,10 @@ public class CopyResourcesIndexer extends CustomIndexer {
 
         private volatile String cachedPath;
         private FileObject activeRoot;
-        private Date timestamp;
-        private long length;
+        private Date timestampPersistenceXml = null;
+        private long lengthPersistenceXml = 0;
+        private Date timestampOrmXml = null;
+        private long lengthOrmXml = 0;
 
         @Override
         public boolean scanStarted(Context context) {
@@ -102,18 +105,25 @@ public class CopyResourcesIndexer extends CustomIndexer {
                     if(tests == null || tests.length==0) {
                         FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
                         if( persistenceXmlLocation!=null ) {
-                            final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
+                            final FileObject persistenceXML = persistenceXmlLocation.getFileObject(PERSISTENCE_XML);//NOI18N
                             if (persistenceXML != null) {
-                                final Date cts = persistenceXML.lastModified();
-                                final long cl = persistenceXML.getSize();
+                                final Date ctsPXml = persistenceXML.lastModified();
+                                final long clPXml = persistenceXML.getSize();
+                                final FileObject ormXML = persistenceXmlLocation.getFileObject(ORM_XML);//NOI18N
+                                final Date ctsOXml = ormXML != null ? ormXML.lastModified() : null;
+                                final long clOXml = ormXML != null ? ormXML.getSize() : 0;
+                                final boolean keepPersistenceXML = ctsPXml.equals(timestampPersistenceXml) && lengthPersistenceXml == clPXml;
+                                final boolean keepOrmXML = clOXml == lengthOrmXml && (ctsOXml == timestampOrmXml || ctsOXml.equals(timestampOrmXml));
                                 synchronized (Factory.this) {
-                                    if (root == activeRoot && cts.equals(timestamp) && length == cl) {
+                                    if (root == activeRoot && keepPersistenceXML && keepOrmXML) {
                                         //Nothing changed.
                                         return super.scanStarted(context);
                                     }
                                     activeRoot = root;
-                                    timestamp = cts;
-                                    length = cl;
+                                    timestampPersistenceXml = ctsPXml;
+                                    lengthPersistenceXml = clPXml;
+                                    timestampOrmXml = ctsOXml;
+                                    lengthOrmXml = clOXml;
                                 }
                                 try {
                                     final String path = getCachePath();
@@ -122,11 +132,20 @@ public class CopyResourcesIndexer extends CustomIndexer {
                                         final FileObject cacheRoot = context.getIndexFolder().getParent().getParent();
                                         final FileObject cacheDir = FileUtil.createFolder(cacheRoot,path);
                                         if (cacheDir != null) {
-                                            final FileObject toDelete = cacheDir.getFileObject(persistenceXML.getName(), persistenceXML.getExt());
-                                            if (toDelete != null) {
-                                                toDelete.delete();
+//                                            if(!keepOrmXML && ormXML!=null) {
+//                                                final FileObject toDelete1 = cacheDir.getFileObject(ormXML.getName(), ormXML.getExt());
+//                                                if (toDelete1 != null) {
+//                                                    toDelete1.delete();
+//                                                }
+//                                                FileUtil.copyFile(ormXML, cacheDir, ormXML.getName());
+//                                            }
+                                            if(!keepPersistenceXML) {
+                                                final FileObject toDelete2 = cacheDir.getFileObject(persistenceXML.getName(), persistenceXML.getExt());
+                                                if (toDelete2 != null) {
+                                                    toDelete2.delete();
+                                                }
+                                                FileUtil.copyFile(persistenceXML, cacheDir, persistenceXML.getName());
                                             }
-                                            FileUtil.copyFile(persistenceXML, cacheDir, persistenceXML.getName());
                                         }
                                     }
                                 } catch (IOException ex) {
