@@ -120,9 +120,9 @@ public final class BookmarkHistoryPopup implements KeyListener {
             hide();
         }
         lastFocusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        if ((gotoPreviousKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.previous")) != null) {
+        if ((gotoPreviousKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.previous")) != null) { //NOI18N
             keepOpenedModifiers = modifiersBits(gotoPreviousKeyStroke.getModifiers());
-            gotoNextKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.next");
+            gotoNextKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.next"); //NOI18N
         } else {
             keepOpenedModifiers = 0; // Keep opened until Escape pressed
         }
