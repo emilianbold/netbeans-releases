@@ -149,7 +149,7 @@ public final class ClientSideProjectDetector {
         @Override
         public boolean detected(File siteRoot) {
             if (siteRoot != this.siteRoot) {
-                throw new IllegalArgumentException("Unexpected site root given (" + siteRoot + "), expected " + this.siteRoot);
+                throw new IllegalArgumentException("Unexpected site root given (" + siteRoot + "), expected " + this.siteRoot); //NOI18N
             }
             if (!SITE_ROOT.equals(siteRoot.getName())) {
                 return false;

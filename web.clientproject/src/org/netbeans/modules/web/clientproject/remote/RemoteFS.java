@@ -130,9 +130,9 @@ public class RemoteFS extends AbstractFileSystem {
     
     private String getNameFrom(URL url) {
         String surl = url.toExternalForm();
-        if (surl.substring(0, 7).equalsIgnoreCase("http://")) {
+        if (surl.substring(0, 7).equalsIgnoreCase("http://")) { //NOI18N
             surl = surl.substring(7);
-        } else if (surl.substring(0, 8).equalsIgnoreCase("https://")) {
+        } else if (surl.substring(0, 8).equalsIgnoreCase("https://")) { //NOI18N
             surl = surl.substring(8);
         }
         surl = surl.replace('/', '_');
@@ -142,7 +142,7 @@ public class RemoteFS extends AbstractFileSystem {
 
     public FileObject getFileForURL(URL url) {
         String surl = getNameFrom(url);
-        FileObject fo = getRoot().getFileObject(surl, "");
+        FileObject fo = getRoot().getFileObject(surl, ""); //NOI18N
         if (fo != null) {
             return fo;
         }
@@ -150,7 +150,7 @@ public class RemoteFS extends AbstractFileSystem {
             urlCache.put(surl, url);
         }
         getRoot().refresh();
-        return getRoot().getFileObject(surl, "");
+        return getRoot().getFileObject(surl, ""); //NOI18N
     }
 
     @Override
@@ -201,7 +201,7 @@ public class RemoteFS extends AbstractFileSystem {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            refreshResource("", false);
+            refreshResource("", false); //NOI18N
         }
         
     }
@@ -256,18 +256,18 @@ public class RemoteFS extends AbstractFileSystem {
             if (fo != null) {
                 return fo.getInputStream();
             } else {
-                throw new FileNotFoundException("Did not find '"+name+"'");
+                throw new FileNotFoundException("Did not find '"+name+"'"); //NOI18N
             }
         }
 
         @Override
         public OutputStream outputStream(String name) throws IOException {
-            throw new IOException("Can not write to remote files");
+            throw new IOException("Can not write to remote files"); //NOI18N
         }
 
         @Override
         public void lock(String name) throws IOException {
-            throw new IOException("Can not write to remote files");
+            throw new IOException("Can not write to remote files"); //NOI18N
         }
 
         @Override
@@ -303,7 +303,7 @@ public class RemoteFS extends AbstractFileSystem {
             if (fo != null) {
                 fo.setAttribute(attrName, value);
             } else {
-                throw new IOException("Did not find '"+name+"'");
+                throw new IOException("Did not find '"+name+"'"); //NOI18N
             }
         }
 
@@ -319,7 +319,7 @@ public class RemoteFS extends AbstractFileSystem {
 
         @Override
         public void renameAttributes(String oldName, String newName) {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
         }
 
         @Override
@@ -388,7 +388,7 @@ public class RemoteFS extends AbstractFileSystem {
                 FileObject fo = files.iterator().next();
                 if (fo.isRoot()) {
                     return ImageUtilities.loadImage(
-                            "org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png");
+                            "org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png"); //NOI18N
                 }
             }
             return icon;

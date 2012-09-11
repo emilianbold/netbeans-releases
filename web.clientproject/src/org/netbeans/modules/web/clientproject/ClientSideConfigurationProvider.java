@@ -77,7 +77,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideConfigurationProvider.class.getName());
 
-    public static final String PROP_CONFIG = "config";
+    public static final String PROP_CONFIG = "config"; //NOI18N
     public static final String CONFIG_PROPS_PATH = AntProjectHelper.PRIVATE_PROPERTIES_PATH; // NOI18N
 
     private Lookup.Result<ClientProjectPlatformProvider> res = 
@@ -99,7 +99,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         p.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
-                    LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE);
+                    LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE); //NOI18N
                     pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
                 }
             }
@@ -119,7 +119,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
                 }
             }
         }
-        LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
+        LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs); //NOI18N
     }
     
     @Override
@@ -194,7 +194,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
 
     @Override
     public void propertyChange(PropertyChangeEvent e) {
-        LOGGER.log(Level.FINEST, "Received {0}", e);
+        LOGGER.log(Level.FINEST, "Received {0}", e); //NOI18N
         refreshConfigurations();
     }
     
@@ -203,7 +203,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         calculateConfigs();
         Set<String> newConfigs = configs.keySet();
         if (!oldConfigs.equals(newConfigs)) {
-            LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
+            LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs}); //NOI18N
             pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
         }
     }
@@ -227,7 +227,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
                 }
             }
         }
-        assert false : "should never happen: no platform can create configuration of type "+type+" and name it "+newName;
+        assert false : "should never happen: no platform can create configuration of type "+type+" and name it "+newName; //NOI18N
         return null;
     }
 

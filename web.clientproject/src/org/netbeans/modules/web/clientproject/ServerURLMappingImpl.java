@@ -70,8 +70,8 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
         } else {
             String relPath = FileUtil.getRelativePath(project.getSiteRootFolder(), projectFile);
             String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
-            if (!root.endsWith("/")) {
-                root += "/";
+            if (!root.endsWith("/")) { //NOI18N
+                root += "/"; //NOI18N
             }
             try {
                 return new URL(root + relPath);
@@ -91,7 +91,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
             String u = serverURL.toExternalForm();
             if (u.startsWith(root)) {
                 u = u.substring(root.length());
-                if (u.startsWith("/")) {
+                if (u.startsWith("/")) { //NOI18N
                     u = u.substring(1);
                 }
                 return project.getSiteRootFolder().getFileObject(u);

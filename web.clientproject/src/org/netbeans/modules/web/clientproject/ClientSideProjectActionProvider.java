@@ -113,8 +113,8 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             ap.invokeAction(command, context);
             return;
         }
-        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",
-                "Action not supported",
+        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration", //NOI18N
+                "Action not supported", //NOI18N
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.INFORMATION_MESSAGE,
                 new Object[]{NotifyDescriptor.OK_OPTION},

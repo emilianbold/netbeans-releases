@@ -380,7 +380,7 @@ public class ExistingClientSideProject extends JPanel {
 
     @NbBundle.Messages("ExistingClientSideProject.siteRoot.dialog.title=Select Site Root")
     private void siteRootBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_siteRootBrowseButtonActionPerformed
-        File siteRoot = browseFile(".siteRoot", Bundle.ExistingClientSideProject_siteRoot_dialog_title(),
+        File siteRoot = browseFile(".siteRoot", Bundle.ExistingClientSideProject_siteRoot_dialog_title(), //NOI18N
                 getSiteRoot());
         if (siteRoot != null) {
             siteRootTextField.setText(FileUtil.normalizeFile(siteRoot).getAbsolutePath());

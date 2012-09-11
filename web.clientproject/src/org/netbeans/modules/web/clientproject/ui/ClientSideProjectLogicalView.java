@@ -439,9 +439,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, project.getSiteRootFolder(), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, project.getSiteRootFolder(), new String[]{"nbproject", "build"}); //NOI18N
                 case Tests:
-                    return createNodeForFolder(k, project.getTestsFolder(), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, project.getTestsFolder(), new String[]{"nbproject", "build"}); //NOI18N
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
@@ -550,11 +550,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public String getDisplayName() {
             switch (nodeType) {
                 case Sources:
-                    return "Site Root";
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SITE_ROOT");
                 case Tests:
-                    return "Unit Tests";
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("UNIT_TESTS");
                 case Configuration:
-                    return "Configuration Files";
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("CONFIGURATION_FILES");
                 default:
                     throw new AssertionError(nodeType.name());
             }
@@ -595,7 +595,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png"); //NOI18N
         }
 
         @Override

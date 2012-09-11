@@ -73,7 +73,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
     static final Logger LOGGER = Logger.getLogger(CustomizerProviderImpl.class.getName());
 
-    static final String CUSTOMIZER_FOLDER_PATH = "Projects/org.netbeans.modules.web.clientproject/Customizer"; // NO18N
+    static final String CUSTOMIZER_FOLDER_PATH = "Projects/org.netbeans.modules.web.clientproject/Customizer"; // NOI18N
     // @GuardedBy("EDT")
     static final Map<Project, Dialog> PROJECT_2_DIALOG = new HashMap<Project, Dialog>();
 

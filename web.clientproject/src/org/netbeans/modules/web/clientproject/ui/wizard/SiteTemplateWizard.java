@@ -96,7 +96,7 @@ public class SiteTemplateWizard extends JPanel {
         assert EventQueue.isDispatchThread();
 
         archiveSiteCustomizer = archiveSiteTemplate.getCustomizer();
-        assert archiveSiteCustomizer != null : "Archive template must have a customizer";
+        assert archiveSiteCustomizer != null : "Archive template must have a customizer"; //NOI18N
 
         initComponents();
         // archive
@@ -421,7 +421,7 @@ public class SiteTemplateWizard extends JPanel {
 
         @Override
         public String getDescription() {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
         }
 
         @Override
