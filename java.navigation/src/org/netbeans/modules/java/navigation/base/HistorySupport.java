@@ -65,6 +65,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -142,8 +143,10 @@ public class HistorySupport {
         return history;
     }
 
-    public static ComboBoxModel createModel(@NonNull final HistorySupport support) {
-        return new HistoryModel(support);
+    public static ComboBoxModel createModel(
+            @NonNull final HistorySupport support,
+            @NullAllowed final String emptyMessage) {
+        return new HistoryModel(support, emptyMessage);
     }
 
 
@@ -177,15 +180,18 @@ public class HistorySupport {
 
         private final List<ListDataListener> listeners;
         private final HistorySupport history;
+        private final String emptyMessage;
         //@GuardedBy("this")
-        private List<? extends Pair<URI,ElementHandle<TypeElement>>> cache;
+        private List<?> cache;
         private Object selectedItem;
 
-
-        HistoryModel(@NonNull final HistorySupport history) {
+        HistoryModel(
+                @NonNull final HistorySupport history,
+                @NonNull final String emptyMessage) {
             Parameters.notNull("history", history); //NOI18N
             listeners = new CopyOnWriteArrayList<ListDataListener>();
             this.history = history;
+            this.emptyMessage = emptyMessage;
             this.history.addPropertyChangeListener(WeakListeners.propertyChange(this, history));
         }
 
@@ -250,9 +256,13 @@ public class HistorySupport {
 
 
         @NonNull
-        private synchronized List<? extends Pair<URI,ElementHandle<TypeElement>>> getCache() {
+        private synchronized List<?> getCache() {
             if (cache == null) {
                 cache = history.getHistory();
+                if (cache.isEmpty() && emptyMessage != null) {
+                    cache = Collections.singletonList(emptyMessage);
+                    setSelectedItem(emptyMessage);
+                }
             }
             return cache;
         }
