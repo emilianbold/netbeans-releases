@@ -64,11 +64,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class DiffElement extends SimpleRefactoringElementImplementation {
 
-    private Difference diff;
-    private PositionBounds bounds;
-    private FileObject parentFile;
-    private ModificationResult modification;
-    private String displayText;
+    private final Difference diff;
+    private final PositionBounds bounds;
+    private final FileObject parentFile;
+    private final ModificationResult modification;
+    private final String displayText;
     private WeakReference<String> newFileContent;
 
 
@@ -128,7 +128,7 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
         if (parentFile.getName().equals(oldFileName)) {
             try {
                 FileLock fileLock = parentFile.lock();
-                parentFile.rename(fileLock, newFileName, "groovy");
+                parentFile.rename(fileLock, newFileName, "groovy"); // NOI18N
                 fileLock.releaseLock();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
