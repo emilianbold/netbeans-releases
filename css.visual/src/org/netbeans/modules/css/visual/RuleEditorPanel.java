@@ -43,8 +43,6 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.FeatureDescriptor;
@@ -52,7 +50,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -62,7 +59,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -78,7 +74,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
@@ -243,12 +238,6 @@ public class RuleEditorPanel extends JPanel {
             }
         }
     };
-    private final ActionListener addPropertyCBActionListener = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            addPropertyCBValueEntered();
-        }
-    };
 
     public RuleEditorPanel() {
         this(false);
@@ -359,13 +348,11 @@ public class RuleEditorPanel extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.removeInitialText();
-                addPropertyCB.getEditor().addActionListener(addPropertyCBActionListener);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.addInitialText();
-                addPropertyCB.getEditor().removeActionListener(addPropertyCBActionListener);
             }
         });
 
@@ -428,10 +415,6 @@ public class RuleEditorPanel extends JPanel {
         
     }
 
-    private ComboBoxModel createFilterCBModel() {
-        return new DefaultComboBoxModel(new Object[]{"jedna", "dva"});
-    }
-    
     private void addPropertyCBValueEntered() {
         Object selected = ADD_PROPERTY_CB_MODEL.getSelectedItem();
         if (selected == null) {
@@ -454,34 +437,37 @@ public class RuleEditorPanel extends JPanel {
         }
 
         if (propertyName != null) {
-            //1.create the property
-            //2.select the corresponding row in the PS
+            //1.verify whether there's such property
+            if(Properties.getProperty(propertyName) != null) {
+                //2.create the property
+                //3.select the corresponding row in the PS
 
-            model.runWriteTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    //add the new declaration to the model.
-                    //the declaration is not complete - the value is missing and it is necessary to 
-                    //enter in the PS otherwise the model become invalid.
-                    ModelUtils utils = new ModelUtils(model);
-                    Declarations decls = rule.getDeclarations();
-                    if (decls == null) {
-                        decls = model.getElementFactory().createDeclarations();
-                        rule.setDeclarations(decls);
+                model.runWriteTask(new Model.ModelTask() {
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        //add the new declaration to the model.
+                        //the declaration is not complete - the value is missing and it is necessary to 
+                        //enter in the PS otherwise the model become invalid.
+                        ModelUtils utils = new ModelUtils(model);
+                        Declarations decls = rule.getDeclarations();
+                        if (decls == null) {
+                            decls = model.getElementFactory().createDeclarations();
+                            rule.setDeclarations(decls);
+                        }
+
+                        Declaration declaration = utils.createDeclaration(propertyName + ":");
+                        decls.addDeclaration(declaration);
+
+                        //do not save the model (apply changes) - once the write task finishes
+                        //the embedded property sheet will be refreshed from the modified model.
+
+                        //remember the created declaration so once the model change is fired
+                        //and the property sheet is refreshed, we can find and select the corresponding
+                        //FeatureDescriptor
+                        createdDeclaration = declaration;
                     }
-
-                    Declaration declaration = utils.createDeclaration(propertyName + ":");
-                    decls.addDeclaration(declaration);
-                    
-                    //do not save the model (apply changes) - once the write task finishes
-                    //the embedded property sheet will be refreshed from the modified model.
-                    
-                    //remember the created declaration so once the model change is fired
-                    //and the property sheet is refreshed, we can find and select the corresponding
-                    //FeatureDescriptor
-                    createdDeclaration = declaration;
-                }
-            });
+                });
+            }
 
         }
     }
