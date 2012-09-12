@@ -89,6 +89,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         jBrowsersTable.setModel(new BrowsersTableModel());
         jBrowsersTable.setDefaultRenderer(TableRow.class, new TableRowCellRenderer());
         initTableVisualProperties(jBrowsersTable);
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning());
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -240,6 +241,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         jStrictCheckBox = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
         jPortTextField = new javax.swing.JTextField();
+        jRestartNeededLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jLabel1.text")); // NOI18N
 
@@ -262,6 +264,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
 
         jPortTextField.setText(org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jPortTextField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jRestartNeededLabel, org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jRestartNeededLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -283,7 +287,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addGap(50, 50, 50)
-                                .addComponent(jPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jRestartNeededLabel))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -305,6 +310,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jStrictCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jRestartNeededLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -341,6 +348,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField jLocationTextField;
     private javax.swing.JTextField jPortTextField;
+    private javax.swing.JLabel jRestartNeededLabel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JCheckBox jStrictCheckBox;
     // End of variables declaration//GEN-END:variables
