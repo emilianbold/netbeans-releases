@@ -398,19 +398,15 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         if (location != null) {
             return location;
         }
-        try {
+        if (DebugUtils.getBoolean("cnd.cache.in.project", false)) { //NOI18N
             FileObject projectDirectory = helper.getProjectDirectory();
-            if (CndFileUtils.isLocalFileSystem(projectDirectory.getFileSystem())) {
+            if (CndFileUtils.isLocalFileSystem(projectDirectory)) {
                 File cache = new File(projectDirectory.getPath() + "/nbproject/private/cache/model"); //NOI18N
-                if (DebugUtils.getBoolean("cnd.cache.in.project", false)) {
-                    cache.mkdirs();
-                }
+                cache.mkdirs();
                 if (cache.exists()) {
                     return new CacheLocation(cache);
                 }
             }
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return CacheLocation.DEFAULT;
     }
