@@ -93,4 +93,30 @@ public class DirectoryProblemResolver implements ProjectProblemResolver {
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 19 * hash + (this.project != null ? this.project.hashCode() : 0);
+        hash = 19 * hash + (this.propertyName != null ? this.propertyName.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DirectoryProblemResolver other = (DirectoryProblemResolver) obj;
+        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+            return false;
+        }
+        if ((this.propertyName == null) ? (other.propertyName != null) : !this.propertyName.equals(other.propertyName)) {
+            return false;
+        }
+        return true;
+    }
+
 }

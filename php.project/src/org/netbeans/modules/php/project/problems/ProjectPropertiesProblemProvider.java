@@ -178,7 +178,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, PhpProjectProperties.TEST_SRC_DIR));
             currentProblems.add(problem);
         }
     }
@@ -196,7 +196,8 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_description(invalidDirectory.getAbsolutePath()),
-                    new DirectoryProblemResolver(project, PhpProjectProperties.SELENIUM_SRC_DIR, Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_dialog_title(project.getName())));
+                    new DirectoryProblemResolver(project, PhpProjectProperties.SELENIUM_SRC_DIR,
+                            Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_dialog_title(project.getName())));
             currentProblems.add(problem);
         }
     }
@@ -217,7 +218,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, PhpProjectProperties.WEB_ROOT));
             currentProblems.add(problem);
         }
     }
@@ -234,7 +235,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                 ProjectProblem problem = ProjectProblem.createError(
                         Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
                         Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
-                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH));
+                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH, PhpProjectProperties.INCLUDE_PATH));
                 currentProblems.add(problem);
                 return;
             }
