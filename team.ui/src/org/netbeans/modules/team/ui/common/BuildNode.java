@@ -57,7 +57,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.JobHandle;
 
 /**
  * Node for build status.
@@ -66,7 +66,7 @@ import org.netbeans.modules.team.ui.spi.BuildHandle;
  */
 public class BuildNode extends LeafNode implements PropertyChangeListener {
 
-    private final BuildHandle build;
+    private final JobHandle build;
 
     private JPanel panel;
     private JLabel lblName;
@@ -74,7 +74,7 @@ public class BuildNode extends LeafNode implements PropertyChangeListener {
     private JLabel lbl1;
     private JLabel lbl2;
 
-    public BuildNode( BuildHandle build, TreeListNode parent ) {
+    public BuildNode( JobHandle build, TreeListNode parent ) {
         super( parent );
         this.build = build;
         build.addPropertyChangeListener(this);
@@ -113,7 +113,7 @@ public class BuildNode extends LeafNode implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if( BuildHandle.PROP_STATUS.equals(evt.getPropertyName()) ) {
+        if( JobHandle.PROP_STATUS.equals(evt.getPropertyName()) ) {
             fireContentChanged();
         }
     }

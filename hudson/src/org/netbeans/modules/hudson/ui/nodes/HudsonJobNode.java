@@ -94,8 +94,9 @@ public class HudsonJobNode extends AbstractNode {
         return Children.create(new ChildFactory<Object>() {
             final Object WORKSPACE = new Object();
             protected @Override boolean createKeys(List<Object> toPopulate) {
-                // XXX would be nicer to avoid adding this in case there is no remote workspace...
-                toPopulate.add(WORKSPACE);
+                if (job.getRemoteWorkspace() != null) {
+                    toPopulate.add(WORKSPACE);
+                }
                 for (HudsonJobBuild b : job.getBuilds()) {
                     // Processing one build at a time, make sure its result is known (blocking call).
                     b.getResult();
