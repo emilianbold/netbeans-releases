@@ -45,8 +45,10 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,8 +65,8 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
-import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
+import org.netbeans.modules.web.browser.api.WebBrowserPane.WebBrowserPaneEvent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.MIMEResolver;
@@ -87,6 +89,7 @@ public class JSTestDriverSupport {
     private RequestProcessor RP = new RequestProcessor("js-test-driver server", 5);
     private AbstractLookup projectContext;
     private InstanceContent lookupContent;
+    private List<WebBrowserPane> integratedBrowserPanes;
     
     public static synchronized JSTestDriverSupport getDefault() {
         if (def == null) {
@@ -156,6 +159,9 @@ public class JSTestDriverSupport {
             testDriver = null;
         }
         TestDriverServiceNode.getInstance().refresh();
+        for (WebBrowserPane wbp : integratedBrowserPanes) {
+            wbp.close(true);
+        }
     }
 
     public void start(final ServerListener l) {
@@ -274,6 +280,7 @@ public class JSTestDriverSupport {
     }
 
     private void captureBrowsers() {
+        integratedBrowserPanes = new ArrayList<WebBrowserPane>();        
         for (JSTestDriverCustomizerPanel.WebBrowserDesc bd : JSTestDriverCustomizerPanel.getBrowsers()) {
             String s = JSTestDriverCustomizerPanel.getServerURL()+"/capture";
             if (bd.nbIntegration) {
@@ -297,6 +304,9 @@ public class JSTestDriverSupport {
                 // updating the lookup; JS debugger listens on lookup changes
                 pane.setProjectContext(projectContext);
                 pane.showURL(u);
+                if (bd.nbIntegration) {
+                    integratedBrowserPanes.add(pane);
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
