@@ -383,21 +383,20 @@ public class JQueryCodeCompletion {
             return Collections.emptyList();
         }
         Project project = FileOwnerQuery.getOwner(fo);
-        HashSet<String> unigue = new HashSet<String>();
+        HashSet<String> unique = new HashSet<String>();
         try {
             CssIndex cssIndex = CssIndex.create(project);
             Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findIdsByPrefix(tagIdPrefix);
 
-            for (FileObject fObject : findIdsByPrefix.keySet()) {
-                Collection<String> ids = findIdsByPrefix.get(fObject);
+            for (Collection<String> ids : findIdsByPrefix.values()) {
                 for (String id : ids) {
-                    unigue.add(id);
+                    unique.add(id);
                 }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return unigue;
+        return unique;
     }
 
     private Collection<String> getCSSClasses(String classPrefix, ParserResult parserResult) {
@@ -406,21 +405,20 @@ public class JQueryCodeCompletion {
             return Collections.emptyList();
         }
         Project project = FileOwnerQuery.getOwner(fo);
-        HashSet<String> unigue = new HashSet<String>();
+        HashSet<String> unique = new HashSet<String>();
         try {
             CssIndex cssIndex = CssIndex.create(project);
             Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findClassesByPrefix(classPrefix);
 
-            for (FileObject fObject : findIdsByPrefix.keySet()) {
-                Collection<String> ids = findIdsByPrefix.get(fObject);
+            for (Collection<String> ids : findIdsByPrefix.values()) {
                 for (String id : ids) {
-                    unigue.add(id);
+                    unique.add(id);
                 }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return unigue;
+        return unique;
 
     }
 

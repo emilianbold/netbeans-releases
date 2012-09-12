@@ -60,6 +60,7 @@ public class JsHintsProvider implements HintsProvider {
     
     private volatile boolean cancel = false;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("BC_UNCONFIRMED_CAST")
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);

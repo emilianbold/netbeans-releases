@@ -73,7 +73,7 @@ public class JsIndex {
     public static final String FIELD_FLAG = "flag"; //NOI18N
     
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_IS_GLOBAL, FIELD_ASSIGNMENS};
-    public static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
+    static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
     
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
