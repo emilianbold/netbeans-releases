@@ -713,7 +713,7 @@ public class FmtOptions {
                 // XXX test for numbers
                 if ( isInteger(optionID) ) {
                     try {
-                        int i = Integer.parseInt(text);
+                        Integer.parseInt(text);
                     } catch (NumberFormatException e) {
                         return;
                     }
