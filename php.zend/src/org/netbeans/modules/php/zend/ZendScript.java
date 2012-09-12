@@ -234,14 +234,17 @@ public final class ZendScript {
 
     public boolean initProject(PhpModule phpModule) {
         try {
+            File sources = FileUtil.toFile(phpModule.getSourceDirectory());
             Future<Integer> result = createPhpExecutable()
-                    .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                    .workDir(sources)
                     .displayName(getDisplayName(phpModule, INIT_PROJECT_COMMAND.get(0)))
                     .additionalParameters(INIT_PROJECT_COMMAND)
                     .warnUser(false)
                     .run(getDescriptor(null));
             if (result != null) {
                 result.get();
+                // #217987
+                FileUtil.refreshFor(sources);
             }
         } catch (CancellationException ex) {
             // canceled

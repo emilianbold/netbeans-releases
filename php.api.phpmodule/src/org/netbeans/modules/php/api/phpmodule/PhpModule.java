@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.php.api.phpmodule;
 
+import java.beans.PropertyChangeEvent;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -61,6 +63,13 @@ import org.openide.windows.WindowManager;
  */
 // XXX add @NonNull etc.
 public abstract class PhpModule {
+
+    /**
+     * Property for frameworks.
+     * @see #propertyChanged(String, Object, Object)
+     * @since 2.4
+     */
+    public static final String PROPERTY_FRAMEWORKS = "PROPERTY_FRAMEWORKS"; // NOI18N
 
     /**
      * See {@link org.netbeans.api.project.ProjectInformation#getName}.
@@ -114,6 +123,14 @@ public abstract class PhpModule {
      * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
      */
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
+
+    /**
+     * A way for informing PHP module that something has changed.
+     * @param propertyChangeEvent property change event
+     * @since 2.4
+     * @see #PROPERTY_FRAMEWORKS
+     */
+    public abstract void propertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
 
     /**
      * Gets PHP module for the given {@link FileObject}.
@@ -214,31 +231,4 @@ public abstract class PhpModule {
         return null;
     }
 
-    /**
-     * This class is used to notify about changes in the direction from frameworks to PHP module.
-     * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender#save(PhpModule)
-     */
-    public enum Change {
-        /**
-         * Directory with source files changed.
-         */
-        SOURCES_CHANGE,
-        /**
-         * Directory with test files changed.
-         */
-        TESTS_CHANGE,
-        /**
-         * Directory with Selenium files changed.
-         */
-        SELENIUM_CHANGE,
-        /**
-         * Ignored files changed.
-         * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
-         */
-        IGNORED_FILES_CHANGE,
-        /**
-         * Framework has been added or removed.
-         */
-        FRAMEWORK_CHANGE,
-    }
 }
