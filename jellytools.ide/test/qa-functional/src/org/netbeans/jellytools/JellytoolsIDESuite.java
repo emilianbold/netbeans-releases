@@ -45,7 +45,6 @@ import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperatorTest;
 import org.netbeans.jellytools.modules.debugger.actions.BreakpointsWindowActionTest;
 import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsActionTest;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperatorTest;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -55,7 +54,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class JellytoolsIDESuite {
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
                 addTest(DocumentsDialogOperatorTest.class, DocumentsDialogOperatorTest.tests).
                 addTest(EditorOperatorTest.class, EditorOperatorTest.tests).
                 addTest(EditorWindowOperatorTest.class, EditorWindowOperatorTest.tests).
@@ -71,7 +70,7 @@ public class JellytoolsIDESuite {
                 addTest(BreakpointsWindowOperatorTest.class).
                 addTest(BreakpointsWindowActionTest.class).
                 addTest(DeleteAllBreakpointsActionTest.class).
-                addTest(CompletionJListOperatorTest.class, CompletionJListOperatorTest.tests);
-        return conf.clusters(".*").enableModules(".*").suite();
+                addTest(CompletionJListOperatorTest.class, CompletionJListOperatorTest.tests).
+                suite();
     }
 }
