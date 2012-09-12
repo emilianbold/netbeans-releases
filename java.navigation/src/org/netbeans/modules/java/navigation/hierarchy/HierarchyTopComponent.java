@@ -184,7 +184,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
         viewTypeCombo.addActionListener(this);
-        historyCombo = new JComboBox(HistorySupport.createModel(history)){
+        historyCombo = new JComboBox(HistorySupport.createModel(history, null)){
             @Override
             public Dimension getMinimumSize() {
                 Dimension res = super.getMinimumSize();
