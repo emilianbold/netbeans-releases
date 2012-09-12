@@ -89,7 +89,8 @@ public class ReplaceInFilesAction extends FindInFilesAction {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ReplaceInFilesAction.class);
+        return new HelpCtx(
+                "org.netbeans.modules.search.ReplaceInFilesAction");    //NOI18N
     }
 
     public static class Selection extends ReplaceInFilesAction {
