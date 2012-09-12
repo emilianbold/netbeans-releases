@@ -797,6 +797,9 @@ public class DiscoveryProjectGeneratorImpl {
     private void addAdditionalPreferedFolder(Folder folder, AbstractRoot additional){
         Folder rootCandidate = null;
         String root = additional.getFolder();
+        if (Utilities.isWindows()) {
+            root = root.replace('\\', '/');
+        }
         int i = root.lastIndexOf('/');
         if (i > 0) {
             Map<String, Folder> prefferedFolders = projectBridge.prefferedFolders();
