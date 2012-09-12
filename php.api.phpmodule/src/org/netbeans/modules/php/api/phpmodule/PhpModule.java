@@ -214,31 +214,4 @@ public abstract class PhpModule {
         return null;
     }
 
-    /**
-     * This class is used to notify about changes in the direction from frameworks to PHP module.
-     * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender#save(PhpModule)
-     */
-    public enum Change {
-        /**
-         * Directory with source files changed.
-         */
-        SOURCES_CHANGE,
-        /**
-         * Directory with test files changed.
-         */
-        TESTS_CHANGE,
-        /**
-         * Directory with Selenium files changed.
-         */
-        SELENIUM_CHANGE,
-        /**
-         * Ignored files changed.
-         * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
-         */
-        IGNORED_FILES_CHANGE,
-        /**
-         * Framework has been added or removed.
-         */
-        FRAMEWORK_CHANGE,
-    }
 }
