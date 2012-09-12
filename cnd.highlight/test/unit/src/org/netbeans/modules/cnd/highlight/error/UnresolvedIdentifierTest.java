@@ -333,6 +333,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         Logger.getLogger("cnd.logger").setLevel(oldLevel);
     }
     
+    public void testBug218192() throws Exception {
+        // Bug 218192 - Exception: attempt to put local declaration FUNCTION_FRIEND_DEFINITION
+        performStaticTest("bug218192.cpp");
+    }      
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

@@ -161,6 +161,19 @@ public abstract class JsDocumentationHolder {
     }
 
     /**
+     * Says whether is examined node (probably function node) class, constructor or not.
+     * @param node examined node
+     * @return {@code true} if the comment says "it's a class", {@code false} otherwise
+     */
+    public boolean isClass(Node node) {
+        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
+        if (comment != null) {
+            return comment.isClass();
+        }
+        return false;
+    }
+
+    /**
      * Gets the set of modifiers attached to given node.
      * @param node examinded node
      * @return {@code Set} of modifiers, never {@code null}

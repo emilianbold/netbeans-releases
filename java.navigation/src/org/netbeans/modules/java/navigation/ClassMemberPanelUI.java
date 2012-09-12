@@ -7,7 +7,6 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -35,8 +34,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -51,12 +48,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
@@ -99,9 +94,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private static final String JDOC_ICON = "org/netbeans/modules/java/navigation/resources/javadoc_open.png";          //NOI18N
     private static final String CMD_JDOC = "jdoc";  //NOI18N
     private static final String CMD_HISTORY = "history";    //NOI18N
-    private static final String CARD_1 = "EMPTY-CARD";      //NOI18N
-    private static final String CARD_2 = "HISTORY-CARD";    //NOI18N
     private static final int MIN_HISTORY_WIDTH = 50;
+    private static final int HISTORY_HEIGHT = 20;
 
     private final ExplorerManager manager = new ExplorerManager();
     private final MyBeanTreeView elementView;
@@ -718,15 +712,14 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private class Toolbar extends JPanel implements ActionListener, ListDataListener {
 
         private final JComboBox historyCombo;
-        private final JPanel historyHolder;
 
         @NbBundle.Messages({
-        "TXT_OpenJDoc=Open Javadoc Window"
+        "TXT_OpenJDoc=Open Javadoc Window",
+        "TXT_InspectMembersHistory=Inspect History"
         })
         Toolbar() {
             setLayout(new GridBagLayout());
-            final Box box = new Box(BoxLayout.X_AXIS);
-            box.setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
+            setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
             final JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
@@ -734,23 +727,20 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
-            historyCombo = new JComboBox(HistorySupport.createModel(history)){
+            historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectMembersHistory())){
                 @Override
                 public Dimension getMinimumSize() {
                     Dimension res = super.getMinimumSize();
-                    if (res.width > MIN_HISTORY_WIDTH) {
-                        res = new Dimension(MIN_HISTORY_WIDTH, res.height);
-                    }
-                    return res;
+                    return new Dimension(
+                        res.width < MIN_HISTORY_WIDTH?MIN_HISTORY_WIDTH:res.width,
+                        HISTORY_HEIGHT);
                 }
             };
             historyCombo.setRenderer(HistorySupport.createRenderer(history));
             historyCombo.setActionCommand(CMD_HISTORY);
             historyCombo.addActionListener(this);
             historyCombo.getModel().addListDataListener(this);
-            historyHolder = updateBackground(new JPanel(new CardLayout()));
-            historyHolder.add(updateBackground(new JPanel()),CARD_1);
-            historyHolder.add(historyCombo, CARD_2);
+            historyCombo.setEnabled(false);
 
             final JButton jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
             jdocButton.setActionCommand(CMD_JDOC);
@@ -768,7 +758,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1;
             c.weighty = 0;
-            toolbar.add(historyHolder, c);
+            toolbar.add(historyCombo, c);
 
             c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
@@ -782,7 +772,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             c.weighty = 0;
             toolbar.add(jdocButton, c);
 
-            box.add (toolbar);
             c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 0;
@@ -793,7 +782,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1;
             c.weighty = 0;
-            add(box,c);
+            add(toolbar,c);
             updateBackground(this);
         }
 
@@ -846,7 +835,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
         private void showHistory() {
             if (historyCombo.getModel().getSize() > 0) {
-                ((CardLayout)historyHolder.getLayout()).show(historyHolder, CARD_2);
+                historyCombo.setEnabled(true);
             }
         }
 

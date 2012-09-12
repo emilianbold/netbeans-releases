@@ -458,7 +458,8 @@ public class ModelVisitor extends PathNodeVisitor {
 
         if (fncScope != null) {
             // check parameters and return types of the function.
-            List<Type> types = parserResult.getDocumentationHolder().getReturnType(functionNode);
+            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            List<Type> types = docHolder.getReturnType(functionNode);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
                     fncScope.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), true));
@@ -469,18 +470,23 @@ public class ModelVisitor extends PathNodeVisitor {
                 fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
             }
 
-            List<DocParameter> docParams = parserResult.getDocumentationHolder().getParameters(functionNode);
+            List<DocParameter> docParams = docHolder.getParameters(functionNode);
             for (DocParameter docParameter : docParams) {
-                    JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
-                    if(param != null) {
-                        for(Type type : docParameter.getParamTypes()) {
-                            param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
-                        }
-                        // param occurence in the doc
-                        addDocNameOccurence(param);
+                JsObjectImpl param = (JsObjectImpl) fncScope.getParameter(docParameter.getParamName().getName());
+                if (param != null) {
+                    for (Type type : docParameter.getParamTypes()) {
+                        param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
                     }
+                    // param occurence in the doc
+                    addDocNameOccurence(param);
                 }
             }
+
+            // mark constructors
+            if (docHolder.isClass(functionNode)) {
+                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            }
+        }
 
         for (FunctionNode fn : functions) {
             // go through all functions defined as function fn () {...}

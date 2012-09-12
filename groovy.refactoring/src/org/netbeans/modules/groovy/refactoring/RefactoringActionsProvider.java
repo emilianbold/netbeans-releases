@@ -60,22 +60,32 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        return isValid(lookup) && RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.FIND_USAGES).isValid();
+        RefactoringTask findUsagesTask = findUsagesTask(lookup);
+        return isValid(lookup) && findUsagesTask != null && findUsagesTask.isValid();
     }
 
     @Override
     public void doFindUsages(Lookup lookup) {
-        RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.FIND_USAGES).run();
+        findUsagesTask(lookup).run();
+    }
+
+    private RefactoringTask findUsagesTask(Lookup lookup) {
+        return RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.FIND_USAGES);
     }
 
     @Override
     public boolean canRename(Lookup lookup) {
-        return isValid(lookup) && RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.RENAME).isValid();
+        RefactoringTask renameTask = renameTask(lookup);
+        return isValid(lookup) && renameTask != null && renameTask.isValid();
     }
 
     @Override
     public void doRename(Lookup lookup) {
-        RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.RENAME).run();
+        renameTask(lookup).run();
+    }
+
+    private RefactoringTask renameTask(Lookup lookup) {
+        return RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.RENAME);
     }
 
     private boolean isValid(Lookup lookup) {

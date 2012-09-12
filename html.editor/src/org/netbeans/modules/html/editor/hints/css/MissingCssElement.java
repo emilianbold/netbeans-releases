@@ -80,21 +80,31 @@ public class MissingCssElement extends Hint {
                 fixes.add(new AddStylesheetLinkHintFix(sourceFile, file));
             }
         } else {
-            //2) if the class is not found in any stylesheet from the project:
-            //      * add "create in xxx stylesheet" - for all available stylesheets. 
-            //      The fix will add the stylesheet reference and create the rule there
-            //* 3) if there's no stylesheet in the project
-            //      * create in new stylesheet 
-            //      Creates stylesheet 'styles.css' in the same folder, add ref to it and put the rule inside.
-
-            for (FileObject stylesheet : hintContext.getAllStylesheets()) {
-                fixes.add(new CreateRuleInStylesheet(
-                        sourceFile, 
-                        stylesheet, 
-                        hintContext.getClassName(),
-                        !hintContext.getReferredFiles().contains(stylesheet)));
+            if(!hintContext.getAllStylesheets().isEmpty()) {
+                //2) if the class is not found in any stylesheet from the project:
+                //      * add "create in xxx stylesheet" - for all available stylesheets. 
+                //      The fix will add the stylesheet reference and create the rule there
+                for (FileObject stylesheet : hintContext.getAllStylesheets()) {
+                    fixes.add(new CreateRuleInStylesheet(
+                            sourceFile, 
+                            stylesheet, 
+                            hintContext.getClassName(),
+                            !hintContext.getReferredFiles().contains(stylesheet),
+                            false));
+                }
+            } else {
+                //* 3) if there's no stylesheet in the project
+                //      * create in new stylesheet 
+                //      Creates stylesheet 'styles.css' in the same folder, add ref to it and put the rule inside.
+                    fixes.add(new CreateRuleInStylesheet(
+                            sourceFile, 
+                            null, 
+                            hintContext.getClassName(),
+                            true,
+                            true));
             }
-
+            
+            
         }
 
 

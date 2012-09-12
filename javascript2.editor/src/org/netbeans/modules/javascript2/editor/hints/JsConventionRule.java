@@ -182,7 +182,7 @@ public class JsConventionRule extends JsAstRule {
                 if(id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
-                if (id == JsTokenId.EOL && ts.movePrevious()) {
+                if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
