@@ -204,7 +204,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         jdocButton.addActionListener(this);
         jdocButton.setFocusable(false);
         jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
-        final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, jdocButton);        
+        final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, null, jdocButton);
         add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
         contentView = new JPanel();
         contentView.setLayout(new CardLayout());
@@ -573,8 +573,13 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
+            Dimension space = new Dimension(3, 0);
             for (JComponent component : components) {
-                toolbar.add(component);
+                if (component == null) {
+                    toolbar.addSeparator(space);
+                } else {
+                    toolbar.add(component);
+                }
             }
             add (toolbar);
         }
