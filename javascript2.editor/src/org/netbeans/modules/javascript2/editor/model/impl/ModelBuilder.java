@@ -95,7 +95,7 @@ public final class ModelBuilder {
     void reset() {
         if (!stack.empty()) {
             if (stack.pop() instanceof DeclarationScopeImpl && !functionStack.empty()) {
-                JsObject object = (JsObject)functionStack.pop();
+                functionStack.pop();
             }
         }
     }

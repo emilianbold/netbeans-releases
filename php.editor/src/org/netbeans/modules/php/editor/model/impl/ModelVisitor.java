@@ -626,7 +626,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
-            if (scope instanceof MethodScope && varInfo.getName().equals("$this")) {//NOI18N
+            String varInfoName = varInfo.getName();
+            if (scope instanceof MethodScope && varInfoName != null && varInfoName.equals("$this")) {//NOI18N
                 scope = scope.getInScope();
             }
             if (scope instanceof VariableNameFactory) {
