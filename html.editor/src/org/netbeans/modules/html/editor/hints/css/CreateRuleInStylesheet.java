@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -71,23 +72,31 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "description.create.rule.in.stylesheet=Create rule {0} in stylesheet {1}",
-    "description.create.rule.and.import.stylesheet=Create rule {0} and import stylesheet {1}"
+    "description.create.rule.and.import.stylesheet=Create rule {0} and import stylesheet {1}",
+    "description.create.rule.and.import.new.stylesheet=Create rule {0} in new stylesheet {1}"
 })
 public class CreateRuleInStylesheet implements HintFix {
 
-    private final FileObject externalStylesheet;
+    private static String NEW_STYLESHEET_NAME = "style.css"; //NOI18N
+    
+    private FileObject externalStylesheet;
     private final FileObject sourceFile;
     private final String ruleName;
     private final String path;
     private boolean importStyleSheet;
+    private boolean createStyleSheet;
+    
 
-    public CreateRuleInStylesheet(FileObject sourceFile, final FileObject externalStylesheet, String ruleName, boolean importStylesheet) {
+    public CreateRuleInStylesheet(FileObject sourceFile, final FileObject externalStylesheet, String ruleName, boolean importStylesheet, boolean createStyleSheet) {
         this.sourceFile = sourceFile;
         this.externalStylesheet = externalStylesheet;
         this.ruleName = ruleName;
         this.importStyleSheet = importStylesheet;
+        this.createStyleSheet = createStyleSheet;
         
-        this.path = WebUtils.getRelativePath(sourceFile, externalStylesheet);
+        this.path = externalStylesheet != null 
+                ? WebUtils.getRelativePath(sourceFile, externalStylesheet)
+                : null;
     }
 
     private String getSelectorText() {
@@ -96,13 +105,22 @@ public class CreateRuleInStylesheet implements HintFix {
 
     @Override
     public String getDescription() {
-        return importStyleSheet 
-                ? Bundle.description_create_rule_and_import_stylesheet(getSelectorText(), path)  
-                : Bundle.description_create_rule_in_stylesheet(getSelectorText(), path);
+        if(createStyleSheet) {
+            return Bundle.description_create_rule_and_import_new_stylesheet(getSelectorText(), NEW_STYLESHEET_NAME);
+        } else if(importStyleSheet) {
+            return Bundle.description_create_rule_and_import_stylesheet(getSelectorText(), path);
+        } else {
+            return Bundle.description_create_rule_in_stylesheet(getSelectorText(), path);
+        }
     }
 
     @Override
     public void implement() throws Exception {
+        if(createStyleSheet) {
+            FileObject folder = sourceFile.getParent();
+            externalStylesheet = FileUtil.createData(folder, NEW_STYLESHEET_NAME);
+        }
+        
         if (importStyleSheet) {
             Source source = Source.create(sourceFile);
             final Document doc = source.getDocument(false);
