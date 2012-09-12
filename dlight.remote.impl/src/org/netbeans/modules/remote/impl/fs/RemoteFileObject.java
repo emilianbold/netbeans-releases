@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -194,7 +196,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
         super.fireFileRenamedEvent(en, fe);
     }
-    
+
 
     // </editor-fold>
 
@@ -283,7 +285,28 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     @Override
     public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
-        return getImplementor().move(lock, target, name, ext);
+        FileObject result = getImplementor().move(lock, target, name, ext);
+        reassignLkp(this, result);
+        return result;
+    }
+
+    public static void reassignLkp(FileObject from, FileObject to) {
+        try {
+            Class<?> c = Class.forName("org.openide.filesystems.FileObjectLkp");
+            Method m = c.getDeclaredMethod("reassign", FileObject.class, FileObject.class);
+            m.setAccessible(true);
+            m.invoke(null, from, to);
+        } catch (InvocationTargetException ex) {
+            if (ex.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) ex.getCause();
+            }
+            if (ex.getCause() instanceof Error) {
+                throw (Error) ex.getCause();
+            }
+            throw new IllegalStateException(ex);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Override
