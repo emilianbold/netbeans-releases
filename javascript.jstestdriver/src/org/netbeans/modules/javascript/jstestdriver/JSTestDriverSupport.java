@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,12 +64,15 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserPane;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 @Messages("JsTestDriverResolver=js-test-driver Conf Files")
 @MIMEResolver.Registration(
@@ -81,7 +85,9 @@ public class JSTestDriverSupport {
     private static JSTestDriverSupport def;
     private static final Logger LOGGER = Logger.getLogger(JSTestDriverSupport.class.getName());
     private RequestProcessor RP = new RequestProcessor("js-test-driver server", 5);
-
+    private AbstractLookup projectContext;
+    private InstanceContent lookupContent;
+    
     public static synchronized JSTestDriverSupport getDefault() {
         if (def == null) {
             def = new JSTestDriverSupport();
@@ -93,6 +99,8 @@ public class JSTestDriverSupport {
     private boolean starting = false;
     
     private JSTestDriverSupport() {
+        lookupContent = new InstanceContent();
+        projectContext = new AbstractLookup(lookupContent);
     }
 
     public JsTestDriver getJsTestDriver() {
@@ -254,26 +262,47 @@ public class JSTestDriverSupport {
                 return;
             }
         }
+        updateJsDebuggerProjectContext(project);
         TestListener listener = new Listener(project);
         JsTestDriver td = testDriver;
         td.runTests(port, strictMode, baseFolder, configFile, testsToRun, listener);
     }
+    
+    private void updateJsDebuggerProjectContext(Project p) {
+        // update lookup used by JS debugger with the right project 
+        lookupContent.set(Collections.singletonList(p), null);
+    }
 
     private void captureBrowsers() {
-        for (WebBrowser browser : JSTestDriverCustomizerPanel.getBrowsers()) {
+        for (JSTestDriverCustomizerPanel.WebBrowserDesc bd : JSTestDriverCustomizerPanel.getBrowsers()) {
             String s = JSTestDriverCustomizerPanel.getServerURL()+"/capture";
+            if (bd.nbIntegration) {
+                // '/timeout/-1/' - will prevent js-test-driver from timeouting the test
+                //   when test execution takes too much time, for example when test is being debugged
+                s += "/timeout/-1/";
+            }
             if (JSTestDriverCustomizerPanel.isStricModel()) {
                 s += "?strict";
             }
             try {
                 URL u = new URL(s);
-                browser.createNewBrowserPane(true, true).showURL(u);
+                WebBrowserPane pane = bd.browser.createNewBrowserPane(true, false);
+                pane.disablePageInspector();
+                // the problem here is following: js-test-driver is a global server
+                // which does not have any project specific context. But in order to
+                // debug JavaScript the JS debugger needs a project context in order
+                // to correctly resolve breakpoints etc. So when server is started
+                // there will not be any project context; only when a test is 
+                // executed from a project the project context will be set for JS debugger by
+                // updating the lookup; JS debugger listens on lookup changes
+                pane.setProjectContext(projectContext);
+                pane.showURL(u);
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
     }
-
+    
     private static class Listener implements TestListener {
 
         private TestSession testSession;

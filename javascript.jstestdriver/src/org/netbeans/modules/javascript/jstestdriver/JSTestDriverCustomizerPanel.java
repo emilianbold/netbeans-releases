@@ -55,12 +55,15 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -149,12 +152,16 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
             prefs.putInt(PORT, port);
             prefs.putBoolean(STRICT_MODE, panel.jStrictCheckBox.isSelected());
             for (TableRow row : ((BrowsersTableModel)panel.jBrowsersTable.getModel()).model) {
-                prefs.putBoolean(USE_BROWSER+row.getBrowser().getId(), row.isSelected());
+                prefs.putBoolean(getBrowserPropertyName(row.getBrowser(), row.hasNbIntegration()), row.isSelected());
             }
             return true;
         } else {
             return false;
         }
+    }
+    
+    private static String getBrowserPropertyName(WebBrowser browser, boolean nbIntegration) {
+        return PropertyUtils.getUsablePropertyName(USE_BROWSER+browser.getId()+(nbIntegration ? ".nbint" : "")); //NOI18N
     }
     
     public static boolean isConfiguredProperly() {
@@ -184,22 +191,37 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
             if (browser.isEmbedded()) {
                 continue;
             }
+            if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM) {
+                model.add(new TableRow(browser, 
+                    NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), true), true));
+            }
             model.add(new TableRow(browser, 
-                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(USE_BROWSER+browser.getId(), true)));
+                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), true), false));
         }
         return model;
     }
     
-    public static List<WebBrowser> getBrowsers() {
+    public static List<WebBrowserDesc> getBrowsers() {
         List<TableRow> model = createModel();
-        List<WebBrowser> res = new ArrayList<WebBrowser>();
+        List<WebBrowserDesc> res = new ArrayList<WebBrowserDesc>();
         for (TableRow row : model) {
             if (row.isSelected()) {
-                res.add(row.getBrowser());
+                res.add(new WebBrowserDesc(row.getBrowser(), row.hasNbIntegration()));
             }
         }
         return res;
     }
+    
+    public static class WebBrowserDesc {
+        public WebBrowser browser;
+        public boolean nbIntegration;
+
+        public WebBrowserDesc(WebBrowser browser, boolean nbIntegration) {
+            this.browser = browser;
+            this.nbIntegration = nbIntegration;
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -345,10 +367,15 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
 
     private static class TableRowCellRenderer extends DefaultTableCellRenderer {
         
+        @NbBundle.Messages({"# {0} - browser name", "IntegratedBrowserName={0} with NetBeans JS Debugger"})
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             if (value instanceof TableRow) {
                 TableRow item = (TableRow) value;
-                return super.getTableCellRendererComponent(table, item.getBrowser().getName(), isSelected, false, row, column);
+                String s = item.getBrowser().getName();
+                if (item.hasNbIntegration()) {
+                    s = Bundle.IntegratedBrowserName(s);
+                }
+                return super.getTableCellRendererComponent(table, s, isSelected, false, row, column);
             }
             return super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
         }
@@ -415,14 +442,20 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     private static final class TableRow {
         private WebBrowser browser;
         private boolean selected;
+        private boolean nbIntegration;
 
-        public TableRow(WebBrowser browser, boolean selected) {
+        public TableRow(WebBrowser browser, boolean selected, boolean nbIntegration) {
             this.browser = browser;
             this.selected = selected;
+            this.nbIntegration = nbIntegration;
         }
 
         public boolean isSelected() {
             return selected;
+        }
+
+        public boolean hasNbIntegration() {
+            return nbIntegration;
         }
 
         public void setSelected(boolean selected) {
@@ -432,7 +465,6 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         public WebBrowser getBrowser() {
             return browser;
         }
-        
         
     }
     
