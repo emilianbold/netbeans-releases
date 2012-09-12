@@ -906,10 +906,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                         FriendFunctionImpl impl = FriendFunctionImpl.create(token, getContainingFile(), fileContent, ClassImpl.this, scope, !isRenderingLocalContext());
                                         friend = impl;
                                         func = impl;
-                                        if (scope instanceof NamespaceImpl) {
-                                            ((NamespaceImpl) scope).addDeclaration(func);
-                                        } else {
-                                            ((NamespaceImpl) getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                        if(!isRenderingLocalContext()) {
+                                            if (scope instanceof NamespaceImpl) {
+                                                ((NamespaceImpl) scope).addDeclaration(func);
+                                            } else {
+                                                ((NamespaceImpl) getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                            }
                                         }
                                     }
                                     //((FileImpl)getContainingFile()).addDeclaration(func);
