@@ -125,7 +125,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             AstPath path = new AstPath(root, caret, doc);
             ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);
             ElementKind kind = ElementUtils.getKind(path, doc, caret);
-            if (kind == ElementKind.OTHER) {
+            if (kind != ElementKind.CLASS) {
                 throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !");
             }
 
