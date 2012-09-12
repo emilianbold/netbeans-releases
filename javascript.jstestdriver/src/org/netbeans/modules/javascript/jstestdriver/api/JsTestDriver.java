@@ -40,28 +40,23 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi.webserver;
+package org.netbeans.modules.javascript.jstestdriver.api;
 
-import java.net.URL;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel;
+import org.netbeans.modules.javascript.jstestdriver.JSTestDriverSupport;
 
 /**
- * Provides mapping between project's source file and its location on server
- * and vice versa. To be registered in project's lookup. See the API counterpart
- * class for more details.
+ *
  */
-public interface ServerURLMappingImplementation {
+public final class JsTestDriver {
+    
+    private JsTestDriver() {
+    }
 
     /**
-     * Convert given project's file into server URL.
-     * @return could return null if file is not deployed to server and therefore
-     *   not accessible
+     * Returns base URL for js-test-driver server, eg. "http://localhost:42442"
      */
-    URL toServer(int projectContext, FileObject projectFile);
-    
-    /**
-     * Convert given server URL into project's file.
-     * @return returns null if nothing is known about this server URL
-     */
-    FileObject fromServer(int projectContext, URL serverURL);
+    public static String getServerURL() {
+        return JSTestDriverCustomizerPanel.getServerURL();
+    }
 }

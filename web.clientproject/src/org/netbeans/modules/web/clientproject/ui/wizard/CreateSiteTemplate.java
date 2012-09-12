@@ -104,7 +104,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         this.manager = new ExplorerManager();
         this.wp = wp;
         try {
-            manager.setRootContext(new FNode(DataObject.find(root).getNodeDelegate()));
+            manager.setRootContext(new FNode(DataObject.find(root).getNodeDelegate(), root.isFolder()));
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -433,8 +433,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
     private class FNode extends FilterNode {
 
-        public FNode(Node original) {
-            super(original, original.isLeaf() ? null : new FChildren(original), Lookups.fixed(new Checkable(), original.getLookup().lookup(FileObject.class)));
+        public FNode(Node original, boolean hasChildren) {
+            super(original, hasChildren ? new FChildren(original) : Children.LEAF, 
+                    Lookups.fixed(new Checkable(), original.getLookup().lookup(FileObject.class)));
             Checkable ch = getLookup().lookup(Checkable.class);
             ch.setOwner(this);
             ch.setComponent(tree);
@@ -443,6 +444,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         public void refresh() {
             fireIconChange();
         }
+        
         
     }
     
@@ -454,7 +456,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
  
         @Override
         protected Node copyNode(Node node) {
-            return new FNode(node);
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            assert fo != null;
+            return new FNode(node, fo.isFolder());
         }
 
         @Override
