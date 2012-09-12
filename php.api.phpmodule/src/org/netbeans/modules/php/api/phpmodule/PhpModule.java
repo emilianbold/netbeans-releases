@@ -66,7 +66,7 @@ public abstract class PhpModule {
 
     /**
      * Property for frameworks.
-     * @see #propertyChanged(String, Object, Object)
+     * @see #propertyChanged(PropertyChangeEvent)
      * @since 2.4
      */
     public static final String PROPERTY_FRAMEWORKS = "PROPERTY_FRAMEWORKS"; // NOI18N
