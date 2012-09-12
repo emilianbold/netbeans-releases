@@ -339,7 +339,7 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
 
         @Override
         public String getName() {
-            return null;
+            return ""; // NOI18N
         }
 
         @Override
