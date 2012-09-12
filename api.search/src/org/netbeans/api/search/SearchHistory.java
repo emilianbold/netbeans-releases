@@ -91,6 +91,7 @@ public final class SearchHistory {
      *  newValue - new selected pattern
      *  @deprecated just changes in history
      */
+    @Deprecated
     public final static String LAST_SELECTED = "last-selected"; //NOI18N
     
     /** Property name for adding pattern that was not in history
@@ -135,6 +136,7 @@ public final class SearchHistory {
      *  @deprecated Use <code>getSearchPatterns().get(0)</code>
      *  @return last selected SearchPattern 
      */
+    @Deprecated
     public SearchPattern getLastSelected(){
         return searchPatternsList.get(0);
     }
@@ -143,6 +145,7 @@ public final class SearchHistory {
      *  @deprecated Use only <code>add(SearchPattern pattern)</code>
      *  @param pattern last selected pattern
      */
+    @Deprecated
     public void setLastSelected(SearchPattern pattern){
         SearchPattern oldPattern = searchPatternsList.get(0);
         add(pattern);

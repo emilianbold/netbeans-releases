@@ -1092,7 +1092,8 @@ public class FileStatusCache {
         }
         
         if (exists) {
-            if (Subversion.getInstance().isIgnored(file)) {
+            if (Subversion.getInstance().isIgnored(file) 
+                    || repositoryStatus != null && repositoryStatus.getStatus().getTextStatus() == SVNStatusKind.EXTERNAL) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, file.isDirectory());
             } else {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, file.isDirectory());

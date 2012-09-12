@@ -181,7 +181,7 @@ public final class TextDetail implements Selectable {
                 });
             }
         }
-        SearchHistory.getDefault().setLastSelected(
+        SearchHistory.getDefault().add(
                 SearchPattern.create(
                 searchPattern.getSearchExpression(),
                 searchPattern.isWholeWords(), searchPattern.isMatchCase(),

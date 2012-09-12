@@ -54,10 +54,12 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.core.runtime.CoreException;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -102,15 +104,20 @@ public class JiraAutoupdate {
             if (!JiraConfig.getInstance().getCheckUpdates()) {
                 return true;
             }
-            if (!checkSupportedJiraServerVersion(repository) && checkNewJiraPluginAvailable()) {
-                AutoupdatePanel panel = new AutoupdatePanel();
-                if (JiraUtils.show(
-                        panel,
-                        NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
-                        NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"), // NOI18N
-                        new HelpCtx(JiraAutoupdate.class))) {
-                    BugtrackingUtil.openPluginManager();
-                    return false;
+            if (!checkSupportedJiraServerVersion(repository)) {
+                UpdateElement ue = checkNewJiraPluginAvailable();
+                if(ue != null) {
+                    AutoupdatePanel panel = new AutoupdatePanel();
+                    if (JiraUtils.show(
+                            panel,
+                            NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
+                            NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"), // NOI18N
+                            new HelpCtx(JiraAutoupdate.class))) {
+                        OperationContainer<InstallSupport> oc = OperationContainer.createForUpdate();
+                        oc.add(ue);
+                        PluginManager.openInstallWizard(oc);
+                        return false;
+                    }
                 }
             }
         } finally {
@@ -120,7 +127,7 @@ public class JiraAutoupdate {
         return true;
     }
 
-    boolean checkNewJiraPluginAvailable() {
+    UpdateElement checkNewJiraPluginAvailable() {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
             if(u.getCodeName().equals(JIRA_MODULE_CODE_NAME)) {
@@ -131,20 +138,21 @@ public class JiraAutoupdate {
                         JiraVersion version = getVersion(desc);
                         if(version != null) {
                             if(SUPPORTED_JIRA_VERSION.compareTo(version) < 0){
-                                return true;
+                                return updateElement;
                             }
                         } else {
-                            return elements.size() > 0; // looks like we weren't able to
-                                                // parse the version; on the other hand ->
-                                                // there is something so lets be optimistic
+                            // looks like we weren't able to
+                            // parse the version; on the other hand ->
+                            // there is something so lets be optimistic
+                            return elements.size() > 0 ? updateElement : null; 
                         }
                     }
                 } else {
-                    return false;
+                    return null;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     public boolean checkSupportedJiraServerVersion(final JiraRepository repository) {
