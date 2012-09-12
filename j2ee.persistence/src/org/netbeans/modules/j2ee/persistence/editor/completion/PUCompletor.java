@@ -397,7 +397,7 @@ public abstract class PUCompletor {
             if (provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
                 values = allKeyAndValues.get(null).get(propertyName);
             }
-            if (values == null && provider != null) {
+            if (values == null && provider != null && allKeyAndValues.get(provider) != null) {
                 values = allKeyAndValues.get(provider).get(propertyName);
                 if (values == null && propertyName.equals(provider.getJdbcUrl())) {
 

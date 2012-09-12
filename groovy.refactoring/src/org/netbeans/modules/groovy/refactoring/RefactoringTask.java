@@ -111,25 +111,25 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
-            ASTNode root = ASTUtils.getRoot(parserResult);
+            final GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
+            final ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
                 return;
             }
 
-            int caret = textC.getCaretPosition();
-            int start = textC.getSelectionStart();
-            int end = textC.getSelectionEnd();
+            final int caret = textC.getCaretPosition();
+            final int start = textC.getSelectionStart();
+            final int end = textC.getSelectionEnd();
 
-            BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
-            AstPath path = new AstPath(root, caret, doc);
-            ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);
-            ElementKind kind = ElementUtils.getKind(path, doc, caret);
-            if (kind == ElementKind.OTHER) {
+            final BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
+            final AstPath path = new AstPath(root, caret, doc);
+            final ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);
+            final ElementKind kind = ElementUtils.getKind(path, doc, caret);
+            if (kind != ElementKind.CLASS) {
                 throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !");
             }
 
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
+            final GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
             }
@@ -167,13 +167,13 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
-            ASTNode root = ASTUtils.getRoot(parserResult);
+            final GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
+            final ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
                 return;
             }
             
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
+            final GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }

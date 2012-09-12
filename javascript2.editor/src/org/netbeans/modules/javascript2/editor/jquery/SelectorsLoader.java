@@ -568,8 +568,6 @@ public class SelectorsLoader extends DefaultHandler {
                 case argument : 
                     if (isMethod) {
                         String paramName = attributes.getValue(NAME);
-                        String paramType = attributes.getValue(TYPE);
-                        boolean isOptional = Boolean.parseBoolean(attributes.getValue("optional"));
                         IdentifierImpl param = new IdentifierImpl(paramName, OffsetRange.NONE);
                         params.add(param);
                     }

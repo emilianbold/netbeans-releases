@@ -147,4 +147,6 @@ public abstract class JsComment {
 
     public abstract Set<JsModifier> getModifiers();
 
+    public abstract boolean isClass();
+
 }

@@ -711,6 +711,22 @@ public class ModelTest extends JsTestBase {
         assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
         assertEquals(0, method.getParameters().size());
      }
+
+     public void testIssue217679() throws Exception {
+        Model model = getModel("testfiles/model/testIssue217679.js");
+        assertNotNull(model);
+        JsObject  global = model.getGlobalObject();
+        assertEquals(3, global.getProperties().size());
+
+        JsObject ridic = global.getProperty("Ridic");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, ridic.getJSKind());
+
+        JsObject aloha = global.getProperty("Aloha");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, ridic.getJSKind());
+
+        JsObject dog = global.getProperty("Dog");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, ridic.getJSKind());
+     }
      
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
