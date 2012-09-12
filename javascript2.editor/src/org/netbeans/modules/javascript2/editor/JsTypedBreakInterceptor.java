@@ -115,12 +115,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         }
 
         Token<? extends JsTokenId> token = ts.token();
-        TokenId id = token.id();
+        JsTokenId id = token.id();
 
         // Insert a missing }
         boolean insertRightBrace = isEndMissing(doc, offset);
 
-        if (id != JsTokenId.UNKNOWN && insertMatching && insertRightBrace) {
+        if (!id.isError() && insertMatching && insertRightBrace) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
@@ -157,7 +157,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return;
         }
 
-        if (id == JsTokenId.UNKNOWN) {
+        if (id.isError()) {
             // See if it's a block comment opener
             String text = token.text().toString();
             if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {

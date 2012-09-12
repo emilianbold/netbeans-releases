@@ -54,11 +54,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %{
     private LexerInput input;
 
+    private boolean embedded;
+
     private boolean canFollowLiteral = true;
 
     public JavaScriptColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
 
+        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.languagePath().mimePath());
         if(info.state() != null) {
             //reset state
             setState((LexerState)info.state());
@@ -84,7 +87,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     public JsTokenId nextToken() throws java.io.IOException {
         JsTokenId token = yylex();
-        if (token != null && !JsTokenId.UNKNOWN.equals(token)
+        if (token != null && !JsTokenId.ERROR.equals(token)
+                && !JsTokenId.UNKNOWN.equals(token)
                 && !JsTokenId.WHITESPACE.equals(token)
                 && !JsTokenId.LINE_COMMENT.equals(token)
                 && !JsTokenId.BLOCK_COMMENT.equals(token)
@@ -92,6 +96,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             canFollowLiteral = canFollowLiteral(token);
         }
         return token;
+    }
+
+    private JsTokenId getErrorToken() {
+        if (embedded) {
+            return JsTokenId.UNKNOWN;
+        }
+        return JsTokenId.ERROR;
     }
 
     private static boolean canFollowLiteral(JsTokenId token) {
@@ -278,7 +289,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"[*]                         { return JsTokenId.UNKNOWN; }
+  "/"[*]                         { return getErrorToken(); }
   "/"
                                  {
                                      if (canFollowLiteral) {
@@ -415,7 +426,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return getErrorToken();
                                      }
                                  }
 }
@@ -447,7 +458,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength -1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return getErrorToken();
                                      }
                                  }
 }
@@ -489,7 +500,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return getErrorToken();
                                      }
                                  }
 }
@@ -504,13 +515,13 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 }
 
 /* error fallback */
-.|\n                             { return JsTokenId.UNKNOWN; }
+.|\n                             { return getErrorToken(); }
 <<EOF>>                          {
     if (input.readLength() > 0) {
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JsTokenId.UNKNOWN;
+        return getErrorToken();
     } else {
         return null;
     }

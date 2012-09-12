@@ -54,9 +54,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %{
     private LexerInput input;
 
+    private boolean embedded;
+
     public JsonColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
 
+        this.embedded = !JsTokenId.JSON_MIME_TYPE.equals(info.languagePath().mimePath());
         if(info.state() != null) {
             //reset state
             setState((LexerState)info.state());
@@ -80,6 +83,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     public JsTokenId nextToken() throws java.io.IOException {
         return yylex();
+    }
+
+    private JsTokenId getErrorToken() {
+        if (embedded) {
+            return JsTokenId.UNKNOWN;
+        }
+        return JsTokenId.ERROR;
     }
 
     public static final class LexerState  {
@@ -205,7 +215,7 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return getErrorToken();
                                      }
                                  }
 }
@@ -223,19 +233,19 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return getErrorToken();
                                      }
                                  }
 }
 
 /* error fallback */
-.|\n                             { return JsTokenId.UNKNOWN; }
+.|\n                             { return getErrorToken(); }
 <<EOF>>                          {
     if (input.readLength() > 0) {
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JsTokenId.UNKNOWN;
+        return getErrorToken();
     } else {
         return null;
     }
