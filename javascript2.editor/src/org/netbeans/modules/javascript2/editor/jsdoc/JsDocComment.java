@@ -189,6 +189,12 @@ public class JsDocComment extends JsComment {
         }
     }
 
+    @Override
+    public boolean isClass() {
+        return !getTagsForTypes(new JsDocElementType[]{JsDocElementType.CLASS, JsDocElementType.CONSTRUCTOR,
+            JsDocElementType.CONSTRUCTS}).isEmpty();
+    }
+
 //    @Override
 //    public List<String> getAuthor() {
 //        List<String> authors = new LinkedList<String>();

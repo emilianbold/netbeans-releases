@@ -57,11 +57,7 @@ public final class RunConfigScriptValidator {
     }
 
     public static String validateNewProject(RunConfigScript config) {
-        String error;
-        error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());
-        if (error != null) {
-            return error;
-        }
+        // default interpreter will be used => no validation needed for new project (validation is done on running)
         return null;
     }
 
@@ -84,7 +80,7 @@ public final class RunConfigScriptValidator {
 
     private static String validate(RunConfigScript config, boolean validateIndex) {
         String error;
-        error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());
+        error = validateInterpreter(config.getInterpreter());
         if (error != null) {
             return error;
         }
@@ -104,10 +100,7 @@ public final class RunConfigScriptValidator {
         return null;
     }
 
-    static String validateInterpreter(boolean useDefaultInterpreter, String interpreter) {
-        if (useDefaultInterpreter) {
-            return null;
-        }
+    private static String validateInterpreter(String interpreter) {
         try {
             PhpInterpreter.getCustom(interpreter);
         } catch (InvalidPhpExecutableException ex) {
