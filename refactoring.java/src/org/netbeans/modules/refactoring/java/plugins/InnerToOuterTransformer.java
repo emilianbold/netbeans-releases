@@ -46,10 +46,10 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -123,9 +123,10 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if(current.getModifiers().contains(Modifier.STATIC) && current.getKind() == ElementKind.METHOD) {
                 TreePath path = getCurrentPath();
                 Tree parent = path.getParentPath() != null ? path.getParentPath().getLeaf() : null;
-                
+                TreePath elementPath = workingCopy.getTrees().getPath(current);
+                JavaFileObject sourceFile = elementPath != null ? elementPath.getCompilationUnit().getSourceFile() : null;
                 if (   (parent != null && parent.getKind() == Tree.Kind.CASE && ((CaseTree) parent).getExpression() == node && current.getKind() == ElementKind.ENUM_CONSTANT)
-                    || path.getCompilationUnit().getSourceFile() == ((Symbol) current).enclClass().sourcefile) {
+                    || path.getCompilationUnit().getSourceFile() == sourceFile) {
                     rewrite(node, make.Identifier(current.getSimpleName()));
                 } else {
                     rewrite(node, make.QualIdent(current));
