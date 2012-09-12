@@ -132,7 +132,7 @@ public final class OutputUtils {
                                 EditorCookie cookie = obj.getLookup().lookup(EditorCookie.class);
                                 int lineInt = Integer.parseInt(lineNum);
                                 try {
-                                    cookie.getLineSet().getCurrent(lineInt).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                    cookie.getLineSet().getCurrent(lineInt - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                                 } catch (IndexOutOfBoundsException x) { // #155880
                                     cookie.open();
                                 }

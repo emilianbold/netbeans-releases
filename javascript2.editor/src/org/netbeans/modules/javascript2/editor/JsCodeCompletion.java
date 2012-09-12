@@ -662,20 +662,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             
             // create code completion results
-            for(String name : addedProperties.keySet()) {
-                JsElement element = addedProperties.get(name);
+            for (JsElement element : addedProperties.values()) {
                 resultList.add(JsCompletionItem.Factory.create(element, request));
             }
         }
-    }
-    
-    private JsObject findObjectForOffset(String name, int offset, Model model) {
-        for (JsObject object : model.getVariables(offset)) {
-            if (object.getName().equals(name)) {
-                return object;
-            }
-        }
-        return null;
     }
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
