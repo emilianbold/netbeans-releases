@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
  * @author sp153251
  */
 @ProjectServiceProvider(service=PersistenceEnvironment.class, projectType={
+    "org-netbeans-modules-maven",
     "org-netbeans-modules-java-j2seproject"
 })
 public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
