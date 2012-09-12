@@ -118,9 +118,10 @@ public class ModelUtils {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
-                if (kind == JsElement.Kind.OBJECT 
-                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR)
-                tmpObject = findJsObject(property, offset);
+                if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR) {
+                    tmpObject = findJsObject(property, offset);
+                }
                 if (tmpObject != null) {
                     result = tmpObject;
                     break;
@@ -323,14 +324,18 @@ public class ModelUtils {
             }
         } else if(type.getType().startsWith("@anonym;")){
             int start = Integer.parseInt(type.getType().substring(8));
-            JsObject globalObject = ModelUtils.getGlobalObject(object);
-            for(JsObject children : globalObject.getProperties().values()) {
-                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
-                    result.add(new TypeUsageImpl(ModelUtils.createFQN(children), children.getOffset(), true));
-                    break;
-                }
-                
+//            JsObject globalObject = ModelUtils.getGlobalObject(object);
+            JsObject byOffset = ModelUtils.findJsObject(object, start);
+            if(byOffset != null && byOffset.isAnonymous()) {
+                result.add(new TypeUsageImpl(ModelUtils.createFQN(byOffset), byOffset.getOffset(), true));
             }
+//            for(JsObject children : globalObject.getProperties().values()) {
+//                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
+//                    result.add(new TypeUsageImpl(ModelUtils.createFQN(children), children.getOffset(), true));
+//                    break;
+//                }
+//                
+//            }
         } else if(type.getType().startsWith("@var;")){
             String name = type.getType().substring(5);
             JsObject parent = object.getParent();
