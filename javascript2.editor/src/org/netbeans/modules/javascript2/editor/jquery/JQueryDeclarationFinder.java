@@ -66,7 +66,6 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,8 +82,9 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
                 RefactoringElementType type = rule.rule.charAt(0) == '#' ? RefactoringElementType.ID : RefactoringElementType.CLASS;
                 Map<FileObject, Collection<EntryHandle>> findAll = CssRefactoring.findAllOccurances(rule.rule.substring(1), type, info.getSnapshot().getSource().getFileObject(), true);
                 DeclarationLocation dl = null;
-                for (FileObject f : findAll.keySet()) {
-                    Collection<EntryHandle> entries = findAll.get(f);
+                for (Map.Entry<FileObject, Collection<EntryHandle>> entry : findAll.entrySet()) {
+                    FileObject f = entry.getKey();
+                    Collection<EntryHandle> entries = entry.getValue();
                     for (EntryHandle entryHandle : entries) {
                         //grrr, the main declarationlocation must be also added to the alternatives
                         //if there are more than one
