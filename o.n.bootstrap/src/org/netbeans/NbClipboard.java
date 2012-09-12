@@ -218,18 +218,8 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
                 // which immediatelly follow WINDOW_ACTIVATED event.
                 // This is workaround of JDK bug described in issue 41098.
                 long curr = System.currentTimeMillis();
-                if (lastWindowActivated != 0 && lastWindowActivated + 100 < curr) {
-                    lastWindowActivated = 0;
-                    
-                    syncTask.schedule(0);
-                    boolean finished = syncTask.waitFinished (100);
-                    log.log(Level.FINE, "after syncTask wait, finished {0}", finished); // NOI18N
-                } else {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.fine("no wait, last: " + lastWindowActivated + " now: " + curr); // NOI18N
-                    }
-                }
-                
+                syncTask.schedule(0);
+                boolean finished = syncTask.waitFinished (100);
                 
                 prev = super.getContents (requestor);
             } else {
