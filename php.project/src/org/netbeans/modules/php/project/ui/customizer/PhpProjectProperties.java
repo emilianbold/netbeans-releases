@@ -703,10 +703,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     void saveCustomizerExtenders() {
         if (customizerExtenders != null) {
-            final EnumSet<PhpModule.Change> changes = EnumSet.noneOf(PhpModule.Change.class);
+            final EnumSet<PhpModuleCustomizerExtender.Change> changes = EnumSet.noneOf(PhpModuleCustomizerExtender.Change.class);
             final PhpModule phpModule = project.getPhpModule();
             for (PhpModuleCustomizerExtender customizerExtender : customizerExtenders) {
-                EnumSet<PhpModule.Change> change = customizerExtender.save(phpModule);
+                EnumSet<PhpModuleCustomizerExtender.Change> change = customizerExtender.save(phpModule);
                 if (change != null) {
                     changes.addAll(change);
                 }
@@ -717,7 +717,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {
-                        for (PhpModule.Change change : changes) {
+                        for (PhpModuleCustomizerExtender.Change change : changes) {
                             switch (change) {
                                 case SOURCES_CHANGE:
                                     project.getSourceRoots().fireChange();

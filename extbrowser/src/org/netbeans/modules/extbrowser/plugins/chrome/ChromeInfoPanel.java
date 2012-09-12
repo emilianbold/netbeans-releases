@@ -69,6 +69,7 @@ import org.openide.util.Utilities;
  */
 class ChromeInfoPanel extends javax.swing.JPanel {
 
+    private static final long serialVersionUID = 5394629966593049098L;
     static final Logger LOGGER = Logger.getLogger(ChromeInfoPanel.class.getName());
 
 

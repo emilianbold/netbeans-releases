@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.symfony;
 
+import java.beans.PropertyChangeEvent;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
@@ -167,5 +168,11 @@ public class CommandsLineProcessorTest extends NbTestCase {
         public boolean isBroken() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }

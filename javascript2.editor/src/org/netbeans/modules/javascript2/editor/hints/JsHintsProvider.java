@@ -50,6 +50,8 @@ import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -64,7 +66,7 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
-        
+
         // find out whether there is a convention hint enabled
         List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionHint.JSCONVENTION_OPTION_HINTS);
         boolean countConventionHints = false;
@@ -79,7 +81,7 @@ public class JsHintsProvider implements HintsProvider {
             JsConventionRule rule = new JsConventionRule();
             rule.computeHints((JsRuleContext)context, hints, manager);
         }
-        
+
         List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
         if (otherHints != null) {
             for (Rule.AstRule astRule : otherHints) {
@@ -106,7 +108,21 @@ public class JsHintsProvider implements HintsProvider {
         ParserResult parserResult = context.parserResult;
         if (parserResult != null) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
-            unhandled.addAll(errors);
+            // if in embedded
+            String mimepath = parserResult.getSnapshot().getMimePath().getPath();
+            if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
+                && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
+                    for (Error error : errors) {
+                        // if the error is in embedded code we ignore it
+                        // as we don't know what the other language will add
+                        int pos = parserResult.getSnapshot().getOriginalOffset(error.getStartPosition());
+                        if (pos >= 0 && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getDisplayName())) {
+                            unhandled.add(error);
+                        }
+                    }
+            } else {
+                unhandled.addAll(errors);
+            }
         }
     }
 

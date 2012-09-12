@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -170,4 +171,12 @@ public class PhpModuleImpl extends PhpModule {
     public Preferences getPreferences(Class<?> clazz, boolean shared) {
         return ProjectUtils.getPreferences(phpProject, clazz, shared);
     }
+
+    @Override
+    public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
+        if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
+            phpProject.resetFrameworks();
+        }
+    }
+
 }

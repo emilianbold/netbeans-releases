@@ -91,6 +91,10 @@ public class JsConventionHintTest extends HintTestBase {
     public void testSemicolon03() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/hints/varInForNode.js", null);
     }
+
+    public void testSemicolonIssue218108() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue218108.js", null);
+    }
     
     public void testUnexpectedComma01() throws Exception {
         checkHints(this, new UnexpectedCommaInObjectLiteral(), "testfiles/hints/unexpectedComma.js", null);
