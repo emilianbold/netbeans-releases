@@ -72,4 +72,8 @@ public class GoToDeclarationTest extends JsTestBase {
     public void testIssue176581() throws Exception {
         checkDeclaration("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", "function ^foo() { }");
     }
+    
+    public void testIssue218090_01() throws Exception {
+        checkDeclaration("testfiles/coloring/issue218090.js", "        text : pro^m,", "    var ^prom = 'test';");
+    }
 }
