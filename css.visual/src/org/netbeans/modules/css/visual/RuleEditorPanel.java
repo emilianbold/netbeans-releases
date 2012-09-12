@@ -454,34 +454,37 @@ public class RuleEditorPanel extends JPanel {
         }
 
         if (propertyName != null) {
-            //1.create the property
-            //2.select the corresponding row in the PS
+            //1.verify whether there's such property
+            if(Properties.getProperty(propertyName) != null) {
+                //2.create the property
+                //3.select the corresponding row in the PS
 
-            model.runWriteTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    //add the new declaration to the model.
-                    //the declaration is not complete - the value is missing and it is necessary to 
-                    //enter in the PS otherwise the model become invalid.
-                    ModelUtils utils = new ModelUtils(model);
-                    Declarations decls = rule.getDeclarations();
-                    if (decls == null) {
-                        decls = model.getElementFactory().createDeclarations();
-                        rule.setDeclarations(decls);
+                model.runWriteTask(new Model.ModelTask() {
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        //add the new declaration to the model.
+                        //the declaration is not complete - the value is missing and it is necessary to 
+                        //enter in the PS otherwise the model become invalid.
+                        ModelUtils utils = new ModelUtils(model);
+                        Declarations decls = rule.getDeclarations();
+                        if (decls == null) {
+                            decls = model.getElementFactory().createDeclarations();
+                            rule.setDeclarations(decls);
+                        }
+
+                        Declaration declaration = utils.createDeclaration(propertyName + ":");
+                        decls.addDeclaration(declaration);
+
+                        //do not save the model (apply changes) - once the write task finishes
+                        //the embedded property sheet will be refreshed from the modified model.
+
+                        //remember the created declaration so once the model change is fired
+                        //and the property sheet is refreshed, we can find and select the corresponding
+                        //FeatureDescriptor
+                        createdDeclaration = declaration;
                     }
-
-                    Declaration declaration = utils.createDeclaration(propertyName + ":");
-                    decls.addDeclaration(declaration);
-                    
-                    //do not save the model (apply changes) - once the write task finishes
-                    //the embedded property sheet will be refreshed from the modified model.
-                    
-                    //remember the created declaration so once the model change is fired
-                    //and the property sheet is refreshed, we can find and select the corresponding
-                    //FeatureDescriptor
-                    createdDeclaration = declaration;
-                }
-            });
+                });
+            }
 
         }
     }
