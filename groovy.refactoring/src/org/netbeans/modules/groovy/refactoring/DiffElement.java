@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -121,6 +122,18 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
 
     @Override
     public void performChange() {
+        final String oldFileName = diff.getOldText();
+        final String newFileName = diff.getNewText();
+
+        if (parentFile.getName().equals(oldFileName)) {
+            try {
+                FileLock fileLock = parentFile.lock();
+                parentFile.rename(fileLock, newFileName, "groovy");
+                fileLock.releaseLock();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     @Override
