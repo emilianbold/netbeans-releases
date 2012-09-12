@@ -39,41 +39,62 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.navigation;
+package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class GoToDeclarationTest extends JsTestBase {
-    
-    public GoToDeclarationTest(String testName) {
+public class JsonParserTest extends JsTestBase {
+
+    public JsonParserTest(String testName) {
         super(testName);
     }
-    
-    public void testIssue209941_01() throws Exception {
-        checkDeclaration("testfiles/coloring/issue209941.js", "this.globalNot^ify();", "    this.^globalNotify = function() {");
-    }
-    
-    public void testBasicNavigation_01() throws Exception {
-        checkDeclaration("testfiles/model/variables01.js", "var address = new A^ddress(\"Prague\", \"Czech Republic\", 15000)", "function ^Address (town, state, number) {");
-    }
-    
-    public void testBasicNavigation_02() throws Exception {
-        checkDeclaration("testfiles/model/variables01.js", "formatter.println(addr^ess.print());", "var ^address = new Address(\"Prague\", \"Czech Republic\", 15000)");
-    }
-    
-    public void testBasicNavigation_03() throws Exception {
-        checkDeclaration("testfiles/model/variables01.js", "formatter.println(\"MyApp.country: \" + MyApp.coun^try);", "    MyApp.^country = state; ");
+
+    public void testComments1() throws Exception {
+        parse("{\n"
+            + "\"name\": \"test\"  //line comment\n"
+            + "/*comment*/\n"
+            + "}\n",
+            Collections.singletonList("test.json:2:16 Expected , or } but found /"));
     }
 
-    public void testIssue176581() throws Exception {
-        checkDeclaration("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", "function ^foo() { }");
+    public void testComments2() throws Exception {
+        parse("{\n"
+            + "\"name\": \"test\"  //line comment\n"
+            + "}\n",
+            Collections.singletonList("test.json:2:16 Expected , or } but found /"));
     }
-    
-    public void testIssue218090_01() throws Exception {
-        checkDeclaration("testfiles/coloring/issue218090.js", "        text : pro^m,", "    var ^prom = 'test';");
+
+    public void testComments3() throws Exception {
+        parse("{\n"
+            + "\"name\": \"test\"\n"
+            + "/*comment*/\n"
+            + "}\n",
+            Collections.singletonList("test.json:3:0 Expected , or } but found /"));
+    }
+
+    private void parse(String original, List<String> errors) throws Exception {
+
+        JsonParser parser = new JsonParser();
+        Document doc = getDocument(original);
+        Context context = new JsParser.Context("test.json", Source.create(doc).createSnapshot(), -1);
+        JsErrorManager manager = new JsErrorManager(null);
+        parser.parseContext(context, JsParser.Sanitize.NEVER, manager);
+
+        assertEquals(errors.size(), manager.getErrors().size());
+        for (int i = 0; i < errors.size(); i++) {
+            if (!manager.getErrors().get(i).getDisplayName().startsWith(errors.get(i))) {
+                fail("Error was expected to start with: " + errors.get(i) + " but was: "
+                        + manager.getErrors().get(i).getDisplayName());
+            }
+        }
     }
 }

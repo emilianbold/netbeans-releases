@@ -222,7 +222,6 @@
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>org.netbeans.modules.android.lint</friend>
                 <friend>org.netbeans.modules.android.lint72</friend>
-                <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.findbugs</friend>
                 <friend>org.netbeans.modules.findbugs.installer</friend>
                 <friend>org.netbeans.modules.java.hints</friend>

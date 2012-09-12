@@ -336,6 +336,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             for (TypeUsage type : resolved) {
                 if (type.getOffset() > 0) {
                     JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                    if (jsObject == null && type.getType().indexOf('.') == -1) {
+                        JsObject decParent = this.parent;
+                        while (jsObject == null && decParent != null) {
+                            jsObject = decParent.getProperty(type.getType());
+                            decParent = decParent.getParent();
+                        }
+                    }
                     if (jsObject != null) {
                         ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
                     }

@@ -327,6 +327,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218070_01.js", "MartinFousek.E^;", true);
     }
     
+    public void testIssue218090_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        text : pro^m,", true);
+    }
+    
+    public void testIssue218090_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "    var ag^e = 10;", true);
+    }
+    
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
     }
