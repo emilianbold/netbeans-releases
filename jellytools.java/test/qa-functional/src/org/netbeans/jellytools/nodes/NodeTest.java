@@ -110,9 +110,6 @@ public class NodeTest extends JellyTestCase {
     /** method called before each testcase */
     @Override
     protected void setUp() throws IOException {
-        safeDeleteTitle = safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle",
-                "LBL_SafeDel_Delete"); // NOI18N
-
         System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
         if (projectRootNode == null) {
