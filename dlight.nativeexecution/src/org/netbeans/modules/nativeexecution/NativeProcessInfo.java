@@ -46,7 +46,9 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
@@ -67,6 +69,7 @@ public final class NativeProcessInfo {
     private final boolean isWindows;
     private final MacroMap environment;
     private final List<String> arguments = new ArrayList<String>();
+    private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private String executable;
     private String commandLine;
     private String workingDirectory;
@@ -74,7 +77,6 @@ public final class NativeProcessInfo {
     private boolean redirectError;
     private boolean x11forwarding;
     private boolean suspend;
-    private Collection<ChangeListener> listeners = null;
     private Pty pty = null;
     private boolean runInPty;
     private boolean expandMacros = true;
@@ -91,12 +93,7 @@ public final class NativeProcessInfo {
         redirectError = false;
     }
 
-    /**
-     * NB! listeners are copied.
-     *
-     * @param info
-     */
-    NativeProcessInfo(NativeProcessInfo info) {
+    NativeProcessInfo(NativeProcessInfo info, boolean copyListeners) {
         this.macroExpander = info.macroExpander;
         this.execEnv = info.execEnv;
         this.isWindows = info.isWindows;
@@ -109,24 +106,21 @@ public final class NativeProcessInfo {
         this.redirectError = info.redirectError;
         this.x11forwarding = info.x11forwarding;
         this.suspend = info.suspend;
-
-        Collection<ChangeListener> l = info.getListeners();
-        if (l != null) {
-            this.listeners = new ArrayList<ChangeListener>(l);
+        if (copyListeners) {
+            this.listeners.addAll(info.getListenersSnapshot());
         }
-
         this.pty = info.pty;
         this.runInPty = info.runInPty;
         this.expandMacros = info.expandMacros;
         this.charset = info.charset;
     }
 
-    public void addNativeProcessListener(ChangeListener listener) {
-        if (listeners == null) {
-            listeners = new ArrayList<ChangeListener>();
-        }
+    public void addChangeListener(ChangeListener listener) {
+        listeners.addIfAbsent(listener);
+    }
 
-        listeners.add(listener);
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
     }
 
     public void redirectError(boolean redirectError) {
@@ -359,8 +353,8 @@ public final class NativeProcessInfo {
         return execEnv;
     }
 
-    public Collection<ChangeListener> getListeners() {
-        return listeners;
+    /* package */ Collection<ChangeListener> getListenersSnapshot() {
+        return new LinkedList<ChangeListener>(listeners);
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
