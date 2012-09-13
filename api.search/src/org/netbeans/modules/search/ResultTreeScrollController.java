@@ -108,7 +108,7 @@ class ResultTreeScrollController implements TreeWillExpandListener,
                     int height = (int) r.getHeight() * (childCount + 1);
 
                     Rectangle rectToShow = new Rectangle(lastX, (int) r.getY(),
-                            (int) scrollPane.getWidth() - 20, height);
+                            scrollPane.getWidth() - 20, height);
 
                     tree.scrollRectToVisible(rectToShow);
                 }

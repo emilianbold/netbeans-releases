@@ -355,7 +355,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         Token<? extends JsTokenId> token = ts.token();
-        TokenId id = token.id();
+        JsTokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
 
@@ -371,7 +371,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         if (ch == '\"' || ch == '\'') {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
-        } else if (id == JsTokenId.UNKNOWN) {
+        } else if (id.isError()) {
             //String text = token.text().toString();
 
             ts.movePrevious();
@@ -549,7 +549,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         boolean completablePosition = isQuoteCompletablePosition(doc, dotPos);
 
         boolean insideString = false;
-        TokenId id = token.id();
+        JsTokenId id = token.id();
 
         for (TokenId currId : stringTokens) {
             if (id == currId) {
@@ -558,15 +558,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
         }
 
-        if ((id == JsTokenId.UNKNOWN) && (previousToken != null) &&
-                (previousToken.id() == beginToken)) {
+        if (id.isError() && (previousToken != null)
+                && (previousToken.id() == beginToken)) {
             insideString = true;
         }
 
         if (id == JsTokenId.EOL && previousToken != null) {
             if (previousToken.id() == beginToken) {
                 insideString = true;
-            } else if (previousToken.id() == JsTokenId.UNKNOWN) {
+            } else if (previousToken.id().isError()) {
                 if (ts.movePrevious()) {
                     if (ts.token().id() == beginToken) {
                         insideString = true;

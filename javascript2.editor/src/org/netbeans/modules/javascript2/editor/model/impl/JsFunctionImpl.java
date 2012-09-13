@@ -57,8 +57,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private List<JsObject> parameters;
     final private Set<TypeUsage> returnTypes;
     private boolean isAnonymous;
-    
-    
+
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
         super(scope, parentObject, name, offsetRange);
         this.parametersByName = new HashMap<String, JsObject>(parameters.size());
@@ -105,6 +104,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     @Override
     public Kind getJSKind() {
+        if (kind != null) {
+            return kind;
+        }
         if (getParent() == null) {
             // global function
             return JsElement.Kind.FILE;

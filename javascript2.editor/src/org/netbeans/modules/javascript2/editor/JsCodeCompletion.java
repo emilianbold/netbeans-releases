@@ -107,7 +107,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
         
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
-        CodeCompletionResult result = CodeCompletionResult.NONE;
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
             request.context = context;
@@ -227,7 +226,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
                 default:
-                    result = CodeCompletionResult.NONE;
+                    break;
             }
         }
         
@@ -372,7 +371,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     prefix = docTokenSeq.token().text().toString();
                 }
             }
-            if (id == JsTokenId.UNKNOWN) {
+            if (id.isError()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     prefix = prefix.substring(0, caretOffset - ts.offset());

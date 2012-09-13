@@ -344,7 +344,7 @@ public abstract class PatternSandbox extends JPanel
      * Reverse items in a list. Create a new list, original list is untouched.
      */
     private static <T> List<T> reverse(List<T> list) {
-        LinkedList ll = new LinkedList<T>();
+        LinkedList<T> ll = new LinkedList<T>();
         for (T t : list) {
             ll.add(0, t);
         }

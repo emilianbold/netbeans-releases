@@ -214,7 +214,8 @@ public class FindInFilesAction extends CallableSystemAction {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(FindInFilesAction.class);
+        return new HelpCtx(
+                "org.netbeans.modules.search.FindInFilesAction");       //NOI18N
     }
 
     /** Perform this action. */
@@ -263,7 +264,7 @@ public class FindInFilesAction extends CallableSystemAction {
     }
 
     private void log(String msg) {
-        LOG.finer(shortClassName + ": " + msg);
+        LOG.log(FINER, "{0}: {1}", new Object[]{shortClassName, msg});  //NOI18N
     }
 
     public static class Selection extends FindInFilesAction {

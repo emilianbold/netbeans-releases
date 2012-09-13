@@ -72,7 +72,9 @@ public class TestCC extends GeneralJavaScript {
                 "testIssue215393",
                 "testAllCompletionSingleFile",
                 "testAllCompletionMultipleFiles",
-                "testCallAndApply").enableModules(".*").clusters(".*"));
+                "testCallAndApply",
+                "testLearning",
+                "testSetterGetter").enableModules(".*").clusters(".*"));
     }
 
     public void createApplication() {
@@ -104,7 +106,7 @@ public class TestCC extends GeneralJavaScript {
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
-        
+
         CompletionInfo completion = getCompletion();
         String[] res = {"add", "x"};
         CompletionJListOperator cjo = completion.listItself;
@@ -171,6 +173,55 @@ public class TestCC extends GeneralJavaScript {
 
         endTest();
     }
+
+    public void testLearning() {
+        startTest();
+
+        EditorOperator eo = new EditorOperator(this.currentFile);
+        cleanFile(eo);
+
+        eo.setCaretPositionToLine(1);
+        type(eo, "var person = {};\n person.learn = function(){}; \n");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        type(eo, "\n \n");
+        eo.setCaretPositionToLine(eo.getLineNumber() - 1);
+        type(eo, "person.");
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+
+        CompletionInfo completion = getCompletion();
+        String[] res = {"learn"};
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, res);
+        completion.listItself.hideAll();
+
+        endTest();
+    }
+    
+    public void testSetterGetter(){
+           startTest();
+
+        EditorOperator eo = new EditorOperator(this.currentFile);
+        cleanFile(eo);
+
+        eo.setCaretPositionToLine(1);
+        type(eo, "var person = {\n \n get name(){return this.myname;");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        type(eo, ",\n set name(n){this.myname=n;");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber()+1);
+        type(eo, ";\n person.");
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+
+        CompletionInfo completion = getCompletion();
+        String[] res = {"name", "myname"};
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, res);
+        completion.listItself.hideAll();
+
+        endTest();
+    }
+   
 
     public void testDOMReferences() {
         startTest();

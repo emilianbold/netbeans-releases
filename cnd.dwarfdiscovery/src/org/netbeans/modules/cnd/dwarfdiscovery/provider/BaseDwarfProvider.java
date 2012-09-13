@@ -325,6 +325,16 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 // Duplicated
                 if (existed.getUserInludePaths().size() < f.getUserInludePaths().size()) {
                     map.put(name, f);
+                } else if (existed.getUserInludePaths().size() == f.getUserInludePaths().size()) {
+                    if (existed.getUserMacros().size() < f.getUserMacros().size()) {
+                        map.put(name, f);
+                    } else if (existed.getUserMacros().size() == f.getUserMacros().size()) {
+                        // ignore
+                    } else {
+                        // ignore
+                    }
+                } else {
+                    // ignore
                 }
             }
         }

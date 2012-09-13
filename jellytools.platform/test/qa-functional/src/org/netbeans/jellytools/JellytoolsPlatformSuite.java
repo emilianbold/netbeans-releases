@@ -38,7 +38,6 @@
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -48,7 +47,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class JellytoolsPlatformSuite {
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
                 addTest(FavoritesOperatorTest.class, FavoritesOperatorTest.tests).
                 addTest(HelpOperatorTest.class, HelpOperatorTest.tests).
                 addTest(MainWindowOperatorTest.class, MainWindowOperatorTest.tests).
@@ -58,7 +57,7 @@ public class JellytoolsPlatformSuite {
                 addTest(OutputTabOperatorTest.class, OutputTabOperatorTest.tests).
                 addTest(PluginsOperatorTest.class, PluginsOperatorTest.tests).
                 addTest(QuestionDialogOperatorTest.class, QuestionDialogOperatorTest.tests).
-                addTest(SaveAsTemplateOperatorTest.class, SaveAsTemplateOperatorTest.tests);
-        return conf.clusters(".*").enableModules(".*").suite();
+                addTest(SaveAsTemplateOperatorTest.class, SaveAsTemplateOperatorTest.tests).
+                suite();
     }
 }

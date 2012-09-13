@@ -54,22 +54,27 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.SourceRoots;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
  * Problems in project properties.
  */
-public final class ProjectPropertiesProblemProvider implements ProjectProblemsProvider, PropertyChangeListener {
+public final class ProjectPropertiesProblemProvider implements ProjectProblemsProvider {
 
     // set would be better but it is fine to use a list for small number of items
-    private static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
+    static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
             PhpProjectProperties.SRC_DIR,
             PhpProjectProperties.TEST_SRC_DIR,
             PhpProjectProperties.SELENIUM_SRC_DIR,
@@ -79,24 +84,23 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final PhpProject project;
     private final Object problemsLock = new Object();
+    private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
     // @GuardedBy("problemsLock")
     private Collection<ProjectProblem> problems;
     // @GuardedBy("problemsLock")
     private long eventId;
+    private volatile FileChangeListener fileChangesListener = new FileChangesListener();
 
 
     private ProjectPropertiesProblemProvider(PhpProject project) {
         this.project = project;
     }
 
-    private void addListeners() {
-        ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
-    }
-
     public static ProjectPropertiesProblemProvider createForProject(PhpProject project) {
         ProjectPropertiesProblemProvider projectProblems = new ProjectPropertiesProblemProvider(project);
-        projectProblems.addListeners();
+        projectProblems.addProjectPropertiesListeners();
+        projectProblems.addFileChangesListeners();
         return projectProblems;
     }
 
@@ -174,7 +178,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, PhpProjectProperties.TEST_SRC_DIR));
             currentProblems.add(problem);
         }
     }
@@ -192,7 +196,8 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_description(invalidDirectory.getAbsolutePath()),
-                    new DirectoryProblemResolver(project, PhpProjectProperties.SELENIUM_SRC_DIR, Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_dialog_title(project.getName())));
+                    new DirectoryProblemResolver(project, PhpProjectProperties.SELENIUM_SRC_DIR,
+                            Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_dialog_title(project.getName())));
             currentProblems.add(problem);
         }
     }
@@ -213,7 +218,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES));
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, PhpProjectProperties.WEB_ROOT));
             currentProblems.add(problem);
         }
     }
@@ -230,7 +235,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                 ProjectProblem problem = ProjectProblem.createError(
                         Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
                         Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
-                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH));
+                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH, PhpProjectProperties.INCLUDE_PATH));
                 currentProblems.add(problem);
                 return;
             }
@@ -266,15 +271,97 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         return ProjectPropertiesSupport.getSourceSubdirectory(project, ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.WEB_ROOT));
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (WATCHED_PROPERTIES.contains(evt.getPropertyName())) {
-            synchronized (problemsLock) {
-                problems = null;
-                eventId++;
-            }
-            propertyChangeSupport.firePropertyChange(PROP_PROBLEMS, null, null);
+    private void addProjectPropertiesListeners() {
+        ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, projectPropertiesListener);
+    }
+
+    private void addFileChangesListeners() {
+        addFileChangesListener(project.getSourceRoots());
+        addFileChangesListener(project.getTestRoots());
+        addFileChangesListener(project.getSeleniumRoots());
+        File webRoot = getWebRoot();
+        if (webRoot != null) {
+            addFileChangeListener(webRoot);
         }
+    }
+
+    private void addFileChangesListener(SourceRoots sourceRoots) {
+        for (FileObject root : sourceRoots.getRoots()) {
+            File file = FileUtil.toFile(root);
+            if (file != null) {
+                addFileChangeListener(file);
+            }
+        }
+    }
+
+    private void addFileChangeListener(File file) {
+        try {
+            FileUtil.addFileChangeListener(fileChangesListener, file);
+        } catch (IllegalArgumentException ex) {
+            // already listenening, ignore
+        }
+    }
+
+    void fireProblemsChange() {
+        synchronized (problemsLock) {
+            problems = null;
+            eventId++;
+        }
+        propertyChangeSupport.firePropertyChange(PROP_PROBLEMS, null, null);
+    }
+
+    void propertiesChanged() {
+        // release the current listener
+        fileChangesListener = new FileChangesListener();
+        addFileChangesListeners();
+    }
+
+    //~ Inner classes
+
+    private final class ProjectPropertiesListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (WATCHED_PROPERTIES.contains(evt.getPropertyName())) {
+                fireProblemsChange();
+                propertiesChanged();
+            }
+        }
+
+    }
+
+    private final class FileChangesListener implements FileChangeListener {
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            fireProblemsChange();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            fireProblemsChange();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            fireProblemsChange();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
+        }
+
     }
 
 }

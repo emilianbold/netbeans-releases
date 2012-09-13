@@ -528,11 +528,30 @@ public class JellyTestCase extends NbTestCase {
     }
 
     protected static junit.framework.Test createModuleTest(String modules, String clusters, Class testClass, String... testNames) {
-        return NbModuleSuite.create(testClass, clusters, modules, testNames);
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(testClass);
+        conf = conf.clusters(clusters);
+        conf = conf.enableModules(modules);
+        // #217226 - behave as run from command line
+        conf = conf.honorAutoloadEager(true);
+        if (testNames.length > 0) {
+            conf = conf.addTest(testNames);
+        }
+        return conf.suite();
     }
 
     protected static junit.framework.Test createModuleTest(Class testClass, String... testNames) {
         return createModuleTest(".*", ".*", testClass, testNames);
+    }
+    
+    /** Returns empty configuration with all clusters and modules enabled and
+     * with default recommended settings.
+     * @return default empty configuration
+     */
+    public static NbModuleSuite.Configuration emptyConfiguration() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        // #217226 - behave as run from command line
+        conf = conf.honorAutoloadEager(true);
+        return conf.clusters(".*").enableModules(".*");
     }
 
     private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread, StackTraceElement[]> data) {

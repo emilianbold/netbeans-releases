@@ -44,13 +44,10 @@
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -58,11 +55,9 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint.Type;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.RequestProcessor;
 
@@ -81,14 +76,14 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     
     private final Debugger d;
     private final WebKitDebugging wd;
-    private final Project project;
+    private final ProjectContext pc;
     private final Map<AbstractBreakpoint, WebKitBreakpointManager> breakpointImpls =
             new HashMap<AbstractBreakpoint, WebKitBreakpointManager>();
     
     public BreakpointRuntimeSetter(ContextProvider lookupProvider) {
         d = lookupProvider.lookupFirst(null, Debugger.class);
         wd = lookupProvider.lookupFirst(null, WebKitDebugging.class);
-        project = lookupProvider.lookupFirst(null, Project.class);
+        pc = lookupProvider.lookupFirst(null, ProjectContext.class);
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         createBreakpointImpls();
     }
@@ -117,10 +112,10 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     
     private WebKitBreakpointManager createWebKitBreakpointManager(AbstractBreakpoint ab) {
         if (ab instanceof LineBreakpoint) {
-            return WebKitBreakpointManager.create(d, (LineBreakpoint) ab);
+            return WebKitBreakpointManager.create(d, pc, (LineBreakpoint) ab);
         }
         if (ab instanceof DOMBreakpoint) {
-            return WebKitBreakpointManager.create(wd, project, (DOMBreakpoint) ab);
+            return WebKitBreakpointManager.create(wd, pc, (DOMBreakpoint) ab);
         }
         if (ab instanceof EventsBreakpoint) {
             return WebKitBreakpointManager.create(d, (EventsBreakpoint) ab);

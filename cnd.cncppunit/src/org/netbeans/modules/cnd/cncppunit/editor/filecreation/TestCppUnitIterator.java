@@ -209,13 +209,12 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
             FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(cfg);
             LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
             LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-            librariesConfiguration.add(LibraryItem.StdLibItem.getStandardItem("CppUnit")); // NOI18N
-            linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
+            librariesConfiguration.add(new LibraryItem.OptionItem("`cppunit-config --libs`")); // NOI18N
             linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
             CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
             CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
-            cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
-            ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+            cCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
+            ccCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
         }
     }
 

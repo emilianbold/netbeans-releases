@@ -55,6 +55,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -76,7 +77,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
         NodeActionsProvider {
 
     private Debugger debugger;
-    private Project project;
+    private ProjectContext pc;
 
     private Action GO_TO_SOURCE;
     private Action MAKE_CURRENT_ACTION = Models.createAction (
@@ -127,8 +128,8 @@ public final class CallStackActionsModel extends ViewModelSupport implements
     
     public CallStackActionsModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
-        project = contextProvider.lookupFirst(null, Project.class);
-        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction(project);
+        pc = contextProvider.lookupFirst(null, ProjectContext.class);
+        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction(pc);
     }
 
     // NodeActionsProvider implementation ......................................
@@ -141,6 +142,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
             if (frame != debugger.getCurrentCallFrame()) {
                 debugger.setCurrentCallFrame(frame);
             } else {
+                Project project = pc.getProject();
                 Line line = MiscEditorUtil.getLine(project, frame.getScript(), frame.getLineNumber());
                 MiscEditorUtil.showLine(line, true);
             }

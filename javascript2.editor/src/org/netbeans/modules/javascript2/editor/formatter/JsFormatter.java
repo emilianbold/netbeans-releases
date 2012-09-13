@@ -641,24 +641,26 @@ public class JsFormatter implements Formatter {
             // we fetch the space or next token to start
             start = FormatTokenStream.getNextNonVirtual(start);
 
-            if (start.getKind() != FormatToken.Kind.WHITESPACE
-                    && start.getKind() != FormatToken.Kind.EOL) {
-                assert start == end : start;
-                if (!remove) {
-                    formatContext.insert(start.getOffset(), " "); // NOI18N
-                }
-            } else {
-                if (lastEol != null) {
-                    end = lastEol;
-                }
-                // if it should be removed or there is eol (in fact space)
-                // which will stay there
-                if (remove || end.getKind() == FormatToken.Kind.EOL) {
-                    formatContext.remove(start.getOffset(),
-                            end.getOffset() - start.getOffset());
+            if (start != null) {
+                if (start.getKind() != FormatToken.Kind.WHITESPACE
+                        && start.getKind() != FormatToken.Kind.EOL) {
+                    assert start == end : start;
+                    if (!remove) {
+                        formatContext.insert(start.getOffset(), " "); // NOI18N
+                    }
                 } else {
-                    formatContext.replace(start.getOffset(),
-                            end.getOffset() - start.getOffset(), " "); // NOI18N
+                    if (lastEol != null) {
+                        end = lastEol;
+                    }
+                    // if it should be removed or there is eol (in fact space)
+                    // which will stay there
+                    if (remove || end.getKind() == FormatToken.Kind.EOL) {
+                        formatContext.remove(start.getOffset(),
+                                end.getOffset() - start.getOffset());
+                    } else {
+                        formatContext.replace(start.getOffset(),
+                                end.getOffset() - start.getOffset(), " "); // NOI18N
+                    }
                 }
             }
         }
