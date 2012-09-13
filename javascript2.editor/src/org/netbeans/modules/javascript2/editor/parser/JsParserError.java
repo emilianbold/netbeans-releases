@@ -69,17 +69,19 @@ public class JsParserError implements Error {
     private final boolean wholeLine;
     private final Severity severity;
     private final Object[] parameters;
-    
-    public JsParserError(String displayName, FileObject file, int startPosition, int endPosition, Severity severity, Object[] parameters, boolean wholeLine) {
+
+    public JsParserError(String displayName, FileObject file, int startPosition,
+            int endPosition, Severity severity, Object[] parameters, boolean wholeLine) {
+
         this.displayName = displayName;
         this.file = file;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.severity = severity;
-        this.parameters = parameters;
+        this.parameters = parameters != null ? parameters.clone() : new Object[] {};
         this.wholeLine = wholeLine;
     }
-    
+
     @Override
     public String getDisplayName() {
         return displayName;
