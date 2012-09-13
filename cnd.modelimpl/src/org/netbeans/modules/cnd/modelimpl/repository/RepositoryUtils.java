@@ -78,7 +78,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 138;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 140;
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;
@@ -306,23 +306,23 @@ public final class RepositoryUtils {
         }
     }
 
-    private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {
-        CharSequence unit = KeyUtilities.getUnitName(unitId);
+    private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {        
         if (!cleanRepository) {
-            int errors = myRepositoryListenerProxy.getErrorCount(unit);
+            int errors = myRepositoryListenerProxy.getErrorCount(unitId);
             if (errors > 0) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.log(Level.INFO, "Clean index for project \"{0}\" because index was corrupted (was {1} errors).", new Object[]{unit, errors}); // NOI18N
+                    CharSequence unit = KeyUtilities.getUnitNameSafe(unitId);
+                    LOG.log(Level.INFO, "Clean index for project {0} \"{1}\" because index was corrupted (was {1} errors).", new Object[]{unitId, unit, errors}); // NOI18N
                 }
                 cleanRepository = true;
             }
         }
-        myRepositoryListenerProxy.cleanErrorCount(unit);
+        myRepositoryListenerProxy.cleanErrorCount(unitId);
         repository.closeUnit(unitId, cleanRepository, requiredUnits);
     }
 
     public static int getRepositoryErrorCount(ProjectBase project){
-        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName());
+        return getRepositoryListenerProxy().getErrorCount(project.getUnitId());
     }
 
     public static void registerRepositoryError(ProjectBase project, Exception e) {
@@ -373,20 +373,20 @@ public final class RepositoryUtils {
 
     private static class RepositoryListenerProxy implements RepositoryListener {
         private RepositoryListener parent = RepositoryListenerImpl.instance();
-        private Map<CharSequence,Integer> wasErrors = new ConcurrentHashMap<CharSequence,Integer>();
+        private Map<Integer,Integer> wasErrors = new ConcurrentHashMap<Integer,Integer>();
         private boolean fatalError = false;
         private RepositoryListenerProxy(){
         }
-        public int getErrorCount(CharSequence unitName) {
-            Integer i = wasErrors.get(unitName);
+        public int getErrorCount(int unitId) {
+            Integer i = wasErrors.get(unitId);
             if (i == null) {
                 return fatalError ? 1 : 0;
             } else {
                 return fatalError ? i.intValue() + 1 : i.intValue();
             }
         }
-        public void cleanErrorCount(CharSequence unitName) {
-            wasErrors.remove(unitName);
+        public void cleanErrorCount(int unitId) {
+            wasErrors.remove(unitId);
             fatalError = false;
         }
         @Override
@@ -399,7 +399,7 @@ public final class RepositoryUtils {
         }
         @Override
         public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
-            primitiveErrorStrategy(unitName, exc);
+            primitiveErrorStrategy(unitId, exc);
             parent.anExceptionHappened(unitId, unitName, exc);
         }
 
@@ -409,18 +409,14 @@ public final class RepositoryUtils {
          * Provide intelligence logic that take into account possibility to "fixing" errors.
          * For example error in "file" segment can be fixed by file reparse.
          */
-        private void primitiveErrorStrategy(CharSequence unitName, RepositoryException exc){
-            if (unitName != null) {
-                Integer i = wasErrors.get(unitName);
-                if (i == null) {
-                    i = Integer.valueOf(1);
-                } else {
-                    i = Integer.valueOf(i.intValue()+1);
-                }
-                wasErrors.put(unitName, i);
+        private void primitiveErrorStrategy(int unitId, RepositoryException exc){
+            Integer i = wasErrors.get(unitId);
+            if (i == null) {
+                i = Integer.valueOf(1);
             } else {
-                fatalError = true;
+                i = Integer.valueOf(i.intValue()+1);
             }
+            wasErrors.put(unitId, i);
         }
     }
 }

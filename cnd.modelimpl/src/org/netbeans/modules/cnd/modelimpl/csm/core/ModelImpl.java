@@ -306,7 +306,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (prj != null) {
             disposeProject(prj, cleanRepository);
             if (!prj.isArtificial()) {
-                LibraryManager.getInstance().onProjectClose(prj.getUID());
+                LibraryManager.getInstance(prj).onProjectClose(prj.getUID());
             }
         }
 
@@ -532,7 +532,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (Iterator<CsmProject> projIter = libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
         }
-        LibraryManager.getInstance().shutdown();
+        LibraryManager.shutdown();
 
         cleanCaches();
 
@@ -805,7 +805,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 closeProject(platformProject, true);
             }
         }
-        LibraryManager.getInstance().cleanLibrariesData(libs);
+        LibraryManager.cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
             ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
             if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed? 

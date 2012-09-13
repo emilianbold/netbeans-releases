@@ -39,27 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.spi;
-
-import java.io.File;
+package org.netbeans.modules.cnd.repository.util;
 
 /**
- * Allows to provide an alternative location of repository unit cache
  *
- * @author Vladimir Kvashin
+ * @author vk155633
  */
-public interface RepositoryCacheDirectoryProvider {
-
-    File getCacheBaseDirectory();
-
-//    /**
-//     * Gets base directory for unit cache.
-//     *
-//     * It does not contain directory of the unit itself -
-//     * it's repository responsibility to create a  subdirectory with appropriate name.
-//     *
-//     * @param unitName unit name
-//     * @return base directory; it can be null, in which case it will be ignored
-//     */
-//    File getUnitCacheBaseDirectory(CharSequence unitName);
+public interface UnitCodec {
+    int removeRepositoryID(int unitId);
+    int addRepositoryID(int unitId);
 }

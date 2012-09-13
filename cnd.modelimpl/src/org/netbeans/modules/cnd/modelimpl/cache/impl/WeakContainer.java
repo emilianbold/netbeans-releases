@@ -84,8 +84,11 @@ public final class WeakContainer<T> {
             }
             container = (T) RepositoryUtils.get(storageKey);
             if (container == null && stateOwner.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
+//                T container2 = (T) RepositoryUtils.get(storageKey);
                 DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + storageKey)); // NOI18N
                 preventMultiplyDiagnosticExceptionsSorage++;
+//            } else{
+//                System.err.printf("OK %s\n", storageKey);
             }
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
                 weakContainer = new WeakReference<T>(container);
