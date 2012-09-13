@@ -42,7 +42,6 @@ import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +68,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Scope;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Name;
 
@@ -283,16 +281,7 @@ public class OrganizeImports {
                 for (Scope.Entry e = ((JCCompilationUnit)cut).starImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
                     if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind()) {
                         if (stars != null) {
-                            Symbol owner = e.sym.owner;
-                            for (Iterator<Element> it = stars.iterator(); it.hasNext();) {
-                                Element el = it.next();
-                                if (types.isSubtype(owner.type, el.asType())) {
-                                    it.remove();
-                                } else if (types.isSubtype(el.asType(), owner.type)) {
-                                    return e.sym;
-                                }
-                            }
-                            stars.add(owner);
+                            stars.add(e.sym.owner);
                         }
                         return e.sym;
                     }
