@@ -682,6 +682,9 @@ final class PropUtils {
         }
 
         String msg = Exceptions.findLocalizedMessage(throwable);
+        if( null == msg || msg.isEmpty() ) {
+            msg = throwable.getMessage();
+        }
         NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
         DialogDisplayer.getDefault().notifyLater(d);
     }
