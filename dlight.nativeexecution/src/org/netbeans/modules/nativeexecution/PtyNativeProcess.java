@@ -69,8 +69,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     private String tty;
     private AbstractNativeProcess delegate = null;
 
-    public PtyNativeProcess(NativeProcessInfo info) {
-        super(new NativeProcessInfo(info));
+    public PtyNativeProcess(final NativeProcessInfo info) {
+        super(new NativeProcessInfo(info, true));
     }
 
     public String getTTY() {
@@ -140,20 +140,12 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         // no need to preload unbuffer in case of running in internal terminal
         info.setUnbuffer(false);
 
-        // Listeners...
-        // listeners are copied already in super()
-        // and never accessed via info anymore...
-        // so when we change listeners here,
-        // this change has effect on delegate only...
-
-        if (info.getListeners() != null) {
-            info.getListeners().clear();
-        }
+        NativeProcessInfo delegateInfo = new NativeProcessInfo(info, false);
 
         if (env.isLocal()) {
-            delegate = new LocalNativeProcess(info);
+            delegate = new LocalNativeProcess(delegateInfo);
         } else {
-            delegate = new RemoteNativeProcess(info);
+            delegate = new RemoteNativeProcess(delegateInfo);
         }
 
         delegate.createAndStart();

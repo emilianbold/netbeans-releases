@@ -55,6 +55,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -66,13 +67,12 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.modules.editor.macros.storage.ui.MacrosModel.Macro;
-import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -289,17 +289,21 @@ public class MacrosPanel extends JPanel {
 	while (it.hasNext()) {
 	    Macro m = it.next();
 	    if (m.getShortcuts().size() > 0) {
-		String sc  = StorageSupport.keyStrokesToString(m.getShortcuts().get(0).getKeyStrokeList(), false);
-		if (sc.equals(shortcut))
+                List<KeyStroke> l2 = m.getShortcuts().get(0).getKeyStrokeList();
+                KeyStroke[] arr = l2.toArray(new KeyStroke[l2.size()]);
+                String sc  = KeyStrokeUtils.getKeyStrokesAsText(arr, " "); // NOI18N
+		if (sc.equals(shortcut)) {
 		    m.setShortcuts(Collections.<String>emptySet());
+                }
 	    }
 	}
 	
         if (act != null) {
             Set<String> set = Collections.<String>emptySet();
 	    // This colliding SC is not a macro, don't try to clean it up
-	    if(act instanceof MacrosModel.Macro)
+	    if(act instanceof MacrosModel.Macro) {
 		((MacrosModel.Macro) act).setShortcuts(set);
+            }
 	    
             shortcutsFinder.setShortcuts(act, set);
         }
