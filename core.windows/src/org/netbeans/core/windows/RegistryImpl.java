@@ -178,6 +178,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     
     /** Called when a TopComponent is opened. */
     public synchronized void topComponentOpened(TopComponent tc) {
+        assert null != tc;
         if (openSet.contains(tc)) {
             return;
         }
@@ -214,6 +215,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      * @param tc
      */
     public synchronized void addTopComponent( TopComponent tc ) {
+        assert null != tc;
         openSet.add( tc );
     }
     
