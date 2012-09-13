@@ -339,26 +339,58 @@ public class MIParser {
 	return list;
     }
 
-
+    /* 
     private MITList parseResultList(TokenType endToken, boolean topLevel)
 	throws MIParserException {
-        
-        Token t = getToken();
-        if ((t.type == TokenType.SYM) && (t.value.equals("bkpt"))) { // NOI18N
-            t = getToken();
-            if (t.type != TokenType.EQ) {
-                error("result", "=", t); // NOI18N
-            }
-            MITList list = parseBkptList(topLevel);
-            return list;
-        } else {
-            ungetToken(t);
-        }
 
 	MITList list = new MITList(endToken == TokenType.RB, topLevel);
 	while (true) {
 	    MIResult result = parseResult();
 	    list.add(result);
+	    Token t = getToken();
+	    if (t.type == endToken)
+		break;
+	    else if (t.type == TokenType.COMMA)
+		continue;
+	    else
+		error("result list", ", or ]", t); // NOI18N
+	}
+	return list;
+    }*/
+
+    /* This implementation supports the output like this:
+        result: variable = value
+        value: tuple (, tuple)*
+    */
+    private MITList parseResultList(TokenType endToken, boolean topLevel)
+	throws MIParserException {
+
+	MITList list = new MITList(endToken == TokenType.RB, topLevel);
+        String name = null;
+	while (true) {
+            Token t = getToken();
+            if (t.type == TokenType.SYM) {
+                name = t.value;
+                
+                t = getToken();
+                
+                if (t.type != TokenType.EQ) {
+                    error("result", "=", t); // NOI18N
+                }
+            } else if (t.type == TokenType.LC) {
+                ungetToken(t);
+            } else {
+                error("result list", "variable or {", t); // NOI18N
+            }
+            
+            if (name == null) {
+                error("result list", "variable", t); // NOI18N
+            }
+            MIValue value = parseValue("file".equals(name) || "fullname".equals(name)); //NOI18N
+            
+	    MIResult result = new MIResult(name, value);
+	    list.add(result);
+            
 	    t = getToken();
 	    if (t.type == endToken)
 		break;
@@ -368,28 +400,6 @@ public class MIParser {
 		error("result list", ", or ]", t); // NOI18N
 	}
 	return list;
-    }
-
-    private MITList parseBkptList(boolean topLevel) throws MIParserException {
-        MITList list = new MITList(true, topLevel);
-        
-        Token t;
-        while (true) {
-            MIValue value = parseValue(topLevel);
-	    list.add(new MIResult("bkpt", value)); // NOI18N
-            
-            t = getToken();
-            
-            if (t.type == TokenType.COMMA)
-		continue;
-            else if (t.type == TokenType.SYM) {
-                ungetToken(t);
-                break;
-            } else if (t.type == TokenType.EOL) {
-                break;
-            }
-        }
-        return list;
     }
 
     private MIValue parseValue(boolean decode) throws MIParserException {
@@ -412,7 +422,7 @@ public class MIParser {
 	return null;
     }
 
-
+    /*
     private MIResult parseResult() throws MIParserException {
 	Token tsym = getToken();
 	if (tsym.type != TokenType.SYM)
@@ -422,10 +432,10 @@ public class MIParser {
 	if (teq.type != TokenType.EQ)
 	    error("result", "=", teq); // NOI18N
 
-        MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value)); //NOI18N
+	MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value)); //NOI18N
 
 	return new MIResult(tsym.value, value);
-    }
+    }*/
 
 
     private MITList parseTList(TokenType endToken) throws MIParserException {
