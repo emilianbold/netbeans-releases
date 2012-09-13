@@ -102,6 +102,9 @@ public class CndPathUtilitities {
      * its filename.
      */
     public static String getBaseName(String path) {
+        if (path == null) {
+            return null; // making it consistent with getDirName
+        }
         if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
             path = path.substring(0,path.length()-1);
         }
