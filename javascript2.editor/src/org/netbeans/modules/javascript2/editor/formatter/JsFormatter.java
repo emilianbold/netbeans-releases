@@ -127,9 +127,14 @@ public class JsFormatter implements Formatter {
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
 
+                if (ts == null) {
+                    return;
+                }
+
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, context.startOffset(), context.endOffset());
-                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms",
+                        (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
@@ -141,7 +146,8 @@ public class JsFormatter implements Formatter {
                 } else {
                     LOGGER.log(Level.INFO, "Format visitor not executed; no root node");
                 }
-                LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.INFO, "Format visitor: {0} ms",
+                        (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
 
