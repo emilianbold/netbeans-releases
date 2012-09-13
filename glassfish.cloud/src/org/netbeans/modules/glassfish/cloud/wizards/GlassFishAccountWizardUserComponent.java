@@ -324,6 +324,7 @@ public class GlassFishAccountWizardUserComponent
     public String getUserPassword() {
         return new String(userPasswordTextField.getPassword());
     }
+
     /**
      * Get selected GlassFish cloud entity name (unique identifier).
      * <p/>

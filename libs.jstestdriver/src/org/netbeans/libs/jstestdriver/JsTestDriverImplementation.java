@@ -56,6 +56,6 @@ public interface JsTestDriverImplementation {
     boolean isRunning();
     boolean wasStartedExternally();
     
-    void runTests(File jsTestDriverJar, int port, boolean strictMode, File baseFolder, File configFile, 
+    void runTests(File jsTestDriverJar, String serverURL, boolean strictMode, File baseFolder, File configFile, 
             String testsToRun, TestListener listener);
 }
