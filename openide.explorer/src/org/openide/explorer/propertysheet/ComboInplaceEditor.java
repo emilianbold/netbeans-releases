@@ -46,12 +46,14 @@ package org.openide.explorer.propertysheet;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyEditor;
+import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.JTextComponent;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import org.openide.util.Lookup;
 
 
 /** A combo box inplace editor.  Does a couple of necessary things:
@@ -169,6 +171,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
             setEditable(editable);
             setActionCommand(COMMAND_SUCCESS);
+            setupAutoComplete();
             reset();
         } finally {
             connecting = false;
@@ -201,6 +204,10 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             return;
         } else {
             if (editor == null) {
+                return;
+            }
+
+            if( isAutoComplete && isPopupVisible() ) {
                 return;
             }
 
@@ -568,6 +575,24 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
                 checker = null;
             }
+        }
+    }
+
+    private boolean isAutoComplete = false;
+    /**
+     * Use reflection to check if SwingX library is on class path and add auto-complete.
+     */
+    private void setupAutoComplete() {
+        if( Boolean.getBoolean( "nb.propertysheet.combobox.autocomplete.disable") ) //NOI18N
+            return;
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
+            Class c = cl.loadClass( "org.jdesktop.swingx.autocomplete.AutoCompleteDecorator" ); //NOI18N
+            Method m = c.getMethod( "decorate", JComboBox.class );
+            m.invoke( null, this );
+            isAutoComplete = true;
+        } catch( Exception e ) {
+            //ignore, SwingX is either not available or unsupported version
         }
     }
 }
