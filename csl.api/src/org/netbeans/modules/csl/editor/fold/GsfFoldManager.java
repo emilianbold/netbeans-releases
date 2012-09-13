@@ -142,6 +142,8 @@ public class GsfFoldManager implements FoldManager {
         = new FoldTemplate(INNER_CLASS_FOLD_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 0, 0);
 
     
+    public static final String CODE_FOLDING_ENABLE = "code-folding-enable"; //NOI18N
+    
     /** Collapse methods by default
      * NOTE: This must be kept in sync with string literal in editor/options
      */
@@ -539,6 +541,10 @@ public class GsfFoldManager implements FoldManager {
         }
         
         private void addTree(GsfFoldManager manager, TreeSet<FoldInfo> result, ParserResult info, Document doc, StructureScanner scanner) {
+            // #217322, disabled folding -> no folds will be created
+            if (!manager.getSetting(CODE_FOLDING_ENABLE)) {
+                return;
+            }
             Map<String,List<OffsetRange>> folds = scanner.folds(info);
             if (cancelled.get()) {
                 return;
