@@ -342,7 +342,12 @@ public abstract class BaseAction extends TextAction {
     
     private void recordAction( JTextComponent target, ActionEvent evt ) {
         if( this == target.getKeymap().getDefaultAction() ) { // defaultKeyTyped
-            textBuffer.append( getFilteredActionCommand(evt.getActionCommand()) );
+            // see #218258; must filter key-typed events after key-pressed. Not ideal,
+            // but shares logic with the actual action that inserts content into the editor.
+            if (BaseKit.isValidDefaultTypedAction(evt) &&
+                BaseKit.isValidDefaultTypedCommand(evt)) {
+                textBuffer.append( evt.getActionCommand() );
+            }
         } else { // regular action
             if( textBuffer.length() > 0 ) {
                 if( macroBuffer.length() > 0 ) macroBuffer.append( ' ' ); 
@@ -353,17 +358,6 @@ public abstract class BaseAction extends TextAction {
             String name = (String)getValue( Action.NAME );
             macroBuffer.append( encodeActionName( name ) );
         }
-    }
-    
-    private String getFilteredActionCommand(String cmd)
-    {
-        if (cmd == null || cmd.length() == 0)
-            return "";
-        char ch = cmd.charAt(0);
-        if ((ch >= 0x20) && (ch != 0x7F))
-            return cmd;
-        else
-            return "";
     }
     
     boolean startRecording( JTextComponent target ) {
