@@ -98,6 +98,10 @@ public class JsFormatterEmbeddedTest extends PHPCodeCompletionTestBase {
         reformatFileContents("testfiles/js/embeddedSimple4.php", new IndentPrefs(4,4));
     }
 
+    public void testEmbeddedSimple5() throws Exception {
+        reformatFileContents("testfiles/js/embeddedSimple5.php", new IndentPrefs(4,4));
+    }
+
     public void testEmbeddedMultipleSections1() throws Exception {
         reformatFileContents("testfiles/js/embeddedMultipleSections1.php", new IndentPrefs(4,4));
     }

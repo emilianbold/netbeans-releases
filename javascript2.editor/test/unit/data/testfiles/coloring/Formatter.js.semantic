@@ -25,8 +25,8 @@ var |>GLOBAL:formatter<| = {
     },
 
     |>METHOD:delimiter<|: function(title, emptyLine) {
-        if (emptyLine == |>GLOBAL:undefined<| || !(emptyLine instanceof |>GLOBAL:Boolean<|)) {
-            emptyLine = new |>GLOBAL:Boolean<|(false);
+        if (emptyLine == |>GLOBAL:undefined<| || !(emptyLine instanceof Boolean)) {
+            emptyLine = new Boolean(false);
         }
         if (emptyLine.valueOf()) {
             this.println("");

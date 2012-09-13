@@ -204,10 +204,14 @@ public class JsErrorManager extends ErrorManager {
     }
 
     private static class ParserError {
-        protected String message;
-        protected int line;
-        protected int column;
-        protected long token;
+
+        protected final String message;
+
+        protected final int line;
+
+        protected final int column;
+
+        protected final long token;
 
         public ParserError(String message, int line, int column, long token) {
             this.message = message;

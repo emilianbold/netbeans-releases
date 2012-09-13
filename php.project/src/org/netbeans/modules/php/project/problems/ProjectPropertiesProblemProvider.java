@@ -258,7 +258,10 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             return null;
         }
         File dir = ProjectPropertiesSupport.getSubdirectory(project, project.getProjectDirectory(), propValue);
-        assert !dir.exists() : "Directory should not exists since fileobject does not exist (or is invalid): " + dir;
+        if (dir.isDirectory()) {
+            // #217030 - directory renamed in file chooser in project problems dialog
+            return null;
+        }
         return dir;
     }
 

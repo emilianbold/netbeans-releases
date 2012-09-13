@@ -45,7 +45,12 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,6 +158,24 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             jerseyPanel = new JerseyPanel( this );
             mainPanel.addChangeListener(jerseyPanel );
             add( jerseyPanel );
+            // Fix for BZ#214951 - Hidden Text Box during REST endpoint creation
+            /*addHierarchyListener( new HierarchyListener(){
+
+                @Override
+                public void hierarchyChanged( HierarchyEvent e ) {*/
+                    double height = 0;
+                    Component[] components = getComponents();
+                    for (Component component : components) {
+                        height+= component.getPreferredSize().getHeight();
+                    }
+                    Dimension dim = getPreferredSize();
+                    int newHeight = (int)height;
+                    if ( dim.height < newHeight ) {
+                        setPreferredSize( new Dimension( dim.width, newHeight ));
+                    }      
+             /*  }
+                
+            });*/ 
         }
         
         @Override
@@ -244,7 +267,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                 jerseyPanel.read(wizard);
             }
         }
-
+        
         private AbstractPanel.Settings mainPanel;    
         private JerseyPanel jerseyPanel;
     }

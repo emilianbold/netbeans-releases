@@ -67,7 +67,7 @@ class RouterGenerator {
 
     void generateRouter( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths,
-            Map<HttpRequests, Boolean> useIds, CompilationController controller)
+            CompilationController controller)
     {
         myRouters.append("var ");                                         // NOI18N
         myRouters.append(myRouterName);

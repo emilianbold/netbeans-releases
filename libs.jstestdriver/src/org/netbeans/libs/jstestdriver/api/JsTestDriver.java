@@ -79,9 +79,9 @@ public final class JsTestDriver {
         return impl.wasStartedExternally();
     }
     
-    public void runTests(int port, boolean strictMode, File baseFolder, File configFile, 
+    public void runTests(String serverURL, boolean strictMode, File baseFolder, File configFile, 
             String testsToRun, TestListener listener) {
-        impl.runTests(jsTestDriverJar, port, strictMode, baseFolder, configFile, testsToRun, listener);
+        impl.runTests(jsTestDriverJar, serverURL, strictMode, baseFolder, configFile, testsToRun, listener);
     }
 
     private JsTestDriverImplementation createImpl2() {
