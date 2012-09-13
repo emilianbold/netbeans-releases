@@ -140,14 +140,9 @@ public class NBTabbedPane extends JTabbedPane {
      * Get the index of a component
      */
     public int indexOf( Component comp ) {
-        int max = getDataModel().size();
-        TabDataModel mdl = getDataModel();
-        for( int i = 0; i < max; i++ ) {
-            if( getComponentConverter().getComponent( mdl.getTab( i ) ) == comp ) {
-                return i;
-            }
-        }
-        return -1;
+        if( null == comp )
+            return -1;
+        return indexOfComponent( comp );
     }
 
     /**
@@ -286,9 +281,7 @@ public class NBTabbedPane extends JTabbedPane {
     }
 
     public int tabForCoordinate( Point p ) {
-        int tabbedPaneIndex = indexAtLocation( p.x, p.y );
-        Component c = getTabComponentAt( tabbedPaneIndex );
-        return indexOf( c );
+        return indexAtLocation( p.x, p.y );
     }
 
     public Image createImageOfTab( int tabIndex ) {
