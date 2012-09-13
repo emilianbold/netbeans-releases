@@ -139,13 +139,18 @@ public final class NativeProcessBuilder implements Callable<Process> {
     /**
      * Register passed <tt>NativeProcess.Listener</tt>.
      *
-     * @param listener NativeProcess.Listener to be registered to recieve process'
-     *        state change events.
+     * @param listener NativeProcess.Listener to be registered to receive
+     * process's state change events.
      *
      * @return this
      */
     public NativeProcessBuilder addNativeProcessListener(ChangeListener listener) {
-        info.addNativeProcessListener(listener);
+        info.addChangeListener(listener);
+        return this;
+    }
+
+    public NativeProcessBuilder removeNativeProcessListener(ChangeListener listener) {
+        info.removeChangeListener(listener);
         return this;
     }
 
