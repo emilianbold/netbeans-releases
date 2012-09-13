@@ -75,6 +75,7 @@ import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -124,7 +125,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
             URL[] testRoots = testSources.getRootURLs();
             boolean addTestSources = false;
             for (int i = 0; i < testRoots.length; i++) {
-                File f = new File(URI.create(testRoots[i].toExternalForm()));
+                File f = Utilities.toFile(URI.create(testRoots[i].toExternalForm()));
                 if (f.exists()) {
                     addTestSources = true;
                     break;
