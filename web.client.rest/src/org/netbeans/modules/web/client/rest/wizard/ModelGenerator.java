@@ -490,18 +490,39 @@ class ModelGenerator {
         }
         else {
             path = getUrl(path);
-            if ( !url.equals(path) || ( useId!= null && useId )){
-                if ( !path.endsWith("/")){                              // NOI18N
-                    path = path +'/';
-                }
-                builder.append("if(method=='");                         // NOI18N
-                builder.append(request.toString());
-                builder.append("'){\n");                                // NOI18N
-                builder.append("options.url = '");                      // NOI18N
-                builder.append(path);
-                builder.append("'+model.id;\n");                        // NOI18N
-                builder.append("}\n");                                  // NOI18N
+            StringBuilder newUrlSnippet = new StringBuilder();
+            boolean isModified = false;
+            if ( !url.equals(path) ){
+                newUrlSnippet.append("options.url = '");                 // NOI18N
+                newUrlSnippet.append(path);
+                isModified = true;
             }
+            if (useId!= null && useId){
+                if ( isModified ){
+                    if ( !path.endsWith("/")){
+                        newUrlSnippet.append('/');
+                    }
+                    newUrlSnippet.append("'+model.id;\n");
+                }
+            }
+            else{
+                if ( isModified ){
+                    newUrlSnippet.append("';\n");
+                }
+                else{
+                    newUrlSnippet.append("options.url = '");             // NOI18N
+                    newUrlSnippet.append(path);
+                    newUrlSnippet.append("';\n");
+                }
+            }
+            if ( newUrlSnippet.length() == 0 ){
+                return;
+            }
+            builder.append("if(method=='");                         // NOI18N
+            builder.append(request.toString());
+            builder.append("'){\n");                                // NOI18N
+            builder.append(newUrlSnippet);
+            builder.append("}\n");                                  // NOI18N
         }
     }
     
