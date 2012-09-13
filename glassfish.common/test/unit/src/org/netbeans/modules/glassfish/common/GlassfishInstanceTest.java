@@ -68,22 +68,23 @@ public class GlassfishInstanceTest {
         int adminPort = 0;
         String userName = "";
         String password = "";
+        String target = "";
         String url = "";
         GlassfishInstanceProvider gip = null;
         GlassfishInstance expResult = null;
         GlassfishInstance result = GlassfishInstance.create(displayName,
                 installRoot, glassfishRoot, domainsDir, domainName,
-                httpPort, adminPort, userName, password,
+                httpPort, adminPort, userName, password, target,
                 "foo:localhost:port", GlassfishInstanceProvider.getEe6());
         assert result != null : "got a null";
         GlassfishInstance result2 = GlassfishInstance.create(displayName,
                 installRoot, glassfishRoot, domainsDir, domainName,
-                httpPort, adminPort, userName, password,
+                httpPort, adminPort, userName, password, target,
                 "foo:localhost:port", GlassfishInstanceProvider.getEe6());
         assert result.equals(result2);
         result2 = GlassfishInstance.create(displayName, installRoot,
                 glassfishRoot, domainsDir, domainName,
-                httpPort, adminPort, userName, password,
+                httpPort, adminPort, userName, password, target,
                 "foo:127.0.0.1:port", GlassfishInstanceProvider.getEe6());
         assert result.equals(result2);
     }
