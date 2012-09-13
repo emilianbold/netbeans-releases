@@ -557,7 +557,7 @@ public class FormatVisitor extends NodeVisitor {
                     // remove around binary operator tokens added during token
                     // stream creation
                     if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                        assert formatToken != null && formatToken.getText() != null
+                        assert formatToken != null
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
                         // we remove blindly inserted binary op markers

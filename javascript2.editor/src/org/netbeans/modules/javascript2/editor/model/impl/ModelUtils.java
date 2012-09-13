@@ -702,7 +702,6 @@ public class ModelUtils {
                     || value instanceof Double) {
                 result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
             } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                // offset is set to -1, to prevent coloring, etc
                 result.add(new TypeUsageImpl("Array", -1, true));
             }
             return null;

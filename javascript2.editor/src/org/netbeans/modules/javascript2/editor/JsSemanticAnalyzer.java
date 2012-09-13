@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
@@ -57,6 +59,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -71,7 +74,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    
+    private static List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER);
+
     public JsSemanticAnalyzer() {
         this.cancelled = false;
         this.semanticHighlights = null;
@@ -141,7 +145,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     break;
                 case OBJECT:
                 case OBJECT_LITERAL:
-                    if (parent.getParent() == null) {
+                    if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for (Occurrence occurence : object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
@@ -165,7 +169,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                     break;
                 case VARIABLE:
-                    if (parent.getParent() == null) {
+                    if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
