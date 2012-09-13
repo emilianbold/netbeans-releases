@@ -137,6 +137,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final int NOW = 0;
     private static final int JDOC_TIME = 500;
     private static final int COMBO_HEIGHT = 20;
+    private static final int MIN_HISTORY_WIDTH = 50;
+    private static final int MIN_TYPE_WIDTH = 100;
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
     @StaticResource
@@ -146,7 +148,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final String NON_ACTIVE_CONTENT = "non-active-content";  //NOI18N
     private static final String ACTIVE_CONTENT = "active-content";  //NOI18N
     private static final String PROP_LOWER_TOOLBAR_EXPANDED = "filtersPanelTap.expanded"; //NOI18N
-    private static final int MIN_HISTORY_WIDTH = 100;
     
     private static HierarchyTopComponent instance;
 
@@ -188,15 +189,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         initComponents();
         setName(Bundle.CTL_HierarchyTopComponent());
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
-        viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values())) {
-            @Override
-            public Dimension getMinimumSize() {
-                Dimension res = super.getMinimumSize();
-                return new Dimension(
-                    res.width,
-                    COMBO_HEIGHT);
-            }
-        };
+        viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
+        viewTypeCombo.setMinimumSize(new Dimension(MIN_TYPE_WIDTH,COMBO_HEIGHT));
         viewTypeCombo.addActionListener(this);
         viewTypeCombo.setToolTipText(Bundle.TOOLTIP_ViewHierarchyType());
         historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectHierarchyHistory()));
