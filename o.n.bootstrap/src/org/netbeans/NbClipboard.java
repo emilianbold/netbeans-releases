@@ -112,11 +112,10 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
 
 
 
-        if (!slowSystemClipboard) {
-            if (System.getProperty("sun.awt.datatransfer.timeout") == null) { // NOI18N
-                System.setProperty("sun.awt.datatransfer.timeout", "1000"); // NOI18N
-            }
-        } else {
+        if (System.getProperty("sun.awt.datatransfer.timeout") == null) { // NOI18N
+            System.setProperty("sun.awt.datatransfer.timeout", "1000"); // NOI18N
+        }
+        if (slowSystemClipboard) {
             Toolkit.getDefaultToolkit().addAWTEventListener(
                 this, AWTEvent.WINDOW_EVENT_MASK);
         }
@@ -155,7 +154,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     // IDE
 
     private static final RequestProcessor RP = new RequestProcessor("System clipboard synchronizer"); // NOI18N
-    private RequestProcessor.Task syncTask = RP.create(this, true);
+    private final RequestProcessor.Task syncTask = RP.create(this, true);
 
     private Transferable data;
     private ClipboardOwner dataOwner;
@@ -186,7 +185,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
                 this.owner = owner;
                 this.contents = contents;
 
-                if (oldOwner != null && oldOwner != owner) {
+                    if (oldOwner != null && oldOwner != owner) {
                     EventQueue.invokeLater(new Runnable() {
 
                         @Override
@@ -218,9 +217,11 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
                 // which immediatelly follow WINDOW_ACTIVATED event.
                 // This is workaround of JDK bug described in issue 41098.
                 long curr = System.currentTimeMillis();
-                syncTask.schedule(0);
-                boolean finished = syncTask.waitFinished (100);
-                
+                int waitTime = Integer.getInteger("sun.awt.datatransfer.timeout", 1000); // NOI18N
+                if (waitTime > 0) {
+                    syncTask.schedule(0);
+                    boolean finished = syncTask.waitFinished (waitTime);
+                }
                 prev = super.getContents (requestor);
             } else {
                 syncTask.waitFinished ();
