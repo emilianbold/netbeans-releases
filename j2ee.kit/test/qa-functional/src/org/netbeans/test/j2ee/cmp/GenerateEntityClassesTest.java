@@ -94,10 +94,7 @@ public class GenerateEntityClassesTest extends DDTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(GenerateEntityClassesTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf, "testOpenProject", "testGenerateBeans");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, GenerateEntityClassesTest.class, "testOpenProject", "testGenerateBeans");
     }
 
     public void testOpenProject() throws Exception {
