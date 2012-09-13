@@ -66,7 +66,6 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
-import org.netbeans.modules.web.browser.api.WebBrowserPane.WebBrowserPaneEvent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.MIMEResolver;
@@ -106,7 +105,7 @@ public class JSTestDriverSupport {
         projectContext = new AbstractLookup(lookupContent);
     }
 
-    public JsTestDriver getJsTestDriver() {
+    private synchronized JsTestDriver getJsTestDriver() {
         if (testDriver == null) {
             if (!isConfiguredProperly()) {
                 if (!configure()) {
@@ -127,23 +126,23 @@ public class JSTestDriverSupport {
     
     
     public String getUserDescription() {
-        if (wasStartedExternally()) {
+        if (JSTestDriverCustomizerPanel.getPort() == -1) {
+            return "External server '"+JSTestDriverCustomizerPanel.getServerURL()+"' cannot be managed by the IDE";
+        } else if (wasStartedExternally()) {
             return "Server was started externally on port "+JSTestDriverCustomizerPanel.getPort()+". IDE cannot manage this instance.";
         } else if (isRunning()) {
-            return "Running on port "+JSTestDriverCustomizerPanel.getPort();
+            return "Server running at "+JSTestDriverCustomizerPanel.getServerURL();
         } else {
             return "Not running";
         }
     }
 
-    public boolean isRunning() {
-        JsTestDriver td = testDriver;
-        return (td != null && td.isRunning());
+    boolean isRunning() {
+        return getJsTestDriver().isRunning();
     }
 
     public boolean wasStartedExternally() {
-        JsTestDriver td = testDriver;
-        return (td != null && td.wasStartedExternally());
+        return getJsTestDriver().wasStartedExternally();
     }
 
     public boolean isStarting() {
@@ -152,12 +151,7 @@ public class JSTestDriverSupport {
 
     public void stop() {
         assert isRunning();
-        JsTestDriver td = testDriver;
-        if (td != null && td.isRunning()) {
-            td.stopServer();
-            // reset server configuration:
-            testDriver = null;
-        }
+        getJsTestDriver().stopServer();
         TestDriverServiceNode.getInstance().refresh();
         for (WebBrowserPane wbp : integratedBrowserPanes) {
             wbp.close(true);
@@ -166,18 +160,9 @@ public class JSTestDriverSupport {
 
     public void start(final ServerListener l) {
         assert !isRunning();
-        JsTestDriver td = testDriver;
-        assert td == null;
-        td = getJsTestDriver();
         if (!isConfiguredProperly()) {
             return;
         }
-        if (td == null) {
-            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                    "js-test-driver server could not be started. See IDE log for more details."));
-            return;
-        }
-        final JsTestDriver td2 = td;
         starting = true;
         TestDriverServiceNode.getInstance().refresh();
         RP.post(new Runnable() {
@@ -185,7 +170,7 @@ public class JSTestDriverSupport {
             @Override
             public void run() {
                 try {
-                    td2.startServer(JSTestDriverCustomizerPanel.getPort(), 
+                    getJsTestDriver().startServer(JSTestDriverCustomizerPanel.getPort(), 
                             JSTestDriverCustomizerPanel.isStricModel(),
                             new ServerListener() {
 
@@ -218,6 +203,7 @@ public class JSTestDriverSupport {
             @Override
             public void run() {
                 boolean b = JSTestDriverCustomizerPanel.showCustomizer();
+                TestDriverServiceNode.getInstance().refresh();
                 res[0] = b;
             }
         };
@@ -243,9 +229,9 @@ public class JSTestDriverSupport {
         return JSTestDriverCustomizerPanel.isConfiguredProperly();
     }
 
-    public void runAllTests(Project project, int port, boolean strictMode, File baseFolder, File configFile, 
+    public void runAllTests(Project project, String serverURL, int port, boolean strictMode, File baseFolder, File configFile, 
             String testsToRun) {
-        if (!isRunning()) {
+        if (!isRunning() && port != -1) {
             final Semaphore s = new Semaphore(0);
             start(new ServerListener() {
                 @Override
@@ -270,8 +256,7 @@ public class JSTestDriverSupport {
         }
         updateJsDebuggerProjectContext(project);
         TestListener listener = new Listener(project);
-        JsTestDriver td = testDriver;
-        td.runTests(port, strictMode, baseFolder, configFile, testsToRun, listener);
+        getJsTestDriver().runTests(serverURL, strictMode, baseFolder, configFile, testsToRun, listener);
     }
     
     private void updateJsDebuggerProjectContext(Project p) {
