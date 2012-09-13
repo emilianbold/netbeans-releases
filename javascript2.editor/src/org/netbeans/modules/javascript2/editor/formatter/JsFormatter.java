@@ -302,7 +302,7 @@ public class JsFormatter implements Formatter {
                                 && (indentationEnd.getKind() != FormatToken.Kind.EOL || templateEdit)) {
                             int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
                             int continuationLevel = formatContext.getContinuationLevel();
-                            if (isContinuation(token, false)) {
+                            if (isContinuation(formatContext, token, false)) {
                                 continuationLevel++;
                                 FormatToken nextImportant = FormatTokenStream.getNextImportant(token);
                                 if (nextImportant.getKind() == FormatToken.Kind.TEXT) {
@@ -395,7 +395,7 @@ public class JsFormatter implements Formatter {
         // do the indentation
         int indentationSize = initialIndent
                 + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-        if (isContinuation(lastWrap.getToken(), true)) {
+        if (isContinuation(formatContext, lastWrap.getToken(), true)) {
             indentationSize += continuationIndent;
         }
         formatContext.indentLineWithOffsetDiff(
@@ -509,7 +509,7 @@ public class JsFormatter implements Formatter {
                     // do the indentation
                     int indentationSize = initialIndent
                             + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                    if (isContinuation(tokenBeforeEol, true)) {
+                    if (isContinuation(formatContext, tokenBeforeEol, true)) {
                         indentationSize += continuationIndent;
                     }
                     formatContext.indentLine(
@@ -652,7 +652,9 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private static boolean isContinuation(FormatToken token, boolean noRealEol) {
+    private static boolean isContinuation(FormatContext formatContext,
+            FormatToken token, boolean noRealEol) {
+
         assert noRealEol || token.getKind() == FormatToken.Kind.SOURCE_START
                 || token.getKind() == FormatToken.Kind.EOL;
 
@@ -718,6 +720,7 @@ public class JsFormatter implements Formatter {
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
+                || formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(text)
                 // this is just safeguard literal offsets should be fixed
                 /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
 
