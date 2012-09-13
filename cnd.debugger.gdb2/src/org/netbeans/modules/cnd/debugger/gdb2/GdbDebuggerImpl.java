@@ -2505,7 +2505,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // iterate through update list
         for (MITListItem item : update_list) {
             MIValue updatevar;
-
+            
 	    // On the Mac a 'changelist' is a list of results not values
 	    if (update_list.isResultList()) {
 		MIResult result = (MIResult)item;
@@ -4001,6 +4001,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MIResult result = (MIResult) results.get(tx);
             if (result.matches(MI_BKPT) || result.matches(MI_WPT)) {
                 newHandler(rt, result, bp);
+                break;  // In order to avoid errors in multiple locations breakpoints
             }
 	}
     }

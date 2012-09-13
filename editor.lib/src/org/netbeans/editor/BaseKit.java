@@ -1061,7 +1061,32 @@ public class BaseKit extends DefaultEditorKit {
         return ret;
     }
 
-
+    /**
+     * Checks that the action will result in an insertion into document. 
+     * Returns true for readonly docs as well.
+     * 
+     * @param evt action event
+     * @return true, if the action event will result in insertion; readonly doc status is not 
+     * checked.
+     */
+    static boolean isValidDefaultTypedAction(ActionEvent evt) {
+        // Check whether the modifiers are OK
+        int mod = evt.getModifiers();
+        boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
+        boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
+            ((mod & ActionEvent.ALT_MASK) != 0);
+        return !(alt || ctrl);
+    }
+    
+    /**
+     * 
+     * @param evt
+     * @return 
+     */
+    static boolean isValidDefaultTypedCommand(ActionEvent evt) {
+        final String cmd = evt.getActionCommand();
+        return (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F);
+    }
 
     /** 
      * Default typed action
@@ -1084,16 +1109,7 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if ((target != null) && (evt != null)) {
 
-                // Check whether the modifiers are OK
-                int mod = evt.getModifiers();
-                boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
-                // On the mac, norwegian and french keyboards use Alt to do bracket characters.
-                // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
-                boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
-                    ((mod & ActionEvent.ALT_MASK) != 0);
-                
-                
-                if (alt || ctrl) {
+                if (!isValidDefaultTypedAction(evt)) {
                     return;
                 }
                 
@@ -1110,7 +1126,7 @@ public class BaseKit extends DefaultEditorKit {
                 
                 // determine if typed char is valid
                 final String cmd = evt.getActionCommand();
-                if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {
+                if (isValidDefaultTypedCommand(evt)) {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "Processing command char: {0}", Integer.toHexString(cmd.charAt(0))); //NOI18N
                     }

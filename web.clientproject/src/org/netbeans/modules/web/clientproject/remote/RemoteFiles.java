@@ -63,6 +63,8 @@ import org.openide.util.RequestProcessor;
  */
 public class RemoteFiles {
 
+    private static RequestProcessor RP = new RequestProcessor(RemoteFiles.class);
+    
     private ClientSideProject project;
     private List<URL> urls;
     private ChangeSupport changeSupport = new ChangeSupport(this);
@@ -94,7 +96,16 @@ public class RemoteFiles {
             ParserManager.parseWhenScanFinished("text/html", new UserTask() { //NOI18N
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    updateRemoteFiles();
+                    //http://netbeans.org/bugzilla/show_bug.cgi?id=217384#c5
+                    //do not set the children keys directly from the parsing task
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            updateRemoteFiles();
+                        }
+                        
+                    });
                 }
             });
         } catch (ParseException ex) {
