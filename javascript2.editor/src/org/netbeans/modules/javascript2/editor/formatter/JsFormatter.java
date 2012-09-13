@@ -127,9 +127,14 @@ public class JsFormatter implements Formatter {
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
 
+                if (ts == null) {
+                    return;
+                }
+
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, context.startOffset(), context.endOffset());
-                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms",
+                        (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
@@ -141,7 +146,8 @@ public class JsFormatter implements Formatter {
                 } else {
                     LOGGER.log(Level.INFO, "Format visitor not executed; no root node");
                 }
-                LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.INFO, "Format visitor: {0} ms",
+                        (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
 
@@ -273,7 +279,6 @@ public class JsFormatter implements Formatter {
 
                         FormatToken indentationStart = null;
                         FormatToken indentationEnd = null;
-                        StringBuilder current = new StringBuilder();
                         // we move main loop here as well to not to process tokens twice
                         for (int j = i + 1; j < tokens.size(); j++) {
                             FormatToken nextToken = tokens.get(j);
@@ -288,7 +293,6 @@ public class JsFormatter implements Formatter {
                                     if (indentationStart == null) {
                                         indentationStart = nextToken;
                                     }
-                                    current.append(nextToken.getText());
                                 }
                             } else {
                                 updateIndentationLevel(nextToken, formatContext);
@@ -676,7 +680,7 @@ public class JsFormatter implements Formatter {
 
         // this may happen when curly bracket is on new line
         FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
-        if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
+        if (nonVirtualNext != null) {
             String nextText = nonVirtualNext.getText().toString();
             if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
                 FormatToken previous = nonVirtualNext.previous();
