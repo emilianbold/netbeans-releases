@@ -42,10 +42,8 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -121,11 +119,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 //            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
-
-        Collection<ChangeListener> ll = info.getListeners();
-        listeners = (ll == null || ll.isEmpty()) ? null
-                : Collections.unmodifiableList(
-                new ArrayList<ChangeListener>(ll));
+        listeners = info.getListenersSnapshot();
     }
 
     public final NativeProcess createAndStart() {
@@ -445,14 +439,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 this.state = state;
 
-                if (listeners == null) {
-                    return;
-                }
+                if (!listeners.isEmpty()) {
+                    final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
 
-                final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
+                    for (ChangeListener l : listeners) {
+                        l.stateChanged(event);
+                    }
 
-                for (ChangeListener l : listeners) {
-                    l.stateChanged(event);
+                    if (this.state == State.CANCELLED
+                            || this.state == State.ERROR
+                            || this.state == State.FINISHED) {
+                        listeners.clear();
+                    }
                 }
             } finally {
                 if (isInterrupted()) {

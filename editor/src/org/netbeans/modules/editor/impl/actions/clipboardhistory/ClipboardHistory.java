@@ -125,20 +125,17 @@ public final class ClipboardHistory implements ClipboardListener {
 
 
     @Override
-    public void clipboardChanged(ClipboardEvent ev) {
+    public synchronized void clipboardChanged(ClipboardEvent ev) {
         ExClipboard clipboard = ev.getClipboard();
         clipboard.removeClipboardListener(this);
 
-        Transferable transferable = clipboard.getContents(null);
         String clipboardContent = null;
         try {
+            Transferable transferable = clipboard.getContents(null);
             if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 clipboardContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
             }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (UnsupportedFlavorException ex) {
-            ErrorManager.getDefault().notify(ex);
+        } catch (Exception ex) {
         }
 
         if (clipboardContent != null) {
