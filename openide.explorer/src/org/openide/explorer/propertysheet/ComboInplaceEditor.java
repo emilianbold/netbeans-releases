@@ -43,18 +43,15 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-
 import java.awt.*;
 import java.awt.event.*;
-
 import java.beans.PropertyEditor;
-
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.JTextComponent;
+import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 
 /** A combo box inplace editor.  Does a couple of necessary things:
@@ -571,39 +568,6 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
                 checker = null;
             }
-        }
-    }
-
-    /* Replacement renderer class to hack around bug in SynthComboUI - will
-    * only be used on GTK look & feel.  GTK does not set background/highlight
-    * colors correctly */
-    private class Renderer extends DefaultListCellRenderer {
-        private boolean sel = false;
-
-        /** Overridden to return the combo box's background color if selected
-         * and focused - in GTK L&F combo boxes are always white (there's even
-         * a &quot;fixme&quot; note in the code. */
-        public Color getBackground() {
-            //This method can be called in the superclass constructor, thanks
-            //to updateUI().  At that time, this==null, so an NPE would happen
-            //if we tried tor reference the outer class
-            if (ComboInplaceEditor.this == null) {
-                return null;
-            }
-
-            if (!sel && ((getText() != null) && (getSelectedItem() != null) && getText().equals(getSelectedItem()))) {
-                return ComboInplaceEditor.this.getBackground();
-            } else {
-                return super.getBackground();
-            }
-        }
-
-        public Component getListCellRendererComponent(
-            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
-        ) {
-            sel = isSelected;
-
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
     }
 }
