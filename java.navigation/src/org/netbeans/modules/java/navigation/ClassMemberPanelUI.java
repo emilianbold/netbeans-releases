@@ -280,7 +280,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return toolbar;
     }
 
-    void refresh( final Description description ) {
+    void refresh(
+            @NonNull final Description description,
+            final boolean userAction) {
         
         final ElementNode rootNode = getRootNode();
         
@@ -292,6 +294,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             RP.post(new Runnable() {
                 public void run() {
                     rootNode.updateRecursively( description );
+                    if (!userAction) {
+                        toolbar.setAuto();
+                    }
                     done();
                 }
             } );            
@@ -301,6 +306,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 public void run() {
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description ) );
+                    if (!userAction) {
+                        toolbar.setAuto();
+                    }
                     done();
                     boolean scrollOnExpand = getScrollOnExpand();
                     setScrollOnExpand( false );
@@ -704,7 +712,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         @Override
         public void run(@NonNull final CompilationController cc) throws Exception {
             cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            getTask().run(cc);
+            getTask().runImpl(cc, true);
         }
 
     }
@@ -712,9 +720,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private class Toolbar extends JPanel implements ActionListener, ListDataListener {
 
         private final JComboBox historyCombo;
+        private boolean ignoreEvents;
 
         @NbBundle.Messages({        
-        "TXT_InspectMembersHistory=<empty>",
+        "TXT_InspectMembersHistoryEmpty=<empty>",
+        "TXT_InspectMembersHistoryAuto=<auto>",
         "TOOLTIP_OpenJDoc=Open Javadoc Window",
         "TOOLTIP_InspectMembersHistory=Inspect Members History",
         })
@@ -728,7 +738,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
-            historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectMembersHistory())){
+            historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectMembersHistoryEmpty())){
                 @Override
                 public Dimension getMinimumSize() {
                     Dimension res = super.getMinimumSize();
@@ -789,6 +799,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            assert SwingUtilities.isEventDispatchThread();
             if (CMD_JDOC.equals(e.getActionCommand())) {
                 final TopComponent win = JavadocTopComponent.findInstance();
                 if (win != null && !win.isShowing()) {
@@ -796,7 +807,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     win.requestVisible();
                     scheduleJavadocRefresh(0);
                 }
-            } else if (CMD_HISTORY.equals(e.getActionCommand())) {
+            } else if (!ignoreEvents && CMD_HISTORY.equals(e.getActionCommand())) {
                 final Object selItem = historyCombo.getSelectedItem();
                 if (selItem instanceof Pair) {
                     final Pair<URI,ElementHandle<TypeElement>> pair = (Pair<URI,ElementHandle<TypeElement>>)selItem;
@@ -826,10 +837,26 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
 
         void select(@NonNull final Pair<URI,ElementHandle<TypeElement>> pair) {
-            SwingUtilities.invokeLater(new Runnable() {
+            Mutex.EVENT.readAccess(new Runnable() {
                 @Override
                 public void run() {
-                    historyCombo.getModel().setSelectedItem(pair);
+                    ignoreEvents = true;
+                    try {
+                        historyCombo.getModel().setSelectedItem(pair);
+                    } finally {
+                        ignoreEvents = false;
+                    }
+                }
+            });
+        }
+
+        void setAuto() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    if (historyCombo.isEnabled()) {
+                        historyCombo.getModel().setSelectedItem(Bundle.TXT_InspectMembersHistoryAuto());
+                    }
                 }
             });
         }
