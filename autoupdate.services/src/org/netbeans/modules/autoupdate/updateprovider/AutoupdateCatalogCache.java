@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -89,7 +89,6 @@ public final class AutoupdateCatalogCache {
         cacheDir = Places.getCacheSubdirectory("catalogcache"); // NOI18N
         getLicenseDir().mkdirs();
         err.log (Level.FINE, "getCacheDirectory: {0}", cacheDir.getPath ());
-        return;
     }
     
     public URL writeCatalogToCache (String codeName, URL original) throws IOException {
@@ -188,7 +187,7 @@ public final class AutoupdateCatalogCache {
             try {
                 fr = new FileInputStream(file);
                 byte[] buffer = new byte[8192];
-                int n = 0;
+                int n;
                 StringBuilder sb = new StringBuilder();
                 while ((n = fr.read(buffer)) != -1) {
                     sb.append(new String(buffer, 0, n, "utf-8"));//NOI18N
