@@ -39,25 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.hint;
+
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.hints.UndocumentedParameterRule;
 
 /**
+ * Checks undocumented parameter.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface Type {
-    public static String BOOLEAN = "Boolean";   //NOI18N
-    public static String NUMBER = "Number";     //NOI18N
-    public static String STRING = "String";     //NOI18N
-    public static String ARRAY = "Array";       //NOI18N
-    /**
-     * When the type is unknown / we are not able to resolve it
-     */
-    public static String UNRESOLVED = "unresolved"; //NOI18N 
-    public static String UNDEFINED = "undefined";   //NOI18N
-      
-    public String getType();
+public class JsUndocumentedParameterTest extends HintTestBase {
 
-    public int getOffset();
+    public JsUndocumentedParameterTest(String testName) {
+        super(testName);
+    }
 
+    private Rule createRule() {
+        return new UndocumentedParameterRule();
+    }
+
+    public void testNoHintForNoComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/undocumentedParameter1.js", null);
+    }
+
+    public void testHintForEmptyComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/undocumentedParameter2.js", null);
+    }
+
+    public void testHintForNotCompletedComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/undocumentedParameter3.js", null);
+    }
 }

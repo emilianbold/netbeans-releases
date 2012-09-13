@@ -142,7 +142,7 @@ public class TestDriverServiceNode extends AbstractNode {
 
         @Override
         protected boolean enable(Node[] activatedNodes) {
-            return !JSTestDriverSupport.getDefault().isRunning();
+            return !JSTestDriverSupport.getDefault().isRunning() && JSTestDriverCustomizerPanel.getPort() != -1;
         }
 
         @Override

@@ -150,7 +150,7 @@ public class JsTestDriverImpl implements JsTestDriverImplementation {
     }
 
     @Override
-    public void runTests(File jsTestDriverJar, int port, boolean strictMode, File baseFolder, File configFile, 
+    public void runTests(File jsTestDriverJar, String serverURL, boolean strictMode, File baseFolder, File configFile, 
             String testsToRun, final TestListener listener) {
         ExecutionDescriptor descriptor = new ExecutionDescriptor().
                 controllable(false).
@@ -163,7 +163,7 @@ public class JsTestDriverImpl implements JsTestDriverImplementation {
             addArgument("-cp").
             addArgument(jsTestDriverJar.getAbsolutePath()+File.pathSeparatorChar+extjar.getAbsolutePath()).
             addArgument("org.netbeans.libs.jstestdriver.ext.RunTests").
-            addArgument("http://localhost:"+port).
+            addArgument(serverURL).
             addArgument(baseFolder.getAbsolutePath()).
             addArgument(configFile.getAbsolutePath()).
             addArgument(testsToRun).

@@ -60,7 +60,7 @@ public final class RunTests {
     public static void runAllTests(Project p, FileObject baseDirectory, FileObject configurationFile) {
         File base = FileUtil.toFile(baseDirectory);
         File config = FileUtil.toFile(configurationFile);
-        JSTestDriverSupport.getDefault().runAllTests(p,
+        JSTestDriverSupport.getDefault().runAllTests(p, JSTestDriverCustomizerPanel.getServerURL(), 
                 JSTestDriverCustomizerPanel.getPort(), JSTestDriverCustomizerPanel.isStricModel(),
                 base, config, "all");
     }
