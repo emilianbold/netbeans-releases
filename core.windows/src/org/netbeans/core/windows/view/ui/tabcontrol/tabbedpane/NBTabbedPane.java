@@ -286,7 +286,9 @@ public class NBTabbedPane extends JTabbedPane {
     }
 
     public int tabForCoordinate( Point p ) {
-        return indexAtLocation( p.x, p.y );
+        int tabbedPaneIndex = indexAtLocation( p.x, p.y );
+        Component c = getTabComponentAt( tabbedPaneIndex );
+        return indexOf( c );
     }
 
     public Image createImageOfTab( int tabIndex ) {
