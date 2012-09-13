@@ -67,7 +67,7 @@ public final class FormatToken {
     }
 
     public static FormatToken forText(int offset, CharSequence text) {
-        assert text != null : text;
+        assert text != null;
         assert offset >= 0 : offset;
         return new FormatToken(Kind.TEXT, offset, text);
     }
@@ -77,7 +77,7 @@ public final class FormatToken {
     }
 
     public static FormatToken forAny(Kind kind, int offset, CharSequence text) {
-        assert text != null : text;
+        assert text != null;
         assert offset >= 0 : offset;
         return new FormatToken(kind, offset, text);
     }

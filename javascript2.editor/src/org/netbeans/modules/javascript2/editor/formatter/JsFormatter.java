@@ -309,7 +309,7 @@ public class JsFormatter implements Formatter {
                             if (isContinuation(formatContext, token, false)) {
                                 continuationLevel++;
                                 FormatToken nextImportant = FormatTokenStream.getNextImportant(token);
-                                if (nextImportant.getKind() == FormatToken.Kind.TEXT) {
+                                if (nextImportant != null && nextImportant.getKind() == FormatToken.Kind.TEXT) {
                                     if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextImportant.getText().toString())) {
                                         continuations.push(new FormatContext.ContinuationBlock(
                                                 FormatContext.ContinuationBlock.Type.CURLY, true));
