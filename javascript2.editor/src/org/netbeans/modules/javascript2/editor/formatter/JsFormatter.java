@@ -273,7 +273,6 @@ public class JsFormatter implements Formatter {
 
                         FormatToken indentationStart = null;
                         FormatToken indentationEnd = null;
-                        StringBuilder current = new StringBuilder();
                         // we move main loop here as well to not to process tokens twice
                         for (int j = i + 1; j < tokens.size(); j++) {
                             FormatToken nextToken = tokens.get(j);
@@ -288,7 +287,6 @@ public class JsFormatter implements Formatter {
                                     if (indentationStart == null) {
                                         indentationStart = nextToken;
                                     }
-                                    current.append(nextToken.getText());
                                 }
                             } else {
                                 updateIndentationLevel(nextToken, formatContext);
@@ -676,7 +674,7 @@ public class JsFormatter implements Formatter {
 
         // this may happen when curly bracket is on new line
         FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
-        if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
+        if (nonVirtualNext != null) {
             String nextText = nonVirtualNext.getText().toString();
             if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
                 FormatToken previous = nonVirtualNext.previous();
