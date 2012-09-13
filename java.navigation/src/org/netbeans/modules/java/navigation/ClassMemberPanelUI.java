@@ -738,15 +738,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
-            historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectMembersHistoryEmpty())){
-                @Override
-                public Dimension getMinimumSize() {
-                    Dimension res = super.getMinimumSize();
-                    return new Dimension(
-                        res.width < MIN_HISTORY_WIDTH?MIN_HISTORY_WIDTH:res.width,
-                        HISTORY_HEIGHT);
-                }
-            };
+            historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectMembersHistoryEmpty()));
+            historyCombo.setMinimumSize(new Dimension(MIN_HISTORY_WIDTH,HISTORY_HEIGHT));
             historyCombo.setRenderer(HistorySupport.createRenderer(history));
             historyCombo.setActionCommand(CMD_HISTORY);
             historyCombo.addActionListener(this);
