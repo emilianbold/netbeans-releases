@@ -53,19 +53,27 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
+import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
+import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -81,10 +89,17 @@ import org.netbeans.modules.ods.api.TestUtils;
 import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.ods.client.api.ODSFactory;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.lookup.Lookups;
 
 /**
+ * Tests for ODSBuilderAccessor.
  *
  * @author jhavlin
  */
@@ -93,21 +108,49 @@ public class ODSBuilderAccessorTest {
     private ODSBuilderAccessor accessor;
     private ProjectHandle<ODSProject> projectHandle;
     private MockBuilderConnector connector;
+    private HudsonInstance hudsonInstance;
 
     public ODSBuilderAccessorTest() {
     }
 
+    /**
+     * Set up environemtn before each test. Prepare a hudson instance for url
+     * "http://test/hudson/" with mock {@link BuilderConnector}, instance of
+     * {@link BuilderAccessor} and a project handle.
+     */
     @Before
-    public void setUp() throws MalformedURLException, ODSException {
+    public void setUp() throws MalformedURLException, ODSException,
+            InterruptedException {
         MockServices.setServices(MockODSFactory.class);
         projectHandle = TestUtils.createMockHandle(
                 "http://test/", "mockProject");
         connector = new MockBuilderConnector();
-        HudsonInstance hi = HudsonManager.addInstance("Mock Hudson Instance",
+        hudsonInstance = HudsonManager.addInstance("Mock Hudson Instance",
                 "http://test/hudson/", 1, connector);
+        final Semaphore s = new Semaphore(0);
+        HudsonChangeListener hcListener = new HudsonChangeAdapter() {
+            @Override
+            public void contentChanged() {
+                s.release();
+            }
+        };
+        hudsonInstance.addHudsonChangeListener(hcListener);
+        s.tryAcquire(1, TimeUnit.SECONDS);
+        hudsonInstance.removeHudsonChangeListener(hcListener);
         accessor = new ODSBuilderAccessor();
     }
 
+    /**
+     * Remove previously created hudson instance.
+     */
+    @After
+    public void tearDown() {
+        HudsonManager.removeInstance(hudsonInstance);
+    }
+
+    /**
+     * Check that mock instances work as expected.
+     */
     @Test
     public void testMocks() throws ODSException, MalformedURLException,
             MalformedURLException {
@@ -125,6 +168,9 @@ public class ODSBuilderAccessorTest {
         assertEquals("Mock Project", handle.getDisplayName());
     }
 
+    /**
+     * Check that the job handle for mock job has correct name.
+     */
     @Test
     public void testGetJobs() {
         List<JobHandle> jobs = accessor.getJobs(projectHandle);
@@ -132,27 +178,139 @@ public class ODSBuilderAccessorTest {
         assertEquals("Job1", jobs.get(0).getDisplayName());
     }
 
+    /**
+     * Check that job list contains mock job with correct status.
+     */
     @Test
-    public void testGetJob() {
+    public void testGetJob() throws InterruptedException {
         JobHandle job = accessor.getJob(projectHandle, "Job1");
         assertEquals("Job1", job.getDisplayName());
+        Status status = job.getStatus();
+        if (status.equals(BuildHandle.Status.UNKNOWN)) {
+            waitForInitialization(job);
+            status = job.getStatus(); // get initialized status now
+        }
+        assertEquals(BuildHandle.Status.UNSTABLE, status);
     }
 
+    /**
+     * Check that new build action is defined.
+     */
     @Test
     public void testGetNewBuildAction() {
         Action newBuildAction = accessor.getNewBuildAction(projectHandle);
         assertNotNull(newBuildAction);
     }
 
+    /**
+     * Check type of ODS builder accessor is correct.
+     */
     @Test
     public void testType() {
         assertEquals(ODSProject.class, accessor.type());
     }
 
+    /**
+     * Check that listener added to a job handle is notified when status of the
+     * job changes.
+     */
+    @Test
+    public void testJobStatusChangeListener() throws InterruptedException {
+        JobHandle job = accessor.getJob(projectHandle, "Job1");
+        if (job.getStatus().equals(BuildHandle.Status.UNKNOWN)) {
+            waitForInitialization(job);
+        }
+        final AtomicBoolean notified = new AtomicBoolean(false);
+        final Semaphore s = new Semaphore(0);
+        job.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(JobHandle.PROP_STATUS)) {
+                    notified.set(true);
+                    s.release();
+                }
+            }
+        });
+        connector.addBuild(); // simulate finishing a new build
+        syncHudsonInstance();
+        s.tryAcquire(1, TimeUnit.DAYS);
+        assertTrue(notified.get());
+        assertEquals(BuildHandle.Status.STABLE, job.getStatus());
+        assertEquals(3, job.getBuilds().size());
+    }
+
+    /**
+     * Check that listener added to a project handle is notified when list of
+     * its builder jobs changes.
+     */
+    @Test
+    public void testJobListChangeListener() throws InterruptedException {
+        List<JobHandle> jobs = accessor.getJobs(projectHandle);
+        assertEquals(1, jobs.size());
+        final Semaphore s = new Semaphore(0);
+        final AtomicBoolean notified = new AtomicBoolean(false);
+        PropertyChangeListener listener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(
+                        ProjectHandle.PROP_BUILD_LIST)) {
+                    notified.set(true);
+                    s.release();
+                }
+            }
+        };
+        projectHandle.addPropertyChangeListener(listener);
+        connector.addJob();
+        syncHudsonInstance();
+        s.tryAcquire(1, TimeUnit.SECONDS);
+        jobs = accessor.getJobs(projectHandle);
+        assertTrue(notified.get());
+        assertEquals(2, jobs.size());
+        assertEquals("Job2", jobs.get(1).getDisplayName());
+    }
+
+    /**
+     * Wait for initialization of job status.
+     */
+    private void waitForInitialization(JobHandle job)
+            throws InterruptedException {
+        final Semaphore s = new Semaphore(0);
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(JobHandle.PROP_STATUS)) {
+                    s.release();
+                }
+            }
+        };
+        job.addPropertyChangeListener(pcl);
+        s.tryAcquire(1, TimeUnit.SECONDS);
+        job.removePropertyChangeListener(pcl);
+    }
+
+    /**
+     * Synchronize hudson instance.
+     */
+    private void syncHudsonInstance() {
+        ContextAwareAction syncAction = FileUtil.getConfigObject(
+                "org-netbeans-modules-hudson/Actions/instance/"
+                + "org-netbeans-modules-hudson-ui-actions-SynchronizeAction"
+                + ".shadow",
+                ContextAwareAction.class);
+        Action a = syncAction.createContextAwareInstance(
+                Lookups.fixed(hudsonInstance));
+        a.actionPerformed(new ActionEvent(this, 0, "sync")); // synchronize
+    }
+
+    /**
+     * Builder connector that provides data for mock hudson instance.
+     */
     public class MockBuilderConnector extends BuilderConnector {
 
-        @Override
-        public InstanceData getInstanceData(boolean authentication) {
+        private List<JobData> jobsData;
+        private List<BuildData> buildsData;
+
+        public MockBuilderConnector() {
             JobData jd = new JobData();
             jd.setJobName("Job1");
             jd.setJobUrl("http://test/hudson/Job1/");
@@ -166,7 +324,18 @@ public class ODSBuilderAccessorTest {
             jd.setLastSuccessfulBuild(2);
             jd.setLastFailedBuild(1);
             jd.setSecured(false);
-            InstanceData id = new InstanceData(Collections.singletonList(jd),
+            this.jobsData = new LinkedList<JobData>();
+            this.jobsData.add(jd);
+
+            this.buildsData = new LinkedList<BuildData>();
+            this.buildsData.add(new BuildData(1, Result.FAILURE, false));
+            this.buildsData.add(new BuildData(2, Result.UNSTABLE, false));
+        }
+
+        @Override
+        public InstanceData getInstanceData(boolean authentication) {
+
+            InstanceData id = new InstanceData(jobsData,
                     Collections.<ViewData>emptyList());
             return id;
         }
@@ -174,10 +343,7 @@ public class ODSBuilderAccessorTest {
         @Override
         public Collection<BuildData> getJobBuildsData(HudsonJob job) {
             if (job.getName().equals("Job1")) {
-                List<BuildData> l = new LinkedList<BuildData>();
-                l.add(new BuildData(1, Result.FAILURE, false));
-                l.add(new BuildData(2, Result.UNSTABLE, false));
-                return l;
+                return this.buildsData;
             } else {
                 return Collections.emptyList();
             }
@@ -192,6 +358,39 @@ public class ODSBuilderAccessorTest {
                     building.set(false);
                 }
             }
+        }
+
+        /**
+         * Add a new stable build to the first job.
+         */
+        public void addBuild() {
+            BuildData bd = new BuildData(3, Result.SUCCESS, false);
+            buildsData.add(bd);
+            JobData jd = jobsData.get(0);
+            jd.setLastBuild(3);
+            jd.setLastCompletedBuild(3);
+            jd.setLastStableBuild(3);
+            jd.setLastSuccessfulBuild(3);
+            jd.setColor(HudsonJob.Color.blue);
+        }
+
+        /**
+         * Add a new job of name "Job2".
+         */
+        public void addJob() {
+            JobData jd = new JobData();
+            jd.setBuildable(true);
+            jd.setColor(HudsonJob.Color.grey);
+            jd.setJobName("Job2");
+            jd.setDisplayName("Job2");
+            jd.setJobUrl("http://test/hudson/Job2/");
+            jd.setLastBuild(0);
+            jd.setLastCompletedBuild(0);
+            jd.setLastFailedBuild(0);
+            jd.setLastStableBuild(0);
+            jd.setLastSuccessfulBuild(0);
+            jd.setSecured(false);
+            jobsData.add(jd);
         }
 
         @Override
@@ -244,28 +443,9 @@ public class ODSBuilderAccessorTest {
         }
     }
 
-    public class MockProjectHandle extends ProjectHandle<ODSProject> {
-
-        public MockProjectHandle(String id) {
-            super(id);
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "ODS Mock Project";
-        }
-
-        @Override
-        public ODSProject getTeamProject() {
-            return null;
-        }
-
-        @Override
-        public boolean isPrivate() {
-            return true;
-        }
-    }
-
+    /**
+     * ODS Factory providing data for mock project handle.
+     */
     public static class MockODSFactory extends ODSFactory {
 
         @Override
@@ -279,8 +459,7 @@ public class ODSBuilderAccessorTest {
                 @Override
                 public Project createProject(Project project)
                         throws ODSException {
-                    throw new UnsupportedOperationException(
-                            "Not supported by mock instance.");
+                    throw unsupportedByMock();
                 }
 
                 @Override
@@ -361,45 +540,51 @@ public class ODSBuilderAccessorTest {
                 @Override
                 public List<ProjectActivity> getRecentActivities(
                         String projectId) throws ODSException {
-                    return Collections.emptyList();
+                    throw unsupportedByMock();
                 }
 
                 @Override
                 public List<ProjectActivity> getRecentShortActivities(
                         String projectId) throws ODSException {
-                    return Collections.emptyList();
+                    throw unsupportedByMock();
                 }
 
                 @Override
                 public List<ScmRepository> getScmRepositories(String projectId)
                         throws ODSException {
-                    return Collections.emptyList();
+                    throw unsupportedByMock();
                 }
 
                 @Override
                 public List<Project> getWatchedProjects() throws ODSException {
-                    return Collections.emptyList();
+                    throw unsupportedByMock();
                 }
 
                 @Override
                 public boolean isWatchingProject(String projectId)
                         throws ODSException {
-                    return false;
+                    throw unsupportedByMock();
                 }
 
                 @Override
-                public List<Project> searchProjects(String pattern)
-                        throws ODSException {
-                    return Collections.emptyList();
+                public List<Project> searchProjects(String pattern) {
+                    throw unsupportedByMock();
                 }
 
                 @Override
                 public void unwatchProject(String projectId)
                         throws ODSException {
+                    throw unsupportedByMock();
                 }
 
                 @Override
                 public void watchProject(String projectId) throws ODSException {
+                    throw unsupportedByMock();
+                }
+
+                private RuntimeException unsupportedByMock() {
+                    return new UnsupportedOperationException(
+                            "Not supported by mock instance.");
                 }
             };
         }
