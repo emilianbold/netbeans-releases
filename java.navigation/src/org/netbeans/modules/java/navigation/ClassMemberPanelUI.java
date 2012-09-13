@@ -713,9 +713,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
         private final JComboBox historyCombo;
 
-        @NbBundle.Messages({
-        "TXT_OpenJDoc=Open Javadoc Window",
-        "TXT_InspectMembersHistory=Inspect History"
+        @NbBundle.Messages({        
+        "TXT_InspectMembersHistory=<empty>",
+        "TOOLTIP_OpenJDoc=Open Javadoc Window",
+        "TOOLTIP_InspectMembersHistory=Inspect Members History",
         })
         Toolbar() {
             setLayout(new GridBagLayout());
@@ -741,12 +742,12 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             historyCombo.addActionListener(this);
             historyCombo.getModel().addListDataListener(this);
             historyCombo.setEnabled(false);
-
+            historyCombo.setToolTipText(Bundle.TOOLTIP_InspectMembersHistory());
             final JButton jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
             jdocButton.setActionCommand(CMD_JDOC);
             jdocButton.addActionListener(this);
             jdocButton.setFocusable(false);
-            jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
+            jdocButton.setToolTipText(Bundle.TOOLTIP_OpenJDoc());
             toolbar.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 0;
@@ -834,7 +835,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
 
         private void showHistory() {
-            if (historyCombo.getModel().getSize() > 0) {
+            if (!history.getHistory().isEmpty()) {
                 historyCombo.setEnabled(true);
             }
         }
