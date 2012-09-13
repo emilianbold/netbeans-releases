@@ -40,28 +40,49 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi.webserver;
+package org.netbeans.modules.web.javascript.debugger.browser;
 
-import java.net.URL;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
- * Provides mapping between project's source file and its location on server
- * and vice versa. To be registered in project's lookup. See the API counterpart
- * class for more details.
+ *
  */
-public interface ServerURLMappingImplementation {
+public class ProjectContext {
 
-    /**
-     * Convert given project's file into server URL.
-     * @return could return null if file is not deployed to server and therefore
-     *   not accessible
-     */
-    URL toServer(int projectContext, FileObject projectFile);
+    private ChangeSupport support;
+    private Lookup.Result<Project> res;
+
+    public ProjectContext(Lookup projectContext) {
+        support = new ChangeSupport(this);
+        res = projectContext.lookupResult(Project.class);
+        res.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                support.fireChange();
+            }
+        });
+    }
     
-    /**
-     * Convert given server URL into project's file.
-     * @return returns null if nothing is known about this server URL
-     */
-    FileObject fromServer(int projectContext, URL serverURL);
+    public Project getProject() {
+        Collection<? extends Project> coll = res.allInstances();
+        if (coll.isEmpty()) {
+            return null;
+        } else {
+            return coll.iterator().next();
+        }
+    }
+    
+    public void addChangeSupport(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+    
+    public void removeChangeSupport(ChangeListener l) {
+        support.removeChangeListener(l);
+    }
 }

@@ -53,6 +53,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.openide.filesystems.FileObject;
@@ -75,15 +76,15 @@ public class BrowserConsoleLogger implements Console.Listener {
     private static final String LEVEL_ERROR = "error";      // NOI18N
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
 
-    private Project project;
+    private ProjectContext pc;
     private InputOutput io;
     private Color colorStdBrighter;
     /** The last logged message. */
     private ConsoleMessage lastMessage;
     //private Color colorErrBrighter;
 
-    public BrowserConsoleLogger(Project project) {
-        this.project = project;
+    public BrowserConsoleLogger(ProjectContext pc) {
+        this.pc = pc;
         initIO();
     }
     
@@ -257,6 +258,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     private String getProjectPath(String urlStr) {
         try {
             URL url = new URL(urlStr);
+            Project project = pc.getProject();
             if (project != null) {
                 FileObject fo = ServerURLMapping.fromServer(project, url);
                 if (fo != null) {
@@ -295,6 +297,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
         }
         private Line getLine() {
+            Project project = pc.getProject();
             return MiscEditorUtil.getLine(project, url, line-1);
         }
 
