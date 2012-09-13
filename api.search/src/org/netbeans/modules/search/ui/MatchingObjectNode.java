@@ -45,10 +45,8 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -141,7 +139,6 @@ public class MatchingObjectNode extends AbstractNode {
 
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
-        return;
     }
 
     @Override

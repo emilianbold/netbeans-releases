@@ -46,6 +46,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +97,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private Pattern outDirPattern;
     private File outputDir;
     String runningTestClass;
+    private final Set<String> usedNames;
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private RunConfig config;
@@ -105,6 +107,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         outDirPattern = Pattern.compile("Surefire report directory\\: (.*)", Pattern.DOTALL); //NOI18N
         outDirPattern2 = Pattern.compile("Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
         this.config = config;
+        usedNames = new HashSet<String>();
     }
 
 
@@ -148,6 +151,18 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         session = null;
     }
 
+    //#179703 allow multiple sessions per project, in case there are multiple executions of surefire plugin.
+    private String createSessionName(String projectId) {
+        String name = projectId;
+        int index = 2;
+        while (usedNames.contains(name)) {
+            name = projectId + "_" + index;
+            index = index + 1;
+        }
+        usedNames.add(name);
+        return name;
+    } 
+    
     private void createSession(File file) {
         if (session == null) {
             File fil = FileUtil.normalizeFile(file);
@@ -165,7 +180,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                             }
                         }
                         final TestSession.SessionType fType = type;
-                        session = new TestSession(mvnprj.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
+                        session = new TestSession(createSessionName(mvnprj.getMavenProject().getId()), prj, TestSession.SessionType.TEST,
                                 new JUnitTestRunnerNodeFactory(session, prj));
                         session.setRerunHandler(new RerunHandler() {
                             public @Override

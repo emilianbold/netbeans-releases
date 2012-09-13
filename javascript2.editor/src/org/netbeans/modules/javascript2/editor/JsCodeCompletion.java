@@ -371,7 +371,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     prefix = docTokenSeq.token().text().toString();
                 }
             }
-            if (id == JsTokenId.UNKNOWN) {
+            if (id.isError()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     prefix = prefix.substring(0, caretOffset - ts.offset());

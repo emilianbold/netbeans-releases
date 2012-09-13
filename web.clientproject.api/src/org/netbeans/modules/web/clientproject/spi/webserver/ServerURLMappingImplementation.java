@@ -47,7 +47,8 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Provides mapping between project's source file and its location on server
- * and vice versa. To be registered in project's lookup.
+ * and vice versa. To be registered in project's lookup. See the API counterpart
+ * class for more details.
  */
 public interface ServerURLMappingImplementation {
 
@@ -56,11 +57,11 @@ public interface ServerURLMappingImplementation {
      * @return could return null if file is not deployed to server and therefore
      *   not accessible
      */
-    URL toServer(FileObject projectFile);
+    URL toServer(int projectContext, FileObject projectFile);
     
     /**
      * Convert given server URL into project's file.
      * @return returns null if nothing is known about this server URL
      */
-    FileObject fromServer(URL serverURL);
+    FileObject fromServer(int projectContext, URL serverURL);
 }

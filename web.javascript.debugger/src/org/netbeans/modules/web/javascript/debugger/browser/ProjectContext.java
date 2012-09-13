@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,38 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.jellytools.nodes;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
+package org.netbeans.modules.web.javascript.debugger.browser;
+
+import java.util.Collection;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
- * Run all tests in the same instance of the IDE.
  *
- * @author shura
- * @author Jiri Skrivanek
  */
-public class NodesSuite {
+public class ProjectContext {
 
-    public static Test suite() {
-        return JellyTestCase.emptyConfiguration().
-                addTest(ClassNodeTest.class, ClassNodeTest.tests).
-                addTest(FolderNodeTest.class, FolderNodeTest.tests).
-                addTest(FormNodeTest.class, FormNodeTest.tests).
-                addTest(HTMLNodeTest.class, HTMLNodeTest.tests).
-                addTest(ImageNodeTest.class, ImageNodeTest.tests).
-                addTest(JavaNodeTest.class, JavaNodeTest.tests).
-                addTest(JavaProjectRootNodeTest.class, JavaProjectRootNodeTest.tests).
-                addTest(NodeTest.class, NodeTest.tests).
-                addTest(ProjectRootNodeTest.class, ProjectRootNodeTest.tests).
-                addTest(PropertiesNodeTest.class, PropertiesNodeTest.tests).
-                addTest(URLNodeTest.class, URLNodeTest.tests).
-                addTest(UnrecognizedNodeTest.class, UnrecognizedNodeTest.tests).
-                suite();
+    private ChangeSupport support;
+    private Lookup.Result<Project> res;
+
+    public ProjectContext(Lookup projectContext) {
+        support = new ChangeSupport(this);
+        res = projectContext.lookupResult(Project.class);
+        res.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                support.fireChange();
+            }
+        });
+    }
+    
+    public Project getProject() {
+        Collection<? extends Project> coll = res.allInstances();
+        if (coll.isEmpty()) {
+            return null;
+        } else {
+            return coll.iterator().next();
+        }
+    }
+    
+    public void addChangeSupport(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+    
+    public void removeChangeSupport(ChangeListener l) {
+        support.removeChangeListener(l);
     }
 }

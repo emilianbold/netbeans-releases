@@ -85,10 +85,11 @@ public class FormPropertiesEditorsTestCase extends JellyTestCase {
             FormNode node = new FormNode(sample1, SAMPLE_FRAME_NAME);
             node.open();
             // wait for form opened
-            new FormDesignerOperator(SAMPLE_FRAME_NAME);
+            FormDesignerOperator fdo = new FormDesignerOperator(SAMPLE_FRAME_NAME);
             // open and close general properties
             new PropertiesAction().perform();
             new PropertySheetOperator().close();
+            ComponentInspectorOperator.invokeNavigator();
             ComponentInspectorOperator inspector = new ComponentInspectorOperator();
             PropertySheetOperator pso = inspector.properties("[JFrame]"); // NOI18N
             Property p = new Property(pso, PROPERTY_NAME);

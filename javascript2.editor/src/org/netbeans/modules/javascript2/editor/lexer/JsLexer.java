@@ -70,7 +70,7 @@ public class JsLexer implements Lexer<JsTokenId> {
     }
 
     public static JsLexer create(LexerRestartInfo<JsTokenId> info) {
-        synchronized(JsLexer.class) {
+        synchronized (JsLexer.class) {
             return new JsLexer(info);
         }
     }
