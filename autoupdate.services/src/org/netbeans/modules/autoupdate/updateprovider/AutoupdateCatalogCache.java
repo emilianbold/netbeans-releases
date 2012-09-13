@@ -105,13 +105,6 @@ public final class AutoupdateCatalogCache {
             } catch (MalformedURLException ex) {
                 assert false : ex;
             }
-            synchronized (getLock(cache)) {
-                assert cache.exists() : "Cache " + cache + " exists.";
-                err.log(Level.FINER, "Cache file {0} was wrote from original URL {1}", new Object[]{cache, original});
-                if (cache.exists() && cache.length() == 0) {
-                    err.log(Level.INFO, "Written cache size is zero bytes");
-                }
-            }
             return url;        
     }
     
@@ -256,6 +249,11 @@ public final class AutoupdateCatalogCache {
         nwl.notifyException ();
         synchronized(getLock(cache)) {
             updateCachedFile(cache, temp);
+            assert cache.exists() : "Cache " + cache + " exists.";
+            err.log(Level.FINER, "Cache file {0} was wrote from original URL {1}", new Object[]{cache, sourceUrl});
+            if (cache.exists() && cache.length() == 0) {
+                err.log(Level.INFO, "Written cache size is zero bytes");
+            }
         }
     }
 
