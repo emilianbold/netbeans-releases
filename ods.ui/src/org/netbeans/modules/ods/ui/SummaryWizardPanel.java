@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.ui.dashboard;
+package org.netbeans.modules.ods.ui;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ods.api.CloudServer;
+import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author tomas
+ * @author Maros Sandor
  */
-public class NotYetAction extends AbstractAction {
-    
-    public static Action instance = new NotYetAction();
-    
+public class SummaryWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+
+    private SummaryWizardPanelGUI component;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private NewProjectWizardIterator iter;
+
+    public SummaryWizardPanel (NewProjectWizardIterator iter) {
+        this.iter = iter;
+    }
+
     @Override
-    public void actionPerformed(ActionEvent e) {
-        notYet();
+    public Component getComponent () {
+        if (component == null) {
+            component = new SummaryWizardPanelGUI(this);
+        }
+        return component;
     }
-    
-    public static void notYet() {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Not yet implemented!", NotifyDescriptor.INFORMATION_MESSAGE));
+
+    @Override
+    public HelpCtx getHelp () {
+        return new HelpCtx("org.netbeans.modules.ods.ui.SummaryWizardPanel"); //NOI18N
     }
-    
+
+    @Override
+    public void readSettings (Object settings) {
+        component.read((WizardDescriptor) settings);
+    }
+
+    @Override
+    public void storeSettings (Object settings) {
+        component.store((WizardDescriptor) settings);
+    }
+
+    @Override
+    public boolean isValid () {
+        return true;
+    }
+
+    @Override
+    public final void addChangeListener (ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    @Override
+    public final void removeChangeListener (ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    protected final void fireChangeEvent () {
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public boolean isFinishPanel () {
+        return true;
+    }
+
+    public CloudServer getServer () {
+        return iter.getServer();
+    }
 }

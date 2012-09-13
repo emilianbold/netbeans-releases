@@ -62,7 +62,6 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import static org.netbeans.modules.ods.ui.Bundle.*;
-import org.netbeans.modules.ods.ui.dashboard.NotYetAction;
 import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -210,7 +209,7 @@ public class CloudServerProviderImpl implements TeamServerProvider {
 
     @Override
     public Action getShareAction () {
-        return new NotYetAction();
+        return ShareAction.getDefault();
     }
     
 }

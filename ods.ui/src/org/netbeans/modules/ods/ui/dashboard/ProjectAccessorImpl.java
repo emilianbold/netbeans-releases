@@ -54,6 +54,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.modules.ods.api.CloudServer;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.ui.NewProjectAction;
 import org.netbeans.modules.ods.ui.OpenProjectAction;
 import org.netbeans.modules.ods.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
@@ -230,14 +231,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getNewTeamProjectAction() {
-        return NotYetAction.instance;
-//        return new AbstractAction() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                throw new UnsupportedOperationException("no yet!");
-////                new NewProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
-//            }
-//        };
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                new NewProjectAction(uiServer.getServer()).actionPerformed(null);
+            }
+        };
     }
 
     private class RefreshAction extends AbstractAction {

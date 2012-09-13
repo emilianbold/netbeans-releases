@@ -44,6 +44,7 @@ package org.netbeans.modules.ods.git;
 import com.tasktop.c2c.server.scm.domain.ScmType;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
 import javax.swing.AbstractAction;
@@ -97,6 +98,24 @@ public class GitApiProviderImpl implements ApiProvider {
             };
         }
         return action;
+    }
+
+    @Override
+    public LocalRepositoryInitializer getRepositoryInitializer () {
+        return new LocalRepositoryInitializerImpl();
+    }
+
+    private static class LocalRepositoryInitializerImpl implements LocalRepositoryInitializer {
+
+        @Override
+        public void initLocalRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException {
+            try {
+                Git.initializeRepository(localFolder, repositoryUrl, credentials);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
     }
     
 }

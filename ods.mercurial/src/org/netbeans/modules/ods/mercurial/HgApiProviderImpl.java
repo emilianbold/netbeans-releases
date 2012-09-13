@@ -82,5 +82,10 @@ public class HgApiProviderImpl implements ApiProvider {
     public Action createOpenHistoryAction (File workdir, String commitId) {
         return null;
     }
+
+    @Override
+    public LocalRepositoryInitializer getRepositoryInitializer () {
+        return null;
+    }
     
 }

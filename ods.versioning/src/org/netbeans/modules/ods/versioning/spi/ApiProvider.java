@@ -42,6 +42,7 @@
 package org.netbeans.modules.ods.versioning.spi;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.PasswordAuthentication;
 import javax.swing.Action;
 
@@ -58,5 +59,13 @@ public interface ApiProvider {
     public String getName ();
 
     public Action createOpenHistoryAction (File workdir, String commitId);
+
+    public LocalRepositoryInitializer getRepositoryInitializer ();
+
+    public static interface LocalRepositoryInitializer {
+
+        public void initLocalRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException;
+
+    }
     
 }

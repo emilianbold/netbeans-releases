@@ -43,6 +43,9 @@ package org.netbeans.modules.ods.api;
 
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.profile.domain.project.ProjectAccessibility;
+import com.tasktop.c2c.server.profile.domain.project.ProjectPreferences;
+import com.tasktop.c2c.server.profile.domain.project.WikiMarkupLanguage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -224,7 +227,7 @@ public final class CloudServer {
             return Collections.emptyList();
         }
 
-        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        ODSClient client = createClient();
         List<Project> projs = client.searchProjects(pattern);
         List<ODSProject> odsProjects = new ArrayList<ODSProject>(projs.size());
         for (Project p : projs) {
@@ -234,11 +237,25 @@ public final class CloudServer {
     }
 
     public void watch (ODSProject prj) throws ODSException {
-        ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication()).watchProject(prj.getId());
+        createClient().watchProject(prj.getId());
     }
 
     public void unwatch (ODSProject prj) throws ODSException {
-        ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication()).unwatchProject(prj.getId());
+        createClient().unwatchProject(prj.getId());
+    }
+
+    public ODSProject createProject (String projectTitle, String projectDescription,
+            String accessibility, String wikiStyle) throws ODSException {
+        ODSClient client = createClient();
+        Project project = new Project();
+        project.setName(projectTitle);
+        project.setDescription(projectDescription);
+        project.setAccessibility(ProjectAccessibility.valueOf(accessibility));
+        ProjectPreferences prefs = new ProjectPreferences();
+        prefs.setWikiLanguage(WikiMarkupLanguage.valueOf(wikiStyle));
+        project.setProjectPreferences(prefs);
+        Project created = client.createProject(project);
+        return setOdsProjectData(created.getIdentifier(), created);
     }
 
     private void firePropertyChange(PropertyChangeEvent event) {
@@ -265,7 +282,7 @@ public final class CloudServer {
                 return new ArrayList<ODSProject>(myProjs);
             }
         }
-        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        ODSClient client = createClient();
         List<Project> mine = client.getMyProjects();
         if (mine == null) {
             synchronized (myProjectCache) {
@@ -362,7 +379,7 @@ public final class CloudServer {
     }
 
     private Project getProject(String projectId) throws ODSException {
-        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        ODSClient client = createClient();
         Project p = client.getProjectById(projectId);
         return p;
     }
@@ -378,5 +395,9 @@ public final class CloudServer {
             }
         }
         return odsProj;
+    }
+
+    private ODSClient createClient () {
+        return ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
     }
 }

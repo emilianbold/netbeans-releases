@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.ods.api.CloudServer;
+import org.netbeans.modules.ods.api.CloudServerManager;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
 import org.openide.util.NbPreferences;
@@ -57,6 +58,8 @@ import static org.netbeans.modules.ods.ui.Bundle.*;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -157,6 +160,36 @@ public class Utilities {
     public static List<ProjectHandle<ODSProject>> getMyProjects(CloudUiServer uiServer) throws ODSException {
         return toODSProjects(uiServer, uiServer.getServer().getMyProjects());
     }
+
+    public static CloudServer getActiveServer (boolean loggedInExpected) {
+        CloudServer server = null;
+        TeamServer selectedServer = TeamUIUtils.getSelectedServer();
+        if (selectedServer instanceof CloudUiServer) {
+            server = ((CloudUiServer) selectedServer).getServer();
+        } else {
+            Collection<CloudServer> servers = CloudServerManager.getDefault().getServers();
+            for (CloudServer s : servers) {
+                if (server == null) {
+                    server = s;
+                }
+                if (s.isLoggedIn()) {
+                    server = s;
+                    break;
+                }
+            }
+        }
+        if (server == null) {
+            return null;
+        }
+        if (loggedInExpected && !server.isLoggedIn()) {
+            TeamServer uiServer = TeamUIUtils.showLogin(CloudUiServer.forServer(server), false);
+            if (uiServer instanceof CloudUiServer) {
+                server = ((CloudUiServer) uiServer).getServer();
+            }
+        }
+        return server;
+    }
+
 
     private static List<ProjectHandle<ODSProject>> toODSProjects(CloudUiServer uiServer, Collection<ODSProject> projects) {
         if(projects == null) {

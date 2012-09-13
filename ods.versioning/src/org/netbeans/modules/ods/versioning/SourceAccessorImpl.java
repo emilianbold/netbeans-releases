@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,6 +68,7 @@ import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.ods.ui.spi.VCSAccessor;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
+import org.netbeans.modules.ods.versioning.spi.ApiProvider.LocalRepositoryInitializer;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -256,6 +258,21 @@ public class SourceAccessorImpl extends VCSAccessor {
         Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
     }
 
+    @Override
+    public RepositoryInitializer getRepositoryInitializer (String repositoryKind) {
+        RepositoryInitializer initializer = null;
+        ScmType type = ScmType.valueOf(repositoryKind);
+        ApiProvider[] providers = getProvidersFor(type);
+        if (providers.length > 0) {
+            ApiProvider provider = providers[0];
+            LocalRepositoryInitializer localRepoInitializer = provider.getRepositoryInitializer();
+            if (localRepoInitializer != null) {
+                initializer = new RepositoryInitImpl(localRepoInitializer);
+            }
+        }
+        return initializer;
+    }
+
     private List<SourceHandle> getSources (ProjectHandle<ODSProject> prjHandle, String repositoryName, boolean onlySupported) {
         ODSProject project = prjHandle.getTeamProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
@@ -318,5 +335,19 @@ public class SourceAccessorImpl extends VCSAccessor {
             }
         }
         return providers.toArray(new ApiProvider[providers.size()]);
+    }
+    
+    private static class RepositoryInitImpl implements RepositoryInitializer {
+        private final LocalRepositoryInitializer delegate;
+
+        private RepositoryInitImpl (LocalRepositoryInitializer delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void initialize (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException {
+            delegate.initLocalRepository(localFolder, repositoryUrl, credentials);
+        }
+        
     }
 }

@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.ods.ui.spi;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.PasswordAuthentication;
 import javax.swing.Action;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -65,4 +68,11 @@ public abstract class VCSAccessor extends SourceAccessor<ODSProject> {
             String repositoryName,
             String commitId);
     
+    public abstract RepositoryInitializer getRepositoryInitializer (String repositoryKind);
+    
+    public static interface RepositoryInitializer {
+        
+        public void initialize (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException;
+        
+    }
 }

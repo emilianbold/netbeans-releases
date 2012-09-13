@@ -45,15 +45,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import javax.swing.JButton;
 import org.netbeans.modules.ods.api.CloudServer;
-import org.netbeans.modules.ods.api.CloudServerManager;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.ods.ui.project.ODSSearchPanel;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -85,31 +82,11 @@ public final class OpenProjectAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
-
         if (server == null) {
-            TeamServer selectedServer = TeamUIUtils.getSelectedServer();
-            if (selectedServer instanceof CloudUiServer) {
-                server = ((CloudUiServer) selectedServer).getServer();
-            } else {
-                Collection<CloudServer> servers = CloudServerManager.getDefault().getServers();
-                for (CloudServer s : servers) {
-                    if (server == null) {
-                        server = s;
-                    }
-                    if (s.isLoggedIn()) {
-                        server = s;
-                        break;
-                    }
-                }
-            }
+            server = Utilities.getActiveServer(true);
         }
         if (server == null) {
             return;
-        }
-        if (!server.isLoggedIn()) {
-            if (TeamUIUtils.showLogin(CloudUiServer.forServer(server), false) == null) {
-                return;
-            }
         }
 
         final JButton open = new JButton(NbBundle.getMessage(OpenProjectAction.class, "OpenODSProjectAction.OpenFromODS"));
