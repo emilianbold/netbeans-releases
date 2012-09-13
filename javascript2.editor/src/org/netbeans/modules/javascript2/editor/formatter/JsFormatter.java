@@ -65,7 +65,6 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -724,7 +723,7 @@ public class JsFormatter implements Formatter {
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
-                || formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(text)
+                || formatContext.isGenerated(result)
                 // this is just safeguard literal offsets should be fixed
                 /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
 
@@ -745,8 +744,8 @@ public class JsFormatter implements Formatter {
 
             // we don't want to touch lines starting with other language
             // it is a bit heuristic but we can't do much
-            // see embeddedMultipleSections3.tpl and embeddedMultipleSections4.php
-            if (formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(indentationEnd.getText().toString())) {
+            // see embeddedMultipleSections1.php
+            if (formatContext.isGenerated(indentationEnd)) {
                 return Indentation.FORBIDDEN;
             }
             return Indentation.ALLOWED;

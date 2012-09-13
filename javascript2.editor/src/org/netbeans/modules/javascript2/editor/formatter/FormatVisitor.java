@@ -65,7 +65,6 @@ import com.oracle.nashorn.ir.WithNode;
 import com.oracle.nashorn.ir.visitor.NodeVisitor;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
