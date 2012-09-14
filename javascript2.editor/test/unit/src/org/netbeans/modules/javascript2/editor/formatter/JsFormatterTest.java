@@ -438,6 +438,14 @@ public class JsFormatterTest extends JsTestBase {
         reindentFileContents("testfiles/formatter/comments1.js", null);
     }
 
+    public void testComments2() throws Exception {
+        reformatFileContents("testfiles/formatter/comments2.js",new IndentPrefs(4, 4));
+    }
+
+    public void testComments3() throws Exception {
+        reformatFileContents("testfiles/formatter/comments3.js",new IndentPrefs(4, 4));
+    }
+
     public void testObjects1() throws Exception {
         reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
     }
