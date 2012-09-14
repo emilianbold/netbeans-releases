@@ -118,6 +118,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
      * @return {@code false} if not found
      */
     public static boolean locatedTplFiles(FileObject fo, int maxDepth, int actualDepth) {
+        if (fo == null || !fo.isValid()) {
+            return false;
+        }
+
         while (actualDepth <= maxDepth) {
             for (FileObject child : fo.getChildren()) {
                 if (!child.isFolder()) {
