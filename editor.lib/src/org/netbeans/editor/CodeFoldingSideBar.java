@@ -833,8 +833,9 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         Fold f2 = f;
                         
                         f = FoldUtilities.findOffsetFold(hierarchy, nextLineOffset);
-                        if (f != f2.getParent()) {
-                            throw new IllegalStateException("non-parent fold without fold mark");
+                        if (f == null) {
+                            // fold does not exist for the position below end-of-fold indicator
+                            return;
                         }
                     }
                     
