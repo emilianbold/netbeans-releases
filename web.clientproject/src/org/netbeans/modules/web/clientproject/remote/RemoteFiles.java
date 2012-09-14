@@ -96,16 +96,7 @@ public class RemoteFiles {
             ParserManager.parseWhenScanFinished("text/html", new UserTask() { //NOI18N
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    //http://netbeans.org/bugzilla/show_bug.cgi?id=217384#c5
-                    //do not set the children keys directly from the parsing task
-                    RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            updateRemoteFiles();
-                        }
-                        
-                    });
+                    updateRemoteFiles();
                 }
             });
         } catch (ParseException ex) {
@@ -114,12 +105,22 @@ public class RemoteFiles {
     }
     
     private void updateRemoteFiles() {
+        final List<URL> deps;
         try {
-            setUrls(filter(getHtmlIndex().getAllRemoteDependencies()));
-            fireChange();
+            deps = getHtmlIndex().getAllRemoteDependencies();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+            return;
         }
+        //http://netbeans.org/bugzilla/show_bug.cgi?id=217384#c5
+        //do not set the children keys directly from the parsing task
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                setUrls(filter(deps));
+                fireChange();
+            }
+        });
     }
     
     public synchronized List<URL> getRemoteFiles() {
