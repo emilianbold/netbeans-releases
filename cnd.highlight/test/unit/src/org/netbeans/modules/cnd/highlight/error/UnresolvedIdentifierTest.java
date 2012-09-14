@@ -337,6 +337,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 218192 - Exception: attempt to put local declaration FUNCTION_FRIEND_DEFINITION
         performStaticTest("bug218192.cpp");
     }      
+
+    public void testBug215225() throws Exception {
+        // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
+        performStaticTest("bug215225.cpp");
+    }      
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

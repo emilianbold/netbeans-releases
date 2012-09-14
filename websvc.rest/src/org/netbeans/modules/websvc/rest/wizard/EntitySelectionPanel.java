@@ -91,16 +91,12 @@ public final class EntitySelectionPanel extends AbstractPanel {
         if ( component.getCreatePersistenceUnit() && 
                 getPersistenceUnit(project)==null)
         {
-            try {
-                org.netbeans.modules.j2ee.persistence.wizard.Util.
-                    createPersistenceUnitUsingWizard(project, 
-                            null, TableGeneration.NONE);
-            }
-            catch (InvalidPersistenceXmlException e) {
-                Logger.getLogger(EntitySelectionPanel.class.getName()).log(
-                        Level.WARNING, null, e);
-            }
-            getPersistenceUnit(project);
+            wizardDescriptor.putProperty(WizardProperties.CREATE_PERSISTENCE_UNIT, 
+                    Boolean.TRUE);
+        }
+        else {
+            wizardDescriptor.putProperty(
+                    WizardProperties.CREATE_PERSISTENCE_UNIT, null);
         }
     }
     
