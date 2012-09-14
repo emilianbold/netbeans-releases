@@ -12,6 +12,7 @@ KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
 KEYWORD    continue                                   null
+KEYWORD    debugger                                   null
 KEYWORD    default                                    null
 KEYWORD    delete                                     null
 KEYWORD    do                                         null
@@ -29,5 +30,6 @@ KEYWORD    throw                                      null
 KEYWORD    try                                        null
 KEYWORD    typeof                                     null
 KEYWORD    var                                        null
+KEYWORD    void                                       null
 KEYWORD    while                                      null
 KEYWORD    with                                       null

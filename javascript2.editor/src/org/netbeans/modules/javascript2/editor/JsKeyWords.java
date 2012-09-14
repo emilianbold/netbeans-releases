@@ -60,14 +60,15 @@ public class JsKeyWords {
         ENDS_WITH_COLON
     };
 
-    protected final static Map<String,CompletionType> KEYWORDS = new HashMap<String, CompletionType>();
+    protected final static Map<String, CompletionType> KEYWORDS = new HashMap<String, CompletionType>();
     static {
         KEYWORDS.put("break", CompletionType.ENDS_WITH_SEMICOLON);
         KEYWORDS.put("case", CompletionType.ENDS_WITH_COLON);
         KEYWORDS.put("catch", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("continue",  CompletionType.ENDS_WITH_SEMICOLON);
+        KEYWORDS.put("continue", CompletionType.ENDS_WITH_SEMICOLON);
+        KEYWORDS.put("debugger", CompletionType.ENDS_WITH_SEMICOLON);
         KEYWORDS.put("default", CompletionType.ENDS_WITH_COLON);
-        KEYWORDS.put("delete",  CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put("delete", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("do", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("else", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("finally", CompletionType.ENDS_WITH_CURLY_BRACKETS);
@@ -75,15 +76,17 @@ public class JsKeyWords {
         KEYWORDS.put("function", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("if", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("in", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("instanceof",  CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put("instanceof", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("new", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("return",  CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put("return", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("switch", CompletionType.CURSOR_INSIDE_BRACKETS);
+        // XXX this is missing here
         KEYWORDS.put("throw", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("try",  CompletionType.ENDS_WITH_CURLY_BRACKETS);
+        KEYWORDS.put("try", CompletionType.ENDS_WITH_CURLY_BRACKETS);
         KEYWORDS.put("typeof", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("var", CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put("void", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("while", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("with",  CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put("with", CompletionType.ENDS_WITH_SPACE);
     }
 }
