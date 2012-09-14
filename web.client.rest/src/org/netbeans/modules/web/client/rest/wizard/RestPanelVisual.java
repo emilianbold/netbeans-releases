@@ -309,7 +309,7 @@ public final class RestPanelVisual extends JPanel  {
         }
         String targetName = Templates.getTargetName(wizardDescriptor);
         FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
-        if ( targetFolder.getFileObject(targetName)!=null){
+        if ( targetFolder!= null && targetFolder.getFileObject(targetName)!=null){
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                     NbBundle.getMessage(RestPanelVisual.class, "ERR_ExistedFile",targetName));    // NOI18N
             return false;
