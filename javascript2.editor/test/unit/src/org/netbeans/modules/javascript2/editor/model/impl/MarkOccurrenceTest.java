@@ -343,6 +343,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
     }
 
+    public void testIssue218231_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218231.js", "    return displa^yname;", true);
+    }
+
+    public void testIssue218231_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218231.js", "var stylizeDisplayName = function(display^name, column, record) {", true);
+    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
