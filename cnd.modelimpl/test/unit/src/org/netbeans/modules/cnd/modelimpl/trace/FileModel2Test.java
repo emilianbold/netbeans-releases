@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testPreprocDirectives() throws Exception {
+        // #218190 - NPE in APTPredefinedMacroMap
+        performTest("preproc_directives.cc"); // NOI18N
+    }
+
     public void test217089() throws Exception {
         // #217089: "#define AAA 1 ## 0" line breaks parser
         performTest("iz217089.c");
