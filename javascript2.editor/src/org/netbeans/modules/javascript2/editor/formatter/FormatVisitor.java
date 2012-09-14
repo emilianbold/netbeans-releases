@@ -71,6 +71,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -1244,9 +1245,15 @@ public class FormatVisitor extends NodeVisitor {
     private static void appendTokenAfterLastVirtual(FormatToken previous,
             FormatToken token, boolean checkDuplicity) {
 
+        assert previous != null;
+
+        @NonNull
         FormatToken current = previous;
-        while (current.next() != null && current.next().isVirtual()) {
-            current = current.next();
+        FormatToken next = current.next();
+
+        while (next != null && next.isVirtual()) {
+            current = next;
+            next = next.next();
         }
         if (!checkDuplicity || !current.isVirtual() || !token.isVirtual()
                 || current.getKind() != token.getKind()) {

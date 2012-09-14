@@ -488,8 +488,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
                     && token.id() != JsTokenId.BLOCK_COMMENT
-                    && token.id() != JsTokenId.LINE_COMMENT) {
-                
+                    && token.id() != JsTokenId.LINE_COMMENT
+                    && token.id() != JsTokenId.OPERATOR_PLUS) {
+
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
