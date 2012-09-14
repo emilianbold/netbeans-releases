@@ -68,6 +68,8 @@ import org.openide.util.RequestProcessor;
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
+    private static final RequestProcessor RP = new RequestProcessor(SmartyPhpFrameworkProvider.class);
+
     private static final Logger LOGGER = Logger.getLogger(SmartyPhpFrameworkProvider.class.getName());
 
     /** Preferences property if the given {@link PhpModule} contains Smarty framework or not. */
@@ -161,7 +163,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             return true;
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 FileObject sourceDirectory = phpModule.getSourceDirectory();
