@@ -84,7 +84,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile boolean isInterrupted;
     private final AtomicBoolean cancelledFlag = new AtomicBoolean(false);
     private Future<ProcessInfoProvider> infoProviderSearchTask;
-    private Future<Integer> waitTask = null;
+    private volatile Future<Integer> waitTask = null;
     private final Object resultLock = new Object();
     private Integer result = null;
     private InputStream inputStream;
@@ -284,6 +284,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
 
         final int timeToWait = destroyImpl();
+
+        if (waitTask == null) {
+            // this could be in a case if exception occured during the process
+            // creation ...
+            return;
+        }
 
         try {
             waitTask.get(timeToWait, TimeUnit.SECONDS);
