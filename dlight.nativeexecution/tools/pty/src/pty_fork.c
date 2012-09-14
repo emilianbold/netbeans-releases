@@ -21,6 +21,9 @@ int posix_openpt(int flags) {
 }
 
 #endif
+extern int  grantpt(int);
+extern int  unlockpt(int);
+extern char *ptsname(int);
 
 static void dup_fd(int pty_fd);
 static int ptm_open(void);
@@ -156,7 +159,7 @@ static void dup_fd(int pty_fd) {
 
 #if defined(TIOCSCTTY) && !defined(__sun)
     if (ioctl(pty_fd, TIOCSCTTY, 0) == -1) {
-        printf("ERROR ioctl(TIOCSCTTY) failed on \"%s\" -- %s\n",
+        printf("ERROR ioctl(TIOCSCTTY) failed on \"pty %d\" -- %s\n",
                 pty_fd, strerror(errno));
         exit(-1);
     }
