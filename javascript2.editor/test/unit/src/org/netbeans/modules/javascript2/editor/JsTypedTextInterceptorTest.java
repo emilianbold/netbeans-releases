@@ -85,8 +85,8 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
     }
 
     public void testNoMatchInComments() throws Exception {
-        insertChar("// Hello^", '\'', "// Hello'^'");
-        insertChar("// Hello^", '"', "// Hello\"^\"");
+        insertChar("// Hello^", '\'', "// Hello'^");
+        insertChar("// Hello^", '"', "// Hello\"^");
         insertChar("// Hello^", '[', "// Hello[^");
         insertChar("// Hello^", '(', "// Hello(^");
         insertChar("/* Hello^*/", '\'', "/* Hello'^*/");
