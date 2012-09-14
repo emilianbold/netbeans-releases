@@ -72,7 +72,7 @@ class NameActions {
     private static final class FullyQualifiedNameAction extends AbstractAction implements Presenter.Popup {
 
         @StaticResource
-        private static final String ICON = "org/netbeans/modules/java/navigation/resources/fqn.gif";  //NOI18N
+        private static final String ICON = "org/netbeans/modules/java/navigation/resources/fqn.png";  //NOI18N
 
         private final HierarchyFilters filters;
         private JRadioButtonMenuItem menuItem;
