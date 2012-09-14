@@ -100,7 +100,8 @@ public final class EditorBridge extends KeymapManager {
         if (actions == null) {
             Map<String, String> categories = readCategories();
             actions = new HashMap<String, Set<ShortcutAction>>();
-            for (EditorAction action : getEditorActionsMap().values()) {
+            final Map<String, EditorAction> tmpEditorActionsMap = Collections.unmodifiableMap(getEditorActionsMap());
+            for (EditorAction action : tmpEditorActionsMap.values()) {
                 String category = categories.get(action.getId());
                 if (category == null) {
                     category = NbBundle.getMessage(EditorBridge.class, "CTL_Other"); // NOI18N

@@ -225,7 +225,17 @@ public class JsFormatter implements Formatter {
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
-                    if (token.getKind().isSpaceMarker()) {
+                    if (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                            || token.getKind() == FormatToken.Kind.DOC_COMMENT
+                            || token.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                        try {
+                            int indent = context.lineIndent(context.lineStartOffset(
+                                    token.getOffset() + formatContext.getOffsetDiff()));
+                            formatComment(token, formatContext, indent);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+                    } else if (token.getKind().isSpaceMarker()) {
                         formatSpace(tokens, i, formatContext);
                     } else if (token.getKind().isLineWrapMarker()) {
                         formatLineWrap(tokens, i, formatContext, initialIndent,
@@ -554,9 +564,9 @@ public class JsFormatter implements Formatter {
                     }
                 } else if (endToken.getKind() != FormatToken.Kind.EOL) {
                     // no eol
-                    FormatToken spaceStartToken = tokenBeforeEol;
-                    if (spaceStartToken.next() != null) {
-                        spaceStartToken = spaceStartToken.next();
+                    FormatToken spaceStartToken = tokenBeforeEol.next();
+                    if (spaceStartToken == null) {
+                        spaceStartToken = tokenBeforeEol;
                     }
 
                     if (isSpace(spaceStartToken, formatContext, true, true)) {
@@ -651,6 +661,31 @@ public class JsFormatter implements Formatter {
                                 end.getOffset() - start.getOffset(), " "); // NOI18N
                     }
                 }
+            }
+        }
+    }
+
+    private void formatComment(FormatToken comment, FormatContext formatContext, int indent) {
+        // this assumes the firts line is already indented by EOL logic
+        assert comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                || comment.getKind() == FormatToken.Kind.DOC_COMMENT
+                || comment.getKind() == FormatToken.Kind.LINE_COMMENT;
+
+        if (comment.getKind() == FormatToken.Kind.LINE_COMMENT) {
+            return;
+        }
+
+        if (!comment.getText().toString().contains("\n")) { // NOI18N
+            return;
+        }
+
+        CharSequence text = comment.getText();
+        for (int i = 0; i < text.length(); i++) {
+            char single = text.charAt(i);
+            if (single == '\n') { // NOI18N
+                // following lines are + 1 indented
+                formatContext.indentLine(comment.getOffset() + i + 1,
+                        indent + 1, Indentation.ALLOWED); // NOI18N
             }
         }
     }
@@ -1130,6 +1165,9 @@ public class JsFormatter implements Formatter {
                 //      thirdarg)
                 isContinuationOperator = (bracketBalance == 0);
             }
+            if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                isContinuationOperator = true;
+            }
 
             if (id == JsTokenId.OPERATOR_COLON) {
                 TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
@@ -1166,7 +1204,10 @@ public class JsFormatter implements Formatter {
             startOffset = Utilities.getRowStart(doc, startOffset);
             int endLineOffset = Utilities.getRowStart(doc, endOffset);
             final boolean indentOnly = (startOffset == endLineOffset)
-                    && (Utilities.isRowEmpty(doc, startOffset) || Utilities.isRowWhite(doc, startOffset));
+                    && endLineOffset == context.caretOffset()
+                    && (Utilities.isRowEmpty(doc, startOffset)
+                    || Utilities.isRowWhite(doc, startOffset)
+                    || Utilities.getFirstNonWhiteFwd(doc, startOffset) == context.caretOffset());
             if (indentOnly && indentContext.isEmbedded()) {
                 // Make sure we're not messing with indentation in HTML
                 Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset);
@@ -1413,7 +1454,7 @@ public class JsFormatter implements Formatter {
                         //indent = LexUtilities.getLineIndent(doc, offset)-originallockCommentIndention+adjustedBlockCommentIndention;
                         indent = GsfUtilities.getLineIndent(doc, offset);
                     }
-                } else if ((endIndents = isEndIndent(context, offset)) > 0) {
+                } else if (!indentOnly && (endIndents = isEndIndent(context, offset)) > 0) {
                     indent = (balance-endIndents) * indentSize + hangingIndent + initialIndent;
                 } else {
                     assert lineType == IN_CODE || lineType == IN_BLOCK_COMMENT_START;

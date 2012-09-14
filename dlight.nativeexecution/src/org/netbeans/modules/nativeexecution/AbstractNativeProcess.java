@@ -68,6 +68,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
+    private final static Integer SIGKILL_TIMEOUT =
+            Integer.valueOf(System.getProperty(
+            "dlight.nativeexecutor.forcekill.timeout", "5")); // NOI18N
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
     protected long creation_ts = -1;
@@ -214,22 +217,23 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * To be implemented by a successor.
-     * It must implement the specific termination of the underlaying system
-     * process on this method call.
-     * It is guaranteed that this method is called only once.
-     * Implementation should not (but may) wait for the actual terminaltion
-     * before returning from the call.
-     * If destroyImpl() returnes and process's waitFor() still not exited during 
-     * specified (by return value) seconds (i.e. process was not actually
-     * terminated), then a SIGKILL is send to the process.
+     * To be implemented by a successor. It must implement the specific
+     * termination of the underlying system process on this method call. It is
+     * guaranteed that this method is called only once. Implementation should
+     * not (but may) wait for the actual termination before returning from the
+     * call. If destroyImpl() returns and process's waitFor() still not exited
+     * during specified (by return value) seconds (i.e. process was not actually
+     * terminated), then a SIGTERM is send to the process.
      *
-     * Default implementation just returns 0. So SIGKILL is send immediately to
+     * Default implementation just returns 0. So SIGTERM is send immediately to
      * force-terminate the process.
      *
+     * SIGKILL is send if after SIGTERM process is still alive for
+     * "dlight.nativeexecutor.forcekill.timeout".
+     *
      * @return number of seconds to wait before doing an attempt to
-     * force-terminate the process with the SIGKILL signal (signal is send only
-     * if process was not finished by that time).
+     * force-terminate the process with the SIGTERM (and SIGKILL) signal (signal
+     * is send only if process was not finished by that time).
      */
     protected int destroyImpl() {
         return 0;
@@ -271,6 +275,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      * Returning from the call of this method does not mean that the process was
      * already terminated.
      *
+     * May block caller thread for significant time
      */
     @Override
     public final void destroy() {
@@ -280,9 +285,14 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         final int timeToWait = destroyImpl();
 
-        // In case the process is in a system call (sleep, read, for example)
-        // this will not have a desired effect - in this case
-        // will send SIGTERM signal..
+        try {
+            waitTask.get(timeToWait, TimeUnit.SECONDS);
+            return;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
 
         try {
             exitValue();
@@ -299,7 +309,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
 
         try {
-            waitTask.get(timeToWait, TimeUnit.SECONDS);
+            waitTask.get(SIGKILL_TIMEOUT, TimeUnit.SECONDS);
+            return;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {

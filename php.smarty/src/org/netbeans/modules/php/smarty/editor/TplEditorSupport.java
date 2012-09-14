@@ -237,7 +237,9 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
      */
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        final Charset c = Charset.forName((String) doc.getProperty(DOCUMENT_SAVE_ENCODING));
+        String foundEncoding = (String) doc.getProperty(DOCUMENT_SAVE_ENCODING);
+        String usedEncoding = foundEncoding != null ? foundEncoding : UTF_8_ENCODING;
+        final Charset c = Charset.forName(usedEncoding);
         final Writer w = new OutputStreamWriter(stream, c);
         try {
             kit.write(w, doc, 0, doc.getLength());

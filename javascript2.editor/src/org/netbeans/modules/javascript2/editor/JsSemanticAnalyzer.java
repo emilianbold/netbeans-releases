@@ -134,14 +134,16 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case PROPERTY_SETTER:
                     int offset = object.getDeclarationName().getOffsetRange().getStart();
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), offset);
-                    ts.move(offset);
-                    if (ts.moveNext() && ts.movePrevious()) {
-                        Token token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
-                        if (token.id() == JsTokenId.IDENTIFIER && token.length() == 3) {
-                            highlights.put(new OffsetRange(ts.offset(), ts.offset() + token.length()), ColoringAttributes.METHOD_SET);
+                    if (ts != null) {
+                        ts.move(offset);
+                        if (ts.moveNext() && ts.movePrevious()) {
+                            Token token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                            if (token.id() == JsTokenId.IDENTIFIER && token.length() == 3) {
+                                highlights.put(new OffsetRange(ts.offset(), ts.offset() + token.length()), ColoringAttributes.METHOD_SET);
+                            }
                         }
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     }
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     break;
                 case OBJECT:
                 case OBJECT_LITERAL:

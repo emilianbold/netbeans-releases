@@ -329,6 +329,7 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_DIRECTIVE(null, "preprocessor"), // NOI18N
     //   - tokens
     PREPROCESSOR_START("#", "preprocessor"), // NOI18N
+    PREPROCESSOR_START_ALT("%:", "preprocessor"), // NOI18N alternative start preprocess token
     PREPROCESSOR_IF("if", "preprocessor-keyword-directive"), // NOI18N
     PREPROCESSOR_IFDEF("ifdef", "preprocessor-keyword-directive"), // NOI18N
     PREPROCESSOR_IFNDEF("ifndef", "preprocessor-keyword-directive"), // NOI18N
