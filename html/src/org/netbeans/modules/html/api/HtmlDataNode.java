@@ -42,34 +42,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.html;
+package org.netbeans.modules.html.api;
 
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.html.HtmlDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Node that represents HTML data object.
  *
  * @author  Radim Kubacki
  */
-public class HtmlDataNode extends org.openide.loaders.DataNode {
-    public static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
+public final class HtmlDataNode extends org.openide.loaders.DataNode {
+    
+    private static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
     private Sheet sheet = null;
+    
+    private Node.PropertySet[] customPropertySet;
     
     /** Creates new HtmlDataNode */
     public HtmlDataNode(DataObject dobj, Children ch) {
         super(dobj, ch);
-        setShortDescription(NbBundle.getMessage(HtmlDataNode.class, "LBL_htmlNodeShortDesc"));
+        setShortDescription(NbBundle.getMessage(HtmlDataObject.class, "LBL_htmlNodeShortDesc"));
     }
     
     @Override
     public Node.PropertySet[] getPropertySets() {
+        if(customPropertySet != null) {
+            return customPropertySet;
+        }
+        
         if(sheet == null) {
             sheet = new Sheet();
             
@@ -87,14 +96,15 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
             // add encoding property
             set = new Sheet.Set();
             set.setName(SHEETNAME_TEXT_PROPERTIES);
-            set.setDisplayName(NbBundle.getBundle(HtmlDataNode.class).getString("PROP_textfileSetName")); // NOI18N
-            set.setShortDescription(NbBundle.getBundle(HtmlDataNode.class).getString("HINT_textfileSetName")); // NOI18N
+            set.setDisplayName(NbBundle.getMessage(HtmlDataObject.class, "PROP_textfileSetName")); // NOI18N
+            set.setShortDescription(NbBundle.getMessage(HtmlDataObject.class, "HINT_textfileSetName")); // NOI18N
             set.put(new PropertySupport.ReadOnly(
                     PROP_FILE_ENCODING,
                     String.class,
-                    NbBundle.getBundle(HtmlDataNode.class).getString("PROP_fileEncoding"), //NOI18N
-                    NbBundle.getBundle(HtmlDataNode.class).getString("HINT_fileEncoding") //NOI18N
+                    NbBundle.getMessage(HtmlDataObject.class, "PROP_fileEncoding"), //NOI18N
+                    NbBundle.getMessage(HtmlDataObject.class, "HINT_fileEncoding") //NOI18N
                     ) {
+                        @Override
                 public Object getValue() {
                     return FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
                 }
@@ -103,4 +113,24 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
         }
         return sheet.toArray();
     }
+
+    /**
+     * Sets custom Node.PropertySet[] to this node.
+     * 
+     * {@link #firePropertySetsChange(org.openide.nodes.Node.PropertySet[], org.openide.nodes.Node.PropertySet[])} is called afterwards.
+     * 
+     * @since 1.46
+     * @param sets the custom property sets or null if the default property sets should be used.
+     */
+    public void setPropertySets(Node.PropertySet[] sets) {
+        Parameters.notNull("sets", sets);
+        
+        Node.PropertySet[] old = customPropertySet != null ? customPropertySet : getPropertySets();
+        Node.PropertySet[] neww = sets != null ? sets : getPropertySets();
+        
+        customPropertySet = sets;
+        
+        firePropertySetsChange(old, neww);
+    }
+    
 }

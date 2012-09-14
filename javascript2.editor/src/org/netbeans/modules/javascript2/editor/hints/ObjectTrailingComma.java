@@ -39,60 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.api;
+package org.netbeans.modules.javascript2.editor.hints;
 
-import org.netbeans.modules.html.HtmlDataObject;
-import org.netbeans.modules.html.HtmlEditorSupport;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
- * Allows to perform some modifications to instances of {@link HtmlEditorSupport}.
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
-public interface HtmlEditorSupportControl {
+public class ObjectTrailingComma extends JsConventionHint {
 
-    /**
-     * Sets a {@link Node} to the HtmlEditorSupport's lookup.
-     *
-     * The lookup is propagated to the editor top component.
-     *
-     * @param node an instance of {@link Node} you want to be current for the
-     * opened html editor. Use null to remove the actual node from the lookup.
-     */
-    public void setNode(Node node);
-
-    /**
-     * Provides ability to obtain an instance of
-     * {@link HtmlEditorSupportControl} for an html DataObject.
-     */
-    public static class Query {
-
-        /**
-         * Gets an instance of {@link HtmlEditorSupportControl} for a
-         * DataObject.
-         *
-         * The given {@link DataObject} must of an instance of
-         * {@link HtmlDataObject}.
-         *
-         * @param dataObject An instance of {@link HtmlDataObject}
-         *
-         * @return an instance of {@link HtmlEditorSupportControl} if the given
-         * dataObject argument is instance of {@link HtmlDataObject}, null
-         * otherwise.
-         */
-        public static HtmlEditorSupportControl get(DataObject dataObject) {
-            if (!(dataObject instanceof HtmlDataObject)) {
-                return null;
-            }
-
-            HtmlEditorSupport editorSupport = dataObject.getLookup().lookup(HtmlEditorSupport.class);
-            assert editorSupport != null;
-
-            return editorSupport;
-
-        }
-        
+    @Override
+    public String getId() {
+        return "jsobjecttrailingcomma.hint"; //NOI18N
     }
+
+    @Override
+    @NbBundle.Messages("ObjectTrailingCommaDescription=Warns if there are ',' after the last property definition in an object literal.")
+    public String getDescription() {
+        return Bundle.ObjectTrailingCommaDescription();
+    }
+
+    @Override
+    @NbBundle.Messages("ObjectTrailingCommaDisplayName=Trailing comma in object literal")
+    public String getDisplayName() {
+        return Bundle.ObjectTrailingCommaDisplayName();
+    }
+
 }

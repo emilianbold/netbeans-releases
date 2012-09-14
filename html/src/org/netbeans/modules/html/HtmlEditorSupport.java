@@ -57,15 +57,12 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ActionMap;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.html.api.HtmlEditorSupportControl;
-import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
@@ -73,23 +70,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -101,7 +88,7 @@ import org.openide.windows.CloneableOpenSupport;
  * @see org.openide.text.DataEditorSupport
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie,
-        EditCookie, EditorCookie.Observable, PrintCookie, HtmlEditorSupportControl {
+        EditCookie, EditorCookie.Observable, PrintCookie {
 
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
@@ -127,21 +114,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     };
 
-    static HtmlEditorSupport createInstance(HtmlDataObject dobj) {
-        return new HtmlEditorSupport(dobj, new EditorLookupSupport(dobj));
-    }
-
-    private EditorLookupSupport lookupSupport;
-
-    private HtmlEditorSupport(HtmlDataObject obj, EditorLookupSupport lookupSupport) {
-        super(obj, lookupSupport.getLookup(), new Environment(obj));
-        this.lookupSupport = lookupSupport;
+    HtmlEditorSupport(HtmlDataObject obj) {
+        super(obj, null, new Environment(obj));
         setMIMEType(getDataObject().getPrimaryFile().getMIMEType());
-    }
-
-    @Override
-    public void setNode(Node node) {
-        lookupSupport.setNodeInLookup(node);
     }
 
     @Override
@@ -372,74 +347,6 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     } // End of nested Environment class.
 
-    private static final class EditorLookupSupport {
 
-        private InstanceContent nodeContent;
-        private Lookup lookup;
-
-        public EditorLookupSupport(final HtmlDataObject dataObject) {
-            nodeContent = new InstanceContent();
-            Lookup nodeLookup = new AbstractLookup(nodeContent);
-            
-            Lookup explorerLookup = ExplorerUtils.createLookup(new ExplorerManager(), new ActionMap());;
-
-            InstanceContent plainContent = new InstanceContent();
-            //add NavigatorLookupHint so the navigator gets activated when the html editor topcomponent
-            //gets activated
-            plainContent.add(new NavigatorLookupHint() {
-                @Override
-                public String getContentType() {
-                    return dataObject.getPrimaryFile().getMIMEType(); // NOI18N
-                }
-            });
-            //add the DataObject and FileObject as well
-            plainContent.add(dataObject);
-            plainContent.add(dataObject.getPrimaryFile());
-
-            Lookup plainContentLookup = new AbstractLookup(plainContent);
-            Lookup saveCookieLookup = new Lookup() {
-                @Override
-                public <T> T lookup(final Class<T> clazz) {
-                    if (clazz.isAssignableFrom(SaveCookie.class)) {
-                        return dataObject.getLookup().lookup(clazz);
-                    } else {
-                        return null;
-                    }
-                }
-
-                @Override
-                public <T> Result<T> lookup(Lookup.Template<T> template) {
-                    if (template.getType().isAssignableFrom(SaveCookie.class)) {
-                        return dataObject.getLookup().lookup(template);
-                    } else {
-                        return Lookup.EMPTY.lookup(template);
-                    }
-                }
-            };
-
-            lookup = new ProxyLookup(nodeLookup, explorerLookup, plainContentLookup, saveCookieLookup);
-            
-        }
-
-        private void setNodeInLookup(Node node) {
-            Node existing = lookup.lookup(Node.class);
-            if(existing == node) {
-                return ;
-            }
-            
-            if(existing != null) {
-                nodeContent.remove(existing);
-            }
-            
-            nodeContent.add(node);
-            
-        }
-        
-        public Lookup getLookup() {
-            return lookup;
-        }
-        
-    }
-    
     
 }

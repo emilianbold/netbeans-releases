@@ -39,53 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.hints;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class JsCodeCompletionGeneralTest extends JsTestBase {
-    
-    public JsCodeCompletionGeneralTest(String testName) {
-        super(testName);
-    }
-    
-    public void testIssue215353() throws Exception {
-        checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
-    }
-    
+public class ArrayTrailingComma extends JsConventionHint {
 
-    public void testIssue217029_01() throws Exception {
-        checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
-    }
-
-    public void testIssue215861_01() throws Exception {
-        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser \"+navigator.^);", false);
-    }
-
-    public void testIssue215861_02() throws Exception {
-        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
+    @Override
+    public String getId() {
+        return "jsarraytrailingcomma.hint"; //NOI18N
     }
 
     @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/general/"))
-            })
-        );
+    @NbBundle.Messages("ArrayTrailingCommaDescription=Warns if there are ',' after the last item in an array literal.")
+    public String getDescription() {
+        return Bundle.ArrayTrailingCommaDescription();
     }
-    
+
+    @Override
+    @NbBundle.Messages("ArrayTrailingCommaDisplayName=Trailing comma in array literal")
+    public String getDisplayName() {
+        return Bundle.ArrayTrailingCommaDisplayName();
+    }
+
 }

@@ -39,31 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.hints;
+package org.netbeans.modules.javascript2.editor.hint;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.hints.UndocumentedParameterRule;
 
 /**
+ * Checks undocumented parameter.
  *
- * @author Petr Pisl
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class UnexpectedCommaInObjectLiteral extends JsConventionHint {
+public class JsIncorrectDocumentationTest extends HintTestBase {
 
-    @Override
-    public String getId() {
-        return "jsunexpectedcommainobjectliteral.hint"; //NOI18N
+    public JsIncorrectDocumentationTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    @NbBundle.Messages("UnexpectedCommaInOLDescription=Warns if there are ',' after the last property definition in an object literal.")
-    public String getDescription() {
-        return Bundle.UnexpectedCommaInOLDescription();
+    private Rule createRule() {
+        return new UndocumentedParameterRule();
     }
 
-    @Override
-    @NbBundle.Messages("UnexpectedCommaInOLDisplayName=Unexpected comma in object literal")
-    public String getDisplayName() {
-        return Bundle.UnexpectedCommaInOLDisplayName();
+    public void testNoHintNoCommentComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation1.js", null);
     }
-    
+
+    public void testHintForWrongComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation2.js", null);
+    }
+
+    public void testHintNoHintForOptionalParameterComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation3.js", null);
+    }
 }

@@ -316,7 +316,11 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, start);
-                        if (ts != null && ts.token().id() != JsTokenId.STRING) { // Not inside strings!
+                        if (ts != null
+                                && ts.token().id() != JsTokenId.LINE_COMMENT
+                                && ts.token().id() != JsTokenId.DOC_COMMENT
+                                && ts.token().id() != JsTokenId.BLOCK_COMMENT // not inside comments
+                                && ts.token().id() != JsTokenId.STRING) { // not inside strings!
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
                             if (selection.length() > 1 &&
@@ -535,7 +539,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         if ((token.id() == JsTokenId.BLOCK_COMMENT)
                 || (token.id() == JsTokenId.DOC_COMMENT)
-                || (token.id() == JsTokenId.LINE_COMMENT)) {
+                || (token.id() == JsTokenId.LINE_COMMENT)
+                || (previousToken != null && previousToken.id() == JsTokenId.LINE_COMMENT && token.id() == JsTokenId.EOL)) {
             return false;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
