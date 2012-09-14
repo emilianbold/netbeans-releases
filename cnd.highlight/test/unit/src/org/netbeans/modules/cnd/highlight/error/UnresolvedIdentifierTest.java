@@ -65,6 +65,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test218303() throws Exception {
+        // #218303 - Unresolved identifiers in preprocessor directives with alternative tokens
+        performStaticTest("iz218303.cpp");
+    }
+
     public void test212841() throws Exception {
         // #212841 - C++11 strongly typed enum incorrectly handled by code assistance
         performStaticTest("iz212841.cpp");

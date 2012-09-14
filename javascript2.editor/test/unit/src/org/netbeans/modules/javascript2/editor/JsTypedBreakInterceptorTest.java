@@ -278,6 +278,10 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "}");
     }
 
+    public void testContinuation2() throws Exception {
+        insertBreak("alert(^);\n", "alert(\n        ^);\n");
+    }
+
     public void testCommentUnbalancedBraces() throws Exception {
         insertBreak("var MyObj = {\n"
             + "    version: 10,\n"

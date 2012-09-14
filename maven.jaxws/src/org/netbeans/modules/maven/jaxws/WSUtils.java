@@ -195,6 +195,11 @@ public class WSUtils {
                 synchronized (result) {
                     log.log(Level.INFO, "Maven project lookup is changed"); // NOI18N
                     result.notifyAll();
+                    if ( !result.allInstances().isEmpty() ){
+                        result.removeLookupListener( this );
+                    }
+                    log.log(Level.INFO, 
+                            "Get out of waiting J2eeModuleProvider instance cycle, listener is removed");// NOI18N
                 }
             }
             
@@ -212,9 +217,6 @@ public class WSUtils {
                 }
             }
         }
-        result.removeLookupListener( listener );
-        log.log(Level.INFO, 
-                "Get out of waiting J2eeModuleProvider instance cycle, listener is removed");// NOI18N
         J2eeModuleProvider provider = lookup.lookup(J2eeModuleProvider.class);
         log.log(Level.INFO, "J2eeModuleProvider instance :"+provider);// NOI18N
         return provider;

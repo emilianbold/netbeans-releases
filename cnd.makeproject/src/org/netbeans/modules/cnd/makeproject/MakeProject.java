@@ -46,8 +46,6 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,7 +57,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,7 +82,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -104,7 +100,6 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -334,8 +329,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources),
-                    this,
-                    createCacheLocation(helper),
+                    this
                 };
         
         MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
@@ -357,59 +351,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
-    }
-
-    /**
-     * Tries getting cache path from project.properties -
-     * first private, then public
-     */
-    private static CacheLocation createCacheLocationFromProperties(MakeProjectHelper helper) {
-
-        FileObject projectDirectory = helper.getProjectDirectory();
-
-        String[] propertyPaths = new String[] {
-            MakeProjectHelper.PRIVATE_PROPERTIES_PATH,
-            MakeProjectHelper.PROJECT_PROPERTIES_PATH
-        };
-
-        for (int i = 0; i < propertyPaths.length; i++) {
-            FileObject propsFO = projectDirectory.getFileObject(propertyPaths[i]);
-            if (propsFO != null && propsFO.isValid()) {
-                Properties props = new Properties();
-                try {
-                    props.load(propsFO.getInputStream());
-                    String path = props.getProperty("cache.location"); //NOI18N
-                    if (path != null) {
-                        if (CndPathUtilitities.isPathAbsolute(path)) {
-                            return new CacheLocation(new File(path));
-                        } else {
-                            return new CacheLocation(new File(projectDirectory.getPath() + '/' + path)); //NOI18N
-                        }
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
-            }
-        }
-        return null;
-    }
-
-    private static CacheLocation createCacheLocation(MakeProjectHelper helper) {
-        CacheLocation location = createCacheLocationFromProperties(helper);
-        if (location != null) {
-            return location;
-        }
-        if (DebugUtils.getBoolean("cnd.cache.in.project", false)) { //NOI18N
-            FileObject projectDirectory = helper.getProjectDirectory();
-            if (CndFileUtils.isLocalFileSystem(projectDirectory)) {
-                File cache = new File(projectDirectory.getPath() + "/nbproject/private/cache/model"); //NOI18N
-                cache.mkdirs();
-                if (cache.exists()) {
-                    return new CacheLocation(cache);
-                }
-            }
-        }
-        return CacheLocation.DEFAULT;
     }
 
     @Override

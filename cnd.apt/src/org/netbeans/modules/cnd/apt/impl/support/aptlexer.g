@@ -918,12 +918,12 @@ FIRST_MOD options { constText=true; } :
     '%' ( {$setType(MOD);}                  //MOD             : '%' ;
     | '=' {$setType(MODEQUAL);}             //MODEQUAL        : "%=" ;
     | '>' {$setType(RCURLY);}               //RCURLY          : "%>" ;
-    | ':' ( {isPreprocPending()}? {$setType(SHARP);}     
+    | ':' ( {isPreprocPending()}? {$setType(SHARP);}
         | {isPreprocPending()}? '%' ':' {$setType(DBL_SHARP);}
         | {!isPreprocPossible()}? {$setType(SHARP);}
         | {isPreprocPossible()}?
             {
-                $setType(SHARP);
+                $setType(PREPROC_DIRECTIVE);
                 setPreprocPossible(false);
                 setPreprocPending(true);
                 setPPDefinedAllowed(true);
@@ -1093,7 +1093,7 @@ PREPROC_DIRECTIVE :
                  |
                     {isPreprocPossible()}? 
                     {
-                        $setType(SHARP);
+                        $setType(PREPROC_DIRECTIVE);
                         setPreprocPossible(false);
                         setPreprocPending(true);
                         setPPDefinedAllowed(true);

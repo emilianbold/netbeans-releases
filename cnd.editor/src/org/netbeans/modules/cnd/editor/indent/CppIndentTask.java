@@ -353,6 +353,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     break;
                 case PREPROCESSOR_DIRECTIVE:
                 case PREPROCESSOR_START:
+                case PREPROCESSOR_START_ALT:
                 case PREPROCESSOR_DEFINE:
                 case PREPROCESSOR_UNDEF:
                 case PREPROCESSOR_INCLUDE:

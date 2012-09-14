@@ -813,7 +813,7 @@ public class QuickSearch {
             if (searchPanel != null) {
                 removeSearchField();
                 //fireQuickSearchConfirmed();
-                callback.quickSearchConfirmed();
+                callback.quickSearchCanceled();
             }
         }
     }

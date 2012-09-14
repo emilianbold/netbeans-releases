@@ -106,7 +106,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
     public void testListeners() throws Exception {
         int count = 5;
         RequestProcessor rp = new RequestProcessor("testListeners", 50);
-        final CountDownLatch done = new CountDownLatch(count);
+        final CountDownLatch done = new CountDownLatch(count * 4);
         final CountDownLatch start = new CountDownLatch(1);
 
         for (int i = 0; i < count * 4; i++) {
@@ -144,7 +144,6 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         }
         start.countDown();
         done.await();
-        rp.shutdown();
     }
 
     private void doTestListeners(ExecutionEnvironment env, final boolean startLongProcessAndTerminateIt, final boolean usePty) {
