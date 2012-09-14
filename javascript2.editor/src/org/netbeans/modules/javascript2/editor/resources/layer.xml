@@ -433,11 +433,16 @@
                        <file name="org-netbeans-modules-javascript2-editor-hints-AssignmentInCondition.instance"/>
                        <file name="org-netbeans-modules-javascript2-editor-hints-UnexpectedCommaInObjectLiteral.instance"/>
                     </folder>
-                    <folder name="other">
+                    <folder name="documentation">
                         <attr name="position" intvalue="100"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.hints.Bundle"/>
+                        <file name="org-netbeans-modules-javascript2-editor-hints-UndocumentedParameterRule.instance"/>
+                        <file name="org-netbeans-modules-javascript2-editor-hints-IncorrectDocumentationRule.instance"/>
+                    </folder>
+                    <folder name="other">
+                        <attr name="position" intvalue="110"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.hints.Bundle"/> 
                         <file name="org-netbeans-modules-javascript2-editor-hints-WeirdAssignment.instance"/>
-                        <file name="org-netbeans-modules-javascript2-editor-hints-UndocumentedParameterRule.instance"/>
                     </folder>
                 </folder>
             </folder>

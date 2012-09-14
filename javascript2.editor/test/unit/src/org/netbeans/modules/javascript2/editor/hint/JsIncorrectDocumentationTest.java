@@ -39,30 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.hints;
+package org.netbeans.modules.javascript2.editor.hint;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.hints.UndocumentedParameterRule;
 
 /**
+ * Checks undocumented parameter.
  *
- * @author Martin Fousek
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class UndocumentedParameterRule extends JsFunctionDocumentationRule {
+public class JsIncorrectDocumentationTest extends HintTestBase {
 
-    @Override
-    public String getId() {
-        return "jsundocumentedparameter.hint";
+    public JsIncorrectDocumentationTest(String testName) {
+        super(testName);
     }
 
-    @NbBundle.Messages("UndocumentedParameterRuleDesc=Undocumented Parameter hint informs you about missing documentation of the function parameter.")
-    @Override
-    public String getDescription() {
-        return Bundle.UndocumentedParameterRuleDesc();
+    private Rule createRule() {
+        return new UndocumentedParameterRule();
     }
 
-    @NbBundle.Messages("UndocumentedParameterRuleDN=Undocumented Parameter")
-    @Override
-    public String getDisplayName() {
-        return Bundle.UndocumentedParameterRuleDN();
+    public void testNoHintNoCommentComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation1.js", null);
+    }
+
+    public void testHintForWrongComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation2.js", null);
+    }
+
+    public void testHintNoHintForOptionalParameterComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation3.js", null);
     }
 }

@@ -47,22 +47,22 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Fousek
  */
-public class UndocumentedParameterRule extends JsFunctionDocumentationRule {
+public class IncorrectDocumentationRule extends JsFunctionDocumentationRule {
 
     @Override
     public String getId() {
         return "jsundocumentedparameter.hint";
     }
 
-    @NbBundle.Messages("UndocumentedParameterRuleDesc=Undocumented Parameter hint informs you about missing documentation of the function parameter.")
+    @NbBundle.Messages("IncorrectDocumentationRuleDesc=Incorrect Documented Parameter hint informs you about defined parameter not used in the function arguments.")
     @Override
     public String getDescription() {
-        return Bundle.UndocumentedParameterRuleDesc();
+        return Bundle.IncorrectDocumentationRuleDesc();
     }
 
-    @NbBundle.Messages("UndocumentedParameterRuleDN=Undocumented Parameter")
+    @NbBundle.Messages("IncorrectDocumentationRuleDN=Incorrect Documented Parameter")
     @Override
     public String getDisplayName() {
-        return Bundle.UndocumentedParameterRuleDN();
+        return Bundle.IncorrectDocumentationRuleDN();
     }
 }
