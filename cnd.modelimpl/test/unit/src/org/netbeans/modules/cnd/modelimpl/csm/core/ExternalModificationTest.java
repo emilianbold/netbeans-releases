@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
-import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
-import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

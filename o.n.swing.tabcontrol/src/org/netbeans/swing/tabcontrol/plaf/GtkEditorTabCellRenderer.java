@@ -125,6 +125,9 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
             dummyTab = new JTabbedPane();
         }
         Region region = Region.TABBED_PANE_TAB;
+        if( !(UIManager.getLookAndFeel() instanceof SynthLookAndFeel) ) {
+            return; //#215311 - unsupported L&F installed
+        }
         SynthLookAndFeel laf = (SynthLookAndFeel) UIManager.getLookAndFeel();
         SynthStyleFactory sf = laf.getStyleFactory();
         SynthStyle style = sf.getStyle(dummyTab, region);

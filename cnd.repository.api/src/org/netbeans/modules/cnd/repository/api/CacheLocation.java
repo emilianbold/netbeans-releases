@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.repository.api;
 
-package org.netbeans.modules.cnd.modelimpl.csm.guard;
-
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import java.io.File;
+import org.openide.modules.Places;
 
 /**
- * base class for guard block tests
  *
- * @author Alexander Simon
+ * @author vk155633
  */
-public class GuardNotDefTestCase extends GuardTestBase {
+public final class CacheLocation {
     
-    public GuardNotDefTestCase(String testName) {
-        super(testName);
+    public static final CacheLocation DEFAULT = new CacheLocation(getDefault());
+        
+    private final File location;
+
+    public CacheLocation(File location) {
+        assert location != null;
+        this.location = location;
     }
     
+    public File getLocation() {
+        return location;
+    }
+
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public String toString() {
+        return "" + location; //NOI18N
     }
-    
+
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + this.location.hashCode();
+        return hash;
     }
-    
-    public void testGuard() throws Exception {
-        parse("cstdlib.h", "argc.cc", "-m");
-        boolean checked = false;
-        for(FileImpl file : getProject().getAllFileImpls()){
-            if ("cstdlib.h".equals(file.getName().toString())){ // NOI18N
-                assertTrue("Guard guard block defined", file.getMacros().size()==2); // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block name not _STDLIB_H", "_STDLIB_H".equals(guard)); // NOI18N
-                checked = true;
-            } else if ("iostream.h".equals(file.getName())){ // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block found", guard == null); // NOI18N
-            } else if ("argc.cc".equals(file.getName())){ // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block name not MAIN", "MAIN".equals(guard)); // NOI18N
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CacheLocation other = (CacheLocation) obj;
+        return this.location.equals(other.location);
+    }    
+
+    private static File getDefault() {
+        File diskRepository = null;
+        if (diskRepository == null) {
+            String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
+            if (diskRepositoryPath != null) {
+                diskRepository = new File(diskRepositoryPath);
+            } else {
+                diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
             }
         }
-        assertTrue("Not found FileImpl for cstdlib.h", checked); // NOI18N
+        return diskRepository;    
     }
-    
 }

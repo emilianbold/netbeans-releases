@@ -49,50 +49,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.cnd.repository.spi.RepositoryCacheDirectoryProvider;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.modules.Places;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 
 /**
  *
  * @author Sergey Grinev
  */
 public class StorageAllocator {
-    private final static StorageAllocator instance = new StorageAllocator();
+
     private final File diskRepository;
     
-    private StorageAllocator() {
-        diskRepository = getCacheBaseDirectoryImpl();
+    public StorageAllocator(CacheLocation cacheLocation) {
+        diskRepository = cacheLocation.getLocation();
     };
 
-    private static File getCacheBaseDirectoryImpl() {
-        File diskRepository = null;
-        Result<RepositoryCacheDirectoryProvider> lookupResult = Lookup.getDefault().lookupResult(RepositoryCacheDirectoryProvider.class);
-        if (lookupResult != null) {
-            for(RepositoryCacheDirectoryProvider provider : lookupResult.allInstances()) {
-                diskRepository = provider.getCacheBaseDirectory();
-                if (diskRepository != null) {
-                    break;
-                }
-            }
-        }
-        if (diskRepository == null) {
-            String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-            if (diskRepositoryPath != null) {
-                diskRepository = new File(diskRepositoryPath);
-            } else {
-                diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
-            }
-        }
-        return diskRepository;
-    }
-
-    public static StorageAllocator getInstance() {
-        return instance;
-    }
-    
     private Map<CharSequence, String> unit2path = new ConcurrentHashMap<CharSequence, String>();
     
     public String reduceString (String name) {

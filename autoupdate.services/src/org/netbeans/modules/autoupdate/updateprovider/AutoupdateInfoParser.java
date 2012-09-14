@@ -53,13 +53,16 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -500,6 +503,9 @@ public class AutoupdateInfoParser extends DefaultHandler {
         return fakeOSGiInfoXml(attr, localized, whereFrom);
     }
 
+    public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
+    public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
+    
     static Element fakeOSGiInfoXml(java.util.jar.Attributes attr, Properties localized, File whereFrom) {
         Document doc = XMLUtil.createDocument("module");
         Element module = doc.getDocumentElement();
@@ -587,6 +593,50 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 manifest.setAttribute("OpenIDE-Module-Needs", "org.netbeans.Netbinox");
             }
         }
+
+        String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
+        StringBuilder provides = new StringBuilder();
+        if (pp != null) {
+            for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                if (provides.length() > 0) {
+                    provides.append(',');
+                }
+                provides.append(p.replaceAll(";.*$", "").trim());
+            }
+        }
+        if (provides.length() > 0) {
+            manifest.setAttribute("OpenIDE-Module-Provides", provides.toString());
+        }
+
+        String ip = attr.getValue(BUNDLE_IMPORT_PACKAGE);
+        StringBuilder requires = new StringBuilder();
+        StringBuilder recommends = new StringBuilder();
+        if (ip != null) {
+            for (String p : ip.replaceAll("\"[^\"]*\"", "").split(",")) {
+                String pkg = p.replaceAll(";.*$", "").trim();
+                if (JAVA_PLATFORM_PACKAGES.contains(pkg)) {
+                    continue;
+                }
+                if (p.matches(".*; *resolution *:= *optional.*")) {
+                    if (recommends.length() > 0) {
+                        recommends.append(',');
+                    }
+                    recommends.append(p.replaceAll(";.*$", "").trim());
+                } else {
+                    if (requires.length() > 0) {
+                        requires.append(',');
+                    }
+                    requires.append(p.replaceAll(";.*$", "").trim());
+                }
+            }
+        }
+        if (requires.length() > 0) {
+            manifest.setAttribute("OpenIDE-Module-Requires", requires.toString().replace('-', '_'));
+        }
+        if (recommends.length() > 0) {
+            manifest.setAttribute("OpenIDE-Module-Recommends", recommends.toString().replace('-', '_'));
+        }
+            
         String bundleCategory = loc(localized, attr, "Bundle-Category");
         if (bundleCategory != null) {
             manifest.setAttribute("OpenIDE-Module-Display-Category", bundleCategory);
@@ -630,5 +680,166 @@ public class AutoupdateInfoParser extends DefaultHandler {
             return codename;
         }
     }
+
+    /**
+     * List of packages guaranteed to be in the Java platform;
+     * taken from JDK 6 Javadoc package-list after removing java.* packages.
+     * Note that Felix's default.properties actually includes a few more packages
+     * (such as org.w3c.dom.ranges) which can be found in src.zip but are not documented.
+     * COPIED FROM: MakeOSGi
+     */
+    private static final Set<String> JAVA_PLATFORM_PACKAGES = new TreeSet<String>(Arrays.asList(
+        "javax.accessibility",
+        "javax.activation",
+        "javax.activity",
+        "javax.annotation",
+        "javax.annotation.processing",
+        "javax.crypto",
+        "javax.crypto.interfaces",
+        "javax.crypto.spec",
+        "javax.imageio",
+        "javax.imageio.event",
+        "javax.imageio.metadata",
+        "javax.imageio.plugins.bmp",
+        "javax.imageio.plugins.jpeg",
+        "javax.imageio.spi",
+        "javax.imageio.stream",
+        "javax.jws",
+        "javax.jws.soap",
+        "javax.lang.model",
+        "javax.lang.model.element",
+        "javax.lang.model.type",
+        "javax.lang.model.util",
+        "javax.management",
+        "javax.management.loading",
+        "javax.management.modelmbean",
+        "javax.management.monitor",
+        "javax.management.openmbean",
+        "javax.management.relation",
+        "javax.management.remote",
+        "javax.management.remote.rmi",
+        "javax.management.timer",
+        "javax.naming",
+        "javax.naming.directory",
+        "javax.naming.event",
+        "javax.naming.ldap",
+        "javax.naming.spi",
+        "javax.net",
+        "javax.net.ssl",
+        "javax.print",
+        "javax.print.attribute",
+        "javax.print.attribute.standard",
+        "javax.print.event",
+        "javax.rmi",
+        "javax.rmi.CORBA",
+        "javax.rmi.ssl",
+        "javax.script",
+        "javax.security.auth",
+        "javax.security.auth.callback",
+        "javax.security.auth.kerberos",
+        "javax.security.auth.login",
+        "javax.security.auth.spi",
+        "javax.security.auth.x500",
+        "javax.security.cert",
+        "javax.security.sasl",
+        "javax.sound.midi",
+        "javax.sound.midi.spi",
+        "javax.sound.sampled",
+        "javax.sound.sampled.spi",
+        "javax.sql",
+        "javax.sql.rowset",
+        "javax.sql.rowset.serial",
+        "javax.sql.rowset.spi",
+        "javax.swing",
+        "javax.swing.border",
+        "javax.swing.colorchooser",
+        "javax.swing.event",
+        "javax.swing.filechooser",
+        "javax.swing.plaf",
+        "javax.swing.plaf.basic",
+        "javax.swing.plaf.metal",
+        "javax.swing.plaf.multi",
+        "javax.swing.plaf.synth",
+        "javax.swing.table",
+        "javax.swing.text",
+        "javax.swing.text.html",
+        "javax.swing.text.html.parser",
+        "javax.swing.text.rtf",
+        "javax.swing.tree",
+        "javax.swing.undo",
+        "javax.tools",
+        "javax.transaction",
+        "javax.transaction.xa",
+        "javax.xml",
+        "javax.xml.bind",
+        "javax.xml.bind.annotation",
+        "javax.xml.bind.annotation.adapters",
+        "javax.xml.bind.attachment",
+        "javax.xml.bind.helpers",
+        "javax.xml.bind.util",
+        "javax.xml.crypto",
+        "javax.xml.crypto.dom",
+        "javax.xml.crypto.dsig",
+        "javax.xml.crypto.dsig.dom",
+        "javax.xml.crypto.dsig.keyinfo",
+        "javax.xml.crypto.dsig.spec",
+        "javax.xml.datatype",
+        "javax.xml.namespace",
+        "javax.xml.parsers",
+        "javax.xml.soap",
+        "javax.xml.stream",
+        "javax.xml.stream.events",
+        "javax.xml.stream.util",
+        "javax.xml.transform",
+        "javax.xml.transform.dom",
+        "javax.xml.transform.sax",
+        "javax.xml.transform.stax",
+        "javax.xml.transform.stream",
+        "javax.xml.validation",
+        "javax.xml.ws",
+        "javax.xml.ws.handler",
+        "javax.xml.ws.handler.soap",
+        "javax.xml.ws.http",
+        "javax.xml.ws.soap",
+        "javax.xml.ws.spi",
+        "javax.xml.ws.wsaddressing",
+        "javax.xml.xpath",
+        "org.ietf.jgss",
+        "org.omg.CORBA",
+        "org.omg.CORBA.DynAnyPackage",
+        "org.omg.CORBA.ORBPackage",
+        "org.omg.CORBA.TypeCodePackage",
+        "org.omg.CORBA.portable",
+        "org.omg.CORBA_2_3",
+        "org.omg.CORBA_2_3.portable",
+        "org.omg.CosNaming",
+        "org.omg.CosNaming.NamingContextExtPackage",
+        "org.omg.CosNaming.NamingContextPackage",
+        "org.omg.Dynamic",
+        "org.omg.DynamicAny",
+        "org.omg.DynamicAny.DynAnyFactoryPackage",
+        "org.omg.DynamicAny.DynAnyPackage",
+        "org.omg.IOP",
+        "org.omg.IOP.CodecFactoryPackage",
+        "org.omg.IOP.CodecPackage",
+        "org.omg.Messaging",
+        "org.omg.PortableInterceptor",
+        "org.omg.PortableInterceptor.ORBInitInfoPackage",
+        "org.omg.PortableServer",
+        "org.omg.PortableServer.CurrentPackage",
+        "org.omg.PortableServer.POAManagerPackage",
+        "org.omg.PortableServer.POAPackage",
+        "org.omg.PortableServer.ServantLocatorPackage",
+        "org.omg.PortableServer.portable",
+        "org.omg.SendingContext",
+        "org.omg.stub.java.rmi",
+        "org.w3c.dom",
+        "org.w3c.dom.bootstrap",
+        "org.w3c.dom.events",
+        "org.w3c.dom.ls",
+        "org.xml.sax",
+        "org.xml.sax.ext",
+        "org.xml.sax.helpers"
+    ));
 
 }

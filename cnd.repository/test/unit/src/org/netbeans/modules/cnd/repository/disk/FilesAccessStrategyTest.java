@@ -47,10 +47,12 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -69,7 +71,19 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         //System.setProperty("access.strategy.threads", "12");
         //System.setProperty("cnd.repository.trace.conflicts", "true");
     }
-    private final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
+    private final FilesAccessStrategyImpl strategy = new FilesAccessStrategyImpl(
+            new StorageAllocator(CacheLocation.DEFAULT),
+            new UnitCodec() {
+                @Override
+                public int removeRepositoryID(int unitId) {
+                    return unitId;
+                }
+
+                @Override
+                public int addRepositoryID(int unitId) {
+                    return unitId;
+                }
+            });
 
     public FilesAccessStrategyTest(String testName) {
         super(testName);

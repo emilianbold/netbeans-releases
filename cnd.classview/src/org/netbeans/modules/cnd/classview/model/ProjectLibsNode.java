@@ -42,49 +42,72 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.guard;
+package org.netbeans.modules.cnd.classview.model;
 
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import java.awt.Image;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.classview.ChildrenUpdater;
+import org.netbeans.modules.cnd.classview.ProjectsKeyArray;
+import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
-/**
- * base class for guard block tests
- *
- * @author Alexander Simon
- */
-public class GuardNotDefTestCase extends GuardTestBase {
-    
-    public GuardNotDefTestCase(String testName) {
-        super(testName);
+
+public final class ProjectLibsNode extends BaseNode {
+
+    private final ChildrenUpdater updater;
+
+    public ProjectLibsNode(CsmProject project, ChildrenUpdater updater) {
+        super(createChildren(project, updater));
+        this.updater = updater;
+        setName("dummy"); // NOI18N
+        setDisplayName(I18n.getMessage("Libs")); // NOI18N
     }
-    
+
+    private static Children createChildren(CsmProject project, ChildrenUpdater updater) {
+//        Collection<CsmProject> libs = project.getLibraries();
+//        if (libs.isEmpty()) {
+//            return Children.LEAF;
+//        } else {
+            ProjectsKeyArray keys = new ProjectsKeyArray(project, updater);
+            updater.register(keys);
+            return keys;
+//        }
+    }
+
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    public void testGuard() throws Exception {
-        parse("cstdlib.h", "argc.cc", "-m");
-        boolean checked = false;
-        for(FileImpl file : getProject().getAllFileImpls()){
-            if ("cstdlib.h".equals(file.getName().toString())){ // NOI18N
-                assertTrue("Guard guard block defined", file.getMacros().size()==2); // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block name not _STDLIB_H", "_STDLIB_H".equals(guard)); // NOI18N
-                checked = true;
-            } else if ("iostream.h".equals(file.getName())){ // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block found", guard == null); // NOI18N
-            } else if ("argc.cc".equals(file.getName())){ // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block name not MAIN", "MAIN".equals(guard)); // NOI18N
-            }
+    public void destroy() throws IOException {
+        Children children = getChildren();
+        if (children instanceof ProjectsKeyArray) {
+            updater.unregister((ProjectsKeyArray) children);
         }
-        assertTrue("Not found FileImpl for cstdlib.h", checked); // NOI18N
+        super.destroy();
     }
-    
+
+    @Override
+    public CsmObject getCsmObject() {
+	return null;
+    }
+
+    @Override
+    public Image getIcon(int param) {
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/classview/resources/libraries_folder.gif"); //NOI18N
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ProjectLibsNode) {
+            return true;
+        }
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
 }

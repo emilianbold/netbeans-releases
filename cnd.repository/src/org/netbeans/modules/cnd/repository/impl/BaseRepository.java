@@ -39,23 +39,68 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.translator;
+package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.File;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategy;
+import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategyImpl;
+import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
+import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
-public class UnitsUtil {
+public abstract class BaseRepository implements Repository, UnitCodec {
+    
+    public static final int REPO_DENOM = 100000;
+    
+    private final int id;
+    private final CacheLocation cacheLocation;
+    private final RepositoryTranslatorImpl translator;
+    private final StorageAllocator storageAllocator;
+    private final FilesAccessStrategy filesAccessStrategy;
+    
 
-    public static int readUnitId(DataInput dataInput) throws IOException {
-        return dataInput.readInt();
+    protected BaseRepository(int id, CacheLocation cacheLocation) {
+        this.id = id;
+        this.cacheLocation = cacheLocation;
+        this.storageAllocator = new StorageAllocator(cacheLocation);
+        this.filesAccessStrategy = new FilesAccessStrategyImpl(storageAllocator, this);
+        this.translator = new RepositoryTranslatorImpl(storageAllocator, this);
     }
-    public static void writeUnitId(int unitId, DataOutput dataOutput) throws IOException {
-        dataOutput.writeInt(unitId);
+
+    @Override
+    public int removeRepositoryID(int unitId) {
+        return unitId % REPO_DENOM; // write it *without* repository ID
+    }
+
+    @Override
+    public int addRepositoryID(int unitId) {
+        return id * REPO_DENOM + (unitId % REPO_DENOM); // add repository ID
+    }
+
+    public final RepositoryTranslatorImpl getTranslation() {
+        return translator;
+    }
+
+    public StorageAllocator getStorageAllocator() {
+        return storageAllocator;
+    }
+
+    public FilesAccessStrategy getFilesAccessStrategy() {
+        return filesAccessStrategy;
+    }
+
+    public CacheLocation getCacheLocation() {
+        return cacheLocation;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + id + ' ' + cacheLocation;
     }
 }
