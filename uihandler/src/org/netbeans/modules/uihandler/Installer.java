@@ -1511,9 +1511,10 @@ public class Installer extends ModuleInstall implements Runnable {
         };
         private AtomicBoolean isSubmiting;// #114505 , report is sent two times
         protected String exitMsg;
-        protected DialogDescriptor dd;
+        private DialogDescriptor dd;
+        private final Object ddLock = new Object();
         protected String msg;
-        protected boolean report;//property tells me wheather I'm in report mode
+        protected final boolean report;//property tells me wheather I'm in report mode
         protected boolean okToExit;
         protected ReportPanel reportPanel;
         private URL url;
@@ -1560,15 +1561,17 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void showURL(URL externalURL, boolean inIDE);
         protected abstract SlownessData getSlownessData();
         
-        DialogDescriptor findDD() {
-            if (dd == null) {
-                if (report) {
-                    dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
-                } else {
-                    dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
+        protected final DialogDescriptor findDD() {
+            synchronized (ddLock) {
+                if (dd == null) {
+                    if (report) {
+                        dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
+                    } else {
+                        dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
+                    }
                 }
+                return dd;
             }
-            return dd;
         }
 
         public void doShow(DataType dataType) {
@@ -1641,6 +1644,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     is.close();
                     //End
                     is = new FileInputStream(tmp);
+                    DialogDescriptor dd = findDD();
                     parseButtons(is, exitMsg, dd);
                     LOG.log(Level.FINE, "doShow, parsing buttons: {0}", Arrays.toString(dd.getOptions())); // NOI18N
                     alterMessage(dd);
@@ -1749,7 +1753,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             LOG.log(Level.FINE, "run, showDialogAndGetValue");
-            Object res = showDialogAndGetValue(dd);
+            Object res = showDialogAndGetValue(findDD());
             LOG.log(Level.FINE, "run, showDialogAndGetValue, res = {0}", res);
 
             if (res == exitMsg) {
@@ -2165,7 +2169,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     settings.save();
                 }
             });
-            dd.setValue(DialogDescriptor.CLOSED_OPTION);
+            findDD().setValue(DialogDescriptor.CLOSED_OPTION);
             d.setVisible(false);
             d.dispose(); // fix the issue #137714
             d = null;
