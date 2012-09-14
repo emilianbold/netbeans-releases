@@ -113,7 +113,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         canceled.set (false); // Task shared for one file needs reset first
         long start = System.currentTimeMillis();        
         
-        if (info.getChangedTree() != null) {
+        if (ClassMemberPanel.compareAndSetLastUsedFile(info.getFileObject()) && info.getChangedTree() != null) {
             //method body has been reparsed - no need to update the navigator
             long end = System.currentTimeMillis();
             Logger.getLogger("TIMER").log(Level.FINE, "Element Scanning Task", //NOI18N
