@@ -48,6 +48,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.libs.jstestdriver.JsTestDriverImpl;
 import org.netbeans.libs.jstestdriver.JsTestDriverImplementation;
 import org.openide.modules.InstalledFileLocator;
@@ -80,8 +81,9 @@ public final class JsTestDriver {
     }
     
     public void runTests(String serverURL, boolean strictMode, File baseFolder, File configFile, 
-            String testsToRun, TestListener listener) {
-        impl.runTests(jsTestDriverJar, serverURL, strictMode, baseFolder, configFile, testsToRun, listener);
+            String testsToRun, TestListener listener, LineConvertor lineConvertor) {
+        impl.runTests(jsTestDriverJar, serverURL, strictMode, baseFolder, configFile, 
+                testsToRun, listener, lineConvertor);
     }
 
     private JsTestDriverImplementation createImpl2() {
