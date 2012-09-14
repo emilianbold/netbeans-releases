@@ -331,6 +331,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218090.js", "        text : pro^m,", true);
     }
     
+    public void testIssue218261() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218261.js", "var a = new Num^ber();", true);
+    }
+
     public void testIssue218090_02() throws Exception {
         checkOccurrences("testfiles/coloring/issue218090.js", "    var ag^e = 10;", true);
     }
