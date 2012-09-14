@@ -22,14 +22,20 @@
 #define WCONTINUED 0
 #endif
 
+extern int putenv(char *);
+
 static void set_noecho(int);
 const char* progname;
+
+static void sigusr(int sig) {
+}
 
 /*
  * 
  */
 int main(int argc, char** argv) {
     int noecho = 0;
+    int waitSignal = 0;
     int master_fd = -1;
     int status = 0;
     int envnum = 0;
@@ -75,6 +81,9 @@ int main(int argc, char** argv) {
             } else if (strcmp(argv[idx], "-e") == 0) {
                 noecho = 1;
                 nopt += 1;
+            } else if (strcmp(argv[idx], "-w") == 0) {
+                waitSignal = 1;
+                nopt += 1;
             } else {
                 printf("ERROR unrecognized option '%s'\n", argv[idx]);
                 exit(-1);
@@ -90,11 +99,16 @@ int main(int argc, char** argv) {
 
     if (argc == 0) {
         //  -e          turned echoing off
-        //  -p          defines pts_name to use instead of opening a new one
+        //  -w          wait until signaled (USR1) before executing a process
+        //  -p          define pts_name to use instead of opening a new one
         // --env        passes additional environment variable to a program
         //              in NAME=VALUE form. For multiple variables multiple
         //              --env options should be used.
-        err_quit("usage: pty_start [-e] [-p pts_name] [[--env NAME=VALUE] ...] program [ arg ... ]");
+        err_quit("usage: %s [-e] [-w] [-p pts_name] [[--env NAME=VALUE] ...] program [ arg ... ]\n"
+                "\t-e\tturn echoing off\n"
+                "\t-w\twait USR1 after reporting PID/TTY and before executing the program\n"
+                "\t-p\tdefine pts_name to attach process's I/O instead of opening a new one\n"
+                "\t--env\tpass (additional) environment variable to the process\n", progname);
         exit(-1);
     }
 
@@ -109,22 +123,27 @@ int main(int argc, char** argv) {
     }
 
     if (pid == 0) { /* child */
+        if (waitSignal) {
+            signal(SIGUSR1, sigusr);
+        }
+
         printf("PID=%d\n", getpid());
         printf("TTY=%s\n", pty == NULL ? "null" : pty);
         fflush(stdout);
+
+        if (waitSignal) {
+            pause();
+        }
 
         if (noecho) {
             set_noecho(STDIN_FILENO);
         }
 
         // Set passed environment variables
-
-        int i;
-
-        for (i = 0; i < envnum; i++) {
+        for (int i = 0; i < envnum; i++) {
             putenv(envvars[i]);
         }
-                
+
         if (execvp(argv[0], argv) < 0) {
             err_sys("can't execute: %s", argv[0]);
         }
@@ -134,7 +153,7 @@ int main(int argc, char** argv) {
     if (envvars != NULL) {
         free(envvars);
     }
-    
+
     /* parent */
 
     int loop_result = 0;
@@ -171,6 +190,10 @@ int main(int argc, char** argv) {
 
     exit(EXIT_FAILURE);
 }
+
+//static void usr1_handler(int signum) {
+//    usr_interrupt = 1;
+//}
 
 /**
  * turn off echo (for slave pty)
