@@ -42,25 +42,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.navigation;
+package org.netbeans.modules.java.navigation.base;
 
 import java.io.CharConversionException;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
 
 /**
  *
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
+ * @author Tomas Zezula
  */
-class Utils {
+public class Utils {
+
+    private static final String CLASS_EXTENSION = "class"; // NOI18N
     
     private Utils() {
         throw new IllegalStateException();
     }
 
     @CheckForNull
-    static String escape(@NonNull final String s) {
+    public static String escape(@NonNull final String s) {
         if (s != null) {
             try {
                 return XMLUtil.toAttributeValue(s);
@@ -68,5 +78,23 @@ class Utils {
             }
         }
         return null;
+    }
+
+
+    @CheckForNull
+    public static FileObject getFile(
+            @NonNull final ElementHandle<TypeElement> toResolve,
+            @NonNull final ClasspathInfo cpInfo) {
+        FileObject res = SourceUtils.getFile(toResolve, cpInfo);
+        if (res == null) {
+            final ClassPath cp = ClassPathSupport.createProxyClassPath(
+                    cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
+                    cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE));
+            res = cp.findResource(String.format(
+                    "%s.%s",    //NOI18N
+                    toResolve.getBinaryName().replace('.', '/'),    //NOI18N
+                    CLASS_EXTENSION));
+        }
+        return res;
     }
 }

@@ -91,6 +91,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.navigation.actions.SortActions;
+import org.netbeans.modules.java.navigation.base.Utils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
@@ -427,9 +428,9 @@ class Nodes {
                 new InstanceContent.Convertor<Description, FileObject>() {
                     @Override
                     public FileObject convert(Description desc) {
-                        return SourceUtils.getFile(
-                                desc.getHandle(),
-                                desc.getClasspathInfo());
+                        return Utils.getFile(
+                            desc.getHandle(),
+                            desc.getClasspathInfo());
                     }
                     @Override
                     public Class<? extends FileObject> type(Description desc) {
@@ -450,9 +451,9 @@ class Nodes {
                     @Override
                     public DataObject convert(Description desc) {
                         try {
-                            final FileObject file = SourceUtils.getFile(
-                                    desc.getHandle(),
-                                    desc.getClasspathInfo());
+                            final FileObject file = Utils.getFile(
+                                desc.getHandle(),
+                                desc.getClasspathInfo());
                             return file == null ? null : DataObject.find(file);
                         } catch (DataObjectNotFoundException ex) {
                             return null;
