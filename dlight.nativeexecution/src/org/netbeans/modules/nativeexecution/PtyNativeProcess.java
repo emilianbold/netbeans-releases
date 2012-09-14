@@ -56,8 +56,10 @@ import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
+import org.netbeans.modules.nativeexecution.support.SignalSupport;
 
 /**
  *
@@ -87,6 +89,10 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         if (pty != null) {
             newArgs.add("-p"); // NOI18N
             newArgs.add(pty.getSlaveName());
+        }
+
+        if (fixEraseKeyInTerminal) {
+            newArgs.add("-w"); // NOI18N
         }
 
         final MacroMap envMap = info.getEnvironment();
@@ -187,6 +193,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         if (fixEraseKeyInTerminal) {
             PtySupport.setBackspaceAsEraseChar(env, tty);
+            SignalSupport.getSignalSupportFor(env).kill(Signal.SIGUSR1, getPID());
         }
     }
 

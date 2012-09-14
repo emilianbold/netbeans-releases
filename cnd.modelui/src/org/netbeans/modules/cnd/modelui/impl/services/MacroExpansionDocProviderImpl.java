@@ -682,7 +682,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             return;
                         }
                         Token embToken = embTS.token();
-                        if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
+                        if (embToken == null || !(embToken.id() instanceof CppTokenId) || 
+                                (embToken.id() != CppTokenId.PREPROCESSOR_START && embToken.id() != CppTokenId.PREPROCESSOR_START_ALT)) {
                             return;
                         }
                         if (!embTS.moveNext()) {
@@ -845,7 +846,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         embTS.moveStart();
                         if (embTS.moveNext()) {
                             Token embToken = embTS.token();
-                            if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
+                            if (embToken == null || !(embToken.id() instanceof CppTokenId) ||
+                                    (embToken.id() != CppTokenId.PREPROCESSOR_START && embToken.id() != CppTokenId.PREPROCESSOR_START_ALT)) {
                                 return false;
                             }
                             if (embTS.moveNext()) {
