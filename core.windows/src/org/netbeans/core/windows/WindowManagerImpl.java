@@ -148,23 +148,29 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     @Override
     public void topComponentRequestAttention(TopComponent tc) {
-        ModeImpl mode = (ModeImpl) findMode(tc);
-        
-        central.topComponentRequestAttention(mode, tc);
+        if( tc.isOpened() ) {
+            ModeImpl mode = (ModeImpl) findMode(tc);
+
+            central.topComponentRequestAttention(mode, tc);
+        }
     }
 
     @Override
     public void topComponentCancelRequestAttention(TopComponent tc) {
-        ModeImpl mode = (ModeImpl) findMode(tc);
+        if( tc.isOpened() ) {
+            ModeImpl mode = (ModeImpl) findMode(tc);
 
-        central.topComponentCancelRequestAttention(mode, tc);
+            central.topComponentCancelRequestAttention(mode, tc);
+        }
     }
 
     @Override
     public void topComponentAttentionHighlight(TopComponent tc, boolean highlight) {
-        ModeImpl mode = (ModeImpl) findMode(tc);
+        if( tc.isOpened() ) {
+            ModeImpl mode = (ModeImpl) findMode(tc);
 
-        central.topComponentAttentionHighlight(mode, tc, highlight);
+            central.topComponentAttentionHighlight(mode, tc, highlight);
+        }
     }
 
     /////////////////////////
