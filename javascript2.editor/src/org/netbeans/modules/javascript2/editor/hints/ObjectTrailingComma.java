@@ -47,23 +47,23 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class UnexpectedCommaInObjectLiteral extends JsConventionHint {
+public class ObjectTrailingComma extends JsConventionHint {
 
     @Override
     public String getId() {
-        return "jsunexpectedcommainobjectliteral.hint"; //NOI18N
+        return "jsobjecttrailingcomma.hint"; //NOI18N
     }
 
     @Override
-    @NbBundle.Messages("UnexpectedCommaInOLDescription=Warns if there are ',' after the last property definition in an object literal.")
+    @NbBundle.Messages("ObjectTrailingCommaDescription=Warns if there are ',' after the last property definition in an object literal.")
     public String getDescription() {
-        return Bundle.UnexpectedCommaInOLDescription();
+        return Bundle.ObjectTrailingCommaDescription();
     }
 
     @Override
-    @NbBundle.Messages("UnexpectedCommaInOLDisplayName=Unexpected comma in object literal")
+    @NbBundle.Messages("ObjectTrailingCommaDisplayName=Trailing comma in object literal")
     public String getDisplayName() {
-        return Bundle.UnexpectedCommaInOLDisplayName();
+        return Bundle.ObjectTrailingCommaDisplayName();
     }
-    
+
 }

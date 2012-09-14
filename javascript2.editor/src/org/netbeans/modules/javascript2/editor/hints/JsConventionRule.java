@@ -48,6 +48,7 @@ import com.oracle.nashorn.ir.ExecuteNode;
 import com.oracle.nashorn.ir.ForNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IfNode;
+import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.VarNode;
@@ -84,29 +85,33 @@ public class JsConventionRule extends JsAstRule {
         Rule missingSemicolon = null;
         Rule duplicatePropertyName = null;
         Rule assignmentInCondition = null;
-        Rule unexpectedCommaInOL = null;
+        Rule objectTrailingComma = null;
+        Rule arrayTrailingComma = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
-                if(manager.isEnabled(astRule)) {
-                    if(astRule instanceof BetterConditionHint) {
+                if (manager.isEnabled(astRule)) {
+                    if (astRule instanceof BetterConditionHint) {
                         betterConditionRule = astRule;
-                    } else if(astRule instanceof MissingSemicolonHint) {
+                    } else if (astRule instanceof MissingSemicolonHint) {
                         missingSemicolon = astRule;
                     } else if (astRule instanceof DuplicatePropertyName) {
                         duplicatePropertyName = astRule;
                     } else if (astRule instanceof AssignmentInCondition) {
                         assignmentInCondition = astRule;
-                    } else if (astRule instanceof UnexpectedCommaInObjectLiteral) {
-                        unexpectedCommaInOL = astRule;
+                    } else if (astRule instanceof ObjectTrailingComma) {
+                        objectTrailingComma = astRule;
+                    } else if (astRule instanceof ArrayTrailingComma) {
+                        arrayTrailingComma = astRule;
                     }
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName,
-                assignmentInCondition, unexpectedCommaInOL);
+        ConventionVisitor conventionVisitor = new ConventionVisitor(this,
+                betterConditionRule, missingSemicolon, duplicatePropertyName,
+                assignmentInCondition, objectTrailingComma, arrayTrailingComma);
         conventionVisitor.process(context, hints);
     }
-            
+
     @Override
     public Set<?> getKinds() {
         return Collections.singleton(JsAstRule.JS_OTHER_HINTS);
@@ -138,16 +143,19 @@ public class JsConventionRule extends JsAstRule {
         private final Rule missingSemicolon;
         private final Rule duplicatePropertyName;
         private final Rule assignmentInCondition;
-        private final Rule unexpectedCommaInOL;
-        
+        private final Rule objectTrailingComma;
+        private final Rule arrayTrailingComma;
+
         public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, 
-                Rule duplicatePropertyName, Rule assignmentInCondition, Rule unexpectedCommaInOL) {
+                Rule duplicatePropertyName, Rule assignmentInCondition,
+                Rule objectTrailingComma, Rule arrayTrailingComma) {
             this.rule = rule;
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
             this.duplicatePropertyName = duplicatePropertyName;
             this.assignmentInCondition = assignmentInCondition;
-            this.unexpectedCommaInOL = unexpectedCommaInOL;
+            this.objectTrailingComma = objectTrailingComma;
+            this.arrayTrailingComma = arrayTrailingComma;
         }
         
         @NbBundle.Messages({"# {0} - expected char or string",
@@ -354,23 +362,24 @@ public class JsConventionRule extends JsAstRule {
 
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
-            "Unexpected=Unexpected \"{0}\"."})
+            "UnexpectedObjectTrailing=Unexpected \"{0}\"."})
         public Node enter(ObjectNode objectNode) {
             checkDuplicateLabels(objectNode);
-            if (unexpectedCommaInOL != null) {
+            if (objectTrailingComma != null) {
                 int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
                 if (offset > -1) {
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), objectNode.getFinish());
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                            context.parserResult.getSnapshot(), objectNode.getFinish());
                     ts.move(objectNode.getFinish());
                     if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
                         LexUtilities.findPrevious(ts, Arrays.asList(
                                 JsTokenId.EOL, JsTokenId.WHITESPACE,
                                 JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                                JsTokenId.BLOCK_COMMENT));
+                                JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
                         if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
                             offset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                             if (offset >= 0) {
-                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()),
+                                hints.add(new Hint(objectTrailingComma, Bundle.UnexpectedObjectTrailing(ts.token().text().toString()),
                                         context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                                         new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
                             }
@@ -382,11 +391,42 @@ public class JsConventionRule extends JsAstRule {
         }
 
         @Override
+        @NbBundle.Messages({"# {0} - the eunexpected token",
+            "UnexpectedArrayTrailing=Unexpected \"{0}\"."})
+        public Node enter(LiteralNode literalNode) {
+            if (arrayTrailingComma != null) {
+                if (literalNode.getValue() instanceof Node[]) {
+                    int offset = context.parserResult.getSnapshot().getOriginalOffset(literalNode.getFinish());
+                    if (offset > -1) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                                context.parserResult.getSnapshot(), literalNode.getFinish());
+                        ts.move(literalNode.getFinish());
+                        if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                            LexUtilities.findPrevious(ts, Arrays.asList(
+                                    JsTokenId.EOL, JsTokenId.WHITESPACE,
+                                    JsTokenId.BRACKET_RIGHT_BRACKET, JsTokenId.LINE_COMMENT,
+                                    JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                                offset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                                if (offset >= 0) {
+                                    hints.add(new Hint(arrayTrailingComma, Bundle.UnexpectedArrayTrailing(ts.token().text().toString()),
+                                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return super.enter(literalNode);
+        }
+
+        @Override
         public Node enter(VarNode varNode) {
             boolean check = true;
             Node previous = getPath().get(getPath().size() - 1);
             if (previous instanceof Block) {
-                Block block = (Block)previous;
+                Block block = (Block) previous;
                 if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
                     check = false;
                 }
