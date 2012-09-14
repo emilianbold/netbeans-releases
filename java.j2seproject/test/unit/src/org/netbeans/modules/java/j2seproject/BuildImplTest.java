@@ -50,6 +50,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.Attributes;
@@ -103,9 +104,10 @@ public final class BuildImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        output.clear();
-        outputPosition = 0;
-        outputType.clear();
+        synchronized (output) {
+            output.clear();
+            outputPosition = 0;
+        }
         String junitJarProp = System.getProperty("test.junit.jar");
         assertNotNull("must set test.junit.jar", junitJarProp);
         junitJar = new File(junitJarProp);
@@ -768,10 +770,12 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes","p/Main.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"run-single"}, p));
         boolean found = false;
-        for (String line : output) {
-            if ("__Test__".equals(line)) {
-                found = true;
-                break;
+        synchronized (output) {
+            for (String line : output) {
+                if ("__Test__".equals(line)) {
+                    found = true;
+                    break;
+                }
             }
         }
         assertTrue(found);
@@ -782,10 +786,12 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes","p/Main.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"run-single"}, p));
         found = false;
-        for (String line : output) {
-            if ("__TestNew__".equals(line)) {
-                found = true;
-                break;
+        synchronized (output) {
+            for (String line : output) {
+                if ("__TestNew__".equals(line)) {
+                    found = true;
+                    break;
+                }
             }
         }
         assertTrue(found);
@@ -809,9 +815,11 @@ public final class BuildImplTest extends NbTestCase {
     }
     private int countOfOutput(String expectedLine) {
         int cnt = 0;
-        for (String line : output) {
-            if (line.replaceFirst("^.+[.](?=.+:$)", "").equals(expectedLine)) {
-                cnt++;
+        synchronized (output) {
+            for (String line : output) {
+                if (line.replaceFirst("^.+[.](?=.+:$)", "").equals(expectedLine)) {
+                    cnt++;
+                }
             }
         }
         return cnt;
@@ -871,19 +879,23 @@ public final class BuildImplTest extends NbTestCase {
 
     private void dumpOutput() {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        for (String line : output) {
-            System.out.println(line);
+        synchronized (output) {
+            for (String line : output) {
+                System.out.println(line);
+            }
         }
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     private void assertOutput(String line) {
-        int newpos = output.size();
-        if (!output.subList(outputPosition, newpos).contains(line)) {
-            dumpOutput();
-            fail("looking for '" + line + "' starting at line #" + (outputPosition + 1));
+        synchronized (output) {
+            int newpos = output.size();
+            if (!output.subList(outputPosition, newpos).contains(line)) {
+                dumpOutput();
+                fail("looking for '" + line + "' starting at line #" + (outputPosition + 1));
+            }
+            outputPosition = newpos;
         }
-        outputPosition = newpos;
     }
 
     @SuppressWarnings("deprecation")
@@ -943,12 +955,10 @@ public final class BuildImplTest extends NbTestCase {
 
     }
 
-    private static final List<String> output = new ArrayList<String>();
+    //@GuardedBy("output")
+    private static final List<String> output = Collections.synchronizedList(new ArrayList<String>());
+    //@GuardedBy("output")
     private static int outputPosition;
-    private static final List<String> outputType = new ArrayList<String>();
-
-    private static final String TYPE_ERR = "err";
-    private static final String TYPE_OK = "ok";
 
     private static final class OW extends OutputWriter {
 
@@ -969,8 +979,6 @@ public final class BuildImplTest extends NbTestCase {
 
         private void message(String msg, boolean hyperlinked) {
             output.add(msg);
-            String type = err ? TYPE_ERR : TYPE_OK;
-            outputType.add(type);
         }
 
         public void reset() throws IOException {}

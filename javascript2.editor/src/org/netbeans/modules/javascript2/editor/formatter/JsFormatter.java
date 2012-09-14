@@ -225,7 +225,17 @@ public class JsFormatter implements Formatter {
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
-                    if (token.getKind().isSpaceMarker()) {
+                    if (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                            || token.getKind() == FormatToken.Kind.DOC_COMMENT
+                            || token.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                        try {
+                            int indent = context.lineIndent(context.lineStartOffset(
+                                    token.getOffset() + formatContext.getOffsetDiff()));
+                            formatComment(token, formatContext, indent);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+                    } else if (token.getKind().isSpaceMarker()) {
                         formatSpace(tokens, i, formatContext);
                     } else if (token.getKind().isLineWrapMarker()) {
                         formatLineWrap(tokens, i, formatContext, initialIndent,
@@ -651,6 +661,31 @@ public class JsFormatter implements Formatter {
                                 end.getOffset() - start.getOffset(), " "); // NOI18N
                     }
                 }
+            }
+        }
+    }
+
+    private void formatComment(FormatToken comment, FormatContext formatContext, int indent) {
+        // this assumes the firts line is already indented by EOL logic
+        assert comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                || comment.getKind() == FormatToken.Kind.DOC_COMMENT
+                || comment.getKind() == FormatToken.Kind.LINE_COMMENT;
+
+        if (comment.getKind() == FormatToken.Kind.LINE_COMMENT) {
+            return;
+        }
+
+        if (!comment.getText().toString().contains("\n")) { // NOI18N
+            return;
+        }
+
+        CharSequence text = comment.getText();
+        for (int i = 0; i < text.length(); i++) {
+            char single = text.charAt(i);
+            if (single == '\n') { // NOI18N
+                // following lines are + 1 indented
+                formatContext.indentLine(comment.getOffset() + i + 1,
+                        indent + 1, Indentation.ALLOWED); // NOI18N
             }
         }
     }

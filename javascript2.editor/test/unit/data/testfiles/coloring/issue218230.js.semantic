@@ -46,8 +46,8 @@
         return '<span style="color: #0000FF;">' + id + '</span>';
     }
 
-    var |>METHOD:stylizeDisplayName<| = function(displayname, |>UNUSED:column<|, record) {
-        var |>UNUSED:displayname<| = record.get('displayname');
+    var |>METHOD:stylizeDisplayName<| = function(|>UNUSED:displayname<|, |>UNUSED:column<|, record) {
+        var displayname = record.get('displayname');
 
         return String.format('{0}<br />', displayname);
     }

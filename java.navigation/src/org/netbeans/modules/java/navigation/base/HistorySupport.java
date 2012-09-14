@@ -197,8 +197,10 @@ public class HistorySupport {
 
         @Override
         public void setSelectedItem(Object anItem) {
-            this.selectedItem = anItem;
-            fire();
+            if (selectedItem == null ? anItem != null : !selectedItem.equals(anItem)) {
+                this.selectedItem = anItem;
+                fire();
+            }
         }
 
         @Override
