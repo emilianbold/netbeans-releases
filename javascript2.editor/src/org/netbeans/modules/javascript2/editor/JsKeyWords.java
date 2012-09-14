@@ -47,14 +47,19 @@ import java.util.Map;
 /**
  *
  * @author Petr Pisl
- * 
+ *
  */
 
 public class JsKeyWords {
-    
-    protected static enum CompletionType {CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
-    ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
-    
+
+    protected static enum CompletionType {
+        CURSOR_INSIDE_BRACKETS,
+        ENDS_WITH_CURLY_BRACKETS,
+        ENDS_WITH_SPACE,
+        ENDS_WITH_SEMICOLON,
+        ENDS_WITH_COLON
+    };
+
     protected final static Map<String,CompletionType> KEYWORDS = new HashMap<String, CompletionType>();
     static {
         KEYWORDS.put("break", CompletionType.ENDS_WITH_SEMICOLON);
@@ -70,8 +75,8 @@ public class JsKeyWords {
         KEYWORDS.put("function", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("if", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("in", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("instanceof",  CompletionType.ENDS_WITH_SPACE);        
-        KEYWORDS.put("new", CompletionType.ENDS_WITH_SPACE);        
+        KEYWORDS.put("instanceof",  CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put("new", CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("return",  CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put("switch", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("throw", CompletionType.ENDS_WITH_SPACE);
@@ -81,10 +86,4 @@ public class JsKeyWords {
         KEYWORDS.put("while", CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put("with",  CompletionType.ENDS_WITH_SPACE);
     }
-    
-    protected final static String[] RESERVED = {
-        "abstract",
-        "as",
-        "boolean"
-    };
 }
