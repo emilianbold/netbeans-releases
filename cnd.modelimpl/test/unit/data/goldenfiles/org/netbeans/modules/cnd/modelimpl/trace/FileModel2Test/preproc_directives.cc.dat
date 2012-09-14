@@ -24,6 +24,6 @@ Macros:
 #define 'F' [7:1/65-7:21/85]
 VARIABLE a [10:5/109-10:15/119]  TYPE: int TEXT=int  [10:5/109-10:8/112]  INIT: text='5'  SCOPE: $Global$ 
 
-========== Dumping model of PROJECT trace_FileModelTest
+========== Dumping model of PROJECT DummyProject
 VARIABLE a [10:5/109-10:15/119]  TYPE: int TEXT=int  [10:5/109-10:8/112]  INIT: text='5'  SCOPE: $Global$ 
 
