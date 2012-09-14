@@ -68,7 +68,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
-    private static final RequestProcessor RP = new RequestProcessor(SmartyPhpFrameworkProvider.class);
+    protected static final RequestProcessor RP = new RequestProcessor(SmartyPhpFrameworkProvider.class);
 
     private static final Logger LOGGER = Logger.getLogger(SmartyPhpFrameworkProvider.class.getName());
 

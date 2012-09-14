@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Random;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -83,6 +85,16 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         assert phpModule != null : "PHP module must exist!";
 
         FileUtil.createData(phpModule.getProjectDirectory(), "template.tpl");
+
+        // preheat isInPhpModule() job
+        SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
+        Future<?> future = SmartyPhpFrameworkProvider.RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                //NOOP
+            }
+        });
+        future.get(5, TimeUnit.SECONDS);
 
         assert SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule) == true;
     }
@@ -135,5 +147,4 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
 
         return project;
     }
-
 }
