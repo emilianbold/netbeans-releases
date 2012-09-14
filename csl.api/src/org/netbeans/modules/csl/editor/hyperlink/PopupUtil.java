@@ -143,8 +143,13 @@ public final class PopupUtil  {
         
         if (x != (-1)) {
             Point p = fitToScreen( x, y, altHeight );
+            Rectangle screen = org.openide.util.Utilities.getUsableScreenBounds();
+            if (p.y < screen.y) {
+                int yAdjustment = screen.y - p.y;
+                p.y += yAdjustment;
+                popupWindow.setSize(popupWindow.getWidth(), popupWindow.getHeight() - yAdjustment);
+            }
             popupWindow.setLocation(p.x, p.y);
-            
         }
         
         popupWindow.setVisible( true );
