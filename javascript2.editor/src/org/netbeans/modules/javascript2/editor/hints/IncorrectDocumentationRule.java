@@ -39,53 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.hints;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Pisl
+ * @author Martin Fousek
  */
-public class JsCodeCompletionGeneralTest extends JsTestBase {
-    
-    public JsCodeCompletionGeneralTest(String testName) {
-        super(testName);
-    }
-    
-    public void testIssue215353() throws Exception {
-        checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
-    }
-    
-
-    public void testIssue217029_01() throws Exception {
-        checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
-    }
-
-    public void testIssue215861_01() throws Exception {
-        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser \"+navigator.^);", false);
-    }
-
-    public void testIssue215861_02() throws Exception {
-        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
-    }
+public class IncorrectDocumentationRule extends JsFunctionDocumentationRule {
 
     @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/general/"))
-            })
-        );
+    public String getId() {
+        return "jsundocumentedparameter.hint";
     }
-    
+
+    @NbBundle.Messages("IncorrectDocumentationRuleDesc=Incorrect Documented Parameter hint informs you about defined parameter not used in the function arguments.")
+    @Override
+    public String getDescription() {
+        return Bundle.IncorrectDocumentationRuleDesc();
+    }
+
+    @NbBundle.Messages("IncorrectDocumentationRuleDN=Incorrect Documented Parameter")
+    @Override
+    public String getDisplayName() {
+        return Bundle.IncorrectDocumentationRuleDN();
+    }
 }

@@ -41,38 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.Node;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Fousek
  */
-public class UndocumentedParameterRule extends JsAstRule {
-
-    @Override
-    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
-        UndocumentedParamVisitor conventionVisitor = new UndocumentedParamVisitor(this);
-        conventionVisitor.process(context, hints);
-    }
-
-    @Override
-    public Set<?> getKinds() {
-        return Collections.singleton(JsAstRule.JS_OTHER_HINTS);
-    }
+public class UndocumentedParameterRule extends JsFunctionDocumentationRule {
 
     @Override
     public String getId() {
@@ -89,69 +64,5 @@ public class UndocumentedParameterRule extends JsAstRule {
     @Override
     public String getDisplayName() {
         return Bundle.UndocumentedParameterRuleDN();
-    }
-    
-    private static class UndocumentedParamVisitor extends PathNodeVisitor {
-        private List<Hint> hints;
-        private JsRuleContext context;
-        private final Rule rule;
-        
-        public UndocumentedParamVisitor(Rule rule) {
-            this.rule = rule;
-        }
-        
-        public void process(JsRuleContext context, List<Hint> hints) {
-            this.hints = hints;
-            this.context = context;
-            FunctionNode root = context.getJsParserResult().getRoot();
-            if (root != null) {
-                context.getJsParserResult().getRoot().accept(this);
-            }
-        }
-
-        @NbBundle.Messages({"# {0} - parameter name which is undocumented",
-            "UndocumentedParameterRuleDisplayDescription=Undocumented Parameters: {0}"})
-        @Override
-        public Node enter(FunctionNode fn) {
-            JsDocumentationHolder documentationHolder = context.getJsParserResult().getDocumentationHolder();
-            if (documentationHolder.getCommentForOffset(fn.getStart(), documentationHolder.getCommentBlocks()) == null) {
-                return super.enter(fn);
-            }
-
-            List<DocParameter> docParameters = documentationHolder.getParameters(fn);
-            List<IdentNode> funcParameters = fn.getParameters();
-            if (docParameters.size() != funcParameters.size()) {
-                String missingParameters = missingParameters(funcParameters, docParameters);
-                if (!missingParameters.isEmpty()) {
-                    hints.add(new Hint(rule, Bundle.UndocumentedParameterRuleDisplayDescription(missingParameters),
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), fn.getIdent().getStart(), fn.getIdent().getFinish()),
-                            null, 600));
-                }
-            }
-            return super.enter(fn);
-        }
-
-        private String missingParameters(List<IdentNode> functionParams, List<DocParameter> documentationParams) {
-            StringBuilder sb = new StringBuilder();
-            String delimiter = ""; //NOI18N
-            for (IdentNode identNode : functionParams) {
-                if (!containFunction(documentationParams, identNode.getName())) {
-                    sb.append(delimiter).append(identNode.getName());
-                    delimiter = ", "; //NOI18N
-                }
-            }
-            return sb.toString();
-        }
-
-        private boolean containFunction(List<DocParameter> documentationParams, String functionName) {
-            for (DocParameter docParameter : documentationParams) {
-                if (docParameter.getParamName().getName().equals(functionName)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
     }
 }
