@@ -279,10 +279,12 @@ public class TopSecurityManager extends SecurityManager {
                         c != System.class &&
                         c != Boolean.class) {
                     String n = c.getName();
+                    boolean log;
                     synchronized (warnedClassesNH) {
-                        if (warnedClassesNH.add(n)) {
-                            LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator/Places at {1}", new Object[] {x, findCallStackLine(n)});
-                        }
+                            log = warnedClassesNH.add(n);
+                    }
+                    if (log) {
+                        LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator/Places at {1}", new Object[] {x, findCallStackLine(n)});
                     }
                     break;
                 }
