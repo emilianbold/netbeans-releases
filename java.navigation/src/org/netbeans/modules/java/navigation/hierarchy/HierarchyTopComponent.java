@@ -173,7 +173,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         "TOOLTIP_RefreshContent=Refresh",
         "TOOLTIP_OpenJDoc=Open Javadoc Window",
         "TOOLTIP_ViewHierarchyType=Hierachy View Type",
-        "TOOLTIP_InspectHierarchyHistory=Inspect Hierarchy History",
+        "TOOLTIP_InspectHierarchyHistory=Inspect Hierarchy History"
     })
     public HierarchyTopComponent() {
         history = HistorySupport.getInstnace(this.getClass());

@@ -726,7 +726,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         "TXT_InspectMembersHistoryEmpty=<empty>",
         "TXT_InspectMembersHistoryAuto=<auto>",
         "TOOLTIP_OpenJDoc=Open Javadoc Window",
-        "TOOLTIP_InspectMembersHistory=Inspect Members History",
+        "TOOLTIP_InspectMembersHistory=Inspect Members History"
         })
         Toolbar() {
             setLayout(new GridBagLayout());
