@@ -408,7 +408,14 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                 // editor window is not properly sized yet; return no infos
                 return Collections.<PaintInfo>emptyList();
             }
-
+            
+            // #218282: if the view hierarchy is not yet updated, the Y coordinate may map to an incorrect offset outside
+            // the document.
+            int docLen = bdoc.getLength();
+            if (startPos >= docLen || endPos > docLen) {
+                return Collections.<PaintInfo>emptyList();
+            }
+            
             startPos = Utilities.getRowStart(bdoc, startPos);
             endPos = Utilities.getRowEnd(bdoc, endPos);
             
@@ -833,8 +840,9 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         Fold f2 = f;
                         
                         f = FoldUtilities.findOffsetFold(hierarchy, nextLineOffset);
-                        if (f != f2.getParent()) {
-                            throw new IllegalStateException("non-parent fold without fold mark");
+                        if (f == null) {
+                            // fold does not exist for the position below end-of-fold indicator
+                            return;
                         }
                     }
                     

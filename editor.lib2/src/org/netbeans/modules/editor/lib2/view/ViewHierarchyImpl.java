@@ -257,7 +257,7 @@ public final class ViewHierarchyImpl {
             return docView.viewToModelNeedsLock(x, y, docView.getAllocation(), biasReturn);
         } else {
             TextUI ui = textComponent.getUI();
-            return (ui != null) ? ui.viewToModel(textComponent, new Point((int)x, (int)y), biasReturn) : null;
+            return (ui != null) ? ui.viewToModel(textComponent, new Point((int)x, (int)y), biasReturn) : 0;
         }
     }
 
