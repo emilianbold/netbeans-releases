@@ -918,12 +918,12 @@ FIRST_MOD options { constText=true; } :
     '%' ( {$setType(MOD);}                  //MOD             : '%' ;
     | '=' {$setType(MODEQUAL);}             //MODEQUAL        : "%=" ;
     | '>' {$setType(RCURLY);}               //RCURLY          : "%>" ;
-    | ':' ( {isPreprocPending()}? {$setType(SHARP);}     
+    | ':' ( {isPreprocPending()}? {$setType(PREPROC_DIRECTIVE);}
         | {isPreprocPending()}? '%' ':' {$setType(DBL_SHARP);}
         | {!isPreprocPossible()}? {$setType(SHARP);}
         | {isPreprocPossible()}?
             {
-                $setType(SHARP);
+                $setType(PREPROC_DIRECTIVE);
                 setPreprocPossible(false);
                 setPreprocPending(true);
                 setPPDefinedAllowed(true);
@@ -1085,7 +1085,7 @@ protected Q_char_sequence : (~('\"'|'\r'|'\n'))* ;
 PREPROC_DIRECTIVE :
          '#'
                 (   
-                    {isPreprocPending()}? {$setType(SHARP);}
+                    {isPreprocPending()}? {$setType(PREPROC_DIRECTIVE);}
                  |
                     {isPreprocPending()}? '#' {$setType(DBL_SHARP);}
                  | 
@@ -1093,7 +1093,7 @@ PREPROC_DIRECTIVE :
                  |
                     {isPreprocPossible()}? 
                     {
-                        $setType(SHARP);
+                        $setType(PREPROC_DIRECTIVE);
                         setPreprocPossible(false);
                         setPreprocPending(true);
                         setPPDefinedAllowed(true);

@@ -79,6 +79,12 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("preproc_directives.cc"); // NOI18N
     }
 
+    public void testPreprocDirectives2() throws Exception {
+        // #218344 - any #warning breaks parser
+        // #218308 - Empty preprocessor directives not supported
+        performTest("sharp_pp_directives.cc"); // NOI18N
+    }
+
     public void test217089() throws Exception {
         // #217089: "#define AAA 1 ## 0" line breaks parser
         performTest("iz217089.c");
