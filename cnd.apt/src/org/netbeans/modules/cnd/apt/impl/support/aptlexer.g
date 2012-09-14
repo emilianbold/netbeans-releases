@@ -918,7 +918,7 @@ FIRST_MOD options { constText=true; } :
     '%' ( {$setType(MOD);}                  //MOD             : '%' ;
     | '=' {$setType(MODEQUAL);}             //MODEQUAL        : "%=" ;
     | '>' {$setType(RCURLY);}               //RCURLY          : "%>" ;
-    | ':' ( {isPreprocPending()}? {$setType(PREPROC_DIRECTIVE);}
+    | ':' ( {isPreprocPending()}? {$setType(SHARP);}
         | {isPreprocPending()}? '%' ':' {$setType(DBL_SHARP);}
         | {!isPreprocPossible()}? {$setType(SHARP);}
         | {isPreprocPossible()}?
@@ -1085,7 +1085,7 @@ protected Q_char_sequence : (~('\"'|'\r'|'\n'))* ;
 PREPROC_DIRECTIVE :
          '#'
                 (   
-                    {isPreprocPending()}? {$setType(PREPROC_DIRECTIVE);}
+                    {isPreprocPending()}? {$setType(SHARP);}
                  |
                     {isPreprocPending()}? '#' {$setType(DBL_SHARP);}
                  | 
