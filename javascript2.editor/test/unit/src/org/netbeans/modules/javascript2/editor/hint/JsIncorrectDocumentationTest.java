@@ -39,53 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.hint;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.hints.UndocumentedParameterRule;
 
 /**
+ * Checks undocumented parameter.
  *
- * @author Petr Pisl
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsCodeCompletionGeneralTest extends JsTestBase {
-    
-    public JsCodeCompletionGeneralTest(String testName) {
+public class JsIncorrectDocumentationTest extends HintTestBase {
+
+    public JsIncorrectDocumentationTest(String testName) {
         super(testName);
     }
-    
-    public void testIssue215353() throws Exception {
-        checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
-    }
-    
 
-    public void testIssue217029_01() throws Exception {
-        checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
+    private Rule createRule() {
+        return new UndocumentedParameterRule();
     }
 
-    public void testIssue215861_01() throws Exception {
-        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser \"+navigator.^);", false);
+    public void testNoHintNoCommentComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation1.js", null);
     }
 
-    public void testIssue215861_02() throws Exception {
-        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
+    public void testHintForWrongComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation2.js", null);
     }
 
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/general/"))
-            })
-        );
+    public void testHintNoHintForOptionalParameterComment() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/incorrectDocumentation3.js", null);
     }
-    
 }

@@ -44,6 +44,7 @@ package org.netbeans.modules.extbrowser.plugins.chrome;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -80,14 +81,22 @@ class ChromeInfoPanel extends javax.swing.JPanel {
 
         File file = new File(pluginPath);
         String name = file.getName();
-        String parent = file.getParent();
+        File parent = file.getParentFile();
         StringBuilder text = new StringBuilder("<html>");                       // NOI18N
         if ( currentStatus == ExtensitionStatus.NEEDS_UPGRADE ){
             text.append(NbBundle.getMessage(ChromeInfoPanel.class, "TXT_RequestUpgrade"));// NOI18N
             text.append(" ");           // NOI18N
         }
+        String path = "";
+        try {
+            path = file.toURI().toURL().toExternalForm();
+        }
+        catch( MalformedURLException e ){
+            LOGGER.log(Level.WARNING, null, e);
+        }
         text.append(NbBundle.getMessage(ChromeInfoPanel.class,
-                "TXT_PluginIstallationIssue" , "file:///"+parent, name ));      // NOI18N
+                "TXT_PluginIstallationIssue" ,                          // NOI18N
+                path, name ));      
         text.append("</html>");         // NOI18N
         myEditorPane.setText(text.toString());
 

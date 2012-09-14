@@ -1165,6 +1165,9 @@ public class JsFormatter implements Formatter {
                 //      thirdarg)
                 isContinuationOperator = (bracketBalance == 0);
             }
+            if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                isContinuationOperator = true;
+            }
 
             if (id == JsTokenId.OPERATOR_COLON) {
                 TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
@@ -1201,7 +1204,10 @@ public class JsFormatter implements Formatter {
             startOffset = Utilities.getRowStart(doc, startOffset);
             int endLineOffset = Utilities.getRowStart(doc, endOffset);
             final boolean indentOnly = (startOffset == endLineOffset)
-                    && (Utilities.isRowEmpty(doc, startOffset) || Utilities.isRowWhite(doc, startOffset));
+                    && endLineOffset == context.caretOffset()
+                    && (Utilities.isRowEmpty(doc, startOffset)
+                    || Utilities.isRowWhite(doc, startOffset)
+                    || Utilities.getFirstNonWhiteFwd(doc, startOffset) == context.caretOffset());
             if (indentOnly && indentContext.isEmbedded()) {
                 // Make sure we're not messing with indentation in HTML
                 Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset);
@@ -1448,7 +1454,7 @@ public class JsFormatter implements Formatter {
                         //indent = LexUtilities.getLineIndent(doc, offset)-originallockCommentIndention+adjustedBlockCommentIndention;
                         indent = GsfUtilities.getLineIndent(doc, offset);
                     }
-                } else if ((endIndents = isEndIndent(context, offset)) > 0) {
+                } else if (!indentOnly && (endIndents = isEndIndent(context, offset)) > 0) {
                     indent = (balance-endIndents) * indentSize + hangingIndent + initialIndent;
                 } else {
                     assert lineType == IN_CODE || lineType == IN_BLOCK_COMMENT_START;
