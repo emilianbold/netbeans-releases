@@ -118,127 +118,110 @@ public class AstRenderer {
             return; // paranoia
         }
         for (AST token = tree.getFirstChild(); token != null; token = token.getNextSibling()) {
-            int type = token.getType();
-            switch (type) {
-                case CPPTokenTypes.CSM_LINKAGE_SPECIFICATION:
-                    render(token, currentNamespace, container);
-                    break;
-                case CPPTokenTypes.CSM_NAMESPACE_DECLARATION:
-                    NamespaceDefinitionImpl ns = NamespaceDefinitionImpl.findOrCreateNamespaceDefionition(container, token, currentNamespace, file);
-                    render(token, (NamespaceImpl) ns.getNamespace(), ns);
-                    checkInnerIncludes(ns, ns.getDeclarations());
-                    break;
-                case CPPTokenTypes.CSM_CLASS_DECLARATION:
-                case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
-                    boolean planB = false;
-                    if(objects != null) {
-                        CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
-                        if(o instanceof ClassImpl) {
-                            ClassImpl cls = (ClassImpl)o;
-                            cls.render(token, getContainingFile(), fileContent, isRenderingLocalContext());
-                            //container.addDeclaration(cls);
+            try {
+                switch (token.getType()) {
+                    case CPPTokenTypes.CSM_LINKAGE_SPECIFICATION:
+                        render(token, currentNamespace, container);
+                        break;
+                    case CPPTokenTypes.CSM_NAMESPACE_DECLARATION:
+                        NamespaceDefinitionImpl ns = NamespaceDefinitionImpl.findOrCreateNamespaceDefionition(container, token, currentNamespace, file);
+                        render(token, (NamespaceImpl) ns.getNamespace(), ns);
+                        checkInnerIncludes(ns, ns.getDeclarations());
+                        break;
+                    case CPPTokenTypes.CSM_CLASS_DECLARATION:
+                    case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
+                        boolean planB = false;
+                        if(objects != null) {
+                            CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
+                            if(o instanceof ClassImpl) {
+                                ClassImpl cls = (ClassImpl)o;
+                                cls.render(token, getContainingFile(), fileContent, isRenderingLocalContext());
+                                //container.addDeclaration(cls);
+                                addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
+                                renderVariableInClassifier(token, cls, currentNamespace, container);
+                            } else {
+                                planB = true;
+                            }
+                        } else {
+                            planB = true;
+                        }                    
+                        if(planB) {
+                            ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                                                ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container) :
+                                                ClassImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
+                            container.addDeclaration(cls);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
+                        }
+                        break;
+                    }
+                    case CPPTokenTypes.CSM_ENUM_DECLARATION: 
+                    case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
+                    {
+                        boolean planB = false;
+                        EnumImpl csmEnum = null;
+                        if(objects != null) {
+                            CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
+                            if(o instanceof EnumImpl) {
+                                csmEnum = (EnumImpl)o;
+                                csmEnum.init(currentNamespace, token, file, !isRenderingLocalContext());
+                                container.addDeclaration(csmEnum);
+                                renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+                            } else {
+                                planB = true;
+                            }
                         } else {
                             planB = true;
-                        }
-                    } else {
-                        planB = true;
-                    }                    
-                    if(planB) {
-                        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                            ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container) :
-                                            ClassImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
-                        container.addDeclaration(cls);
-                        addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
-                        renderVariableInClassifier(token, cls, currentNamespace, container);
-                    }
-                    break;
-                }
-                case CPPTokenTypes.CSM_ENUM_DECLARATION: 
-                case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
-                {
-                    boolean planB = false;
-                    EnumImpl csmEnum = null;
-                    if(objects != null) {
-                        CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
-                        if(o instanceof EnumImpl) {
-                            csmEnum = (EnumImpl)o;
-                            csmEnum.init(currentNamespace, token, file, !isRenderingLocalContext());
+                        }                    
+                        if(planB) {
+                            csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
                             container.addDeclaration(csmEnum);
-                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);
-                        } else {
-                            planB = true;
+                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
                         }
-                    } else {
-                        planB = true;
-                    }                    
-                    if(planB) {
-                        csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
-                        container.addDeclaration(csmEnum);
-                        renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
-                    }
-                    if (csmEnum != null) {
-                        checkInnerIncludes(csmEnum, Collections.<CsmObject>emptyList());
-                    }
-                    break;
-                }
-                case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
-                    if (isFuncLikeVariable(token, false)) {
-                        if (renderFuncLikeVariable(token, currentNamespace, container, !isFuncLikeVariable(token, true))) {
-                            break;
+                        if (csmEnum != null) {
+                            checkInnerIncludes(csmEnum, Collections.<CsmObject>emptyList());
                         }
+                        break;
                     }
-                //nobreak!
-                case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
-                case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
-                case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
-                case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
-                case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
-                    try {
+                    case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
+                        if (isFuncLikeVariable(token, false)) {
+                            if (renderFuncLikeVariable(token, currentNamespace, container, !isFuncLikeVariable(token, true))) {
+                                break;
+                            }
+                        }
+                    //nobreak!
+                    case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
+                    case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
                         FunctionImpl<?> fi = FunctionImpl.create(token, file, fileContent, null, currentNamespace, !isRenderingLocalContext(), objects);
                         container.addDeclaration(fi);
                         if (NamespaceImpl.isNamespaceScope(fi)) {
                             currentNamespace.addDeclaration(fi);
                         }
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_INSTANTIATION:
-                    try {
+                        break;
+                    case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_INSTANTIATION:
                         if(isClassExplicitInstantiation(token)) {
                             // TODO
                         } else {
-                            CsmFunctionInstantiation fi = FunctionInstantiationImpl.create(token, file, fileContent, !isRenderingLocalContext());
-                            container.addDeclaration(fi);
+                            CsmFunctionInstantiation cfi = FunctionInstantiationImpl.create(token, file, fileContent, !isRenderingLocalContext());
+                            container.addDeclaration(cfi);
                         }
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;                    
-                case CPPTokenTypes.CSM_CTOR_DEFINITION:
-                case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
-                    try {
+                        break;                    
+                    case CPPTokenTypes.CSM_CTOR_DEFINITION:
+                    case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                         container.addDeclaration(ConstructorDefinitionImpl.create(token, file, fileContent, !isRenderingLocalContext()));
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_DTOR_DEFINITION:
-                case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
-                    try {
+                        break;
+                    case CPPTokenTypes.CSM_DTOR_DEFINITION:
+                    case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
                         container.addDeclaration(DestructorDefinitionImpl.create(token, file, fileContent, !isRenderingLocalContext()));
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
-                case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
-                case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
-                case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
-                case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
-                    try {
+                        break;
+                    case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
+                    case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                    case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                         if (isMemberDefinition(token)) {
                             container.addDeclaration(FunctionDefinitionImpl.create(token, file, fileContent, null, !isRenderingLocalContext(), objects));
                         } else {
@@ -249,24 +232,20 @@ public class AstRenderer {
                                 currentNamespace.addDeclaration(fddi);
                             }
                         }
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION:
-                    if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
                         break;
-                    } else {
-                        renderForwardMemberDeclaration(token, currentNamespace, container, file);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
-                    if (isClassSpecialization(token)) {
-                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
-                        container.addDeclaration(spec);
-                        addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
-                    } else {
-                        try {
+                    case CPPTokenTypes.CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                        if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
+                            break;
+                        } else {
+                            renderForwardMemberDeclaration(token, currentNamespace, container, file);
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                        if (isClassSpecialization(token)) {
+                            ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
+                            container.addDeclaration(spec);
+                            addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
+                        } else {
                             if (isMemberDefinition(token)) {
                                 if(!isFunctionSpecialization(token)) {
                                     // this is a template method specialization declaration (without a definition)
@@ -295,27 +274,15 @@ public class AstRenderer {
                                     currentNamespace.addDeclaration(funct);
                                 }
                             }
-                        } catch (AstRendererException e) {
-                            DiagnosticExceptoins.register(e);
                         }
-                    }
-                    break;
-                case CPPTokenTypes.CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
-                    try {
+                        break;
+                    case CPPTokenTypes.CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
                         container.addDeclaration(ConstructorDefinitionImpl.create(token, file, fileContent, !isRenderingLocalContext()));
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
-                    try {
+                        break;
+                    case CPPTokenTypes.CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
                         container.addDeclaration(DestructorDefinitionImpl.create(token, file, fileContent, !isRenderingLocalContext()));
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
-                    try {
+                        break;
+                    case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                         if (isMemberDefinition(token)) {
                             if(!isFunctionSpecialization(token)) {
                                 ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
@@ -333,57 +300,57 @@ public class AstRenderer {
                                 currentNamespace.addDeclaration(fddit);
                             }
                         }
-                    } catch (AstRendererException e) {
-                        DiagnosticExceptoins.register(e);
+                        break;
+                    case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
+                        if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                            NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                            container.addDeclaration(alias);
+                            currentNamespace.addDeclaration(alias);
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_USING_DIRECTIVE: {
+                        if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                            UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
+                            container.addDeclaration(using);
+                            currentNamespace.addDeclaration(using);
+                        }
+                        break;
                     }
-                    break;
-                case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
-                        NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
-                        container.addDeclaration(alias);
-                        currentNamespace.addDeclaration(alias);
+                    case CPPTokenTypes.CSM_USING_DECLARATION: {
+                        if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                            UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                            container.addDeclaration(using);
+                            currentNamespace.addDeclaration(using);
+                        }
+                        break;
                     }
-                    break;
-                case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
-                        UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
-                        container.addDeclaration(using);
-                        currentNamespace.addDeclaration(using);
-                    }
-                    break;
+                    case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
+                        if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
+                            break;
+                        } else {
+                            renderForwardMemberDeclaration(token, currentNamespace, container, file);
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_GENERIC_DECLARATION:
+                        if (renderNSP(token, currentNamespace, container, file)) {
+                            break;
+                        }
+                        if (renderVariable(token, currentNamespace, container, currentNamespace, false)) {
+                            break;
+                        }
+                        if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
+                            break;
+                        }
+                        if (renderLinkageSpec(token, file, currentNamespace, container)) {
+                            break;
+                        }
+                        addTypedefs(renderTypedef(token, file, fileContent, currentNamespace, container).typedefs, currentNamespace, container,null);
+                        break;
+                    default:
+                        renderNSP(token, currentNamespace, container, file);
                 }
-                case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
-                        UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
-                        container.addDeclaration(using);
-                        currentNamespace.addDeclaration(using);
-                    }
-                    break;
-                }
-                case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
-                    if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
-                        break;
-                    } else {
-                        renderForwardMemberDeclaration(token, currentNamespace, container, file);
-                    }
-                    break;
-                case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                    if (renderNSP(token, currentNamespace, container, file)) {
-                        break;
-                    }
-                    if (renderVariable(token, currentNamespace, container, currentNamespace, false)) {
-                        break;
-                    }
-                    if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
-                        break;
-                    }
-                    if (renderLinkageSpec(token, file, currentNamespace, container)) {
-                        break;
-                    }
-                    addTypedefs(renderTypedef(token, file, fileContent, currentNamespace, container).typedefs, currentNamespace, container,null);
-                    break;
-                default:
-                    renderNSP(token, currentNamespace, container, file);
+            }  catch (AstRendererException e) {
+                DiagnosticExceptoins.register(e);
             }
         }
     }
