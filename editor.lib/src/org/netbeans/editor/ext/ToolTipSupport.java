@@ -573,6 +573,26 @@ public class ToolTipSupport {
      * @since 2.3
      */
     public void setToolTipVisible(boolean visible) {
+        setToolTipVisible(visible, true);
+    }
+    
+    /** 
+     * Set the visibility of the tooltip.
+     * Behaves like {@link #setToolTipVisible(boolean)}, except that it can skip
+     * forwarding the tooltip request to the view hierarchy. This is useful when
+     * tooltips are actively displayed by the code, not initiated by user's mouse hover
+     * or gesture. This call should be then followed by a call to {@code setTooltip}
+     * to actually set the tooltip's value and position.
+     * <p/>
+     * Use {@link #setToolTipVisible(boolean)} to display a tooltip relevant to the
+     * mouse position.
+     * 
+     * @param visible whether tooltip should become visible or not.
+     * @param updateFromView if true, ask DocumentView to build a tooltip.
+     *
+     * @since 3.28
+     */
+    public final void setToolTipVisible(boolean visible, boolean updateFromView) {
         LOG.log(Level.FINE, "setToolTipVisible: visible={0}, status={1}, enabled={2}", new Object [] { //NOI18N
             visible, status, enabled
         });
@@ -588,7 +608,9 @@ public class ToolTipSupport {
             if (visible) { // try to show the tooltip
                 if (enabled) {
                     setStatus(STATUS_VISIBILITY_ENABLED);
-                    updateToolTip();
+                    if (updateFromView) {
+                        updateToolTip();
+                    }
                 }
 
             } else { // hide tip

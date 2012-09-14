@@ -58,7 +58,7 @@ import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
 import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -116,6 +116,17 @@ public final class ServerUtilities {
     public ServerInstance getServerInstance(String uri) {
         ServerInstance retVal = gip.getInstance(uri);
         return retVal;
+    }
+
+    /**
+     * Creates an iterator for a wizard to instantiate server objects.
+     * <p/>
+     * @return Server wizard iterator initialized with supported GlassFish
+     * server versions.
+     */
+    public static WizardDescriptor.InstantiatingIterator
+            getInstantiatingIterator() {
+        return ServerDetails.getInstantiatingIterator();
     }
 
     /**

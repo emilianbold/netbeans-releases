@@ -90,7 +90,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     Bundle.CompositePanelProviderImpl_jsFiles_title(),
                     null);
         }
-        assert category != null : "No category for name: " + name;
+        assert category != null : "No category for name: " + name; //NOI18N
         return category;
     }
 
@@ -106,7 +106,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (JS_FILES.equals(categoryName)) {
             return new JavaScriptFilesPanel(category, uiProperties);
         }
-        assert false : "No component found for " + category.getDisplayName();
+        assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();
     }
 
@@ -119,14 +119,14 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
-            position = 200)
+            position = 300)
     public static CompositePanelProviderImpl createRunConfigs() {
         return new CompositePanelProviderImpl(RUN);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
-            position = 300)
+            position = 200)
     public static CompositePanelProviderImpl createJavaScriptFiles() {
         return new CompositePanelProviderImpl(JS_FILES);
     }

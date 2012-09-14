@@ -416,6 +416,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         final InstallSupport support = model.getBaseContainer().getSupport();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+        if (support == null) {
+            return null;
+        }
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
         JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);

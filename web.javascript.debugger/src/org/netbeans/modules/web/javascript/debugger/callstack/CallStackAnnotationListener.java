@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
 import org.netbeans.modules.web.javascript.debugger.annotation.CurrentLineAnnotation;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
@@ -65,7 +66,7 @@ import org.openide.text.Line;
 public class CallStackAnnotationListener extends DebuggerManagerAdapter
                                          implements Debugger.Listener, PropertyChangeListener {
     
-    private Project project;
+    private ProjectContext pc;
     private final List<Annotation> annotations = new ArrayList<Annotation>();
     
     @Override
@@ -79,7 +80,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
         if (d != null) {
             d.addListener(this);
             d.addPropertyChangeListener(this);
-            project = engine.lookupFirst(null, Project.class);
+            pc = engine.lookupFirst(null, ProjectContext.class);
             List<CallFrame> stackTrace;
             if (d.isSuspended()) {
                 stackTrace = d.getCurrentCallStack();
@@ -96,7 +97,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
         if (d != null) {
             d.removeListener(this);
             d.removePropertyChangeListener(this);
-            project = null;
+            pc = null;
             updateAnnotations(Collections.EMPTY_LIST);
         }
     }
@@ -122,6 +123,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             if (cf != null) {
                 Script script = cf.getScript();
                 if (script != null) {
+                    Project project = pc != null ? pc.getProject() : null;
                     Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
                     MiscEditorUtil.showLine(line, true);
                 }
@@ -140,6 +142,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             if (script == null) {
                 continue;
             }
+            Project project = pc != null ? pc.getProject() : null;
             final Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
             if (line == null) {
                 first = false;

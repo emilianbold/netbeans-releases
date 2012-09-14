@@ -45,10 +45,8 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,7 +59,10 @@ import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -70,6 +71,8 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
@@ -86,6 +89,8 @@ public class MatchingObjectNode extends AbstractNode {
     @StaticResource
     private static final String WARNING_ICON =
             "org/netbeans/modules/search/res/warning.gif";              //NOI18N
+    private static RequestProcessor RP = new RequestProcessor(
+            "MatchingObjectNode");                                      //NOI18N
 
     private MatchingObject matchingObject;
     private Node original;
@@ -108,6 +113,7 @@ public class MatchingObjectNode extends AbstractNode {
             ReplaceCheckableNode checkableNode) {
         super(children, Lookups.fixed(matchingObject, checkableNode,
                 matchingObject.getFileObject()));
+        Parameters.notNull("original", original);                       //NOI18N
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
             this.original = original;
@@ -133,7 +139,6 @@ public class MatchingObjectNode extends AbstractNode {
 
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
-        return;
     }
 
     @Override
@@ -195,6 +200,16 @@ public class MatchingObjectNode extends AbstractNode {
         fireDisplayNameChange(null, null);
     }
 
+    private void resetValidOriginal() {
+        try {
+            valid = true;
+            original = matchingObject.getDataObject().getNodeDelegate();
+            setValidOriginal();
+        } catch (NullPointerException npe) {
+            setInvalidOriginal();
+        }
+    }
+
     private void setInvalidOriginal() {
         if (valid) {
             valid = false;
@@ -202,11 +217,12 @@ public class MatchingObjectNode extends AbstractNode {
             fireIconChange();
             return; // already invalid
         }
-        if (origNodeListener != null) {
+        if (origNodeListener != null && original != null) {
             original.removeNodeListener(origNodeListener);
             origNodeListener = null;
         }
-        String oldDisplayName = original.getDisplayName();
+        String oldDisplayName = original == null
+                ? null : original.getDisplayName();
         original = new AbstractNode(Children.LEAF);
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
@@ -254,6 +270,34 @@ public class MatchingObjectNode extends AbstractNode {
                     matchingObject.getFileObject());
         }
         return propertySets;
+    }
+
+    /**
+     * Check whether the file object is valid and a valid data object can be
+     * found for it. It should be checked after original node is destroyed. It
+     * does not have to mean the the file was deleted, but also that a module
+     * that contain data loader was enabled. In the letter case, the node should
+     * be updated for new data object.
+     */
+    private void checkFileObjectValid() {
+        FileObject fo = matchingObject.getFileObject();
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject reloaded = DataObject.find(fo);
+                matchingObject.updateDataObject(reloaded);
+                valid = reloaded.isValid();
+                if (valid) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetValidOriginal();
+                        }
+                    });
+                }
+            } catch (DataObjectNotFoundException ex) {
+                // still invalid, the file was probably really deleted
+            }
+        }
     }
 
     private class DetailsCountProperty extends Property<Integer> {
@@ -313,6 +357,17 @@ public class MatchingObjectNode extends AbstractNode {
                 @Override
                 public void run() {
                     setInvalidOriginal();
+                    /**
+                     * Check if the object is valid again. It can happen when a
+                     * module with real data loader is enabled.
+                     */
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            checkFileObjectValid();
+                        }
+                    }, 2500);
                 }
             });
         }

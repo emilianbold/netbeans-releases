@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
@@ -69,58 +70,102 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     private static final boolean TRACE = true;
     
     public void testClosure() throws Exception {
-        
-        final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
-                
-        assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
+                        
+        //assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
         
 	final TraceModelBase traceModel = new TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
         
         long waitAfterParseTimeout = 30000;
-        
-        // Open a project, make sure cache is NOT empty
-        ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
-        waitCondition(new Condition("Cache should not be empty at that time") {
-            @Override
-            boolean check() {
-                return getFileNames(strategy).size() == 4;
-            }
-        }, waitAfterParseTimeout);
-        
-        // Close the project, make sure cache IS empty
-        traceModel.getModel().closeProjectBase(projectRoot1);
-        if (TRACE) {
-            System.out.println("Closed project " + projectRoot1.getName());
-        }
-        assertTrue("Cache should be empty after project closure", getFileNames(strategy).isEmpty());
 
-        // Open the 2-nd project, make sure cache is NOT empty
-        ProjectBase projectRoot2 = createProject(traceModel, "project-2", "file2.cpp", "int foo2");
-        waitCondition(new Condition("Cache should not be empty at that time") {
-            @Override
-            boolean check() {
-                return getFileNames(strategy).size() == 4;
+        {
+            // Open a project, make sure cache is NOT empty
+            ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
+            projectRoot1.waitParse();
+
+            final FilesAccessStrategyImpl strategy1 = FilesAccessStrategyImpl.testGetStrategy(
+                    ProjectBase.getCacheLocation((NativeProject) projectRoot1.getPlatformProject()));
+
+            waitCondition(new Condition("Wrong cache size at moment A") {
+                @Override
+                boolean check() {
+                    Collection<String> fileNames = getFileNames(strategy1);
+                    int size = fileNames.size();
+                    if (size < 3) {
+                        return true;
+                    } else {
+                        failureMessageArg = "" + size + ": " + fileNames;
+                        return false;
+                    }
+                }
+            }, waitAfterParseTimeout);
+
+            // Close the project, make sure cache IS empty
+            traceModel.getModel().closeProjectBase(projectRoot1);
+            if (TRACE) {
+                System.out.println("Closed project " + projectRoot1.getName());
             }
-        }, waitAfterParseTimeout);
-        final Collection<String> setTwo = strategy.testGetCacheFileNames();
-        
-        // Open the 3-rd project, make sure cache has changed and contains all previous keys
-        ProjectBase projectRoot3 = createProject(traceModel, "project-3", "file3.cpp", "int foo3");
-        waitCondition(new Condition("Cache should change at that time") {
-            @Override
-            boolean check() {
-                Collection<String> newKeys = getFileNames(strategy);
-                return newKeys.size() == 8 && newKeys.containsAll(setTwo);
-            }
-        }, waitAfterParseTimeout);
-        
-        // Close the 3-rd project, make sure cache is the same as befor it was open
-        traceModel.getModel().closeProjectBase(projectRoot3);
-        if (TRACE) {
-            System.out.println("Closed project " + projectRoot3.getName());
+            assertTrue("Cache should be empty after project closure", getFileNames(strategy1).isEmpty());
         }
-        assertTrue("The set of the cached files should be the same as before", getFileNames(strategy).equals(setTwo));
+
+        {
+            // Open the 2-nd project, make sure cache is NOT empty
+            ProjectBase projectRoot2 = createProject(traceModel, "project-2", "file2.cpp", "int foo2");
+
+            final FilesAccessStrategyImpl strategy2 = FilesAccessStrategyImpl.testGetStrategy(
+                    ProjectBase.getCacheLocation((NativeProject) projectRoot2.getPlatformProject()));
+
+            waitCondition(new Condition("Wrong cache size at moment B") {
+                @Override
+                boolean check() {
+                    Collection<String> fileNames = getFileNames(strategy2);
+                    int size = fileNames.size();
+                    if (size < 3) {
+                        return true;
+                    } else {
+                        failureMessageArg = "" + size + ": " + fileNames;
+                        return false;
+                    }
+                }
+            }, waitAfterParseTimeout);
+        }
+
+        {
+            // Open the 3-rd project, make sure cache has changed and contains all previous keys
+            ProjectBase projectRoot3 = createProject(traceModel, "project-3", "file3.cpp", "int foo3");
+
+            final FilesAccessStrategyImpl strategy3 = FilesAccessStrategyImpl.testGetStrategy(
+                    ProjectBase.getCacheLocation((NativeProject) projectRoot3.getPlatformProject()));
+
+            final Collection<String> setTwo = strategy3.testGetCacheFileNames();
+
+            waitCondition(new Condition("Cache should change at that time") {
+                @Override
+                boolean check() {
+                    Collection<String> newKeys = getFileNames(strategy3);
+                    boolean result = true;
+                    failureMessageArg = "";
+                    final int ref = 8;
+                    int size = newKeys.size();
+                    if (size != ref) {
+                        failureMessageArg += "newKeys.size() is " + size + " instead of " + ref;
+                        result = false;
+                    }
+                    if (!newKeys.containsAll(setTwo)) {
+                        failureMessageArg += " newKeys " + newKeys + " do not contain " + setTwo;
+                        result = false;
+                    }
+                    return result; // newKeys.size() == 8 && newKeys.containsAll(setTwo);
+                }
+            }, waitAfterParseTimeout);
+
+            // Close the 3-rd project, make sure cache is the same as befor it was open
+            traceModel.getModel().closeProjectBase(projectRoot3);
+            if (TRACE) {
+                System.out.println("Closed project " + projectRoot3.getName());
+            }
+        }
+        //assertTrue("The set of the cached files should be the same as before", getFileNames(strategy).equals(setTwo));
     }
     
     private ProjectBase createProject(TraceModelBase traceModel, String projectName, String fileName, String fileContent) throws Exception {
@@ -139,16 +184,26 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     private Collection<String> getFileNames(FilesAccessStrategyImpl strategy) {
         Collection<String> res = strategy.testGetCacheFileNames();
         if (TRACE) {
-            System.out.println(res);
+            System.out.printf("%d %s\n", res.size(), res);
         }
         return res;
     }
 
     private abstract class Condition {
-        public final String failureMessage;
+
+        private String failureMessage;
+        protected String failureMessageArg;
+
         public Condition(String failureMessage) {
             this.failureMessage = failureMessage;
+            this.failureMessageArg = "";
         }
+        public String getFailureMessage() {
+            return (failureMessageArg == null) ?
+                    failureMessage :
+                    (failureMessage + ": " + failureMessageArg);
+        }
+
         abstract boolean check();
     }
 
@@ -160,7 +215,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
             now = System.currentTimeMillis();
         }
         if (now >= end) {
-            fail(condition.failureMessage);
+            fail(condition.getFailureMessage());
         }
     }
 }

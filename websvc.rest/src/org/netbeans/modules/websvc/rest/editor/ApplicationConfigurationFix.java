@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.websvc.rest.editor;
 
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -54,10 +55,10 @@ import org.openide.util.NbBundle;
 class ApplicationConfigurationFix extends BaseRestConfigurationFix {
     
     ApplicationConfigurationFix(Project project, FileObject fileObject, 
-            RestConfigurationEditorAwareTaskFactory factory, String[] packs, 
-            String fqn)
+            RestConfigurationEditorAwareTaskFactory factory, String fqn, 
+            ClasspathInfo cpInfo )
     {
-        super(project, fileObject, factory, packs );
+        super(project, fileObject, factory , cpInfo );
         this.fqn = fqn;
     }
 

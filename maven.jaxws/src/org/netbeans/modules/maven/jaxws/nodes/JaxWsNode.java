@@ -147,11 +147,18 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         this.implBeanClass = implBeanClass;
         project = FileOwnerQuery.getOwner(srcRoot);
         
-        if (service.isServiceProvider() )
+        if (service.isServiceProvider() && 
+                implBeanClass.getAttribute("jax-ws-service") == null)
               // isServiceProvider() means class is WS not a client
                 /*|| service.isServiceProvider() && 
                 implBeanClass.getAttribute("jax-ws-service-provider") == null)  // NOI18N*/
         {
+            try {
+                implBeanClass.setAttribute("jax-ws-service", Boolean.TRUE);
+            }
+            catch(IOException e ){
+                LOG.log( Level.WARNING, null , e);
+            }
             Runnable runnable = new Runnable() {
                 
                 @Override

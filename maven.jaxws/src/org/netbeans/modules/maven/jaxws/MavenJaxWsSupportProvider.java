@@ -49,6 +49,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
@@ -81,6 +84,8 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             reactOnPomChanges();
         }
     });
+    
+    private static final Logger LOG = Logger.getLogger(MavenJaxWsLookupProvider.class.getName());
 
     private JAXWSLightSupport jaxWsSupport;
     private PropertyChangeListener pcl;
@@ -98,8 +103,10 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             @Override
             public void run() {
                 registerPCL();
+                LOG.log(Level.INFO, "Inside Maven WS request processor");   // NOI18N
                 MetadataModel<WebservicesMetadata> model = 
                         jaxWsSupport.getWebservicesMetadataModel();
+                LOG.log(Level.INFO, "WS metadata model : "+model);       // NOI18N
                 if (model != null) {
                     registerAnnotationListener(model);
                 }
@@ -244,6 +251,9 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                     public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
                         Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
                         Webservices webServices = metadata.getRoot();
+                        LOG.log(Level.INFO, "Inside update JAX-WS , WS root :"+
+                                webServices+" ; number of descriptions :"+
+                                webServices.getWebserviceDescription().length);// NOI18N
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {

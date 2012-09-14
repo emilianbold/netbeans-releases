@@ -43,7 +43,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.modules.php.smarty.ui.customizer.SmartyCustomizerPanel;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
@@ -53,7 +52,7 @@ import org.openide.util.NbBundle;
 public class SmartyPhpModuleCustomizerExtender extends PhpModuleCustomizerExtender {
     public static final String CUSTOM_OPEN_DELIMITER = "custom-open-delimiter"; // NOI18N
     public static final String CUSTOM_CLOSE_DELIMITER = "custom-close-delimiter"; // NOI18N
-    
+
     private final PhpModule phpModule;
     private final String customOpenDelimiter;
     private final String customCloseDelimiter;

@@ -2151,7 +2151,11 @@ AtomicLockListener, FoldHierarchyListener {
         SwingUtilities.invokeLater(new Runnable() {
             public @Override void run() {
                LOG.finest("Updating after fold hierarchy change");
-               updateAfterFoldHierarchyChange = true;
+               if (component == null) {
+                   return;
+               }
+               // see #217867
+               updateAfterFoldHierarchyChange = caretBounds != null;
                Rectangle b = saveFoldCaretBounds;
                boolean wasInView = b != null && component.getVisibleRect().intersects(b);
                // scroll if:

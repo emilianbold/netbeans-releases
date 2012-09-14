@@ -45,46 +45,63 @@
     padding: 0;
 }
 body {
-    font-family: Tahoma, Helvetica;
-    font-size: 12px;
-}
-a {
-    text-decoration: none;
+    font-family: Arial, Tahoma, Helvetica;
+    font-size: 10pt;
+    font-weight: normal;
+    color: #303942;
+    background-color: #fff;
 }
 
 .clear {
     clear: both;
 }
-.right {
-    float: right;
+.hidden {
+    visibility: hidden;
 }
 
 #presetMenu {
-    width: 300px;
-    border: 2px solid orange;
-    border-radius: 5px;
+    border: 1px solid #aeaeab;
+    border-radius: 2px;
+    white-space: nowrap;
 }
 #presetMenu a {
     display: block;
+    height: 38px;
+    clear: both;
 }
-#presetMenu div.type, #presetMenu div.label {
+#presetMenu a:hover {
+    background-color: #e4ecf7;
+}
+#presetMenu a.active {
+    background-color: #bbcee9;
+}
+#presetMenu div.form-item, #presetMenu div.icon, #presetMenu div.label {
     float: left;
-    padding: 4px;
+    margin-top: 10px;
 }
-#presetMenu div.type {
-    width: 40px;
+#presetMenu div.form-item {
+    margin-left: 20px;
+    margin-right: 20px;
 }
-#presetMenu div.title {
-    color: chocolate;
+#presetMenu div.icon {
+    width: 16px;
 }
-#presetMenu div.size {
-    color: darkorange;
+#presetMenu div.label {
+    margin-top: 6px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+#presetMenu div.main {
+    font-size: 10pt;
     font-weight: bold;
+    color: #303942;
 }
-#presetMenu div.size:hover {
-    color: orange;
+#presetMenu div.info {
+    font-size: 9pt;
+    color: #6b7176;
 }
 #presetMenu hr {
     clear: both;
-    border: 1px solid orange;
+    margin: 0 4px;
+    border: 1px solid #aeaeab;
 }

@@ -59,15 +59,10 @@ public class MultyFileStorage implements Storage {
     private FilesAccessStrategy theFilesHelper;
     private CharSequence unitName;
     
-    public MultyFileStorage(CharSequence unitName) {
-        super();
-        theFilesHelper = FilesAccessStrategyImpl.getInstance();
-        this.unitName = unitName;
-    }
-    
     /** Creates a new instance of SimpleDiskRepository */
-    public MultyFileStorage(FilesAccessStrategy aFilesHelper) {
+    public MultyFileStorage(FilesAccessStrategy aFilesHelper, CharSequence unitName) {
         theFilesHelper = aFilesHelper;
+        this.unitName = unitName;
     }
     
     @Override

@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
@@ -189,6 +191,21 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         Reference<Line2Offset> aLines = lines;
         if (aLines != null) {
             aLines.clear();
+        }
+    }
+
+    @Override
+    public long getCRC() {        
+        try {
+            Checksum checksum = new Adler32();
+            char[] chars = getCharBuffer();
+            for (char c : chars) {
+                checksum.update(c);
+            }
+            return checksum.getValue();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+            return -1; // Adler never returns negative values
         }
     }
 }

@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class ClassPathProviderImpl implements ClassPathProvider {
     
-    public static final String SOURCE_CP = "classpath/html5";
+    public static final String SOURCE_CP = "classpath/html5"; //NOI18N
             
     private ClientSideProject project;
 
@@ -89,7 +89,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         
         @Override
         public boolean includes(URL root, String resource) {
-            return !resource.startsWith("nbproject");
+            return !resource.startsWith("nbproject"); //NOI18N
         }
 
         @Override

@@ -319,8 +319,36 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", true);
     }
     
+    public void testIssue218070_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218070_01.js", "Martin^Fousek.E;", true);
+    }
+    
+    public void testIssue218070_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218070_01.js", "MartinFousek.E^;", true);
+    }
+    
+    public void testIssue218090_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        text : pro^m,", true);
+    }
+    
+    public void testIssue218261() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218261.js", "var a = new Num^ber();", true);
+    }
+
+    public void testIssue218090_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "    var ag^e = 10;", true);
+    }
+    
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
+    }
+
+    public void testIssue218231_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218231.js", "    return displa^yname;", true);
+    }
+
+    public void testIssue218231_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218231.js", "var stylizeDisplayName = function(display^name, column, record) {", true);
     }
 
     private String getTestPath() {

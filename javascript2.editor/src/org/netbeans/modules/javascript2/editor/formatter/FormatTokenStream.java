@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -57,7 +58,7 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
  */
 public final class FormatTokenStream implements Iterable<FormatToken> {
 
-    private final Map<Integer, FormatToken> tokenPosition = new TreeMap<Integer, FormatToken>();
+    private final TreeMap<Integer, FormatToken> tokenPosition = new TreeMap<Integer, FormatToken>();
 
     private FormatToken firstToken;
 
@@ -207,6 +208,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         return ret;
     }
 
+    @CheckForNull
     public static FormatToken getNextNonVirtual(FormatToken token) {
         FormatToken current = token.next();
         while (current != null && current.isVirtual()) {
@@ -215,8 +217,43 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         return current;
     }
 
+    @CheckForNull
+    public static FormatToken getNextImportant(FormatToken token) {
+        FormatToken current = token.next();
+        while (current != null && (current.isVirtual()
+                || current.getKind() == FormatToken.Kind.WHITESPACE
+                || current.getKind() == FormatToken.Kind.EOL
+                || current.getKind() == FormatToken.Kind.DOC_COMMENT
+                || current.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                || current.getKind() == FormatToken.Kind.LINE_COMMENT)) {
+            current = current.next();
+        }
+        return current;
+    }
+
     public FormatToken getToken(int offset) {
         return tokenPosition.get(offset);
+    }
+
+    /**
+     * Returns token containing the offset if any. Returned token does not
+     * have to start at the offset but it has to cover it.
+     * @param offset the give offset
+     * @return token containing the offset or <code>null</code>
+     */
+    public FormatToken getCoveringToken(int offset) {
+        Map.Entry<Integer, FormatToken> entry = tokenPosition.floorEntry(offset);
+        FormatToken token = entry.getValue();
+        if (!token.isVirtual()) {
+            if (token.getOffset() == offset) {
+                return token;
+            }
+            int endPos = token.getOffset() + token.getText().length();
+            if (offset >= token.getOffset() && offset < endPos) {
+                return token;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -248,6 +285,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
     }
 
     public void removeToken(FormatToken token) {
+        assert token.isVirtual() : token;
         FormatToken previous = token.previous();
         FormatToken next = token.next();
 

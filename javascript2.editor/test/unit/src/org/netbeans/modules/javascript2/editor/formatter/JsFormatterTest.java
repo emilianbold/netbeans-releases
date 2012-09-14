@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -437,6 +438,14 @@ public class JsFormatterTest extends JsTestBase {
         reindentFileContents("testfiles/formatter/comments1.js", null);
     }
 
+    public void testComments2() throws Exception {
+        reformatFileContents("testfiles/formatter/comments2.js",new IndentPrefs(4, 4));
+    }
+
+    public void testComments3() throws Exception {
+        reformatFileContents("testfiles/formatter/comments3.js",new IndentPrefs(4, 4));
+    }
+
     public void testObjects1() throws Exception {
         reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
     }
@@ -481,6 +490,14 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testObjects4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/objects4.js");
+    }
+
+    public void testObjects5() throws Exception {
+        reformatFileContents("testfiles/formatter/objects5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testObjects6() throws Exception {
+        reformatFileContents("testfiles/formatter/objects6.js",new IndentPrefs(4, 4));
     }
 
     public void testSwitch1() throws Exception {
@@ -553,14 +570,6 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSwitch6Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch6.js");
-    }
-
-    public void testSwitch189745() throws Exception {
-        reformatFileContents("testfiles/formatter/switch189745.js",new IndentPrefs(4, 4));
-    }
-
-    public void testSwitch189745Indented() throws Exception {
-        reindentFileContents("testfiles/formatter/switch189745.js", null);
     }
 
     public void testIf1() throws Exception {
@@ -1442,6 +1451,31 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/var4.js");
     }
 
+    public void testBroken1() throws Exception {
+        reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testCodeTemplate1() throws Exception {
+        reformatFileContents("testfiles/formatter/codeTemplate1.js",
+                Collections.<String, Object>emptyMap(), null, true);
+    }
+
+    public void testIssue189745() throws Exception {
+        reformatFileContents("testfiles/formatter/issue189745.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue189745Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/issue189745.js", null);
+    }
+
+    public void testIssue218090() throws Exception {
+        reformatFileContents("testfiles/formatter/issue218090.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue218328() throws Exception {
+        reformatFileContents("testfiles/formatter/issue218328.js",new IndentPrefs(4, 4));
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {
@@ -1568,10 +1602,14 @@ public class JsFormatterTest extends JsTestBase {
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
-        reformatFileContents(file, options, null);
+        reformatFileContents(file, options, null, false);
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options, String suffix) throws Exception {
+        reformatFileContents(file, options, suffix, false);
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options, String suffix, boolean template) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
 
@@ -1595,6 +1633,10 @@ public class JsFormatterTest extends JsTestBase {
         BaseDocument doc = getDocument(text);
         assertNotNull(doc);
 
+        if (template) {
+            Dictionary<Object, Object> dict = doc.getDocumentProperties();
+            dict.put(JsFormatter.CT_HANDLER_DOC_PROPERTY, "test");
+        }
 
         IndentPrefs preferences = new IndentPrefs(4, 4);
         Formatter formatter = getFormatter(preferences);

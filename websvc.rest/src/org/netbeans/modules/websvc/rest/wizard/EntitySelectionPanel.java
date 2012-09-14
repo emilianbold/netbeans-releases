@@ -44,8 +44,13 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelectionVisual;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -82,6 +87,17 @@ public final class EntitySelectionPanel extends AbstractPanel {
     @Override
     public void storeSettings(Object settings) {
         getComponent().store(wizardDescriptor);
+        Project project = Templates.getProject(wizardDescriptor);
+        if ( component.getCreatePersistenceUnit() && 
+                getPersistenceUnit(project)==null)
+        {
+            wizardDescriptor.putProperty(WizardProperties.CREATE_PERSISTENCE_UNIT, 
+                    Boolean.TRUE);
+        }
+        else {
+            wizardDescriptor.putProperty(
+                    WizardProperties.CREATE_PERSISTENCE_UNIT, null);
+        }
     }
     
     @Override

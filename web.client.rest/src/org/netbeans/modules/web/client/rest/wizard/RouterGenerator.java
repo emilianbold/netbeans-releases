@@ -67,7 +67,7 @@ class RouterGenerator {
 
     void generateRouter( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths,
-            Map<HttpRequests, Boolean> useIds, CompilationController controller)
+            CompilationController controller)
     {
         myRouters.append("var ");                                         // NOI18N
         myRouters.append(myRouterName);
@@ -147,17 +147,17 @@ class RouterGenerator {
             myRouters.append("self.details(self.requestedId);\n}\n");     // NOI18N
             if ( useUi() ){
                 myRouters.append("var pagerOptions = {\n");                   // NOI18N
-                myRouters.append("// target the pager markup \n");            // NOI18N
+                myRouters.append(" // target the pager markup \n");            // NOI18N
                 myRouters.append("container: $('.pager'),\n");                // NOI18N
-                myRouters.append("// output string - default is ");           // NOI18N
+                myRouters.append(" // output string - default is ");           // NOI18N
                 myRouters.append("'{page}/{totalPages}'; possible");          // NOI18N
                 myRouters.append("variables: {page}, {totalPages},");         // NOI18N
                 myRouters.append("{startRow}, {endRow} and {totalRows}\n");   // NOI18N
                 myRouters.append("output: '{startRow} to");                   // NOI18N
                 myRouters.append(" {endRow} ({totalRows})',\n");              // NOI18N
-                myRouters.append("// starting page of the pager (zero based index)\n");// NOI18N
+                myRouters.append(" // starting page of the pager (zero based index)\n");// NOI18N
                 myRouters.append("page: 0,\n");                               // NOI18N
-                myRouters.append("// Number of visible rows - default is 10\n");// NOI18N
+                myRouters.append(" // Number of visible rows - default is 10\n");// NOI18N
                 myRouters.append("size: 10\n};\n$('#");                       // NOI18N
                 myRouters.append(getSideBarId());
                 myRouters.append("').tablesorter({widthFixed: true, \n");     // NOI18N
@@ -189,7 +189,7 @@ class RouterGenerator {
             myRouters.append("this.view = new views.ModelView({\n");      // NOI18N
             myRouters.append("model:this.");                              // NOI18N
             myRouters.append(modelVar);
-            myRouters.append(",\n// ");                                   // NOI18N
+            myRouters.append(",\n // ");                                   // NOI18N
             myRouters.append( myDetailsTemplateName );
             myRouters.append(" is template identifier for chosen model element\n");// NOI18N
             myRouters.append("templateName: '#");                         // NOI18N
@@ -216,7 +216,7 @@ class RouterGenerator {
             myRouters.append(".fetch({\n");                               // NOI18N
             myRouters.append("success:function(){\n");                    // NOI18N
             myRouters.append("self.view = new views.ModelView({\n");      // NOI18N
-            myRouters.append("model: self.newclass,\n// ");               // NOI18N
+            myRouters.append("model: self.newclass,\n // ");               // NOI18N
             myRouters.append(myDetailsTemplateName);
             myRouters.append(" is template identifier for chosen model element\n");// NOI18N
             myRouters.append("templateName : '#");                        // NOI18N

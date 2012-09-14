@@ -133,12 +133,18 @@ public class UpdateAction extends ContextAction {
         if (revision == null) {
             return;
         }
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
+        final ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
+            @Override
             public void perform() {
                 update(ctx, this, getContextDisplayName(nodes), revision);
             }
         };                    
-        support.start(createRequestProcessor(ctx));
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                support.start(createRequestProcessor(ctx));
+            }
+        });
     }
 
     protected SVNRevision getRevision (Context ctx) {
@@ -245,11 +251,10 @@ public class UpdateAction extends ContextAction {
     }
 
     private static void openResults(final List<FileUpdateInfo> resultsList, final SVNUrl url, final String contextDisplayName) {
-        final UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
-        final VersioningOutputManager vom = VersioningOutputManager.getInstance();
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
+                UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
+                VersioningOutputManager vom = VersioningOutputManager.getInstance();
                 vom.addComponent(url.toString() + "-UpdateExecutor", results); // NOI18N
             }
         });

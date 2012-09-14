@@ -43,15 +43,15 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -68,12 +68,11 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.text.BadLocationException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.lib.api.properties.Properties;
@@ -85,9 +84,11 @@ import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
@@ -140,6 +141,9 @@ import org.openide.util.actions.Presenter;
  */
 @NbBundle.Messages({
     "titleLabel.text={0} properties",
+    "titleLabel.text.no.selected.rule=No Rule Selected",
+    "titleLabel.tooltip.no.selected.rule=Select a css rule in editor or CSS Styles Window to activate the Rule Editor",
+    "titleLabel.no.selected.rule=No Rule Selected",
     "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only"
 })
 public class RuleEditorPanel extends JPanel {
@@ -170,6 +174,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
+    private Declaration createdDeclaration;
+    
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
@@ -221,13 +227,12 @@ public class RuleEditorPanel extends JPanel {
             } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
                 //refresh the PS content
                 node.fireContextChanged();
+                
+                if(createdDeclaration != null) {
+                    //select & edit the property corresponding to the created declaration
+                    editCreatedDeclaration();
+                }
             }
-        }
-    };
-    private final ActionListener addPropertyCBActionListener = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            addPropertyCBValueEntered();
         }
     };
 
@@ -311,42 +316,16 @@ public class RuleEditorPanel extends JPanel {
 
         //init the add property combo box
         ADD_PROPERTY_CB_MODEL.addInitialText();
-        AutoCompleteDecorator.decorate(addPropertyCB, new AddPropertyCBObjectToStringConverter());
-
-        //nasty workaround for the enter key being consumed by the popup
-        addPropertyCB.addPopupMenuListener(new PopupMenuListener() {
-            private boolean cancelled;
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                cancelled = false;
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                if (!cancelled) {
-                    addPropertyCBValueEntered();
-                }
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-                cancelled = true;
-            }
-        });
-
-
+ 
         addPropertyCB.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.removeInitialText();
-                addPropertyCB.getEditor().addActionListener(addPropertyCBActionListener);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.addInitialText();
-                addPropertyCB.getEditor().removeActionListener(addPropertyCBActionListener);
             }
         });
 
@@ -357,26 +336,56 @@ public class RuleEditorPanel extends JPanel {
         }
 
         addPropertyButton.setVisible(!addPropertyMode);
+        addPropertyCB.setVisible(!addPropertyMode);
 
         titleLabel.setText(null);
 
         //add the property sheet to the center
-        sheet = new PropertySheet();
+        sheet = new REPropertySheet(popupMenu);
         try {
             sheet.setSortingMode(PropertySheet.UNSORTED);
         } catch (PropertyVetoException ex) {
             //no-op
         }
-        sheet.setPopupEnabled(false);
+        sheet.setPopupEnabled(true);
         sheet.setDescriptionAreaVisible(false);
         sheet.setNodes(new Node[]{node});
 
         add(sheet, BorderLayout.CENTER);
 
+        if(addPropertyMode) {
+            northWestPanel.remove(titleLabel);
+            northWestPanel.add(filterTextField, BorderLayout.CENTER);
+            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,8));
+            northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
+        }
+        
         northEastPanel.add(filters.getComponent(), BorderLayout.WEST);
 
         updateFiltersPresenters();
 
+        //add document listener to the filter text field 
+        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+ 
+            private void contentChanged() {
+                node.setFilterPrefix(filterTextField.getText());
+            }
+            
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                contentChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                contentChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        
     }
 
     private void addPropertyCBValueEntered() {
@@ -401,36 +410,63 @@ public class RuleEditorPanel extends JPanel {
         }
 
         if (propertyName != null) {
-            //1.create the property
-            //2.select the corresponding row in the PS
+            //1.verify whether there's such property
+            if(Properties.getProperty(propertyName) != null) {
+                //2.create the property
+                //3.select the corresponding row in the PS
 
-            model.runWriteTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    //add the new declaration to the model.
-                    //the declaration is not complete - the value is missing and it is necessary to 
-                    //enter in the PS otherwise the model become invalid.
-                    ModelUtils utils = new ModelUtils(model);
-                    Declarations decls = rule.getDeclarations();
-                    if (decls == null) {
-                        decls = model.getElementFactory().createDeclarations();
-                        rule.setDeclarations(decls);
+                model.runWriteTask(new Model.ModelTask() {
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        //add the new declaration to the model.
+                        //the declaration is not complete - the value is missing and it is necessary to 
+                        //enter in the PS otherwise the model become invalid.
+                        ModelUtils utils = new ModelUtils(model);
+                        Declarations decls = rule.getDeclarations();
+                        if (decls == null) {
+                            decls = model.getElementFactory().createDeclarations();
+                            rule.setDeclarations(decls);
+                        }
+
+                        Declaration declaration = utils.createDeclaration(propertyName + ":");
+                        decls.addDeclaration(declaration);
+
+                        //do not save the model (apply changes) - once the write task finishes
+                        //the embedded property sheet will be refreshed from the modified model.
+
+                        //remember the created declaration so once the model change is fired
+                        //and the property sheet is refreshed, we can find and select the corresponding
+                        //FeatureDescriptor
+                        createdDeclaration = declaration;
                     }
-
-                    Declaration declaration = utils.createDeclaration(propertyName + ":");
-                    decls.addDeclaration(declaration);
-                    
-                    //do not save the model (apply changes) - once the write task finishes
-                    //the embedded property sheet will be refreshed from the modified model.
-                    
-                }
-            });
-
-            //TODO - once Standa add to the propertySheet - select the new property in the PS in edit mode 
-            //so the user can smoothlesly enter the value
-
+                });
+            }
 
         }
+    }
+    
+    
+    private void editCreatedDeclaration() {
+        DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
+        assert descriptor != null;
+        
+        sheet.requestFocus();
+//        sheet.select(descriptor, true);
+        try {
+            call_PropertySheet_select(sheet, descriptor, showCategories);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        createdDeclaration = null;
+    }
+    
+    private void call_PropertySheet_select(PropertySheet sheet, FeatureDescriptor descriptor, boolean edit) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        //private so far, will be public later
+        Class clz = PropertySheet.class;
+        Method select_method = clz.getDeclaredMethod("select", FeatureDescriptor.class, boolean.class); //NOI18N
+        select_method.setAccessible(true);
+        select_method.invoke(sheet, descriptor, edit);
     }
 
     public final void updateFiltersPresenters() {
@@ -616,6 +652,8 @@ public class RuleEditorPanel extends JPanel {
             }
         });
         titleLabel.setText(Bundle.titleLabel_text(ruleNameRef.get()));
+        titleLabel.setToolTipText(null);
+        titleLabel.setEnabled(true);
 
     }
 
@@ -626,8 +664,11 @@ public class RuleEditorPanel extends JPanel {
         Rule old = this.rule;
         this.rule = null;
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, null);
-
-        titleLabel.setText(null);
+ 
+        titleLabel.setText(Bundle.titleLabel_no_selected_rule());
+        titleLabel.setToolTipText(Bundle.titleLabel_tooltip_no_selected_rule());
+        titleLabel.setEnabled(false);
+        
         addPropertyButton.setEnabled(false);
         addPropertyCB.setEnabled(false);
         node.fireContextChanged();
@@ -670,13 +711,15 @@ public class RuleEditorPanel extends JPanel {
     private void initComponents() {
 
         menuLabel = new javax.swing.JLabel();
+        cancelFilterLabel = new javax.swing.JLabel();
+        filterTextField = new javax.swing.JTextField();
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         southPanel = new javax.swing.JPanel();
         addPropertyButton = new javax.swing.JButton();
-        addPropertyCB = new javax.swing.JComboBox();
+        addPropertyCB = new AutocompleteJComboBox(ADD_PROPERTY_CB_MODEL, new AddPropertyCBObjectToStringConverter());
 
         menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/menu.png"))); // NOI18N
         menuLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.menuLabel.text")); // NOI18N
@@ -686,6 +729,18 @@ public class RuleEditorPanel extends JPanel {
                 menuLabelMouseClicked(evt);
             }
         });
+
+        cancelFilterLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/cancel.png"))); // NOI18N
+        cancelFilterLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.cancelFilterLabel.text")); // NOI18N
+        cancelFilterLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                cancelFilterLabelMouseClicked(evt);
+            }
+        });
+
+        filterTextField.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.filterTextField.text")); // NOI18N
+        filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
+        filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
         setLayout(new java.awt.BorderLayout());
 
@@ -717,9 +772,13 @@ public class RuleEditorPanel extends JPanel {
         southPanel.add(addPropertyButton, java.awt.BorderLayout.LINE_END);
 
         addPropertyCB.setEditable(true);
-        addPropertyCB.setModel(ADD_PROPERTY_CB_MODEL);
         addPropertyCB.setEnabled(false);
         addPropertyCB.setRenderer(new AddPropertyCBRendeder());
+        addPropertyCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPropertyCBActionPerformed(evt);
+            }
+        });
         southPanel.add(addPropertyCB, java.awt.BorderLayout.CENTER);
 
         add(southPanel, java.awt.BorderLayout.SOUTH);
@@ -729,9 +788,20 @@ public class RuleEditorPanel extends JPanel {
         //just invoke popup as if right-clicked
         popupMenu.show(menuLabel, 0, 0);
     }//GEN-LAST:event_menuLabelMouseClicked
+
+    private void cancelFilterLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelFilterLabelMouseClicked
+        filterTextField.setText(null);
+    }//GEN-LAST:event_cancelFilterLabelMouseClicked
+
+    private void addPropertyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPropertyCBActionPerformed
+        addPropertyCBValueEntered();
+    }//GEN-LAST:event_addPropertyCBActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
     private javax.swing.JComboBox addPropertyCB;
+    private javax.swing.JLabel cancelFilterLabel;
+    private javax.swing.JTextField filterTextField;
     private javax.swing.JLabel menuLabel;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
@@ -744,7 +814,6 @@ public class RuleEditorPanel extends JPanel {
 
     private static class AddPropertyComboBoxModel extends DefaultComboBoxModel {
 
-        private Collection<PropertyDefinition> properties;
         private boolean containsInitialText;
 
         public AddPropertyComboBoxModel() {
@@ -791,9 +860,9 @@ public class RuleEditorPanel extends JPanel {
             return c;
         }
     };
-
+    
     private static class AddPropertyCBObjectToStringConverter extends ObjectToStringConverter {
-
+        
         @Override
         public String getPreferredStringForItem(Object o) {
             if (o == null) {
@@ -810,5 +879,44 @@ public class RuleEditorPanel extends JPanel {
                 }
             }
         }
+    }
+    
+    private class REPropertySheet extends PropertySheet {
+
+        private final JPopupMenu genericPopupMenu;
+
+        public REPropertySheet(JPopupMenu genericPopupMenu) {
+            this.genericPopupMenu = genericPopupMenu;
+        }
+        
+        @Override
+        protected JPopupMenu createPopupMenu() {
+            FeatureDescriptor fd = getSelection();
+            if(fd != null) {
+                if(fd instanceof RuleNode.DeclarationProperty) {
+                    //property
+                    //
+                    //actions:
+                    //remove
+                    //hide
+                    //????
+                    //custom popop for the whole panel
+                    JPopupMenu pm = new JPopupMenu();
+                    
+                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+
+                    return pm;
+                    
+                } else if(fd instanceof RuleNode.PropertyCategoryPropertySet) {
+                    //property category
+                    //TODO possibly add "add property" action which would
+                    //preselect the css category in the "add property dialog".
+                }
+            }            
+            
+            //no context popup - create the generic popup
+            return genericPopupMenu;
+        }
+        
     }
 }

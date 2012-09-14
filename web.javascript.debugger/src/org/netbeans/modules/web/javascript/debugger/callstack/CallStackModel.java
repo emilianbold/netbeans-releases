@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -83,14 +84,14 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
 
     private Debugger debugger;
-    private Project project;
+    private ProjectContext pc;
 
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
     
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
-        project = contextProvider.lookupFirst(null, Project.class);
+        pc = contextProvider.lookupFirst(null, ProjectContext.class);
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
@@ -218,6 +219,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
                     FileObject fo = null;
                     try {
                         URL url = URI.create(file).toURL();
+                        Project project = pc.getProject();
                         if (project != null) {
                             fo = ServerURLMapping.fromServer(project, url);
                         }
@@ -236,6 +238,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
                     if (!file.isEmpty()) {
                         try {
                             URL url = URI.create(file).toURL();
+                            Project project = pc.getProject();
                             if (project != null) {
                                 FileObject fo = ServerURLMapping.fromServer(project, url);
                                 if (fo != null) {

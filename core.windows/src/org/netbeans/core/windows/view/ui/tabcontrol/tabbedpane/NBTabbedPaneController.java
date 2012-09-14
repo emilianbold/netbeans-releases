@@ -378,6 +378,11 @@ public class NBTabbedPaneController {
                     }
                     shouldPerformAction( command, tabIndex, e );
                 }
+            } else if( e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON2 && i >= 0 ) {
+                //close on middle click
+                CloseableTabComponent tab = ( CloseableTabComponent ) container.getTabComponentAt( i );
+                String command = TabbedContainer.COMMAND_CLOSE;
+                shouldPerformAction( command, tabIndex, e );
             }
         }
 

@@ -138,7 +138,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
         populateCatalog(contents);
 
         JiraAutoupdate jau = new JiraAutoupdate();
-        assertTrue(jau.checkNewJiraPluginAvailable());
+        assertNotNull(jau.checkNewJiraPluginAvailable());
     }
 
     public void testNewJIRANotAvailable() throws Throwable {
@@ -146,7 +146,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
         populateCatalog(contents);
 
         JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkNewJiraPluginAvailable());
+        assertNull(jau.checkNewJiraPluginAvailable());
     }
 
     public void testJIRAIsNotAtUCAvailable() throws Throwable {
@@ -154,7 +154,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
         populateCatalog(contents);
 
         JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkNewJiraPluginAvailable());
+        assertNull(jau.checkNewJiraPluginAvailable());
     }
 
     public void testIsSupported() {

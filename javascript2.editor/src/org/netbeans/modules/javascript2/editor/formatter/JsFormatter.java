@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -64,7 +65,6 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -75,6 +75,9 @@ import org.openide.util.Exceptions;
  * @author Petr Hejl
  */
 public class JsFormatter implements Formatter {
+
+    // only for tests
+    static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
@@ -110,6 +113,7 @@ public class JsFormatter implements Formatter {
         processed.clear();
         lastOffsetDiff = 0;
         final BaseDocument doc = (BaseDocument) context.document();
+        final boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
 
         doc.runAtomic(new Runnable() {
 
@@ -117,14 +121,19 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
-                FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
+                FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot(), language);
 
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
 
+                if (ts == null) {
+                    return;
+                }
+
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, context.startOffset(), context.endOffset());
-                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms",
+                        (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
@@ -136,7 +145,8 @@ public class JsFormatter implements Formatter {
                 } else {
                     LOGGER.log(Level.INFO, "Format visitor not executed; no root node");
                 }
-                LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
+                LOGGER.log(Level.INFO, "Format visitor: {0} ms",
+                        (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
 
@@ -150,12 +160,57 @@ public class JsFormatter implements Formatter {
                     }
                 }
                 boolean firstTokenFound = false;
+                Stack<FormatContext.ContinuationBlock> continuations = new Stack<FormatContext.ContinuationBlock>();
 
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
 
+                    if (processed.contains(token)) {
+                        continue;
+                    }
+
                     // FIXME optimize performance
                     if (!token.isVirtual()) {
+                        if (!continuations.isEmpty()) {
+                            if (token.getKind() == FormatToken.Kind.TEXT) {
+                                if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(token.getText().toString())) {
+                                    continuations.push(new FormatContext.ContinuationBlock(
+                                            FormatContext.ContinuationBlock.Type.CURLY, false));
+                                } else if (JsTokenId.BRACKET_LEFT_BRACKET.fixedText().equals(token.getText().toString())) {
+                                    continuations.push(new FormatContext.ContinuationBlock(
+                                            FormatContext.ContinuationBlock.Type.BRACKET, false));
+                                } else if (JsTokenId.BRACKET_LEFT_PAREN.fixedText().equals(token.getText().toString())) {
+                                    continuations.push(new FormatContext.ContinuationBlock(
+                                            FormatContext.ContinuationBlock.Type.PAREN, false));
+                                } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(token.getText().toString())) {
+                                    FormatContext.ContinuationBlock block = continuations.peek();
+                                    if (block.getType() == FormatContext.ContinuationBlock.Type.CURLY) {
+                                        continuations.pop();
+                                        if (block.isChange()) {
+                                            formatContext.decContinuationLevel();
+                                        }
+                                    }
+                                } else if (JsTokenId.BRACKET_RIGHT_BRACKET.fixedText().equals(token.getText().toString())) {
+                                    FormatContext.ContinuationBlock block = continuations.peek();
+                                    if (block.getType() == FormatContext.ContinuationBlock.Type.BRACKET) {
+                                        continuations.pop();
+                                        if (block.isChange()) {
+                                            formatContext.decContinuationLevel();
+                                        }
+                                    }
+                                } else if (JsTokenId.BRACKET_RIGHT_PAREN.fixedText().equals(token.getText().toString())) {
+                                    FormatContext.ContinuationBlock block = continuations.peek();
+                                    if (block.getType() == FormatContext.ContinuationBlock.Type.PAREN) {
+                                        continuations.pop();
+                                        if (block.isChange()) {
+                                            formatContext.decContinuationLevel();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
                         if (!firstTokenFound) {
                             firstTokenFound = true;
                             formatContext.setCurrentLineStart(token.getOffset());
@@ -170,11 +225,17 @@ public class JsFormatter implements Formatter {
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
-                    if (processed.contains(token)) {
-                        continue;
-                    }
-
-                    if (token.getKind().isSpaceMarker()) {
+                    if (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                            || token.getKind() == FormatToken.Kind.DOC_COMMENT
+                            || token.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                        try {
+                            int indent = context.lineIndent(context.lineStartOffset(
+                                    token.getOffset() + formatContext.getOffsetDiff()));
+                            formatComment(token, formatContext, indent);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+                    } else if (token.getKind().isSpaceMarker()) {
                         formatSpace(tokens, i, formatContext);
                     } else if (token.getKind().isLineWrapMarker()) {
                         formatLineWrap(tokens, i, formatContext, initialIndent,
@@ -201,25 +262,15 @@ public class JsFormatter implements Formatter {
                                 if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
                                     FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
                                     if (lastWrap != null) {
-                                        // we dont have to remove trailing spaces as indentation will fix it
-                                        formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
-                                        // do the indentation
-                                        // FIXME continuation, initialIndent and level - check it is ok
-                                        int indentationSize = initialIndent
-                                                + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                                        if (isContinuation(lastWrap.getToken(), true)) {
-                                            indentationSize += continuationIndent;
-                                        }
-                                        formatContext.indentLineWithOffsetDiff(
-                                                lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
-                                                indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                                        // wrap it
+                                        wrapLine(formatContext, lastWrap, initialIndent, continuationIndent);
                                     }
                                 }
                             }
                         }
 
                         // remove trailing spaces
-                        removeTrailingSpaces(tokens, i, formatContext, token);
+                        removeTrailingSpaces(tokens, i, formatContext, token, templateEdit);
 
                         if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                             formatContext.setCurrentLineStart(token.getOffset()
@@ -237,7 +288,6 @@ public class JsFormatter implements Formatter {
 
                         FormatToken indentationStart = null;
                         FormatToken indentationEnd = null;
-                        StringBuilder current = new StringBuilder();
                         // we move main loop here as well to not to process tokens twice
                         for (int j = i + 1; j < tokens.size(); j++) {
                             FormatToken nextToken = tokens.get(j);
@@ -252,19 +302,63 @@ public class JsFormatter implements Formatter {
                                     if (indentationStart == null) {
                                         indentationStart = nextToken;
                                     }
-                                    current.append(nextToken.getText());
                                 }
                             } else {
                                 updateIndentationLevel(nextToken, formatContext);
                             }
                             i++;
                         }
+
+                        // if it is code template formatting we want to do
+                        // proper indentation even on a blank line
                         if (indentationEnd != null
-                                && indentationEnd.getKind() != FormatToken.Kind.EOL) {
+                                && (indentationEnd.getKind() != FormatToken.Kind.EOL || templateEdit)) {
                             int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
-                            if (isContinuation(token, false)) {
-                                indentationSize += continuationIndent;
+                            int continuationLevel = formatContext.getContinuationLevel();
+                            if (isContinuation(formatContext, token, false)) {
+                                continuationLevel++;
+                                FormatToken nextImportant = FormatTokenStream.getNextImportant(token);
+                                if (nextImportant != null && nextImportant.getKind() == FormatToken.Kind.TEXT) {
+                                    if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextImportant.getText().toString())) {
+                                        continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.CURLY, true));
+                                        formatContext.incContinuationLevel();
+                                        processed.add(nextImportant);
+                                    } else if (JsTokenId.BRACKET_LEFT_BRACKET.fixedText().equals(nextImportant.getText().toString())) {
+                                        continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.BRACKET, true));
+                                        formatContext.incContinuationLevel();
+                                        processed.add(nextImportant);
+                                    } else if (JsTokenId.BRACKET_LEFT_PAREN.fixedText().equals(nextImportant.getText().toString())) {
+                                        continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.PAREN, true));
+                                        formatContext.incContinuationLevel();
+                                        processed.add(nextImportant);
+                                    } else if (JsTokenId.KEYWORD_FUNCTION.fixedText().equals(nextImportant.getText().toString())) {
+                                        FormatToken curly = nextImportant;
+                                        while (curly != null) {
+                                            if (!curly.isVirtual()) {
+                                                if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(curly.getText().toString())) {
+                                                    // safety catch - something wrong
+                                                    curly = null;
+                                                    break;
+                                                }
+                                                if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(curly.getText().toString())) {
+                                                    break;
+                                                }
+                                            }
+                                            curly = curly.next();
+                                        }
+                                        if (curly != null) {
+                                            continuations.push(new FormatContext.ContinuationBlock(
+                                                FormatContext.ContinuationBlock.Type.CURLY, true));
+                                            formatContext.incContinuationLevel();
+                                            processed.add(curly);
+                                        }
+                                    }
+                                }
                             }
+                            indentationSize += continuationIndent * continuationLevel;
                             formatContext.indentLine(
                                     indentationStart.getOffset(), indentationSize,
                                     checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize));
@@ -276,8 +370,13 @@ public class JsFormatter implements Formatter {
         });
     }
 
-    private void removeTrailingSpaces(List<FormatToken> tokens, int index,
-            FormatContext formatContext, FormatToken limit) {
+    private static void removeTrailingSpaces(List<FormatToken> tokens, int index,
+            FormatContext formatContext, FormatToken limit, boolean templateEdit) {
+
+        // if it is code template we are doing indentation even on a blank line
+        if (templateEdit && limit.getKind() == FormatToken.Kind.EOL) {
+            return;
+        }
 
         FormatToken start = null;
         for (int j = index - 1; j >= 0; j--) {
@@ -296,6 +395,25 @@ public class JsFormatter implements Formatter {
             }
             start = start.next();
         }
+    }
+
+    private static void wrapLine(FormatContext formatContext, FormatContext.LineWrap lastWrap,
+            int initialIndent, int continuationIndent) {
+        // we dont have to remove trailing spaces as indentation will fix it
+        formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset()
+                + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+        // there is + 1 for eol
+        formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
+                + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
+        // do the indentation
+        int indentationSize = initialIndent
+                + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+        if (isContinuation(formatContext, lastWrap.getToken(), true)) {
+            indentationSize += continuationIndent;
+        }
+        formatContext.indentLineWithOffsetDiff(
+                lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
     }
 
     private void formatLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
@@ -339,19 +457,8 @@ public class JsFormatter implements Formatter {
                 if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
                     // we dont have to remove trailing spaces as indentation will fix it
                     int offsetBeforeChanges = formatContext.getOffsetDiff();
-                    formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
-                    // there is + 1 for eol
-                    formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
-                            + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
-                    // do the indentation
-                    int indentationSize = initialIndent
-                            + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                    if (isContinuation(lastWrap.getToken(), true)) {
-                        indentationSize += continuationIndent;
-                    }
-                    formatContext.indentLineWithOffsetDiff(
-                            lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
-                            indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                    // wrap it
+                    wrapLine(formatContext, lastWrap, initialIndent, continuationIndent);
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
                             tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges),
@@ -401,20 +508,8 @@ public class JsFormatter implements Formatter {
                     if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
                         FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
                         if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
-                            // we dont have to remove trailing spaces as indentation will fix it
-                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
-                            // there is + 1 for eol
-                            formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
-                                    + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
-                            // do the indentation
-                            int indentationSize = initialIndent
-                                    + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                            if (isContinuation(lastWrap.getToken(), true)) {
-                                indentationSize += continuationIndent;
-                            }
-                            formatContext.indentLineWithOffsetDiff(
-                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
-                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                            // wrap it
+                            wrapLine(formatContext, lastWrap, initialIndent, continuationIndent);
                         }
                     }
 
@@ -427,7 +522,7 @@ public class JsFormatter implements Formatter {
                     // do the indentation
                     int indentationSize = initialIndent
                             + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                    if (isContinuation(tokenBeforeEol, true)) {
+                    if (isContinuation(formatContext, tokenBeforeEol, true)) {
                         indentationSize += continuationIndent;
                     }
                     formatContext.indentLine(
@@ -545,30 +640,59 @@ public class JsFormatter implements Formatter {
             // we fetch the space or next token to start
             start = FormatTokenStream.getNextNonVirtual(start);
 
-            if (start.getKind() != FormatToken.Kind.WHITESPACE
-                    && start.getKind() != FormatToken.Kind.EOL) {
-                assert start == end : start;
-                if (!remove) {
-                    formatContext.insert(start.getOffset(), " "); // NOI18N
-                }
-            } else {
-                if (lastEol != null) {
-                    end = lastEol;
-                }
-                // if it should be removed or there is eol (in fact space)
-                // which will stay there
-                if (remove || end.getKind() == FormatToken.Kind.EOL) {
-                    formatContext.remove(start.getOffset(),
-                            end.getOffset() - start.getOffset());
+            if (start != null) {
+                if (start.getKind() != FormatToken.Kind.WHITESPACE
+                        && start.getKind() != FormatToken.Kind.EOL) {
+                    assert start == end : start;
+                    if (!remove) {
+                        formatContext.insert(start.getOffset(), " "); // NOI18N
+                    }
                 } else {
-                    formatContext.replace(start.getOffset(),
-                            end.getOffset() - start.getOffset(), " "); // NOI18N
+                    if (lastEol != null) {
+                        end = lastEol;
+                    }
+                    // if it should be removed or there is eol (in fact space)
+                    // which will stay there
+                    if (remove || end.getKind() == FormatToken.Kind.EOL) {
+                        formatContext.remove(start.getOffset(),
+                                end.getOffset() - start.getOffset());
+                    } else {
+                        formatContext.replace(start.getOffset(),
+                                end.getOffset() - start.getOffset(), " "); // NOI18N
+                    }
                 }
             }
         }
     }
 
-    private boolean isContinuation(FormatToken token, boolean noRealEol) {
+    private void formatComment(FormatToken comment, FormatContext formatContext, int indent) {
+        // this assumes the firts line is already indented by EOL logic
+        assert comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                || comment.getKind() == FormatToken.Kind.DOC_COMMENT
+                || comment.getKind() == FormatToken.Kind.LINE_COMMENT;
+
+        if (comment.getKind() == FormatToken.Kind.LINE_COMMENT) {
+            return;
+        }
+
+        if (!comment.getText().toString().contains("\n")) { // NOI18N
+            return;
+        }
+
+        CharSequence text = comment.getText();
+        for (int i = 0; i < text.length(); i++) {
+            char single = text.charAt(i);
+            if (single == '\n') { // NOI18N
+                // following lines are + 1 indented
+                formatContext.indentLine(comment.getOffset() + i + 1,
+                        indent + 1, Indentation.ALLOWED); // NOI18N
+            }
+        }
+    }
+
+    private static boolean isContinuation(FormatContext formatContext,
+            FormatToken token, boolean noRealEol) {
+
         assert noRealEol || token.getKind() == FormatToken.Kind.SOURCE_START
                 || token.getKind() == FormatToken.Kind.EOL;
 
@@ -580,6 +704,7 @@ public class JsFormatter implements Formatter {
         for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
             if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                    || current.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL
                     || current.getKind() == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
                     || current.getKind().isIndentationMarker()) {
@@ -589,7 +714,7 @@ public class JsFormatter implements Formatter {
 
         // this may happen when curly bracket is on new line
         FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
-        if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
+        if (nonVirtualNext != null) {
             String nextText = nonVirtualNext.getText().toString();
             if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
                 FormatToken previous = nonVirtualNext.previous();
@@ -611,6 +736,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
+                    || kind == FormatToken.Kind.AFTER_ARRAY_LITERAL
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
                     || kind.isIndentationMarker()) {
@@ -622,6 +748,7 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
                 || result.getKind().isIndentationMarker()) {
@@ -631,6 +758,7 @@ public class JsFormatter implements Formatter {
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
+                || formatContext.isGenerated(result)
                 // this is just safeguard literal offsets should be fixed
                 /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
 
@@ -651,8 +779,8 @@ public class JsFormatter implements Formatter {
 
             // we don't want to touch lines starting with other language
             // it is a bit heuristic but we can't do much
-            // see embeddedMultipleSections3.tpl and embeddedMultipleSections4.php
-            if (formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(indentationEnd.getText().toString())) {
+            // see embeddedMultipleSections1.php
+            if (formatContext.isGenerated(indentationEnd)) {
                 return Indentation.FORBIDDEN;
             }
             return Indentation.ALLOWED;

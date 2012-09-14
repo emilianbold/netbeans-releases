@@ -283,7 +283,7 @@ public class ResultsOutlineSupport {
             Object lpc = event.getPath().getLastPathComponent();
             Node node = Visualizer.findNode(lpc);
             if (node != null) {
-                expandOnlyChilds((Node) node);
+                expandOnlyChilds(node);
             }
         }
 

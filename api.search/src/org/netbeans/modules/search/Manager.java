@@ -52,19 +52,19 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
+import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
+import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.OutputWriter;
-import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
-import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
-import org.netbeans.spi.search.provider.SearchComposition;
-import org.openide.util.Mutex;
 
 /**
  * Manager of the Search module's activities.
@@ -148,7 +148,7 @@ public final class Manager {
         processNextPendingTask();
     }
 
-    public void scheduleSearchTask(SearchComposition searchComposition,
+    public <R> void scheduleSearchTask(SearchComposition<R> searchComposition,
             boolean replacing) {
         scheduleSearchTask(new SearchTask(searchComposition, replacing));
     }
@@ -455,18 +455,19 @@ public final class Manager {
             if (pTasks[i] instanceof SearchTask){
                 if (!stoppingTasks.isEmpty()){
                     notifySearchPending((SearchTask)pTasks[i], SEARCHING);
-                } else if (haveReplaceRunning)
+                } else if (haveReplaceRunning) {
                     notifySearchPending((SearchTask)pTasks[i], REPLACING);
-                else{
+                } else {
                     if(pendingTasks.remove(pTasks[i])){
                         startSearching((SearchTask)pTasks[i]);
                     }
                 }
             }else if (pTasks[i] instanceof ReplaceTask){
-                if (!haveReplaceRunning && !haveRunningSearchTask())
+                if (!haveReplaceRunning && !haveRunningSearchTask()) {
                     if(pendingTasks.remove(pTasks[i])){
                         startReplacing((ReplaceTask)pTasks[i]);
                     }
+                }
             }else if (pTasks[i] instanceof PrintDetailsTask){
                 if(pendingTasks.remove(pTasks[i])){
                     startPrintingDetails((PrintDetailsTask)pTasks[i]);
@@ -635,7 +636,7 @@ public final class Manager {
          */
         @Override
         public void taskFinished(Task task) {
-            Runnable rTask = null;
+            Runnable rTask;
             synchronized (Manager.this) {
                 rTask = Manager.this.tasksMap.remove(task);
             }

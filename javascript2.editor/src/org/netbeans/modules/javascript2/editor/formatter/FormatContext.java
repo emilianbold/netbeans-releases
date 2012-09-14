@@ -47,12 +47,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -71,6 +73,8 @@ public final class FormatContext {
 
     private final Snapshot snapshot;
 
+    private final Language<JsTokenId> languange;
+
     private final int initialStart;
 
     private final int initialEnd;
@@ -83,13 +87,16 @@ public final class FormatContext {
 
     private int indentationLevel;
 
+    private int continuationLevel;
+
     private int offsetDiff;
 
     private int currentLineStart;
 
-    public FormatContext(Context context, Snapshot snapshot) {
+    public FormatContext(Context context, Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
         this.snapshot = snapshot;
+        this.languange = language;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
 
@@ -123,8 +130,8 @@ public final class FormatContext {
                 int endOffset = region.getOriginalEnd();
                 try {
                     int lineOffset = context.lineStartOffset(endOffset);
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
-                        snapshot, region.getOriginalStart());
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        snapshot, region.getOriginalStart(), language);
                     if (ts != null) {
                         int embeddedOffset = snapshot.getEmbeddedOffset(lineOffset);
                         if (embeddedOffset >= 0) {
@@ -176,6 +183,18 @@ public final class FormatContext {
 
     public void decIndentationLevel() {
         this.indentationLevel--;
+    }
+
+    public int getContinuationLevel() {
+        return continuationLevel;
+    }
+
+    public void incContinuationLevel() {
+        this.continuationLevel++;
+    }
+
+    public void decContinuationLevel() {
+        this.continuationLevel--;
     }
 
     public int getOffsetDiff() {
@@ -253,7 +272,10 @@ public final class FormatContext {
             try {
                 // this is bit hacky
                 boolean nonEmpty = false;
-                FormatToken startToken = stream.getToken(
+                // the region may unfortunately start in the middle of token
+                // so we have to query for token containing the offset
+                // covered by embeddedSimple3.php
+                FormatToken startToken = stream.getCoveringToken(
                         snapshot.getEmbeddedOffset(start.getOriginalStart()));
                 // in case we have different regions and space
                 // between those regions is not empty (more precisely
@@ -286,7 +308,22 @@ public final class FormatContext {
                     }
                 }
                 if (nonEmpty && i > 0) {
-                    start.setInitialIndentation(regions.get(i - 1).getInitialIndentation());
+                    // some regions may have been skipped (no indentation
+                    // query - call to this method) so we have to find
+                    // the right one rolling back
+                    // covered by embeddedSimple7.php
+                    Region regionWithIndentation = null;
+                    for (int j = i - 1; j >= 0; j--) {
+                        if (regions.get(j).getInitialIndentation() >= 0) {
+                            regionWithIndentation = regions.get(j);
+                            break;
+                        }
+                    }
+                    if (regionWithIndentation != null) {
+                        start.setInitialIndentation(regionWithIndentation.getInitialIndentation());
+                    } else {
+                        start.setInitialIndentation(0);
+                    }
                 } else {
                     // for case like <script>\nfoo();\n</script>
                     // we get the inital indentation from already indented
@@ -299,6 +336,12 @@ public final class FormatContext {
             }
         }
         return start != null ? start.getInitialIndentation() : 0;
+    }
+
+    public boolean isGenerated(FormatToken token) {
+        // XXX it may be better to replace with
+        // return embedded && getDocumentOffset(token.getOffset()) < 0;
+        return embedded && JsEmbeddingProvider.isGeneratedIdentifier(token.getText().toString());
     }
 
     public BaseDocument getDocument() {
@@ -451,6 +494,35 @@ public final class FormatContext {
 
         public int getIndentationLevel() {
             return indentationLevel;
+        }
+    }
+
+    public static class ContinuationBlock {
+
+        public enum Type {
+
+            CURLY,
+
+            BRACKET,
+
+            PAREN
+        }
+
+        private final ContinuationBlock.Type type;
+
+        private final boolean change;
+
+        public ContinuationBlock(ContinuationBlock.Type type, boolean change) {
+            this.type = type;
+            this.change = change;
+        }
+
+        public ContinuationBlock.Type getType() {
+            return type;
+        }
+
+        public boolean isChange() {
+            return change;
         }
     }
 

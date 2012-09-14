@@ -403,6 +403,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                         }
                     });
                 } else {
+                    final OffsetsBag paneBag = SpellcheckerHighlightLayerFactory.getBag(pane);
                     _document.render(new Runnable() {
                         public void run() {
                             if (isCanceled()) {
@@ -413,7 +414,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                             for (int[] current : localHighlights) {
                                 localHighlightsBag.addHighlight(current[0], current[1], ERROR);
                             }
-                            SpellcheckerHighlightLayerFactory.getBag(pane).setHighlights(localHighlightsBag);
+                            paneBag.setHighlights(localHighlightsBag);
                         }
                     });
                 }

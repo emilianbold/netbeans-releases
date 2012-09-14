@@ -44,12 +44,17 @@ package org.netbeans.modules.javascript2.editor.hints;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -60,10 +65,11 @@ public class JsHintsProvider implements HintsProvider {
     
     private volatile boolean cancel = false;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("BC_UNCONFIRMED_CAST")
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
-        
+
         // find out whether there is a convention hint enabled
         List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionHint.JSCONVENTION_OPTION_HINTS);
         boolean countConventionHints = false;
@@ -78,7 +84,7 @@ public class JsHintsProvider implements HintsProvider {
             JsConventionRule rule = new JsConventionRule();
             rule.computeHints((JsRuleContext)context, hints, manager);
         }
-        
+
         List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
         if (otherHints != null) {
             for (Rule.AstRule astRule : otherHints) {
@@ -105,7 +111,37 @@ public class JsHintsProvider implements HintsProvider {
         ParserResult parserResult = context.parserResult;
         if (parserResult != null) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
-            unhandled.addAll(errors);
+            // if in embedded
+            String mimepath = parserResult.getSnapshot().getMimePath().getPath();
+            if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
+                && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
+                    int nextCorrect = -1;
+                    for (Error error : errors) {
+                        // if the error is in embedded code we ignore it
+                        // as we don't know what the other language will add
+                        int pos = parserResult.getSnapshot().getOriginalOffset(error.getStartPosition());
+                        if (pos >= 0 && nextCorrect <= error.getStartPosition()
+                                && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getDisplayName())) {
+                            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(
+                                    parserResult.getSnapshot(), error.getStartPosition());
+                            if (ts != null && ts.movePrevious()) {
+                                // check also a previous token - is it generated ?
+                                Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                                if (!JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
+                                    unhandled.add(error);
+                                } else {
+                                    // usually we may expect a group of errors
+                                    // so we disable them until next } .... \n
+                                    nextCorrect = findNextCorrectOffset(ts, error.getStartPosition());
+                                }
+                            } else {
+                                unhandled.add(error);
+                            }
+                        }
+                    }
+            } else {
+                unhandled.addAll(errors);
+            }
         }
     }
 
@@ -123,8 +159,18 @@ public class JsHintsProvider implements HintsProvider {
     public RuleContext createRuleContext() {
         return new JsRuleContext();
     }
-    
+
+    private int findNextCorrectOffset(TokenSequence<? extends JsTokenId> ts, int offset) {
+        ts.move(offset);
+        if (ts.moveNext()) {
+            LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.BRACKET_LEFT_CURLY));
+            LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+        }
+        return ts.offset();
+    }
+
     public static class JsRuleContext extends RuleContext {
+
         private JsParserResult jsParserResult = null;
 
         public JsParserResult getJsParserResult() {

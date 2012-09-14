@@ -87,10 +87,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableRowSorter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -455,7 +453,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
             }
             Library library = libraryVersion.getLibrary();
-            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
@@ -547,7 +545,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(librariesFilterTextField))
+                        .addComponent(librariesFilterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -558,9 +556,13 @@ public class JavaScriptLibrarySelection extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-            .addComponent(generalInfoLabel)
-            .addComponent(additionalInfoLabel)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(additionalInfoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
@@ -568,7 +570,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(generalInfoLabel)
+                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(additionalInfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -588,7 +590,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                         .addComponent(deselectSelectedButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deselectAllButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 57, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesFolderLabel)
@@ -667,7 +669,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion;
+                assert false : "Unknown library type: " + libraryVersion; //NOI18N
                 // fallback
                 type = ""; // NOI18N
             }
@@ -687,7 +689,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         public LibrariesTableModel() {
             assert EventQueue.isDispatchThread();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : LibraryManager.getDefault().getLibraries()) {
+            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
                             WebClientLibraryManager.PROPERTY_REAL_NAME);
@@ -735,7 +737,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (columnIndex == 1) {
                 return Bundle.JavaScriptLibrarySelection_column_version();
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; // NOI18N
             return null;
         }
 
@@ -759,7 +761,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (columnIndex == 1) {
                 return VersionsRenderer.getLabel(modelItem.getSelectedVersion());
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; //NOI18N
             return null;
         }
 
@@ -771,7 +773,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 modelItem.setSelectedVersion((LibraryVersion) aValue);
                 return;
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; //NOI18N
         }
 
         List<ModelItem> getItems() {
@@ -897,7 +899,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         public String getSimpleDisplayName() {
-            return getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
+            return getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
         }
 
         public String getDescription() {
@@ -937,7 +939,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                     libraryVersions.add(libraryVersion);
                 }
                 if (libraryVersion == null) {
-                    assert false : "Unknown library version: " + library.getName();
+                    assert false : "Unknown library version: " + library.getName(); //NOI18N
                 }
             }
             return libraryVersions;
@@ -1003,7 +1005,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         @Override
         public String toString() {
-            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; // NOI18N
+            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; //NOI18N
         }
 
     }
@@ -1065,7 +1067,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion;
+                assert false : "Unknown library type: " + libraryVersion; //NOI18N
                 // fallback
                 type = ".???"; // NOI18N
             }

@@ -923,11 +923,12 @@ FIRST_MOD options { constText=true; } :
         | {!isPreprocPossible()}? {$setType(SHARP);}
         | {isPreprocPossible()}?
             {
+                $setType(SHARP);
                 setPreprocPossible(false);
                 setPreprocPending(true);
                 setPPDefinedAllowed(true);
             }
-            (options{greedy = true;}:Space)*
+            (options{greedy = true;}:Space|COMMENT)*
             (  // lexer has no token labels
               ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
             | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
@@ -1092,11 +1093,12 @@ PREPROC_DIRECTIVE :
                  |
                     {isPreprocPossible()}? 
                     {
+                        $setType(SHARP);
                         setPreprocPossible(false);
                         setPreprocPending(true);
                         setPPDefinedAllowed(true);
                     }
-                    (options{greedy = true;}:Space)*
+                    (options{greedy = true;}:Space|COMMENT)*
                     (  // lexer has no token labels
                       ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
                     | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 

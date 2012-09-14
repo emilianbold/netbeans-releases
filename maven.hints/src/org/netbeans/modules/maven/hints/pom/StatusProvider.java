@@ -168,17 +168,6 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
             return ProjectManager.mutex().readAccess(new Mutex.Action<List<ErrorDescription>>() {
                 public @Override List<ErrorDescription> run() {
-                    //Mkleint: this code is very very suspicious
-                    // isIntransaction() only means that some *other* thread has started a transaction.
-                    // with no relation to the current one.. On top of that the current thread should not need
-                    // a transaction since it's just read-only..
-                    boolean isInTransaction = model.isIntransaction();
-                    if (! isInTransaction) {
-                        if (! model.startTransaction()) {
-                            return err;
-                        }
-                    }
-                    try {
                         Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
                         if (selectionStart == -1 && selectionEnd == -1) {
                             Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
@@ -204,15 +193,6 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                             }
                         }
                         return err;
-                    } finally {
-                        if ((! isInTransaction) && model.isIntransaction()) {
-                            try {
-                                model.endTransaction();
-                            } catch (IllegalStateException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    }
                 }
             });
         }
@@ -245,8 +225,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             FileObject fo = NbEditorUtilities.getFileObject(document);
             if (fo != null) {
                 ModelSource ms = Utilities.createModelSource(fo);
-                model = POMModelFactory.getDefault().getModel(ms);
-                model.setAutoSyncActive(false);
+                model = POMModelFactory.getDefault().createFreshModel(ms);
                 project = FileOwnerQuery.getOwner(fo);
                 fo.addFileChangeListener(FileUtil.weakFileChangeListener(listener, fo));
             }
@@ -329,16 +308,6 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     styled.putProperty("maven_annot", null); //217741
                 }
                 if (checkModelValid(model)) {
-                    //Mkleint: this code is very very suspicious
-                    // isIntransaction() only means that some *other* thread has started a transaction.
-                    // with no relation to the current one.. On top of that the current thread should not need
-                    // a transaction since it's just read-only..
-                    boolean isInTransaction = model.isIntransaction();
-                    if (! isInTransaction) {
-                        if (! model.startTransaction()) {
-                            return;
-                        }
-                    }
                     try {
                         List<Annotation> anns = new ArrayList<Annotation>();
                         //now add a link to parent pom.
@@ -352,14 +321,6 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                         styled.putProperty("maven_annot", anns.toArray(new Annotation[0]));
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
-                    } finally {
-                        if ((! isInTransaction) && model.isIntransaction()) {
-                            try {
-                                model.endTransaction();
-                            } catch (IllegalStateException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
                     }                    
                 }
             }

@@ -52,10 +52,15 @@ import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
+@ActionID(id = OpenKenaiProjectAction.ID, category = "Team")
+@ActionRegistration(displayName = "#CTL_OpenKenaiProjectAction")
 public final class OpenKenaiProjectAction extends AbstractAction {
 
+    static final String ID = "org.netbeans.modules.kenai.ui.OpenKenaiProjectAction"; //NOI18N
     private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
 
     private Kenai kenai;

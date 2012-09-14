@@ -72,14 +72,17 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class ProjectsKeyArray extends Children.Keys<CsmProject> {
+
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
     private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
     private final Object lock = new Object();
+    private final CsmProject libOwnerProject;
     private static final RequestProcessor RP = new RequestProcessor(ProjectsKeyArray.class.getName(), 1);
     
-    public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
+    public ProjectsKeyArray(CsmProject libOwnerProject, ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
+        this.libOwnerProject= libOwnerProject;
     }
 
     private void resetKeys(){
@@ -111,13 +114,14 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     private Set<CsmProject> getProjects(){
         Set<CsmProject> projects = new HashSet<CsmProject>();
-        for (CsmProject p : CsmModelAccessor.getModel().projects()) {
-            if (ClassViewModel.isShowLibs()) {
-                for(CsmProject lib : p.getLibraries()) {
-                    projects.add(lib);
-                }
+        if (libOwnerProject == null) {
+            for (CsmProject p : CsmModelAccessor.getModel().projects()) {
+                projects.add(p);
             }
-            projects.add(p);
+        } else {
+            for(CsmProject lib : libOwnerProject.getLibraries()) {
+                projects.add(lib);
+            }
         }
         return projects;
     }
@@ -138,7 +142,14 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         return true;
     }
     
-    public void openProject(CsmProject project){
+    public void openProject(CsmProject project) {
+        if (project.isArtificial()) {
+            if (libOwnerProject == null) {
+                return;
+            } else if (!libOwnerProject.getLibraries().contains(project)) {
+                return;
+            }
+        }
         synchronized(lock) {
             if (myProjects == null) {
                 return;

@@ -118,6 +118,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
     private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main"; // NOI18N
     private static final Logger LOG = Logger.getLogger(CosChecker.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(CosChecker.class);
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
@@ -964,7 +965,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
         @Override
         protected void projectOpened() {
-            touchProject(project);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    touchProject(project);
+                }
+            });
             NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
             if (prj != null) {
                 prj.addPropertyChangeListener(listener);
@@ -979,12 +985,17 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 MavenProject mvn = prj.getMavenProject();
                 deleteCoSTimeStamp(mvn, true);
                 deleteCoSTimeStamp(mvn, false);
-                try {
-                    //also delete the IDE generated class files now?
-                    cleanGeneratedClassfiles(project);
-                } catch (IOException ex) {
-                    LOG.log(Level.FINE, "Error cleaning up", ex);
-                }
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //also delete the IDE generated class files now?
+                            cleanGeneratedClassfiles(project);
+                        } catch (IOException ex) {
+                            LOG.log(Level.FINE, "Error cleaning up", ex);
+                        }
+                    }
+                });
             }
         }
     }
