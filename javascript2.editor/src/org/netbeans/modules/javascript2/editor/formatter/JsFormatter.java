@@ -564,9 +564,9 @@ public class JsFormatter implements Formatter {
                     }
                 } else if (endToken.getKind() != FormatToken.Kind.EOL) {
                     // no eol
-                    FormatToken spaceStartToken = tokenBeforeEol;
-                    if (spaceStartToken.next() != null) {
-                        spaceStartToken = spaceStartToken.next();
+                    FormatToken spaceStartToken = tokenBeforeEol.next();
+                    if (spaceStartToken == null) {
+                        spaceStartToken = tokenBeforeEol;
                     }
 
                     if (isSpace(spaceStartToken, formatContext, true, true)) {
