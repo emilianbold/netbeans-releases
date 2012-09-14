@@ -44,7 +44,6 @@ package org.netbeans.modules.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -72,7 +71,8 @@ import java.util.Set;
  *
  * @author Victor G. Vasilyev <vvg@netbeans.org>
  */
-public class ArraySet<E> extends ArrayList<E> implements Set<E> {
+public class ArraySet<E extends Comparable<E>>
+        extends ArrayList<E> implements Set<E> {
     private int limit;
     private boolean isSorted;
     private boolean isNullAllowed;
@@ -110,7 +110,7 @@ public class ArraySet<E> extends ArrayList<E> implements Set<E> {
         }
         if(super.add(e)) {
             if(isSorted) {
-                Collections.sort((List)this);
+                Collections.sort(this);
             }
             return true;
         }
@@ -125,7 +125,7 @@ public class ArraySet<E> extends ArrayList<E> implements Set<E> {
      *        false} - ordering will be disabled.
      * @return this {@code ArraySet}.
      */
-    public ArraySet ordering(boolean doOrdering) {
+    public ArraySet<E> ordering(boolean doOrdering) {
         this.isSorted = doOrdering;
         return this;
     }
@@ -137,7 +137,7 @@ public class ArraySet<E> extends ArrayList<E> implements Set<E> {
      *        disabled.
      * @return this {@code ArraySet}.
      */
-    public ArraySet nullIsAllowed(boolean isNullAllowed) {
+    public ArraySet<E> nullIsAllowed(boolean isNullAllowed) {
         this.isNullAllowed = isNullAllowed;
         return this;
     }

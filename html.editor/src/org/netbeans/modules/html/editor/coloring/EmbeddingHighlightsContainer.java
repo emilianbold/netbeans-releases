@@ -83,8 +83,8 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
     private static final String CSS_BACKGROUND_TOKEN_NAME = "css-embedded"; //NOI18N
     private static final String JAVASCRIPT_BACKGROUND_TOKEN_NAME = "javascript-embedded"; //NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; //NOI18N
-    private static final String CSS_MIME_TYPE = "text/x-css"; //NOI18N
-    private static final String CSS_INLINED_MIME_TYPE = "text/x-css-inlined"; //NOI18N
+    private static final String CSS_MIME_TYPE = "text/css"; //NOI18N
+    private static final String CSS_INLINED_MIME_TYPE = "text/css-inlined"; //NOI18N
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; //NOI18N
 
     private final AttributeSet cssBackground;

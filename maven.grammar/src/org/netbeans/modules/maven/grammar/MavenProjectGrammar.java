@@ -70,6 +70,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
+import org.apache.maven.model.PluginManagement;
+import org.apache.maven.model.Plugin;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.Document;
@@ -133,12 +135,13 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     private final Object VERSION_LOCK = new Object();
     private final Object CLASSIFIER_LOCK = new Object();
     private static RequestProcessor RP = new RequestProcessor(MavenProjectGrammar.class.getName(), 3);
+    private final Project owner;
 
 
-    public MavenProjectGrammar(GrammarEnvironment env) {
+    MavenProjectGrammar(GrammarEnvironment env, Project owner) {
         super(env);
+        this.owner = owner;
         groupTask = RP.create(new GroupTask());
-        
     }
     
     @Override
@@ -208,6 +211,32 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         ArtifactInfoHolder holder = findArtifactInfo(previous);
         if (holder.getGroupId() == null) {
             holder.setGroupId("org.apache.maven.plugins"); //NOI18N
+        }
+        if (holder.getVersion() != null && holder.getVersion().contains("${")) {
+            //cannot do anything with unresolved value, clear and hope for the best
+            holder.setVersion(null);
+        }
+        if (holder.getVersion() == null && holder.getGroupId() != null && holder.getArtifactId() != null) {
+            NbMavenProject prj = owner.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                for (Plugin a : prj.getMavenProject().getBuildPlugins()) {
+                    if (holder.getGroupId().equals(a.getGroupId()) && holder.getArtifactId().equals(a.getArtifactId())) {
+                        holder.setVersion(a.getVersion());
+                        break;
+                    } 
+                }
+                if (holder.getVersion() == null) {
+                    PluginManagement man = prj.getMavenProject().getPluginManagement();
+                    if (man != null) {
+                        for (Plugin p : man.getPlugins()) {
+                            if (holder.getGroupId().equals(p.getGroupId()) && holder.getArtifactId().equals(p.getArtifactId())) {
+                                holder.setVersion(p.getVersion());
+                                break;
+                            } 
+                        }
+                    }
+                }
+            }
         }
         if (checkLocalRepo && (holder.getVersion() == null || "LATEST".equals(holder.getVersion()) || "RELEASE".equals(holder.getVersion()))  //NOI18N
                 && holder.getArtifactId() != null && holder.getGroupId() != null) { //NOI18N

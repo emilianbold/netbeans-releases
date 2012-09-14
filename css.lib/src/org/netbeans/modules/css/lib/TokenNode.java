@@ -96,12 +96,16 @@ public class TokenNode extends AbstractParseTreeNode {
         return new StringBuilder(super.toString())
                 .append(' ')
                 .append('\'')
-                .append(image())
+                .append(escapeNL(image()))
                 .append('\'')
                 .append(' ')
                 .append('[')
                 .append(getTokenId())
                 .append(']')
                 .toString();
+    }
+    
+    private CharSequence escapeNL(CharSequence text) {
+        return text.toString().replaceAll("\n", "\\\\n");
     }
 }

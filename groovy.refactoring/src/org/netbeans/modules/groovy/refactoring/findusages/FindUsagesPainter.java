@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -84,6 +85,8 @@ public class FindUsagesPainter {
 
         if (node instanceof ConstructorNode) {
             return colorLine(line, ((ConstructorNode) node).getDeclaringClass().getNameWithoutPackage());
+        } else if (node instanceof ConstructorCallExpression) {
+            return colorLine(line, ((ConstructorCallExpression) node).getType().getNameWithoutPackage());
         } else if (node instanceof MethodNode) {
             return colorLine(line, ((MethodNode) node).getName());
         } else if (node instanceof FieldNode) {

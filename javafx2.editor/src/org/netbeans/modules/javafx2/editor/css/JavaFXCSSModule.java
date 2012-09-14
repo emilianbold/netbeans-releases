@@ -43,10 +43,9 @@ package org.netbeans.modules.javafx2.editor.css;
 
 import java.util.Collection;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -63,10 +62,10 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     static ElementKind JFX_CSS_ELEMENT_KIND = ElementKind.GLOBAL;
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
-    private static Collection<Property> propertyDescriptors;
+    private static Collection<PropertyDefinition> propertyDescriptors;
 
     @Override
-    public synchronized Collection<Property> getProperties() {
+    public synchronized Collection<PropertyDefinition> getProperties() {
         if (propertyDescriptors == null) {
             propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }

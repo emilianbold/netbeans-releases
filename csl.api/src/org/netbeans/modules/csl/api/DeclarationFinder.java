@@ -139,7 +139,7 @@ public interface DeclarationFinder {
             alternatives.add(location);
         }
         
-        @CheckForNull
+        @NonNull
         public List<AlternativeLocation> getAlternativeLocations() {
             if (alternatives != null) {
                 return alternatives;

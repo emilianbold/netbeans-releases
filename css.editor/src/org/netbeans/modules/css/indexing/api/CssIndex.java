@@ -312,6 +312,11 @@ public class CssIndex {
         return Collections.emptyList();
     }
 
+    /**
+     * Get all stylesheets from the project.
+     * 
+     * @return 
+     */
     public Collection<FileObject> getAllIndexedFiles() {
         try {
             Collection<? extends IndexResult> results = querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.CSS_CONTENT_KEY);

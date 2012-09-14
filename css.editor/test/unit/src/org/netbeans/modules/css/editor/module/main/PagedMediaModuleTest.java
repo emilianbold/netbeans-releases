@@ -42,8 +42,9 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -105,14 +106,14 @@ public class PagedMediaModuleTest extends CssModuleTestBase {
     public void testProperties() {
         assertPropertyValues("size", "10px 20px");
         
-        PropertyModel p = CssModuleSupport.getPropertyModel("size");
+        PropertyModel p = Properties.getPropertyModel("size");
         assertNotNull(p);
-        assertTrue(new PropertyValue(p, "auto").isResolved());
-        assertTrue(new PropertyValue(p, "portrait").isResolved());
+        assertTrue(new ResolvedProperty(p, "auto").isResolved());
+        assertTrue(new ResolvedProperty(p, "portrait").isResolved());
         
-        p = CssModuleSupport.getPropertyModel("orphans");
+        p = Properties.getPropertyModel("orphans");
         assertNotNull(p);
-        assertTrue(new PropertyValue(p, "2").isResolved());
+        assertTrue(new ResolvedProperty(p, "2").isResolved());
         
 //        p = CssModuleSupport.getPropertyModel("fit-position");
 //        assertNotNull(p);

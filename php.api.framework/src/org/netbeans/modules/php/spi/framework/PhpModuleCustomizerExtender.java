@@ -46,7 +46,6 @@ import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.openide.util.HelpCtx;
 
 /**
@@ -56,6 +55,35 @@ import org.openide.util.HelpCtx;
  * @author Tomas Mysik
  */
 public abstract class PhpModuleCustomizerExtender {
+
+    /**
+     * This class is used to notify about changes in the direction from frameworks to PHP module.
+     * @see PhpModuleCustomizerExtender#save(PhpModule)
+     * @since 0.3
+     */
+    public enum Change {
+        /**
+         * Directory with source files changed.
+         */
+        SOURCES_CHANGE,
+        /**
+         * Directory with test files changed.
+         */
+        TESTS_CHANGE,
+        /**
+         * Directory with Selenium files changed.
+         */
+        SELENIUM_CHANGE,
+        /**
+         * Ignored files changed.
+         * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
+         */
+        IGNORED_FILES_CHANGE,
+        /**
+         * Framework has been added or removed.
+         */
+        FRAMEWORK_CHANGE,
+    }
 
     /**
      * Returns the display name of this extender. This method

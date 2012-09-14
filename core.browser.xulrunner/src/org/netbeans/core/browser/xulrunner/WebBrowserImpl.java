@@ -74,6 +74,7 @@ import org.mozilla.xpcom.XPCOMException;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -413,10 +414,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     @Override
-    public void executeJavaScript(String script) {
+    public Object executeJavaScript(String script) {
         if( !isInitialized() )
-            return;
-        browser.jsexec(script);
+            return null;
+        return browser.jsexec(script);
     }
 
     private boolean isInitialized() {
@@ -482,6 +483,11 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     private WeakReference<Window> parentWindow;
+
+    @Override
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
 
     private class BrowserContainer extends JPanel {
 

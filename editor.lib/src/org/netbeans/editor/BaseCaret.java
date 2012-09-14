@@ -179,7 +179,7 @@ AtomicLockListener, FoldHierarchyListener {
      * Present bounds of the caret. This rectangle needs to be repainted
      * prior the caret gets repainted elsewhere.
      */
-    private Rectangle caretBounds;
+    private volatile Rectangle caretBounds;
 
     /** Component this caret is bound to */
     protected JTextComponent component;
@@ -756,7 +756,8 @@ AtomicLockListener, FoldHierarchyListener {
                     c.repaint(oldCaretBounds);
                 }
 
-                if (updateCaretBounds()) {
+                // note - the order is important ! caret bounds must be updated even if the fold flag is true.
+                if (updateCaretBounds() || updateAfterFoldHierarchyChange) {
                     Rectangle scrollBounds = new Rectangle(caretBounds);
                     
                     // Optimization to avoid extra repaint:
@@ -826,12 +827,17 @@ AtomicLockListener, FoldHierarchyListener {
                         scrollBounds.y -= (visibleBounds.height - caretBounds.height) / 2;
                         scrollBounds.height = visibleBounds.height;
                     }
-
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("Resetting fold flag, current: " + updateAfterFoldHierarchyChange);
+                    }
                     updateAfterFoldHierarchyChange = false;
                     
                     // Ensure that the viewport will be scrolled either to make the caret visible
                     // or to retain cart's relative visual position against the begining of the viewport's visible rectangle.
                     if (doScroll) {
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("Scrolling to: " + scrollBounds);
+                        }
                         c.scrollRectToVisible(scrollBounds);
                     }
 
@@ -2099,8 +2105,9 @@ AtomicLockListener, FoldHierarchyListener {
 
     public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
         int caretOffset = getDot();
-        int addedFoldCnt = evt.getAddedFoldCount();
+        final int addedFoldCnt = evt.getAddedFoldCount();
         final boolean scrollToView;
+        LOG.finest("Received fold hierarchy change");
         if (addedFoldCnt > 0) {
             FoldHierarchy hierarchy = (FoldHierarchy)evt.getSource();
             Fold collapsed = null;
@@ -2110,6 +2117,7 @@ AtomicLockListener, FoldHierarchyListener {
                 hierarchy.expand(collapsed);                
                 wasExpanded = true;
             }
+            saveFoldCaretBounds = caretBounds;
             // prevent unneeded scrolling; the user may have scrolled out using mouse already
             // so scroll only if the added fold may affect Y axis. Actually it's unclear why
             // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
@@ -2133,6 +2141,7 @@ AtomicLockListener, FoldHierarchyListener {
                     setDot(startOffset, false);
                 }
             }
+            saveFoldCaretBounds = null;
             scrollToView = false;
         }        
         // Update caret's visual position
@@ -2141,11 +2150,26 @@ AtomicLockListener, FoldHierarchyListener {
         // view information.
         SwingUtilities.invokeLater(new Runnable() {
             public @Override void run() {
-                updateAfterFoldHierarchyChange = true;
-                dispatchUpdate(scrollToView); // do not scroll the window
+               LOG.finest("Updating after fold hierarchy change");
+               if (component == null) {
+                   return;
+               }
+               // see #217867
+               updateAfterFoldHierarchyChange = caretBounds != null;
+               Rectangle b = saveFoldCaretBounds;
+               boolean wasInView = b != null && component.getVisibleRect().intersects(b);
+               // scroll if:
+               // a/ a fold was added and the caret was originally in the view
+               // b/ scrollToView is true (= caret was positioned within a new now collapsed fold)
+               dispatchUpdate((addedFoldCnt > 1 && wasInView) || scrollToView);
             }
         });
     }
+    
+    /**
+     * Cursor bounds effective at the time the fold hierarchy event arrives.
+     */
+    private volatile Rectangle saveFoldCaretBounds;
     
     void scheduleCaretUpdate() {
         if (!caretUpdatePending) {

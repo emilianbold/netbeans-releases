@@ -55,6 +55,7 @@ import java.lang.management.MemoryUsage;
 public final class LowMemoryWatcher {
 
     private static float heapLimit = 0.8f;
+    private static long absHeapLimit = 100<<20;
     private static LowMemoryWatcher instance;
     private final MemoryMXBean memBean;
 
@@ -74,7 +75,7 @@ public final class LowMemoryWatcher {
             if (usage != null) {
                 long used = usage.getUsed();
                 long max = usage.getMax();
-                return used > max * heapLimit;
+                return (used > max * heapLimit) && (max-used <= absHeapLimit);
             }
         }
         return false;
@@ -85,7 +86,11 @@ public final class LowMemoryWatcher {
      * @since 2.12
      */
     public void free() {
-        System.gc();
+        final Runtime rt = Runtime.getRuntime();
+        rt.gc();
+        rt.runFinalization();
+        rt.gc();
+        rt.gc();
     }
     
     /**

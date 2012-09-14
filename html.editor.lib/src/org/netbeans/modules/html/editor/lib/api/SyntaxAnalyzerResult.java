@@ -321,7 +321,7 @@ public class SyntaxAnalyzerResult {
             }
 
             Iterator<Element> original = getElementsIterator();
-            Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+            final Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
                 @Override
                 public boolean accepts(Element node) {
                     switch (node.type()) {
@@ -345,7 +345,7 @@ public class SyntaxAnalyzerResult {
             Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
                     source,
                     namespace,
-                    filteredIterator);
+                    createLookupFor(filteredIterator));
 
             return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
@@ -356,6 +356,17 @@ public class SyntaxAnalyzerResult {
 
     }
 
+    private static Lookup createLookupFor(final Iterator<Element> elementsIterator) {
+        InstanceContent ic = new InstanceContent();
+        ic.add(new ElementsIteratorHandle() {
+            @Override
+            public Iterator<Element> getIterator() {
+                return elementsIterator;
+            }
+        });
+        return new AbstractLookup(ic);
+    }
+    
     /**
      * Parse the content as a plain xml-like tree. Any validity checks are not
      * done, just the tag elements are transformed to the tree structure.
@@ -363,7 +374,7 @@ public class SyntaxAnalyzerResult {
     public ParseResult parsePlain() {
         long start = System.currentTimeMillis();
         try {
-            Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, getElementsIterator());
+            Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, createLookupFor(getElementsIterator()));
             return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
         } finally {
             long end = System.currentTimeMillis();
@@ -409,7 +420,7 @@ public class SyntaxAnalyzerResult {
             Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
                     source,
                     null,
-                    filteredIterator);
+                    createLookupFor(filteredIterator));
 
             return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
         } finally {

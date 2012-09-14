@@ -325,7 +325,7 @@ public class Dwarf {
                             break;
                         }
                     }
-                    if (len > 1 || startVirtual == splitVirtual.length - 2 || startReal == splitReal.length - 1) {
+                    if (len > 1 || startVirtual == splitVirtual.length - 2 || startReal == splitReal.length - 2) {
                         StringBuilder buf = new StringBuilder();
                         for(int k = 0; k < startReal+len; k++) {
                             buf.append('/').append(splitReal[k]); //NOI18N

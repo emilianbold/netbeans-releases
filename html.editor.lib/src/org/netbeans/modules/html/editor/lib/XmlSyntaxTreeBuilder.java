@@ -39,15 +39,18 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.editor.lib;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Properties;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -55,58 +58,85 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public class XmlSyntaxTreeBuilder {
 
-    public static Node makeUncheckedTree(HtmlSource source, String namespace, Iterator<Element> elements) {
+    private static boolean ADD_TEXT_NODES;
+    private static boolean FOLLOW_HTML_MODEL;
+    private static HtmlModel MODEL;
 
-        assert elements != null : "passed elements list cannot but null"; //NOI18N
+    public static Node makeUncheckedTree(HtmlSource source, String namespace, Lookup lookup) {
+        Parameters.notNull("source", source);
+        Parameters.notNull("lookup", lookup);
 
-        int lastEndOffset = source.getSourceCode().length();
+        ElementsIteratorHandle handle = lookup.lookup(ElementsIteratorHandle.class);
+        Iterator<Element> elements = handle != null ? handle.getIterator() : null;
+        assert elements != null;
 
-        //create a root node, it can contain one or more child nodes
-        //normally just <html> node should be its child
-        XmlSTElements.Root rootNode = new XmlSTElements.Root(namespace, lastEndOffset);
+        Properties props = lookup.lookup(Properties.class);
+        if (props != null) {
+            ADD_TEXT_NODES = Boolean.parseBoolean(props.getProperty("add_text_nodes")); //NOI18N
+            FOLLOW_HTML_MODEL = Boolean.parseBoolean(props.getProperty("follow_html_model")); //NOI18N
+        }
+
+        if (FOLLOW_HTML_MODEL) {
+            MODEL = lookup.lookup(HtmlModel.class);
+            assert MODEL != null : "add HtmlModel instance to the lookup!"; //NOI18N
+        }
+
+        CharSequence code = source.getSourceCode();
+        XmlSTElements.Root rootNode = new XmlSTElements.Root(namespace, code);
         LinkedList<XmlSTElements.OT> stack = new LinkedList<XmlSTElements.OT>();
         stack.add(rootNode);
 
-        while(elements.hasNext()) {
+        while (elements.hasNext()) {
             Element element = elements.next();
 
             if (element.type() == ElementType.OPEN_TAG) { //open tag
                 OpenTag plainOpenTag = (OpenTag) element;
 
-
                 OpenTag openTagNode = plainOpenTag.isEmpty()
-                        ?
-                        new XmlSTElements.EmptyOT(
-                            plainOpenTag.attributes(),
-                            plainOpenTag.name(), 
-                            plainOpenTag.from(),
-                            plainOpenTag.to())
-                        :
-                        new XmlSTElements.OT(
-                            plainOpenTag.attributes(),
-                            plainOpenTag.name(), 
-                            plainOpenTag.from(),
-                            plainOpenTag.to())
-                        ;
-                
-                XmlSTElements.OT peek = stack.getLast();
-                
-                //possible add the node to the nodes stack
-                if (!(plainOpenTag.isEmpty())) {
-                    stack.addLast((XmlSTElements.OT)openTagNode);
-                }
+                        ? new XmlSTElements.EmptyOT(
+                        plainOpenTag.attributes(),
+                        plainOpenTag.name(),
+                        code,
+                        plainOpenTag.from(),
+                        plainOpenTag.to())
+                        : new XmlSTElements.OT(
+                        plainOpenTag.attributes(),
+                        plainOpenTag.name(),
+                        code,
+                        plainOpenTag.from(),
+                        plainOpenTag.to());
 
                 //add the node to its parent
+                XmlSTElements.OT peek = stack.getLast();
                 peek.addChild(openTagNode);
+
+                if (MODEL != null) {
+                    HtmlTag htmlTag = MODEL.getTag(plainOpenTag.name().toString());
+                    if (htmlTag != null) {
+                        if (htmlTag.isEmpty()) {
+                            //imply the close tag (do not add to the nesting stack)
+                            continue;
+                        }
+                    }
+                }
+
+
+                //possible add the node to the nodes stack
+                if (!(plainOpenTag.isEmpty())) {
+                    stack.addLast((XmlSTElements.OT) openTagNode);
+                }
+
 
             } else if (element.type() == ElementType.CLOSE_TAG) { //close tag
                 CloseTag plainElement = (CloseTag) element;
                 CharSequence tagName = plainElement.name();
 
-                XmlSTElements.ET endTagNode = new XmlSTElements.ET(plainElement.name(),
-                        plainElement.from(), 
+                XmlSTElements.ET endTagNode = new XmlSTElements.ET(
+                        plainElement.name(),
+                        code,
+                        plainElement.from(),
                         plainElement.to());
-                
+
                 int matched_index = -1;
                 for (int i = stack.size() - 1; i >= 0; i--) {
                     OpenTag node = stack.get(i);
@@ -147,10 +177,18 @@ public class XmlSyntaxTreeBuilder {
                     stack.getLast().addChild(endTagNode);
                 }
 
+            } else if (element.type() == ElementType.TEXT) {
+                if (ADD_TEXT_NODES) {
+                    XmlSTElements.OT parent = stack.getLast();
+                    Element text = new XmlSTElements.Text(
+                            code, element.from(), element.to());
+
+                    parent.addChild(text);
+                }
+
             } else {
                 //rest of the syntax element types
                 //XXX do we need to have these in the AST???
-
                 // add a new AST node to the last node on the stack
 //                Node.NodeType nodeType = intToNodeType(element.type());
 //
@@ -164,11 +202,10 @@ public class XmlSyntaxTreeBuilder {
         //check the stack content and resolve left nodes
         for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
             XmlSTElements.OT node = stack.get(i);
-            node.setLogicalEndOffset(lastEndOffset);
+            node.setLogicalEndOffset(code.length());
 
         }
 
         return rootNode;
     }
-
 }

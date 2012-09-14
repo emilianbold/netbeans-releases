@@ -62,7 +62,7 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     
     public HtmlLanguage() {
     }
-
+   
     @Override
     public CommentHandler getCommentHandler() {
         return new HtmlCommentHandler();

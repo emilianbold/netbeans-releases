@@ -122,6 +122,8 @@ public abstract class WebRestSupport extends RestSupport {
     public static final String JERSEY_CONFIG_IDE="ide";         //NOI18N
     public static final String JERSEY_CONFIG_SERVER="server";   //NOI18N
     
+    public static final String CONTAINER_RESPONSE_FILTER = "com.sun.jersey.spi.container.ContainerResponseFilters";//NOI18N
+    
     public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
     protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
     protected static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
@@ -277,6 +279,38 @@ public abstract class WebRestSupport extends RestSupport {
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        }
+    }
+    
+    public void addInitParam( String paramName, String value ) {
+        try {
+            FileObject ddFO = getWebXml();
+            WebApp webApp = findWebApp();
+            if (ddFO == null || webApp == null) {
+                return;
+            }
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,
+                    REST_SERVLET_ADAPTOR);
+            InitParam initParam = (InitParam) adaptorServlet.findBeanByName(
+                    "InitParam", // NOI18N
+                    "ParamName", // NOI18N
+                    paramName);
+            if (initParam == null) {
+                try {
+                    initParam = (InitParam) adaptorServlet
+                            .createBean("InitParam"); // NOI18N
+                    adaptorServlet.addInitParam(initParam);
+                }
+                catch (ClassNotFoundException ex) {
+                }
+            }
+            initParam.setParamName(paramName);
+            initParam.setParamValue(value);
+            
+            webApp.write(ddFO);
+        }
+        catch (IOException e) {
+            Logger.getLogger(WebRestSupport.class.getName()).log(Level.WARNING,  null , e);
         }
     }
 
@@ -471,7 +505,7 @@ public abstract class WebRestSupport extends RestSupport {
         }
     }
 
-    protected Servlet getRestServletAdaptor(WebApp webApp) {
+    public Servlet getRestServletAdaptor(WebApp webApp) {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
                 String servletClass = s.getServletClass();
@@ -876,8 +910,8 @@ public abstract class WebRestSupport extends RestSupport {
     }
     
     protected void reconfigApplicationClass( final String appClassFqn ) {
+        scheduleReconfigAppClass(appClassFqn);
         if ( restModelListener == null ){
-            scheduleReconfigAppClass(appClassFqn);
             restModelListener = new PropertyChangeListener() {
                 
                 @Override
@@ -973,6 +1007,9 @@ public abstract class WebRestSupport extends RestSupport {
         Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
                 simple, ClassIndex.NameKind.SIMPLE_NAME, 
                 Collections.singleton(ClassIndex.SearchScope.SOURCE));
+        if ( handles == null ){
+            return null;
+        }
         for (ElementHandle<TypeElement> handle : handles) {
             if (qualifiedClassName.equals(handle.getQualifiedName())) {
                 return SourceUtils.getFile(handle, cpInfo);

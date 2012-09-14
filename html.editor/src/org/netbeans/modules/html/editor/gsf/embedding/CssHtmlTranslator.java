@@ -70,7 +70,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
     private static final Logger LOGGER = Logger.getLogger(CssHtmlTranslator.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    public static final String CSS_MIME_TYPE = "text/x-css"; //NOI18N
+    public static final String CSS_MIME_TYPE = "text/css"; //NOI18N
     public static final String HTML_MIME_TYPE = "text/html"; //NOI18N
 
     private static final Pattern CLASSES_LIST_PATTERN = Pattern.compile("[^\\s,]*"); //splits by whitespaces and comma //NOI18N

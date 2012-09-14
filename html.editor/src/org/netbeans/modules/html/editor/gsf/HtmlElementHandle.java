@@ -69,14 +69,26 @@ import org.openide.filesystems.FileObject;
  */
 public class HtmlElementHandle implements ElementHandle {
 
-    private FileObject fo;
-    private String name;
-    private String elementPath;
+    private final FileObject fo;
+    private final String name;
+    private final String elementPath;
+    private final int attributesHash;
 
     public HtmlElementHandle(OpenTag node, FileObject fo) {
         this.fo = fo;
         this.name = node.id().toString();
         this.elementPath = ElementUtils.encodeToString(new TreePath(node));
+        this.attributesHash = computeAttributesHash(node);
+    }
+    
+    private int computeAttributesHash(OpenTag node) {
+        int hash = 11;
+        for(Attribute a : node.attributes()) {
+           hash = 37 * hash + a.name().hashCode();
+           CharSequence value = a.value();
+           hash = 37 * hash + (value != null ? value.hashCode() : 0);
+        }
+        return hash;
     }
 
     @Override
@@ -135,6 +147,9 @@ public class HtmlElementHandle implements ElementHandle {
         }
         final HtmlElementHandle other = (HtmlElementHandle) obj;
         if ((this.elementPath == null) ? (other.elementPath != null) : !this.elementPath.equals(other.elementPath)) {
+            return false;
+        }
+        if ((this.attributesHash != other.attributesHash)) {
             return false;
         }
         return true;

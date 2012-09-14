@@ -54,17 +54,45 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     private final PhpProject project;
     private final String category;
+    private final String propertyName;
 
 
-    public CustomizerProblemResolver(PhpProject project, String category) {
+    public CustomizerProblemResolver(PhpProject project, String category, String propertyName) {
         this.project = project;
         this.category = category;
+        this.propertyName = propertyName;
     }
 
     @Override
     public Future<ProjectProblemsProvider.Result> resolve() {
         PhpProjectUtils.openCustomizer(project, category);
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + (this.project != null ? this.project.hashCode() : 0);
+        hash = 59 * hash + (this.propertyName != null ? this.propertyName.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CustomizerProblemResolver other = (CustomizerProblemResolver) obj;
+        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+            return false;
+        }
+        if ((this.propertyName == null) ? (other.propertyName != null) : !this.propertyName.equals(other.propertyName)) {
+            return false;
+        }
+        return true;
     }
 
 }

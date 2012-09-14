@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     description_key='HINT_DISABLED_BREAKPOINT_STROKE'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/DisabledBreakpointi_stroke.png'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint_stroke.png'
     highlight='0xDCDCD8'
     type='line'
     actions='BreakpointActions'

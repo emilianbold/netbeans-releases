@@ -73,6 +73,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 
@@ -121,6 +122,9 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
     private JRadioButton definedDepthRadio;
     private JRadioButton fullDepthRadio;
     private JSpinner defineDepthSpinner;
+    private JLabel trackEveryLabel1;
+    private JLabel trackEveryLabel2;
+    private JSpinner trackEverySpinner;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -131,6 +135,10 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
+    
+    public void setProfilingType(int profilingType) {
+        settingsPanel.setVisible(profilingType != ProfilingSettings.PROFILE_MEMORY_SAMPLING);
+    }
 
     public void setAllocStackTraceLimit(int limit) {
         if (limit <= 0) {
@@ -166,6 +174,14 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
     public HelpCtx getHelpCtx() {
         return HELP_CTX;
+    }
+    
+    public void setTrackEvery(int trackEvery) {
+        trackEverySpinner.setValue(Integer.valueOf(trackEvery));
+    }
+
+    public int getTrackEvery() {
+        return ((Integer) trackEverySpinner.getValue()).intValue();
     }
 
     public void setRecordStackTrace(boolean record) {
@@ -215,6 +231,10 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         threadsSettingsPanel.setEnabled(false);
         threadsMonitoringCheckbox.setEnabled(false);
         threadsSamplingCheckbox.setEnabled(false);
+        
+        trackEveryLabel1.setEnabled(false);
+        trackEveryLabel2.setEnabled(false);
+        trackEverySpinner.setEnabled(false);
     }
 
     public void enableAll() {
@@ -228,6 +248,10 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         threadsSettingsPanel.setEnabled(true);
         threadsMonitoringCheckbox.setEnabled(true);
         threadsSamplingCheckbox.setEnabled(true);
+        
+        trackEveryLabel1.setEnabled(true);
+        trackEveryLabel2.setEnabled(true);
+        trackEverySpinner.setEnabled(true);
     }
 
     // --- Static tester frame ---------------------------------------------------
@@ -275,18 +299,82 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.insets = new Insets(0, 5, 10, 5);
         add(settingsPanel, constraints);
+        
+        // trackEveryContainer - definition
+        JPanel trackEveryContainer = new JPanel(new GridBagLayout());
+
+        // trackEveryLabel1
+        trackEveryLabel1 = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(trackEveryLabel1, Bundle.MemorySettingsBasicPanel_TrackEveryLabelText());
+        trackEveryLabel1.setToolTipText(Bundle.StpTrackEveryTooltip());
+        trackEveryLabel1.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 0, 0, 5);
+        trackEveryContainer.add(trackEveryLabel1, constraints);
+
+        // trackEverySpinner
+        trackEverySpinner = new JExtendedSpinner(new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1)) {
+                public Dimension getPreferredSize() {
+                    return new Dimension(55, getDefaultSpinnerHeight());
+                }
+
+                public Dimension getMinimumSize() {
+                    return getPreferredSize();
+                }
+            };
+        trackEveryLabel1.setLabelFor(trackEverySpinner);
+        trackEverySpinner.setToolTipText(Bundle.StpTrackEveryTooltip());
+        trackEverySpinner.addChangeListener(getSettingsChangeListener());
+        constraints = new GridBagConstraints();
+        constraints.gridx = 1;
+        constraints.gridy = 0;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        trackEveryContainer.add(trackEverySpinner, constraints);
+
+        // trackEveryLabel2
+        trackEveryLabel2 = new JLabel(Bundle.MemorySettingsBasicPanel_AllocLabelText());
+        trackEveryLabel2.setToolTipText(Bundle.StpTrackEveryTooltip());
+        trackEveryLabel2.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 2;
+        constraints.gridy = 0;
+        constraints.weightx = 1;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 5, 0, 0);
+        trackEveryContainer.add(trackEveryLabel2, constraints);
+
+        // trackEveryContainer - customization
+        trackEveryContainer.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(2, 7, 5, 0);
+        settingsPanel.add(trackEveryContainer, constraints);
 
         // recordStackTracesLabel
         recordStackTracesLabel = new JLabel(Bundle.MemorySettingsAdvancedPanel_RecordTracesLabelText());
         recordStackTracesLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
-        constraints.gridy = 0;
+        constraints.gridy = 1;
         constraints.weightx = 1;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(2, 7, 0, 0);
+        constraints.insets = new Insets(5, 7, 0, 0);
         settingsPanel.add(recordStackTracesLabel, constraints);
 
         // fullDepthRadio
@@ -298,7 +386,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         fullDepthRadio.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
-        constraints.gridy = 1;
+        constraints.gridy = 2;
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
@@ -371,7 +459,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         sampledTimingContainer.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
-        constraints.gridy = 2;
+        constraints.gridy = 3;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
@@ -386,7 +474,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         runGCCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
-        constraints.gridy = 3;
+        constraints.gridy = 4;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
@@ -425,7 +513,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // threadsSamplingCheckbox
         threadsSamplingCheckbox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, Bundle.MemorySettingsAdvancedPanel_EnableSamplingCheckboxText());
-        threadsSamplingCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
+        threadsSamplingCheckbox.setToolTipText(Bundle.StpSamplingTooltip());
         threadsSamplingCheckbox.setOpaque(false);
         threadsSamplingCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();

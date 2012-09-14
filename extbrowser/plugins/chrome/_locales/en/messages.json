@@ -1,0 +1,153 @@
+{
+
+    // manifest
+    "_pluginName": {
+        "message": "NetBeans IDE Support Plugin"
+    },
+
+    // general
+    "_OK": {
+        "message": "OK"
+    },
+    "_Cancel": {
+        "message": "Cancel"
+    },
+    "_New": {
+        "message": "New"
+    },
+    "_Remove": {
+        "message": "Remove"
+    },
+    "_Help": {
+        "message": "Help"
+    },
+    "_ShowHelp": {
+        "message": "Show Help"
+    },
+
+    // presets
+    "_Desktop": {
+        "message": "Desktop"
+    },
+    "_Netbook": {
+        "message": "Netbook"
+    },
+    "_Widescreen": {
+        "message": "Widescreen"
+    },
+    "_TabletLandscape": {
+        "message": "Tablet Landscape"
+    },
+    "_TabletPortrait": {
+        "message": "Tablet Portrait"
+    },
+    "_SmartphoneLandscape": {
+        "message": "Smartphone Landscape"
+    },
+    "_SmartphonePortrait": {
+        "message": "Smartphone Portrait"
+    },
+
+
+    // options
+    "_CloseWithoutSaving": {
+        "message": "Close without Saving"
+    },
+    "_CustomizeWindowSettings": {
+        "message": "Customize Window Settings"
+    },
+    "_ConfigureSizesInfo": {
+        "message": "Configure window size options and control which appear in the Preview toolbar."
+    },
+    "_DisplaySizes": {
+        "message": "Display Sizes:"
+    },
+    "_Type": {
+        "message": "Type"
+    },
+    "_Name": {
+        "message": "Name"
+    },
+    "_Width": {
+        "message": "Width"
+    },
+    "_Height": {
+        "message": "Height"
+    },
+    "_Toolbar": {
+        "message": "Toolbar"
+    },
+    "_AddSize": {
+        "message": "Add Size"
+    },
+    "_RemoveSize": {
+        "message": "Remove Size"
+    },
+    "_MoveUp": {
+        "message": "Move Up"
+    },
+    "_MoveSizeUp": {
+        "message": "Move Size Up"
+    },
+    "_MoveDown": {
+        "message": "Move Down"
+    },
+    "_MoveSizeDown": {
+        "message": "Move Size Down"
+    },
+    "_SaveAndClose": {
+        "message": "Save and Close"
+    },
+    "_WindowSettingsNotAvailable": {
+        "message": "Window settings not available (NetBeans IDE is not running?)."
+    },
+    "_New_hellip": {
+        "message": "New..."
+    },
+
+    // popup
+    "_ActualWindowSize": {
+        "message": "Actual Window Size"
+    },
+    "_SizeToFit": {
+        "message": "Size to Fit"
+    },
+    "_CustomizeWindowSettings_hellip": {
+        "message": "Customize Window Settings..."
+    },
+    "_Customize_hellip": {
+        "message": "Customize..."
+    },
+    "_SwitchSelectionMode": {
+        "message": "Switch Selection Mode"
+    },
+    "_SelectMode": {
+        "message": "Select Mode"
+    },
+    "_PresetTitle": {
+        "message": "$PRESET$ ($WIDTH$ x $HEIGHT$)",
+        "placeholders": {
+            "PRESET": {
+                "content": "$1"
+            },
+            "WIDTH": {
+                "content": "$2"
+            },
+            "HEIGHT": {
+                "content": "$3"
+            }
+        }
+    },
+    "_PresetWidthHeight": {
+        "message": "$WIDTH$ x $HEIGHT$",
+        "placeholders": {
+            "WIDTH": {
+                "content": "$1"
+            },
+            "HEIGHT": {
+                "content": "$2"
+            }
+        }
+    }
+
+}

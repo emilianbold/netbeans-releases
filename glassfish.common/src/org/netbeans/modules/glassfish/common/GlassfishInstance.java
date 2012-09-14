@@ -87,6 +87,63 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         Lookup.Provider, LookupListener, GlassFishServer {
 
     ////////////////////////////////////////////////////////////////////////////
+    // Inner classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Properties map used to store GlassFish server properties in GlassFish
+     * server instance.
+     */
+    public class Props extends HashMap<String, String> {
+
+        /**
+         * Constructs a new properties map with the same mappings as the
+         * specified <code>Map</code>.
+         * <p/>
+         * The <code>Props</code> is created with default load factor (0.75)
+         * and an initial capacity sufficient to hold the mappings in the
+         * specified <code>Map</code>.
+         * <p/>
+         * @param m Properties <code>Map</code> whose mappings are to be placed
+         *          in this map.
+         * @throws NullPointerException if the specified map is null.
+         */
+        public Props(Map<String, String> m) {
+            super(m);
+        }
+
+        /**
+         * Returns the property value to which the specified property key
+         * is mapped, or <code>null</code> if this map contains no mapping for
+         * the key.
+         * <p/>
+         * @param key Property key used to search for mapped property value.
+         * @return Property value mapped to specified property key
+         *         or <code>null</code> if no such property value exists.
+         */
+        @Override
+        public String get(Object key) {
+            if (GlassfishModule.PASSWORD_ATTR.equals(key)) {
+                String value = super.get(key);
+                if (value == null) {
+                    char[] passwordChars = Keyring.read(
+                            GlassfishInstance.passwordKey(
+                            super.get(GlassfishModule.DISPLAY_NAME_ATTR),
+                            super.get(GlassfishModule.USERNAME_ATTR)));
+                    value = passwordChars != null
+                            ? new String(passwordChars)
+                            : DEFAULT_ADMIN_PASSWORD;
+                    super.put((String)key, value);
+                }
+                return value;
+            } else {
+                return super.get(key);
+            }
+        }
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -94,17 +151,62 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // these unless the server's actual setting cannot be determined in any way.
     public static final String DEFAULT_HOST_NAME = "localhost"; // NOI18N
     public static final String DEFAULT_ADMIN_NAME = "admin"; // NOI18N
-    public static final String DEFAULT_ADMIN_PASSWORD = "adminadmin"; // NOI18N
+    public static final String DEFAULT_ADMIN_PASSWORD = ""; // NOI18N
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
     public static final String DEFAULT_DOMAINS_FOLDER = "domains"; //NOI18N
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
+    /** GlassFish user account instance key ring name space. */
+    static final String KEYRING_NAME_SPACE="GlassFish.admin";
+    
+    /**
+     * GlassFish user account instance key ring field separator.
+     * <p/>
+     * Key ring name is constructed in following form:
+     * <field>{'.'<field>}':'<identifier>
+     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
+     */
+    static final String KEYRING_NAME_SEPARATOR=".";
+
+    /**
+     * GlassFish user account instance key ring identifier separator.
+     * <p/>
+     * Key ring name is constructed in following form:
+     * <field>{'.'<field>}':'<identifier>
+     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
+     */
+    static final String KEYRING_IDENT_SEPARATOR=":";
     
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Build key ring identifier for password related to given user name.
+     * <p/>
+     * @param serverName Name of server to add into password key.
+     * @param userName User name of account user who's password will be stored.
+     * @return Key ring identifier for password related to given user name
+     */
+    public static String passwordKey(String serverName, String userName) {
+        StringBuilder pwKey = new StringBuilder(
+                KEYRING_NAME_SPACE.length() + KEYRING_NAME_SEPARATOR.length()
+                + GlassfishModule.PASSWORD_ATTR.length()
+                + KEYRING_IDENT_SEPARATOR.length()
+                + (serverName != null ? serverName.length() : 0)
+                + KEYRING_IDENT_SEPARATOR.length()
+                + (userName != null ? userName.length() : 0));
+        pwKey.append(KEYRING_NAME_SPACE);
+        pwKey.append(KEYRING_NAME_SEPARATOR);
+        pwKey.append(GlassfishModule.PASSWORD_ATTR);
+        pwKey.append(KEYRING_IDENT_SEPARATOR);
+        pwKey.append(serverName != null ? serverName : "");
+        pwKey.append(KEYRING_IDENT_SEPARATOR);
+        pwKey.append(userName != null ? userName : "");
+        return pwKey.toString();
+    }
 
     /**
      * Find all modules that have NetBeans support, add them to
@@ -166,7 +268,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static GlassfishInstance create(String displayName,
             String installRoot, String glassfishRoot, String domainsDir,
             String domainName, int httpPort, int adminPort,
-            String userName, String password, String url,
+            String userName, String password, String target, String url,
             GlassfishInstanceProvider gip) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
@@ -176,6 +278,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        ip.put(GlassfishModule.TARGET_ATTR, target);
         ip.put(GlassfishModule.USERNAME_ATTR,
                 userName != null
                 ? userName : DEFAULT_ADMIN_NAME);
@@ -240,50 +343,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         return create(ip, gip, true);
     }
     
-    /**
-     * Build and update copy of GlassFish properties to be stored in <code>this</code>
-     * object.
-     * <p/>
-     * Constructor helper method.
-     * <p/>
-     * @param properties Source GlassFish properties.
-     * @return Updated copy of GlassFish properties to be stored.
-     */
-    private static Map<String, String> prepareProperties(
-            Map<String, String> properties) {
-        boolean isRemote = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
-        String deployerUri = properties.get(GlassfishModule.URL_ATTR);
-        updateString(properties, GlassfishModule.HOSTNAME_ATTR,
-                DEFAULT_HOST_NAME);
-        updateString(properties, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
-        updateInt(properties, GlassfishModule.HTTPPORT_ATTR,
-                DEFAULT_HTTP_PORT);
-        updateString(properties, GlassfishModule.DISPLAY_NAME_ATTR,
-                "Bogus display name");
-        updateInt(properties, GlassfishModule.ADMINPORT_ATTR,
-                DEFAULT_ADMIN_PORT);
-        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG, "true");
-        updateString(properties, GlassfishModule.START_DERBY_FLAG,
-                isRemote ? "false" : "true");
-        updateString(properties, GlassfishModule.USE_IDE_PROXY_FLAG, "true");
-        updateString(properties, GlassfishModule.DRIVER_DEPLOY_FLAG, "true");
-        updateString(properties, GlassfishModule.HTTPHOST_ATTR, "localhost");
-        properties.put(GlassfishModule.JVM_MODE,
-                isRemote && !deployerUri.contains("deployer:gfv3ee6wc")
-                ? GlassfishModule.DEBUG_MODE : GlassfishModule.NORMAL_MODE);
-        updateString(properties, GlassfishModule.USERNAME_ATTR,
-                DEFAULT_ADMIN_NAME);
-        updateString(properties, GlassfishModule.PASSWORD_ATTR,
-                DEFAULT_ADMIN_PASSWORD);
-        Map<String, String> newProperties =  Collections.synchronizedMap(
-                new HashMap<String, String>(properties));
-        // Asume a local instance is in NORMAL_MODE
-        // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
-        // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
-        // XXX username/password handling at some point.
-        return newProperties;
-    }
-
     /**
      * Add new <code>String</code> storedValue into <code>Map</code> when storedValue
      * with specified key does not exist.
@@ -408,7 +467,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * <p/>
      * @param properties GlassFish properties to set
      */
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(Props properties) {
         this.properties = properties;
     }
 
@@ -835,6 +894,48 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Build and update copy of GlassFish properties to be stored in <code>this</code>
+     * object.
+     * <p/>
+     * Constructor helper method.
+     * <p/>
+     * @param properties Source GlassFish properties.
+     * @return Updated copy of GlassFish properties to be stored.
+     */
+    private Map<String, String> prepareProperties(
+            Map<String, String> properties) {
+        boolean isRemote = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+        String deployerUri = properties.get(GlassfishModule.URL_ATTR);
+        updateString(properties, GlassfishModule.HOSTNAME_ATTR,
+                DEFAULT_HOST_NAME);
+        updateString(properties, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
+        updateInt(properties, GlassfishModule.HTTPPORT_ATTR,
+                DEFAULT_HTTP_PORT);
+        updateString(properties, GlassfishModule.DISPLAY_NAME_ATTR,
+                "Bogus display name");
+        updateInt(properties, GlassfishModule.ADMINPORT_ATTR,
+                DEFAULT_ADMIN_PORT);
+        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG, "true");
+        updateString(properties, GlassfishModule.START_DERBY_FLAG,
+                isRemote ? "false" : "true");
+        updateString(properties, GlassfishModule.USE_IDE_PROXY_FLAG, "true");
+        updateString(properties, GlassfishModule.DRIVER_DEPLOY_FLAG, "true");
+        updateString(properties, GlassfishModule.HTTPHOST_ATTR, "localhost");
+        properties.put(GlassfishModule.JVM_MODE,
+                isRemote && !deployerUri.contains("deployer:gfv3ee6wc")
+                ? GlassfishModule.DEBUG_MODE : GlassfishModule.NORMAL_MODE);
+        updateString(properties, GlassfishModule.USERNAME_ATTR,
+                DEFAULT_ADMIN_NAME);
+        Map<String, String> newProperties =  Collections.synchronizedMap(
+                new Props(properties));
+        // Asume a local instance is in NORMAL_MODE
+        // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
+        // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
+        // XXX username/password handling at some point.
+        return newProperties;
+    }
 
     /**
      * Check if this instance is publicly accessible.

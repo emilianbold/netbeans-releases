@@ -104,7 +104,7 @@ public abstract class JsfSupportProvider {
         }
         JsfSupport support = provider.getSupport(project);
         if (support == null) {
-            LOGGER.warning(
+            LOGGER.fine(
                     String.format("The implementation %s of JsfSupportProvider returned no JsfSupport instance for project %s", //NOI18N
                     provider.getClass().getName(),
                     getProjectDisplayName(project)));

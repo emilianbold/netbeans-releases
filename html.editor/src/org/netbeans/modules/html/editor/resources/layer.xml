@@ -204,10 +204,10 @@ made subject to such option by the copyright holder.
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
 			<attr name="position" intvalue="1290"/>
 		    </file>
-                    <file name="format">
+                    <file name="generate-code">
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="generate-code">
+                    <file name="format">
                         <attr name="position" intvalue="1480"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">
@@ -360,10 +360,10 @@ made subject to such option by the copyright holder.
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
 			<attr name="position" intvalue="1290"/>
 		    </file>
-                    <file name="format">
+                        <file name="generate-code">
                         <attr name="position" intvalue="1400"/>
                     </file>
-                        <file name="generate-code">
+                    <file name="format">
                         <attr name="position" intvalue="1480"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">

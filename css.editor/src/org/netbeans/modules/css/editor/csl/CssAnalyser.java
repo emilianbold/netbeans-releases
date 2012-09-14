@@ -49,13 +49,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -92,7 +93,7 @@ public class CssAnalyser {
                     }
                     
                     Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
-                    Node valueNode = NodeUtil.getChildByType(node, NodeType.expr);
+                    Node valueNode = NodeUtil.getChildByType(node, NodeType.propertyValue);
 
                     if (propertyNode != null) {
                         String propertyName = propertyNode.image().toString().trim();
@@ -104,7 +105,7 @@ public class CssAnalyser {
                         }
 
                         //check for vendor specific properies - ignore them
-                        PropertyModel property = CssModuleSupport.getPropertyModel(propertyName, file);
+                        PropertyModel property = Properties.getPropertyModel(propertyName);
                         if (!Css3Utils.containsGeneratedCode(propertyName) && !Css3Utils.isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
@@ -127,18 +128,17 @@ public class CssAnalyser {
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!Css3Utils.containsGeneratedCode(valueImage)) {
-                                PropertyValue pv = new PropertyValue(property, valueImage);
+                            if (!Css3Utils.containsGeneratedCode(valueImage) 
+                                    //TODO add support for checking value of vendor specific properties, not it is disabled.
+                                    && !Css3Utils.isVendorSpecificPropertyValue(valueImage)) {
+                                ResolvedProperty pv = new ResolvedProperty(property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;
-                                    if (pv instanceof CustomErrorMessageProvider) {
-                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
-                                    }
 
                                     //error in property 
-                                    String unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
+                                    Token unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
 
-                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
+                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
                                         return false;
                                     }
 

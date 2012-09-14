@@ -57,6 +57,11 @@ import org.openide.util.Parameters;
  * @since 1.68
  */
 // TODO add JBoss notation parsing MAJOR.MINOR.MICRO.QUALIFIER
+
+// TODO: I copied this class to org.netbeans.modules.web.common.api.Version
+//       so that it can be reused in other places. Perhaps it should be deprecated
+//       here in favor of web.common one???
+
 public final class Version {
 
     private static final Pattern JSR277_PATTERN = Pattern.compile(

@@ -45,58 +45,39 @@ package org.netbeans.modules.css.visual;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Severity;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.visual.ui.preview.CssTCController;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelVisitor;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
+import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.*;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.windows.WindowManager;
 
 /**
- * 
+ *
  * @author mfukala@netbeans.org
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
 
-    //static, will hold the singleton reference forever but I cannot reasonably
-    //hook to gsf to be able to free this once last css component closes
-    private static CssTCController windowController;
-
-    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-    
+    private static final Logger LOG = Logger.getLogger(RuleEditorPanel.RULE_EDITOR_LOGGER_NAME);
+    private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
 
-    private static synchronized void initializeWindowController() {
-        if(windowController == null) {
-            windowController = CssTCController.getDefault();
-        }
-    }
-
-    public static class Factory extends TaskFactory {
-
-        @Override
-        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-            initializeWindowController();
-
-            String mimeType = snapshot.getMimeType();
-            String sourceMimeType = snapshot.getSource().getMimeType();
-
-            //allow to run only on .css files
-            if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
-                return Collections.singletonList(new CssCaretAwareSourceTask());
-            } else {
-                return Collections.emptyList();
-            }
-        }
+    public CssCaretAwareSourceTask() {
+        RuleEditorTCController.init();
     }
 
     @Override
@@ -115,60 +96,135 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     }
 
     @Override
-    public void run(CssCslParserResult result, SchedulerEvent event) {
+    public void run(final CssCslParserResult result, SchedulerEvent event) {
+        final FileObject file = result.getSnapshot().getSource().getFileObject();
+        final String mimeType = file.getMIMEType();
+
+        LOG.log(Level.FINE, "run(), file: {0}", new Object[]{file});
+
         cancelled = false;
-        
-        if(event == null) {
-            return ;
-        }
 
-        if(!(event instanceof CursorMovedSchedulerEvent)) {
-            return ;
-        }
-
-        int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
-
-        Node root = result.getParseTree();
-        if(root != null) {
-            //find the rule scope and check if there is an error inside it
-            Node leaf = NodeUtil.findNodeAtOffset(root, caretOffset);
-            if(leaf != null) {
-                Node ruleNode = leaf.type() == NodeType.ruleSet ?
-                    leaf :
-                    NodeUtil.getAncestorByType(leaf, NodeType.ruleSet);
-                if(ruleNode != null) {
-                    //filter out warnings
-                    List<? extends Error> errors = result.getDiagnostics();
-                    for(Error e : errors) {
-
-                        if(e.getSeverity() == Severity.ERROR) {
-                            if(ruleNode.from() <= e.getStartPosition() &&
-                                    ruleNode.to() >= e.getEndPosition()) {
-                                //there is an error in the selected rule
-                                CssEditorSupport.getDefault().parsedWithError(result);
-                                return ;
-                            }
-                        }
-                    }
-                    
-                    if(cancelled) {
-                        return ;
-                    }
-
-                    //no errors found in the node
-                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
-                    return ;
-                }
+        final int caretOffset;
+        if (event == null) {
+            LOG.log(Level.FINE, "run() - NULL SchedulerEvent?!?!?!");
+            caretOffset = -1;
+        } else {
+            if (event instanceof CursorMovedSchedulerEvent) {
+                caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+            } else {
+                LOG.log(Level.FINE, "run() - !(event instanceof CursorMovedSchedulerEvent)");
+                caretOffset = -1;
             }
         }
+
+        final Model model = result.getModel(); //do this outside EDT
         
-        if(cancelled) {
-            return ;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                runInEDT(result, model, file, mimeType, caretOffset);
+            }
+        });
+    }
+
+    private void runInEDT(final CssCslParserResult result, Model model, final FileObject file, String mimeType, int caretOffset) {
+        LOG.log(Level.FINE, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
+
+        if (cancelled) {
+            LOG.log(Level.INFO, "cancelled");
+            return;
         }
 
-        //out of rule, lets notify the editor support anyway
-        CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
+        if (caretOffset == -1) {
+            try {
+                //dirty workaround
+                DataObject dobj = DataObject.find(file);
+                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                if (ec != null) {
+                    JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
+                    if (panes != null && panes.length > 0) {
+                        JEditorPane pane = panes[0]; //hopefully the active one
+                        caretOffset = pane.getCaretPosition();
+                    }
+                }
+
+            } catch (DataObjectNotFoundException ex) {
+                //possibly deleted file, give up
+                return;
+
+            }
+            
+            LOG.log(Level.INFO, "workarounded caret offset: {0}", caretOffset);
+        }
+
+
+        //find rule corresponding to the offset
+        Rule rule = findRuleAtOffset(result.getSnapshot(), model, caretOffset);
+        
+        if (!mimeType.equals("text/css")) {
+            //if not a css file, 
+            //update the rule editor only if there's a rule in an embedded css code
+            if (rule == null) {
+                LOG.log(Level.FINE, "not a css file and rule not found at {0} offset, exiting w/o change of the RuleEditor", caretOffset);
+                return;
+            }
+        }
+
+        final RuleEditorTC ruleEditorTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
+        if (ruleEditorTC == null) {
+            return;
+        }
+        
+        //update the RuleEditor TC name
+        RuleEditorController controller = ruleEditorTC.getRuleEditorController();
+        controller.setModel(result.getModel());
+
+        if (rule == null) {
+            controller.setNoRuleState();
+        } else {
+            controller.setRule(rule);
+        }
+    }
+
+    private Rule findRuleAtOffset(Snapshot snapshot, Model model, int documentOffset) {
+        final int astOffset = snapshot.getEmbeddedOffset(documentOffset);
+        if (astOffset == -1) {
+            return null;
+        }
+        final AtomicReference<Rule> ruleRef = new AtomicReference<Rule>();
+        model.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                styleSheet.accept(new ModelVisitor.Adapter() {
+                    @Override
+                    public void visitRule(Rule rule) {
+                        if (cancelled) {
+                            return;
+                        }
+                        if (astOffset >= rule.getStartOffset() && astOffset < rule.getEndOffset()) {
+                            ruleRef.set(rule);
+                        }
+                    }
+                });
+
+            }
+        });
+        return ruleRef.get();
 
     }
-}
 
+    @MimeRegistration(mimeType = "text/css", service = TaskFactory.class)
+    public static class Factory extends TaskFactory {
+
+        @Override
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            String mimeType = snapshot.getMimeType();
+
+            if (mimeType.equals(CSS_MIMETYPE)) { //NOI18N
+                return Collections.singletonList(new CssCaretAwareSourceTask());
+            } else {
+                return Collections.emptyList();
+            }
+        }
+    }
+}

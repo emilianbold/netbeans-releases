@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -53,7 +54,7 @@ public class InternetExplorerModule extends BrowserSupportModule {
 
     public InternetExplorerModule() {
         super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", 
-                "ms", "ie20"), "internet_explorer"); //NOI18N
+                "ms", "ie20", PropertyCategory.INTERNET_EXPLORER), "internet_explorer"); //NOI18N
     }
       
 }

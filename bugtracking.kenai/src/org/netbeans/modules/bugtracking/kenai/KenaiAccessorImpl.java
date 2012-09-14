@@ -142,7 +142,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
-            Support.LOG.log(Level.INFO, "no kenai for url : [{0}]", url);
+            Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
             return null;
         }
         return getPasswordAuthentication(kenai, forceLogin);
@@ -211,7 +211,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject getKenaiProject(String url, String projectName) throws IOException {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
-            Support.LOG.log(Level.INFO, "no kenai for url : [{0}]", url);
+            Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
             return null;
         }
         KenaiProject kp = kenai.getProject(projectName);

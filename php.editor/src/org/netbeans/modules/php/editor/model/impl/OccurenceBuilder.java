@@ -389,7 +389,13 @@ class OccurenceBuilder {
         if (canBePrepared(methodDeclaration, scope)) {
             MethodDeclarationInfo node = MethodDeclarationInfo.create(methodDeclaration, scope.getTypeScope());
             methodDeclarations.put(node, scope);
-
+            if (scope.getInScope() instanceof ClassScope) {
+                ClassScope classScope = (ClassScope) scope.getInScope();
+                String className = classScope.getName();
+                if (className != null && className.equals(CodeUtils.extractMethodName(methodDeclaration))) {
+                    prepare(Kind.CLASS, methodDeclaration.getFunction().getFunctionName(), scope);
+                }
+            }
         }
     }
 

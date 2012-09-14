@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -114,12 +115,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions1.js");
     }
 
+    public void testFunctions1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions1.js", null);
+    }
+
     public void testFunctions2() throws Exception {
         reformatFileContents("testfiles/formatter/functions2.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctions2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functions2.js");
+    }
+
+    public void testFunctions2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions2.js", null);
     }
 
     public void testFunctions3() throws Exception {
@@ -130,6 +139,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions3.js");
     }
 
+    public void testFunctions3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions3.js", null);
+    }
+
     public void testFunctions4() throws Exception {
         reformatFileContents("testfiles/formatter/functions4.js",new IndentPrefs(4, 4));
     }
@@ -138,12 +151,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions4.js");
     }
 
+    public void testFunctions4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions4.js", null);
+    }
+
     public void testFunctions5() throws Exception {
         reformatFileContents("testfiles/formatter/functions5.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctions5Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functions5.js");
+    }
+
+    public void testFunctions5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions5.js", null);
     }
 
     public void testFunctions6Default() throws Exception {
@@ -162,12 +183,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions6.js");
     }
 
+    public void testFunctions6Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions6.js", null);
+    }
+
     public void testFunctions7() throws Exception {
         reformatFileContents("testfiles/formatter/functions7.js",new IndentPrefs(4, 4));
     }
 
     public void testFunctions7Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/functions7.js");
+    }
+
+    public void testFunctions7Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/functions7.js", null);
     }
 
     public void testFunctionDeclaration1() throws Exception {
@@ -455,12 +484,24 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/objects4.js");
     }
 
+    public void testObjects5() throws Exception {
+        reformatFileContents("testfiles/formatter/objects5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testObjects6() throws Exception {
+        reformatFileContents("testfiles/formatter/objects6.js",new IndentPrefs(4, 4));
+    }
+
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
     }
 
     public void testSwitch1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch1.js");
+    }
+
+    public void testSwitch1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch1.js", null);
     }
 
     public void testSwitch2() throws Exception {
@@ -485,6 +526,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSwitch3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch3.js");
+    }
+
+    public void testSwitch3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/switch3.js", null);
     }
 
     public void testSwitch4Default() throws Exception {
@@ -519,20 +564,16 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/switch6.js");
     }
 
-    public void testSwitch189745() throws Exception {
-        reformatFileContents("testfiles/formatter/switch189745.js",new IndentPrefs(4, 4));
-    }
-
-    public void testSwitch189745Indented() throws Exception {
-        reindentFileContents("testfiles/formatter/switch189745.js", null);
-    }
-
     public void testIf1() throws Exception {
         reformatFileContents("testfiles/formatter/if1.js",new IndentPrefs(4, 4));
     }
 
     public void testIf1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/if1.js");
+    }
+
+    public void testIf1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if1.js", null);
     }
 
     public void testIf2Default() throws Exception {
@@ -549,6 +590,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testIf2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/if2.js");
+    }
+
+    public void testIf2Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if2.js", null);
     }
 
     public void testIf3Default() throws Exception {
@@ -568,12 +613,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/if3.js");
     }
 
+    public void testIf3Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if3.js", null);
+    }
+
     public void testIf4() throws Exception {
         reformatFileContents("testfiles/formatter/if4.js", new IndentPrefs(4, 4));
     }
 
     public void testIf4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/if4.js");
+    }
+
+    public void testIf4Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if4.js", null);
     }
 
     public void testIf5() throws Exception {
@@ -584,6 +637,10 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/if5.js");
     }
 
+    public void testIf5Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if5.js", null);
+    }
+
     public void testIf6() throws Exception {
         reformatFileContents("testfiles/formatter/if6.js",new IndentPrefs(4, 4));
     }
@@ -592,12 +649,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/if6.js");
     }
 
+    public void testIf6Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if6.js", null);
+    }
+
     public void testIf7() throws Exception {
         reformatFileContents("testfiles/formatter/if7.js",new IndentPrefs(4, 4));
     }
 
     public void testIf7Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/if7.js");
+    }
+
+    public void testIf7Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if7.js", null);
     }
 
     public void testIf8Always() throws Exception {
@@ -622,12 +687,20 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/if8.js");
     }
 
+    public void testIf8Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if8.js", null);
+    }
+
     public void testIf9() throws Exception {
         reformatFileContents("testfiles/formatter/if9.js",new IndentPrefs(4, 4));
     }
 
     public void testIf9Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/if9.js");
+    }
+
+    public void testIf9Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/if9.js", null);
     }
 
     public void testDoWhile1() throws Exception {
@@ -1280,6 +1353,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/partialFormat5.js", Collections.<String, Object>emptyMap());
     }
 
+    public void testPartialFormat6() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat6.js", Collections.<String, Object>emptyMap());
+    }
+
     public void testTernary1() throws Exception {
         reformatFileContents("testfiles/formatter/ternary1.js",new IndentPrefs(4, 4));
     }
@@ -1364,6 +1441,31 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testVar4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/var4.js");
+    }
+
+    public void testBroken1() throws Exception {
+        reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testCodeTemplate1() throws Exception {
+        reformatFileContents("testfiles/formatter/codeTemplate1.js",
+                Collections.<String, Object>emptyMap(), null, true);
+    }
+
+    public void testIssue189745() throws Exception {
+        reformatFileContents("testfiles/formatter/issue189745.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue189745Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/issue189745.js", null);
+    }
+
+    public void testIssue218090() throws Exception {
+        reformatFileContents("testfiles/formatter/issue218090.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue218328() throws Exception {
+        reformatFileContents("testfiles/formatter/issue218328.js",new IndentPrefs(4, 4));
     }
 
     // test from original formatter
@@ -1492,10 +1594,14 @@ public class JsFormatterTest extends JsTestBase {
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
-        reformatFileContents(file, options, null);
+        reformatFileContents(file, options, null, false);
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options, String suffix) throws Exception {
+        reformatFileContents(file, options, suffix, false);
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options, String suffix, boolean template) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
 
@@ -1519,6 +1625,10 @@ public class JsFormatterTest extends JsTestBase {
         BaseDocument doc = getDocument(text);
         assertNotNull(doc);
 
+        if (template) {
+            Dictionary<Object, Object> dict = doc.getDocumentProperties();
+            dict.put(JsFormatter.CT_HANDLER_DOC_PROPERTY, "test");
+        }
 
         IndentPrefs preferences = new IndentPrefs(4, 4);
         Formatter formatter = getFormatter(preferences);

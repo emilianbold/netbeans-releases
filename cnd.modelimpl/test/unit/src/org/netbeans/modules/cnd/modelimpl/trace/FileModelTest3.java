@@ -77,6 +77,11 @@ public class FileModelTest3 extends TraceModelTestBase {
     public void testResolverClassString_02() throws Exception {
         performTest("resolver_class_string.cc"); // NOI18N
     }
+    
+    // it behaved differently on 1-st and subsequent runs
+    public void testPreprocDirectives() throws Exception {
+        performTest("preproc_directives.cc"); // NOI18N
+    }
 
     @Override
     protected Class<?> getTestCaseDataClass() {

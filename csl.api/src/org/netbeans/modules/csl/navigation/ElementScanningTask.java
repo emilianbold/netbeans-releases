@@ -167,6 +167,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
                                 List<? extends StructureItem> children = findCachedStructure(resultIterator.getSnapshot(), r);
                                 if (children == null) {
                                     long startTime = System.currentTimeMillis();
+//                                    children = convert(scanner.scan((ParserResult) r), language);
                                     children = scanner.scan((ParserResult) r);
                                     long endTime = System.currentTimeMillis();
                                     Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
@@ -258,7 +259,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
     public synchronized boolean isCancelled() {
         return canceled;
     }
-
+    
     private static final class RootStructureItem implements StructureItem {
 
         private final List<? extends StructureItem> items;
@@ -276,7 +277,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
         }
 
         public ElementHandle getElementHandle() {
-            throw new UnsupportedOperationException("Not supported on the Root Node.");
+            return null;
         }
 
         public ElementKind getKind() {
@@ -315,7 +316,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
     static final class MimetypeRootNode implements StructureItem {
 
         //hack - see the getSortText() comment
-        private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+        private static final String CSS_MIMETYPE = "text/css"; //NOI18N
         private static final String CSS_SORT_TEXT = "2";//NOI18N
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
         private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N

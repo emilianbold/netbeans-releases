@@ -459,6 +459,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
                 String str, boolean overwrite) throws BadLocationException {
+            
             //workaround for #209019 - regression of issue 
             //#204450 - Rewrite actions to use TypingHooks SPI
             if(str.length() == 0) {
@@ -466,7 +467,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 //==> ignore this call since we are going to be called a bit later
                 //from HtmlKit.performTextInsertion() properly with the text typed
                 return ;
-            }            
+            }
             
             char insertedChar = str.charAt(0);
             Document document = target.getDocument();

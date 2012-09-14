@@ -242,7 +242,7 @@ public final class OpenProjectList {
         }
     }
 
-    Future<Project[]> openProjectsAPI() {
+    public Future<Project[]> openProjectsAPI() {
         return LOAD;
     }
 

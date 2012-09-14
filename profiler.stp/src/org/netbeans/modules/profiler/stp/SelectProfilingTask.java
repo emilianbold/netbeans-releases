@@ -563,8 +563,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private void cleanup(boolean settingsAccepted) {
         // store settings if project is selected
         if (settingsAccepted) {
-            if (!projectsChooserPanel.isVisible() || (projectsChooserCombo.
-                    getSelectedItem() != Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
+            if (!projectsChooserPanel.isVisible() || (!Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(projectsChooserCombo.getSelectedItem()))) {
                 storeCurrentSettings();
             }
         }
@@ -754,19 +753,19 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                     // Store settings of last project
                     if (lastAttachProject != null) {
-                        storeSettings((lastAttachProject == Bundle.SelectProfilingTask_ExternalApplicationString()) ? null : (Lookup.Provider) lastAttachProject);
+                        storeSettings((Bundle.SelectProfilingTask_ExternalApplicationString().equals(lastAttachProject)) ? null : (Lookup.Provider) lastAttachProject);
                     }
 
-                    if ((comboSelection == null) || (comboSelection == Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
+                    if ((comboSelection == null) || (Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(comboSelection))) {
                         return;
                     }
 
-                    if ((comboSelection != Bundle.SelectProfilingTask_SelectProjectToAttachString())
-                            && (projectsChooserCombo.getItemAt(0) == Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
+                    if ((!Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(comboSelection))
+                            && (Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(projectsChooserCombo.getItemAt(0)))) {
                         projectsChooserCombo.removeItemAt(0);
                     }
 
-                    if (comboSelection == Bundle.SelectProfilingTask_ExternalApplicationString()) {
+                    if (Bundle.SelectProfilingTask_ExternalApplicationString().equals(comboSelection)) {
                         updateProject(null);
                         lastAttachProject = Bundle.SelectProfilingTask_ExternalApplicationString();
                     } else if (comboSelection instanceof Lookup.Provider) {
@@ -1028,8 +1027,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
                         
         final boolean hasContext = !projectsChooserPanel.isVisible() ||
-                (projectsChooserCombo.getSelectedItem() !=
-                Bundle.SelectProfilingTask_SelectProjectToAttachString());
+                !Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(projectsChooserCombo.getSelectedItem());
         
         if (!hasContext) {
             // Attach, no project selected
@@ -1129,7 +1127,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                         }
 
                         if (attachSettingsPanelContainer.isVisible()) {
-                            attachSettingsPanel.setSettings(project, projectsChooserCombo.getSelectedItem() != Bundle.SelectProfilingTask_SelectProjectToAttachString());
+                            attachSettingsPanel.setSettings(project, !Bundle.SelectProfilingTask_SelectProjectToAttachString().equals(projectsChooserCombo.getSelectedItem()));
                         }
                     }
                 };

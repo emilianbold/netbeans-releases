@@ -47,7 +47,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.HtmlRule;
@@ -59,7 +58,24 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Missing CSS class hint.
+ * 
+ * Check whether the class reference in an html element is valid.
+ * 
+ * Hint fixes rules:
+ * 0) if the class is found in a lined stylesheet, no hint, not fixes
+ * 
+ * 1) if the class is found in one of the stylesheets in the project:
+ *      * add "Import stylesheet" hintfix
+ * 
+ * 2) if the class is not found in any stylesheet from the project:
+ *      * add "create in xxx stylesheet" - for all available stylesheets. 
+ *      The fix will add the stylesheet reference and create the rule there
+ * 
+ * 3) if there's no stylesheet in the project
+ *      * create in new stylesheet 
+ *      Creates stylesheet 'styles.css' in the same folder, add ref to it and put the rule inside.
+ * 
  * @author marekfukala
  */
 public class MissingClassRule extends HtmlRule {

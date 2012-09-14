@@ -43,6 +43,8 @@ package org.netbeans.modules.html.editor.hints.css;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
@@ -52,6 +54,7 @@ import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,24 +62,25 @@ import org.openide.filesystems.FileObject;
  */
 public class CssClassesVisitor implements ElementVisitor {
 
+    /* test */ static Pattern CLASSES_PATTERN = Pattern.compile("\\s+");
     private static final String CLASS_ATTR_NAME = "class"; //NOI18N
-    
     private final HtmlRuleContext context;
     private final Collection<FileObject> referredFiles;
+    private final Collection<FileObject> allStylesheets;
     private final Map<FileObject, Collection<String>> classes;
     private final Map<String, Collection<FileObject>> classes2files;
-    
     private final Rule rule;
     private final List<Hint> hints;
-    
+
     public CssClassesVisitor(Rule rule, HtmlRuleContext context, List<Hint> hints) throws IOException {
         this.context = context;
         this.hints = hints;
         this.rule = rule;
-        
+
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
         classes = context.getCssIndex().findAllClassDeclarations();
         classes2files = createReversedMap(classes);
+        allStylesheets = context.getCssIndex().getAllIndexedFiles();
     }
 
     private static Map<String, Collection<FileObject>> createReversedMap(Map<FileObject, Collection<String>> file2elements) {
@@ -93,7 +97,7 @@ public class CssClassesVisitor implements ElementVisitor {
         }
         return map;
     }
-    
+
     @Override
     public void visit(Element node) {
         OpenTag tag = (OpenTag) node;
@@ -103,37 +107,47 @@ public class CssClassesVisitor implements ElementVisitor {
                 return LexerUtils.equals(CLASS_ATTR_NAME, attribute.name(), true, true);
             }
         })) {
-            processElements(id, CssElementType.CLASS, classes2files);
+            processElements(id, CssElementType.CLASS);
         }
     }
 
-    private void processElements(Attribute attribute, CssElementType elementType, Map<String, Collection<FileObject>> elements2files) {
+    private void processElements(Attribute attribute, CssElementType elementType) {
         CharSequence value = attribute.unquotedValue();
         if (value == null) {
             return;
         }
-        
-        if(value.length() == 0) {
-            return ; //ignore empty value
-        }
-        
-        //all files containing the id declaration
-        Collection<FileObject> filesWithTheId = elements2files.get(value.toString());
 
-        //all referred files with the id declaration
-        Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
-        if (filesWithTheId != null) {
-            referredFilesWithTheId.addAll(filesWithTheId);
-            referredFilesWithTheId.retainAll(referredFiles);
+        if (value.length() == 0) {
+            return; //ignore empty value
         }
-        
-        if (referredFilesWithTheId.isEmpty()) {
-            //unknown id
-            hints.add(new MissingCssElement(rule,
-                    context,
-                    getAttributeValueOffsetRange(attribute, context),
-                    filesWithTheId));
+
+        //there might be more whitespace separated values in the attribute value:
+        //<section class="foodlist hide" id="entrees">
+        for (String token : CLASSES_PATTERN.split(value)) {
+            if (token.trim().isEmpty()) {
+                continue; //possibly skip ws
+            }
+
+            //all files containing the id declaration
+            Collection<FileObject> filesWithTheClass = classes2files.get(token);
+
+            //all referred files with the id declaration
+            Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
+            if (filesWithTheClass != null) {
+                referredFilesWithTheId.addAll(filesWithTheClass);
+                referredFilesWithTheId.retainAll(referredFiles);
+            }
+
+            if (referredFilesWithTheId.isEmpty()) {
+                //unknown id
+                hints.add(new MissingCssElement(rule,
+                        NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssClass", token),
+                        context,
+                        getAttributeValueOffsetRange(attribute, context),
+                        new HintContext(token)));
+            }
         }
+
     }
 
     private static OffsetRange getAttributeValueOffsetRange(Attribute attr, HtmlRuleContext context) {
@@ -141,5 +155,35 @@ public class CssClassesVisitor implements ElementVisitor {
         int from = attr.valueOffset() + (quoted ? 1 : 0);
         int to = from + attr.unquotedValue().length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.getSnapshot());
+    }
+    
+    public class HintContext {
+        
+        private final String className;
+
+        public HintContext(String className) {
+            this.className = className;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public Collection<FileObject> getAllStylesheets() {
+            return allStylesheets;
+        }
+        
+        public Collection<FileObject> getReferredFiles() {
+            return referredFiles;
+        }
+
+        public Map<FileObject, Collection<String>> getClasses() {
+            return classes;
+        }
+
+        public Map<String, Collection<FileObject>> getClasses2files() {
+            return classes2files;
+        }
+        
     }
 }

@@ -45,7 +45,7 @@ import java.net.URL;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  *
@@ -54,7 +54,7 @@ import org.netbeans.modules.css.editor.module.spi.Property;
 public class PropertyCompatibilityHelpResolver extends HelpResolver {
 
     @Override
-    public String getHelp(Property property) {
+    public String getHelp(PropertyDefinition property) {
         StringBuilder sb = new StringBuilder();
         //XXX using legacy html code instead of css styling due to the jdk swingbrowser
         sb.append("<table width=\"100%\" border=\"0\"><tr><td><div style=\"font-size: large; font-weight: bold\">"); //NOI18N
@@ -75,7 +75,7 @@ public class PropertyCompatibilityHelpResolver extends HelpResolver {
     }
 
     @Override
-    public URL resolveLink(Property property, String link) {
+    public URL resolveLink(PropertyDefinition property, String link) {
         return null;
     }
 

@@ -42,7 +42,6 @@ import org.netbeans.jellytools.modules.form.FormEditorOperatorTest;
 import org.netbeans.jellytools.modules.form.properties.editors.MethodPickerOperatorTest;
 import org.netbeans.jellytools.modules.form.properties.editors.ParametersPickerOperatorTest;
 import org.netbeans.jellytools.modules.form.properties.editors.PropertyPickerOperatorTest;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -52,7 +51,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class JellytoolsJavaSuite {
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
                 addTest(NewFileWizardOperatorTest.class, NewFileWizardOperatorTest.tests).
                 addTest(NewJavaFileNameLocationStepOperatorTest.class, NewJavaFileNameLocationStepOperatorTest.tests).
                 addTest(NewJavaProjectNameLocationStepOperatorTest.class, NewJavaProjectNameLocationStepOperatorTest.tests).
@@ -62,7 +61,7 @@ public class JellytoolsJavaSuite {
                 addTest(FormEditorOperatorTest.class, FormEditorOperatorTest.tests).
                 addTest(MethodPickerOperatorTest.class, MethodPickerOperatorTest.tests).
                 addTest(ParametersPickerOperatorTest.class, ParametersPickerOperatorTest.tests).
-                addTest(PropertyPickerOperatorTest.class, PropertyPickerOperatorTest.tests);
-        return conf.clusters(".*").enableModules(".*").suite();
+                addTest(PropertyPickerOperatorTest.class, PropertyPickerOperatorTest.tests).
+                suite();
     }
 }

@@ -79,6 +79,12 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="500"/>
         </file>
 
+        <file name="ChromiumBrowser.settings" url="ChromiumBrowser.xml">
+            <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.ChromiumBrowser.isHidden"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
+            <attr name="position" intvalue="450"/>
+        </file>
 
         <file name="MozillaBrowser.settings" url="MozillaBrowser.xml">
             <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.MozillaBrowser.isHidden"/>

@@ -86,9 +86,6 @@ public class JsIndexer extends EmbeddingIndexer {
             return;
         }
 
-        List<IndexDocument> documents = new LinkedList<IndexDocument>();
-        IndexDocument reverseIdxDocument = support.createDocument(indexable);
-
         JsObject globalObject = model.getGlobalObject();
         for(JsObject object : globalObject.getProperties().values()) {
             storeObject(object, support, indexable);

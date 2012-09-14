@@ -66,10 +66,10 @@ import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
@@ -118,7 +118,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
         module("presentation_levels", "http://www.w3.org/TR/css3-preslev"),
         module("generated_and_replaced_content", "http://www.w3.org/TR/css3-content") //NOI18N
     };
-    private static Collection<Property> propertyDescriptors;
+    private static Collection<PropertyDefinition> propertyDescriptors;
 
     private static CssModule module(String name, String url) {
         return new DefaultCssModule(name, url);
@@ -165,12 +165,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
     private static class Css21HelpResolver extends HelpResolver {
 
         @Override
-        public String getHelp(Property property) {
+        public String getHelp(PropertyDefinition property) {
             return CssHelpResolver.instance().getPropertyHelp(property.getName());
         }
 
         @Override
-        public URL resolveLink(Property property, String link) {
+        public URL resolveLink(PropertyDefinition property, String link) {
 //            return CssHelpResolver.getHelpZIPURLasString() == null ? null :
 //            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
 //                    normalizeLink( elementHandle, link));
@@ -184,9 +184,9 @@ public class DefaultCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public synchronized Collection<Property> getProperties() {
+    public synchronized Collection<PropertyDefinition> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = new ArrayList<Property>();
+            propertyDescriptors = new ArrayList<PropertyDefinition>();
             for (CssModule module : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + module.getName();
                 propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path, module));
@@ -266,8 +266,8 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
                         }
                         break;
-                    case attrib_name: //attribute name in selector
-                    case attrname: //attribute name in css function
+                    case slAttributeName: //attribute name in selector
+                    case fnAttributeName: //attribute name in css function
                         OffsetRange range = Css3Utils.getDocumentOffsetRange(node, snapshot);
                         if (Css3Utils.isValidOffsetRange(range)) {
                             getResult().put(range, ColoringAttributes.CUSTOM1_SET);
@@ -352,7 +352,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
             @Override
             public boolean visit(Node node) {
                 int from = -1, to = -1;
-                if (node.type() == NodeType.ruleSet) {
+                if (node.type() == NodeType.rule) {
                     //find the ruleSet curly brackets and create the fold between them inclusive
                     Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.token);
                     for (Node leafNode : tokenNodes) {
@@ -467,14 +467,15 @@ public class DefaultCssEditorModule extends CssEditorModule {
         final Set<StructureItem> ids = new HashSet<StructureItem>();
         final Set<StructureItem> elements = new HashSet<StructureItem>();
 
-        result.add(new TopLevelStructureItem.Rules(rules));
+        result.add(new TopLevelStructureItem.Rules(rules, context));
         result.add(new TopLevelStructureItem.AtRules(atrules));
         result.add(new TopLevelStructureItem.Classes(classes));
         result.add(new TopLevelStructureItem.Ids(ids));
         result.add(new TopLevelStructureItem.Elements(elements));
 
         final Snapshot snapshot = context.getSnapshot();
-
+        final FileObject file = context.getFileObject();
+        
         return new NodeVisitor<T>() {
 
             @Override
@@ -483,48 +484,48 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case selectorsGroup: //rules
                         //get parent - ruleSet to obtain the { ... } range 
                         Node ruleNode = node.parent();
-                        assert ruleNode.type() == NodeType.ruleSet;
+                        assert ruleNode.type() == NodeType.rule;
 
                         int so = snapshot.getOriginalOffset(ruleNode.from());
                         int eo = snapshot.getOriginalOffset(ruleNode.to());
                         if (eo > so) {
                             //todo: filter out virtual selectors
-                            StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(ruleNode), snapshot);
+                            StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, ruleNode), snapshot);
                             rules.add(item);
                         }
                         break;
                     case elementName: //element
-                        elements.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        elements.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case cssClass:
-                        classes.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        classes.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case cssId:
-                        ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case charSet:
                     case imports:
                     case namespace:
-                        atrules.add(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(node), snapshot));
+                        atrules.add(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case fontFace:
                         Node tokenNode = NodeUtil.getChildTokenNode(node, CssTokenId.FONT_FACE_SYM);
-                        atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(node), snapshot));
+                        atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
-                    case media_query_list:
+                    case mediaQueryList:
                         Node mediaNode = node.parent();
                         assert mediaNode.type() == NodeType.media;
                         StringBuilder image = new StringBuilder();
                         image.append("@media "); //NOI18N
                         image.append(node.image());
-                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(mediaNode), snapshot));
+                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
                         break;
                     case page:
                         Node pageSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.PAGE_SYM);
                         Node lbraceSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
                         if(pageSymbolNode != null && lbraceSymbolNode != null) {
                             CharSequence headingAreaImage = snapshot.getText().subSequence(pageSymbolNode.from(), lbraceSymbolNode.from());
-                            atrules.add(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(node), snapshot));
+                            atrules.add(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(file, node), snapshot));
                         }
                         break;
                     case counterStyle:
@@ -533,7 +534,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                             image = new StringBuilder();
                             image.append("@counter-style "); //NOI18N
                             image.append(identNode.image());
-                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(node), snapshot));
+                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, node), snapshot));
                         }
                         break;
 

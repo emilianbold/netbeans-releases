@@ -64,13 +64,18 @@ import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
+@ActionID(id = GetSourcesFromKenaiAction.ID, category = "Team")
+@ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance")
 public final class GetSourcesFromKenaiAction extends AbstractAction {
 
+    static final String ID = "org.netbeans.modules.kenai.ui.GetSourcesFromKenaiAction"; //NOI18N
     private ProjectAndFeature prjAndFeature;
     private SourceHandleImpl srcHandle;
 

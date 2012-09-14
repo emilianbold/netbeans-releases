@@ -79,6 +79,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.Model.Type;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.TraitScope;
@@ -93,6 +94,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Index Ruby structure into the persistent store for retrieval by
@@ -191,7 +193,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     public String getPersistentUrl(File file) {
         String url;
         try {
-            url = file.toURI().toURL().toExternalForm();
+            url = Utilities.toURI(file).toURL().toExternalForm();
             // Make relative URLs for urls in the libraries
             return PHPIndex.getPreindexUrl(url);
         } catch (MalformedURLException ex) {
@@ -231,7 +233,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
-            Model model = r.getModel(false);
+            Model model = r.getModel(Type.COMMON);
             final FileScope fileScope = model.getFileScope();
             IndexDocument reverseIdxDocument = support.createDocument(indexable);
             documents.add(reverseIdxDocument);
@@ -354,18 +356,18 @@ public final class PHPIndexer extends EmbeddingIndexer {
 
                 @Override
                 public void visit(Identifier identifier) {
-                    addSignature(IdentifierSignature.createIdentifier(identifier));
+                    addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
                     super.visit(identifier);
                 }
 
                 @Override
                 public void visit(PHPDocTypeNode node) {
-                    addSignature(IdentifierSignature.create(node));
+                    addSignature(IdentifierSignatureFactory.create(node));
                     super.visit(node);
                 }
 
                 private void addSignature(final IdentifierSignature signature) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER, signature.getSignature(), true, true);
+                    signature.save(identifierDocument, FIELD_IDENTIFIER);
                 }
             };
             program.accept(identifierVisitor);

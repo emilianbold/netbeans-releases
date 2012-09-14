@@ -86,6 +86,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
@@ -376,6 +378,18 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (libraryConfiguration != null) {
             libraryConfiguration.removeLibraryChangeListener(listener);
         }
+    }
+    
+    //@Override
+    public void addDeployOnSaveListener( DeployOnSaveListener listener ) {
+        DeployOnSaveManager.getDefault().addDeployOnSaveListener(provider,
+                listener);
+    }
+
+    //@Override
+    public void removeDeployOnSaveListener( DeployOnSaveListener listener ) {
+        DeployOnSaveManager.getDefault().removeDeployOnSaveListener(provider,
+                listener);
     }
 
     @Override
@@ -993,5 +1007,24 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             collectData(server, allRelativePaths);
         }
         return allRelativePaths;
+    }
+
+    // XXX commented out - there does not seem to be any client for 7.3
+    // once this is going to be used move to J2eeModuleProvider
+    /**
+     * The listener interface to listen for deploy on save operations.
+     *
+     * @since 1.91
+     */
+    public static interface DeployOnSaveListener {
+
+        /**
+         * Invoked when a deploy on save operation has been successfully
+         * performed by the infrastructure.
+         *
+         * @param artifacts artifacts affected by the deploy
+         */
+        public void deployed(Iterable<ArtifactListener.Artifact> artifacts);
+
     }
 }

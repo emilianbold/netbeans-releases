@@ -282,13 +282,13 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
+                <friend>org.netbeans.modules.web.client.rest</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <package>org.netbeans.modules.websvc.rest.model.api</package>
                 <package>org.netbeans.modules.websvc.rest.model.spi</package>
                 <package>org.netbeans.modules.websvc.rest.spi</package>
-                <package>org.netbeans.modules.websvc.wsstack.jaxrs</package>
             </friend-packages>
         </data>
     </configuration>

@@ -70,11 +70,13 @@ public class ClearDocumentBookmarksAction extends BaseAction {
 	return (String) getValue(NAME);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e, JTextComponent target) {
 	BookmarkList bookmarkList = BookmarkList.get(target.getDocument());
         bookmarkList.removeAllBookmarks ();
     }
 
+    @Override
     protected Object getDefaultShortDescription() {
         return NbBundle.getBundle(ClearDocumentBookmarksAction.class).getString(
                 (String)getValue(Action.NAME));

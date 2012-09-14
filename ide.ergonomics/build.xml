@@ -58,7 +58,6 @@
             <exclude name="platform"/>
             <exclude name="ergonomics"/>
             <exclude name="extra"/>
-            <exclude name="webcommon"/>
             <exclude name="nb"/>
         </dirset>
     </target>

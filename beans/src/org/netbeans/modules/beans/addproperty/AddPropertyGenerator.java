@@ -94,7 +94,7 @@ public class AddPropertyGenerator {
                 scriptContext.setAttribute("className", addPropertyConfig.getClassName(), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("name", name, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("initializer", initializer, ScriptContext.ENGINE_SCOPE); // NOI18N
-                scriptContext.setAttribute("capitalizedName", capitalize(name), ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("capitalizedName", capitalize(name).toString(), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("static", Boolean.valueOf(addPropertyConfig.isStatic()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("final", Boolean.valueOf(addPropertyConfig.isFinale()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 AddPropertyConfig.GENERATE generateGetterSetter = addPropertyConfig.getGenerateGetterSetter();
@@ -154,16 +154,20 @@ public class AddPropertyGenerator {
         return new ScriptEngineManager().getEngineByName("freemarker"); // NOI18N
     }
 
-    private static String capitalize(String string) {
-        if (string == null) {
-            return null;
+    private static StringBuilder capitalize(String string) {
+        StringBuilder sb = new StringBuilder(string);
+        while (sb.length() > 1 && sb.charAt(0) == '_') { //NOI18N
+            sb.deleteCharAt(0);
         }
-        if (string.length() > 0) {
-            final char charAtZero = string.charAt(0);
-            if (Character.isLowerCase(charAtZero)) {
-                string = Character.toUpperCase(charAtZero) + string.substring(1);
-            }
+
+        //Beans naming convention, #165241
+        if (sb.length() > 1 && Character.isUpperCase(sb.charAt(1))) {
+            return sb;
         }
-        return string;
+
+        if (sb.length() > 0) {
+            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
+        }
+        return sb;
     }
 }

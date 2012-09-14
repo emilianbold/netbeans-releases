@@ -55,7 +55,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.CopyAction;
-import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.PasteActionNoBlock;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -111,9 +110,6 @@ public class NodeTest extends JellyTestCase {
     /** method called before each testcase */
     @Override
     protected void setUp() throws IOException {
-        safeDeleteTitle = safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle",
-                "LBL_SafeDel_Delete"); // NOI18N
-
         System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
         if (projectRootNode == null) {
@@ -134,8 +130,6 @@ public class NodeTest extends JellyTestCase {
     @Override
     protected void tearDown() {
     }
-    // "Safe Delete"
-    private static String safeDeleteTitle;
 
     /** Test constructor  */
     public void testConstructor() {
@@ -255,7 +249,6 @@ public class NodeTest extends JellyTestCase {
         String[] expectedChildren = {
             "JFrameSample.java",
             "SampleClass1.java",
-            "TestOutline.java",
             "html.html",
             "image.gif",
             "properties.properties",

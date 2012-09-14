@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="core.browser.webview.jfxplatformbridge">
+    <description>Builds, tests, and runs the project core.browser.webview.jfxplatformbridge</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

@@ -98,7 +98,7 @@ public class CssBracketCompleterTest extends TestBase {
         // this doesn't work since the JTextPane doesn't like our Kits since they aren't StyleEditorKits.
         //            Document doc = createDocument();
         //            JTextPane pane = new JTextPane((StyledDocument)doc);
-        //            EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-css");
+        //            EditorKit kit = CloneableEditorSupport.getEditorKit("text/css");
         //            pane.setEditorKit(kit);
 
         File tmpFile = new File(getWorkDir(), "bracketCompleterTest.css");

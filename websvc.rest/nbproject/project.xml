@@ -626,7 +626,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.client.rest</friend>
+                <package>org.netbeans.modules.websvc.rest.client</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

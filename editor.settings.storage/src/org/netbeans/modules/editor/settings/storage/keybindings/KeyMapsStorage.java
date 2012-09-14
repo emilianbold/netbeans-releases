@@ -63,6 +63,7 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -173,7 +174,7 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         }
                     }
                     
-                    KeyStroke[] shortcut = StorageSupport.stringToKeyStrokes(key, true);
+                    KeyStroke[] shortcut = Utilities.stringToKeys(key.replaceAll("\\$", " ")); // NOI18N
                     String remove = attributes.getValue(A_REMOVE);
                     
                     if (Boolean.valueOf(remove)) {

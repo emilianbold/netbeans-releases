@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.hint;
 
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.css.editor.properties.Semitones;
 import org.netbeans.modules.javascript2.editor.hints.AssignmentInCondition;
 import org.netbeans.modules.javascript2.editor.hints.BetterConditionHint;
 import org.netbeans.modules.javascript2.editor.hints.DuplicatePropertyName;
@@ -91,6 +90,10 @@ public class JsConventionHintTest extends HintTestBase {
     
     public void testSemicolon03() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/hints/varInForNode.js", null);
+    }
+
+    public void testSemicolonIssue218108() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue218108.js", null);
     }
     
     public void testUnexpectedComma01() throws Exception {

@@ -1,0 +1,23 @@
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
+${doctype}
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=${encoding}">
+    ${script}
+  </head>
+  <body>
+	${header}
+	${sidebar}
+        ${content}
+
+	<!-- Templates -->
+	${tpl_create}
+	${tpl_list_item}
+	${tpl_details}
+
+  </body>
+</html>

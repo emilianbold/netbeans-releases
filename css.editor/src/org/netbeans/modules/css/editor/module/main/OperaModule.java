@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class OperaModule extends BrowserSupportModule {
 
     public OperaModule() {
-        super(new DefaultBrowser("Opera", "Opera", "presto", "o", "opera20"), "opera"); //NOI18N
+        super(new DefaultBrowser("Opera", "Opera", "presto", "o", "opera20", PropertyCategory.OPERA), "opera"); //NOI18N
     }
 
 }

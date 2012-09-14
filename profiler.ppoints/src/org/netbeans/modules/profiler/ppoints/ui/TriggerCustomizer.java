@@ -149,16 +149,16 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
 
         Object key = triggerWhenCombo.getSelectedItem();
 
-        if (key == Bundle.TriggerCustomizer_HeapUsgRelKey()) {
+        if (Bundle.TriggerCustomizer_HeapUsgRelKey().equals(key)) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_HEAPUSG);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
-        } else if (key == Bundle.TriggerCustomizer_HeapSizeAbsKey()) {
+        } else if (Bundle.TriggerCustomizer_HeapSizeAbsKey().equals(key)) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_HEAPSIZ);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue() * (1024L * 1024L));
-        } else if (key == Bundle.TriggerCustomizer_SurvgenCountKey()) {
+        } else if (Bundle.TriggerCustomizer_SurvgenCountKey().equals(key)) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_SURVGEN);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
-        } else if (key == Bundle.TriggerCustomizer_LdClassCountKey()) {
+        } else if (Bundle.TriggerCustomizer_LdClassCountKey().equals(key)) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_LDCLASS);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
         }
@@ -172,16 +172,16 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         if (e.getSource() == triggerWhenCombo) {
             Object key = triggerWhenCombo.getSelectedItem();
 
-            if (key == Bundle.TriggerCustomizer_HeapUsgRelKey()) {
+            if (Bundle.TriggerCustomizer_HeapUsgRelKey().equals(key)) {
                 triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_HeapUsgRelUnit());
                 triggerValueSpinner.setModel(percentsModel);
-            } else if (key == Bundle.TriggerCustomizer_HeapSizeAbsKey()) {
+            } else if (Bundle.TriggerCustomizer_HeapSizeAbsKey().equals(key)) {
                 triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_HeapSizeAbsUnit());
                 triggerValueSpinner.setModel(unitsModel);
-            } else if (key == Bundle.TriggerCustomizer_SurvgenCountKey()) {
+            } else if (Bundle.TriggerCustomizer_SurvgenCountKey().equals(key)) {
                 triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_SurvgenCountUnit());
                 triggerValueSpinner.setModel(unitsModel);
-            } else if (key == Bundle.TriggerCustomizer_LdClassCountKey()) {
+            } else if (Bundle.TriggerCustomizer_LdClassCountKey().equals(key)) {
                 triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_LdClassCountUnit());
                 triggerValueSpinner.setModel(unitsModel);
             }

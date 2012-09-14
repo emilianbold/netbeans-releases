@@ -80,6 +80,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -133,6 +134,8 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
+    @StaticResource
+    private static final String WARNING_ICON = "org/netbeans/modules/java/source/resources/icons/warning.png";  //NOI18N
 
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
@@ -262,7 +265,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             rootName);
                         NotificationDisplayer.getDefault().notify(
                             NbBundle.getMessage(JavaCustomIndexer.class, "TITLE_LowMemory"),
-                            ImageUtilities.loadImageIcon("org/netbeans/modules/java/resources/error.png", false),
+                            ImageUtilities.loadImageIcon(WARNING_ICON, false),
                             NbBundle.getMessage(JavaCustomIndexer.class, "MSG_LowMemory", rootName),
                             new ActionListener() {
                                 @Override
@@ -275,7 +278,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     }
                                 }
                             },
-                            NotificationDisplayer.Priority.HIGH);
+                            NotificationDisplayer.Priority.NORMAL);
                     }
                     
                 } finally {

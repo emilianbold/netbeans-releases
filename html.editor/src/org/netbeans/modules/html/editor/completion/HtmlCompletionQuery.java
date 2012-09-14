@@ -141,7 +141,7 @@ public class HtmlCompletionQuery extends UserTask {
                 } else if (resultMimeType.equals("text/javascript")) {
                     //complete the </script> end tag
                     completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, SCRIPT_TAG_NAME);
-                } else if (resultMimeType.equals("text/x-css")) {
+                } else if (resultMimeType.equals("text/css")) {
                     //complete the </style> end tag
                     completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, STYLE_TAG_NAME);
                 }

@@ -38,7 +38,7 @@ T[ 35]: "=" F(1) OPERATOR[8] FlyT,
 T[ 36]: ""text/css"" <132,142> VALUE[9] DefT, 
 T[ 37]: ">" F(1) TAG_CLOSE_SYMBOL[19] FlyT, 
 T[ 38]: "\n            h1 {\n            color: black;\n            }\n        " <143,209> STYLE[2] DefT, la=8, 
-    Embedding[0]: "text/html/text/x-css"
+    Embedding[0]: "text/html/text/css"
     T[ 0]: "\n" <143,144> NL[84] DefT, 
     T[ 1]: "            " <144,156> WS[6] DefT, la=1, 
     T[ 2]: "h1" <156,158> IDENT[16] DefT, la=1, 
@@ -69,7 +69,7 @@ T[ 47]: "=" F(1) OPERATOR[8] FlyT,
 T[ 48]: ""text/css"" <238,248> VALUE[9] DefT, 
 T[ 49]: ">" F(1) TAG_CLOSE_SYMBOL[19] FlyT, 
 T[ 50]: "\n            h2 {\n            background-color:green;\n            }\n            col.prvni address #15 col.druhy {\n            font-family: cursive;\n            font-size: 36cm;\n            }\n        " <249,448> STYLE[2] DefT, la=8, 
-    Embedding[0]: "text/html/text/x-css"
+    Embedding[0]: "text/html/text/css"
     T[ 0]: "\n" <249,250> NL[84] DefT, 
     T[ 1]: "            " <250,262> WS[6] DefT, la=1, 
     T[ 2]: "h2" <262,264> IDENT[16] DefT, la=1, 
@@ -127,7 +127,7 @@ T[ 55]: "<" F(1) TAG_OPEN_SYMBOL[18] FlyT, la=1,
 T[ 56]: "style" F(5) TAG_OPEN[5] FlyT, la=1, 
 T[ 57]: ">" F(1) TAG_CLOSE_SYMBOL[19] FlyT, 
 T[ 58]: "\n            col.prvni address #15 col.druhy {\n            vertical-align: text-top;\n            word-spacing: 4px\n            }\n        " <472,609> STYLE[2] DefT, la=8, 
-    Embedding[0]: "text/html/text/x-css"
+    Embedding[0]: "text/html/text/css"
     T[ 0]: "\n" <472,473> NL[84] DefT, 
     T[ 1]: "            " <473,485> WS[6] DefT, la=1, 
     T[ 2]: "col" <485,488> IDENT[16] DefT, la=1, 
@@ -195,7 +195,7 @@ T[ 88]: " " <755,756> WS[3] DefT, la=1,
 T[ 89]: "style" F(5) ARGUMENT[7] FlyT, la=1, 
 T[ 90]: "=" F(1) OPERATOR[8] FlyT, 
 T[ 91]: ""color: blue;"" <762,776> VALUE_CSS[11] DefT, 
-    Embedding[0]: "text/html/text/x-css"
+    Embedding[0]: "text/html/text/css"
     T[0]: "color" <763,768> IDENT[16] DefT, la=1, 
     T[1]: ":" <768,769> COLON[18] DefT, la=1, 
     T[2]: " " <769,770> WS[6] DefT, la=1, 

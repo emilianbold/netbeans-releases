@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +101,7 @@ public abstract class CssEditorModule {
         return null;
     }
     
-    public Collection<Property> getProperties() {
+    public Collection<PropertyDefinition> getProperties() {
         return Collections.emptyList();
     }
     

@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.hints.css;
 
 import java.util.Collections;
+import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -52,31 +53,38 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
+@NbBundle.Messages(
+    "description.add.stylesheet.reference=Add reference to containing stylesheet {0}"
+)
 public class AddStylesheetLinkHintFix implements HintFix {
     private final FileObject externalStylesheet;
-    private final String message;
     private final FileObject sourceFile;
+    private final String path;
 
-    public AddStylesheetLinkHintFix(String message, FileObject sourceFile, FileObject externalStylesheet) {
-        this.message = message;
+    public AddStylesheetLinkHintFix(FileObject sourceFile, FileObject externalStylesheet) {
         this.sourceFile = sourceFile;
         this.externalStylesheet = externalStylesheet;
+        
+        this.path = WebUtils.getRelativePath(sourceFile, externalStylesheet);
     }
 
     @Override
     public String getDescription() {
-        return message;
+        return Bundle.description_add_stylesheet_reference(path);
     }
 
     @Override
     public void implement() throws Exception {
         Source source = Source.create(sourceFile);
+        final Document doc = source.getDocument(false);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override
@@ -89,6 +97,10 @@ public class AddStylesheetLinkHintFix implements HintFix {
                 ModificationResult modification = new ModificationResult();
                 if(HtmlSourceUtils.importStyleSheet(modification, (HtmlParserResult)result, externalStylesheet)) {
                     modification.commit();
+//                    if(doc != null) {
+//                        //refresh the index for the modified file
+//                        HtmlSourceUtils.forceReindex(sourceFile);
+//                    }
                 }
             }
         });

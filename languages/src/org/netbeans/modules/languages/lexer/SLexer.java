@@ -147,7 +147,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                   "text/javascript".equals (language.getMimeType ()) &&
                   "js_error_string".equals (token.getTypeName ())
                 ) ||
-                (token == null && "text/x-css".equals (language.getMimeType ()))
+                (token == null && "text/css".equals (language.getMimeType ()))
         )) {
             char ch = input.getString (index, index + 1).charAt (0);
             if (ch == '\"' || ch == '\'') {

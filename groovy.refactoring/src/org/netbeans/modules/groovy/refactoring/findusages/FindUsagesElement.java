@@ -89,6 +89,10 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
         return FindUsagesPainter.colorASTNode(element.getNode(), line);
     }
 
+    public String getName() {
+        return element.getName();
+    }
+
     @Override
     public void performChange() {
     }

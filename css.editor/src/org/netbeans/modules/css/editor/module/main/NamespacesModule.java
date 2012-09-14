@@ -65,8 +65,10 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.css.lib.api.model.Namespace;
-import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Namespace;
+import org.netbeans.modules.css.model.api.Namespaces;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -81,8 +83,8 @@ public class NamespacesModule extends CssEditorModule {
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL
 
     @Override
-    public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+    public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
+        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
         if (isError) {
@@ -90,25 +92,22 @@ public class NamespacesModule extends CssEditorModule {
         }
 
         switch (activeNode.type()) {
-            case namespace_prefix:
+            case namespacePrefix:
             case elementName:
                 //already in the prefix
 
                 //todo: rewrite to use index later
-                Stylesheet model = context.getParserResult().getModel();
-                for (Namespace ns : model.getNamespaces()) {
-                    proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-                }
+                proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
             case root:
             case styleSheet:
-            case bodylist:
+            case body:
                 CompletionProposal nsKeywordProposal =
                         CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                 proposals.add(nsKeywordProposal);
 
-            case bodyset:
+            case bodyItem:
             case media:
             case combinator:
             case selector:
@@ -153,9 +152,9 @@ public class NamespacesModule extends CssEditorModule {
                 }
                 break;
 
-            case attrib:
-            case attrib_name:
-            case namespace_wqname_prefix:
+            case slAttribute:
+            case slAttributeName:
+            case namespacePrefixName:
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
         }
@@ -163,11 +162,24 @@ public class NamespacesModule extends CssEditorModule {
         return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
-    private static List<CompletionProposal> getNamespaceCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
-            proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-        }
+    private static List<CompletionProposal> getNamespaceCompletionProposals(final CompletionContext context) {
+        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        //todo: rewrite to use index later
+        Model sourceModel = Model.getModel(context.getParserResult());
+        sourceModel.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                Namespaces namespaces = styleSheet.getNamespaces();
+                if(namespaces == null) {
+                    return ;
+                }
+                for (Namespace ns : namespaces.getNamespaces()) {
+                    proposals.add(
+                            new NamespaceCompletionItem(ns.getNamespacePrefixName().getContent().toString(),
+                            ns.getResourceIdentifier().getContent().toString(), context.getAnchorOffset()));
+                }
+            }
+        });
         return proposals;
     }
 
@@ -178,8 +190,7 @@ public class NamespacesModule extends CssEditorModule {
             @Override
             public boolean visit(Node node) {
                 switch (node.type()) {
-                    case namespace_prefix:
-                    case namespace_wildcard_prefix:
+                    case namespacePrefix:
                         getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CONSTRUCTOR_SET);
                         break;
                 }
@@ -190,11 +201,11 @@ public class NamespacesModule extends CssEditorModule {
 
     @Override
     public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
-        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.namespace_prefix);
+        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.namespacePrefix);
     }
 
     @Override
-    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, T result) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         result.add(new TopLevelStructureItem.Namespaces(items));
 
@@ -203,7 +214,7 @@ public class NamespacesModule extends CssEditorModule {
             @Override
             public boolean visit(Node node) {
                 if (node.type() == NodeType.namespace) {
-                    items.add(new NamespaceStructureItem(node));
+                    items.add(new NamespaceStructureItem(context.getFileObject(), node));
                 }
 
                 return false;

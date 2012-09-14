@@ -45,8 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.csl.CssColor;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -61,13 +61,13 @@ import org.openide.util.lookup.ServiceProvider;
 public class ColorsModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTY_DEFINITIONS_PATH = "org/netbeans/modules/css/editor/module/main/properties/colors"; //NOI18N    
-    private final Property colorsListPropertyDescriptor = new Property(
+    private final PropertyDefinition colorsListPropertyDescriptor = new PropertyDefinition(
             "@colors-list", //NOI18N
             generateColorsList(), this);
-    private final Collection<Property> propertyDescriptors;
+    private final Collection<PropertyDefinition> propertyDescriptors;
 
     public ColorsModule() {
-        propertyDescriptors = new ArrayList<Property>();
+        propertyDescriptors = new ArrayList<PropertyDefinition>();
         propertyDescriptors.add(colorsListPropertyDescriptor);
         propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(PROPERTY_DEFINITIONS_PATH, this));
     }
@@ -86,7 +86,7 @@ public class ColorsModule extends CssEditorModule implements CssModule {
     }
 
     @Override
-    public Collection<Property> getProperties() {
+    public Collection<PropertyDefinition> getProperties() {
         return propertyDescriptors;
     }
 

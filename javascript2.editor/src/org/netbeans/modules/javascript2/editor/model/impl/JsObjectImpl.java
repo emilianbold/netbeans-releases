@@ -59,7 +59,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private Map<Integer, Collection<TypeUsage>> assignments;
     final private boolean hasName;
     private String documentation;
-    private JsElement.Kind kind;
+    protected JsElement.Kind kind;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -336,6 +336,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             for (TypeUsage type : resolved) {
                 if (type.getOffset() > 0) {
                     JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                    if (jsObject == null && type.getType().indexOf('.') == -1) {
+                        JsObject decParent = this.parent;
+                        while (jsObject == null && decParent != null) {
+                            jsObject = decParent.getProperty(type.getType());
+                            decParent = decParent.getParent();
+                        }
+                    }
                     if (jsObject != null) {
                         ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
                     }

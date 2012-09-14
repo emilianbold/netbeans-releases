@@ -1,4 +1,4 @@
-TokenSequence for text/x-css at tokenIndex=0. TokenList contains 298 tokens:
+TokenSequence for text/css at tokenIndex=0. TokenList contains 298 tokens:
 *[  0]: "/* -------- DIRECT STYLES FOR TAGS-----------*/" <0,47> COMMENT[79] DefT, 
 T[  1]: "\n" <47,48> NL[84] DefT, 
 T[  2]: "body" <48,52> IDENT[16] DefT, la=1, 

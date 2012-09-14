@@ -60,8 +60,11 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
 
 /**
@@ -76,6 +79,8 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     /** Delegating component */
     private HtmlBrowser browserComponent;
     private HtmlBrowser.Factory browserFactory;
+
+    private final MyLookup proxyLookup = new MyLookup();
     
 
     // initialization ....................................................................................
@@ -105,18 +110,23 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         setName (""); // NOI18N
         setLayout (new BorderLayout ());
         this.browserFactory = fact;
-//        add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), BorderLayout.CENTER);
-//
-//        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-//
-//        // Ensure closed browsers are not stored:
-//        if (browserComponent.getBrowserComponent() != null) {
-//            putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-//        }
         setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser")); //NOI18N
         //don't use page title for display name as it can be VERY long
         setName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
-        setDisplayName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
+        setDisplayName(getDefaultDisplayName());
+
+        putClientProperty( "KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE );
+
+        setActivatedNodes( new Node[0] );
+    }
+
+    private String getDefaultDisplayName() {
+        return NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser"); //NOI18N
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return proxyLookup;
     }
     
     @Override
@@ -124,6 +134,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         return PERSISTENCE_ONLY_OPENED;
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent e) {
         if( HtmlBrowser.Impl.PROP_STATUS_MESSAGE.equals(e.getPropertyName()) ) {
             StatusDisplayer.getDefault().setStatusText(browserComponent.getBrowserImpl().getStatusMessage());
@@ -133,8 +144,22 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             if ((title == null) || (title.length () < 1))
                 return;
             setToolTipText(title);
+            setDisplayName( makeShort(title) );
+        } else if( HtmlBrowser.Impl.PROP_LOADING.equals (e.getPropertyName ()) ) {
+            boolean loading = ((Boolean)e.getNewValue()).booleanValue();
+            makeBusy( loading );
         }
-    }    
+    }
+
+    private static final int MAX_TITLE_LENGTH = 25;
+
+    private static String makeShort( String title ) {
+        if( title.length() > MAX_TITLE_LENGTH ) {
+            title = title.substring( 0, MAX_TITLE_LENGTH);
+            title += "…"; //NOI18N
+        }
+        return title;
+    }
     
     /** always open this top component in our special mode, if
     * no mode for this component is specified yet */
@@ -145,6 +170,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             return;
         }
 
+        setDisplayName( getDefaultDisplayName() );
         // behave like superclass
         super.open();
     }
@@ -182,19 +208,9 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     public HelpCtx getHelpCtx () {
         return new HelpCtx(HtmlBrowserComponent.class);
     }
-
+    
     @Override
     protected void componentActivated () {
-        if( null == browserComponent ) {
-            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
-
-            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-            // Ensure closed browsers are not stored:
-            if (browserComponent.getBrowserComponent() != null) {
-                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-            }
-        }
         if( null != browserComponent ) {
             HtmlBrowser.Impl impl = browserComponent.getBrowserImpl();
             if( null != impl ) {
@@ -206,6 +222,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         super.componentActivated ();
         SwingUtilities.invokeLater( new Runnable() {
 
+            @Override
             public void run() {
                 setEnableHome(enableHome);
                 setEnableLocation(enableLocation);
@@ -221,6 +238,18 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
 
     @Override
     protected void componentClosed() {
+        releaseBrowser();
+    }
+
+    /**
+     * Creates and initializes the internal browser component again.
+     */
+    public void recreateBrowser() {
+        releaseBrowser();
+        createBrowser();
+    }
+
+    private void releaseBrowser() {
         if( null != browserComponent ) {
             toolbarVisible = isToolbarVisible();
             statusVisible = isStatusLineVisible();
@@ -233,15 +262,47 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         browserComponent = null;
     }
 
+    private void createBrowser() {
+        if( null == browserComponent ) {
+            browserComponent = createBrowser( browserFactory, toolbarVisible, statusVisible );
+            initBrowser();
+        }
+    }
+
+    Lookup getBrowserLookup() {
+        if (browserComponent != null) {
+            return browserComponent.getBrowserImpl().getLookup();
+        } else {
+            return Lookup.EMPTY;
+        }
+    }
+
     @Override
     protected void componentOpened() {
+        createBrowser();
     }
 
     @Override
     public java.awt.Image getIcon () {
         return new ImageIcon (HtmlBrowser.class.getResource ("/org/openide/resources/html/htmlView.gif")).getImage ();   // NOI18N
     }
-    
+
+    protected HtmlBrowser createBrowser( HtmlBrowser.Factory factory, boolean showToolbar, boolean showStatus ) {
+        return new HtmlBrowser( factory, showToolbar, showStatus );
+    }
+
+    private void initBrowser() {
+        add( browserComponent, BorderLayout.CENTER );
+        // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
+        proxyLookup.setLookup(getBrowserLookup());
+
+        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+
+        // Ensure closed browsers are not stored:
+        if (browserComponent.getBrowserComponent() != null) {
+            putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+        }
+    }
 
     // public methods ....................................................................................
 
@@ -255,6 +316,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             urlToLoad = str;
             return;
         }
+        urlToLoad = null;
         browserComponent.setURL (str);
     }
 
@@ -270,6 +332,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             urlToLoad = null == url ? null : url.toExternalForm();
             return;
         }
+        urlToLoad = null;
         browserComponent.setURL (url);
     }
 
@@ -362,24 +425,20 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         return "HtmlBrowserComponent"; //NOI18N
     }
 
-    void setURLAndOpen( URL url ) {
-        if( null == browserComponent ) {
-            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
-
-            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-            // Ensure closed browsers are not stored:
-            if (browserComponent.getBrowserComponent() != null) {
-                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-            }
-        }
+    public void setURLAndOpen( URL url ) {
+        createBrowser();
         browserComponent.setURL(url);
+        urlToLoad = null;
         if( null != browserComponent.getBrowserComponent() ) {
             open();
             requestActive();
         }
     }
-
+    
+    public HtmlBrowser.Impl getBrowserImpl(){
+        return browserComponent.getBrowserImpl();
+    }
+    
 public static final class BrowserReplacer implements java.io.Externalizable {
     
     /** serial version UID */
@@ -451,4 +510,13 @@ public static final class BrowserReplacer implements java.io.Externalizable {
 
 } // end of BrowserReplacer inner class
 
+    private static class MyLookup extends ProxyLookup {
+        public MyLookup() {
+            super( Lookup.EMPTY );
+        }
+
+        public void setLookup( Lookup lkp ) {
+            setLookups( new Lookup[] { lkp } );
+        }
+    }
 }

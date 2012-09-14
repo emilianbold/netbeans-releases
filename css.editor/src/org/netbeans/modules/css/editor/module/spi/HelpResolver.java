@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import java.net.URL;
 
 /**
@@ -52,12 +53,12 @@ public abstract class HelpResolver {
     /**
      * Returns the help content in the html code form for the given property.
      */
-    public abstract String getHelp(Property property);
+    public abstract String getHelp(PropertyDefinition property);
     
     /**
      * Resolves a link (relative or absolute) from within the property help content
      */
-    public abstract URL resolveLink(Property property, String link);
+    public abstract URL resolveLink(PropertyDefinition property, String link);
     
     /**
      * Return a reasonable number representing a sort priority of the help resolver.

@@ -182,7 +182,11 @@ public class ClientBuilder {
                         model.startTransaction();
                         service.setName(newServiceName);
                     } finally {
-                        model.endTransaction();
+			try {
+                            model.endTransaction();
+			} catch (IllegalStateException ex) {
+			    ErrorManager.getDefault().notify(ex);
+			}
                     }
                     changed = true;
                 }

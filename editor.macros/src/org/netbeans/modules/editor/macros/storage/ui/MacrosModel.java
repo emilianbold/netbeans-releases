@@ -57,10 +57,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.KeyStroke;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.modules.editor.macros.MacroDialogSupport;
 import org.netbeans.modules.editor.macros.MacroShortcutsInjector;
@@ -228,8 +230,7 @@ public final class MacrosModel {
     
     public void deleteMacro(int tableRow) {
         Macro macro = allMacrosList.get(tableRow);
-        Set<String> set = Collections.<String>emptySet();
-        macro.setShortcuts(set);
+        macro.setShortcuts(Collections.<String>emptySet());
         allMacrosList.remove(tableRow);
         Map<String, Macro> map = mimeType2Macros.get(macro.getMimeType());
         map.remove(macro.getName());
@@ -280,9 +281,18 @@ public final class MacrosModel {
         // shortcuts is in Ctrl+A form
         public void setShortcut(String shortcut) {
             List<? extends MultiKeyBinding> list = Collections.singletonList(
-                new MultiKeyBinding(StorageSupport.stringToKeyStrokes(shortcut, false), MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
+                new MultiKeyBinding(KeyStrokeUtils.getKeyStrokes(shortcut), 
+                    MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
             
-            if (Utilities.compareObjects(getShortcuts(), list)) {
+            List<? extends MultiKeyBinding> current = getShortcuts();
+            if (current == list) {
+                return;
+            }
+            // ignores changes iff just order of shortcuts has been changed;
+            // this is consistent with key binding storage.
+            if (current != null && list != null &&
+                current.size() == list.size() &&
+                current.containsAll(list)) {
                 return;
             }
             
@@ -296,12 +306,13 @@ public final class MacrosModel {
             model.setChanged(true);
         }
 
-        // shortcuts are in M-A form
+        // shortcuts are in M-A form, delimited by SPACE
         public void setShortcuts(Set<String> shortcuts) {
             List<MultiKeyBinding> list = new ArrayList<MultiKeyBinding>(shortcuts.size());
             
             for (String shortcut : shortcuts) {
-                list.add(new MultiKeyBinding(StorageSupport.stringToKeyStrokes(shortcut, true), MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
+                KeyStroke[] keys = Utilities.stringToKeys(shortcut);
+                list.add(new MultiKeyBinding(Utilities.stringToKeys(shortcut), MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
             }
             
             if (Utilities.compareObjects(new HashSet<MultiKeyBinding>(getShortcuts()), new HashSet<MultiKeyBinding>(list))) {
@@ -456,7 +467,9 @@ public final class MacrosModel {
                     StringBuilder sb = new StringBuilder();
                     for(int j = 0; j < allMacrosList.get(rowIndex).getShortcuts().size(); j++) {
                         MultiKeyBinding mkb = allMacrosList.get(rowIndex).getShortcuts().get(j);
-                        sb.append(StorageSupport.keyStrokesToString(mkb.getKeyStrokeList(), false));
+                        List<KeyStroke> list = mkb.getKeyStrokeList();
+                        KeyStroke[] arr = list.toArray(new KeyStroke[list.size()]);
+                        sb.append(KeyStrokeUtils.getKeyStrokesAsText(arr, " ")); // NOI18N
                         if (j + 1 < allMacrosList.get(rowIndex).getShortcuts().size()) {
                             sb.append(", "); //NOI18N
                         }

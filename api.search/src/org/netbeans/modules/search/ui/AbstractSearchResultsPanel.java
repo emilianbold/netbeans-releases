@@ -63,6 +63,7 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.swing.outline.Outline;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.OutlineView;
@@ -141,7 +142,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        toolBar = new javax.swing.JToolBar();
+        toolBar = new ToolbarWithOverflow();
         contentPanel = new javax.swing.JPanel();
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -182,7 +183,6 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private void initToolbar() {
 
         toolBar.setRollover(true);
-        toolBar.setFloatable(false);
 
         initStopRefreshButton();
         toolBar.add(btnStopRefresh);
@@ -192,6 +192,10 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         toolBar.add(btnNext);
         initExpandButton();
         toolBar.add(btnExpand);
+
+        toolBar.setMinimumSize(new Dimension(
+                (int) toolBar.getMinimumSize().getWidth(),
+                (int) btnStopRefresh.getMinimumSize().getHeight()));
     }
 
     private void initStopRefreshButton() throws MissingResourceException {

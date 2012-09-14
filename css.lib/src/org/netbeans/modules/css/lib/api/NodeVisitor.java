@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Allows to visit the css source parse trees.
  *
  * @author marekfukala
  */

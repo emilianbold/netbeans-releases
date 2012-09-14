@@ -65,18 +65,18 @@ import org.openide.windows.TopComponent;
 /**
  * Configuration for CSS
  */
-@LanguageRegistration(mimeType = "text/x-css", useMultiview = true) //NOI18N
+@LanguageRegistration(mimeType = "text/css", useMultiview = true) //NOI18N
 //index all source roots only
-@PathRecognizerRegistration(mimeTypes = "text/x-css", libraryPathIds = {}, binaryLibraryPathIds = {}) //NOI18N
+@PathRecognizerRegistration(mimeTypes = "text/css", libraryPathIds = {}, binaryLibraryPathIds = {}) //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
 
-    public static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+    public static final String CSS_MIME_TYPE = "text/css";//NOI18N
 
     @MultiViewElement.Registration(displayName = "#LBL_CSSEditorTab",
         iconBase = "org/netbeans/modules/css/resources/style_sheet_16.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "css.source",
-        mimeType = "text/x-css",
+        mimeType = "text/css",
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);

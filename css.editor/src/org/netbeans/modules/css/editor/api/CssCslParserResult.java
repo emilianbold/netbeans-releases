@@ -51,6 +51,7 @@ import org.netbeans.modules.css.editor.csl.CssAnalyser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -62,6 +63,8 @@ public class CssCslParserResult extends ParserResult {
     private CssParserResult wrappedCssParserResult;
     private final List<Error> errors = new ArrayList<Error>();
     private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
+    
+    private Model model; 
 
     public CssCslParserResult(Snapshot snapshot) {
         super(snapshot);
@@ -83,6 +86,13 @@ public class CssCslParserResult extends ParserResult {
 
     public Node getParseTree() {
         return wrappedCssParserResult.getParseTree();
+    }
+    
+    public synchronized Model getModel() {
+        if(model == null) {
+            model = Model.getModel(getWrappedCssParserResult());
+        }
+        return model;
     }
 
     @Override
@@ -107,94 +117,4 @@ public class CssCslParserResult extends ParserResult {
         return errors;
     }
 
-//    
-//     private Error createError(ProblemDescription pe) {
-//         
-//         pe.
-//        int from = pe.getFrom();
-//
-//        if (!(containsGeneratedCode(pe..image) || containsGeneratedCode(errorToken.image))) {
-//            if(!filterError(pe, snapshot, errorToken)) {
-//                String errorMessage = buildErrorMessage(pe);
-//                int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
-//                int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
-//
-//                //lets try to filter out some of the unwanted errors on generated virtual code
-//                if(root != null) { //the root can become null in case of completely unparseable file
-//                    SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
-//                    assert errorNode != null;
-//                    SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
-//                    //[Bug 183631] generated inline style is marked as an error
-//                    //The code <h1 style="#{x.style}"></h1> is translated to
-//                    // SELECTOR { @@@; } which is unparseable
-//                    //
-//                    //check if the declaration node contains generated code (@@@)
-//                    //if so, just ignore the error
-//                    if(parent != null) {
-//                        if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
-//                            if(containsGeneratedCode(parent.image())) {
-//                                return null;
-//                            }
-//                        }
-//                    }
-//                }
-//
-//
-//                if (documentStartOffset == -1 && documentEndOffset == -1) {
-//                    //the error is completely out of the mappable area, map it to the beginning of the document
-//                    documentStartOffset = documentEndOffset = 0;
-//                } else if (documentStartOffset == -1) {
-//                    documentStartOffset = documentEndOffset;
-//                } else if (documentEndOffset == -1) {
-//                    documentEndOffset = documentStartOffset;
-//                }
-//
-//                assert documentStartOffset <= documentEndOffset;
-//
-//                return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
-//                        documentStartOffset, documentEndOffset, Severity.ERROR);
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private boolean filterError(ParseException pe, Snapshot snapshot, Token errorToken) {
-//        //#182133 - filter error in css virtual source code for empty html tag class attribute
-//        //<div class=""/> generates .|{} for the empty value so the css completion can work there
-//        //and offer all classes
-//        if (pe.currentToken.kind == CssParserConstants.DOT
-//                && errorToken.kind == CssParserConstants.LBRACE
-//                && snapshot.getOriginalOffset(pe.currentToken.offset) == -1) {
-//            return true;
-//        }
-//
-//        return false;
-//    }
-//
-//    private String buildErrorMessage(ParseException pe) {
-//        StringBuilder buff = new StringBuilder();
-//        buff.append(ERROR_MESSAGE_PREFIX);
-//
-//        int maxSize = 0;
-//        for (int i = 0; i < pe.expectedTokenSequences.length; i++) {
-//            if (maxSize < pe.expectedTokenSequences[i].length) {
-//                maxSize = pe.expectedTokenSequences[i].length;
-//            }
-//        }
-//
-//        Token tok = pe.currentToken.next;
-//        buff.append('"');
-//        for (int i = 0; i < maxSize; i++) {
-//            buff.append(tok.image);
-//            if (i < maxSize - 1) {
-//                buff.append(',');
-//                buff.append(' ');
-//            }
-//            tok = tok.next;
-//        }
-//        buff.append('"');
-//
-//        return buff.toString();
-//    }
-//    
 }

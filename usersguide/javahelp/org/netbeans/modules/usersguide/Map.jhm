@@ -235,7 +235,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="text.plain" url="editing/csh/plain_editor.html" />
 
 <!--CSH for css text editor-->
-<mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
+<mapID target="text.css" url="xml/css/csh/about_source_editor.html" />
 
 <!-- CSH for HTML and JSP text editor -->
 <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
@@ -278,6 +278,8 @@ Other names may be trademarks of their respective owners.
   
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
+<!--ID for Shelved Changes dialog box:-->
+    <mapID target="org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction" url="misc-general/shelved_changes.html" />
 
     <!--ID for Find and Replace in Projects dialog. "search" module is in utilities package-->
 <mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    

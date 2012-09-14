@@ -1490,7 +1490,7 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             
-            <folder name="x-css">
+            <folder name="css">
                 <folder name="FontsColors">
                     <folder name="CityLights">
                         <folder name="Defaults">
