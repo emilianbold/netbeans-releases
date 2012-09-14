@@ -195,7 +195,9 @@ public class WSUtils {
                 synchronized (result) {
                     log.log(Level.INFO, "Maven project lookup is changed"); // NOI18N
                     result.notifyAll();
-                    result.removeLookupListener( this );
+                    if ( !result.allInstances().isEmpty() ){
+                        result.removeLookupListener( this );
+                    }
                     log.log(Level.INFO, 
                             "Get out of waiting J2eeModuleProvider instance cycle, listener is removed");// NOI18N
                 }
