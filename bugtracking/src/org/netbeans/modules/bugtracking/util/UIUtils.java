@@ -43,14 +43,18 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.AWTKeyStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -61,12 +65,16 @@ import java.awt.event.MouseWheelListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.windows.WindowManager;
 
 /**
@@ -154,6 +162,55 @@ public class UIUtils {
             };
         }
         return scrollingFocusListener;
+    }
+
+    public interface SizeController {
+        public void setWidth(int width);
+    }
+        
+    public static void keepComponentsWidthByVisibleArea(final JPanel panel, final SizeController sc) {
+        panel.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                final JViewport v = getViewport(panel);
+                assert v != null;
+                if(v == null) {
+                    return;
+                }
+                sc.setWidth(computeWidth(v));
+                v.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        sc.setWidth(computeWidth(v));
+                    }
+                });
+                v.addComponentListener(new ComponentListener() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        sc.setWidth(computeWidth(v));
+                    }
+                    @Override public void componentMoved(ComponentEvent e) { }
+                    @Override public void componentShown(ComponentEvent e) { }
+                    @Override public void componentHidden(ComponentEvent e) { }
+                });
+            }
+            private int computeWidth(JViewport v) {
+                Rectangle vr = v.getViewRect();
+                return vr.width + vr.x;
+            }
+            @Override public void ancestorRemoved(AncestorEvent event) { }
+            @Override public void ancestorMoved(AncestorEvent event) { }
+        });
+    }
+    
+    private static JViewport getViewport(Container c) {
+        if(c == null) {
+            return null;
+        }
+        if(c instanceof JScrollPane) {
+            return ((JScrollPane) c).getViewport();
+        }
+        return getViewport(c.getParent());
     }
     
     private static class NotShowingFieldsFocusListener implements FocusListener {

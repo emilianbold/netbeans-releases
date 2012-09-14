@@ -62,6 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.JViewport;
+import javax.swing.border.LineBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -155,46 +156,16 @@ public class QueryPanel extends javax.swing.JPanel {
         filterComboBox.setRenderer(new FilterCellRenderer());
 
         UIUtils.keepFocusedComponentVisible(this);
-        
-        addAncestorListener(new AncestorListener() {
+        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
             @Override
-            public void ancestorAdded(AncestorEvent event) {
-                final JViewport v = getViewport(QueryPanel.this);
-                assert v != null;
-                if(v == null) {
-                    return;
-                }
-                setByTextWidth(v.getViewRect().width);
-                v.addComponentListener(new ComponentListener() {
-                    @Override
-                    public void componentResized(ComponentEvent e) {
-                        setByTextWidth(v.getViewRect().width);
-                    }
-                    @Override public void componentMoved(ComponentEvent e) { }
-                    @Override public void componentShown(ComponentEvent e) { }
-                    @Override public void componentHidden(ComponentEvent e) { }
-                });
-            }
-            private void setByTextWidth(int width) {
+            public void setWidth(int width) {
                 setContainerSize(byTextContainer, width, byTextPanel.getPreferredSize().height);
                 setContainerSize(byPeopleContainer, width, byPeoplePanel.getPreferredSize().height);
                 setContainerSize(byLastChangeContainer, width, byLastChangePanel.getPreferredSize().height);
             }
-            private JViewport getViewport(Container c) {
-                if(c == null) {
-                    return null;
-                }
-                if(c instanceof JScrollPane) {
-                    return ((JScrollPane) c).getViewport();
-                }
-                return getViewport(c.getParent());
-            }
-            @Override public void ancestorRemoved(AncestorEvent event) { }
-            @Override public void ancestorMoved(AncestorEvent event) { }
-
-            private void setContainerSize(JComponent container, int width, int height) {
-                container.setPreferredSize(new Dimension(width, height));
-                container.revalidate();
+            private void setContainerSize(JComponent cmp, int width, int height) {
+                cmp.setPreferredSize(new Dimension(width, height));
+                cmp.revalidate();
             }
         });
         
@@ -829,7 +800,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE)
+                .addComponent(urlTextField)
                 .addContainerGap())
         );
         urlPanelLayout.setVerticalGroup(
@@ -861,7 +832,7 @@ public class QueryPanel extends javax.swing.JPanel {
                             .addComponent(byLastChangeLabel)))
                     .addComponent(byTextContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(byPeopleContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

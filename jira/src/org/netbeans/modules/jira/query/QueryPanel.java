@@ -150,7 +150,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         
         filterComboBox.setRenderer(new FilterCellRenderer());
 
-        UIUtils.keepFocusedComponentVisible(this);
 
         summaryCheckBox.setOpaque(false);
         descriptionCheckBox.setOpaque(false);
@@ -161,43 +160,14 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         lblIssueKeyWarning.setVisible(false);
         warningLabel.setVisible(false);
 
-        addAncestorListener(new AncestorListener() {
+        UIUtils.keepFocusedComponentVisible(this);
+        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
             @Override
-            public void ancestorAdded(AncestorEvent event) {
-                final JViewport v = getViewport(QueryPanel.this);
-                assert v != null;
-                if(v == null) {
-                    return;
-                }
-                setByTextWidth(v.getViewRect().width);
-                v.addComponentListener(new ComponentListener() {
-                    @Override
-                    public void componentResized(ComponentEvent e) {
-                        setByTextWidth(v.getViewRect().width);
-                    }
-                    @Override public void componentMoved(ComponentEvent e) { }
-                    @Override public void componentShown(ComponentEvent e) { }
-                    @Override public void componentHidden(ComponentEvent e) { }
-                });
+            public void setWidth(int width) {
+                byTextContainer.setPreferredSize(new Dimension(width, byTextPanel.getPreferredSize().height));
+                byTextContainer.revalidate();
             }
-            private void setByTextWidth(int width) {
-                setContainerSize(byTextContainer, width, byTextPanel.getPreferredSize().height);
-            }
-            private JViewport getViewport(Container c) {
-                if(c == null) {
-                    return null;
-                }
-                if(c instanceof JScrollPane) {
-                    return ((JScrollPane) c).getViewport();
-                }
-                return getViewport(c.getParent());
-            }
-            @Override public void ancestorRemoved(AncestorEvent event) { }
-            @Override public void ancestorMoved(AncestorEvent event) { }
-
-            private void setContainerSize(JComponent container, int width, int height) {
-                container.setPreferredSize(new Dimension(width, height));
-                container.revalidate();
+            private void setContainerSize(JComponent cmp, int width, int height) {
             }
         });
         
