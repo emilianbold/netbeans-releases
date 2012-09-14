@@ -77,7 +77,7 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         PhpModule phpModule = getPhpModule(createPhpProject());
         assert phpModule != null : "PHP module must exist!";
 
-        assert SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule) == false;
+        assertTrue(!SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
     }
 
     public void testProjectWithCreatedTemplate() throws Exception {
@@ -96,7 +96,7 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         });
         future.get(5, TimeUnit.SECONDS);
 
-        assert SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule) == true;
+        assertTrue(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
     }
 
     public void testProjectWithOldSmartyPropertyFlag() throws Exception {
@@ -106,7 +106,7 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
         preferences.put(SmartyPhpFrameworkProvider.PROP_SMARTY_AVAILABLE, "1");
 
-        assert SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule) == true;
+        assertTrue(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
     }
 
     public void testProjectWithNewSmartyPropertyFlag() throws Exception {
@@ -115,7 +115,7 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
         preferences.putBoolean(SmartyPhpFrameworkProvider.PROP_SMARTY_AVAILABLE, true);
 
-        assert SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule) == true;
+        assertTrue(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
     }
 
     private PhpModule getPhpModule(Project phpProject) {
