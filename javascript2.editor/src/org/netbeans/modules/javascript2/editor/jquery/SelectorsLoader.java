@@ -183,13 +183,11 @@ public class SelectorsLoader extends DefaultHandler {
     }
     
     private static class Argument {
-        String name;
-        String type;
-        String description;
+        final String name;
+        final String description;
 
         public Argument(String name, String type, String description) {
             this.name = name;
-            this.type = type;
             this.description = description;
         }    
     }
