@@ -745,10 +745,22 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                 }
             } catch(TimeoutException ex) {
                 Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
+                Logger.getLogger("glassfish").log(Level.INFO,
                         commandLocation.getCommand() + " timed out. "
                         +tries+" of "+maxtries, ex);
                 isReady = false;
             } catch (Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
                 Logger.getLogger("glassfish").log(Level.INFO,
                         commandLocation.getCommand() + " failed at  "
                         +tries+" of "+maxtries, ex);

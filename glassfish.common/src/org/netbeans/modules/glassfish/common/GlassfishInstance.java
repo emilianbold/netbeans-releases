@@ -292,6 +292,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             String[] urlParts = bigUrlParts[1].split(":"); // NOI18N
             if (null != urlParts && urlParts.length > 2) {
                 ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
+                ip.put(GlassfishModule.HTTPHOST_ATTR, urlParts[2]);
             }
         }
         return create(ip, gip, true);
