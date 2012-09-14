@@ -233,6 +233,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
                         switch ((CppTokenId)id) {
                             case WHITESPACE:
                             case PREPROCESSOR_START:
+                            case PREPROCESSOR_START_ALT:
                                 // use caret offset
                                 queryAnchorOffset = caretOffset;
                                 break;
