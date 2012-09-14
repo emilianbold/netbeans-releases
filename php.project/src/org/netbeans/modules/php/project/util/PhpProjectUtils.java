@@ -69,6 +69,8 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
@@ -81,6 +83,7 @@ import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 /**
  * Utility methods.
@@ -240,9 +243,18 @@ public final class PhpProjectUtils {
         SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
         if (saveCookie != null) {
             try {
-                saveCookie.save();
+                try {
+                    saveCookie.save();
+                } catch (UserQuestionException uqe) {
+                    // #216194
+                    NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
+                    if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
+                        uqe.confirmed();
+                        saveCookie.save();
+                    }
+                }
             } catch (IOException ioe) {
-                LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+                LOGGER.log(Level.WARNING, ioe.getLocalizedMessage(), ioe);
             }
         }
     }

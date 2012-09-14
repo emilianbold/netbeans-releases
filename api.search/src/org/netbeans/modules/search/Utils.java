@@ -54,7 +54,6 @@ import java.nio.charset.Charset;
 import javax.swing.BorderFactory;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import org.netbeans.spi.search.SearchScopeDefinition;
 
 /**
  *
