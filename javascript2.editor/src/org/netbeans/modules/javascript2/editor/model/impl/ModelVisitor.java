@@ -925,14 +925,23 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
         JsObject property = null;
-        while (scope != null && property == null) {
+        JsObject parameter = null;
+        while (scope != null && property == null && parameter == null) {
             JsFunction function = (JsFunction)scope;
-            property = function.getParameter(iNode.getName());
-            if (property == null) {
-                property = function.getProperty(iNode.getName());
-            }
+            property = function.getProperty(iNode.getName());
+            parameter = function.getParameter(iNode.getName());
             scope = scope.getInScope();
         }
+        if(parameter != null) {
+            if (property == null) {
+                property = parameter;
+            } else {
+                if(property.getJSKind() == JsElement.Kind.FIELD || property.getJSKind() == JsElement.Kind.PROPERTY) {
+                    property = parameter;
+                }
+            }
+        }
+
         if (property != null) {
 
             // occurence in the doc
