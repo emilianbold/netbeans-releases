@@ -140,9 +140,7 @@ public class MappingsTestCase extends RemoteTestBase {
     }
 
     public void testHostMappingProviderWindows_English2() throws Exception {
-        if (true) {
-            return;
-        }
+        // Bug #214622
         StringBuilder sb = new StringBuilder();
         sb.append("New connections will be remembered.\n");
         sb.append("\n");
@@ -157,12 +155,34 @@ public class MappingsTestCase extends RemoteTestBase {
         sb.append("The command completed successfully.\n");
         Map<String, String> map;
         map = HostMappingProviderWindows.parseNetUseOutput("amkar.russia.sun.com", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "p:".equals(map.get("home"));
+        assert map != null && map.size() == 1 && "k:".equals(map.get("home"));
 
         map = HostMappingProviderWindows.parseNetUseOutput("vboxsvr", new StringReader(sb.toString()));
         assert map != null && map.size() == 2;
     }
     
+    public void testHostMappingProviderWindows_English3() throws Exception {
+        // Bug #213365
+        StringBuilder sb = new StringBuilder();
+        sb.append("New connections will be remembered.\n");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append("Status       Local     Remote                    Network\n");
+        sb.append("\n");
+        sb.append("-------------------------------------------------------------------------------\n");
+        sb.append("Disconnected K:        \\\\amkar.rus.sun.com\\home\n");
+        sb.append("                                                Microsoft Windows Network\n");
+        sb.append("             X:        \\\\vboxsvr\\cnd-main        VirtualBox Shared Folders\n");
+        sb.append("             Z:        \\\\vboxsvr\\exchange        VirtualBox Shared Folders\n");
+        sb.append("The command completed successfully.\n");
+        Map<String, String> map;
+        map = HostMappingProviderWindows.parseNetUseOutput("amkar.rus.sun.com", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "k:".equals(map.get("home"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("vboxsvr", new StringReader(sb.toString()));
+        assert map != null && map.size() == 2;
+    }
+
     public void testHostMappingProviderWindows_Russian() throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("Новые подключения не будут запомнены.\n");

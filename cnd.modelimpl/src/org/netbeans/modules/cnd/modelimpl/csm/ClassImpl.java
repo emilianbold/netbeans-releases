@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
@@ -196,9 +197,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             CsmOffsetableDeclaration existing = container.findExistingDeclaration(start, end, name);
             if (existing instanceof ClassImpl) {
                 out = (ClassImpl) existing;
-//                System.err.printf("found existing %s in %s\n", existing, container); // NOI18N
-//            } else {
-//                System.err.printf("not found %s [%d-%d] in %s\n", name, start, end, container); // NOI18N
+    //                System.err.printf("found existing %s in %s\n", existing, container); // NOI18N
+    //            } else {
+    //                System.err.printf("not found %s [%d-%d] in %s\n", name, start, end, container); // NOI18N
             }
         }
         return out;
@@ -214,6 +215,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         if (impl == null) {
             nameHolder = NameHolder.createClassName(ast);
             impl = new ClassImpl(nameHolder, ast, file);
+        }
+        // fix for Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
+        if(scope != null && ClassImpl.class.equals(scope.getClass())) {
+            ClassImpl scopeCls = (ClassImpl)scope;
+            if(impl.getStartOffset() == scopeCls.getStartOffset() &&
+                    impl.getEndOffset() == scopeCls.getEndOffset() &&
+                    impl.getName().toString().equals(scopeCls.getName().toString())) {
+                return null;
+            }
         }
         impl.init(scope, ast, file, fileContent, register);
         if (nameHolder != null) {
@@ -738,27 +748,29 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 }
                             }
                         }
-                        innerClass.setVisibility(curentVisibility);
-                        if(!created) {
-                            addMember(innerClass,!isRenderingLocalContext());
-                        }
-                        typedefs = renderTypedef(token, innerClass, ClassImpl.this);
-                        if (!typedefs.getTypesefs().isEmpty()) {
-                            for (CsmTypedef typedef : typedefs.getTypesefs()) {
-                                // It could be important to register in project before add as member...
-                                if (!isRenderingLocalContext()) {
-                                    ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                        if(innerClass != null) {
+                            innerClass.setVisibility(curentVisibility);
+                            if(!created) {
+                                addMember(innerClass,!isRenderingLocalContext());
+                            }
+                            typedefs = renderTypedef(token, innerClass, ClassImpl.this);
+                            if (!typedefs.getTypesefs().isEmpty()) {
+                                for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                    // It could be important to register in project before add as member...
+                                    if (!isRenderingLocalContext()) {
+                                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                    }
+                                    addMember((MemberTypedef) typedef,!isRenderingLocalContext());
+                                    if (typedefs.getEnclosingClassifier() != null){
+                                        typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
+                                    }
                                 }
-                                addMember((MemberTypedef) typedef,!isRenderingLocalContext());
-                                if (typedefs.getEnclosingClassifier() != null){
-                                    typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
+                                if (typedefs.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(typedefs.getEnclosingClassifier())) {
+                                    addMember(typedefs.getEnclosingClassifier(), !isRenderingLocalContext());
                                 }
                             }
-                            if (typedefs.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(typedefs.getEnclosingClassifier())) {
-                                addMember(typedefs.getEnclosingClassifier(), !isRenderingLocalContext());
-                            }
+                            renderVariableInClassifier(token, innerClass, null, null);
                         }
-                        renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
                         EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), fileContent, !isRenderingLocalContext());
