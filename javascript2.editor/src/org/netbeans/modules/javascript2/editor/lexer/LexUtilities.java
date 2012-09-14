@@ -90,12 +90,14 @@ public final class LexUtilities {
         return getTokenSequence(th, offset, language);
     }
 
+    @CheckForNull
     public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Snapshot snapshot,
             int offset) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
 
+    @CheckForNull
     public static TokenSequence<? extends JsTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
         return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }

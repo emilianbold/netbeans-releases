@@ -261,6 +261,9 @@ public class JsConventionRule extends JsAstRule {
                 return;
             }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), objectNode.getStart());
+            if (ts == null) {
+                return;
+            }
             ts.move(objectNode.getStart());
             State state = State.BEFORE_COLON;
             int curlyBalance = 0;
@@ -370,6 +373,9 @@ public class JsConventionRule extends JsAstRule {
                 if (offset > -1) {
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                             context.parserResult.getSnapshot(), objectNode.getFinish());
+                    if (ts == null) {
+                        return super.enter(objectNode);
+                    }
                     ts.move(objectNode.getFinish());
                     if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
                         LexUtilities.findPrevious(ts, Arrays.asList(
@@ -400,6 +406,9 @@ public class JsConventionRule extends JsAstRule {
                     if (offset > -1) {
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                                 context.parserResult.getSnapshot(), literalNode.getFinish());
+                        if (ts == null) {
+                            return super.enter(literalNode);
+                        }
                         ts.move(literalNode.getFinish());
                         if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
                             LexUtilities.findPrevious(ts, Arrays.asList(
