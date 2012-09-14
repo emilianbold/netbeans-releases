@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -271,9 +272,9 @@ public final class FormatContext {
             try {
                 // this is bit hacky
                 boolean nonEmpty = false;
-                // the region may unfortunately start in the middle of region
+                // the region may unfortunately start in the middle of token
                 // so we have to query for token containing the offset
-                // covered by embeddedSimple6.php
+                // covered by embeddedSimple3.php
                 FormatToken startToken = stream.getCoveringToken(
                         snapshot.getEmbeddedOffset(start.getOriginalStart()));
                 // in case we have different regions and space
@@ -335,6 +336,12 @@ public final class FormatContext {
             }
         }
         return start != null ? start.getInitialIndentation() : 0;
+    }
+
+    public boolean isGenerated(FormatToken token) {
+        // XXX it may be better to replace with
+        // return embedded && getDocumentOffset(token.getOffset()) < 0;
+        return embedded && JsEmbeddingProvider.isGeneratedIdentifier(token.getText().toString());
     }
 
     public BaseDocument getDocument() {
