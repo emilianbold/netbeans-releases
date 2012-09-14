@@ -59,11 +59,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -185,17 +187,19 @@ public class JsConventionRule extends JsAstRule {
                 return;
             }
             ts.move(offset);
-            if(ts.movePrevious() && ts.moveNext()) {
+            if (ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
-                if(id == JsTokenId.STRING_END && ts.moveNext()) {
+                if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
                 if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    id = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE)).id();
-                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                    id = previous.id();
+                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
+                            && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {
                         // check again whether there is not semicolon
                         fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                         if (fileOffset >= 0) {
