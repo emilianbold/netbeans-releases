@@ -43,6 +43,7 @@
 package org.netbeans.libs.jstestdriver;
 
 import java.io.File;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.libs.jstestdriver.api.ServerListener;
 import org.netbeans.libs.jstestdriver.api.TestListener;
 
@@ -57,5 +58,5 @@ public interface JsTestDriverImplementation {
     boolean wasStartedExternally();
     
     void runTests(File jsTestDriverJar, String serverURL, boolean strictMode, File baseFolder, File configFile, 
-            String testsToRun, TestListener listener);
+            String testsToRun, TestListener listener, LineConvertor lineConvertor);
 }
