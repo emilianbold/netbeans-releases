@@ -55,6 +55,7 @@ import javax.swing.Icon;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
@@ -183,7 +184,7 @@ public final class FiltersManagerImpl extends FiltersManager {
                     if (index < 0) {
                         return false;
                     } else {
-                        return filtersDesc.isSelected(index);
+                        return filtersDesc.isEnabled(index) && filtersDesc.isSelected(index);
                     }
                 }
                 result = filterStates.get(filterName);
@@ -252,8 +253,10 @@ public final class FiltersManagerImpl extends FiltersManager {
                     javax.swing.BorderFactory.createMatteBorder(0, 1, 0, 0,
                     javax.swing.UIManager.getDefaults().getColor("Separator.foreground")), //NOI18N
                     javax.swing.BorderFactory.createEmptyBorder(0, 1, 0, 0)));
-            toolbar.setOpaque(false);
-            toolbar.setFocusable(false);
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                toolbar.setBackground(UIManager.getColor("NbExplorerView.background"));
+            }
+//            toolbar.setFocusable(false);
             // create toggle buttons
             int filterCount = filtersDesc.getFilterCount();
             toggles = new ArrayList<JToggleButton>(filterCount);
@@ -295,17 +298,22 @@ public final class FiltersManagerImpl extends FiltersManager {
 
         private JToggleButton createToggle(Map<String, Boolean> fStates, int index) {
             boolean isSelected = filtersDesc.isSelected(index);
+            boolean enabled = filtersDesc.isEnabled(index);
             Icon icon = filtersDesc.getIcon(index);
             // ensure small size, just for the icon
-            JToggleButton result = new JToggleButton(icon, isSelected);
+            JToggleButton result = new JToggleButton(icon, enabled && isSelected);
             Dimension size = new Dimension(21, 21); // 3 less than other buttons
             result.setMaximumSize(size);
             result.setMinimumSize(size);
             result.setPreferredSize(size);
-            result.setBorderPainted(false);
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                result.setBorderPainted(true);
+            } else {
+                result.setBorderPainted(false);
+            }
 //            result.setMargin(new Insets(2, 3, 2, 3));
             result.setToolTipText(filtersDesc.getTooltip(index));
-            result.setEnabled(filtersDesc.isEnabled(index));
+            result.setEnabled(enabled);
             fStates.put(filtersDesc.getKey(index), Boolean.valueOf(isSelected));
 
             return result;

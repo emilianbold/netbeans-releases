@@ -51,6 +51,7 @@ import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -85,10 +86,17 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         cmbProvider.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String tooltip = null;
                 if (value instanceof TeamServerProvider) {
-                    value = ((TeamServerProvider) value).getDisplayName();
+                    TeamServerProvider prov = (TeamServerProvider) value;
+                    value = prov.getDisplayName();
+                    tooltip = prov.getDescription();
                 }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (comp instanceof JComponent) {
+                    ((JComponent) comp).setToolTipText(tooltip);
+                }
+                return comp;
             }
         });
         cmbProvider.setEnabled(providers.size() > 1);
@@ -160,10 +168,6 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         lblProvider.setLabelFor(cmbProvider);
         org.openide.awt.Mnemonics.setLocalizedText(lblProvider, org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProvider.text")); // NOI18N
 
-        lblProviderDescription.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ui/resources/info.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(lblProviderDescription, org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProviderDescription.text")); // NOI18N
-        lblProviderDescription.setFocusable(false);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -180,8 +184,6 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblProviderDescription)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(txtDisplayName)
                             .addComponent(txtUrl)))
@@ -198,9 +200,7 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(lblProviderDescription)
-                            .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(cmbProvider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lblName)
@@ -224,8 +224,6 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         txtUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.txtUrl.AccessibleContext.accessibleName")); // NOI18N
         txtUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.txtUrl.AccessibleContext.accessibleDescription")); // NOI18N
         proxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.proxy.AccessibleContext.accessibleDescription")); // NOI18N
-        lblProviderDescription.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProviderDescription.AccessibleContext.accessibleName")); // NOI18N
-        lblProviderDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TeamServerInstanceCustomizer.class, "TeamServerInstanceCustomizer.lblProviderDescription.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
@@ -237,7 +235,6 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     private javax.swing.JComboBox cmbProvider;
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblProvider;
-    final javax.swing.JLabel lblProviderDescription = new javax.swing.JLabel();
     private javax.swing.JLabel lblUrl;
     private javax.swing.JProgressBar progress;
     private javax.swing.JButton proxy;
@@ -330,9 +327,9 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     private void updateSelection () {
         Object sel = cmbProvider.getSelectedItem();
         if (sel instanceof TeamServerProvider) {
-            lblProviderDescription.setToolTipText(((TeamServerProvider) sel).getDescription());
+            cmbProvider.setToolTipText(((TeamServerProvider) sel).getDescription());
         } else {
-            lblProviderDescription.setToolTipText(null);
+            cmbProvider.setToolTipText(null);
         }
     }
 

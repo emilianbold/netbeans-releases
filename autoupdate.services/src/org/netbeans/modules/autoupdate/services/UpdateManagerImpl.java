@@ -121,6 +121,12 @@ public class UpdateManagerImpl extends Object {
     public Collection<ModuleInfo> getInstalledProviders (String token) {
         Collection<ModuleInfo> res;
         final Cache c = getCache ();
+        if (token.startsWith("cnb.")) { // NOI18N
+            UpdateUnit updateUnit = c.getUpdateUnit(token.substring(4));
+            if (updateUnit.getInstalled() != null) {
+                return Trampoline.API.impl(updateUnit.getInstalled()).getModuleInfos();
+            }
+        }
         Collection<ModuleInfo> providers = c.createMapToken2InstalledProviders ().get (token);
         if (providers == null || providers.isEmpty ()) {
             res = new HashSet<ModuleInfo> (0) {
@@ -137,6 +143,12 @@ public class UpdateManagerImpl extends Object {
     public Collection<ModuleInfo> getAvailableProviders (String token) {
         Collection<ModuleInfo> res;
         final Cache c = getCache ();
+        if (token.startsWith("cnb.")) { // NOI18N
+            UpdateUnit updateUnit = c.getUpdateUnit(token.substring(4));
+            if (! updateUnit.getAvailableUpdates().isEmpty()) {
+                return Trampoline.API.impl(updateUnit.getAvailableUpdates().get(0)).getModuleInfos();
+            }
+        }
         Collection<ModuleInfo> providers = c.createMapToken2AvailableProviders ().get (token);
         if (providers == null || providers.isEmpty ()) {
             res = new HashSet<ModuleInfo> (0) {

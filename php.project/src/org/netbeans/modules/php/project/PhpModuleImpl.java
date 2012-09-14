@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -149,7 +152,13 @@ public class PhpModuleImpl extends PhpModule {
 
     private PhpModuleProperties setIncludePath(PhpModuleProperties properties) {
         String includePath = ProjectPropertiesSupport.getPropertyEvaluator(phpProject).getProperty(PhpProjectProperties.INCLUDE_PATH);
-        properties.setIncludePath(Arrays.asList(PropertyUtils.tokenizePath(includePath)));
+        List<String> paths;
+        if (includePath == null) {
+            paths = Collections.emptyList();
+        } else {
+            paths = Arrays.asList(PropertyUtils.tokenizePath(includePath));
+        }
+        properties.setIncludePath(paths);
         return properties;
     }
 
@@ -162,4 +171,12 @@ public class PhpModuleImpl extends PhpModule {
     public Preferences getPreferences(Class<?> clazz, boolean shared) {
         return ProjectUtils.getPreferences(phpProject, clazz, shared);
     }
+
+    @Override
+    public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
+        if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
+            phpProject.resetFrameworks();
+        }
+    }
+
 }

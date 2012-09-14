@@ -36,11 +36,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="get-bits">
-        <condition property="glassfish_bits_location" value="${glassfish_location_ml}" else="${glassfish_location}">
-            <istrue value="${mlbuild}"/>
-        </condition>  
-        <echo message="Downloading GlassFish from ${glassfish_bits_location}" />
-        <get src="${glassfish_bits_location}" dest="./build/glassfish_image.zip" usetimestamp="true"/>
+        <echo message="Downloading GlassFish from ${glassfish_location_ml}" />
+        <get src="${glassfish_location_ml}" dest="./build/glassfish_image.zip" usetimestamp="true"/>
     </target>
     
     <target name="unzip" depends="get-bits">

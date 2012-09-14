@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.search;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -61,7 +60,6 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.FocusManager;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -92,6 +90,7 @@ import org.openide.windows.WindowManager;
  * @author Marian Petras
  * @author kaktus
  */
+
 @TopComponent.Description(preferredID=ResultView.ID, persistenceType=TopComponent.PERSISTENCE_ALWAYS, iconBase="org/netbeans/modules/search/res/find.gif")
 @TopComponent.Registration(mode="output", position=1900, openAtStartup=false)
 @ActionID(id = "org.netbeans.modules.search.ResultViewOpenAction", category = "Window")
@@ -211,28 +210,29 @@ public final class ResultView extends TopComponent {
         Manager.getInstance().searchWindowOpened();
 
         ResultViewPanel panel = getCurrentResultViewPanel();
-        if (panel != null)
+        if (panel != null) {
             panel.componentOpened();
+        }
         setToolTipText(NbBundle.getMessage(ResultView.class,
                 "TOOLTIP_SEARCH_RESULTS"));                             //NOI18N
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void requestFocus() {
         ResultViewPanel panel = getCurrentResultViewPanel();
-        if (panel != null)
+        if (panel != null) {
             panel.requestFocus();
+        }
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
         ResultViewPanel panel = getCurrentResultViewPanel();
-        if (panel != null)
+        if (panel != null) {
             return panel.requestFocusInWindow();
-        else
+        } else {
             return false;
+        }
     }
 
     private ResultViewPanel getCurrentResultViewPanel(){
@@ -269,17 +269,16 @@ public final class ResultView extends TopComponent {
             }
         }
     }
-    private void removePanel(JPanel panel) {
+    private void removePanel(ResultViewPanel panel) {
         if (tabs.getTabCount() > 0) {
             if (panel == null) {
-                panel = (JPanel) tabs.getSelectedComponent();
+                panel = (ResultViewPanel) tabs.getSelectedComponent();
             }
-            ResultViewPanel rvp = (ResultViewPanel)panel;
-            if (rvp.isSearchInProgress()){
-                rvp.getSearchComposition().terminate();
+            if (panel.isSearchInProgress()){
+                panel.getSearchComposition().terminate();
             }
             tabs.remove(panel);
-            rvp.getSearchComposition().getSearchResultsDisplayer().closed();
+            panel.getSearchComposition().getSearchResultsDisplayer().closed();
             if (tabs.getTabCount() == 0) {
                 contentCards.show(this, CARD_NAME_EMPTY);
                 updateLookup();
@@ -294,7 +293,7 @@ public final class ResultView extends TopComponent {
             Component comp = singlePanel.getComponents()[0];
             ResultViewPanel rvp = (ResultViewPanel) comp;
             if (rvp.isSearchInProgress()) {
-                Manager.getInstance().stopSearching(viewToSearchMap.get(comp));
+                Manager.getInstance().stopSearching(viewToSearchMap.get(rvp));
             }
             singlePanel.remove(comp);
             contentCards.show(this, CARD_NAME_EMPTY);
@@ -395,8 +394,10 @@ public final class ResultView extends TopComponent {
 //        mainPanel.updateShowAllDetailsBtn();
     }
 
-    private Map<SearchTask, ResultViewPanel> searchToViewMap = new HashMap();
-    private Map<ResultViewPanel, SearchTask> viewToSearchMap = new HashMap();
+    private Map<SearchTask, ResultViewPanel> searchToViewMap =
+            new HashMap<SearchTask, ResultViewPanel>();
+    private Map<ResultViewPanel, SearchTask> viewToSearchMap =
+            new HashMap<ResultViewPanel, SearchTask>();
 
     void addSearchPair(ResultViewPanel panel, SearchTask task){
         if ((task != null) && (panel != null)){
@@ -409,8 +410,10 @@ public final class ResultView extends TopComponent {
         }
     }
 
-    private Map<ReplaceTask, SearchTask> replaceToSearchMap = new HashMap();
-    private Map<SearchTask, ReplaceTask> searchToReplaceMap = new HashMap();
+    private Map<ReplaceTask, SearchTask> replaceToSearchMap =
+            new HashMap<ReplaceTask, SearchTask>();
+    private Map<SearchTask, ReplaceTask> searchToReplaceMap =
+            new HashMap<SearchTask, ReplaceTask>();
 
     private void closeAll(boolean butCurrent) {
         if (tabs.getTabCount() > 0) {
@@ -433,14 +436,16 @@ public final class ResultView extends TopComponent {
     }
 
     private class CloseListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
-                removePanel((JPanel) evt.getNewValue());
+                removePanel((ResultViewPanel) evt.getNewValue());
             }
         }
     }
 
     private class PopupListener extends MouseUtils.PopupMouseAdapter {
+        @Override
         protected void showPopup (MouseEvent e) {
             pop.show(ResultView.this, e.getX(), e.getY());
         }
@@ -450,6 +455,7 @@ public final class ResultView extends TopComponent {
         public Close() {
             super(NbBundle.getMessage(ResultView.class, "LBL_CloseWindow"));  //NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             removePanel(null);
         }
@@ -459,6 +465,7 @@ public final class ResultView extends TopComponent {
         public CloseAll() {
             super(NbBundle.getMessage(ResultView.class, "LBL_CloseAll"));  //NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             closeAll(false);
         }
@@ -468,6 +475,7 @@ public final class ResultView extends TopComponent {
         public CloseAllButCurrent() {
             super(NbBundle.getMessage(ResultView.class, "LBL_CloseAllButCurrent"));  //NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             closeAll(true);
         }

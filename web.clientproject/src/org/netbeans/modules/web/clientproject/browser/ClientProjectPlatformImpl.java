@@ -105,10 +105,10 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
             if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
                 l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, 100, false));
-            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) {
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { //NOI18N
                 l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, chrome++, false));
                 l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.FALSE, chrome++, true));
-            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) {
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { //NOI18N
                 l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, chromium++, false));
                 l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.FALSE, chromium++, true));
             } else {

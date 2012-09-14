@@ -172,26 +172,29 @@ public class JsConventionRule extends JsAstRule {
             if (fileOffset == -1) {
                 return;
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), offset);
             if (ts == null) {
                 return;
             }
-            ts.move(fileOffset);
+            ts.move(offset);
             if(ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
                 if(id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
-                if (id == JsTokenId.EOL && ts.movePrevious()) {
+                if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                     id = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE)).id();
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                         // check again whether there is not semicolon
-                        hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()), 
-                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                        fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                        if (fileOffset >= 0) {
+                            hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                    new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
+                        }
                     }
                 }
             }
@@ -249,23 +252,26 @@ public class JsConventionRule extends JsAstRule {
             if (startOffset == -1 || endOffset == -1) {
                 return;
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, startOffset);
-            ts.move(startOffset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), objectNode.getStart());
+            ts.move(objectNode.getStart());
             State state = State.BEFORE_COLON;
             int curlyBalance = 0;
             int parenBalance = 0;
             int bracketBalance = 0;
             if (ts.movePrevious() && ts.moveNext()) {
                 HashSet<String> names = new HashSet<String>();
-                while (ts.moveNext() && ts.offset() < endOffset) {
+                while (ts.moveNext() && ts.offset() < objectNode.getFinish()) {
                     JsTokenId id = ts.token().id();
                     switch (state) {
                         case BEFORE_COLON:
                             if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
                                 if (!names.add(ts.token().text().toString())) {
-                                    hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(ts.token().text().toString()),
-                                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                    int docOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                                    if (docOffset >= 0) {
+                                        hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(ts.token().text().toString()),
+                                                context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                                new OffsetRange(docOffset, docOffset + ts.token().length()), null, 500));
+                                    }
                                 }
                             } else if (id == JsTokenId.OPERATOR_COLON) {
                                 state = State.AFTER_COLON;
@@ -319,97 +325,84 @@ public class JsConventionRule extends JsAstRule {
                 }
             }
         }   
-       
+
         @Override
-        public Node visit(DoWhileNode doWhileNode, boolean onset) {
-            if (onset) {
-                checkCondition(doWhileNode.getTest());
-            }
-            return super.visit(doWhileNode, onset);
+        public Node enter(DoWhileNode doWhileNode) {
+            checkCondition(doWhileNode.getTest());
+            return super.enter(doWhileNode);
         }
-        
-        
+
         @Override
-        public Node visit(ExecuteNode executeNode, boolean onset) {
-            if (onset && !(executeNode.getExpression() instanceof Block)) {
+        public Node enter(ExecuteNode executeNode) {
+            if (!(executeNode.getExpression() instanceof Block)) {
                 checkSemicolon(executeNode.getFinish());
             }
-            return super.visit(executeNode, onset);
+            return super.enter(executeNode);
         }
 
         @Override
-        public Node visit(ForNode forNode, boolean onset) {
-            if (onset) {
-                checkCondition(forNode.getTest());
-            }
-            return super.visit(forNode, onset);
+        public Node enter(ForNode forNode) {
+            checkCondition(forNode.getTest());
+            return super.enter(forNode);
         }
 
         @Override
-        public Node visit(IfNode ifNode, boolean onset) {
-            if (onset) {
-                checkCondition(ifNode.getTest());
-            }
-            return super.visit(ifNode, onset);
+        public Node enter(IfNode ifNode) {
+            checkCondition(ifNode.getTest());
+            return super.enter(ifNode);
         }
-        
-        
 
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
             "Unexpected=Unexpected \"{0}\"."})
-        public Node visit(ObjectNode objectNode, boolean onset) {
-            if (onset) {
-                checkDuplicateLabels(objectNode);
-                if (unexpectedCommaInOL != null) {
-                    int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                    if (offset > -1) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                        ts.move(offset);
-                        if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
-                            LexUtilities.findPrevious(ts, Arrays.asList(
-                                    JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                                    JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                                    JsTokenId.BLOCK_COMMENT));
-                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()), 
-                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                                    new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+        public Node enter(ObjectNode objectNode) {
+            checkDuplicateLabels(objectNode);
+            if (unexpectedCommaInOL != null) {
+                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+                if (offset > -1) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), objectNode.getFinish());
+                    ts.move(objectNode.getFinish());
+                    if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                        LexUtilities.findPrevious(ts, Arrays.asList(
+                                JsTokenId.EOL, JsTokenId.WHITESPACE,
+                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                JsTokenId.BLOCK_COMMENT));
+                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                            offset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                            if (offset >= 0) {
+                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()),
+                                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                        new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
                             }
                         }
                     }
                 }
             }
-            return super.visit(objectNode, onset);
+            return super.enter(objectNode);
         }
 
         @Override
-        public Node visit(VarNode varNode, boolean onset) {
-            if (onset) {
-                boolean check = true;
-                Node previous = getPath().get(getPath().size() - 1);
-                if (previous instanceof Block) {
-                    Block block = (Block)previous;
-                    if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
-                        check = false;
-                    }
-                } else if (previous instanceof ForNode) {
+        public Node enter(VarNode varNode) {
+            boolean check = true;
+            Node previous = getPath().get(getPath().size() - 1);
+            if (previous instanceof Block) {
+                Block block = (Block)previous;
+                if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
                     check = false;
                 }
-                if (check) {
-                    checkSemicolon(varNode.getFinish());
-                }
+            } else if (previous instanceof ForNode) {
+                check = false;
             }
-            return super.visit(varNode, onset);
+            if (check) {
+                checkSemicolon(varNode.getFinish());
+            }
+            return super.enter(varNode);
         }
 
         @Override
-        public Node visit(WhileNode whileNode, boolean onset) {
-            if (onset) {
-                checkCondition(whileNode.getTest());
-            }
-            return super.visit(whileNode, onset);
+        public Node enter(WhileNode whileNode) {
+            checkCondition(whileNode.getTest());
+            return super.enter(whileNode);
         }
-        
     }
 }

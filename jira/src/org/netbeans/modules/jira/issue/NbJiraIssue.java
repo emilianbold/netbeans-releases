@@ -1442,8 +1442,8 @@ public class NbJiraIssue {
                 scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
                 scrollPane.getVerticalScrollBar().setUnitIncrement(size);
             }
-            UIUtils.keepFocusedComponentVisible(scrollPane);
             issuePanel = panel;
+            UIUtils.keepFocusedComponentVisible(issuePanel);
             component = scrollPane;
         }
 

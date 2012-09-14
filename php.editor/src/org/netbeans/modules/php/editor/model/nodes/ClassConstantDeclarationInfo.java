@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 
 /**
  * @author Radek Matous
@@ -74,6 +75,12 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
             Expression initializer = iteratorInitializers.next();
             if (initializer instanceof Scalar) {
                 value = ((Scalar)initializer).getStringValue();
+            } else if (initializer instanceof UnaryOperation) {
+                UnaryOperation unaryOperation = (UnaryOperation) initializer;
+                Expression expression = unaryOperation.getExpression();
+                if (expression instanceof Scalar) {
+                    value = unaryOperation.getOperator() + ((Scalar) expression).getStringValue();
+                }
             }
             retval.add(new ClassConstantDeclarationInfo(name, value));
         }

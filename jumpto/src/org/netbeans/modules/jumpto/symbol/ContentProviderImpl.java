@@ -82,6 +82,7 @@ import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
+import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -284,7 +285,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private final HighlightingNameFormatter symbolNameFormatter;
          
         private MyPanel rendererComponent;
-        private JLabel jlName = new JLabel();
+        private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlOwner = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 5;
@@ -307,7 +308,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             
             jList = list;
             this.caseSensitive = caseSensitive.isSelected();
-            
+            resetName();
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
                 ((JViewport)container).addChangeListener(this);
@@ -349,10 +350,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             rendererComponent.add( jlPrj, c);
             
             
-            jlName.setOpaque(false);
-            jlPrj.setOpaque(false);
-            
-            jlName.setFont(list.getFont());
+            jlPrj.setOpaque(false);            
             jlPrj.setFont(list.getFont());
             
             
@@ -398,7 +396,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
             rendererComponent.setPreferredSize(size);                        
-                                    
+            resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlOwner.setForeground(fgSelectionColor);
@@ -416,11 +414,11 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 long time = System.currentTimeMillis();
                 SymbolDescriptor td = (SymbolDescriptor)value;                
                 jlName.setIcon(td.getIcon());
-                final String formattedTypeName = symbolNameFormatter.formatName(
+                final String formattedSymbolName = symbolNameFormatter.formatName(
                         td.getSymbolName(),
                         textToFind,
                         caseSensitive);
-                jlName.setText(String.format("<html>%s</html>", formattedTypeName)); //NOI18N
+                jlName.setText(formattedSymbolName);
                 jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
@@ -472,6 +470,14 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             } catch (BadLocationException ex) {
                 textToFind = "";    //NOI18N
             }
+        }
+
+        private void resetName() {
+            ((HtmlRenderer.Renderer)jlName).reset();
+            jlName.setFont(jList.getFont());
+            jlName.setOpaque(false);
+            ((HtmlRenderer.Renderer)jlName).setHtml(true);
+            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }
 
      }

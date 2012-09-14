@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.kenai.ui.impl;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -54,14 +55,19 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import javax.swing.Action;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
+import org.netbeans.modules.kenai.ui.ShareAction;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -219,5 +225,20 @@ public class TeamServerProviderImpl implements TeamServerProvider {
             return ERR_UrlNotValid();
         }
         return null;
+    }
+
+    @Override
+    public PopupMenuProvider getPopupMenuProvider (String repositoryUrl) {
+        assert !EventQueue.isDispatchThread();
+        if (KenaiProject.getNameForRepository(repositoryUrl) != null) {
+            return KenaiPopupActionsProvider.getDefault();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Action getShareAction () {
+        return ShareAction.getDefault();
     }
 }

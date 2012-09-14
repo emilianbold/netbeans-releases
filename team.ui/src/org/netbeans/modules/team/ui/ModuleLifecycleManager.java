@@ -46,6 +46,7 @@ package org.netbeans.modules.team.ui;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -58,7 +59,12 @@ import org.openide.util.RequestProcessor;
 public final class ModuleLifecycleManager extends ModuleInstall {
     @Override
     public void restored() {
-        // invoke eventuall login on all known team instances
-        RequestProcessor.getDefault().post(new LoginTask());
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
+            public void run () {
+                // invoke eventuall login on all known team instances
+                RequestProcessor.getDefault().post(new LoginTask());
+            }
+        });
     }
 }

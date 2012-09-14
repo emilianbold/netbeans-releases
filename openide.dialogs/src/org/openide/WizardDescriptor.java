@@ -2059,7 +2059,17 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Change in the observed objects */
         @Override
         public void stateChanged(ChangeEvent ev) {
-            updateState();
+            //#217446 - updateState() isn't final so make sure it gets called in EDT
+            if (SwingUtilities.isEventDispatchThread ()) {
+                updateState();
+            } else {
+                SwingUtilities.invokeLater (new Runnable () {
+                    @Override
+                    public void run () {
+                       updateState();
+                    }
+                });
+            }
         }
 
         /** Action listener */
@@ -2144,7 +2154,16 @@ public class WizardDescriptor extends DialogDescriptor {
                                     err.log(Level.INFO, null, ioe);
 
                                     setValueWithoutPCH(NEXT_OPTION);
-                                    updateStateWithFeedback();
+                                    if( SwingUtilities.isEventDispatchThread() ) {
+                                        updateStateWithFeedback();
+                                    } else {
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                updateStateWithFeedback();
+                                            }
+                                        });
+                                    }
 
                                     // notify user by the wizard's status line
                                     putProperty(PROP_ERROR_MESSAGE, ioe.getLocalizedMessage());

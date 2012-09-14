@@ -93,6 +93,7 @@ FormattingToken{kind=TEXT, offset=103, text="}
 FormattingToken{kind=TEXT, offset=104, text=:}
 FormattingToken{kind=WHITESPACE, offset=105, text= }
 FormattingToken{kind=TEXT, offset=106, text=[}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=107, text="}
 FormattingToken{kind=TEXT, offset=108, text="}
@@ -201,6 +202,7 @@ FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=262, text=
 }
 FormattingToken{kind=WHITESPACE, offset=263, text=    }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=267, text=]}
 FormattingToken{kind=EOL, offset=268, text=

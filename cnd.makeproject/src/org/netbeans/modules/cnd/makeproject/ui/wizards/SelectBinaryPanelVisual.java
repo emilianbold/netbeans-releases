@@ -186,7 +186,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         dependeciesComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                System.err.println("selection "+e);
                 validateController();
             }
         });
@@ -277,7 +276,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     if (compiler != null) {
                         controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_TOOLCHAIN, compiler);
                         controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
-                        controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
+                        // allow user to select right tool collection if discovery detected wrong one
+                        controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
                     } else {
                         controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
                     }

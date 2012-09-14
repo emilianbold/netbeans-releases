@@ -10,6 +10,7 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=13, text= }
 FormattingToken{kind=TEXT, offset=14, text=[}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=15, text=1}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
@@ -25,6 +26,7 @@ FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=20, text= }
 FormattingToken{kind=TEXT, offset=21, text=3}
 FormattingToken{kind=WHITESPACE, offset=22, text=      }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=28, text=]}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

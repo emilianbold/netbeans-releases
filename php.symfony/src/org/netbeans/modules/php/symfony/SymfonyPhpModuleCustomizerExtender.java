@@ -47,7 +47,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.symfony.ui.customizer.SymfonyCustomizerPanel;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;

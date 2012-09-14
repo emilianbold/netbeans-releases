@@ -213,20 +213,22 @@ class SummaryCellRenderer implements ListCellRenderer {
                 ? revision.getUserData().getEvents()
                 : revision.getUserData().getDummyEvents();
         int maxWidth = -1;
-        for (AbstractSummaryView.LogEntry.Event event : events) {
-            int i = 0;
-            for (String path : getInterestingPaths(event)) {
-                if (++i == 2) {
-                    if (path == null) {
-                        break;
-                    } else {
-                        path = PREFIX_PATH_FROM + path;
+        if (events.size() < 20) {
+            for (AbstractSummaryView.LogEntry.Event event : events) {
+                int i = 0;
+                for (String path : getInterestingPaths(event)) {
+                    if (++i == 2) {
+                        if (path == null) {
+                            break;
+                        } else {
+                            path = PREFIX_PATH_FROM + path;
+                        }
                     }
+                    StringBuilder sb = new StringBuilder(event.getAction()).append(" ").append(path);
+                    FontMetrics fm = list.getFontMetrics(list.getFont());
+                    Rectangle2D rect = fm.getStringBounds(sb.toString(), g);
+                    maxWidth = Math.max(maxWidth, (int) rect.getWidth() + 1);
                 }
-                StringBuilder sb = new StringBuilder(event.getAction()).append(" ").append(path);
-                FontMetrics fm = list.getFontMetrics(list.getFont());
-                Rectangle2D rect = fm.getStringBounds(sb.toString(), g);
-                maxWidth = Math.max(maxWidth, (int) rect.getWidth() + 1);
             }
         }
         return maxWidth;
@@ -690,8 +692,10 @@ class SummaryCellRenderer implements ListCellRenderer {
                 }
                 pathLabel.setText(sb.append("</body></html>").toString()); //NOI18N
                 int width = getMaxPathWidth(list, item.getParent(), pathLabel.getGraphics());
-                width = width + 15 + INDENT - actionLabel.getPreferredSize().width;
-                pathLabel.setPreferredSize(new Dimension(width, pathLabel.getPreferredSize().height));
+                if (width > -1) {
+                    width = width + 15 + INDENT - actionLabel.getPreferredSize().width;
+                    pathLabel.setPreferredSize(new Dimension(width, pathLabel.getPreferredSize().height));
+                }
             }
             return this;
         }

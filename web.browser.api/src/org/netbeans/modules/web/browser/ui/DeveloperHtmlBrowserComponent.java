@@ -66,6 +66,10 @@ public class DeveloperHtmlBrowserComponent extends HtmlBrowserComponent {
 
     private final DeveloperToolbar devToolbar = DeveloperToolbar.create();
 
+    public DeveloperHtmlBrowserComponent() {
+        super( false, false );
+    }
+
     public DeveloperHtmlBrowserComponent( HtmlBrowser.Factory factory ) {
         super( factory, false, false );
     }
@@ -186,6 +190,9 @@ public class DeveloperHtmlBrowserComponent extends HtmlBrowserComponent {
                 Logger.getLogger(HtmlBrowserComponent.class.getName()).log(Level.WARNING, null, exc);
             }
             WebBrowser browser = WebBrowsers.getInstance().getPreferred();
+            if( null == browser || !browser.isEmbedded() ) {
+                browser = WebBrowsers.getInstance().getEmbedded();
+            }
             if( null != browser && browser.isEmbedded() ) {
                 HtmlBrowser.Factory factory = browser.getHtmlBrowserFactory();
                 bComp = new DeveloperHtmlBrowserComponent( factory );

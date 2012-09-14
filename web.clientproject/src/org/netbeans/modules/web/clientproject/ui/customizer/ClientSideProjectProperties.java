@@ -92,7 +92,7 @@ final class ClientSideProjectProperties {
     }
 
     void saveConfig() {
-        assert ProjectManager.mutex().isWriteAccess() : "Write mutex required";
+        assert ProjectManager.mutex().isWriteAccess() : "Write mutex required"; //NOI18N
         for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
             config.save();
         }

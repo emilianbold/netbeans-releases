@@ -66,6 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
@@ -278,7 +279,7 @@ public final class MiscEditorUtil {
         MiscEditorUtil.showLine(line);
     }
     
-    public static Action createDebuggerGoToAction (final Project project) {
+    public static Action createDebuggerGoToAction (final ProjectContext pc) {
         Models.ActionPerformer actionPerform =  new Models.ActionPerformer () {
             @Override
             public boolean isEnabled (Object object) {
@@ -298,6 +299,7 @@ public final class MiscEditorUtil {
                     MiscEditorUtil.openFileObject(fileObject);
                 } else*/ if ( node instanceof CallFrame ){
                     CallFrame cf = ((CallFrame)node);
+                    Project project = pc.getProject();
                     Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
                     if ( line != null ) {
                         showLine(line, true);

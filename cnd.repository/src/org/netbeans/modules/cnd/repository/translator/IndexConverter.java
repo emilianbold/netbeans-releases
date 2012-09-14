@@ -65,12 +65,12 @@ public class IndexConverter {
 
     private List<Rule> rules = new ArrayList<Rule>();
 
-    IndexConverter(String oldCanonicalPath, String newCanonicalPath) {
-        if (!oldCanonicalPath.endsWith(newCanonicalPath)) {
-            oldCanonicalPath.replace('\\', '/');
-            newCanonicalPath.replace('\\', '/');
-            String[] oldParts = oldCanonicalPath.split("/"); // NOI18N
-            String[] newParts = newCanonicalPath.split("/"); // NOI18N
+    IndexConverter(String oldPath, String newPath) {
+        if (!oldPath.endsWith(newPath)) {
+            oldPath = oldPath.replace('\\', '/');
+            newPath = newPath.replace('\\', '/');
+            String[] oldParts = oldPath.split("/"); // NOI18N
+            String[] newParts = newPath.split("/"); // NOI18N
             int oldIdx = oldParts.length - 1;
             int newIdx = newParts.length - 1;
             while (newIdx > 0 && oldIdx > 0) {

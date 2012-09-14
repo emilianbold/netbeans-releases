@@ -42,10 +42,14 @@
 
 package org.netbeans.modules.maven;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,9 +57,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import static org.netbeans.modules.maven.Bundle.*;
-import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
@@ -88,16 +93,14 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document cachedDoc;
     private final Object configIOLock = new Object();
     private final FileObject projectDirectory;
-    private ProblemReporterImpl reporter;
-
-    /** intentionally left without reference to project instance
-        when using this constructor can only get values, never put or remove */
-    public M2AuxilaryConfigImpl(FileObject dir) {
-        this.projectDirectory = dir;
-    }
+    private ProblemProvider pp;
     
-    public M2AuxilaryConfigImpl(FileObject dir, ProblemReporterImpl impl) {
-        this(dir);
+    public M2AuxilaryConfigImpl(FileObject dir, boolean writable) {
+        this.projectDirectory = dir;
+        
+        if (writable) {
+            pp = new ProblemProvider();
+
         savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
@@ -133,6 +136,11 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         });
+        }
+    }
+    
+    public ProjectProblemsProvider getProblemProvider() {
+        return pp;
     }
 
     private Document loadConfig(FileObject config) throws IOException, SAXException {
@@ -187,17 +195,16 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     try {
                         Document doc = loadConfig(config);
                         cachedDoc = doc;
+                        if (pp != null) {
+                            pp.setProblem(null);
+                        }
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
-                        if (reporter != null) {
-                        if (!reporter.hasReportWithId(BROKEN_NBCONFIG)) {
-                            ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                    TXT_Problem_Broken_Config(),
-                                    DESC_Problem_Broken_Config(ex.getMessage()),
-                                    ProblemReporterImpl.createOpenFileAction(config));
-                            rep.setId(BROKEN_NBCONFIG);
-                            reporter.addReport(rep);
-                        }
+                        if (pp != null) {
+                            pp.setProblem(ProjectProblem.createWarning(
+                                    TXT_Problem_Broken_Config(), 
+                                    DESC_Problem_Broken_Config(ex.getMessage()), 
+                                    new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
                         }
                         LOG.log(Level.INFO, ex.getMessage(), ex);
                         cachedDoc = null;
@@ -374,5 +381,42 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 "therefore it is assumed to be part of version control checkout.\n" +
                 "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));
         return doc;
+    }
+    
+    private class ProblemProvider implements ProjectProblemsProvider {
+
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private ProjectProblem pp;
+
+        public ProblemProvider() {
+        }
+        
+        void setProblem(ProjectProblem pp) {
+            this.pp = pp;
+            if (pp == null && this.pp == null) {
+                return; //ignore this case, dont' fire change..
+            }
+            pcs.firePropertyChange(ProjectProblemsProvider.PROP_PROBLEMS, null, null);
+        }
+        
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public Collection<? extends ProjectProblem> getProblems() {
+            if (pp != null) {
+                return Collections.singleton(pp);
+            } else {
+                return Collections.emptyList();
+            }
+        }
+        
     }
 }

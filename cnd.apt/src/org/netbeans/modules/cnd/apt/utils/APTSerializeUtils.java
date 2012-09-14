@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -86,8 +87,12 @@ public class APTSerializeUtils {
     private APTSerializeUtils() {
     }
 
-    public static int getUnitId(CharSequence unitName) {
-        return translator.getUnitId(unitName);
+    /**
+     * @param cacheLocation can be null, in this case standard location 
+     * ${userdir}/var/cache/cnd/model will be used
+     */
+    public static int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+        return translator.getUnitId(unitName, cacheLocation);
     }
 
     public static CharSequence getUnitName(int unitIndex) {

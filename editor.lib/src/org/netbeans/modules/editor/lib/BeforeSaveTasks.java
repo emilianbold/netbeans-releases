@@ -44,15 +44,16 @@
 
 package org.netbeans.modules.editor.lib;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.GapList;
 
 /**
- * Removal of trailing whitespace
+ * Registration of tasks performed right before document save.
  *
  * @author Miloslav Metelka
  * @since 1.9
@@ -60,6 +61,8 @@ import org.netbeans.lib.editor.util.GapList;
 public final class BeforeSaveTasks {
     
     private static final Logger LOG = Logger.getLogger(BeforeSaveTasks.class.getName());
+
+    private static final List<Task> tasks = new ArrayList<Task>(5);
     
     public static synchronized BeforeSaveTasks get(BaseDocument doc) {
         BeforeSaveTasks beforeSaveTasks = (BeforeSaveTasks) doc.getProperty(BeforeSaveTasks.class);
@@ -72,8 +75,6 @@ public final class BeforeSaveTasks {
     
     private final BaseDocument doc;
 
-    private List<Task> tasks = new GapList<Task>(1);
-    
     private BeforeSaveTasks(BaseDocument doc) {
         this.doc = doc;
         Runnable beforeSaveRunnable = (Runnable)
@@ -95,10 +96,12 @@ public final class BeforeSaveTasks {
      *
      * @param task non-null task.
      */
-    public synchronized void addTask(Task task) {
+    public static void addTask(Task task) {
         if (task == null)
             throw new IllegalArgumentException("task must not be null"); // NOI18N
-        tasks.add(task);
+        synchronized (tasks) {
+            tasks.add(task);
+        }
     }
 
     /**
@@ -108,11 +111,49 @@ public final class BeforeSaveTasks {
      * @return true if the tasks was removed successfully or false if the task
      *  was not found (compared by <code>Object.equals()</code>).
      */
-    public synchronized boolean removeTask(Task task) {
-        return tasks.remove(task);
+    public static boolean removeTask(Task task) {
+        synchronized (tasks) {
+            return tasks.remove(task);
+        }
     }
     
-    private void runTasks() {
+    public static boolean removeTask(Class taskClass) {
+        synchronized (tasks) {
+            int i = taskIndex(taskClass);
+            if (i >= 0) {
+                tasks.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Task getTask(Class taskClass) {
+        synchronized (tasks) {
+            int i = taskIndex(taskClass);
+            return (i >= 0) ? tasks.get(i) : null;
+        }
+    }
+
+    private static int taskIndex(Class taskClass) {
+        for (int i = tasks.size() - 1; i >= 0; i--) {
+            Task task = tasks.get(i);
+            if (taskClass == task.getClass()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    void runTasks() {
+        final List<Task> tasksCopy = new ArrayList<Task>(tasks);
+        final List<Object> locks = new ArrayList<Object>(tasksCopy.size());
+        int taskCount = tasksCopy.size();
+        int lockedTaskEndIndex = 0;
+        for (;lockedTaskEndIndex < taskCount; lockedTaskEndIndex++) {
+            Task task = tasksCopy.get(lockedTaskEndIndex);
+            locks.add(task.lock(doc));
+        }
         try {
             doc.runAtomicAsUser (new Runnable () {
                 public @Override void run () {
@@ -121,8 +162,9 @@ public final class BeforeSaveTasks {
                     // the save operation to succeed. Thus the possible exceptions thrown
                     // by the tasks will be notified but they will not prevent the save to succeed.
                     try {
-                        for (Task task : tasks) {
-                            task.run(atomicEdit);
+                        for (int i = 0; i < tasksCopy.size(); i++) {
+                            Task task = tasksCopy.get(i);
+                            task.run(locks.get(i), doc, atomicEdit);
                         }
                     } catch (Exception e) {
                         LOG.log(Level.WARNING, "Exception thrown in before-save tasks", e); // NOI18N
@@ -131,13 +173,48 @@ public final class BeforeSaveTasks {
                 }
             });
         } finally {
+            while (lockedTaskEndIndex > 0) {
+                Task task = tasksCopy.get(--lockedTaskEndIndex);
+                task.unlock(locks.get(lockedTaskEndIndex), doc);
+            }
+
             EditorPackageAccessor.get().BaseDocument_clearAtomicEdits(doc);
         }
     }
 
+    /**
+     * Task run right before document saving such as reformatting or trailing whitespace removal.
+     */
     public interface Task {
-        
-        void run(UndoableEdit edit);
+
+        /**
+         * Perform an extra lock for task if necessary.
+         * Locks for all tasks will be obtained first then atomic document lock will be obtained
+         * and then all the tasks will be run. Then all the locks will be released by running unlock()
+         * in all tasks in a reverse order of locking.
+         * @param doc non-null document.
+         */
+        Object lock(Document doc);
+
+        /**
+         * Run the before-save task.
+         *
+         * @param lockInfo lock object produced by {@link #lock(javax.swing.text.Document) }
+         *  that may contain an arbitrary info.
+         * @param doc non-null document.
+         * @param edit a non-ended edit to which undoable edits of the task should be added.
+         *  It may be null in which case the produced tasks should not be added to anything.
+         */
+        void run(Object lockInfo, Document doc, UndoableEdit edit);
+
+        /**
+         * Perform an extra unlock for task if necessary.
+         *
+         * @param lockInfo lock object produced by {@link #lock(javax.swing.text.Document) }
+         *  that may contain an arbitrary info.
+         * @param doc non-null document.
+         */
+        void unlock(Object lockInfo, Document doc);
 
     }
 

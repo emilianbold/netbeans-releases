@@ -8,4 +8,6 @@ $('div.notMe')
 $('.notMe')
 $('div[title]')
 $('div[title="hello"]')
+$('[]')
+$('[')
 

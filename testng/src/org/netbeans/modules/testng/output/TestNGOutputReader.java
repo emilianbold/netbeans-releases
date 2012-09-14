@@ -809,6 +809,7 @@ final class TestNGOutputReader {
     }
 
     private void suiteStarted(String name, int expectedTCases, String config) {
+        name = testSession.getSuiteName(name);
         TestSuite suite = new TestNGTestSuite(name, testSession, expectedTCases, config);
         testSession.addSuite(suite);
         testSession.setCurrentSuite(name);
@@ -818,6 +819,7 @@ final class TestNGOutputReader {
     }
 
     private void suiteFinished(SuiteStats stats) {
+        stats.name = testSession.getCurrentSuite().getName();
         testSession.setCurrentSuite(stats.name);
         TestNGTestSuite s = (TestNGTestSuite) testSession.getCurrentSuite();
         s.setElapsedTime(elapsedTime);
@@ -829,6 +831,7 @@ final class TestNGOutputReader {
     }
 
     private void testStarted(String suiteName, String testCase, String parameters, String values) {
+        suiteName = testSession.getCurrentSuite().getName();
         testSession.setCurrentSuite(suiteName);
         TestNGTestcase tc = ((TestNGTestSuite) ((TestNGTestSession) testSession).getCurrentSuite()).getTestCase(testCase, values);
         if (tc == null) {
@@ -845,6 +848,7 @@ final class TestNGOutputReader {
     }
 
     private void testFinished(String st, String suiteName, String testCase, String parameters, String values, String duration) {
+        suiteName = testSession.getCurrentSuite().getName();
         testSession.setCurrentSuite(suiteName);
         TestNGTestcase tc = ((TestNGTestSuite) ((TestNGTestSession) testSession).getCurrentSuite()).getTestCase(testCase, values);
         if (tc == null) {

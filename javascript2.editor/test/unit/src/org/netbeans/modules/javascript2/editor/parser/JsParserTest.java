@@ -210,7 +210,22 @@ public class JsParserTest extends JsTestBase {
             1,
             JsParser.Sanitize.SYNTAX_ERROR_PREVIOUS);
     }
-    
+
+    public void testSimpleParen1() throws Exception {
+        parse("if (data != null) {\n"
+            + "$.each(data, function(i,item) {\n"
+            + "    text = \"test\";\n"
+            + "    item = item.test\n"
+            + "}\n"
+            + "}",
+            "if (data != null) {\n"
+            + "$.each(data, function(i,item) {\n"
+            + "    text = \"test\";\n"
+            + "    item = item.test\n"
+            + "})"
+            + "}", 1, SanitizingParser.Sanitize.MISSING_PAREN);
+    }
+
     private void parse(String original, String expected, int errorCount,
             JsParser.Sanitize sanitization) throws Exception {
 

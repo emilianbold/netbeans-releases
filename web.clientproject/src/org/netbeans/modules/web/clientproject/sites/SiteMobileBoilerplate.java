@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@ServiceProvider(service=SiteTemplateImplementation.class, position=400)
+@ServiceProvider(service=SiteTemplateImplementation.class, position=500)
 public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());
@@ -91,7 +91,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
         SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);

@@ -76,7 +76,7 @@ class ModelElementFactory {
         JsFunctionImpl result; 
         if (fqName.size() > 1) {
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
-            parentObject = isAnnonymous ? globalObject : ModelUtils.getJsObject(modelBuilder, objectName);
+            parentObject = isAnnonymous ? globalObject : ModelUtils.getJsObject(modelBuilder, objectName, false);
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(), 
                     parentObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
             if (parentObject instanceof JsFunction && !"prototype".equals(parentObject.getName())) {
@@ -130,7 +130,7 @@ class ModelElementFactory {
         JsObjectImpl newObject;
         if (!belongsToParent) {
             List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
-            parent = ModelUtils.getJsObject(modelBuilder, objectName);
+            parent = ModelUtils.getJsObject(modelBuilder, objectName, false);
         }
         result = parent.getProperty(name.getName());
         newObject = new JsObjectImpl(parent, name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
@@ -149,9 +149,9 @@ class ModelElementFactory {
     
     static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
         String name = modelBuilder.getUnigueNameForAnonymObject();
-        JsObjectImpl result = new AnonymousObject(modelBuilder.getGlobal(),
+        JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationScope(),
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
-        modelBuilder.getGlobal().addProperty(name, result);
+        modelBuilder.getCurrentDeclarationScope().addProperty(name, result);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         result.setDocumentation(docHolder.getDocumentation(objectNode));
         return result;

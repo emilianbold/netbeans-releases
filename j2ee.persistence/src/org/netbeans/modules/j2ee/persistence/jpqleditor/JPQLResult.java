@@ -54,6 +54,7 @@ public class JPQLResult {
     private int updateOrDeleteResult;
     private List<Throwable> exceptions = new ArrayList<Throwable>();
     private String sqlQuery;
+    private String queryProblems;
 
     public List<Throwable> getExceptions() {
         return exceptions;
@@ -91,5 +92,13 @@ public class JPQLResult {
      */
     public void setSqlQuery(String sqlQuery) {
         this.sqlQuery = sqlQuery;
+    }
+
+    void setQueryProblems(String queryProblems) {
+        this.queryProblems = queryProblems;
+    }
+    
+    public String getQueryProblems(){
+        return queryProblems;
     }
 }

@@ -271,7 +271,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         hostComboBox = new javax.swing.JComboBox();
         toolchainComboBox = new javax.swing.JComboBox();
 
-        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         projectNameLabel.setLabelFor(projectNameTextField);

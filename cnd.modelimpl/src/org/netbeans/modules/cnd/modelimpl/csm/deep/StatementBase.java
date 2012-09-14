@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -119,6 +120,14 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }   
 
+    public interface StatementBuilderContainer {
+        public void addStatementBuilder(StatementBuilder builder);
+    }
+    
+    public static abstract class StatementBuilder extends ScopedDeclarationBuilder {
+        abstract StatementBase create();
+    }    
+    
     @Override
     public String toString() {
         return "" + getKind() + ' ' + getOffsetString(); // NOI18N

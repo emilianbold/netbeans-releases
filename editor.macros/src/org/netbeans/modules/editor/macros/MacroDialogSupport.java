@@ -52,7 +52,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -67,6 +66,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -76,7 +76,6 @@ import org.netbeans.modules.editor.macros.storage.MacroDescription;
 import org.netbeans.modules.editor.macros.storage.MacrosStorage;
 import org.netbeans.modules.editor.macros.storage.ui.MacrosPanel;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
-import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -307,12 +306,12 @@ outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
             MacroDescription macro = findMacro(mimeType, keyStroke);
             if (macro == null) {
                 // if not found, try action command, which should contain complete multi keystroke
-                KeyStroke[] shortcut = StorageSupport.stringToKeyStrokes(evt.getActionCommand(), false);
+                KeyStroke[] shortcut = KeyStrokeUtils.getKeyStrokes(evt.getActionCommand());
                 macro = findMacro(mimeType, shortcut);
             }
 
             if (macro == null) {
-                error(target, "macro-not-found", StorageSupport.keyStrokesToString(Collections.singleton(keyStroke), false)); // NOI18N
+                error(target, "macro-not-found", KeyStrokeUtils.getKeyStrokeAsText(keyStroke)); // NOI18N
                 return;
             }
 

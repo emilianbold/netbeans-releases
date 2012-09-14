@@ -48,6 +48,12 @@ import org.netbeans.api.sendopts.CommandException;
  * fields annotated by {@link Arg} have been initialized before 
  * the {@link #process(org.netbeans.spi.sendopts.Env)} method is invoked.
  * The subclass needs to have public default constructor.
+ * <p class="nonnormative">
+ * For headless NetBeans applications: command line argument processing is the
+ * last step in the boot sequence; services and classes offered by the platform
+ * have been initialized at this point. Application code in {@link #process(org.netbeans.spi.sendopts.Env)} can safely
+ * use the platform.
+ * </p>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 2.20

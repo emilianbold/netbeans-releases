@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
@@ -76,7 +77,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideConfigurationProvider.class.getName());
 
-    public static final String PROP_CONFIG = "config";
+    public static final String PROP_CONFIG = "config"; //NOI18N
     public static final String CONFIG_PROPS_PATH = AntProjectHelper.PRIVATE_PROPERTIES_PATH; // NOI18N
 
     private Lookup.Result<ClientProjectPlatformProvider> res = 
@@ -98,7 +99,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         p.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
-                    LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE);
+                    LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE); //NOI18N
                     pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
                 }
             }
@@ -118,7 +119,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
                 }
             }
         }
-        LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
+        LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs); //NOI18N
     }
     
     @Override
@@ -140,11 +141,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         if (config != null && configs.containsKey(config)) {
             return configs.get(config);
         }
-        // return first in the list:
-        if (orderedConfigurations.isEmpty()) {
-            return null;
-        }
-        return orderedConfigurations.iterator().next();
+        return getDefaultConfiguration(orderedConfigurations);
     }
 
     @Override
@@ -197,7 +194,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
 
     @Override
     public void propertyChange(PropertyChangeEvent e) {
-        LOGGER.log(Level.FINEST, "Received {0}", e);
+        LOGGER.log(Level.FINEST, "Received {0}", e); //NOI18N
         refreshConfigurations();
     }
     
@@ -206,7 +203,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
         calculateConfigs();
         Set<String> newConfigs = configs.keySet();
         if (!oldConfigs.equals(newConfigs)) {
-            LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
+            LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs}); //NOI18N
             pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
         }
     }
@@ -230,7 +227,18 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
                 }
             }
         }
-        assert false : "should never happen: no platform can create configuration of type "+type+" and name it "+newName;
+        assert false : "should never happen: no platform can create configuration of type "+type+" and name it "+newName; //NOI18N
         return null;
+    }
+
+    private ClientProjectConfigurationImplementation getDefaultConfiguration(List<ClientProjectConfigurationImplementation> cfgs) {
+        for (ClientProjectConfigurationImplementation cfg : cfgs) {
+            if (cfg instanceof ClientProjectConfigurationImpl && 
+                    ((ClientProjectConfigurationImpl)cfg).canBeDefaultConfiguration()) {
+                return cfg;
+            }
+        }
+        // fallback on first one:
+        return cfgs.get(0);
     }
 }

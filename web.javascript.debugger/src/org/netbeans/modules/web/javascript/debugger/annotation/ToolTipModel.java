@@ -74,7 +74,12 @@ public class ToolTipModel extends VariablesModel implements TreeExpansionModelFi
     @Override
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == ROOT) {
-            return new Object[] { ToolTipView.getVariable() };
+            ScopedRemoteObject ttv = ToolTipView.getVariable();
+            if (ttv != null) {
+                return new Object[] { ttv };
+            } else {
+                return new Object[] { };
+            }
         } else {
             return super.getChildren(parent, from, to);
         }

@@ -88,10 +88,10 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         PASSIVE_MODE,
         IGNORE_DISCONNECT_ERRORS
     ));
-    private static final int DEFAULT_PORT = 21;
+    static final int DEFAULT_PORT = 21;
     static final FtpConfiguration.Encryption DEFAULT_ENCRYPTION = FtpConfiguration.Encryption.NONE;
     static final boolean DEFAULT_ONLY_LOGIN_ENCRYPTED = false;
-    private static final int DEFAULT_TIMEOUT = 30;
+    static final int DEFAULT_TIMEOUT = 30;
     static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
 

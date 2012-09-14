@@ -649,7 +649,7 @@ public class ElementHandleTest extends NbTestCase {
             }
             if (member.getKind() == ElementKind.FIELD) {
                 VariableElement ve = (VariableElement) member;
-                if ("count".contentEquals(ve.getSimpleName())) {
+                if ("value".contentEquals(ve.getSimpleName())) {
                     result[2] = member;
                 }
             }

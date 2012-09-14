@@ -108,7 +108,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
                     public void run() {
                         ProgressHandle handle = null;
                         try {
-                            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
+                            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupActionsProvider.class, "CTL_OpenKenaiProjectAction")); //NOI18N
                             handle.start();
                             final KenaiProject kp = kenai.getProject("ide");//NOI!18N
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
@@ -124,7 +124,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
                             if (err == null) {
                                 err = e.getCause().getLocalizedMessage();
                             }
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupActionsProvider.class, "ERROR_CONNECTION", err))); //NOI18N
                         } finally {
                             if (handle != null) {
                                 handle.finish();

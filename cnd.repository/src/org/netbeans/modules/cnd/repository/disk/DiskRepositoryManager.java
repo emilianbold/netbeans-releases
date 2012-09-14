@@ -61,11 +61,11 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.queue.KeyValueQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
-import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -81,7 +80,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  *
  * @author Sergey Grinev
  */
-public class DiskRepositoryManager implements Repository, RepositoryWriter {
+public class DiskRepositoryManager extends BaseRepository implements RepositoryWriter {
     
     private static final Logger LOG = Logger.getLogger(DiskRepositoryManager.class.getName());
     private final Map<Integer, Unit> units;
@@ -93,13 +92,13 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     private static final class UnitLock {}
     private final Object mainUnitLock = new UnitLock();
-    private final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
 
-    public DiskRepositoryManager() {
+    public DiskRepositoryManager(int id, CacheLocation cacheLocation) {
+        super(id, cacheLocation);
         removedObject = new RemovedPersistent();
         queueLock = new ReentrantReadWriteLock(true);
         threadManager = new RepositoryThreadManager(this, queueLock);
-        queue = threadManager.startup();
+        queue = threadManager.getQueue();
         units = new ConcurrentHashMap<Integer, Unit>();
     }
 
@@ -148,8 +147,8 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
                 unit = units.get(unitId);
                 if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitId, unitName)) {
-                        ((RepositoryTranslatorImpl)translator).loadUnitIndex(unitName);
-                        unit = new UnitImpl(unitId, unitName);
+                        getTranslation().loadUnitIndex(unitName);
+                        unit = new UnitImpl(unitId, unitName, this);
                         units.put(unitId, unit);
                     }
                 }
@@ -257,7 +256,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         } finally {
             queueLock.writeLock().unlock();
         }
-        ((RepositoryTranslatorImpl)translator).shutdown();
+        getTranslation().shutdown();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.INFO, "Repository shutdown done.");
         }
@@ -312,7 +311,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         if (requiredUnits != null) {
             requiredUnitNames = new LinkedHashSet<CharSequence>(requiredUnits.size());
             for (Integer integer : requiredUnits) {
-                requiredUnitNames.add(translator.getUnitName(unitId));
+                requiredUnitNames.add(getTranslation().getUnitName(unitId));
             }
         }
         synchronized (getUnitLock(unitId)) {
@@ -359,13 +358,13 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
         //clean the repository cach files here if it is necessary
         //
-        StorageAllocator allocator = StorageAllocator.getInstance();
+        StorageAllocator allocator = getStorageAllocator();
         if (cleanRepository) {
             allocator.deleteUnitFiles(unitName, true);
         }
         allocator.closeUnit(unitName);
 
-        ((RepositoryTranslatorImpl)translator).closeUnit(unitName, requiredUnits);
+        getTranslation().closeUnit(unitName, requiredUnits);
         RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitId, unitName);
     }
 
@@ -374,7 +373,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         synchronized (getUnitLock(unitId)) {
             closeUnit2(unitId, unitName, true, Collections.<CharSequence>emptySet());
-            ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
+            getTranslation().removeUnit(unitName);
         }
     }
 
@@ -401,7 +400,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     @Override
     public void cleanCaches() {
-        StorageAllocator.getInstance().cleanRepositoryCaches();
+        getStorageAllocator().cleanRepositoryCaches();
     }
 
     @Override
@@ -414,6 +413,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     @Override
     public void startup(int persistMechanismVersion) {
+        threadManager.startup();
     }
 
     @Override
@@ -470,7 +470,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     }
 
     private CharSequence getUnitNameSafe(Key key) {
-        return translator.getUnitNameSafe(key.getUnitId());
+        return getTranslation().getUnitNameSafe(key.getUnitId());
     }
 
     private static final class NamedLock {

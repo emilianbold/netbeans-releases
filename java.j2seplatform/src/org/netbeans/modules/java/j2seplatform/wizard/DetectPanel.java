@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -99,6 +100,12 @@ import org.openide.util.Utilities;
  * @author Svata Dedic
  */
 public class DetectPanel extends javax.swing.JPanel {
+
+    private enum PlatformState {
+        UNKNOWN,
+        VALID,
+        INVALID
+    }
 
     private static final int COLS = 30;
     private static final RequestProcessor RP = new RequestProcessor(DetectPanel.class.getName(), 1, false, false);
@@ -422,7 +429,7 @@ public class DetectPanel extends javax.swing.JPanel {
         private RequestProcessor.Task task;
         private final J2SEWizardIterator  iterator;
         private final ChangeSupport cs = new ChangeSupport(this);
-        private volatile boolean             detected;
+        private final AtomicReference<PlatformState> detected = new AtomicReference<PlatformState>(PlatformState.UNKNOWN);
         private volatile boolean             valid;        
         private boolean             firstPass=true;
         private WizardDescriptor    wiz;
@@ -613,12 +620,15 @@ public class DetectPanel extends javax.swing.JPanel {
                 jdoc = J2SEPlatformImpl.defaultJavadoc(platform);
             }
             final String jdocStr = javadocToString(jdoc);
-            detected = platform.isValid();            
+            detected.set(
+                platform.isValid()?
+                    PlatformState.VALID:
+                    PlatformState.INVALID);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
-                public void run () {                                        
-                    component.setJavadoc(jdocStr);
+                public void run () {
                     component.updatePlatformName(platform);
+                    component.setJavadoc(jdocStr);
                     assert progressHandle != null;
                     progressHandle.finish ();
                     component.progressPanel.setVisible (false);
@@ -637,9 +647,20 @@ public class DetectPanel extends javax.swing.JPanel {
         private void checkValid () {
             this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
             final String name = this.component.getPlatformName ();
-            boolean vld = detected;
-            if (!vld) {
-                this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
+            boolean vld;
+            switch (detected.get()) {
+                case INVALID:
+                    this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
+                    vld = false;
+                    break;
+                case UNKNOWN:
+                    vld = false;
+                    break;
+                case VALID:
+                    vld = true;
+                    break;
+                default:
+                    throw new IllegalStateException();
             }
             if (vld && name.length() == 0) {
                 vld = false;

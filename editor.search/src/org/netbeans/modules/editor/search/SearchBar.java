@@ -664,15 +664,15 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
         incSearchTextField.requestFocusInWindow();
 
-        if (incSearchTextField.getText().length() > 0) {
-            // preselect the text in incremental search text field
+        boolean empty = incSearchTextField.getText().isEmpty();
+        if (!empty) { // preselect the text in incremental search text field
             incSearchTextField.selectAll();
-            findPreviousButton.setEnabled(true);
-            findNextButton.setEnabled(true);
-        } else {
-            findPreviousButton.setEnabled(false);
-            findNextButton.setEnabled(false);
         }
+        findPreviousButton.setEnabled(!empty);
+        findNextButton.setEnabled(!empty);
+        ReplaceBar.getInstance(this).getReplaceButton().setEnabled(!empty);
+        ReplaceBar.getInstance(this).getReplaceAllButton().setEnabled(!empty);
+
         actualViewPort = getActualTextComponent().getVisibleRect();
         if (!isClosingSearchType() && highlightCanceled) {
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -698,6 +698,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
             highlightCanceled = true;
         }
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
+        EditorFindSupport.getInstance().putFindProperties(searchProps.getProperties());
     }
 
     private void incrementalSearch() {

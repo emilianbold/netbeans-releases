@@ -42,10 +42,8 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -121,11 +119,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 //            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
-
-        Collection<ChangeListener> ll = info.getListeners();
-        listeners = (ll == null || ll.isEmpty()) ? null
-                : Collections.unmodifiableList(
-                new ArrayList<ChangeListener>(ll));
+        listeners = info.getListenersSnapshot();
     }
 
     public final NativeProcess createAndStart() {
@@ -271,7 +265,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * Terminates the underlaying system process. The system process represented
+     * Terminates the underlying system process. The system process represented
      * by this <code>AbstractNativeProcess</code> object is forcibly terminated.
      *
      * Returning from the call of this method does not mean that the process was
@@ -286,39 +280,44 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         final int timeToWait = destroyImpl();
 
-        if (pid > 0 && waitTask != null && !waitTask.isDone()) {
-            Future<Integer> killTask = null;
+        // In case the process is in a system call (sleep, read, for example)
+        // this will not have a desired effect - in this case
+        // will send SIGTERM signal..
 
-            if (timeToWait > 0) {
-                // Submit an asynchronious task that will send SIGKILL if
-                // process is still here after returned timeout...
-                final Callable<Integer> waitForTermination = new Callable<Integer>() {
+        try {
+            exitValue();
+            // No exception means successful termination
+            return;
+        } catch (IllegalThreadStateException ex) {
+        }
 
-                    @Override
-                    public Integer call() throws Exception {
-                        try {
-                            return waitTask.get(timeToWait, TimeUnit.SECONDS);
-                        } catch (TimeoutException ex) {
-                            // Process didn't gone.. Kill it!
-                            return CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
-                        }
-                    }
-                };
+        try {
+            CommonTasksSupport.sendSignalGrp(execEnv, pid, Signal.SIGTERM, null).get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        }
 
-                killTask = NativeTaskExecutorService.submit(waitForTermination,
-                        "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
-            } else {
-                killTask = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
-            }
+        try {
+            waitTask.get(timeToWait, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
 
-            if (killTask != null) {
-                try {
-                    killTask.get();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+        try {
+            exitValue();
+            // No exception means successful termination
+            return;
+        } catch (IllegalThreadStateException ex) {
+        }
+
+        try {
+            CommonTasksSupport.sendSignalGrp(execEnv, pid, Signal.SIGKILL, null).get();
+        } catch (InterruptedException ex1) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex1) {
         }
     }
 
@@ -440,14 +439,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 this.state = state;
 
-                if (listeners == null) {
-                    return;
-                }
+                if (!listeners.isEmpty()) {
+                    final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
 
-                final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
+                    for (ChangeListener l : listeners) {
+                        l.stateChanged(event);
+                    }
 
-                for (ChangeListener l : listeners) {
-                    l.stateChanged(event);
+                    if (this.state == State.CANCELLED
+                            || this.state == State.ERROR
+                            || this.state == State.FINISHED) {
+                        listeners.clear();
+                    }
                 }
             } finally {
                 if (isInterrupted()) {

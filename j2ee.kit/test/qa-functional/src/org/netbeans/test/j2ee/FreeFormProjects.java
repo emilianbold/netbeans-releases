@@ -73,13 +73,9 @@ public class FreeFormProjects extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(FreeFormProjects.class);
-        conf = addServerTests(conf,
+        return createAllModulesServerSuite(Server.ANY, FreeFormProjects.class,
                 "testEjbWithSources",
-                "testEarWithSources"
-                );
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+                "testEarWithSources");
     }
 
     @Override

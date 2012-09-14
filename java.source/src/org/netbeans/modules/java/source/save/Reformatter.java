@@ -3402,6 +3402,8 @@ public class Reformatter implements ReformatTask {
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             } else {
+                                if (insideTag)
+                                    break;
                                 newState = 7;
                             }
                             if (currWSOffset >= 0 && afterText) {
