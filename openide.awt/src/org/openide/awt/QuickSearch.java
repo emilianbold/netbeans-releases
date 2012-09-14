@@ -448,7 +448,6 @@ public class QuickSearch {
     
     private void removeSearchField() {
         if (isAlwaysShown()) {
-            searchTextField.setText("");
             return;
         }
         if (searchPanel == null) {
