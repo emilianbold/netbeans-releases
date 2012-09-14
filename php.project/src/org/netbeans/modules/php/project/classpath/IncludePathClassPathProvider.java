@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -70,30 +69,11 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
     private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
     private static final ReadWriteLock PROJECT_INCLUDES_LOCK = new ReentrantReadWriteLock();
 
-    // @GuardedBy(INCLUDE_PATH_CP_LOCK)
+    // @GuardedBy("IncludePathClassPathProvider.class")
     static ClassPath globalIncludePathClassPath = null;
-    private static final ReadWriteLock INCLUDE_PATH_CP_LOCK = new ReentrantReadWriteLock();
-    private static final Lock INCLUDE_PATH_CP_READ_LOCK = INCLUDE_PATH_CP_LOCK.readLock();
-    static final Lock INCLUDE_PATH_CP_WRITE_LOCK = INCLUDE_PATH_CP_LOCK.writeLock();
+    // @GuardedBy("IncludePathClassPathProvider.class")
+    private static PropertyChangeListener includePathListener = null;
 
-    private static final PropertyChangeListener INCLUDE_PATH_LISTENER = new PropertyChangeListener() {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpOptions.PROP_PHP_GLOBAL_INCLUDE_PATH.equals(evt.getPropertyName())) {
-                INCLUDE_PATH_CP_WRITE_LOCK.lock();
-                try {
-                    globalIncludePathClassPath = null;
-                } finally {
-                    INCLUDE_PATH_CP_WRITE_LOCK.unlock();
-                }
-            }
-        }
-    };
-
-
-    public IncludePathClassPathProvider() {
-        PhpOptions.getInstance().addPropertyChangeListener(INCLUDE_PATH_LISTENER);
-    }
 
     public static void addProjectIncludePath(final ClassPath classPath) {
         runUnderWriteLock(new Runnable() {
@@ -143,26 +123,27 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
         return getGlobalIncludePathClassPath();
     }
 
-    private static ClassPath getGlobalIncludePathClassPath() {
-        INCLUDE_PATH_CP_READ_LOCK.lock();
-        try {
-            if (globalIncludePathClassPath == null) {
-                INCLUDE_PATH_CP_READ_LOCK.unlock();
-                INCLUDE_PATH_CP_WRITE_LOCK.lock();
-                try {
-                    if (globalIncludePathClassPath == null) {
-                        List<FileObject> includePath = PhpSourcePath.getIncludePath(null);
-                        globalIncludePathClassPath = ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
+    private static synchronized ClassPath getGlobalIncludePathClassPath() {
+        if (includePathListener == null) {
+            includePathListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (PhpOptions.PROP_PHP_GLOBAL_INCLUDE_PATH.equals(evt.getPropertyName())) {
+                        resetGlobalIncludePathClassPath();
                     }
-                } finally {
-                    INCLUDE_PATH_CP_READ_LOCK.lock();
-                    INCLUDE_PATH_CP_WRITE_LOCK.unlock();
                 }
-            }
-            return globalIncludePathClassPath;
-        } finally {
-            INCLUDE_PATH_CP_READ_LOCK.unlock();
+            };
+            PhpOptions.getInstance().addPropertyChangeListener(includePathListener);
         }
+        if (globalIncludePathClassPath == null) {
+            List<FileObject> includePath = PhpSourcePath.getIncludePath(null);
+            globalIncludePathClassPath = ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
+        }
+        return globalIncludePathClassPath;
+    }
+
+    static synchronized void resetGlobalIncludePathClassPath() {
+        globalIncludePathClassPath = null;
     }
 
     private static void runUnderWriteLock(Runnable runnable) {
