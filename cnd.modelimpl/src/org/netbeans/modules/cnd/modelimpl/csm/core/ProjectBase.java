@@ -465,9 +465,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         String postfix = CndFileUtils.isLocalFileSystem(fs) ? "" : fs.getDisplayName();
         String result;
         if (platformProject instanceof NativeProject) {
-            result = ((NativeProject) platformProject).getProjectRoot() + "/N/" + postfix;
+            result = ((NativeProject) platformProject).getProjectRoot() + "/N/" + postfix; // NOI18N
         } else if (platformProject instanceof CharSequence) {
-            result = ((CharSequence)platformProject).toString() + "/L/" + postfix;
+            result = ((CharSequence)platformProject).toString() + "/L/" + postfix; // NOI18N
         } else if (platformProject == null) {
             throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
         } else {
