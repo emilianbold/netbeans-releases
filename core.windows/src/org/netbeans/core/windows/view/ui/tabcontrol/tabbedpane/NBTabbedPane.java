@@ -101,6 +101,8 @@ public class NBTabbedPane extends JTabbedPane {
         this.winsysInfo = winsysInfo;
 
         updateUI();
+
+        setFocusable( false );
     }
 
     public WinsysInfoForTabbedContainer getWinsysInfoForTabbedContainer() {

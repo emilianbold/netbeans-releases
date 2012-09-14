@@ -104,6 +104,9 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
                     Transferable t = node.drag();
                     dge.getDragSource().addDragSourceListener( this );
                     dge.startDrag( dragNoDropCursor, t );
+                } catch( InvalidDnDOperationException e ) {
+                    //#214776 - somebody didn't finish their dnd operation properly
+                    Logger.getLogger(ActionsTree.class.getName()).log(Level.INFO, e.getMessage(), e);
                 } catch( IOException e ) {
                     Logger.getLogger(ActionsTree.class.getName()).log(Level.WARNING, null, e);
                 }
