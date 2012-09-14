@@ -64,12 +64,19 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
     }
     
-    
+
     public void testIssue217029_01() throws Exception {
         checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
     }
-    
-    
+
+    public void testIssue215861_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser \"+navigator.^);", false);
+    }
+
+    public void testIssue215861_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
