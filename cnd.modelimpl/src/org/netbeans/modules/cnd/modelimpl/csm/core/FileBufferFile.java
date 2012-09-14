@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 public class FileBufferFile extends AbstractFileBuffer {
     
     private volatile Reference<char[]> cachedArray;
+    private long crc = Long.MIN_VALUE;
     private final Object lock = new Object();
     private volatile long lastModifiedWhenCachedString;
 
@@ -91,6 +92,16 @@ public class FileBufferFile extends AbstractFileBuffer {
         }
     }
 
+    @Override
+    public long getCRC() {
+        synchronized (lock) {
+            if (crc == Long.MIN_VALUE) {
+                crc = super.getCRC();
+            }
+            return crc;
+        }
+    }
+
     private char[] doGetChar() throws IOException {
         synchronized (lock) {
             Reference<char[]> aCachedArray = cachedArray;
@@ -102,6 +113,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                         }
                 }
             }
+            crc = Long.MIN_VALUE;
             FileObject fo = getFileObject();
             long length = fo.getSize();
             if (length > Integer.MAX_VALUE) {

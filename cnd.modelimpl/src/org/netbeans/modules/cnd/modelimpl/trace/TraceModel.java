@@ -1288,7 +1288,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testLibProject() {
-        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include"); // NOI18N
+        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include", null); // NOI18N
         getModel().addProject(libProject);
         tracer.dumpModel(libProject);
     }

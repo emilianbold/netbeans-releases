@@ -65,7 +65,6 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -226,7 +225,17 @@ public class JsFormatter implements Formatter {
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
-                    if (token.getKind().isSpaceMarker()) {
+                    if (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                            || token.getKind() == FormatToken.Kind.DOC_COMMENT
+                            || token.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                        try {
+                            int indent = context.lineIndent(context.lineStartOffset(
+                                    token.getOffset() + formatContext.getOffsetDiff()));
+                            formatComment(token, formatContext, indent);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+                    } else if (token.getKind().isSpaceMarker()) {
                         formatSpace(tokens, i, formatContext);
                     } else if (token.getKind().isLineWrapMarker()) {
                         formatLineWrap(tokens, i, formatContext, initialIndent,
@@ -656,6 +665,31 @@ public class JsFormatter implements Formatter {
         }
     }
 
+    private void formatComment(FormatToken comment, FormatContext formatContext, int indent) {
+        // this assumes the firts line is already indented by EOL logic
+        assert comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                || comment.getKind() == FormatToken.Kind.DOC_COMMENT
+                || comment.getKind() == FormatToken.Kind.LINE_COMMENT;
+
+        if (comment.getKind() == FormatToken.Kind.LINE_COMMENT) {
+            return;
+        }
+
+        if (!comment.getText().toString().contains("\n")) { // NOI18N
+            return;
+        }
+
+        CharSequence text = comment.getText();
+        for (int i = 0; i < text.length(); i++) {
+            char single = text.charAt(i);
+            if (single == '\n') { // NOI18N
+                // following lines are + 1 indented
+                formatContext.indentLine(comment.getOffset() + i + 1,
+                        indent + 1, Indentation.ALLOWED); // NOI18N
+            }
+        }
+    }
+
     private static boolean isContinuation(FormatContext formatContext,
             FormatToken token, boolean noRealEol) {
 
@@ -724,7 +758,7 @@ public class JsFormatter implements Formatter {
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
-                || formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(text)
+                || formatContext.isGenerated(result)
                 // this is just safeguard literal offsets should be fixed
                 /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
 
@@ -745,8 +779,8 @@ public class JsFormatter implements Formatter {
 
             // we don't want to touch lines starting with other language
             // it is a bit heuristic but we can't do much
-            // see embeddedMultipleSections3.tpl and embeddedMultipleSections4.php
-            if (formatContext.isEmbedded() && JsEmbeddingProvider.isGeneratedIdentifier(indentationEnd.getText().toString())) {
+            // see embeddedMultipleSections1.php
+            if (formatContext.isGenerated(indentationEnd)) {
                 return Indentation.FORBIDDEN;
             }
             return Indentation.ALLOWED;

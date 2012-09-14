@@ -53,6 +53,8 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.libs.jstestdriver.api.JsTestDriver;
@@ -66,14 +68,19 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 @Messages("JsTestDriverResolver=js-test-driver Conf Files")
 @MIMEResolver.Registration(
@@ -98,7 +105,7 @@ public class JSTestDriverSupport {
     }
 
     private JsTestDriver testDriver;
-    private boolean starting = false;
+    private volatile boolean starting = false;
     
     private JSTestDriverSupport() {
         lookupContent = new InstanceContent();
@@ -108,9 +115,7 @@ public class JSTestDriverSupport {
     private synchronized JsTestDriver getJsTestDriver() {
         if (testDriver == null) {
             if (!isConfiguredProperly()) {
-                if (!configure()) {
-                    return null;
-                }
+                return null;
             }
             String jsTestDriverJar = JSTestDriverCustomizerPanel.getJSTestDriverJar();
             File f = new File(jsTestDriverJar);
@@ -138,11 +143,11 @@ public class JSTestDriverSupport {
     }
 
     boolean isRunning() {
-        return getJsTestDriver().isRunning();
+        return testDriver != null && testDriver.isRunning();
     }
 
     public boolean wasStartedExternally() {
-        return getJsTestDriver().wasStartedExternally();
+        return testDriver != null && testDriver.wasStartedExternally();
     }
 
     public boolean isStarting() {
@@ -151,7 +156,8 @@ public class JSTestDriverSupport {
 
     public void stop() {
         assert isRunning();
-        getJsTestDriver().stopServer();
+        assert testDriver != null;
+        testDriver.stopServer();
         TestDriverServiceNode.getInstance().refresh();
         for (WebBrowserPane wbp : integratedBrowserPanes) {
             wbp.close(true);
@@ -160,9 +166,16 @@ public class JSTestDriverSupport {
 
     public void start(final ServerListener l) {
         assert !isRunning();
-        if (!isConfiguredProperly()) {
+        JsTestDriver td = getJsTestDriver();
+        if (td == null) {
+            if (configure()) {
+                td = getJsTestDriver();
+            }
+        }
+        if (td == null) {
             return;
         }
+        final JsTestDriver td2 = td;
         starting = true;
         TestDriverServiceNode.getInstance().refresh();
         RP.post(new Runnable() {
@@ -170,7 +183,7 @@ public class JSTestDriverSupport {
             @Override
             public void run() {
                 try {
-                    getJsTestDriver().startServer(JSTestDriverCustomizerPanel.getPort(), 
+                    td2.startServer(JSTestDriverCustomizerPanel.getPort(), 
                             JSTestDriverCustomizerPanel.isStricModel(),
                             new ServerListener() {
 
@@ -231,6 +244,15 @@ public class JSTestDriverSupport {
 
     public void runAllTests(Project project, String serverURL, int port, boolean strictMode, File baseFolder, File configFile, 
             String testsToRun) {
+        JsTestDriver td = getJsTestDriver();
+        if (td == null) {
+            if (configure()) {
+                td = getJsTestDriver();
+            }
+        }
+        if (td == null) {
+            return;
+        }
         if (!isRunning() && port != -1) {
             final Semaphore s = new Semaphore(0);
             start(new ServerListener() {
@@ -256,7 +278,8 @@ public class JSTestDriverSupport {
         }
         updateJsDebuggerProjectContext(project);
         TestListener listener = new Listener(project);
-        getJsTestDriver().runTests(serverURL, strictMode, baseFolder, configFile, testsToRun, listener);
+        LineConvertor convertor = new LineConvertorImpl(project);
+        td.runTests(serverURL, strictMode, baseFolder, configFile, testsToRun, listener, convertor);
     }
     
     private void updateJsDebuggerProjectContext(Project p) {
@@ -296,6 +319,113 @@ public class JSTestDriverSupport {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+    
+    private static class LineConvertorImpl implements LineConvertor {
+
+        private Project p;
+
+        public LineConvertorImpl(Project p) {
+            this.p = p;
+        }
+        
+        @Override
+        public List<ConvertedLine> convert(String line) {
+            // pattern is "at ...... (file:line:column)"
+            if (!line.endsWith(")")) {
+                return null;
+            }
+            int start = line.lastIndexOf('(');
+            if (start == -1) {
+                return null;
+            }
+            int fileEnd = line.indexOf(':', start);
+            if (fileEnd == -1) {
+                return null;
+            }
+            int lineNumber = -1;
+            int columnNumber = -1;
+            int lineNumberEnd = line.indexOf(':', fileEnd+1);
+            try {
+                if (lineNumberEnd == -1) {
+                    lineNumber = Integer.parseInt(line.substring(fileEnd+1, line.length()-1));
+                } else {
+                    lineNumber = Integer.parseInt(line.substring(fileEnd+1, lineNumberEnd));
+                    columnNumber = Integer.parseInt(line.substring(lineNumberEnd+1, line.length()-1));
+                }
+            } catch (NumberFormatException e) {
+                //ignore
+            }
+            if (lineNumber == -1) {
+                return null;
+            }
+            String file = line.substring(start+1, fileEnd);
+            if (file.length() == 0) {
+                return null;
+            }
+            FileObject fo = p.getProjectDirectory().getFileObject(file);
+            if (fo == null) {
+                return null;
+            }
+            List<ConvertedLine> res = new ArrayList<ConvertedLine>();
+            //res.add(ConvertedLine.forText(line.substring(0, start), null));
+            ListenerImpl l = new ListenerImpl(fo, lineNumber, columnNumber);
+            res.add(ConvertedLine.forText(/*line.substring(start, line.length()-1)*/line, l.isValidHyperlink() ? l : null));
+            //res.add(ConvertedLine.forText(line.substring(line.length()-1, line.length()), null));
+            return res;
+        }
+        
+    }
+    
+    private static class ListenerImpl implements OutputListener {
+
+        private FileObject fo;
+        private int line;
+        private int column;
+
+        public ListenerImpl(FileObject fo, int line, int column) {
+            this.fo = fo;
+            this.line = line;
+            this.column = column;
+        }
+        
+        @Override
+        public void outputLineSelected(OutputEvent ev) {
+        }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+            Line l = getLine();
+            if (l != null) {
+                l.show(Line.ShowOpenType.OPEN, 
+                    Line.ShowVisibilityType.FOCUS, column != -1 ? column -1 : -1);
+            }
+        }
+        
+        private Line getLine() {
+            LineCookie result = null;
+            try {
+                DataObject dataObject = DataObject.find(fo);
+                if (dataObject != null) {
+                    result = dataObject.getCookie(LineCookie.class);
+                }
+            } catch (DataObjectNotFoundException e) {
+                e.printStackTrace();
+            }
+            if (result != null) {
+                return result.getLineSet().getCurrent(line-1);
+            }
+            return null;
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
+        }
+        
+        public boolean isValidHyperlink() {
+            return getLine() != null;
+        }
+    
     }
     
     private static class Listener implements TestListener {

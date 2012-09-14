@@ -55,7 +55,13 @@ public interface RepositoryTranslation {
     int getFileIdByName(final int unitId, final CharSequence fileName);
     CharSequence getFileNameById(final int unitId, final int fileId);
     CharSequence getFileNameByIdSafe(final int unitId, final int fileId);
-    int getUnitId(CharSequence unitName);
+    /**
+     * @param cacheLocation can be null, in this case standard location 
+     * ${userdir}/var/cache/cnd/model will be used
+     */
+    int getUnitId(CharSequence unitName, CacheLocation cacheLocation);
+
+    CacheLocation getCacheLocation(int unitId);
     CharSequence getUnitName(int unitId);
     CharSequence getUnitNameSafe(int unitId);
 }

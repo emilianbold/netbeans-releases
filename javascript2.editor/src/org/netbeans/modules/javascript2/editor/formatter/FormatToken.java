@@ -90,7 +90,7 @@ public final class FormatToken {
     @NonNull
     public CharSequence getText() {
         assert !isVirtual();
-        return text != null ? text : "";
+        return text != null ? text : ""; // NOI18N
     }
 
     public int getOffset() {

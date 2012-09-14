@@ -478,9 +478,9 @@ public class ModelTest extends JsTestBase {
         assertEquals(2, function.getReturnTypes().size());
         iterator = function.getReturnTypes().iterator();
         type = iterator.next();
-        assertEquals(Type.STRING, type.getType());
-        type = iterator.next();
         assertEquals(Type.NUMBER, type.getType());
+        type = iterator.next();
+        assertEquals(Type.STRING, type.getType());
         
         JsObject property = object.getProperty("isGreat");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());

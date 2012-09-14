@@ -65,7 +65,6 @@ import com.oracle.nashorn.ir.WithNode;
 import com.oracle.nashorn.ir.visitor.NodeVisitor;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -174,7 +173,17 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node enter(DoWhileNode doWhileNode) {
         // within parens spaces
-        markSpacesWithinParentheses(doWhileNode, getFinish(doWhileNode.getBody()), getFinish(doWhileNode),
+        int leftStart;
+        Block body = doWhileNode.getBody();
+        if (body.getStart() == body.getFinish()) {
+            // unfortunately due to condition at the end of do-while
+            // we have to care about virtual block
+            List<Node> statements = body.getStatements();
+            leftStart = getFinish(statements.get(statements.size() - 1));
+        } else {
+            leftStart = getFinish(doWhileNode.getBody());
+        }
+        markSpacesWithinParentheses(doWhileNode, leftStart, getFinish(doWhileNode),
                 FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
 
         // mark space before left brace

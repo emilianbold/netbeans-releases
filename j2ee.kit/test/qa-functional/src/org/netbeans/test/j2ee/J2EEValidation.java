@@ -108,10 +108,7 @@ public class J2EEValidation extends J2eeTestCase {
     }
 
     public static junit.framework.Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(J2EEValidation.class);
-        conf = addServerTests(Server.GLASSFISH, conf, "testWebApplication");
-        conf = conf.enableModules(".*").clusters(".*");
-        return conf.suite();
+        return createAllModulesServerSuite(Server.GLASSFISH, J2EEValidation.class, "testWebApplication");
     }
 
     @Override
