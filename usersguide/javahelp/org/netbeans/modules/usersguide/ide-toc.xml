@@ -88,12 +88,10 @@ Other names may be trademarks of their respective owners.
     </tocitem>
     
     <tocitem text="JavaScript Files">
-        <tocitem text="Basic Features" target="js.basics" />
-        <tocitem text="Code Completion" target="js.code.completion"/>
-        <tocitem text="Refactoring" target="js.refactoring" />
+        <tocitem text="About Editing JavaScript Files" target="js.basics" />
+        <tocitem text="About Code Completion" target="js.code.completion"/>
+        <tocitem text="Refactoring JavaScript Files" target="js.refactoring" />
         <tocitem text="Quick Fixes and Semantic Checks" target="js.quickfixes" />
-        <tocitem text="Browser Compatibility" target="js.browser.compatibility" />
-        <tocitem text="Cross-File Navigation" target="js.function.jump" />        
     </tocitem>
   
      <tocitem text="XML Documents" >
