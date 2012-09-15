@@ -77,6 +77,14 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
     }
 
+    public void testIssue215777_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215777.js", "var x= Math.^", false);
+    }
+
+    public void testIssue215777_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215777.js", "var x=Math.^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
