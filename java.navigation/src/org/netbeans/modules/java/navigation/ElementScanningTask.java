@@ -42,6 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.java.navigation;
+import org.netbeans.modules.java.navigation.base.Utils;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
