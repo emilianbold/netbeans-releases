@@ -238,19 +238,20 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         return;
                     }
                 }
-                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
-                    TokenId[] stringTokens = REGEXP_TOKENS;
-                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
-
-                    boolean inserted =
-                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-
-                    if (inserted) {
-                        caret.setDot(dotPos + 1);
-                    }
-
-                    return;
-                }
+                // see issue #217134 - it's confusing to have it turned on by default
+//                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
+//                    TokenId[] stringTokens = REGEXP_TOKENS;
+//                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
+//
+//                    boolean inserted =
+//                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
+//
+//                    if (inserted) {
+//                        caret.setDot(dotPos + 1);
+//                    }
+//
+//                    return;
+//                }
             }
             break;
         }
@@ -278,7 +279,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     doc.remove(start, end-start);
                 }
                 // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
+            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0) {
