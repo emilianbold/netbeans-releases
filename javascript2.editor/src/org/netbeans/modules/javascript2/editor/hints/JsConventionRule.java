@@ -51,6 +51,7 @@ import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.ReturnNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
 import java.util.Arrays;
@@ -456,6 +457,12 @@ public class JsConventionRule extends JsAstRule {
         public Node enter(WhileNode whileNode) {
             checkCondition(whileNode.getTest());
             return super.enter(whileNode);
+        }
+
+        @Override
+        public Node enter(ReturnNode returnNode) {
+            checkSemicolon(returnNode.getFinish());
+            return super.enter(returnNode);
         }
     }
 }
