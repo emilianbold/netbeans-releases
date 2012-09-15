@@ -106,6 +106,10 @@ public final class LexUtilities {
         return getTokenSequence(th, offset, JsDocumentationTokenId.language());
     }
 
+    public static TokenSequence<? extends JsDocumentationTokenId> getJsDocumentationTokenSequence(Snapshot snapshot, int offset) {
+        return getTokenSequence(snapshot.getTokenHierarchy(), offset, JsDocumentationTokenId.language());
+    }
+
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     @CheckForNull
     public static <K> TokenSequence<? extends K> getTokenSequence(TokenHierarchy<?> th,
