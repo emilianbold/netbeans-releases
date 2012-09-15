@@ -130,6 +130,7 @@ public class OptionsPanel extends JPanel {
     private String hintText;
     private JTextComponent searchTC;
     private String text2search = "";
+    boolean clearSearch = false;
     private CardLayout cLayout;
     
     private int selectedTabIndex = -1;
@@ -344,6 +345,11 @@ public class OptionsPanel extends JPanel {
                 } else {
                     showHint(false);
                 }
+                if(e.getOppositeComponent() != null && e.getOppositeComponent().equals(quickSearch) && !clearSearch) {
+                    searchTC.requestFocusInWindow();
+                } else {
+                    clearSearch = false;
+                }
             }
         });
         showHint(true);
@@ -390,7 +396,6 @@ public class OptionsPanel extends JPanel {
         } else {
             searchTC.setForeground(origForeground);
             searchTC.setText(text2search);
-            searchTC.requestFocusInWindow();
         }
     }
         
@@ -727,7 +732,7 @@ public class OptionsPanel extends JPanel {
                                                     && exactCategory.toUpperCase().contains(searchText.toUpperCase()))) {
                                             exactTabIndex = tabIndex;
                                             setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-                                        }
+                                    }
                                     }
                                     break;
                                 }
@@ -759,8 +764,8 @@ public class OptionsPanel extends JPanel {
                                         for (Integer removedTabIndex : removedTabsInfo.keySet()) {
                                             if (removedTabIndex < tabIndex) {
                                                 removedTabsBefore++;
-                                            }
-                                        }
+                            }
+                        }
                                         removedTabsInfo.put(tabIndex, tabsInfo.get(tabIndex));
                                         tabbedpane2removedtabs.put(pane, removedTabsInfo);
                                         pane.removeTabAt(tabIndex - removedTabsBefore);
@@ -858,9 +863,10 @@ public class OptionsPanel extends JPanel {
         }
 
         private void clearAll() {
+            clearSearch = true;
             for (String category : removedCategories) {
                 buttons.get(category).setVisible(true);
-            }
+                    }
 
             for (JTabbedPane pane : tabbedpane2removedtabs.keySet()) {
                 HashMap<Integer, TabInfo> stuff = tabbedpane2removedtabs.get(pane);
@@ -872,6 +878,9 @@ public class OptionsPanel extends JPanel {
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
             removedCategories.clear();
             tabbedpane2removedtabs.clear();
+            if(keymapsSearch != null) {
+                keymapsSearch.setText("");
+            }
         }
     }
     
@@ -1030,6 +1039,7 @@ public class OptionsPanel extends JPanel {
         @Override
         public void actionPerformed (ActionEvent e) {
             showHint(false);
+            searchTC.requestFocusInWindow();
         }
     }
     
