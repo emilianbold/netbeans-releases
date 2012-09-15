@@ -1122,6 +1122,8 @@ public class ClientJavaSourceHelper {
     }
 
     static class PathFormat {
+        private static final String ARG = "arg";       // NOI18N
+        
         private String pattern;
         private String[] arguments;
 
@@ -1130,7 +1132,10 @@ public class ClientJavaSourceHelper {
         }
 
         public void setArguments(String[] arguments) {
-            this.arguments = arguments;
+            this.arguments = new String[arguments.length];
+            for(int i=0; i<arguments.length; i++){
+                this.arguments[i]=getJavaIdentifier(arguments[i]);
+            }
         }
 
         public String getPattern() {
@@ -1140,8 +1145,56 @@ public class ClientJavaSourceHelper {
         public void setPattern(String pattern) {
             this.pattern = pattern;
         }
+        
+        private String getJavaIdentifier(String arg ){
+            if ( arg.length() == 0 ){
+                return getUniqueArgument(ARG);
+            }
+            else {
+                char first = arg.charAt(0);
+                if ( Character.isJavaIdentifierStart(first)){
+                    int index = -1;
+                    for(int i=1; i<arg.length(); i++){
+                        if ( !Character.isJavaIdentifierPart( arg.charAt(i))){
+                            index = i;
+                            break;
+                        }
+                    }
+                    if ( index ==-1 ){
+                        return getUniqueArgument(arg);
+                    }
+                    else {
+                        String start = arg.substring(0, index);
+                        String end = "";
+                        if ( index <arg.length()-1){
+                            end = arg.substring(index+1);
+                        }
+                        if ( end.length() >0){
+                            end = Character.toUpperCase(end.charAt(0))+end.substring(1);
+                        }
+                        return getUniqueArgument( start +end);
+                    }
+                }
+                else {
+                    return getJavaIdentifier(arg.substring(1));
+                }
+            }
+        }
+        
+        private String getUniqueArgument(String base ){
+            String result = base;
+            int count=1;
+            while( javaIds.contains(result)){
+                result = base+count;
+                count++;
+            }
+            javaIds.add(result);
+            return result;
+        }
+        
+        private Set<String> javaIds = new HashSet<String>();
     }
-
+    
     static class ResourcePath {
         private PathFormat pathFormat;
         private String path;

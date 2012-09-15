@@ -694,13 +694,13 @@ public class ModelUtils {
         public Node enter(LiteralNode lNode) {
             Object value = lNode.getObject();
             if (value instanceof Boolean) {
-                result.add(new TypeUsageImpl(Type.BOOLEAN, lNode.getStart(), true));
+                result.add(new TypeUsageImpl(Type.BOOLEAN, -1, true));
             } else if (value instanceof String) {
-                result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
+                result.add(new TypeUsageImpl(Type.STRING, -1, true));
             } else if (value instanceof Integer
                     || value instanceof Float
                     || value instanceof Double) {
-                result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
+                result.add(new TypeUsageImpl(Type.NUMBER, -1, true));
             } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
                 result.add(new TypeUsageImpl("Array", -1, true));
             }

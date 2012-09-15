@@ -49,6 +49,7 @@ import java.awt.Dialog;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
@@ -105,6 +106,7 @@ import org.openide.xml.XMLUtil;
 import static org.netbeans.core.output2.OutputTab.ACTION.*;
 import org.netbeans.core.output2.options.OutputOptions;
 import org.netbeans.core.output2.ui.OutputKeymapManager;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.IOColors;
 
@@ -113,25 +115,22 @@ import org.openide.windows.IOColors;
  * A component representing one tab in the output window.
  */
 final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks {
+    private static final RequestProcessor RP =
+            new RequestProcessor("OutputTab");                          //NOI18N
     private final NbIO io;
     private OutWriter outWriter;
     private PropertyChangeListener optionsListener;
+    private volatile boolean actionsLoaded = false;
 
     OutputTab(NbIO io) {
         this.io = io;
         if (Controller.LOG) Controller.log ("Created an output component for " + io);
         outWriter = ((NbWriter) io.getOut()).out();
-        createActions();
         OutputDocument doc = new OutputDocument(outWriter);
         setDocument(doc);
-
-        installKBActions();
-        getActionMap().put("jumpPrev", action(PREV_ERROR)); // NOI18N
-        getActionMap().put("jumpNext", action(NEXT_ERROR)); // NOI18N
-        getActionMap().put(FindAction.class.getName(), action(FIND));
-        getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, action(COPY));
         applyOptions();
         initOptionsListener();
+        loadAndInitActions();
     }
 
     private void applyOptions() {
@@ -588,7 +587,13 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * @param p The point clicked
      * @param src The source of the click event
      */
+    @NbBundle.Messages({"STATUS_Initializing=Output Window is Initializing"})
     void postPopupMenu(Point p, Component src) {
+        if (!actionsLoaded) {
+            StatusDisplayer.getDefault().setStatusText(
+                    Bundle.STATUS_Initializing());
+            return;
+        }
         JPopupMenu popup = new JPopupMenu();
         Action[] a = getToolbarActions();
         if (a.length > 0) {
@@ -647,6 +652,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     void updateActions() {
+        if (!actionsLoaded) {
+            return;
+        }
         OutputPane pane = (OutputPane) getOutputPane();
         int len = pane.getLength();
         boolean enable = len > 0;
@@ -774,6 +782,33 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             }
             getOutputPane().setViewFont(font);
         }
+    }
+
+    private void loadAndInitActions() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                createActions();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        installKBActions();
+                        getActionMap().put("jumpPrev", //NOI18N
+                                action(PREV_ERROR));
+                        getActionMap().put("jumpNext", //NOI18N
+                                action(NEXT_ERROR));
+                        getActionMap().put(FindAction.class.getName(),
+                                action(FIND));
+                        getActionMap().put(
+                                javax.swing.text.DefaultEditorKit.copyAction,
+                                action(COPY));
+                        actionsLoaded = true;
+                        updateActions();
+                        setInputVisible(isInputVisible()); // update action
+                    }
+                });
+            }
+        });
     }
 
     static enum ACTION { COPY, WRAP, SAVEAS, CLOSE, NEXT_ERROR, PREV_ERROR,
@@ -976,7 +1011,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 JComponent selected = getIO().getIOContainer().getSelected();
                 if (OutputTab.this != selected && selected instanceof OutputTab) {
                     OutputTab tab = (OutputTab) selected;
-                    return tab.action(action).isEnabled();
+                    Action a = tab.action(action);
+                    if (a != null) {
+                        return a.isEnabled();
+                    }
                 }
                 return false;
             }
@@ -990,7 +1028,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 JComponent selected = getIO().getIOContainer().getSelected();
                 if (OutputTab.this != selected && selected instanceof OutputTab) {
                     OutputTab tab = (OutputTab) selected;
-                    tab.action(action).actionPerformed(e);
+                    Action a = tab.action(action);
+                    if (a != null) {
+                        a.actionPerformed(e);
+                    }
                 }
                 return ;
             }
@@ -1024,8 +1065,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                      {
                         String pattern = getFindDlgResult(getOutputPane().getSelectedText(), "LBL_Find_Title", "LBL_Find_What", "BTN_Find"); //NOI18N
                         if (pattern != null && find(false)) {
-                            action(FIND_NEXT).setEnabled(true);
-                            action(FIND_PREVIOUS).setEnabled(true);
+                            Action findNext = action(FIND_NEXT);
+                            Action findPrev = action(FIND_PREVIOUS);
+                            if (findNext != null) {
+                                findNext.setEnabled(true);
+                            }
+                            if (findPrev != null) {
+                                findPrev.setEnabled(true);
+                            }
                             requestFocus();
                         }
                     }
@@ -1086,7 +1133,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     @Override
     public void setInputVisible(boolean val) {
         super.setInputVisible(val);
-        action(PASTE).setEnabled(val);
+        Action pasteAction = action(PASTE);
+        if (pasteAction != null) {
+            pasteAction.setEnabled(val);
+        }
     }
 
     private boolean validRegExp(String pattern) {

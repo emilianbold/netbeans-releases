@@ -58,14 +58,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -75,7 +71,6 @@ import org.openide.util.Parameters;
  */
 public class Resolvers {
 
-    private static final String CLASS_EXTENSION = "class"; // NOI18N
 
     private Resolvers() {
         throw new IllegalStateException();
@@ -218,30 +213,14 @@ public class Resolvers {
             if (handle == null) {
                 return null;
             }
-            final FileObject file = getFile(
-                    handle,
-                    js.getClasspathInfo());
+            final FileObject file = Utils.getFile(
+                handle,
+                js.getClasspathInfo());
             if (file == null) {
                 return null;
             }
             return Pair.<URI,ElementHandle<TypeElement>>of(file.toURI(),handle);
         }
 
-        @CheckForNull
-        private static FileObject getFile(
-                @NonNull final ElementHandle<TypeElement> toResolve,
-                @NonNull final ClasspathInfo cpInfo) {
-            FileObject res = SourceUtils.getFile(toResolve, cpInfo);
-            if (res == null) {
-                final ClassPath cp = ClassPathSupport.createProxyClassPath(
-                        cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
-                        cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE));
-                res = cp.findResource(String.format(
-                        "%s.%s",    //NOI18N
-                        toResolve.getBinaryName().replace('.', '/'),    //NOI18N
-                        CLASS_EXTENSION));
-            }
-            return res;
-        }
     }    
 }

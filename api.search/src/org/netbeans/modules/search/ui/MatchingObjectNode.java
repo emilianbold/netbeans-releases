@@ -71,9 +71,11 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -390,13 +392,17 @@ public class MatchingObjectNode extends AbstractNode {
                     matchingObject.getFileObject());
             if (f != null) {
                 String path = f.getPath();
-                Toolkit toolkit = Toolkit.getDefaultToolkit();
-                if (toolkit != null) {
-                    Clipboard clipboard = toolkit.getSystemClipboard();
-                    if (clipboard != null) {
-                        StringSelection strSel = new StringSelection(path);
-                        clipboard.setContents(strSel, null);
+                Clipboard clipboard = Lookup.getDefault().lookup(
+                        ExClipboard.class);
+                if (clipboard == null) {
+                    Toolkit toolkit = Toolkit.getDefaultToolkit();
+                    if (toolkit != null) {
+                        clipboard = toolkit.getSystemClipboard();
                     }
+                }
+                if (clipboard != null) {
+                    StringSelection strSel = new StringSelection(path);
+                    clipboard.setContents(strSel, null);
                 }
             }
         }

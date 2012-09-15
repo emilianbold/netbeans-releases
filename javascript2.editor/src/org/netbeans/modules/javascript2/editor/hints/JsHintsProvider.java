@@ -85,6 +85,21 @@ public class JsHintsProvider implements HintsProvider {
             rule.computeHints((JsRuleContext)context, hints, manager);
         }
 
+        // find out whether there is a documentation hint enabled
+        List<? extends Rule.AstRule> documentationRules = allHints.get(JsFunctionDocumentationRule.JSDOCUMENTATION_OPTION_HINTS);
+        boolean documentationHints = false;
+        if (documentationRules != null) {
+            for (Rule.AstRule astRule : documentationRules) {
+                if (manager.isEnabled(astRule)) {
+                    documentationHints = true;
+                }
+            }
+        }
+        if (documentationHints && !cancel) {
+            JsFunctionDocumentationRule rule = new JsFunctionDocumentationRule();
+            rule.computeHints((JsRuleContext) context, hints, manager);
+        }
+
         List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
         if (otherHints != null) {
             for (Rule.AstRule astRule : otherHints) {

@@ -292,8 +292,8 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     public static void reassignLkp(FileObject from, FileObject to) {
         try {
-            Class<?> c = Class.forName("org.openide.filesystems.FileObjectLkp");
-            Method m = c.getDeclaredMethod("reassign", FileObject.class, FileObject.class);
+            Class<?> c = Class.forName("org.openide.filesystems.FileObjectLkp"); //NOI18N
+            Method m = c.getDeclaredMethod("reassign", FileObject.class, FileObject.class); //NOI18N
             m.setAccessible(true);
             m.invoke(null, from, to);
         } catch (InvocationTargetException ex) {

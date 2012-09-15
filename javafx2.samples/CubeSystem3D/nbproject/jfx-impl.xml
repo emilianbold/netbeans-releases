@@ -27,16 +27,28 @@
         <!-- Called right after <fx:deploy> task. You can override this target in the ../build.xml file. -->
     </target>
     
+    <target name="-pre-jfx-native">
+        <!-- Called right before the call to native packager (just after -pre-jfx-deploy). You can override this target in the ../build.xml file. -->
+    </target>
+
+    <target name="-post-jfx-native">
+        <!-- Called right after the call to native packager (just after -post-jfx-deploy). You can override this target in the ../build.xml file. -->
+    </target>
+    
     
     <!-- Check system and JDK version -->
 
     <target name="-check-operating-system">
+        <condition property="running.on.mac">
+            <os family="mac"/>
+        </condition>
         <condition property="running.on.unix">
             <os family="unix"/>
         </condition>
         <condition property="running.on.windows">
             <os family="windows"/>
         </condition>
+        <echo message="running.on.mac = ${running.on.mac}" level="verbose"/>
         <echo message="running.on.unix = ${running.on.unix}" level="verbose"/>
         <echo message="running.on.windows = ${running.on.windows}" level="verbose"/>
     </target>
@@ -162,6 +174,7 @@
         </condition>
         <condition property="have-jdk-pre7u6">
             <or>
+                <isset property="have-jdk-older-than-1.6"/>
                 <contains string="${version-output}" substring="java version &quot;1.6"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0&quot;"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_01"/>
@@ -176,6 +189,33 @@
         <echo message="have-jdk-pre7u6 = ${have-jdk-pre7u6}" level="verbose"/>
     </target>
         
+    <target name="-check-ant-jre-version" unless="ant-jre-version-checked-in-jfximpl">
+        <local name="version-output"/>
+        <exec executable="${java.home}${file.separator}bin${file.separator}java" outputproperty="version-output">
+            <arg value="-version"/>
+        </exec>
+        <echo message="version-output:${line.separator}${version-output}" level="verbose"/>
+        <condition property="have-ant-jre-pre7u6">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+                <contains string="${version-output}" substring="java version &quot;1.4"/>
+                <contains string="${version-output}" substring="java version &quot;1.5"/>
+                <contains string="${version-output}" substring="java version &quot;1.6"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0&quot;"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_01"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_02"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_03"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_05"/>
+            </or>
+        </condition>
+        <property name="ant-jre-version-checked-in-jfximpl" value="true"/>
+        <echo message="have-ant-jre-pre7u6 = ${have-ant-jre-pre7u6}" level="verbose"/>
+    </target>
+
     <target name="-check-jdk-7u4or5-mac" depends="-check-jdk-version" if="have-jdk-7u4or5-mac">
         <fail message="Error:${line.separator}JDK 7u4 Mac and 7u5 Mac do not support WebStart and JavaFX 2.0+ browser plugin technologies.${line.separator}Please upgrade to JDK 7u6 or later."/>
     </target>
@@ -1620,6 +1660,7 @@
     <macrodef name="deploy-deploy">
         <sequential>
             <antcall target="-pre-jfx-deploy"/>
+            <antcall target="-call-pre-jfx-native"/>
             <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
             <typedef name="fx_deploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${javafx.ant.classpath}"/>
             <echo message="Launching &lt;fx:deploy&gt; task from ${ant-javafx.jar.location}" level="info"/>
@@ -1694,7 +1735,7 @@
                         }
                     }
                     // native packaging (time consuming, thus applied in explicit build only)
-                    var nativeEnabled = project.getProperty("javafx.native.bundling.enabled");
+                    var nativeEnabled = project.getProperty("do.build.native.package");
                     var nativeType = project.getProperty("javafx.native.bundling.type");
                     var projStateRun = project.getProperty("project.state.running");
                     var projStateDbg = project.getProperty("project.state.debugging");
@@ -1703,13 +1744,12 @@
                         if(!isTrue(projStateRun) && !isTrue(projStateDbg) && !isTrue(projStatePrf)) {
                             if(fx_ant_api_1_2 == "true") {
                                 deploy.setNativeBundles(nativeType);
-                                println("Note: To create native bundles in full the JavaFX SDK <fx:deploy> task requires NetBeans to run on JDK7u6 or later");
-                                println("      and may require external packages (see JavaFX 2.2 documentation) to be on default system path.");
+                                println("Note: To create native bundles the <fx:deploy> task may require external tools. See JavaFX 2.2+ documentation for details.");
+                                println("");
+                                println("Launching <fx:deploy> in native packager mode...");
                             } else {
                                 println("Warning: Native packaging is not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK 7u6 or higher.");
                             }
-                        } else {
-                            println("Warning: Native packaging omitted to save application startup time. To create native bundles use Clean and Build.");
                         }
                     }
 
@@ -1884,6 +1924,7 @@
                 ]]>
             </script>
             <antcall target="-post-jfx-deploy"/>
+            <antcall target="-call-post-jfx-native"/>
         </sequential>
     </macrodef>
 
@@ -2628,6 +2669,9 @@
     <target name="jfx-rebuild" depends="clean, -jfx-do-compile, -jfx-do-jar"/>
     <target name="jfx-rebuild-noscript" depends="-set-fallback-no-javascript, clean, -jfx-do-compile, -jfx-do-jar"/>
 
+    <target name="jfx-build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jfx-rebuild"/>
+    <target name="jfx-build-native-noscript" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jfx-rebuild-noscript"/>
+
     <target name="-check-do-jar">
         <condition property="do-jar-false">
             <and>
@@ -2646,7 +2690,95 @@
     <target name="-jfx-do-jar" depends="-check-do-jar" unless="do-jar-false">
         <antcall target="jar"/>
     </target>
-        
+    
+    <target name="-set-do-build-native-package">
+        <property name="do.build.native.package" value="true"/>
+        <echo message="do.build.native.package = ${do.build.native.package}" level="verbose"/>
+    </target>
+    <target name="-check-ant-jre-supports-native-packaging" depends="-check-ant-jre-version">
+        <fail message="Error:${line.separator}JavaFX native packager requires NetBeans to run on JDK 1.7u6 or later !" if="have-ant-jre-pre7u6"/>
+    </target>
+    
+    <target name="-call-pre-jfx-native" if="do.build.native.package">
+        <antcall target="-pre-jfx-native"/>
+    </target>
+    <target name="-call-post-jfx-native" if="do.build.native.package">
+        <antcall target="-post-jfx-native"/>
+    </target>
+
+    <target name="-check-native-bundling-type" depends="-check-operating-system" if="do.build.native.package">
+        <condition property="need.Inno.presence">
+            <and>
+                <isset property="running.on.windows"/>
+                <isset property="javafx.native.bundling.type"/>
+                <or>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
+                </or>
+            </and>
+        </condition>
+        <condition property="need.WiX.presence">
+            <and>
+                <isset property="running.on.windows"/>
+                <isset property="javafx.native.bundling.type"/>
+                <or>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
+                </or>
+            </and>
+        </condition>
+        <echo message="need.Inno.presence:${need.Inno.presence}" level="verbose"/>
+        <echo message="need.WiX.presence:${need.WiX.presence}" level="verbose"/>
+    </target>
+    <target name="-check-Inno-presence" depends="-check-native-bundling-type" if="need.Inno.presence">
+        <local name="exec-output"/>
+        <local name="exec-error"/>
+        <local name="exec-result"/>
+        <exec executable="iscc" outputproperty="exec-output" failifexecutionfails="false" errorproperty="exec-error" resultproperty="exec-result"/>
+        <echo message="exec-output:${exec-output}" level="verbose"/>
+        <echo message="exec-error:${exec-error}" level="verbose"/>
+        <echo message="exec-result:${exec-result}" level="verbose"/>
+        <condition property="missing.Inno">
+            <not><and>
+                <contains string="${exec-output}" substring="Inno Setup"/>
+                <not><contains string="${exec-output}" substring="Inno Setup 1"/></not>
+                <not><contains string="${exec-output}" substring="Inno Setup 2"/></not>
+                <not><contains string="${exec-output}" substring="Inno Setup 3"/></not>
+                <not><contains string="${exec-output}" substring="Inno Setup 4"/></not>
+            </and></not>
+        </condition>
+    </target>
+    <target name="-check-WiX-presence" depends="-check-native-bundling-type" if="need.WiX.presence">
+        <local name="exec-output"/>
+        <local name="exec-error"/>
+        <local name="exec-result"/>
+        <exec executable="candle" outputproperty="exec-output" failifexecutionfails="false" errorproperty="exec-error" resultproperty="exec-result">
+            <arg value="-?"/>
+        </exec>
+        <echo message="exec-output:${exec-output}" level="verbose"/>
+        <echo message="exec-error:${exec-error}" level="verbose"/>
+        <echo message="exec-result:${exec-result}" level="verbose"/>
+        <condition property="missing.WiX">
+            <not><and>
+                <contains string="${exec-output}" substring="Windows Installer Xml Compiler version"/>
+                <not><contains string="${exec-output}" substring="Windows Installer Xml Compiler version 1"/></not>
+                <not><contains string="${exec-output}" substring="Windows Installer Xml Compiler version 2"/></not>
+            </and></not>
+        </condition>
+    </target>
+    <target name="-check-native-packager-external-tools" depends="-check-Inno-presence, -check-WiX-presence">
+        <property name="missing.Inno.message" value="JavaFX native packager requires external Inno Setup 5+ tools installed and included on PATH. See http://www.jrsoftware.org/"/>
+        <property name="missing.WiX.message" value="JavaFX native packager requires external WiX 3.0+ tools installed and included on PATH. See http://wix.sourceforge.net/"/>
+        <condition property="missing.Inno.WiX">
+            <and>
+                <isset property="missing.Inno"/>
+                <isset property="missing.WiX"/>
+            </and>
+        </condition>
+        <fail message="Error:${line.separator}${missing.Inno.message}${line.separator}${missing.WiX.message}" if="missing.Inno.WiX"/>
+        <fail message="Error:${line.separator}${missing.Inno.message}" if="missing.Inno"/>
+        <fail message="Error:${line.separator}${missing.WiX.message}" if="missing.WiX"/>
+    </target>
 
     <!-- Project Run Support -->
 

@@ -65,6 +65,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test218303() throws Exception {
+        // #218303 - Unresolved identifiers in preprocessor directives with alternative tokens
+        performStaticTest("iz218303.cpp");
+    }
+
     public void test212841() throws Exception {
         // #212841 - C++11 strongly typed enum incorrectly handled by code assistance
         performStaticTest("iz212841.cpp");
@@ -336,6 +341,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testBug218192() throws Exception {
         // Bug 218192 - Exception: attempt to put local declaration FUNCTION_FRIEND_DEFINITION
         performStaticTest("bug218192.cpp");
+    }      
+
+    public void testBug215225() throws Exception {
+        // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
+        performStaticTest("bug215225.cpp");
     }      
     
     /////////////////////////////////////////////////////////////////////

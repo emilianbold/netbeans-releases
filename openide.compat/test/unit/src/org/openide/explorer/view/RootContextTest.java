@@ -68,6 +68,9 @@ import org.openide.nodes.Children.Array;
  * @author  Jiri Rechtacek
  */
 public class RootContextTest extends NbTestCase {
+    static {
+        System.setProperty("sun.awt.datatransfer.timeout", "0");
+    }
     
     public static Test suite() {
         return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(RootContextTest.class);
