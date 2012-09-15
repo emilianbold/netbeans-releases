@@ -74,7 +74,7 @@ import org.openide.util.TaskListener;
 @ActionID(category = "Project", id = "org.netbeans.modules.javafx2.project.CreateNativePackageAction")
 @ActionRegistration(lazy = false, displayName = "#CTL_CreateNativePackageAction")
 @ActionReferences({
-    @ActionReference(path = "Projects/org-netbeans-modules-java-j2seproject/Actions", position = 350),
+    @ActionReference(path = "Projects/org-netbeans-modules-java-j2seproject/Actions", position = 350)
 })
 @Messages("CTL_CreateNativePackageAction=Build Nati&ve Package")
 public final class CreateNativePackageAction extends AbstractAction implements ContextAwareAction {
