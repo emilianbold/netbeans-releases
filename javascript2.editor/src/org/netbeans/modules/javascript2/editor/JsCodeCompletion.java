@@ -303,17 +303,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         String prefix = "";
+
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return null;
         }
 
-
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
-
-
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
-
+        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
         }
@@ -348,7 +345,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
-                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq =
+                        LexUtilities.getJsDocumentationTokenSequence(info.getSnapshot(), caretOffset);
                 if (docTokenSeq == null) {
                     return null;
                 }
