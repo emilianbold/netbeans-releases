@@ -41,13 +41,8 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,29 +52,21 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.editor.AtomicLockEvent;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -91,13 +78,12 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.EmbeddingProviderFactory;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
@@ -123,12 +109,10 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -159,10 +143,13 @@ public class EmbeddedIndexerTest extends NbTestCase {
         final FileObject wd = FileUtil.toFileObject(_wd);
         final FileObject cache = wd.createFolder("cache");  //NOI18N
         CacheFolder.setCacheFolder(cache);
+        final Map<String,Object> attrMap = new HashMap<String,Object>();
+        attrMap.put(EmbeddingProviderFactory.ATTR_TARGET_MIME_TYPE, MIME_INNER);
+        attrMap.put(EmbeddingProviderFactory.ATTR_PROVIDER, new TopToInnerEmbProvider());
         MockMimeLookup.setInstances(
                 MimePath.get(MIME_TOP),
                 new TopParser.Factory(),
-                new TopToInnerEmbProvider.Factory(),
+                EmbeddingProviderFactory.create(attrMap),
                 new TopIndexer.Factory());
         MockMimeLookup.setInstances(
                 MimePath.get(MIME_INNER),
@@ -179,7 +166,7 @@ public class EmbeddedIndexerTest extends NbTestCase {
                 "   <A>   <B>   < A> < >"));                        //NOI18N
         FileUtil.setMIMEType(EXT_TOP, MIME_TOP);
         RepositoryUpdaterTest.setMimeTypes(MIME_TOP, MIME_INNER);
-        ClassPathProviderImpl.root = srcRoot;
+        ClassPathProviderImpl.setRoot(srcRoot);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 
@@ -193,7 +180,7 @@ public class EmbeddedIndexerTest extends NbTestCase {
         super.tearDown();
     }
 
-    public void testEmbeddingIndexer() throws Exception {
+    public void testEmbeddingIndexerQueryOnOuterAndInner() throws Exception {
         RepositoryUpdater ru = RepositoryUpdater.getDefault();
         assertEquals(0, ru.getScannedBinaries().size());
         assertEquals(0, ru.getScannedBinaries().size());
@@ -206,6 +193,8 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
         srcCp = ClassPath.getClassPath(srcRoot, PATH_TOP_SOURCES);
         assertNotNull(srcCp);
+        assertEquals(1, srcCp.getRoots().length);
+        assertEquals(srcRoot, srcCp.getRoots()[0]);
         globalPathRegistry_register(PATH_TOP_SOURCES, srcCp);
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
@@ -267,14 +256,95 @@ public class EmbeddedIndexerTest extends NbTestCase {
         assertEquals(1,res.size());
         assertEquals(Boolean.TRUE.toString(), res.iterator().next().getValue("valid")); //NOI18N
 
-//        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
-//        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
-//        assertEquals(5,res.size());
-//        count = countModes(res);
-//        assertEquals(Integer.valueOf(1), count.get(0));
-//        assertEquals(Integer.valueOf(2), count.get(1));
-//        assertEquals(Integer.valueOf(1), count.get(2));
-//        assertEquals(Integer.valueOf(1), count.get(3));
+        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
+        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+        assertEquals(5,res.size());
+        count = countModes(res);
+        assertEquals(Integer.valueOf(1), count.get(0));
+        assertEquals(Integer.valueOf(2), count.get(1));
+        assertEquals(Integer.valueOf(1), count.get(2));
+        assertEquals(Integer.valueOf(1), count.get(3));
+    }
+
+    public void testEmbeddingIndexerQueryOnInnerOnly() throws Exception {
+        RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        srcCp = ClassPath.getClassPath(srcRoot, PATH_TOP_SOURCES);
+        assertNotNull(srcCp);
+        assertEquals(1, srcCp.getRoots().length);
+        assertEquals(srcRoot, srcCp.getRoots()[0]);
+        globalPathRegistry_register(PATH_TOP_SOURCES, srcCp);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(srcRoot.toURL(), handler.getSources().get(0));
+
+        QuerySupport sup = QuerySupport.forRoots(TopIndexer.NAME, TopIndexer.VERSION, srcRoot);
+        Collection<? extends IndexResult> res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+        assertEquals(1,res.size());
+        assertEquals(Boolean.TRUE.toString(), res.iterator().next().getValue("valid")); //NOI18N
+
+        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
+        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+        assertEquals(4,res.size());
+        Map<? extends Integer,? extends Integer> count = countModes(res);
+        assertEquals(Integer.valueOf(1), count.get(0));
+        assertEquals(Integer.valueOf(2), count.get(1));
+        assertEquals(Integer.valueOf(1), count.get(2));
+
+        //Symulate EditorRegistry
+        final Source src = Source.create(srcFile);
+        ParserManager.parse(Collections.<Source>singleton(src), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+        final DataObject dobj = DataObject.find(srcFile);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                final JEditorPane jp = new JEditorPane() {
+                    @Override
+                    public boolean isFocusOwner() {
+                        return true;
+                    }
+                };
+                jp.setDocument(doc);
+                EditorApiPackageAccessor.get().register(jp);
+            }
+        });
+
+        //Do modification
+        NbDocument.runAtomic(doc, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.insertString(doc.getLength(), "<C>", null); //NOI18N
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        });
+
+        //Query should be updated
+        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
+        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
+        assertEquals(5,res.size());
+        count = countModes(res);
+        assertEquals(Integer.valueOf(1), count.get(0));
+        assertEquals(Integer.valueOf(2), count.get(1));
+        assertEquals(Integer.valueOf(1), count.get(2));
+        assertEquals(Integer.valueOf(1), count.get(3));
     }
 
     private static Map<? extends Integer, ? extends Integer> countModes(@NonNull final Collection<? extends IndexResult> docs)  {
@@ -399,6 +469,9 @@ public class EmbeddedIndexerTest extends NbTestCase {
                 } else if (text.charAt(i) == 'B') {
                     res.setMode(InnerResult.B);
                     break;
+                } else if (text.charAt(i) == 'C') {
+                    res.setMode(InnerResult.C);
+                    break;
                 }
             }
             resultCache = res;
@@ -480,14 +553,6 @@ public class EmbeddedIndexerTest extends NbTestCase {
         @Override
         public void cancel() {
         }
-
-        public static class Factory extends TaskFactory {
-            @Override
-            public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-                return Collections.<SchedulerTask>singleton(new TopToInnerEmbProvider());
-            }
-
-        }
     }
 
     public static class TopIndexer extends EmbeddingIndexer {
@@ -525,7 +590,6 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
             @Override
             public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-                System.out.println("FILES DIRTY!");
                 try {
                     final IndexingSupport is = IndexingSupport.getInstance(context);
                     for (Indexable df : dirty) {
@@ -591,7 +655,6 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
             @Override
             public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-                System.out.println("INNER DIRTY");
                 try {
                     final IndexingSupport is = IndexingSupport.getInstance(context);
                     for (Indexable df : dirty) {
@@ -646,24 +709,27 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
     public static class ClassPathProviderImpl implements ClassPathProvider {
 
-        static volatile FileObject root;
+        //@GuardedBy("ClassPathProviderImpl.class")
+        private static FileObject root;
+        //@GuardedBy("ClassPathProviderImpl.class")
+        private static ClassPath cp;
 
-        private final AtomicReference<ClassPath> cpRef = new AtomicReference<ClassPath>();
 
+        static synchronized  void setRoot(@NonNull final FileObject r) {
+            cp = null;
+            root = r;
+        }
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            if (PATH_TOP_SOURCES.equals(type) &&
-               (FileUtil.isParentOf(root, file) || root.equals(file))) {
-               ClassPath cp = cpRef.get();
-               if (cp == null) {
-                   cp = ClassPathSupport.createClassPath(root);
-                   if (!cpRef.compareAndSet(null, cp)) {
-                       cp = cpRef.get();
+            synchronized(ClassPathProviderImpl.class) {
+                if (PATH_TOP_SOURCES.equals(type) &&
+                   (FileUtil.isParentOf(root, file) || root.equals(file))) {
+                   if (cp == null) {
+                       cp = ClassPathSupport.createClassPath(root);
                    }
-               }
-               assert cp != null;
-               return cp;
+                   return cp;
+                }
             }
             return null;
         }
