@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.parser.Lexer;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
@@ -702,7 +703,9 @@ public class ModelUtils {
                     || value instanceof Double) {
                 result.add(new TypeUsageImpl(Type.NUMBER, -1, true));
             } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                result.add(new TypeUsageImpl("Array", -1, true));
+                result.add(new TypeUsageImpl(Type.ARRAY, -1, true));
+            } else if (value instanceof Lexer.RegexToken) {
+                result.add(new TypeUsageImpl(Type.REGEXP, -1, true));
             }
             return null;
         }

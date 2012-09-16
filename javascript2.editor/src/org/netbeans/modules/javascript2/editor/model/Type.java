@@ -50,6 +50,9 @@ public interface Type {
     public static String NUMBER = "Number";     //NOI18N
     public static String STRING = "String";     //NOI18N
     public static String ARRAY = "Array";       //NOI18N
+
+    static String REGEXP = "RegExp";     //NOI18N
+
     /**
      * When the type is unknown / we are not able to resolve it
      */
