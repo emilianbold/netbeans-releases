@@ -160,14 +160,12 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        if (icon != null) return icon;
-        return super.getIcon(type);
+        return icon;
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        if (icon != null) return icon;
-        return super.getOpenedIcon(type);
+        return icon;
     }
 
     private static final String CONSTRUCTOR_NAME = "<init>";
@@ -283,7 +281,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         return null;
     }
     
-    private static final Image DEFAULT_ICON = ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/statement.png");
+    private static final Image DEFAULT_ICON = null;
     
     private static Image iconFor(CompilationInfo info, TreePath path) {
         Element el = info.getTrees().getElement(path);
