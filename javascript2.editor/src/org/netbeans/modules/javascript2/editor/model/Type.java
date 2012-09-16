@@ -46,18 +46,22 @@ package org.netbeans.modules.javascript2.editor.model;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public interface Type {
-    public static String BOOLEAN = "Boolean";   //NOI18N
-    public static String NUMBER = "Number";     //NOI18N
-    public static String STRING = "String";     //NOI18N
-    public static String ARRAY = "Array";       //NOI18N
+
+    static String BOOLEAN = "Boolean";   //NOI18N
+    static String NUMBER = "Number";     //NOI18N
+    static String STRING = "String";     //NOI18N
+    static String ARRAY = "Array";       //NOI18N
+
+    static String REGEXP = "RegExp";     //NOI18N
+
     /**
      * When the type is unknown / we are not able to resolve it
      */
-    public static String UNRESOLVED = "unresolved"; //NOI18N 
-    public static String UNDEFINED = "undefined";   //NOI18N
-      
-    public String getType();
+    static String UNRESOLVED = "unresolved"; //NOI18N
+    static String UNDEFINED = "undefined";   //NOI18N
 
-    public int getOffset();
+    String getType();
+
+    int getOffset();
 
 }

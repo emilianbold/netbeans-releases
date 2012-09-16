@@ -481,7 +481,13 @@ public class ModelTest extends JsTestBase {
         assertEquals(Type.NUMBER, type.getType());
         type = iterator.next();
         assertEquals(Type.STRING, type.getType());
-        
+
+        function = (JsFunction)object.getProperty("getRegExp");
+        assertEquals(1, function.getReturnTypes().size());
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.REGEXP, type.getType());
+
         JsObject property = object.getProperty("isGreat");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
         Collection<? extends TypeUsage> types = property.getAssignmentForOffset(property.getDeclarationName().getOffsetRange().getEnd());
@@ -491,7 +497,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(Type.BOOLEAN, type.getType());
     }
     
-    
+
     public void testReturnTypes02() throws Exception {
         Model model = getModel("testfiles/model/returnTypes02.js");
         assertNotNull(model);
@@ -510,7 +516,7 @@ public class ModelTest extends JsTestBase {
         assertEquals("Man.Address", type.getType());
         
     }
-    
+
     public void testPropertyWithNew() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");
         assertNotNull(model);
