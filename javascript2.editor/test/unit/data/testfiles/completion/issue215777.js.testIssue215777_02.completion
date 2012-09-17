@@ -39,13 +39,13 @@ METHOD     tan(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-FIELD      E                               [PUBLIC]   stub_CORE_Math.js
-FIELD      LN10                            [PUBLIC]   stub_CORE_Math.js
-FIELD      LN2                             [PUBLIC]   stub_CORE_Math.js
-FIELD      LOG10E                          [PUBLIC]   stub_CORE_Math.js
-FIELD      LOG2E                           [PUBLIC]   stub_CORE_Math.js
-FIELD      PI                              [PUBLIC]   stub_CORE_Math.js
-FIELD      SQRT1_2                         [PUBLIC]   stub_CORE_Math.js
-FIELD      SQRT2                           [PUBLIC]   stub_CORE_Math.js
+FIELD      E: Number                       [PUBLIC]   stub_CORE_Math.js
+FIELD      LN10: Number                    [PUBLIC]   stub_CORE_Math.js
+FIELD      LN2: Number                     [PUBLIC]   stub_CORE_Math.js
+FIELD      LOG10E: Number                  [PUBLIC]   stub_CORE_Math.js
+FIELD      LOG2E: Number                   [PUBLIC]   stub_CORE_Math.js
+FIELD      PI: Number                      [PUBLIC]   stub_CORE_Math.js
+FIELD      SQRT1_2: Number                 [PUBLIC]   stub_CORE_Math.js
+FIELD      SQRT2: Number                   [PUBLIC]   stub_CORE_Math.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
 FIELD      prototype                       [PUBLIC]   stub_CORE_Math.js

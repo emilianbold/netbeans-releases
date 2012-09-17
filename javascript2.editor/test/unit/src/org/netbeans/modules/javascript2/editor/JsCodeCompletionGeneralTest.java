@@ -97,6 +97,19 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/issue217100_3.js", "v^", false);
     }
 
+    public void testIssue215746_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215746.js", "Math.E.M^IN_VALUE;", false);
+    }
+
+    public void testIssue215746_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215746.js", "window.h^istory.state;", false);
+    }
+
+    public void testIssue215746_03() throws Exception {
+        checkCompletion("testfiles/completion/issue215746.js", "window.history.s^tate;", false);
+    }
+
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

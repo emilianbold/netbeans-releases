@@ -3,4 +3,4 @@ Person.p|rototype.shower=function(){           //Shower technology improves for 
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   person.js
-FIELD      population                      [PUBLIC,   person.js
+FIELD      population: Number              [PUBLIC,   person.js
