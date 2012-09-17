@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,6 +58,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,6 +84,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -118,6 +121,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -308,7 +312,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         Object[] lookups = new Object[] {
                     info,
                     aux,
-                    helper.createCacheDirectoryProvider(),
                     spp,
                     new MakeActionProvider(this),
                     new MakeLogicalViewProvider(this),
@@ -344,13 +347,76 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             }
         }
         if(!containsNativeProject) {
-            ArrayList<Object> newLookups = new ArrayList<Object>();
-            newLookups.addAll(Arrays.asList(lookups));
-            newLookups.add(new NativeProjectProvider(this, projectDescriptorProvider));
-            lookups = newLookups.toArray();
+            lookups = augment(lookups, new NativeProjectProvider(this, projectDescriptorProvider));
+        }
+        File cacheLocation = getCacheLocation(helper);
+        if (cacheLocation != null) {            
+            final FileObject cacheFO;
+            try {
+                cacheFO = FileUtil. createFolder(cacheLocation);
+                lookups = augment(lookups, new CacheDirectoryProvider() {
+                    @Override
+                    public FileObject getCacheDirectory() throws IOException {
+                        return cacheFO;
+                    }
+                });
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
+    }
+
+    private static <T> T[] augment(T[] array, T value) {
+        ArrayList<T> newLookups = new ArrayList<T>();
+        newLookups.addAll(Arrays.asList(array));
+        newLookups.add(value);
+        return (T[]) newLookups.toArray();
+    }
+
+    /**
+     * Tries getting cache path from project.properties -
+     * first private, then public
+     */
+    private static File getCacheLocation(MakeProjectHelper helper) {
+
+        FileObject projectDirectory = helper.getProjectDirectory();
+
+        String[] propertyPaths = new String[] {
+            MakeProjectHelper.PRIVATE_PROPERTIES_PATH,
+            MakeProjectHelper.PROJECT_PROPERTIES_PATH
+        };
+
+        for (int i = 0; i < propertyPaths.length; i++) {
+            FileObject propsFO = projectDirectory.getFileObject(propertyPaths[i]);
+            if (propsFO != null && propsFO.isValid()) {
+                Properties props = new Properties();
+                try {
+                    props.load(propsFO.getInputStream());
+                    String path = props.getProperty("cache.location"); //NOI18N
+                    if (path != null) {
+                        if (CndPathUtilitities.isPathAbsolute(path)) {
+                            return new File(path);
+                        } else {
+                            return new File(projectDirectory.getPath() + '/' + path); //NOI18N
+                        }
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            }
+        }
+        if (DebugUtils.getBoolean("cnd.cache.in.project", false)) { //NOI18N
+            if (CndFileUtils.isLocalFileSystem(projectDirectory)) {
+                File cache = new File(projectDirectory.getPath() + "/nbproject/private/cache/model"); //NOI18N
+                cache.mkdirs();
+                if (cache.exists()) {
+                    return cache;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
