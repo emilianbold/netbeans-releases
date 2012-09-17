@@ -240,7 +240,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * Updates the content of and sets a new page model to this panel.
      *
      * @param pageModel page model to use by this panel.
-     * @param if {@code true} then an attempt to keep the current
+     * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
     final void updateContent(WebKitPageModel pageModel, boolean keepSelection) {
@@ -251,16 +251,17 @@ public class CSSStylesSelectionPanel extends JPanel {
         if (this.pageModel != null) {
             this.pageModel.addPropertyChangeListener(getListener());
         }
-        updateContent(keepSelection);
+        updateContentImpl(pageModel, keepSelection);
     }
 
     /**
      * Updates the content of this panel.
      *
-     * @param if {@code true} then an attempt to keep the current
+     * @param pageModel page model to use by this panel.
+     * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
-    void updateContent(boolean keepSelection) {
+    void updateContentImpl(WebKitPageModel pageModel, boolean keepSelection) {
         if (pageModel == null) {
             setDummyRoots();
         } else {
@@ -401,7 +402,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (PageModel.PROP_SELECTED_NODES.equals(propertyName)) {
-                updateContent(false);
+                updateContentImpl(pageModel, false);
             }
         }
 
