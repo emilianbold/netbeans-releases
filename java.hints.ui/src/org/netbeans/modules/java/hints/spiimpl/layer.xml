@@ -15,6 +15,16 @@
                   </folder>
               </folder>
           </folder>
+          <folder name="OnSave">
+              <folder name="text">
+                  <folder name="x-java">
+                      <file name="JavaHints.instance">
+                          <!--<attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>-->
+                          <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.onsave.OnSavePreferencesCustomizer$FactoryImpl"/>
+                      </file>
+                  </folder>
+              </folder>
+          </folder>
       </folder>
   </folder>
 
