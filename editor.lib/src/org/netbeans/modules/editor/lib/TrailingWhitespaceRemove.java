@@ -44,16 +44,18 @@
 
 package org.netbeans.modules.editor.lib;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
-import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.document.ModRootElement;
 import org.netbeans.modules.editor.lib2.document.TrailingWhitespaceRemoveProcessor;
+import org.netbeans.spi.editor.document.OnSaveTask;
 
 /**
  * Removal of trailing whitespace
@@ -61,29 +63,21 @@ import org.netbeans.modules.editor.lib2.document.TrailingWhitespaceRemoveProcess
  * @author Miloslav Metelka
  * @since 1.27
  */
-public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task {
+public final class TrailingWhitespaceRemove implements OnSaveTask {
 
     // -J-Dorg.netbeans.modules.editor.lib.TrailingWhitespaceRemove.level=FINE
     static final Logger LOG = Logger.getLogger(TrailingWhitespaceRemove.class.getName());
 
-    private static final TrailingWhitespaceRemove INSTANCE = new TrailingWhitespaceRemove();
+    private final Document doc;
+    
+    private AtomicBoolean canceled = new AtomicBoolean();
 
-    public static void ensureRegistered() {
-        if (BeforeSaveTasks.getTask(TrailingWhitespaceRemove.class) == null) {
-            BeforeSaveTasks.addTask(INSTANCE);
-        }
-    }
-
-    private TrailingWhitespaceRemove() {
+    TrailingWhitespaceRemove(Document doc) {
+        this.doc = doc;
     }
 
     @Override
-    public Object lock(Document doc) {
-        return null; // No extra locking
-    }
-
-    @Override
-    public void run(Object lock, Document doc, UndoableEdit compoundEdit) {
+    public void performTask() {
         Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
         if (prefs.getBoolean(SimpleValueNames.ON_SAVE_USE_GLOBAL_SETTINGS, Boolean.TRUE)) {
             prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -95,7 +89,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task {
                 boolean origEnabled = modRootElement.isEnabled();
                 modRootElement.setEnabled(false);
                 try {
-                    new TrailingWhitespaceRemoveProcessor(doc, "modified-lines".equals(policy)).removeWhitespace(); //NOI18N
+                    new TrailingWhitespaceRemoveProcessor(doc, "modified-lines".equals(policy), canceled).removeWhitespace(); //NOI18N
                 } finally {
                     modRootElement.setEnabled(origEnabled);
                 }
@@ -104,7 +98,24 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task {
     }
 
     @Override
-    public void unlock(Object lock, Document doc) {
+    public void runLocked(Runnable run) {
+        run.run();
+    }
+
+    @Override
+    public boolean cancel() {
+        canceled.set(true);
+        return true;
+    }
+
+    @MimeRegistration(mimeType="", service=OnSaveTask.Factory.class, position=1000)
+    public static final class FactoryImpl implements Factory {
+
+        @Override
+        public OnSaveTask createTask(Context context) {
+            return new TrailingWhitespaceRemove(context.getDocument());
+        }
+
     }
 
 }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.editor.lib2.document;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -140,10 +141,13 @@ public class TrailingWhitespaceRemoveProcessor {
      * Shift offset of the caret relative to caretLineIndex's line beginning.
      */
     private final int caretRelativeOffset;
+    
+    private final AtomicBoolean canceled;
 
-    public TrailingWhitespaceRemoveProcessor(Document doc, boolean removeFromModifiedLinesOnly) {
+    public TrailingWhitespaceRemoveProcessor(Document doc, boolean removeFromModifiedLinesOnly, AtomicBoolean canceled) {
         this.doc = doc;
         this.removeFromModifiedLinesOnly = removeFromModifiedLinesOnly;
+        this.canceled = canceled;
         this.docText = DocumentUtilities.getText(doc); // Persists for doc's lifetime
         lineRootElement = DocumentUtilities.getParagraphRootElement(doc);
         modRootElement = ModRootElement.get(doc);

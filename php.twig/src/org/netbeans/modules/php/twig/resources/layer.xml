@@ -121,8 +121,13 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-javascript2-editor-embedding-JsEmbeddingProvider$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
-                <file name="org-netbeans-modules-html-editor-gsf-embedding-CssEmbeddingProvider$Factory.instance">
+                <file name="org-netbeans-modules-html-editor-gsf-embedding-CssEmbeddingProvider.instance">
+                    <!--org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider-->
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.parsing.impl.EmbeddingProviderFactory.create" name="instanceCreate"/>
+                    <attr name="targetMimeType" stringvalue="text/css"/>
+                    <attr name="provider" newvalue="org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider"/>
                 </file>
                 <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>

@@ -47,46 +47,27 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author marekfukala
  */
+@EmbeddingProvider.Registration(
+        mimeType="text/html",
+        targetMimeType="text/css"
+)
 public class CssEmbeddingProvider extends EmbeddingProvider {
 
     private static final Logger LOG = Logger.getLogger(CssEmbeddingProvider.class.getSimpleName());
-    
     private static final long MAX_SNAPSHOT_SIZE = 4 * 1024 * 1024; //4MB
-    
-    public static class Factory extends TaskFactory {
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
-        private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    private String sourceMimeType;
+    private Translator translator;
 
-        private static final Map<String, Translator> translators = new HashMap<String, Translator>();
-
-        static {
-            translators.put(HTML_MIME_TYPE, new CssHtmlTranslator()); //xxx can I use shared instance???
-        }
-
-        @Override
-        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-            
-            int slen = snapshot.getText().length();
-            LOG.fine(String.format("CssEmbeddingProvider.create(snapshot): mimetype: %s, size: %s", snapshot.getMimeType(), slen)); //NOI18N
-            if(slen > MAX_SNAPSHOT_SIZE) {
-                LOG.fine(String.format("Size %s > maximum (%s) => providing no css embedding", slen, MAX_SNAPSHOT_SIZE)); //NOI18N
-                return Collections.<SchedulerTask>emptyList();
-            }
-            
-            Translator t = translators.get(snapshot.getMimeType());
-            if (t != null) {
-                return Collections.singleton(new CssEmbeddingProvider(snapshot.getMimeType(), t));
-            } else {
-                return Collections.<SchedulerTask>emptyList();
-            }
-        }
+    public CssEmbeddingProvider() {
+        this.sourceMimeType = HTML_MIME_TYPE;
+        this.translator = new CssHtmlTranslator();
     }
 
     public static interface Translator {
@@ -95,18 +76,15 @@ public class CssEmbeddingProvider extends EmbeddingProvider {
     
     }
 
-
-    private String sourceMimeType;
-    private Translator translator;
-
-    private CssEmbeddingProvider(String sourceMimeType, Translator translator) {
-        this.sourceMimeType = sourceMimeType;
-        this.translator = translator;
-    }
-
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         if (sourceMimeType.equals(snapshot.getMimeType())) {
+            int slen = snapshot.getText().length();
+            LOG.fine(String.format("CssEmbeddingProvider.create(snapshot): mimetype: %s, size: %s", snapshot.getMimeType(), slen)); //NOI18N
+            if(slen > MAX_SNAPSHOT_SIZE) {
+                LOG.fine(String.format("Size %s > maximum (%s) => providing no css embedding", slen, MAX_SNAPSHOT_SIZE)); //NOI18N
+                return Collections.<Embedding>emptyList();
+            }
             List<Embedding> embeddings = translator.getEmbeddings(snapshot);
             if(embeddings.isEmpty()) {
                 return Collections.emptyList();
