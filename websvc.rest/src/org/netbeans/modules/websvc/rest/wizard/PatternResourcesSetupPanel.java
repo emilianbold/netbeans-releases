@@ -49,6 +49,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
@@ -57,6 +58,9 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
@@ -159,23 +163,38 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             mainPanel.addChangeListener(jerseyPanel );
             add( jerseyPanel );
             // Fix for BZ#214951 - Hidden Text Box during REST endpoint creation
-            /*addHierarchyListener( new HierarchyListener(){
+            addHierarchyListener( new HierarchyListener(){
 
                 @Override
-                public void hierarchyChanged( HierarchyEvent e ) {*/
-                    double height = 0;
-                    Component[] components = getComponents();
-                    for (Component component : components) {
-                        height+= component.getPreferredSize().getHeight();
-                    }
-                    Dimension dim = getPreferredSize();
-                    int newHeight = (int)height;
-                    if ( dim.height < newHeight ) {
-                        setPreferredSize( new Dimension( dim.width, newHeight ));
-                    }      
-             /*  }
+                public void hierarchyChanged( HierarchyEvent e ) {
+                    final HierarchyListener listener = this; 
+                    SwingUtilities.invokeLater( new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            double height = 0;
+                            Component[] components = getComponents();
+                            for (Component component : components) {
+                                height+= component.getSize().getHeight();
+                            }
+                            Dimension dim = getSize();
+                            int newHeight = (int)height;
+                            if ( dim.height < newHeight ) {
+                                setPreferredSize( new Dimension( dim.width, newHeight ));
+                                Window window = SwingUtilities.
+                                        getWindowAncestor(PatternPanel.this);
+                                if ( window!= null ){
+                                    window.pack();
+                                }
+                            }
+                            removeHierarchyListener(listener);
+                        }
+                        
+                    });   
+                     
+              }
                 
-            });*/ 
+            });
         }
         
         @Override
@@ -221,6 +240,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                     jerseyPanel.read(wizard);
                 }
             }
+            
         }
 
         @Override
