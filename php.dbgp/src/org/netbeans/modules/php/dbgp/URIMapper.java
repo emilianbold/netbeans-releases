@@ -59,6 +59,7 @@ import org.netbeans.modules.php.api.util.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Converts remote (or also local) URI to local project File an vice versa
@@ -126,7 +127,7 @@ abstract class URIMapper {
         if (!"file".equals(webServerURI.getScheme())) {//NOI18N
             return null;
         }
-        File webServerFile = new File(webServerURI);
+        File webServerFile = Utilities.toFile(webServerURI);
         File sourceFile = FileUtil.toFile(sourceFileObj);
         String sourcePath = FileUtil.getRelativePath(sourceRoot, sourceFileObj);
         //debugged file must be part of the debugged project (for now)
@@ -146,7 +147,7 @@ abstract class URIMapper {
                 URI[] bases = findBases(webServerURI, sourceFile, sourceRootFile);
                 if (bases != null) {
                     URI webServerBase = bases[0];
-                    File sourceBase = new File(bases[1]);
+                    File sourceBase = Utilities.toFile(bases[1]);
                     assert webServerBase != null;
                     assert sourceBase != null;
                     return new BaseMapper(webServerBase, sourceBase);
@@ -165,7 +166,7 @@ abstract class URIMapper {
 
             @Override
             File toSourceFile(URI remoteURI) {
-                File retval = new File(remoteURI);
+                File retval = Utilities.toFile(remoteURI);
                 File absFile = can2AbsFile.get(retval);
                 retval = (absFile != null) ? absFile : retval;
                 if (LOGGER.isLoggable(Level.INFO)) {
@@ -278,7 +279,7 @@ abstract class URIMapper {
             File retval = null;
             if (!relativizedURI.isAbsolute()) {
                 assert FILE_SCHEME.equals(webServerURI.getScheme());
-                retval = new File(baseSourceURI.resolve(relativizedURI));
+                retval = Utilities.toFile(baseSourceURI.resolve(relativizedURI));
             }
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), webServerURI, retval));
