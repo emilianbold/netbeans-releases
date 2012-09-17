@@ -44,13 +44,10 @@ package org.netbeans.modules.jira.query;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
@@ -63,10 +60,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -166,8 +160,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             public void setWidth(int width) {
                 byTextContainer.setPreferredSize(new Dimension(width, byTextPanel.getPreferredSize().height));
                 byTextContainer.revalidate();
-            }
-            private void setContainerSize(JComponent cmp, int width, int height) {
             }
         });
         
@@ -1433,6 +1425,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         lastRefreshDateLabel.setText(lastRefresh);
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         Component c = e.getComponent();
         if(c instanceof JComponent) {
@@ -1446,6 +1439,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         // do nothing
     }
