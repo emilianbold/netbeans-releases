@@ -301,7 +301,7 @@ public class JSTestDriverSupport {
             }
             try {
                 URL u = new URL(s);
-                WebBrowserPane pane = bd.browser.createNewBrowserPane(true, false);
+                WebBrowserPane pane = bd.browser.createNewBrowserPane(true, !bd.nbIntegration);
                 pane.disablePageInspector();
                 // the problem here is following: js-test-driver is a global server
                 // which does not have any project specific context. But in order to
