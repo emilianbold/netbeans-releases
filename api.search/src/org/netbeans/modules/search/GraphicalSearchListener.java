@@ -385,7 +385,7 @@ class GraphicalSearchListener extends SearchListener {
                     return "path";                                      //NOI18N
                 }
             };
-            final Property[] properties = new Property[]{pathProperty};
+            final Property<?>[] properties = new Property<?>[]{pathProperty};
             PropertySet[] sets = new PropertySet[1];
             sets[0] = new PropertySet() {
                 @Override

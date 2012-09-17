@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -151,8 +152,10 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup.Provider;
@@ -181,6 +184,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.uniqueName = getUniqueName(fs, platformProject);
         RepositoryUtils.openUnit(key);
         unitId = key.getUnitId();
+        cacheLocation = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         this.fileSystem = fs;
@@ -427,16 +431,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/ CacheLocation getCacheLocation() {
-        return RepositoryAccessor.getTranslator().getCacheLocation(unitId);
+        return cacheLocation;
     }
 
     public static CacheLocation getCacheLocation(NativeProject project) {
         assert project != null;
         Provider lp = project.getProject();
         if (lp != null) {
-            CacheLocation loc = lp.getLookup().lookup(CacheLocation.class);
+            CacheDirectoryProvider loc = lp.getLookup().lookup(CacheDirectoryProvider.class);
             if (loc != null) {
-                return loc;
+                try {
+                    FileObject cacheDir = loc.getCacheDirectory();
+                    if (cacheDir != null) {
+                        File cacheDirFile = FileUtil.toFile(cacheDir);
+                        if (cacheDirFile != null) {
+                            return new CacheLocation(cacheDirFile);
+                        }
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
         return CacheLocation.DEFAULT;
@@ -1354,7 +1368,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (aPlatformProject != null){
             searcher = APTFileSearch.get(KeyUtilities.createProjectKey(
                     ProjectBase.getUniqueName(fileSystem, aPlatformProject),
-                    ProjectBase.getCacheLocation(nativeFile.getNativeProject())));
+                    getCacheLocation()));
         }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
@@ -3422,6 +3436,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private final CharSequence uniqueName;
     private final int unitId;
+    private final CacheLocation cacheLocation;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     private final Key classifierStorageKey;
 
@@ -3481,6 +3496,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        
         unitId = aStream.readUnitId();
+        cacheLocation = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();

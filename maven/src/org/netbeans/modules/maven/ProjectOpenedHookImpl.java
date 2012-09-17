@@ -435,7 +435,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
                     if (p != null) {
                         NbMavenProjectImpl nbmp = p.getLookup().lookup(NbMavenProjectImpl.class);
                         if (nbmp != null) {
-                            MavenFileOwnerQueryImpl.getInstance().registerProject(nbmp);
+                            MavenFileOwnerQueryImpl.getInstance().registerProject(nbmp, true);
                         } else {
                             LOGGER.log(Level.FINE, "not a Maven project in {0}", basedir);
                         }
@@ -450,7 +450,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
         } else {
             try {
-                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, version, Utilities.toURI(basedir).toURL());
+                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, version, Utilities.toURI(basedir).toURL(), true);
             } catch (MalformedURLException x) {
                 LOGGER.log(Level.FINE, null, x);
             }

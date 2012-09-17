@@ -107,7 +107,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
             "org/netbeans/modules/search/res/collapseTree.png";         //NOI18N
 
     private ExplorerManager explorerManager;
-    private SearchComposition searchComposition;
+    private SearchComposition<?> searchComposition;
     protected JButton btnStopRefresh = new JButton();
     protected JButton btnPrev = new JButton();
     protected JButton btnNext = new JButton();
@@ -119,7 +119,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     /**
      * Creates new form AbstractSearchResultsPanel
      */
-    public AbstractSearchResultsPanel(SearchComposition searchComposition,
+    public AbstractSearchResultsPanel(SearchComposition<?> searchComposition,
             SearchProvider.Presenter searchProviderPresenter) {
         this.searchComposition = searchComposition;
         this.searchProviderPresenter = searchProviderPresenter;
@@ -268,7 +268,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         return contentPanel;
     }
 
-    protected SearchComposition getSearchComposition() {
+    protected SearchComposition<?> getSearchComposition() {
         return searchComposition;
     }
 
@@ -433,9 +433,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private void shift(int direction) {
 
         Node next = findShiftNode(direction, getOutlineView(), true);
-        if (next == null) {
-            return;
-        } else {
+        if (next != null) {
             try {
                 getExplorerManager().setSelectedNodes(new Node[]{next});
                 onDetailShift(next);
@@ -641,6 +639,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
             this.direction = direction;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
             shift(direction);
         }
