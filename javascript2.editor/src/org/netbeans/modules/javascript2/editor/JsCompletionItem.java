@@ -340,6 +340,40 @@ public class JsCompletionItem implements CompletionProposal {
         }
     }
 
+    public static class JsPropertyCompletionItem extends JsCompletionItem {
+
+        JsPropertyCompletionItem(ElementHandle element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.appendText(getName());
+            Collection<? extends TypeUsage> assignment = null;
+            if (getElement() instanceof JsObject) {
+                JsObject jsObject = (JsObject) getElement();
+                assignment = jsObject.getAssignmentForOffset(request.anchor);
+            } else if (getElement() instanceof IndexedElement) {
+                IndexedElement iElement = (IndexedElement)getElement();
+                assignment = iElement.getAssignments();
+            }
+            if (assignment != null) {
+                if (!assignment.isEmpty()) {
+                    formatter.type(true);
+                    formatter.appendText(": ");  //NOI18N
+                    for (Iterator<? extends TypeUsage> it = assignment.iterator(); it.hasNext();) {
+                        formatter.appendText(it.next().getType());
+                        if (it.hasNext()) {
+                            formatter.appendText("|");   //NOI18N
+                        }
+                    }
+                    formatter.type(false);
+                }
+            }
+            return formatter.getText();
+        }
+    }
+
     public static class Factory {
         
         public static JsCompletionItem create(JsElement object, CompletionRequest request) {
@@ -349,6 +383,12 @@ public class JsCompletionItem implements CompletionProposal {
                 case FUNCTION:
                 case METHOD:
                     result = new JsFunctionCompletionItem(object, request);
+                    break;
+                case PROPERTY:
+                case PROPERTY_GETTER:
+                case PROPERTY_SETTER:
+                case FIELD:
+                    result = new JsPropertyCompletionItem(object, request);
                     break;
                 default:
                     result = new JsCompletionItem(object, request);

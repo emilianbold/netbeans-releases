@@ -5,5 +5,5 @@ return "This is a carrot that has " + this.|color + " color";
 METHOD     getColor()                      [PUBLIC]   simpleObject.js
 METHOD     getDescription(): String        [PUBLIC]   simpleObjectContinue.js
 METHOD     isVegitable(): Boolean          [PUBLIC]   simpleObject.js
-FIELD      called                          [PUBLIC]   simpleObject.js
-FIELD      color                           [PUBLIC]   simpleObject.js
+FIELD      called: Number                  [PUBLIC]   simpleObject.js
+FIELD      color: String                   [PUBLIC]   simpleObject.js

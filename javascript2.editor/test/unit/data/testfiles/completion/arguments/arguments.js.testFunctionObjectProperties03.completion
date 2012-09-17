@@ -25,9 +25,9 @@ METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Number.js
 METHOD     toPrecision(precision: Number)  [PUBLIC]   stub_CORE_Number.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Number.js
 METHOD     valueOf(): Number               [PUBLIC]   stub_CORE_Number.js
-FIELD      MAX_VALUE                       [PUBLIC,   stub_CORE_Number.js
-FIELD      MIN_VALUE                       [PUBLIC,   stub_CORE_Number.js
-FIELD      NEGATIVE_INFINITY               [PUBLIC,   stub_CORE_Number.js
-FIELD      NaN                             [PUBLIC,   stub_CORE_Number.js
-FIELD      POSITIVE_INFINITY               [PUBLIC,   stub_CORE_Number.js
+FIELD      MAX_VALUE: Number               [PUBLIC,   stub_CORE_Number.js
+FIELD      MIN_VALUE: Number               [PUBLIC,   stub_CORE_Number.js
+FIELD      NEGATIVE_INFINITY: String       [PUBLIC,   stub_CORE_Number.js
+FIELD      NaN: Number                     [PUBLIC,   stub_CORE_Number.js
+FIELD      POSITIVE_INFINITY: String       [PUBLIC,   stub_CORE_Number.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_Number.js
