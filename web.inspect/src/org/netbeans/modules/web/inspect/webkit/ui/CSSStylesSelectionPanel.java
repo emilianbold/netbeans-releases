@@ -69,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
@@ -281,7 +282,12 @@ public class CSSStylesSelectionPanel extends JPanel {
                     showLabel(null);
                     WebKitDebugging webKit = pageModel.getWebKit();
                     CSS css = webKit.getCSS();
-                    MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
+                    MatchedStyles matchedStyles;
+                    try {
+                        matchedStyles = css.getMatchedStyles(node, null, false, true);
+                    } catch (TransportStateException tsex) {
+                        matchedStyles = null;
+                    }
                     if (matchedStyles != null) {
                         final Node[] selectedRules = rulePaneManager.getSelectedNodes();
                         final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
