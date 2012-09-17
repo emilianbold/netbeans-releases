@@ -57,8 +57,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 
-public class SourcesPanel extends javax.swing.JPanel {
+public class SourcesPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private ClientSideProject project;
     
@@ -227,6 +228,11 @@ public class SourcesPanel extends javax.swing.JPanel {
                 }
             }
         }
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel");
     }
     
     private void jBrowseTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseTestButtonActionPerformed
