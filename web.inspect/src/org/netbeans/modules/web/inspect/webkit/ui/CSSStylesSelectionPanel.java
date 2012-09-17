@@ -69,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
@@ -240,7 +241,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * Updates the content of and sets a new page model to this panel.
      *
      * @param pageModel page model to use by this panel.
-     * @param if {@code true} then an attempt to keep the current
+     * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
     final void updateContent(WebKitPageModel pageModel, boolean keepSelection) {
@@ -251,16 +252,17 @@ public class CSSStylesSelectionPanel extends JPanel {
         if (this.pageModel != null) {
             this.pageModel.addPropertyChangeListener(getListener());
         }
-        updateContent(keepSelection);
+        updateContentImpl(pageModel, keepSelection);
     }
 
     /**
      * Updates the content of this panel.
      *
-     * @param if {@code true} then an attempt to keep the current
+     * @param pageModel page model to use by this panel.
+     * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
-    void updateContent(boolean keepSelection) {
+    void updateContentImpl(WebKitPageModel pageModel, boolean keepSelection) {
         if (pageModel == null) {
             setDummyRoots();
         } else {
@@ -280,7 +282,12 @@ public class CSSStylesSelectionPanel extends JPanel {
                     showLabel(null);
                     WebKitDebugging webKit = pageModel.getWebKit();
                     CSS css = webKit.getCSS();
-                    MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
+                    MatchedStyles matchedStyles;
+                    try {
+                        matchedStyles = css.getMatchedStyles(node, null, false, true);
+                    } catch (TransportStateException tsex) {
+                        matchedStyles = null;
+                    }
                     if (matchedStyles != null) {
                         final Node[] selectedRules = rulePaneManager.getSelectedNodes();
                         final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
@@ -401,7 +408,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (PageModel.PROP_SELECTED_NODES.equals(propertyName)) {
-                updateContent(false);
+                updateContentImpl(pageModel, false);
             }
         }
 
