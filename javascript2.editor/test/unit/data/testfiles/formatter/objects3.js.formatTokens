@@ -12,7 +12,9 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=5, text="}
 FormattingToken{kind=TEXT, offset=6, text=menu}
 FormattingToken{kind=TEXT, offset=10, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=11, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=12, text= }
 FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=13, text={}
@@ -23,7 +25,9 @@ FormattingToken{kind=WHITESPACE, offset=15, text=  }
 FormattingToken{kind=TEXT, offset=17, text="}
 FormattingToken{kind=TEXT, offset=18, text=id}
 FormattingToken{kind=TEXT, offset=20, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=21, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=22, text= }
 FormattingToken{kind=TEXT, offset=23, text=2e10}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
@@ -36,7 +40,9 @@ FormattingToken{kind=WHITESPACE, offset=29, text=  }
 FormattingToken{kind=TEXT, offset=31, text="}
 FormattingToken{kind=TEXT, offset=32, text=value}
 FormattingToken{kind=TEXT, offset=37, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=38, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=39, text= }
 FormattingToken{kind=TEXT, offset=40, text="}
 FormattingToken{kind=TEXT, offset=41, text=File}
@@ -52,7 +58,9 @@ FormattingToken{kind=TEXT, offset=50, text="}
 FormattingToken{kind=TEXT, offset=51, text=x}
 FormattingToken{kind=TEXT, offset=52, text="}
 FormattingToken{kind=WHITESPACE, offset=53, text= }
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=54, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=55, text= }
 FormattingToken{kind=TEXT, offset=56, text=1.5}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
@@ -66,7 +74,9 @@ FormattingToken{kind=TEXT, offset=63, text="}
 FormattingToken{kind=TEXT, offset=64, text=y}
 FormattingToken{kind=TEXT, offset=65, text="}
 FormattingToken{kind=WHITESPACE, offset=66, text= }
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=67, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=68, text= }
 FormattingToken{kind=TEXT, offset=69, text=2.5e-5}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
@@ -79,7 +89,9 @@ FormattingToken{kind=WHITESPACE, offset=77, text=  }
 FormattingToken{kind=TEXT, offset=79, text="}
 FormattingToken{kind=TEXT, offset=80, text=popup}
 FormattingToken{kind=TEXT, offset=85, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=86, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=87, text= }
 FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=88, text={}
@@ -90,7 +102,9 @@ FormattingToken{kind=WHITESPACE, offset=90, text=    }
 FormattingToken{kind=TEXT, offset=94, text="}
 FormattingToken{kind=TEXT, offset=95, text=menuitem}
 FormattingToken{kind=TEXT, offset=103, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=104, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=105, text= }
 FormattingToken{kind=TEXT, offset=106, text=[}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
@@ -110,7 +124,9 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=118, text="}
 FormattingToken{kind=TEXT, offset=119, text=value}
 FormattingToken{kind=TEXT, offset=124, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=125, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=126, text= }
 FormattingToken{kind=TEXT, offset=127, text="}
 FormattingToken{kind=TEXT, offset=128, text=New}
@@ -123,7 +139,9 @@ FormattingToken{kind=WHITESPACE, offset=133, text= }
 FormattingToken{kind=TEXT, offset=134, text="}
 FormattingToken{kind=TEXT, offset=135, text=onclick}
 FormattingToken{kind=TEXT, offset=142, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=143, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=144, text= }
 FormattingToken{kind=TEXT, offset=145, text="}
 FormattingToken{kind=TEXT, offset=146, text=CreateNewDoc()}
@@ -144,7 +162,9 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=171, text="}
 FormattingToken{kind=TEXT, offset=172, text=value}
 FormattingToken{kind=TEXT, offset=177, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=178, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=179, text= }
 FormattingToken{kind=TEXT, offset=180, text="}
 FormattingToken{kind=TEXT, offset=181, text=Open}
@@ -157,7 +177,9 @@ FormattingToken{kind=WHITESPACE, offset=187, text= }
 FormattingToken{kind=TEXT, offset=188, text="}
 FormattingToken{kind=TEXT, offset=189, text=onclick}
 FormattingToken{kind=TEXT, offset=196, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=197, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=198, text= }
 FormattingToken{kind=TEXT, offset=199, text="}
 FormattingToken{kind=TEXT, offset=200, text=OpenDoc()}
@@ -178,7 +200,9 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=220, text="}
 FormattingToken{kind=TEXT, offset=221, text=value}
 FormattingToken{kind=TEXT, offset=226, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=227, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=228, text= }
 FormattingToken{kind=TEXT, offset=229, text="}
 FormattingToken{kind=TEXT, offset=230, text=Close}
@@ -191,7 +215,9 @@ FormattingToken{kind=WHITESPACE, offset=237, text= }
 FormattingToken{kind=TEXT, offset=238, text="}
 FormattingToken{kind=TEXT, offset=239, text=onclick}
 FormattingToken{kind=TEXT, offset=246, text="}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=247, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=248, text= }
 FormattingToken{kind=TEXT, offset=249, text="}
 FormattingToken{kind=TEXT, offset=250, text=CloseDoc()}
