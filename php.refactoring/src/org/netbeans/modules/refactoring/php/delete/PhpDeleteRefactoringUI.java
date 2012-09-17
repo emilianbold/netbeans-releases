@@ -124,16 +124,19 @@ public class PhpDeleteRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PhpDeleteRefactoringUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI"); //NOI18N
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
         return panel.isRegularDelete();
     }
 
+    @Override
     public void doRefactoringBypass() throws IOException {
         // #172199
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 file.delete();
             }
