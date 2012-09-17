@@ -43,11 +43,9 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.AWTKeyStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
@@ -227,10 +225,8 @@ public class UIUtils {
             }
             Component cmp = e.getComponent();
             if(cmp instanceof JComponent) {
-                JViewport vp = getViewport(cmp.getParent());
-                
+                JViewport vp = getViewport(container);
                 Rectangle vr = vp.getViewRect();
-                
                 Point p = SwingUtilities.convertPoint(cmp.getParent(), cmp.getLocation(), container);
                 final Rectangle r = new Rectangle(p, cmp.getSize());
                 if(vr.intersects(r)) {
@@ -240,16 +236,6 @@ public class UIUtils {
             }
         }
 
-        private JViewport getViewport(Container c) {
-            if(c == null) {
-                return null;
-            }
-            if(c instanceof JScrollPane) {
-                return ((JScrollPane) c).getViewport();
-            }
-            return getViewport(c.getParent());
-        }
-        
         @Override
         public void focusLost(FocusEvent e) { }
 
