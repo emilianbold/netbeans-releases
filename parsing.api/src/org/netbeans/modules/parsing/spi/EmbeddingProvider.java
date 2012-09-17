@@ -42,9 +42,14 @@
 
 package org.netbeans.modules.parsing.spi;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.List;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 
 /**
@@ -83,6 +88,30 @@ public abstract class EmbeddingProvider extends SchedulerTask {
      * @return              priority of this source provider
      */
     public abstract int getPriority ();
+
+    /**
+     * Registration of the {@link EmbeddingProvider}.
+     * Creates a mime lookup registration of the {@link TaskFactory} for
+     * annotated {@link EmbeddingProvider}. It also provides the target
+     * mime type of the created embedding which allows the {@link QuerySupport}
+     * to correctly mark dirty embedded indexers.
+     *
+     * @since 1.57
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target(ElementType.TYPE)
+    public @interface Registration {
+
+        /**
+         * Mime type to which should be the given {@link EmbeddingProvider} registered.
+         */
+         public String mimeType();
+
+        /**
+         * Mime type of the embedding created by the registered {@link EmbeddingProvider}
+         */
+        String targetMimeType();
+    }
 }
 
 

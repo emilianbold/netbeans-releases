@@ -52,9 +52,11 @@ import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -94,6 +96,11 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
     }
 
     private void checkTrailingWhitespaceRemove(String policy, String result) throws Exception {
+        MockServices.setServices(MockMimeLookup.class);
+        MockMimeLookup.setInstances(MimePath.parse(""),
+                new TrailingWhitespaceRemove.FactoryImpl()
+        );
+        
         RandomTestContainer container = DocumentTesting.initContainer(null);
         container.setName(this.getName());
 //        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);

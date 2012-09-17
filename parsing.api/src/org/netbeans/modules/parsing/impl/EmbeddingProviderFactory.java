@@ -39,69 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.lib2.document;
+package org.netbeans.modules.parsing.impl;
 
-import javax.swing.text.Document;
-import javax.swing.text.Element;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author Miloslav Metelka
+ * @author Tomas Zezula
  */
-public class DocumentInternalUtils {
+public class EmbeddingProviderFactory extends TaskFactory {
 
-    private DocumentInternalUtils() {
-        // no instances
+    public static final String ATTR_TARGET_MIME_TYPE = "targetMimeType";   //NOI18N
+    public static final String ATTR_PROVIDER = "provider";                 //NOI18N
+    
+    private final Map<String,Object> params;
+    private final String targetMimeType;
+
+    private EmbeddingProviderFactory(@NonNull final Map<String,Object> params) {
+        Parameters.notNull("definition", params);   //NOI18N
+        this.params = params;
+        this.targetMimeType = (String) params.get(ATTR_TARGET_MIME_TYPE);
+        if (this.targetMimeType == null) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "The definition file has no %s attribute.", //NOI18N
+                    ATTR_TARGET_MIME_TYPE));
+        }
     }
 
-    public static Element customElement(Document doc, int startOffset, int endOffset) {
-        return new CustomRootElement(doc, startOffset, endOffset);
+    public String getTargetMimeType() {
+        return this.targetMimeType;
     }
 
-    private static final class CustomElement extends AbstractPositionElement {
-
-        CustomElement(Element parent, int startOffset, int endOffset) {
-            super(parent, startOffset, endOffset);
-            CharSequenceUtilities.checkIndexesValid(startOffset, endOffset,
-                    parent.getDocument().getLength() + 1);
-        }
-
-        @Override
-        public String getName() {
-            return "CustomElement";
-        }
-
+    @NonNull
+    @Override
+    public Collection<? extends SchedulerTask> create (@NonNull final Snapshot snapshot) {
+        final Object delegate = params.get(ATTR_PROVIDER);
+        return (delegate instanceof EmbeddingProvider) ?
+                Collections.singleton((EmbeddingProvider)delegate) :
+                Collections.<EmbeddingProvider>emptySet();
     }
 
-
-    private static final class CustomRootElement extends AbstractRootElement<CustomElement> {
-
-        private final CustomElement customElement;
-
-        public CustomRootElement(Document doc, int startOffset, int endOffset) {
-            super(doc);
-            customElement = new CustomElement(this, startOffset, endOffset);
-        }
-
-        @Override
-        public String getName() {
-            return "CustomRootElement";
-        }
-
-        @Override
-        public Element getElement(int index) {
-            if (index == 0) {
-                return customElement;
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public int getElementCount() {
-            return 1;
-        }
-
+    public static TaskFactory create(@NonNull final Map<String,Object> params) {
+        return new EmbeddingProviderFactory(params);
     }
 }
