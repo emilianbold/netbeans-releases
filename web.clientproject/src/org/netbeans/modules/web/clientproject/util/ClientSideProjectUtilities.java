@@ -43,12 +43,17 @@ package org.netbeans.modules.web.clientproject.util;
 
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -59,7 +64,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
@@ -85,13 +89,29 @@ import org.w3c.dom.NodeList;
  */
 public final class ClientSideProjectUtilities {
 
+    private static final Logger LOGGER = Logger.getLogger(ClientSideProjectUtilities.class.getName());
+
+    private static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
+
+
     private ClientSideProjectUtilities() {
     }
 
+    /**
+     * Setup project with the given name and also set the following properties:
+     * <ul>
+     *   <li>file encoding - set to UTF-8 (or default charset if UTF-8 is not available)</li>
+     * </ul>
+     * @param dirFO project directory
+     * @param name project name
+     * @return {@link AntProjectHelper}
+     * @throws IOException if any error occurs
+     */
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
-        saveProjectProperties(projectHelper, Collections.<String, String>emptyMap());
+        Map<String, String> properties = Collections.singletonMap(ClientSideProjectConstants.PROJECT_ENCODING, DEFAULT_PROJECT_CHARSET.name());
+        saveProjectProperties(projectHelper, properties);
         return projectHelper;
     }
 
@@ -242,6 +262,20 @@ public final class ClientSideProjectUtilities {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
+    }
+
+    // #217970
+    private static Charset getDefaultProjectCharset() {
+        try {
+            return Charset.forName("UTF-8"); // NOI18N
+        } catch (IllegalCharsetNameException exception) {
+            // fallback
+            LOGGER.log(Level.INFO, "UTF-8 charset not supported, falling back to the default charset.", exception);
+        } catch (UnsupportedCharsetException exception) {
+            // fallback
+            LOGGER.log(Level.INFO, "UTF-8 charset not supported, falling back to the default charset.", exception);
+        }
+        return Charset.defaultCharset();
     }
 
 }
