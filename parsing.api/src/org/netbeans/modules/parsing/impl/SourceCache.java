@@ -502,7 +502,7 @@ retry:  while (true) {
     private Collection<? extends TaskFactory> resortTaskFactories(Collection<? extends TaskFactory> factories) {
         List<TaskFactory> resorted = new ArrayList<TaskFactory>(factories);
         for(TaskFactory tf : resorted) {
-            if(tf.getClass().getName().equals("org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider$Factory")) { //NOI18N
+            if(tf.getClass().getName().equals("org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider$Factory")) { //NOI18N
                 resorted.remove(tf); 
                 resorted.add(0, tf);
                 break;
