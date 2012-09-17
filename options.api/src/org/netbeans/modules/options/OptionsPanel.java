@@ -329,7 +329,7 @@ public class OptionsPanel extends JPanel {
         
         JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
         searchPanel.setToolTipText(Bundle.Filter_Textfield_Tooltip());
-        searchTC = (JTextComponent) searchPanel.getComponent(1);
+        searchTC = (JTextComponent) searchPanel.getComponent(searchPanel.getComponentCount() - 1);
         searchTC.setToolTipText(Bundle.Filter_Textfield_Tooltip());
         searchTC.addFocusListener(new FocusListener() {
 
