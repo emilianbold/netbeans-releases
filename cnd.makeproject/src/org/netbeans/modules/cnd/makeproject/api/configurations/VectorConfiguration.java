@@ -160,17 +160,22 @@ public class VectorConfiguration<E> implements Cloneable {
      * @return concatenated <code>String</code>
      */
     public String toString(ToString<E> visitor) {
+        return toString(visitor, " "); // NOI18N
+    }
+
+    public String toString(ToString<E> visitor, String separator) {
         StringBuilder buf = new StringBuilder();
         List<E> list = getValue();
         for (E item : list) {
             String s = visitor.toString(item);
             if (s != null && 0 < s.length()) {
-                buf.append(s).append(' '); // NOI18N
+                buf.append(s).append(separator);
             }
         }
         return buf.toString();
     }
 
+    
     /**
      * Used to convert vector elements to <code>String</code>.
      * See {@link VectorConfiguration#toString(ToString)}.
