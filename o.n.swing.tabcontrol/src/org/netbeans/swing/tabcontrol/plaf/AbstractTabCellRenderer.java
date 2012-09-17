@@ -160,7 +160,8 @@ public abstract class AbstractTabCellRenderer extends JLabel
                      return TabDisplayer.COMMAND_CLOSE_ALL;
                  } else if ((modifiers & MouseEvent.ALT_DOWN_MASK) != 0 && mouseButton != MouseEvent.BUTTON2) {
                      return TabDisplayer.COMMAND_CLOSE_ALL_BUT_THIS;
-                 } else if( (tabState & TabState.CLOSE_BUTTON_ARMED) == 0 && mouseButton == MouseEvent.BUTTON1 )  {
+                 } else if( ((tabState & TabState.CLOSE_BUTTON_ARMED) == 0 || (tabState & TabState.MOUSE_PRESSED_IN_CLOSE_BUTTON) == 0)
+                         && mouseButton == MouseEvent.BUTTON1 )  {
                      //#208732
                      result = TabDisplayer.COMMAND_SELECT;
                  }
