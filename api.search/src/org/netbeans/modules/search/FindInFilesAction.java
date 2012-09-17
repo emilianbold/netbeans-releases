@@ -166,10 +166,10 @@ public class FindInFilesAction extends CallableSystemAction {
         }
 
         Object refObj = getProperty(VAR_TOOLBAR_COMP_REF);
-        if (refObj != null) {
-            Reference ref = (Reference) refObj;
+        if (refObj instanceof Reference<?>) {
+            Reference<?> ref = (Reference<?>) refObj;
             Object presenterObj = ref.get();
-            if (presenterObj != null) {
+            if (presenterObj instanceof Component) {
                 return (Component) presenterObj;
             }
         }
