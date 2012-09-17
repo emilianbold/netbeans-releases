@@ -213,7 +213,11 @@ final class HtmlStructureItem implements StructureItem {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return items;
+        if (items == null){
+            return Collections.emptyList();
+        } else {
+            return items;
+        }
     }
 
     @Override

@@ -6,8 +6,6 @@ org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener
 org.netbeans.spi.debugger.ui.MethodChooser$Segment
 
 #218045
-org.netbeans.modules.php.project.PhpPreferences
-org.netbeans.modules.php.project.api.PhpOptions
 org.netbeans.modules.php.twig.editor.gsf.TwigLanguage
 
 #218044

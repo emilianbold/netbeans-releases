@@ -315,6 +315,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return null;
         }
         String inspectedURL = pageModel.getDocumentURL();
+        if (inspectedURL == null) {
+            return null;
+        }
         try {
             
             URL url = new URL(inspectedURL);

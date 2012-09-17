@@ -272,10 +272,10 @@
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    <!--                    <file name="RenameAction.shadow">
+                    <file name="RenameAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                         <attr name="position" intvalue="900"/>
-                    </file>-->
+                    </file>
                     <file name="SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1100"/>
