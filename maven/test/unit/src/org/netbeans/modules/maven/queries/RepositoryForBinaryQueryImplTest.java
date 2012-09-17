@@ -63,9 +63,9 @@ import org.openide.util.test.TestFileUtils;
  *
  * @author mkleint
  */
-public class RepositorySourceForBinaryQueryImplTest extends NbTestCase{
+public class RepositoryForBinaryQueryImplTest extends NbTestCase{
     
-    public RepositorySourceForBinaryQueryImplTest(String name) {
+    public RepositoryForBinaryQueryImplTest(String name) {
         super(name);
     }
 
@@ -83,11 +83,11 @@ public class RepositorySourceForBinaryQueryImplTest extends NbTestCase{
     
     
     /**
-     * Test of findSourceRoots2 method, of class RepositorySourceForBinaryQueryImpl.
+     * Test of findSourceRoots2 method, of class RepositoryForBinaryQueryImpl.
      */
     @Test
     public void testResultChanging() throws IOException {
-        RepositorySourceForBinaryQueryImpl query = new RepositorySourceForBinaryQueryImpl();
+        RepositoryForBinaryQueryImpl query = new RepositoryForBinaryQueryImpl();
         File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
         File art10 = new File(repo, "nbtest/testprj/1.0/testprj-1.0.jar");
         org.codehaus.plexus.util.FileUtils.deleteDirectory(art10.getParentFile());

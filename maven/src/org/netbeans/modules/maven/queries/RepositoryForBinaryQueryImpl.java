@@ -97,7 +97,7 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service=SourceForBinaryQueryImplementation2.class, position=68),
     @ServiceProvider(service=JavadocForBinaryQueryImplementation.class, position=68)
 })
-public class RepositorySourceForBinaryQueryImpl extends AbstractMavenForBinaryQueryImpl {
+public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImpl {
     
     private final Map<URL, WeakReference<SrcResult>> srcCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<SrcResult>>());
     private final Map<URL, WeakReference<JavadocResult>> javadocCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<JavadocResult>>());
@@ -520,7 +520,7 @@ public class RepositorySourceForBinaryQueryImpl extends AbstractMavenForBinaryQu
                     FileObject fo = FileUtil.toFileObject(file);
                     if (!FileUtil.isArchiveFile(fo)) {
                         //#124175  ignore any jar files that are not jar files (like when downloaded file is actually an error html page).
-                        Logger.getLogger(RepositorySourceForBinaryQueryImpl.class.getName()).log(Level.INFO, "javadoc in repository is not really a JAR: {0}", file);
+                        Logger.getLogger(RepositoryForBinaryQueryImpl.class.getName()).log(Level.INFO, "javadoc in repository is not really a JAR: {0}", file);
                         return new URL[0];
                     }
                     //try detecting the source path root, in case the source jar has the sources not in root.
