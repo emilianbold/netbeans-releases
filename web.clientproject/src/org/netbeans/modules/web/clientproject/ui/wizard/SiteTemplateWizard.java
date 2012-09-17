@@ -60,12 +60,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -241,51 +238,53 @@ public class SiteTemplateWizard extends JPanel {
         return null;
     }
 
+    public void lockPanel() {
+        enablePanel(false);
+        setArchiveTemplateEnabled(false);
+        setOnlineTemplateEnabled(false);
+    }
+
+    public void unlockPanel() {
+        enablePanel(true);
+        updateSiteTemplate();
+    }
+
+    private void enablePanel(boolean enable) {
+        noTemplateRadioButton.setEnabled(enable);
+        archiveTemplateRadioButton.setEnabled(enable);
+        onlineTemplateRadioButton.setEnabled(enable);
+    }
+
     @NbBundle.Messages({
         "# {0} - template name",
         "SiteTemplateWizard.template.preparing=Preparing template \"{0}\" for first usage...",
         "# {0} - template name",
-        "SiteTemplateWizard.error.preparing=<html>Cannot prepare template \"{0}\".<br><br>See IDE log for more details."
+        "SiteTemplateWizard.error.preparing=Cannot prepare template \"{0}\" (see IDE log for more details)."
     })
-    public void prepareTemplate() {
+    public String prepareTemplate() {
+        assert !EventQueue.isDispatchThread();
         final String templateName;
         synchronized (siteTemplateLock) {
             if (siteTemplate.isPrepared()) {
                 // already prepared
-                return;
+                return null;
             }
             templateName = siteTemplate.getName();
         }
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    synchronized (siteTemplateLock) {
-                        siteTemplate.prepare();
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    errorOccured(Bundle.SiteTemplateWizard_error_preparing(templateName));
-                }
+        // prepare
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
+        progressHandle.start();
+        try {
+            synchronized (siteTemplateLock) {
+                siteTemplate.prepare();
             }
-        };
-        if (EventQueue.isDispatchThread()) {
-            // going to the next step
-            ProgressUtils.showProgressDialogAndRun(task, Bundle.SiteTemplateWizard_template_preparing(templateName));
-        } else {
-            // #216283 - finish from the current step
-            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
-            progressHandle.start();
-            try {
-                task.run();
-            } finally {
-                progressHandle.finish();
-            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return Bundle.SiteTemplateWizard_error_preparing(templateName);
+        } finally {
+            progressHandle.finish();
         }
-    }
-
-    void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        return null;
     }
 
     void fireChange() {
