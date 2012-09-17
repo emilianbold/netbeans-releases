@@ -36,11 +36,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="get-bits">
-        <condition property="sjsas_bits_location" value="${sjsas_location_ml}" else="${sjsas_location}">
-            <istrue value="${mlbuild}"/>
-        </condition>  
-        <echo message="Downloading sjsas from ${sjsas_bits_location}" />
-        <get src="${sjsas_bits_location}" dest="./build/sjsas_image.zip" usetimestamp="true"/>
+        <echo message="Downloading sjsas from ${sjsas_location_ml}" />
+        <get src="${sjsas_location_ml}" dest="./build/sjsas_image.zip" usetimestamp="true"/>
     </target>
     
     <target name="unzip" depends="get-bits">

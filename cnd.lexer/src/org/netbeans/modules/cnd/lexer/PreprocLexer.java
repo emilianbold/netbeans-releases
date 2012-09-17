@@ -122,6 +122,18 @@ public final class PreprocLexer extends CndLexer {
         return super.finishSharp();
     }
 
+    @Override
+    protected Token<CppTokenId> finishPercent() {
+        if (state == INIT) {
+            if (read(true) == ':') {
+                // the first %: in preprocessor directive has own id
+                return token(CppTokenId.PREPROCESSOR_START_ALT);
+            }
+            backup(1);
+        }
+        return super.finishPercent();
+    }
+
     @SuppressWarnings("fallthrough")
     @Override
     protected Token<CppTokenId> finishDblQuote() {
@@ -193,8 +205,8 @@ public final class PreprocLexer extends CndLexer {
         assert id != null;
         switch (state) { // change state of lexer
             case INIT:
-                assert id == CppTokenId.PREPROCESSOR_START : 
-                    "in INIT state only CppTokenId.PREPROCESSOR_START is possible: " + id; //NOI18N
+                assert id == CppTokenId.PREPROCESSOR_START || id == CppTokenId.PREPROCESSOR_START_ALT:
+                    "in INIT state only CppTokenId.PREPROCESSOR_START(_ALT) is possible: " + id; //NOI18N
                 state = DIRECTIVE_NAME;
                 break;
             case DIRECTIVE_NAME:

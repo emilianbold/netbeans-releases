@@ -538,7 +538,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             instance.start();
            
             //find where the file was downloaded, remove the "http:/" from the url
-            String returnstr = saveFile.getPath() + sourceURL.substring(6, sourceURL.length());
+            String returnstr = rent.getSaveFile().getPath();
             return returnstr;
         } catch (Exception e) {
             //e.printStackTrace();

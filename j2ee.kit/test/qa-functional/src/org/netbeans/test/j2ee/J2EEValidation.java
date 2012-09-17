@@ -74,29 +74,25 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
- * Overall validation suite for j2ee cluster.
- * <br/>
- * To run this single test use "Test File" action and provide path to GlassFish
- * server instance in property test-qa-functional-sys-prop.glassfish.home. It
- * can be stored in nbbuild/user.build.properties and thus available for all modules.
- * <br/>
- * To run this test from command line use:
+ * Overall validation suite for Java EE. <br/> To run this single test use "Test
+ * File" action and provide path to GlassFish server instance in property
+ * test-qa-functional-sys-prop.glassfish.home. It can be stored in
+ * nbbuild/user.build.properties and thus available for all modules. <br/> To
+ * run this test from command line use:
  * <pre>
  * ant -f j2ee.kit/build.xml -Dtest.config=uicommit test
- * </pre>
- * <br/>
- * To run this test from binary distribution use:
+ * </pre> <br/>To run this test from binary distribution use:
  * <pre>
  * ant -f j2ee.kit/build.xml test-build
  * cd nbbuild/build/testdist
- * ant -Dnetbeans.dest.dir=<rep>/nbbuild/netbeans 
+ * ant -Dnetbeans.dest.dir=main/nbbuild/netbeans
  *      -Dtest.types=qa-functional
  *      -Dmodules.list=enterprise/org-netbeans-modules-j2ee-kit
  *      -Dtest.config.default.includes=**\/J2EEValidation.class
  *      -Dtest-sys-prop.glassfish.home=C:/space/hudson/glassfish
  * </pre>
- * 
- * @author Jiri.Skrivanek@sun.com
+ *
+ * @author Jiri Skrivanek
  */
 public class J2EEValidation extends J2eeTestCase {
 
@@ -104,16 +100,15 @@ public class J2EEValidation extends J2eeTestCase {
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "SampleWebProject";  //NOI18N
 
-    /** Need to be defined because of JUnit */
+    /**
+     * Need to be defined because of JUnit
+     */
     public J2EEValidation(String name) {
         super(name);
     }
 
     public static junit.framework.Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(J2EEValidation.class);
-        conf = addServerTests(Server.GLASSFISH, conf, "testWebApplication");
-        conf = conf.enableModules(".*").clusters(".*");//.failOnException(Level.INFO).failOnMessage(Level.SEVERE);
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, J2EEValidation.class, "testWebApplication");
     }
 
     @Override
@@ -121,8 +116,9 @@ public class J2EEValidation extends J2eeTestCase {
         System.out.println("########  " + getName() + "  #######");
     }
 
-    /** Test Web Application
-     * - add server if com.sun.aas.installRoot property was set
+    /**
+     * Test Web Application
+     * <pre>
      * - create new Web Application project
      * - wait until project is in Projects view
      * - wait classpath scanning finished
@@ -132,6 +128,7 @@ public class J2EEValidation extends J2eeTestCase {
      * - run project from context menu on project's root node
      * - wait until JSP Page is accessible through HTTP connection
      * - stop application server
+     * </pre>
      */
     public void testWebApplication() throws Exception {
         // workaround for jelly issue
@@ -231,15 +228,16 @@ public class J2EEValidation extends J2eeTestCase {
         }
     }
 
-    /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
-     * if timeout expires.
+    /**
+     * Opens URL connection and waits for given text. It throws
+     * TimeoutExpiredException if timeout expires.
+     *
      * @param urlSuffix suffix added to server URL
      * @param timeout time to wait
      * @param text text to be found
      */
     public static void waitText(final String urlSuffix, final long timeout, final String text) {
         Waitable waitable = new Waitable() {
-
             @Override
             public Object actionProduced(Object obj) {
                 InputStream is = null;

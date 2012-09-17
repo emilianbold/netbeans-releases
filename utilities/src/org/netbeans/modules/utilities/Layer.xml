@@ -228,4 +228,11 @@ made subject to such option by the copyright holder.
         </folder> <!-- lookups -->
     </folder> <!-- xml -->
     
+    <folder name="Keymaps">
+        <folder name="Idea">
+            <file name="DS-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-utilities-CopyPathToClipboard.instance"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -210,6 +210,11 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     }
 
     @Override
+    public long getCRC() {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }    
+
+    @Override
     public char[] getCharBuffer() throws IOException {
         return getSnapshot().getCharBuffer();
     }

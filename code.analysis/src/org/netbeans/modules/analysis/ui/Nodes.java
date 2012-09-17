@@ -127,7 +127,8 @@ public class Nodes {
                     AnalyzerFactory analyzer = typeEntry.getValue().keySet().iterator().next();
                     final Image icon = SPIAccessor.ACCESSOR.getAnalyzerIcon(analyzer);
 
-                    String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(findWarningDescription(analyzerId2Description, analyzer, typeEntry.getKey())) : null;
+                    WarningDescription wd = typeEntry.getKey() != null ? findWarningDescription(analyzerId2Description, analyzer, typeEntry.getKey()) : null;
+                    String typeDisplayName = wd != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(wd) : null;
                     long typeWarnings = 0;
 
                     for (List<ErrorDescription> v1 : typeEntry.getValue().values()) {

@@ -288,7 +288,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         
         private synchronized Task getRefreshContentTask() {
             if (refreshTask == null) {
-                refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+                refreshTask = new RequestProcessor(EngineListener.class.getName()).create(new Runnable() {
                     public void run() {
                         try {
                         HeapFragmentWalker fragmentWalker = ClassesCountsView.this.hfw;

@@ -58,7 +58,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -298,20 +297,17 @@ public class DebugSession extends SingleThread {
     }
 
     private boolean canSendSynchronCommand() {
-        Thread sessionThread = getSessionThread();
-        if (sessionThread == null) {
+        Thread currentSessionThread = getSessionThread();
+        if (currentSessionThread == null) {
             return false;
         }
-        if (sessionThread != Thread.currentThread()) {
-            assert sessionThread != null;
+        if (currentSessionThread != Thread.currentThread()) {
             printing146558(Thread.currentThread());
         }
         return true;
     }
 
     private void printing146558(Thread currentThread) {
-        Level level = Level.FINE;
-        assert (level = Level.WARNING) != null;
         IllegalStateException illegalStateException = new IllegalStateException(
                 "Method incorrect usage. It should be called in handler thread only. " + //NOI18N
                 "Called from thread: " + currentThread.getName() // NOI18N
@@ -319,7 +315,7 @@ public class DebugSession extends SingleThread {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
             illegalStateException.printStackTrace(new PrintStream(bos));
-            Logger.getLogger(DebugSession.class.getName()).log(level,
+            Logger.getLogger(DebugSession.class.getName()).log(Level.WARNING,
                     bos.toString());
         } finally {
             try {
@@ -523,7 +519,7 @@ public class DebugSession extends SingleThread {
 
     /*
      * This class is associated  with DebugSession but is intended for
-     * cooperation with IDE UI. 
+     * cooperation with IDE UI.
      */
     public class IDESessionBridge extends AbstractIDEBridge {
         /* (non-Javadoc)

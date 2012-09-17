@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.search;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,11 +51,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -76,7 +71,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -252,7 +246,7 @@ public class SearchPanel extends JPanel implements FocusListener,
                 this,
                 NbBundle.getMessage(getClass(), titleMsgKey),
                 false,
-                new Object[]{newTabCheckBox, okButton,  cancelButton},
+                new Object[]{okButton, cancelButton},
                 okButton,
                 DialogDescriptor.BOTTOM_ALIGN,
                 new HelpCtx(getClass().getCanonicalName() + "." + replacing),
@@ -260,12 +254,12 @@ public class SearchPanel extends JPanel implements FocusListener,
 
         dialogDescriptor.setTitle(NbBundle.getMessage(getClass(), titleMsgKey));
         dialogDescriptor.createNotificationLineSupport();
+        dialogDescriptor.setAdditionalOptions(new Object[] {newTabCheckBox});
 
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.addWindowListener(new DialogCloseListener());
         this.setDialogDescriptor(dialogDescriptor);
 
-        setControlsLayoutAndSizes();
         dialog.pack();
         setCurrentlyShown(this);
         dialog.setVisible(
@@ -432,40 +426,6 @@ public class SearchPanel extends JPanel implements FocusListener,
             return false;
         } else {
             return sp.isPreferScopeSelection();
-        }
-    }
-
-    /**
-     * Set layout and sizes of control buttons at the bottom of the dialog.
-     *
-     * Caution: This implementation can be dangerous, as changes in the
-     * DialogDescriptor can make it work incorrectly.
-     */
-    private void setControlsLayoutAndSizes() {
-        Container parent = newTabCheckBox.getParent();
-        if (parent == null) {
-            return;
-        }
-        double maxWidth = 0;
-        List<Integer> buttons = new LinkedList<Integer>();
-        for (int i = 0; i < parent.getComponentCount(); i++) {
-            Component c = parent.getComponent(i);
-            if (c instanceof JButton) {
-                maxWidth = Math.max(maxWidth, c.getPreferredSize().getWidth());
-                buttons.add(i);
-            }
-        }
-        if (maxWidth > 0 && !buttons.isEmpty()) {
-            parent.setLayout(new BoxLayout(parent, BoxLayout.LINE_AXIS));
-            int added = 0;
-            for (Integer origIndex : buttons) {
-                Component b = parent.getComponent(origIndex + added);
-                b.setPreferredSize(new Dimension((int) maxWidth,
-                        (int) b.getPreferredSize().getHeight()));
-                parent.add(Box.createHorizontalStrut(5),
-                        origIndex + added + 1);
-                added++;
-            }
         }
     }
 

@@ -5,7 +5,7 @@ test2 = ["a", "b"][0];
 test3 = [1, 2, [1, 2]];
 
 test4 = ["aaaaa", "bbbbb",
-        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]
+    "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]
 
 test5 = ["aaaaa", "bbbbb", ["xxx",
         "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]]

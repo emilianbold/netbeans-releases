@@ -102,6 +102,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
 
@@ -736,12 +737,13 @@ public class WSUtils {
     }
 
     private static void setProjectProperty( final AntProjectHelper helper,
-            final String propertyName, final String value ) throws MutexException
+            final String propertyName, final String value ) throws MutexException, IOException
     {
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            
             @Override
-            public Object run() throws IOException {
-                // and save the project
+            public void run() {
+             // and save the project
                 try {
                     EditableProperties ep = helper.getProperties(
                             AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -756,9 +758,9 @@ public class WSUtils {
                     ProjectManager.getDefault().saveProject(project);  
                 } 
                 catch(IOException ioe) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
-                }
-                return null;
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, 
+                            ioe.getLocalizedMessage(), ioe);
+                }                
             }
         });
     }

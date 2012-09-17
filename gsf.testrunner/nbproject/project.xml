@@ -188,6 +188,7 @@
                 <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.hudson</friend>
                 <friend>org.netbeans.modules.java.testrunner</friend>
+                <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.mobility.j2meunit</friend>

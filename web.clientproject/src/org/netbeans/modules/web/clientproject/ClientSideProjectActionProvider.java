@@ -72,6 +72,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                     COMMAND_MOVE,
                     COMMAND_COPY,
                     COMMAND_DELETE,
+                    COMMAND_TEST,
                 };
     }
 
@@ -112,8 +113,8 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             ap.invokeAction(command, context);
             return;
         }
-        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",
-                "Action not supported",
+        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration", //NOI18N
+                "Action not supported", //NOI18N
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.INFORMATION_MESSAGE,
                 new Object[]{NotifyDescriptor.OK_OPTION},
@@ -123,6 +124,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        ActionProvider ap = getActionProvider();
+        if (ap != null) {
+            return ap.isActionEnabled(command, context);
+        }
         return true;
     }
 

@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -61,10 +62,12 @@ import org.openide.util.CharSequences;
 
     protected ProjectNameBasedKey(int unitIndex) {
         this.unitIndex = unitIndex;
+        CndUtils.assertTrue(this.unitIndex > 10000, "Impossible unit index: ", unitIndex); //NOI18N
     }
 
     protected ProjectNameBasedKey(KeyDataPresentation presentation) {
         unitIndex = presentation.getUnitPresentation();
+        CndUtils.assertTrue(this.unitIndex > 10000, "Impossible unit index: ", unitIndex); //NOI18N
     }
 
     @Override

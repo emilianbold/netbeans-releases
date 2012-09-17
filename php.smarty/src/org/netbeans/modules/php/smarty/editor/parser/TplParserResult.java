@@ -181,6 +181,11 @@ public class TplParserResult extends ParserResult {
         public String getText() {
             return text;
         }
+
+        public int getFunctionNameLength() {
+            return function.length();
+        }
+        
     }
 
     public static class Block {

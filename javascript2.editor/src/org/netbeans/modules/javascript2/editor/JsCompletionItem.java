@@ -44,9 +44,9 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
@@ -181,30 +181,31 @@ public class JsCompletionItem implements CompletionProposal {
 
         private void appendParamsStr(HtmlFormatter formatter){
             LinkedHashMap<String, Collection<String>> allParameters = new LinkedHashMap<String, Collection<String>>();
-            
-            if(getElement() instanceof JsFunction) {
-                for (JsObject jsObject: ((JsFunction)getElement()).getParameters()) {
+
+            ElementHandle element = getElement();
+            if(element instanceof JsFunction) {
+                for (JsObject jsObject: ((JsFunction) element).getParameters()) {
                     Collection<String> types = new ArrayList();
                     for (TypeUsage type : jsObject.getAssignmentForOffset(jsObject.getOffset() + 1)) {
                         types.add(type.getType());
                     }
                     allParameters.put(jsObject.getName(), types);
                 }
-            } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
-                allParameters = ((IndexedElement.FunctionIndexedElement)getElement()).getParameters();
+            } else if (element instanceof IndexedElement.FunctionIndexedElement) {
+                allParameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
             }
-            for (Iterator<String> it = allParameters.keySet().iterator(); it.hasNext();) {
-                String name = it.next();
+            for (Iterator<Map.Entry<String, Collection<String>>> it = allParameters.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, Collection<String>> entry = it.next();
                 formatter.parameters(true);
-                formatter.appendText(name);
+                formatter.appendText(entry.getKey());
                 formatter.parameters(false);
-                Collection<String> types = allParameters.get(name);
+                Collection<String> types = entry.getValue();
                 if (!types.isEmpty()) {
                     formatter.type(true);
                     formatter.appendText(": ");  //NOI18N
                     for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
                         formatter.appendText(itTypes.next());
-                        if(itTypes.hasNext()) {
+                        if (itTypes.hasNext()) {
                             formatter.appendText("|");   //NOI18N
                         }
                     }
@@ -218,12 +219,14 @@ public class JsCompletionItem implements CompletionProposal {
 
         private void appendReturnTypes(HtmlFormatter formatter) {
             Collection<String> returnTypes = new ArrayList<String>();
-            if(getElement() instanceof JsFunction) {
-                for(TypeUsage type: ((JsFunction)getElement()).getReturnTypes()) {
+
+            ElementHandle element = getElement();
+            if (element instanceof JsFunction) {
+                for (TypeUsage type: ((JsFunction) element).getReturnTypes()) {
                     returnTypes.add((type.getType()));
                 }
-            } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
-                returnTypes.addAll(((IndexedElement.FunctionIndexedElement)getElement()).getReturnTypes());
+            } else if (element instanceof IndexedElement.FunctionIndexedElement) {
+                returnTypes.addAll(((IndexedElement.FunctionIndexedElement) element).getReturnTypes());
             }
             if (!returnTypes.isEmpty()) {
                 formatter.appendText(": "); //NOI18N
@@ -250,7 +253,6 @@ public class JsCompletionItem implements CompletionProposal {
 
     static class KeywordItem extends JsCompletionItem {
         private static  ImageIcon keywordIcon = null;
-        private String description = null;
         private String keyword = null;
 
         public KeywordItem(String keyword, CompletionRequest request) {
@@ -278,13 +280,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                formatter.appendHtml(description);
-                return formatter.getText();
-
-            } else {
-                return null;
-            }
+            return null;
         }
 
         @Override

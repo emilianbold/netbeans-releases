@@ -133,8 +133,8 @@ public class JPQLEditorCodeCompletionProvider implements CompletionProvider {
                         results = null;
                         anchorOffset = -1;
                         Source source = Source.create(doc);
-                        PUDataObject puObject = null;
-                        JavaSource js = null;
+                        PUDataObject puObject;
+                        JavaSource js;
                         if (source != null) {
                             JPQLEditorTopComponent tc = (JPQLEditorTopComponent) NbEditorUtilities.getTopComponent(component);
                             puObject = tc.getDataObject();

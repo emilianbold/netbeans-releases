@@ -72,9 +72,11 @@ import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -440,7 +442,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             final boolean[] found = new boolean[1];
-            for (CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
+            for (final CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
                 final Model sourceModel = result.getModel();
                 sourceModel.runReadTask(new Model.ModelTask() {
                     @Override
@@ -456,19 +458,24 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                     Declaration declaration = declarations.get(i);
                                     Property property = declaration.getProperty();
                                     String propertyName = property.getContent().toString().trim();
-                                    if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
-                                        controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
-                                    } else {
-                                        if (!active.contains(propertyName)) {
-                                            // Properties that were not parsed successfully
-                                            // do not override other properties.
-                                            PropertyValue propertyValue = declaration.getPropertyValue();
-                                            Expression expression = propertyValue.getExpression();
-                                            String value = expression.getContent().toString().trim();
-                                            if (isParsedOk(propertyName, value)) {
+                                    PropertyValue propertyValue = declaration.getPropertyValue();
+                                    Expression expression = propertyValue.getExpression();
+                                    String value = expression.getContent().toString().trim();
+                                    if (isIEHackIgnoredByWebKit(property, result.getSnapshot())) {
+                                        controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
+                                    } else if (isParsedOk(propertyName, value)) {
+                                        if (!ruleInfo.isInherited() || CSSUtils.isInheritedProperty(propertyName)) {
+                                            if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
+                                                controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
+                                            } else {
                                                 active.add(propertyName);
                                             }
+                                        } else {
+                                            // Inherited rule but a property that is not inherited
+                                            controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
                                         }
+                                    } else {
+                                        controller.setDeclarationInfo(declaration, DeclarationInfo.ERRONEOUS);
                                     }
                                 }
                             }
@@ -483,6 +490,21 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             if (!found[0]) {
                 controller.setNoRuleState();
             }
+        }
+
+        /**
+         * Determines whether the given property uses star or underscore
+         * hack to affect Internet Explorer only.
+         * 
+         * @param property property to check.
+         * @param snapshot snapshot of the styleSheet.
+         * @return {@code true} when the property uses star or underscore hack.
+         */
+        private boolean isIEHackIgnoredByWebKit(Property property, Snapshot snapshot) {
+            String styleSheetText = snapshot.getText().toString();
+            int startOffset = property.getStartOffset();
+            char c = styleSheetText.charAt(startOffset-1);
+            return (c == '_' || c == '*');
         }
 
     }

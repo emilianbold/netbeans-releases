@@ -409,6 +409,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             if(tokenID instanceof CppTokenId) {
                 switch ((CppTokenId)tokenID) {
                     case PREPROCESSOR_START:
+                    case PREPROCESSOR_START_ALT:
                     case WHITESPACE:
                     case BLOCK_COMMENT:
                     case ESCAPED_LINE:

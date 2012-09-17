@@ -427,7 +427,15 @@ public final class CndFileUtils {
     public static boolean isLocalFileSystem(FileSystem fs) {
         return fs == getLocalFileSystem();
     }
-    
+
+    public static boolean isLocalFileSystem(FileObject fo) {
+        try {
+            return fo.getFileSystem() == getLocalFileSystem();
+        } catch (FileStateInvalidException ex) {
+            return false;
+        }
+    }
+
     private static void index(FileSystem fs, String path, ConcurrentMap<String, Flags> files) {
         if (isLocalFileSystem(fs)) {
             File file = new File(path);

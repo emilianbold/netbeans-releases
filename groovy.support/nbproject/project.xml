@@ -305,7 +305,8 @@
                 <friend>org.netbeans.modules.groovy.grails</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.groovy.griffon</friend>
-                <!--<friend>org.netbeans.modules.groovy.javaee</friend>-->
+                <friend>org.netbeans.modules.groovy.ejbproject</friend>
+                <friend>org.netbeans.modules.groovy.webproject</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <friend>org.netbeans.modules.maven.groovy</friend>
                 <package>org.netbeans.modules.groovy.support.api</package>

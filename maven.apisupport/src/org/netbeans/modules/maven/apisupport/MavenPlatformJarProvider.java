@@ -89,7 +89,7 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
             Project parent = MavenNbModuleImpl.findAppProject(project);
             app = parent != null ? parent.getLookup().lookup(NbMavenProject.class) : null;
             if (app == null) { // #202946: standalone or suite component
-                File ide = MavenNbModuleImpl.findIDEInstallation(nbmp);
+                File ide = MavenNbModuleImpl.findIDEInstallation(project);
                 return ide != null ? allModulesIn(ide) : Collections.<File>emptySet();
             }
         } else {

@@ -4,7 +4,7 @@
  *  Prototype is freely distributable under the terms of an MIT-style license.
  *  For details, see the Prototype web site: http://prototype.conio.net/
  *
-/*--------------------------------------------------------------------------*/
+ /*--------------------------------------------------------------------------*/
 
 var Prototype = {
     Version: '1.5.0',
@@ -862,9 +862,9 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
                     (this.options.encoding ? '; charset=' + this.options.encoding : '');
 
             /* Force "Connection: close" for older Mozilla browsers to work
-       * around a bug where XMLHttpRequest sends an incorrect
-       * Content-length header. See Mozilla Bugzilla #246651.
-       */
+             * around a bug where XMLHttpRequest sends an incorrect
+             * Content-length header. See Mozilla Bugzilla #246651.
+             */
             if (this.transport.overrideMimeType &&
                     (navigator.userAgent.match(/Gecko\/(\d{4})/) || [0, 2005])[1] < 2005)
                 headers['Connection'] = 'close';
@@ -1868,10 +1868,10 @@ Form.Methods = {
     getElements: function(form) {
         return $A($(form).getElementsByTagName('*')).inject([],
                 function(elements, child) {
-            if (Form.Element.Serializers[child.tagName.toLowerCase()])
-                elements.push(Element.extend(child));
-            return elements;
-        }
+                    if (Form.Element.Serializers[child.tagName.toLowerCase()])
+                        elements.push(Element.extend(child));
+                    return elements;
+                }
         );
     },
     getInputs: function(form, typeName, name) {
@@ -2199,7 +2199,7 @@ Object.extend(Event, {
 
         if (name == 'keypress' &&
                 (navigator.appVersion.match(/Konqueror|Safari|KHTML/)
-                || element.attachEvent))
+                        || element.attachEvent))
             name = 'keydown';
 
         Event._observeAndCache(element, name, observer, useCapture);
@@ -2210,7 +2210,7 @@ Object.extend(Event, {
 
         if (name == 'keypress' &&
                 (navigator.appVersion.match(/Konqueror|Safari|KHTML/)
-                || element.detachEvent))
+                        || element.detachEvent))
             name = 'keydown';
 
         if (element.removeEventListener) {

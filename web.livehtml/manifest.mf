@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
+AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.web.livehtml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/livehtml/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager

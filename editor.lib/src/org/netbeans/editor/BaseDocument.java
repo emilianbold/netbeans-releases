@@ -95,6 +95,7 @@ import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
+import org.netbeans.modules.editor.lib.BeforeSaveTasks;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
@@ -108,8 +109,9 @@ import org.netbeans.modules.editor.lib2.document.ContentEdit;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
-import org.netbeans.modules.editor.lib2.document.LineElementRoot;
+import org.netbeans.modules.editor.lib2.document.LineRootElement;
 import org.netbeans.modules.editor.lib2.document.ListUndoableEdit;
+import org.netbeans.modules.editor.lib2.document.ModRootElement;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
@@ -299,7 +301,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 //    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
-    LineElementRoot lineElementRoot;
+    LineRootElement lineRootElement;
 
     /** Last document event to be undone. The field is filled
      * by the lastly done modification undoable edit.
@@ -541,7 +543,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         });
         putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
-        lineElementRoot = new LineElementRoot(this);
+        lineRootElement = new LineRootElement(this);
 
         // Line separators default to platform ones
         putProperty(READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
@@ -568,7 +570,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
         findSupportChange(null); // update doc by find settings
 
-        TrailingWhitespaceRemove.install(this);
+        ModRootElement modElementRoot = new ModRootElement(this);
+        this.addUpdateDocumentListener(modElementRoot);
+        modElementRoot.setEnabled(true);
+
+        BeforeSaveTasks.get(this); // Ensure that "beforeSaveRunnable" gets initialized
 
         undoEditWrappers = MimeLookup.getLookup(mimeType).lookupAll(UndoableEditWrapper.class);
         if (undoEditWrappers != null && undoEditWrappers.isEmpty()) {
@@ -1047,7 +1053,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
                 ((BaseDocumentEvent)chng).getText());
 
-        lineElementRoot.insertUpdate(chng, attr);
+        lineRootElement.insertUpdate(chng, attr);
 
         fixLineSyntaxState.update(false);
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
@@ -1075,7 +1081,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         // Remember the line changes here but add them to chng during postRemoveUpdate()
         // in order to satisfy the legacy syntax update mechanism
-        removeUpdateLineUndo = lineElementRoot.legacyRemoveUpdate(chng);
+        removeUpdateLineUndo = lineRootElement.legacyRemoveUpdate(chng);
 
         fixLineSyntaxState = new FixLineSyntaxState(chng);
         chng.addEdit(fixLineSyntaxState.createBeforeLineUndo());
@@ -1335,7 +1341,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Return default root element */
     public @Override Element getDefaultRootElement() {
         if (defaultRootElem == null) {
-            defaultRootElem = lineElementRoot;
+            defaultRootElem = lineRootElement;
         }
         return defaultRootElem;
     }
@@ -1420,7 +1426,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             // Reset modified regions accounting after the initial load
             Boolean inPaste = BaseKit.IN_PASTE.get();
             if (inPaste == null || !inPaste) {
-                TrailingWhitespaceRemove.install(this).resetModRegions();
+                ModRootElement modElementRoot = ModRootElement.get(this);
+                if (modElementRoot != null) {
+                    modElementRoot.resetMods(null);
+                }
             }
             lastModifyUndoEdit = null;
         } finally {
@@ -1970,7 +1979,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     public @Override Element getParagraphElement(int pos) {
-        return lineElementRoot.getElement(lineElementRoot.getElementIndex(pos));
+        return lineRootElement.getElement(lineRootElement.getElementIndex(pos));
     }
 
     /** Returns object which represent list of annotations which are

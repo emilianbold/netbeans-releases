@@ -146,7 +146,7 @@ public final class MavenProjectCache {
         MavenEmbedder projectEmbedder = EmbedderFactory.getProjectEmbedder();
         MavenProject newproject = null;
         //TODO have independent from M2AuxiliaryConfigImpl
-        AuxiliaryConfiguration aux = new M2AuxilaryConfigImpl(projectDirectory);
+        AuxiliaryConfiguration aux = new M2AuxilaryConfigImpl(projectDirectory, false);
         ActiveConfigurationProvider config = new ActiveConfigurationProvider(projectDirectory, aux);
         M2Configuration active = config.getActiveConfiguration();
         final File pomFile = new File(FileUtil.toFile(projectDirectory), "pom.xml");

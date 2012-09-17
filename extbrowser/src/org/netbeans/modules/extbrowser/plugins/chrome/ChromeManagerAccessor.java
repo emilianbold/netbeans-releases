@@ -47,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -67,6 +69,7 @@ import org.netbeans.modules.extbrowser.plugins.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -78,6 +81,13 @@ import org.openide.util.Utilities;
  *
  */
 public class ChromeManagerAccessor implements ExtensionManagerAccessor {
+    
+    private static final String NO_WEB_STORE_SWITCH=
+            "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
+    
+    // XXX: change it to the real plugin url for FCS
+    private static final String PLUGIN_PAGE= 
+            "https://chrome.google.com/webstore/detail/icpgjfneehieebagbmdbhnlpiopdcmna?utm_campaign=en&utm_source=en-et-na-us-oc-webstrhm";// NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor#getManager()
@@ -98,7 +108,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String PLUGIN_NAME = "NetBeans IDE Support Plugin";// NOI18N
         
-        private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-chrome-plugin.crx"; // NOI18N
+        private static final String EXTENSION_PATH = "modules/lib/netbeans-ros-chrome-plugin.crx"; // NOI18N
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
@@ -187,33 +197,14 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return false;
             }
             
+            String useManualInstallation = System.getProperty( NO_WEB_STORE_SWITCH );
             try {
-                JButton continueButton = new JButton(NbBundle.getMessage(
-                        ChromeExtensionManager.class, "LBL_Continue"));                       // NOI18N
-                continueButton.getAccessibleContext().setAccessibleName(NbBundle.
-                        getMessage(ChromeExtensionManager.class, "ACSN_Continue"));    // NOI18N
-                continueButton.getAccessibleContext().setAccessibleDescription(NbBundle.
-                        getMessage(ChromeExtensionManager.class, "ACSD_Continue"));    // NOI18N
-                DialogDescriptor descriptor = new DialogDescriptor(
-                        new ChromeInfoPanel(extensionFile.getCanonicalPath(), 
-                                loader, currentStatus), 
-                        NbBundle.getMessage(ChromeExtensionManager.class, 
-                                "TTL_InstallExtension"), true, 
-                        new Object[]{continueButton, 
-                                DialogDescriptor.CANCEL_OPTION}, continueButton, 
-                                DialogDescriptor.DEFAULT_ALIGN, null, null);
-                while (true) {
-                    Object result = DialogDisplayer.getDefault().notify(descriptor);
-                    if (result == continueButton) {
-                        ExtensitionStatus status = isInstalled();
-                        if ( status!= ExtensitionStatus.INSTALLED){
-                            continue;
-                        } else {
-                            return true;
-                        }
-                    } else {
-                        return false;
-                    }
+                if ( useManualInstallation !=null ){
+                    return manualInstallPluginDialog(loader, currentStatus, extensionFile);
+                }
+                else {
+                    alertGoogleWebStore();
+                    return false;
                 }
             }
             catch( IOException e ){
@@ -342,6 +333,65 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             } 
             else {
                 return Utils.getUserPaths("/.config/google-chrome", "/.config/chrome");// NOI18N
+            }
+        }
+        
+        private boolean manualInstallPluginDialog( PluginLoader loader,
+                ExtensionManager.ExtensitionStatus currentStatus,
+                File extensionFile ) throws IOException
+        {
+            JButton continueButton = new JButton(NbBundle.getMessage(
+                    ChromeExtensionManager.class, "LBL_Continue"));                // NOI18N
+            continueButton.getAccessibleContext().setAccessibleName(NbBundle.
+                    getMessage(ChromeExtensionManager.class, "ACSN_Continue"));    // NOI18N
+            continueButton.getAccessibleContext().setAccessibleDescription(NbBundle.
+                    getMessage(ChromeExtensionManager.class, "ACSD_Continue"));    // NOI18N
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    new ChromeInfoPanel(extensionFile.getCanonicalPath(), 
+                            loader, currentStatus), 
+                    NbBundle.getMessage(ChromeExtensionManager.class, 
+                            "TTL_InstallExtension"), true, 
+                    new Object[]{continueButton, 
+                            DialogDescriptor.CANCEL_OPTION}, continueButton, 
+                            DialogDescriptor.DEFAULT_ALIGN, null, null);
+            while (true) {
+                Object result = DialogDisplayer.getDefault().notify(descriptor);
+                if (result == continueButton) {
+                    ExtensitionStatus status = isInstalled();
+                    if ( status!= ExtensitionStatus.INSTALLED){
+                        continue;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        
+        private void alertGoogleWebStore(){
+            JButton goToButton = new JButton(NbBundle.getMessage(
+                    ChromeExtensionManager.class, "LBL_GoToWebStore"));            // NOI18N
+            goToButton.getAccessibleContext().setAccessibleName(NbBundle.
+                    getMessage(ChromeExtensionManager.class, "ACSN_GoToWebStore"));    // NOI18N
+            goToButton.getAccessibleContext().setAccessibleDescription(NbBundle.
+                    getMessage(ChromeExtensionManager.class, "ACSD_GoToWebStore"));    // NOI18N
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    new WebStorePanel(), 
+                    NbBundle.getMessage(ChromeExtensionManager.class, 
+                            "TTL_InstallExtension"), true, 
+                    new Object[]{goToButton, 
+                            DialogDescriptor.CANCEL_OPTION}, goToButton, 
+                            DialogDescriptor.DEFAULT_ALIGN, null, null);
+            Object result = DialogDisplayer.getDefault().notify(descriptor);
+            if ( result == goToButton ){
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(
+                            URI.create(PLUGIN_PAGE).toURL());
+                }
+                catch(MalformedURLException e){
+                    assert false;
+                }
             }
         }
         

@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -98,6 +99,7 @@ public class VCSAnnotationProviderTestCase extends NbTestCase {
         DummyVCS.topmostFile = VCSFileProxy.createFileProxy(workDirFO);
     }
 
+    @RandomlyFails
     public void testAnnotationChanged () throws Exception {
         
         HashMap<FileObject, String> expectedLabelAnnotations = new HashMap<FileObject, String>();

@@ -328,7 +328,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
-                    new CPPImpl(sources)
+                    new CPPImpl(sources),
+                    this
                 };
         
         MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());

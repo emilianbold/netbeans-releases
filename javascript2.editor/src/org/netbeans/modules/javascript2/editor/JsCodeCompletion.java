@@ -107,7 +107,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
         
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
-        CodeCompletionResult result = CodeCompletionResult.NONE;
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
             request.context = context;
@@ -227,7 +226,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
                 default:
-                    result = CodeCompletionResult.NONE;
+                    break;
             }
         }
         
@@ -274,6 +273,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             } catch (ParseException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
             }
+        } else if (element instanceof JsObject) {
+            JsObject jsObject = (JsObject) element;
+            if (jsObject.getDocumentation() != null) {
+                documentation.append(jsObject.getDocumentation());
+            }
         }
         if (documentation.length() == 0) {
             String doc = jqueryCC.getHelpDocumentation(info, element);
@@ -299,17 +303,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         String prefix = "";
+
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return null;
         }
 
-
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
-
-
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
-
+        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
         }
@@ -344,7 +345,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
-                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq =
+                        LexUtilities.getJsDocumentationTokenSequence(info.getSnapshot(), caretOffset);
                 if (docTokenSeq == null) {
                     return null;
                 }
@@ -365,6 +367,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // get the token before
                     docTokenSeq.movePrevious();
                     prefix = docTokenSeq.token().text().toString();
+                }
+            }
+            if (id.isError()) {
+                prefix = token.text().toString();
+                if (upToOffset) {
+                    prefix = prefix.substring(0, caretOffset - ts.offset());
                 }
             }
         }
@@ -478,8 +486,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
                     && token.id() != JsTokenId.BLOCK_COMMENT
-                    && token.id() != JsTokenId.LINE_COMMENT) {
-                
+                    && token.id() != JsTokenId.LINE_COMMENT
+                    && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
+                    && token.id() != JsTokenId.OPERATOR_PLUS) {
+
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
@@ -651,20 +661,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             
             // create code completion results
-            for(String name : addedProperties.keySet()) {
-                JsElement element = addedProperties.get(name);
+            for (JsElement element : addedProperties.values()) {
                 resultList.add(JsCompletionItem.Factory.create(element, request));
             }
         }
-    }
-    
-    private JsObject findObjectForOffset(String name, int offset, Model model) {
-        for (JsObject object : model.getVariables(offset)) {
-            if (object.getName().equals(name)) {
-                return object;
-            }
-        }
-        return null;
     }
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {

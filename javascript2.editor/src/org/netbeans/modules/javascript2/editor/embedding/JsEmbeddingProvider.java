@@ -108,16 +108,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             // no-op
         }
 
-        public
         @Override
-        Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             //filter out transitive embedding creations like JSP -> HTML -> JavaScript
             //we have a direct translator for them JSP -> JavaScript
-            //but not in case of xhtml as source mimetype :-( grrr, this is hacking!!!
-            if (!snapshot.getSource().getMimeType().equals("text/xhtml")) {
-                if (snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
-                    return null;
-                }
+            if (snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
+                return null;
             }
 
             Translator t = translators.get(snapshot.getMimeType());
@@ -133,7 +129,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // Public implementation
     // ------------------------------------------------------------------------
     public static boolean isGeneratedIdentifier(String ident) {
-        return GENERATED_IDENTIFIER.trim().equals(ident);
+        return GENERATED_IDENTIFIER.equals(ident);
+    }
+    
+    public static boolean containsGeneratedIdentifier(String ident) {
+        return ident.contains(GENERATED_IDENTIFIER);
     }
     // ------------------------------------------------------------------------
     // Private implementation
@@ -159,9 +159,8 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(TPL_MIME_TYPE, new TplTranslator());
     }
     // If you change this, update the testcase reference
-    // in javascript.hints/test/unit/data/testfiles/generated.js
-    // Also sync Rhino's Parser.java patched class
-    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
+    private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
+
     /** PHPTokenId's T_INLINE_HTML name */
     private static final String T_INLINE_HTML = "T_INLINE_HTML";
     private final String sourceMimeType;

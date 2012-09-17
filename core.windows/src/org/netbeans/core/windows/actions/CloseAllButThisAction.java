@@ -84,9 +84,6 @@ implements PropertyChangeListener, Runnable {
         putValue(NAME, NbBundle.getMessage(CloseAllButThisAction.class,
             "CTL_CloseAllButThisAction_MainMenu")); //NOI18N
 
-        TopComponent.getRegistry().addPropertyChangeListener(
-            WeakListeners.propertyChange(this, TopComponent.getRegistry()));
-        updateEnabled();
         updateTimer = new Timer( 300, new ActionListener() {
 
             @Override
@@ -95,6 +92,10 @@ implements PropertyChangeListener, Runnable {
             }
         });
         updateTimer.setRepeats( false );
+
+        TopComponent.getRegistry().addPropertyChangeListener(
+            WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        updateEnabled();
     }
     
     public CloseAllButThisAction(TopComponent topComp, boolean isContext) {

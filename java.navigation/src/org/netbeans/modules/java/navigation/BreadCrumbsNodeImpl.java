@@ -48,11 +48,16 @@ import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
@@ -155,14 +160,12 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        if (icon != null) return icon;
-        return super.getIcon(type);
+        return icon;
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        if (icon != null) return icon;
-        return super.getOpenedIcon(type);
+        return icon;
     }
 
     private static final String CONSTRUCTOR_NAME = "<init>";
@@ -180,7 +183,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                 case INTERFACE:
                 case ENUM:
                 case ANNOTATION_TYPE:
-                    return new BreadCrumbsNodeImpl(tph, iconFor(info, path), ((ClassTree) leaf).getSimpleName().toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(tph, iconFor(info, path), className(path), info.getFileObject(), pos);
                 case METHOD:
                     MethodTree mt = (MethodTree) leaf;
                     CharSequence name;
@@ -278,7 +281,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         return null;
     }
     
-    private static final Image DEFAULT_ICON = ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/statement.png");
+    private static final Image DEFAULT_ICON = null;
     
     private static Image iconFor(CompilationInfo info, TreePath path) {
         Element el = info.getTrees().getElement(path);
@@ -286,6 +289,33 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         Icon icon = ElementIcons.getElementIcon(el.getKind(), el.getModifiers());
         if (icon == null) return DEFAULT_ICON;
         return ImageUtilities.icon2Image(icon);
+    }
+    
+    private static String className(TreePath path) {
+        ClassTree ct = (ClassTree) path.getLeaf();
+        
+        if (path.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+            NewClassTree nct = (NewClassTree) path.getParentPath().getLeaf();
+            
+            if (nct.getClassBody() == ct) {
+                return simpleName(nct.getIdentifier());
+            }
+        }
+        
+        return ct.getSimpleName().toString();
+    }
+    
+    private static String simpleName(Tree t) {
+        switch (t.getKind()) {
+            case PARAMETERIZED_TYPE:
+                return simpleName(((ParameterizedTypeTree) t).getType());
+            case IDENTIFIER:
+                return ((IdentifierTree) t).getName().toString();
+            case MEMBER_SELECT:
+                return ((MemberSelectTree) t).getIdentifier().toString();
+            default:
+                return "";//XXX
+        }
     }
     
     private static final class ChildrenFactoryImpl extends ChildFactory<Node> {

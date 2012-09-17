@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -61,6 +63,8 @@ class FailedPatchResolver {
     private static final String PREFIX_APPLYING = "applying "; //NOI18N
     private static final String PREFIX_PATCHING_FILE = "patching file "; //NOI18N
     private static final String SAVING_REJECTS = "saving rejects to file "; //NOI18N
+    private static final String MISSING_FILE = "unable to find "; //NOI18N
+    private static final Pattern MISSING_FILE_PATTERN = Pattern.compile("unable to find \'(.*)\' for patching"); //NOI18N
     
     private String failedPatch;
     private Map<File, File> rejects;
@@ -86,6 +90,11 @@ class FailedPatchResolver {
                 failedPatch = line.substring(PREFIX_APPLYING.length());
             } else if (normalizedLine.startsWith(PREFIX_PATCHING_FILE)) {
                 patchedFile = line.substring(PREFIX_PATCHING_FILE.length());
+            } else if (normalizedLine.contains(MISSING_FILE)) {
+                Matcher m = MISSING_FILE_PATTERN.matcher(line);
+                if (m.matches()) {
+                    patchedFile = m.group(1);
+                }
             } else if (normalizedLine.contains(SAVING_REJECTS)) {
                 failure = true;
                 if (patchedFile != null) {

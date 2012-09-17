@@ -232,14 +232,16 @@ public final class FindDialogMemory {
         openInNewTab = prefs.getBoolean(PROP_OPEN_IN_NEW_TAB, true);
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
         replExpressions = new ArrayList<String>(maxReplExprCount);
-        ignoreList = new ArrayList();
+        ignoreList = new ArrayList<String>();
         for(int i=0; i < maxFileNamePatternCount; i++){
             String fileNamePattern = prefs.get(PROP_FILENAME_PATTERN_PREFIX + i, null);
-            if (fileNamePattern != null)
+            if (fileNamePattern != null) {
                 fileNamePatterns.add(fileNamePattern);
+            }
             String replacePattern = prefs.get(PROP_REPLACE_PATTERN_PREFIX + i, null);
-            if (replacePattern != null)
+            if (replacePattern != null) {
                 replExpressions.add(replacePattern);
+            }
         }
         int i = 0;
         while (true) {

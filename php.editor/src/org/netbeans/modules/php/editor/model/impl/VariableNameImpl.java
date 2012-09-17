@@ -484,11 +484,10 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
         void process() {
             Collection<? extends TypeScope> types = getTypes(startOffset);
-            FieldElementImpl field = null;
             TypeScope type = ModelUtils.getFirst(types);
             if (type instanceof ClassScope) {
                 ClassScope cls = (ClassScope) type;
-                field = (FieldElementImpl) ModelUtils.getFirst(cls.getDeclaredFields(), fldName);
+                FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.getDeclaredFields(), fldName);
                 if (field != null) {
                     FieldAssignmentImpl fa = new FieldAssignmentImpl(VariableNameImpl.this, (FieldElementImpl) field, scope, scope.getBlockRange(), range, typeName);
                     addElement(fa);

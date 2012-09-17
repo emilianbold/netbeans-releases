@@ -918,16 +918,17 @@ FIRST_MOD options { constText=true; } :
     '%' ( {$setType(MOD);}                  //MOD             : '%' ;
     | '=' {$setType(MODEQUAL);}             //MODEQUAL        : "%=" ;
     | '>' {$setType(RCURLY);}               //RCURLY          : "%>" ;
-    | ':' ( {isPreprocPending()}? {$setType(SHARP);}     
+    | ':' ( {isPreprocPending()}? {$setType(SHARP);}
         | {isPreprocPending()}? '%' ':' {$setType(DBL_SHARP);}
         | {!isPreprocPossible()}? {$setType(SHARP);}
         | {isPreprocPossible()}?
             {
+                $setType(PREPROC_DIRECTIVE);
                 setPreprocPossible(false);
                 setPreprocPending(true);
                 setPPDefinedAllowed(true);
             }
-            (options{greedy = true;}:Space)*
+            (options{greedy = true;}:Space|COMMENT)*
             (  // lexer has no token labels
               ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
             | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
@@ -1092,11 +1093,12 @@ PREPROC_DIRECTIVE :
                  |
                     {isPreprocPossible()}? 
                     {
+                        $setType(PREPROC_DIRECTIVE);
                         setPreprocPossible(false);
                         setPreprocPending(true);
                         setPPDefinedAllowed(true);
                     }
-                    (options{greedy = true;}:Space)*
+                    (options{greedy = true;}:Space|COMMENT)*
                     (  // lexer has no token labels
                       ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
                     | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 

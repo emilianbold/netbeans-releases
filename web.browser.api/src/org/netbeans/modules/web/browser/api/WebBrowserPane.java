@@ -230,7 +230,7 @@ public final class WebBrowserPane {
         }
     }
     
-    void setProjectContext(Lookup projectContext) {
+    public void setProjectContext(Lookup projectContext) {
         lastProjectContext = projectContext;
         if ( impl != null && impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).setProjectContext(projectContext);

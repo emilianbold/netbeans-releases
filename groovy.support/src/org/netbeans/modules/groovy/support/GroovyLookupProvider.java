@@ -52,9 +52,14 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hejl
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
+@LookupProvider.Registration(projectType={
+        "org-netbeans-modules-java-j2seproject",
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject"
+    })
 public class GroovyLookupProvider implements LookupProvider {
 
+    @Override
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project project = baseContext.lookup(Project.class);
         if (project == null) {

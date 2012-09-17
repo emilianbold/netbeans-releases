@@ -68,6 +68,7 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -526,6 +527,7 @@ public class FileStatusCache {
     private void refreshFileStatus(File file, FileInformation fi) {
         if(file == null || fi == null) return;
         FileInformation current;
+        boolean fireEvent = true;
         synchronized (this) {
             file = FileUtil.normalizeFile(file);
             current = getInfo(file);
@@ -539,7 +541,12 @@ public class FileStatusCache {
             }
             if (equivalent(fi, current)) {
                 // no need to fire an event
-                return;
+                if (Utilities.isWindows() || Utilities.isMac()) {
+                    // but for these we need to update keys in cache because of renames AAA.java -> aaa.java
+                    fireEvent = false;
+                } else {
+                    return;
+                }
             }
             boolean addToIndex = false;
             if (fi.getStatus().equals(EnumSet.of(Status.UNKNOWN))) {
@@ -553,7 +560,9 @@ public class FileStatusCache {
             }
             updateIndex(file, fi, addToIndex);
         }
-        fireFileStatusChanged(file, current, fi);
+        if (fireEvent) {
+            fireFileStatusChanged(file, current, fi);
+        }
     }
 
     /**

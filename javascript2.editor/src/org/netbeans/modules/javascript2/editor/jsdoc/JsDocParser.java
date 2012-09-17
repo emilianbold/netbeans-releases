@@ -126,7 +126,9 @@ public class JsDocParser {
                 continue;
             }
 
-            if (token.id() == JsDocumentationTokenId.KEYWORD || token.id() == JsDocumentationTokenId.COMMENT_END) {
+            JsDocElementType elementType = getJsDocKeywordType(CharSequenceUtilities.toString(token.text()));
+            if ((token.id() == JsDocumentationTokenId.KEYWORD && elementType != JsDocElementType.UNKNOWN
+                    && elementType != JsDocElementType.LINK) || token.id() == JsDocumentationTokenId.COMMENT_END) {
                 if (sb.toString().trim().isEmpty()) {
                     // simple tag
                     if (type != null) {
@@ -175,5 +177,9 @@ public class JsDocParser {
             }
         }
         return JsDocCommentType.DOC_COMMON;
+    }
+
+    private static JsDocElementType getJsDocKeywordType(String string) {
+        return JsDocElementType.fromString(string);
     }
 }

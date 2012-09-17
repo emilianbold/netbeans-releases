@@ -1,6 +1,6 @@
---- JavaScriptColoringLexer.java	2011-12-08 14:12:54.000000000 +0100
-+++ JavaScriptColoringLexer.java.patched	2011-12-08 14:14:23.000000000 +0100
-@@ -888,7 +888,7 @@
+--- JavaScriptColoringLexer.java	2012-09-11 23:38:58.281577587 +0200
++++ JavaScriptColoringLexer.java.patched	2012-09-11 23:38:58.353577605 +0200
+@@ -982,7 +982,7 @@
     * Returns the text matched by the current regular expression.
     */
    public final String yytext() {
@@ -9,7 +9,7 @@
    }
  
  
-@@ -904,7 +904,7 @@
+@@ -998,7 +998,7 @@
     * @return the character at position pos
     */
    public final char yycharat(int pos) {
@@ -18,7 +18,7 @@
    }
  
  
-@@ -912,7 +912,7 @@
+@@ -1006,7 +1006,7 @@
     * Returns the length of the matched text region.
     */
    public final int yylength() {
@@ -27,7 +27,7 @@
    }
  
  
-@@ -955,7 +955,7 @@
+@@ -1049,7 +1049,7 @@
      if ( number > yylength() )
        zzScanError(ZZ_PUSHBACK_2BIG);
  
@@ -36,7 +36,7 @@
    }
  
  
-@@ -988,7 +988,7 @@
+@@ -1082,7 +1082,7 @@
  
        zzAction = -1;
  
@@ -45,7 +45,7 @@
    
        zzState = ZZ_LEXSTATE[zzLexicalState];
  
-@@ -996,30 +996,15 @@
+@@ -1090,30 +1090,15 @@
        zzForAction: {
          while (true) {
      
@@ -82,7 +82,7 @@
            int zzNext = zzTransL[ zzRowMapL[zzState] + zzCMapL[zzInput] ];
            if (zzNext == -1) break zzForAction;
            zzState = zzNext;
-@@ -1027,7 +1012,7 @@
+@@ -1121,7 +1106,7 @@
            int zzAttributes = zzAttrL[zzState];
            if ( (zzAttributes & 1) == 1 ) {
              zzAction = zzState;
@@ -91,7 +91,7 @@
              if ( (zzAttributes & 8) == 8 ) break zzForAction;
            }
  
-@@ -1035,7 +1020,9 @@
+@@ -1129,7 +1114,9 @@
        }
  
        // store back cached position
@@ -101,4 +101,4 @@
 +      }
  
        switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
-         case 38: 
+         case 40: 

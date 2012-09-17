@@ -77,6 +77,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -130,10 +132,13 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
     "CTL_HierarchyTopComponent=Hierarchy",
     "HINT_HierarchyTopComponent=This is a Hierarchy window"
 })
-public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
+public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener, ListDataListener {
 
     private static final int NOW = 0;
     private static final int JDOC_TIME = 500;
+    private static final int COMBO_HEIGHT = 20;
+    private static final int MIN_HISTORY_WIDTH = 50;
+    private static final int MIN_TYPE_WIDTH = 100;
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
     @StaticResource
@@ -143,7 +148,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final String NON_ACTIVE_CONTENT = "non-active-content";  //NOI18N
     private static final String ACTIVE_CONTENT = "active-content";  //NOI18N
     private static final String PROP_LOWER_TOOLBAR_EXPANDED = "filtersPanelTap.expanded"; //NOI18N
-    private static final int MIN_HISTORY_WIDTH = 50;
     
     private static HierarchyTopComponent instance;
 
@@ -164,9 +168,12 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final HistorySupport history;
 
     @NbBundle.Messages({
-        "TXT_RefreshContent=Refresh",
-        "TXT_OpenJDoc=Open Javadoc Window",
-        "TXT_NonActiveContent=<No View Available - Refresh Manually>"
+        "TXT_NonActiveContent=<No View Available - Refresh Manually>",
+        "TXT_InspectHierarchyHistory=<empty>",
+        "TOOLTIP_RefreshContent=Refresh",
+        "TOOLTIP_OpenJDoc=Open Javadoc Window",
+        "TOOLTIP_ViewHierarchyType=Hierachy View Type",
+        "TOOLTIP_InspectHierarchyHistory=Inspect Hierarchy History"
     })
     public HierarchyTopComponent() {
         history = HistorySupport.getInstnace(this.getClass());
@@ -183,28 +190,29 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setName(Bundle.CTL_HierarchyTopComponent());
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
+        viewTypeCombo.setMinimumSize(new Dimension(MIN_TYPE_WIDTH,COMBO_HEIGHT));
         viewTypeCombo.addActionListener(this);
-        historyCombo = new JComboBox(HistorySupport.createModel(history)){
-            @Override
-            public Dimension getMinimumSize() {
-                Dimension res = super.getMinimumSize();
-                if (res.width > MIN_HISTORY_WIDTH) {
-                    res = new Dimension(MIN_HISTORY_WIDTH, res.height);
-                }
-                return res;
-            }
-        };
+        viewTypeCombo.setToolTipText(Bundle.TOOLTIP_ViewHierarchyType());
+        historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectHierarchyHistory()));
+        historyCombo.setMinimumSize(new Dimension(MIN_HISTORY_WIDTH,COMBO_HEIGHT));
         historyCombo.setRenderer(HistorySupport.createRenderer(history));
         historyCombo.addActionListener(this);
+        historyCombo.setEnabled(false);
+        historyCombo.getModel().addListDataListener(this);
+        historyCombo.setToolTipText(Bundle.TOOLTIP_InspectHierarchyHistory());
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
         refreshButton.setFocusable(false);
-        refreshButton.setToolTipText(Bundle.TXT_RefreshContent());
+        refreshButton.setToolTipText(Bundle.TOOLTIP_RefreshContent());
         jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
         jdocButton.addActionListener(this);
         jdocButton.setFocusable(false);
-        jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
-        final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, jdocButton);        
+        jdocButton.setToolTipText(Bundle.TOOLTIP_OpenJDoc());
+        final Box upperToolBar = new MainToolBar(
+            constrainedComponent(viewTypeCombo, GridBagConstraints.HORIZONTAL, 1.0, new Insets(0,0,0,0)),
+            constrainedComponent(historyCombo, GridBagConstraints.HORIZONTAL, 1.5, new Insets(0,3,0,0)),
+            constrainedComponent(refreshButton, GridBagConstraints.NONE, 0.0, new Insets(0,3,0,0)),
+            constrainedComponent(jdocButton, GridBagConstraints.NONE, 0.0, new Insets(0,3,0,3)));
         add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
         contentView = new JPanel();
         contentView.setLayout(new CardLayout());
@@ -306,6 +314,22 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     @Override
+    public void intervalAdded(ListDataEvent e) {
+        enableHistory();
+    }
+
+    @Override
+    public void intervalRemoved(ListDataEvent e) {
+        enableHistory();
+    }
+
+    @Override
+    public void contentsChanged(ListDataEvent e) {
+        enableHistory();
+    }
+
+
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         if (JavadocTopComponent.shouldUpdate() && getLookup().lookup(Node.class) != null) {
@@ -314,6 +338,30 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
+    private void enableHistory() {
+        if (!history.getHistory().isEmpty()) {
+            historyCombo.setEnabled(true);
+        }
+    }
+
+    @NonNull
+    private static Pair<JComponent, GridBagConstraints> constrainedComponent(
+            @NonNull final JComponent component,
+            final int fill,
+            final double weightx,
+            @NonNull final Insets insets) {
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = GridBagConstraints.RELATIVE;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.weightx = weightx;
+        c.weighty = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = fill;
+        c.insets = insets;
+        return Pair.<JComponent,GridBagConstraints>of(component,c);
+    }
 
 
     @NonNull
@@ -439,8 +487,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     @NbBundle.Messages({
-        "LBL_SuperTypeView=Supertype View",
-        "LBL_SubTypeView=Subtype View"})
+        "LBL_SuperTypeView=Supertypes",
+        "LBL_SubTypeView=Subtypes"})
     private static enum ViewType {
                        
         SUPER_TYPE(Bundle.LBL_SuperTypeView()),
@@ -563,7 +611,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
     
     private static final class MainToolBar extends Box {
-        MainToolBar(@NonNull final JComponent... components) {
+        MainToolBar(@NonNull final Pair<JComponent,GridBagConstraints>... components) {
             super(BoxLayout.X_AXIS);
             setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
             final JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
@@ -573,8 +621,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
-            for (JComponent component : components) {
-                toolbar.add(component);
+            toolbar.setLayout(new GridBagLayout());
+            for (Pair<JComponent,GridBagConstraints> p : components) {
+                toolbar.add(p.first,p.second);
             }
             add (toolbar);
         }

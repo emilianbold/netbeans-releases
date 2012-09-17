@@ -1192,29 +1192,20 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return new StringReader(str[0]);
     }  
    
-
-    /**
-     * Recursively deletes the file or directory.
-     *
-     * @param file file/directory to delete
-     */
-    private static void deleteRecursively(File file) {
-        deleteRecursively(file, Level.WARNING);
-    }
-
     /**
      * Recursively deletes the file or directory.
      *
      * @param file file/directory to delete
      * @param level log level
      */
-    private static void deleteRecursively(File file, Level level) {
+    private static void deleteRecursively (File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return;
         try {
             fo.delete();
         } catch (IOException e) {
-            DiffSidebarManager.LOG.log(level, "", e);
+            DiffSidebarManager.LOG.log(Level.INFO, "", e);
+            file.deleteOnExit();
         }
     }
     

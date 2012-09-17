@@ -78,6 +78,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.modules.editor.impl.ReformatBeforeSaveTask;
 import org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;

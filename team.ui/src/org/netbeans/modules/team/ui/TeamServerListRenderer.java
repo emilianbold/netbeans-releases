@@ -55,7 +55,7 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
  *
  * @author Jan Becicka
  */
-class TeamServerListRenderer implements ListCellRenderer {
+public class TeamServerListRenderer implements ListCellRenderer {
 
     public TeamServerListRenderer() {
     }

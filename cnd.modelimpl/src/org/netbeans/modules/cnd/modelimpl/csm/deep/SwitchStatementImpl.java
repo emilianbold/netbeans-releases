@@ -49,10 +49,11 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionDeclarationImpl.ConditionDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionExpressionImpl.ConditionExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -68,6 +69,10 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         super(ast, file, scope);
     }
 
+    private SwitchStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+    }    
+    
     public static SwitchStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         SwitchStatementImpl stmt = new SwitchStatementImpl(ast, file, scope);
         stmt.init(ast);
@@ -119,5 +124,43 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         return DeepUtil.merge(getCondition(), getBody());
     }
     
+    public static class SwitchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
+
+        ConditionExpressionBuilder conditionExpression;
+        ConditionDeclarationBuilder conditionDeclaration;
+        StatementBuilder body;
+
+        public void setConditionExpression(ConditionExpressionBuilder conditionExpression) {
+            this.conditionExpression = conditionExpression;
+        }
+
+        public void setConditionDeclaration(ConditionDeclarationBuilder conditionDeclaration) {
+            this.conditionDeclaration = conditionDeclaration;
+        }
+
+        public void setBody(StatementBuilder body) {
+            this.body = body;
+        }
+        
+        @Override
+        public SwitchStatementImpl create() {
+            SwitchStatementImpl stmt = new SwitchStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            body.setScope(stmt);
+            stmt.body = body.create();
+            if(conditionDeclaration != null) {
+                conditionDeclaration.setScope(stmt);
+                stmt.condition = conditionDeclaration.create();
+            } else if (conditionExpression != null) {
+                conditionExpression.setScope(stmt);
+                stmt.condition = conditionExpression.create();
+            }
+            return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            body = builder;
+        }
+    }    
     
 }

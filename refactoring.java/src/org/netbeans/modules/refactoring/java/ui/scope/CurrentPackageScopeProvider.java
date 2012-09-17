@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
@@ -76,19 +77,20 @@ public final class CurrentPackageScopeProvider extends ScopeProvider {
         final String packageName;
         ClassPath sourceCP = ClassPath.getClassPath(file, ClassPath.SOURCE);
         if (sourceCP != null) {
-            TreePath path = context.lookup(TreePath.class);
-            if (path != null) {
-                final ExpressionTree packageName1 = path.getCompilationUnit().getPackageName();
-                packageName = packageName1 == null ? "<default package>" : packageName1.toString(); //NOI18N
-                if (packageName1 == null) {
-                    packageFolder = sourceCP.findOwnerRoot(file);
-                } else {
-                    packageFolder = sourceCP.findResource(packageName.replaceAll("\\.", "/")); //NOI18N
-                }
-            } else {
-                packageFolder = file.isFolder()? file : file.getParent();
-                packageName = sourceCP.getResourceName(packageFolder, '.', false);
-            }
+//            TreePathHandle path = context.lookup(TreePathHandle.class);
+//            if (path != null) {
+//                final ExpressionTree packageName1 = path.getCompilationUnit().getPackageName();
+//                packageName = packageName1 == null ? "<default package>" : packageName1.toString(); //NOI18N
+//                if (packageName1 == null) {
+//                    packageFolder = sourceCP.findOwnerRoot(file);
+//                } else {
+//                    packageFolder = sourceCP.findResource(packageName.replaceAll("\\.", "/")); //NOI18N
+//                }
+//            } else {
+            packageFolder = file.isFolder()? file : file.getParent();
+            String packageName1 = sourceCP.getResourceName(packageFolder, '.', false);
+            packageName = packageName1.isEmpty()? "<default package>" : packageName1; //NOI18N
+//            }
         } else {
             packageFolder = null;
             packageName = null;

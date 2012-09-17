@@ -56,7 +56,7 @@ public final class BookmarkInfo {
     /**
      * Special entry used in popup switcher to represent jumping to bookmarks view.
      */
-    public static BookmarkInfo BOOKMARKS_WINDOW = new BookmarkInfo(0, "Bookmarks Window", 0, "", null); // NOI18N
+    public final static BookmarkInfo BOOKMARKS_WINDOW = new BookmarkInfo(0, "Bookmarks Window", 0, "", null); // NOI18N
     
     public static final Comparator<BookmarkInfo> CURRENT_LINE_COMPARATOR = new Comparator<BookmarkInfo>() {
 

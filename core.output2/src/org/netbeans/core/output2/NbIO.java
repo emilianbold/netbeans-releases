@@ -53,6 +53,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Reader;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -75,6 +76,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     private Boolean focusTaken = null;
     private boolean closed = false;
     private final String name;
+    private OutputOptions options = OutputOptions.getDefault().makeCopy();
     
     private Action[] actions;
 
@@ -277,7 +279,9 @@ class NbIO implements InputOutput, Lookup.Provider {
         if (lookup == null) {
             ioTab = new IOTabImpl();
             ioColors = new IOColorsImpl();
-            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl(), new IOColorPrintImpl(), new IOSelectImpl());
+            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(),
+                    new IOColorLinesImpl(), new IOColorPrintImpl(),
+                    new IOSelectImpl(), options);
         }
         return lookup;
     }
@@ -521,7 +525,7 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         @Override
         protected Color getColor(OutputType type) {
-            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : AbstractLines.getDefColors()[type.ordinal()];
+            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : options.getColorForType(type);
         }
 
         @Override
@@ -529,5 +533,20 @@ class NbIO implements InputOutput, Lookup.Provider {
             clrs[type.ordinal()] = color;
             post(NbIO.this, IOEvent.CMD_DEF_COLORS, type);
         }
+    }
+
+    /**
+     * Set option values. The object itself is not replaced, all registered
+     * listeners remains untouched.
+     */
+    void setOptions(OutputOptions options) {
+        this.options.assign(options);
+    }
+
+    /**
+     * Get Options object.
+     */
+    OutputOptions getOptions() {
+        return this.options;
     }
 }

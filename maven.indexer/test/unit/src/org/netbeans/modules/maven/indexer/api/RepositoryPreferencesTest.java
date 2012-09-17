@@ -44,12 +44,20 @@ package org.netbeans.modules.maven.indexer.api;
 
 import org.apache.maven.settings.Mirror;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 
 public class RepositoryPreferencesTest extends NbTestCase {
 
     public RepositoryPreferencesTest(String name) {
         super(name);
+    }
+    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new RepositoryPreferencesTest("testGetRepositoryInfos"));
+        suite.addTest(new RepositoryPreferencesTest("testGetMirrorRepositoryInfos"));
+        return suite;
     }
 
     @Override protected void setUp() throws Exception {

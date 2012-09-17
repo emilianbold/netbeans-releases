@@ -43,6 +43,8 @@
 console.log('Sending actual viewport margins');
 chrome.extension.sendMessage({
     type: 'VIEWPORT',
+    width: window.innerWidth,
+    height: window.innerHeight,
     marginWidth: window.outerWidth - window.innerWidth,
     marginHeight: window.outerHeight - window.innerHeight
 });

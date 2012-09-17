@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
@@ -438,26 +439,32 @@ public class MavenProjectSupport {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            final String newOne = ServerManager.showAddServerInstanceWizard();
-            final String serverType = newOne != null ? obtainServerID(newOne) : null;
-            Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() { //NOI18N
-                @Override public void performOperation(POMModel model) {
-                    if (newOne != null) {
-                        Properties props = model.getProject().getProperties();
-                        if (props == null) {
-                            props = model.getFactory().createProperties();
-                            model.getProject().setProperties(props);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    final String newOne = ServerManager.showAddServerInstanceWizard();
+                    final String serverType = newOne != null ? obtainServerID(newOne) : null;
+                    Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() { //NOI18N
+                        @Override public void performOperation(POMModel model) {
+                            if (newOne != null) {
+                                Properties props = model.getProject().getProperties();
+                                if (props == null) {
+                                    props = model.getFactory().createProperties();
+                                    model.getProject().setProperties(props);
+                                }
+                                props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
+                            } else {
+                                Properties props = model.getProject().getProperties();
+                                if (props != null) {
+                                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
+                                }
+                            }
                         }
-                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                    } else {
-                        Properties props = model.getProject().getProperties();
-                        if (props != null) {
-                            props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
-                        }
-                    }
+                    }));
+                    prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
                 }
-            }));
-            prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
+            });
         }
     }
 

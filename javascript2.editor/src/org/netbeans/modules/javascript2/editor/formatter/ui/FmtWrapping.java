@@ -65,8 +65,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         scrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
 
-        statementCombo.putClientProperty(OPTION_ID, wrapStatement);
-        statementCombo.addFocusListener(this);
         variablesCombo.putClientProperty(OPTION_ID, wrapVariables);
         variablesCombo.addFocusListener(this);
         methodParamsCombo.putClientProperty(OPTION_ID, wrapMethodParams);
@@ -136,8 +134,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         scrollPane = new javax.swing.JScrollPane();
         panel1 = new javax.swing.JPanel();
-        statementLabel = new javax.swing.JLabel();
-        statementCombo = new javax.swing.JComboBox();
         variablesLabel = new javax.swing.JLabel();
         variablesCombo = new javax.swing.JComboBox();
         methodParamsLabel = new javax.swing.JLabel();
@@ -182,11 +178,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         panel1.setFocusCycleRoot(true);
         panel1.setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
             public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return statementCombo;
+                return variablesCombo;
             }//end getDefaultComponent
 
             public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return statementCombo;
+                return variablesCombo;
             }//end getFirstComponent
 
             public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
@@ -195,6 +191,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
                 if(aComponent ==  chainedMethodCallsCombo){
+                    return afterDotCheckBox;
+                }
+                if(aComponent ==  afterDotCheckBox){
                     return arrayInitCombo;
                 }
                 if(aComponent ==  methodCallArgsCombo){
@@ -212,13 +211,16 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 if(aComponent ==  withStatementCombo){
                     return binaryOpsCombo;
                 }
-                if(aComponent ==  statementCombo){
-                    return variablesCombo;
-                }
                 if(aComponent ==  ternaryOpsCombo){
+                    return afterTernaryOpsCheckBox;
+                }
+                if(aComponent ==  afterTernaryOpsCheckBox){
                     return assignOpsCombo;
                 }
                 if(aComponent ==  binaryOpsCombo){
+                    return afterBinaryOpsCheckBox;
+                }
+                if(aComponent ==  afterBinaryOpsCheckBox){
                     return ternaryOpsCombo;
                 }
                 if(aComponent ==  whileStatementComboBox){
@@ -236,11 +238,14 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 if(aComponent ==  forCombo){
                     return forStatementCombo;
                 }
-                return statementCombo;//end getComponentAfter
+                return variablesCombo;//end getComponentAfter
             }
             public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  arrayInitCombo){
+                if(aComponent ==  afterDotCheckBox){
                     return chainedMethodCallsCombo;
+                }
+                if(aComponent ==  arrayInitCombo){
+                    return afterDotCheckBox;
                 }
                 if(aComponent ==  chainedMethodCallsCombo){
                     return methodCallArgsCombo;
@@ -254,14 +259,17 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 if(aComponent ==  binaryOpsCombo){
                     return doWhileStatementCombo;
                 }
-                if(aComponent ==  variablesCombo){
-                    return statementCombo;
-                }
                 if(aComponent ==  assignOpsCombo){
+                    return afterTernaryOpsCheckBox;
+                }
+                if(aComponent ==  afterTernaryOpsCheckBox){
                     return ternaryOpsCombo;
                 }
-                if(aComponent ==  ternaryOpsCombo){
+                if(aComponent ==  afterBinaryOpsCheckBox){
                     return binaryOpsCombo;
+                }
+                if(aComponent ==  ternaryOpsCombo){
+                    return afterBinaryOpsCheckBox;
                 }
                 if(aComponent ==  doWhileStatementCombo){
                     return whileStatementComboBox;
@@ -282,11 +290,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             }});
             panel1.setOpaque(false);
-
-            statementLabel.setLabelFor(statementCombo);
-            org.openide.awt.Mnemonics.setLocalizedText(statementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_statement")); // NOI18N
-
-            statementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
             variablesLabel.setLabelFor(variablesCombo);
             org.openide.awt.Mnemonics.setLocalizedText(variablesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsList")); // NOI18N
@@ -368,8 +371,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             afterTernaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             afterTernaryOpsCheckBox.setOpaque(false);
 
-            propertiesLabel.setLabelFor(binaryOpsCombo);
-            org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.text")); // NOI18N
+            propertiesLabel.setLabelFor(propertiesCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_props")); // NOI18N
 
             propertiesCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -383,125 +386,96 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             panel1Layout.setHorizontalGroup(
                 panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panel1Layout.createSequentialGroup()
+                    .addContainerGap()
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addGap(12, 12, 12)
-                            .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(statementLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(statementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(variablesLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(variablesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(methodParamsLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(methodParamsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(methodCallArgsLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 60, Short.MAX_VALUE)
-                                    .addComponent(methodCallArgsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(chainedMethodCallsLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(chainedMethodCallsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(variablesLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(variablesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addComponent(afterDotCheckBox)
-                            .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(methodParamsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(methodParamsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
+                            .addComponent(methodCallArgsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(methodCallArgsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panel1Layout.createSequentialGroup()
+                            .addComponent(chainedMethodCallsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(chainedMethodCallsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(arrayInitLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(arrayInitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(forLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(forCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(forStatementLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(forStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(ifStatementLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(ifStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(whileStatementLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(whileStatementComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(doWhileStatementLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(doWhileStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(jLabel1)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(withStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(propertiesLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(propertiesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addComponent(binaryOpsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(binaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(ternaryOpsLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(afterBinaryOpsCheckBox)
-                                    .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(ternaryOpsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
                             .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(afterTernaryOpsCheckBox)
-                                    .addGap(0, 0, Short.MAX_VALUE))
-                                .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(assignOpsLabel)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(afterDotCheckBox)
+                                .addComponent(afterBinaryOpsCheckBox)
+                                .addComponent(afterTernaryOpsCheckBox))
+                            .addGap(0, 11, Short.MAX_VALUE))
+                        .addGroup(panel1Layout.createSequentialGroup()
+                            .addComponent(assignOpsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
             );
             panel1Layout.setVerticalGroup(
                 panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panel1Layout.createSequentialGroup()
-                    .addGap(8, 8, 8)
-                    .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(statementLabel)
-                        .addComponent(statementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(12, 12, 12)
+                    .addContainerGap()
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(variablesLabel)
                         .addComponent(variablesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(14, 14, 14)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(methodParamsLabel)
                         .addComponent(methodParamsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(14, 14, 14)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(methodCallArgsLabel)
                         .addComponent(methodCallArgsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(14, 14, 14)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(chainedMethodCallsLabel)
                         .addComponent(chainedMethodCallsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addComponent(afterDotCheckBox)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -539,13 +513,13 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(binaryOpsLabel)
                         .addComponent(binaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addComponent(afterBinaryOpsCheckBox)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ternaryOpsLabel)
                         .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addComponent(afterTernaryOpsCheckBox)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -554,10 +528,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
-            statementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementLabel.AccessibleContext.accessibleName")); // NOI18N
-            statementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementLabel.AccessibleContext.accessibleDescription")); // NOI18N
-            statementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementCombo.AccessibleContext.accessibleName")); // NOI18N
-            statementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.statementCombo.AccessibleContext.accessibleDescription")); // NOI18N
             variablesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesLabel.AccessibleContext.accessibleName")); // NOI18N
             variablesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesLabel.AccessibleContext.accessibleDescription")); // NOI18N
             variablesCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.variablesCombo.AccessibleContext.accessibleName")); // NOI18N
@@ -614,6 +584,16 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.withLabel.AccessibleContext.accessibleDescription")); // NOI18N
             withStatementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.withStatementCombo.AccessibleContext.accessibleName")); // NOI18N
             withStatementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.withStatementCombo.AccessibleContext.accessibleDescription")); // NOI18N
+            afterBinaryOpsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterBinaryOpsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+            afterBinaryOpsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterBinaryOpsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+            afterTernaryOpsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterTernaryOpsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+            afterTernaryOpsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterTernaryOpsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+            propertiesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.AccessibleContext.accessibleName")); // NOI18N
+            propertiesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+            propertiesCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCombo.AccessibleContext.accessibleName")); // NOI18N
+            propertiesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCombo.AccessibleContext.accessibleDescription")); // NOI18N
+            afterDotCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterDotCheckBox.AccessibleContext.accessibleName")); // NOI18N
+            afterDotCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.afterDotCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
             scrollPane.setViewportView(panel1);
             panel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.panel1.AccessibleContext.accessibleName")); // NOI18N
@@ -656,8 +636,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JComboBox propertiesCombo;
     private javax.swing.JLabel propertiesLabel;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JComboBox statementCombo;
-    private javax.swing.JLabel statementLabel;
     private javax.swing.JComboBox ternaryOpsCombo;
     private javax.swing.JLabel ternaryOpsLabel;
     private javax.swing.JComboBox variablesCombo;

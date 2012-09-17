@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual.editors;
 
+import java.awt.Component;
 import java.beans.PropertyEditorSupport;
 import java.util.Collection;
 import java.util.TreeSet;

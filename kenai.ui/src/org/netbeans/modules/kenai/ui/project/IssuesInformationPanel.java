@@ -69,7 +69,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.ui.KenaiPopupMenu;
+import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
@@ -262,7 +262,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                             RequestProcessor.getDefault().post(new Runnable() {
 
                                 public void run() {
-                                    ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
+                                    ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupActionsProvider.class, "CONTACTING_ISSUE_TRACKER"));
                                     h.start();
                                     dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
                                     h.finish();
@@ -281,7 +281,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                     RequestProcessor.getDefault().post(new Runnable() {
 
                                         public void run() {
-                                            ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
+                                            ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupActionsProvider.class, "CONTACTING_ISSUE_TRACKER"));
                                             h.start();
                                             dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
                                             h.finish();

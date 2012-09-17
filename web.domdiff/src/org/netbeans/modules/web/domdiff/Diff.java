@@ -958,10 +958,10 @@ public class Diff {
     }
 
     // sort Matches from the most important one to least and from top to bottom
-    public static final MatchComparator MATCH_COMPARATOR = new MatchComparator();
+    private static final MatchComparator MATCH_COMPARATOR = new MatchComparator();
     
     // sort Matches from top to bottom
-    public static final MatchComparator2 MATCH_COMPARATOR2 = new MatchComparator2();
+    private static final MatchComparator2 MATCH_COMPARATOR2 = new MatchComparator2();
     
     private static class MatchComparator implements Comparator<Match> {
 

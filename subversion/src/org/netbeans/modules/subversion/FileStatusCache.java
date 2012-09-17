@@ -692,8 +692,10 @@ public class FileStatusCache {
      * @return true if supplied entries contain equivalent information
      */ 
     private static boolean equal(ISVNStatus e1, ISVNStatus e2) {
-        if (!SVNStatusKind.IGNORED.equals(e1.getTextStatus()) && !SVNStatusKind.UNVERSIONED.equals(e1.getTextStatus())) {
+        if (!SVNStatusKind.IGNORED.equals(e1.getTextStatus()) && !SVNStatusKind.UNVERSIONED.equals(e1.getTextStatus())
+                 && !SVNStatusKind.ADDED.equals(e1.getTextStatus())) {
             // check revisions just when it's meaningful, unversioned or ignored files have no revision and thus should be considered equal
+            // added/copied files make no sense either, they have no revision yet
             long r1 = -1;
             if (e1 != null) {
                 SVNRevision r = e1.getRevision();
@@ -1092,7 +1094,8 @@ public class FileStatusCache {
         }
         
         if (exists) {
-            if (Subversion.getInstance().isIgnored(file)) {
+            if (Subversion.getInstance().isIgnored(file) 
+                    || repositoryStatus != null && repositoryStatus.getStatus().getTextStatus() == SVNStatusKind.EXTERNAL) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, file.isDirectory());
             } else {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, file.isDirectory());

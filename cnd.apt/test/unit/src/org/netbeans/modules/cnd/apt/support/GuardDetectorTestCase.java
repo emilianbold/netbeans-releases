@@ -89,7 +89,7 @@ public class GuardDetectorTestCase extends NbTestCase {
                   "#pragma once\n"
                 + INNER_BODY
                 +"\n";
-        String golden = APTUtils.getFileOnceMacroName(new APTFileNode(new FileSystemImpl(), getName()));
+        String golden = APTUtils.getFileOnceMacroName(new APTFileNode(new FileSystemImpl(), getName())).toString();
         for (String content : createEqualContents(base)) {
             CharSequence guardMacro = getAPTGuardMacro(content);
             assertEquals("pragma once is not detected:\n" + content, golden, guardMacro);

@@ -174,7 +174,7 @@ public final class RelationshipMappingRename implements JPARefactoring {
                                             }
                                             SourcePositions sp = ci.getTrees().getSourcePositions();
                                             sp.getStartPosition(unit, t);
-                                            if(fo!=null)refactoringElementsBag.add(rename, new RelationshipAnnotationRenameRefactoringElement(fo, oppEntEl, field, at0, t, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                            if(fo!=null)refactoringElementsBag.add(rename, new RelationshipAnnotationRenameRefactoringElement(fo, field, at0, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
                                         }
                                     }
                                 }
@@ -195,12 +195,10 @@ public final class RelationshipMappingRename implements JPARefactoring {
         private final AnnotationMirror annotation;
         private final String attrValue;
         private final FileObject fo;
-        private final TypeElement oppEntEl;
-        private final Tree tree;
         private final VariableElement var;
         private final AnnotationTree at;
         
-        RelationshipAnnotationRenameRefactoringElement(FileObject fo, TypeElement oppEntEl, VariableElement var, AnnotationTree at, Tree valueTree, AnnotationMirror annotation, String attrValue, int start, int end) {
+        RelationshipAnnotationRenameRefactoringElement(FileObject fo, VariableElement var, AnnotationTree at, AnnotationMirror annotation, String attrValue, int start, int end) {
             this.fo = fo;
             this.annotation = annotation;
             this.attrValue = attrValue;
@@ -209,8 +207,6 @@ public final class RelationshipMappingRename implements JPARefactoring {
                 end--;
             }
             loc = new int[]{start, end};
-            this.oppEntEl = oppEntEl;
-            this.tree = valueTree;
             this.at = at;
             this.var = var;
         }
@@ -239,7 +235,6 @@ public final class RelationshipMappingRename implements JPARefactoring {
                     public void run(WorkingCopy workingCopy) throws Exception {
 
                         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                        Element element = oppEntEl;
 
                         for (AnnotationMirror annotation : var.getAnnotationMirrors()) {
 

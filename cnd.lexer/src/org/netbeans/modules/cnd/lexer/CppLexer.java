@@ -74,10 +74,23 @@ public class CppLexer extends CndLexer {
         Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER); // NOI18N
         this.lexerFilter = filter != null ? filter : defaultFilter;
     }
-        
-    @SuppressWarnings("fallthrough")
+
     @Override
     protected Token<CppTokenId> finishSharp() {
+        return finishPreprocDirective();
+    }
+
+    @Override
+    protected Token<CppTokenId> finishPercent() {
+        if (read(true) == ':') {
+            return finishPreprocDirective();
+        }
+        backup(1);
+        return super.finishPercent();
+    }
+
+    @SuppressWarnings("fallthrough")
+    private Token<CppTokenId> finishPreprocDirective() {
         // one prerpocessor directive block
         // we should eat block comments to skip it's new lines
         // also eat string and char literals to prevent incorrect recognition

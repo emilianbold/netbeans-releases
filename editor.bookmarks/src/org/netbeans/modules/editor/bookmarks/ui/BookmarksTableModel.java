@@ -177,13 +177,13 @@ public class BookmarksTableModel extends AbstractTableModel {
                 case NAME_COLUMN:
                     String nameToolTip = bookmark.getName();
                     if (nameToolTip == null || nameToolTip.length() == 0) {
-                        nameToolTip = NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkNameEmpty");
+                        nameToolTip = NbBundle.getMessage(BookmarksTableModel.class, "LBL_BookmarkNameEmpty");
                     }
                     return nameToolTip;
                 case KEY_COLUMN:
                     String keyToolTip = bookmark.getKey();
                     if (keyToolTip == null || keyToolTip.length() == 0) {
-                        keyToolTip = NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKeyEmpty");
+                        keyToolTip = NbBundle.getMessage(BookmarksTableModel.class, "LBL_BookmarkKeyEmpty");
                     }
                     return keyToolTip;
                 case LOCATION_COLUMN:

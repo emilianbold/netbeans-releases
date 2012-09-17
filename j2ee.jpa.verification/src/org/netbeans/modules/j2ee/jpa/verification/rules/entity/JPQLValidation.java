@@ -123,7 +123,7 @@ public class JPQLValidation extends JPAClassRule implements CancelListener {
         if (!ctx.isCancelled() && problems != null && problems.size() > 0) {
             ret = new ErrorDescription[problems.size()];
             for (int i = 0; i < ret.length; i++) {
-                ListResourceBundle msgBundle = null;
+                ListResourceBundle msgBundle;
                 try {
                     msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
                 } catch (MissingResourceException ex) {//default en

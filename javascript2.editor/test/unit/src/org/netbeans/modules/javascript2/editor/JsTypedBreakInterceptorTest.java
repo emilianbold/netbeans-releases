@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.Formatter;
  *
  * @author Tor Norbye
  */
+// XXX note this also tests indenter
 public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public JsTypedBreakInterceptorTest(String testName) {
@@ -265,6 +266,20 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public void testNoContcomment2() throws Exception {
         insertBreak("x = /*\n*/^", "x = /*\n*/\n^");
+    }
+
+    public void testContinuation1() throws Exception {
+        insertBreak("for (i = 0; i < 10; i++) {\n"
+                + "    a = 5 +^\n"
+                + "}",
+                "for (i = 0; i < 10; i++) {\n"
+                + "    a = 5 +\n"
+                + "            ^\n"
+                + "}");
+    }
+
+    public void testContinuation2() throws Exception {
+        insertBreak("alert(^);\n", "alert(\n        ^);\n");
     }
 
     public void testCommentUnbalancedBraces() throws Exception {
