@@ -44,6 +44,8 @@ package org.netbeans.modules.refactoring.php.delete;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -56,6 +58,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -64,7 +67,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Radek Matous
  */
 public class PhpDeleteRefactoringUI implements RefactoringUI, RefactoringUIBypass {
-
+    private static final RequestProcessor RP = new RequestProcessor(PhpDeleteRefactoringUI.class);
+    private static final Logger LOGGER = Logger.getLogger(PhpDeleteRefactoringUI.class.getName());
     private final SafeDeleteRefactoring refactoring;
     private final boolean regulardelete;
     private final FileObject file;
@@ -134,12 +138,23 @@ public class PhpDeleteRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     @Override
     public void doRefactoringBypass() throws IOException {
-        // #172199
-        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+        RP.post(new Runnable() {
+
             @Override
-            public void run() throws IOException {
-                file.delete();
+            public void run() {
+                try {
+                    // #172199
+                    FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                        @Override
+                        public void run() throws IOException {
+                            file.delete();
+                        }
+                    });
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
+                }
             }
+
         });
     }
 }
