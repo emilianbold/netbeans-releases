@@ -50,6 +50,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -171,7 +172,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     @NbBundle.Messages({
         "TXT_NonActiveContent=<No View Available - Refresh Manually>",
         "TXT_InspectHierarchyHistory=<empty>",
-        "TOOLTIP_RefreshContent=Refresh",
+        "TOOLTIP_RefreshContent=Refresh for entity under cursor",
         "TOOLTIP_OpenJDoc=Open Javadoc Window",
         "TOOLTIP_ViewHierarchyType=Hierachy View Type",
         "TOOLTIP_InspectHierarchyHistory=Inspect Hierarchy History"
@@ -203,11 +204,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         historyCombo.setToolTipText(Bundle.TOOLTIP_InspectHierarchyHistory());
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
-        refreshButton.setFocusable(false);
         refreshButton.setToolTipText(Bundle.TOOLTIP_RefreshContent());
         jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
         jdocButton.addActionListener(this);
-        jdocButton.setFocusable(false);
         jdocButton.setToolTipText(Bundle.TOOLTIP_OpenJDoc());
         final Box upperToolBar = new MainToolBar(
             constrainedComponent(viewTypeCombo, GridBagConstraints.HORIZONTAL, 1.0, new Insets(0,0,0,0)),
@@ -237,7 +236,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         lowerToolBar.setExpanded(expanded);
         lowerToolBar.addPropertyChangeListener(this);
         add(updateBackground(lowerToolBar), BorderLayout.SOUTH);
-
     }
 
     public void setContext(
