@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.primefaces:primefaces:3.4:jar</value>
+            <value>org.primefaces:3.4:jar</value>
         </property>
     </properties>
 </library>
