@@ -574,7 +574,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         this.addUpdateDocumentListener(modElementRoot);
         modElementRoot.setEnabled(true);
 
-        TrailingWhitespaceRemove.ensureRegistered();
         BeforeSaveTasks.get(this); // Ensure that "beforeSaveRunnable" gets initialized
 
         undoEditWrappers = MimeLookup.getLookup(mimeType).lookupAll(UndoableEditWrapper.class);

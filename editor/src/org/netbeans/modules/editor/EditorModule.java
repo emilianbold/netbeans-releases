@@ -307,8 +307,6 @@ public class EditorModule extends ModuleInstall {
                 }
             }
         });
-
-        ReformatBeforeSaveTask.ensureRegistered();
     }
     
     /** Called when module is uninstalled. Overrides superclass method. */
