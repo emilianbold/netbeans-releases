@@ -47,6 +47,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
@@ -72,6 +73,7 @@ import org.openide.util.Utilities;
  */
 public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
+    private static final Logger LOG = Logger.getLogger(IntroduceLocalExtensionTransformer.class.getName());
     private final IntroduceLocalExtensionRefactoring refactoring;
     private Problem problem;
     private String fqn;
@@ -97,6 +99,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
             TypeElement source = (TypeElement) refactoring.getRefactoringSource().lookup(TreePathHandle.class).getElementHandle().resolve(workingCopy);
 
+            boolean noInterface = source.getKind() != ElementKind.INTERFACE;
+            
             List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(source.getTypeParameters().size());
             transformTypeParameters(source.getTypeParameters(), make, genUtils, newTypeParams);
 
@@ -106,26 +110,38 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             List<Tree> members = new ArrayList<Tree>();
             addConstructors(source, members);
 
-            if (wrap) {
+            if (wrap && noInterface) {
                 Tree type = make.Type(source.asType());
                 VariableTree field = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE)), "delegate", type, null); //NOI18N
                 members.add(0, field);
                 addFields(source, genUtils, members);
             }
 
-            if (wrap) {
+            if (wrap && noInterface) {
                 addMembers(source, genUtils, members);
                 createEquals(source, genUtils, members);
             }
 
             // create new class
-            ClassTree newClassTree = make.Class(
-                    make.Modifiers(source.getModifiers()), //classModifiersTree,
-                    name,
-                    newTypeParams,
-                    wrap ? null : make.Type(source.asType()), //superClass,
-                    implementsList,
-                    members);
+            Tree newClassTree;
+            if(noInterface) {
+                newClassTree = make.Class(
+                   make.Modifiers(source.getModifiers()), //classModifiersTree,
+                   name,
+                   newTypeParams,
+                   wrap ? null : make.Type(source.asType()), //superClass,
+                   implementsList,
+                   members);
+            } else {
+                final Set<Modifier> modifiers = new HashSet(source.getModifiers());
+                modifiers.remove(Modifier.ABSTRACT);
+                newClassTree = make.Interface(
+                   make.Modifiers(modifiers), //classModifiersTree,
+                   name,
+                   newTypeParams,
+                   Collections.singletonList(make.Type(source.asType())), //superClass,
+                   members);
+            }
 
             // TODO: Useful javadoc for the class
 //            Doc javadoc = wc.getElementUtilities().javaDocFor(source);
@@ -240,7 +256,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         }
         return result;
     }
-
+    
     private void addMembers(TypeElement source, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
         for (ExecutableElement method : ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(source))) {
             if (!method.getModifiers().contains(Modifier.NATIVE)
@@ -521,7 +537,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         modifiers.remove(Modifier.STATIC);
         modifiers.remove(Modifier.FINAL);
 
-        if (refactoring.getWrap()) {
+        if (refactoring.getWrap() && origClass.getKind() != ElementKind.INTERFACE) {
             // create constructor
             AssignmentTree assignment = make.Assignment(make.MemberSelect(make.Identifier("this"), "delegate"), make.Identifier("delegate")); //NOI18N
             ExpressionStatementTree statement = make.ExpressionStatement(assignment);
