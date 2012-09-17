@@ -70,7 +70,7 @@ public class CssEmbeddingProviderTest extends TestBase {
         Snapshot snapshot = source.createSnapshot();
         assertNotNull(snapshot);
 
-        Collection<? extends SchedulerTask> providers = new CssEmbeddingProvider.Factory().create(snapshot);
+        Collection<? extends SchedulerTask> providers = null; //TODO: was: new CssEmbeddingProvider.Factory().create(snapshot);
         assertNotNull(providers);
         assertEquals(1, providers.size());
 
