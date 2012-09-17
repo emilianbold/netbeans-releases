@@ -76,7 +76,7 @@ public class JsConventionHintTest extends HintTestBase {
         return new DuplicatePropertyName();
     }
     
-    public void testSemicolon1() throws Exception {
+    public void testSemicolonAssignment() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/coloring/assignments01.js", null);
     }
     
@@ -106,6 +106,10 @@ public class JsConventionHintTest extends HintTestBase {
 
     public void testSemicolonIssue218446() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/hints/issue218446.js", null);
+    }
+
+    public void testSemicolonIssue217079() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue217079.js", null);
     }
     
     public void testObjectTrailingComma01() throws Exception {
