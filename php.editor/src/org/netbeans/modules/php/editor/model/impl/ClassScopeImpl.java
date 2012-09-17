@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -93,7 +94,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         Expression superId = nodeInfo.getSuperClass();
-        String superName = null;
         if (superId != null) {
             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
             QualifiedName superClassName = QualifiedName.create(superId);
@@ -321,7 +321,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
 
 
-    @NonNull
+    @CheckForNull
     @Override
     public QualifiedName getSuperClassName() {
         if (superClass != null) {
@@ -365,7 +365,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
-        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        QualifiedName qualifiedName = namespaceScope != null ? namespaceScope.getQualifiedName() : QualifiedName.create("");
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         List<? extends String> superInterfaceNames = getSuperInterfaceNames();
         StringBuilder ifaceSb = new StringBuilder();
@@ -510,6 +510,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
+        assert (subType instanceof ClassScope);
         boolean result = false;
         if (subType.isClass()) {
             for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
