@@ -50,6 +50,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
@@ -164,7 +165,15 @@ public final class RunUtils {
             return false;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+        if (cos == null) {
+            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
+            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+                cos = "app";
+            } else {
+                cos = "none";
+            }
+        }
+        return "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos);
     }
 
     /**
@@ -192,7 +201,15 @@ public final class RunUtils {
             return true;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        return cos != null && ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+        if (cos == null) {
+            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
+            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+                cos = "app";
+            } else {
+                cos = "none";
+            }
+        }
+        return "all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos);
     }
     /**
      *
