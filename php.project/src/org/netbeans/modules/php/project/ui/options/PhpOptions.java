@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Helper class to get actual PHP properties like debugger port etc.
@@ -273,9 +274,15 @@ public final class PhpOptions {
         // XXX the default value could be improved (OS dependent)
         String phpGlobalIncludePath = getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, null);
         if (phpGlobalIncludePath == null) {
-            // first time we want to read it => write an empty string to the global properties so property evaluator is not confused
-            //  (property evaluator returns JAR entry, see org.netbeans.modules.php.project.classpath.ClassPathProviderImpl#getBootClassPath())
-            setPhpGlobalIncludePath(""); // NOI18N
+            // #218432
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    // first time we want to read it => write an empty string to the global properties so property evaluator is not confused
+                    //  (property evaluator returns JAR entry, see org.netbeans.modules.php.project.classpath.ClassPathProviderImpl#getBootClassPath())
+                    setPhpGlobalIncludePath(""); // NOI18N
+                }
+            });
             phpGlobalIncludePath = ""; // NOI18N
         }
         return phpGlobalIncludePath;
