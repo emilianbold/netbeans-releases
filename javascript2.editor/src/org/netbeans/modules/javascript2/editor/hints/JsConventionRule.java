@@ -183,7 +183,8 @@ public class JsConventionRule extends JsAstRule {
             if (fileOffset == -1) {
                 return;
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), offset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                    context.parserResult.getSnapshot(), offset);
             if (ts == null) {
                 return;
             }
@@ -199,9 +200,13 @@ public class JsConventionRule extends JsAstRule {
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                     Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
                     id = previous.id();
+                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
+                        Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                        id = next.id();
+                    }
+                    // check again whether there is not semicolon and it is not generated
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
                             && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {
-                        // check again whether there is not semicolon
                         fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                         if (fileOffset >= 0) {
                             hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
