@@ -48,7 +48,7 @@ NetBeans.serverURL = function() {
     var serverPort = 8008;
     var serverFile = '/';
     return serverProtocol+'://'+serverHost+':'+serverPort+serverFile;
-}
+};
 
 NetBeans.DEBUG = true;
 NetBeans.INFOBAR = false;
@@ -73,13 +73,13 @@ NetBeans.tabStatus = function(tabId) {
         status = tabInfo.status;
     }
     return status;
-}
+};
 
 NetBeans.cleanup = function() {
     this.socket = null;
     this.socketReady = false;
     this.pendingMessages = [];
-}
+};
 
 NetBeans.connectIfNeeded = function() {
     if (this.socket === null) {
@@ -95,14 +95,14 @@ NetBeans.connectIfNeeded = function() {
                 console.log(e.name + ': ' + e.message);
             }
             self.cleanup();
-        }
+        };
         this.socket.onclose = function() {
             self.cleanup();
-        }
+        };
         this.socket.onopen = function() {
             self.socketReady = true;
             self.sendPendingMessages();
-        }
+        };
         this.socket.onmessage = function(e) {
             if (NetBeans.DEBUG) {
                 console.log('Received message: ' + e.data);
@@ -117,10 +117,10 @@ NetBeans.connectIfNeeded = function() {
                 return;
             }
             self.processMessage(message);
-        }
+        };
     }
     return this.socketReady;    
-}
+};
 
 NetBeans.sendMessage = function(message) {
     if (this.connectIfNeeded()) {
@@ -132,7 +132,7 @@ NetBeans.sendMessage = function(message) {
     } else {
         this.pendingMessages.push(message);
     }
-}
+};
 
 NetBeans.sendInitMessage = function(tab) {
     this.sendMessage({
@@ -140,14 +140,14 @@ NetBeans.sendInitMessage = function(tab) {
         url: tab.url,
         tabId: tab.id
     });
-}
+};
 
 NetBeans.sendCloseMessage = function(tabId) {
     this.sendMessage({
         message: 'close',
         tabId: tabId
     });
-}
+};
 
 NetBeans.sendUrlChangeMessage = function(tabId, url) {
     this.sendMessage({
@@ -155,17 +155,17 @@ NetBeans.sendUrlChangeMessage = function(tabId, url) {
         tabId: tabId,
         url: url
     });
-}
+};
 
 NetBeans.sendLoadResizeOptionsMessage = function() {
     // XXX message sent more than once
-    if (ResizeOptions != null) {
+    if (ResizeOptions !== null) {
         return;
     }
     this.sendMessage({
         message: 'load_resize_options'
     });
-}
+};
 
 NetBeans.sendSaveResizeOptionsMessage = function(presets) {
     ResizeOptions = presets;
@@ -173,21 +173,21 @@ NetBeans.sendSaveResizeOptionsMessage = function(presets) {
         message: 'save_resize_options',
         resizeOptions: ResizeOptions
     });
-}
+};
 
 NetBeans.sendSelectionModeMessage = function(selectionMode) {
     this.sendMessage({
         message: 'selection_mode',
         selectionMode: selectionMode
     });
-}
+};
 
 NetBeans.sendPendingMessages = function() {
     for (var i=0; i<this.pendingMessages.length; i++) {
         this.sendMessage(this.pendingMessages[i]);
     }
     this.pendingMessages = [];
-}
+};
 
 NetBeans.processMessage = function(message) {
     var type = message.message;
@@ -214,7 +214,7 @@ NetBeans.processMessage = function(message) {
         console.log('Unsupported message!');
         console.log(message);
     }
-}
+};
 
 NetBeans.tabIdFromMessage = function(message) {
     var tabIdValue = message.tabId;
@@ -228,7 +228,7 @@ NetBeans.tabIdFromMessage = function(message) {
         console.log(message);
     }
     return tabId;
-}
+};
 
 NetBeans.processInitMessage = function(message) {
     var tabId = this.tabIdFromMessage(message);
@@ -255,7 +255,7 @@ NetBeans.processInitMessage = function(message) {
             console.log('Ignoring init message for a tab for which such message was not requested: '+tabId);
         }
     }
-}
+};
 
 NetBeans.processReloadMessage = function(message) {
     var tabId = this.tabIdFromMessage(message);
@@ -267,7 +267,7 @@ NetBeans.processReloadMessage = function(message) {
             console.log('Refusing to reload tab that is not managed: '+tabId);
         }
     }
-}
+};
 
 NetBeans.processCloseMessage = function(message) {
     var tabId = this.tabIdFromMessage(message);
@@ -279,7 +279,7 @@ NetBeans.processCloseMessage = function(message) {
             console.log('Refusing to close tab that is not managed: '+tabId);
         }
     }
-}
+};
 
 NetBeans.processAttachDebuggerMessage = function(message) {
     var tabId = this.tabIdFromMessage(message);
@@ -291,7 +291,7 @@ NetBeans.processAttachDebuggerMessage = function(message) {
             console.log('Refusing to attach debugger to tab that is not managed: '+tabId);
         }
     }
-}
+};
 
 NetBeans.processDetachDebuggerMessage = function(message) {
     var tabId = this.tabIdFromMessage(message);
@@ -303,7 +303,7 @@ NetBeans.processDetachDebuggerMessage = function(message) {
             console.log('Refusing to dettach debugger from tab that is not managed: '+tabId);
         }
     }
-}
+};
 
 NetBeans.processDebuggerCommandMessage = function(message) {
     var tabId = this.tabIdFromMessage(message);
@@ -316,18 +316,18 @@ NetBeans.processDebuggerCommandMessage = function(message) {
             console.log('Refusing to send debugger command to tab that is not managed: '+tabId);
         }
     }
-}
+};
 
 NetBeans.processLoadResizeOptionsMessage = function(message) {
     ResizeOptions = JSON.parse(message.resizeOptions);
-}
+};
 
 NetBeans.processSaveResizeOptionsMessage = function(message) {
     this.sendMessage({
         message: 'save_resize_options',
         resizeOptions: message.resizeOptions
     });
-}
+};
 
 NetBeans.processPageInspectionPropertyChange = function(message) {
     var name = message.propertyName;
@@ -343,11 +343,11 @@ NetBeans.processPageInspectionPropertyChange = function(message) {
             value: value
         });
     }
-}
+};
 
 NetBeans.addPageInspectionPropertyListener = function(listener) {
     this.pageInspectionListeners.push(listener);
-}
+};
 
 NetBeans.sendDebuggingResponse = function(tabId, response) {
     this.sendMessage({
@@ -355,19 +355,19 @@ NetBeans.sendDebuggingResponse = function(tabId, response) {
         tabId: tabId,
         response : response
     });
-}
+};
 
 NetBeans.sendDebuggerDetached = function(tabId) {
     this.sendMessage({
         message: 'debugger_detached',
         tabId: tabId
     });
-}
+};
 
 
 NetBeans.tabCreated = function(tabId) {
     this.managedTabs[tabId] = {status: this.STATUS_NEW};
-}
+};
 
 NetBeans.tabUpdated = function(tab) {
     var status = this.tabStatus(tab.id);
@@ -390,12 +390,13 @@ NetBeans.tabUpdated = function(tab) {
             this.sendUrlChangeMessage(tab.id, tab.url);
             this.showPageIcon(tab.id);
             this.createContextMenu(tab.id, tab.url);
+            this.initShortcuts(tab.id);
             if (this.INFOBAR) {
                 this.showInfoBar(tab.id);
             }
         }
     }
-}
+};
 
 NetBeans.tabRemoved = function(tabId) {
     var status = this.tabStatus(tabId);
@@ -412,20 +413,20 @@ NetBeans.tabRemoved = function(tabId) {
         // Remove the tab from the set of managed tabs (if it was there)
         delete this.managedTabs[tabId];
     }
-}
+};
 
 NetBeans.setSelectionMode = function(selectionMode) {
     this.selectionMode = selectionMode;
     this.sendSelectionModeMessage(selectionMode);
-}
+};
 
 NetBeans.getSelectionMode = function() {
     return this.selectionMode;
-}
+};
 
 NetBeans.getSynchronizeSelection = function() {
     return this.synchronizeSelection;
-}
+};
 
 /**
  * Class representing window preset.
@@ -491,19 +492,19 @@ NetBeans_Preset.allTypes = function() {
         NetBeans_Preset.SMARTPHONE_LANDSCAPE,
         NetBeans_Preset.SMARTPHONE_PORTRAIT
     ];
-}
+};
 // get preset type for the given ident, or null if not found
 NetBeans_Preset.typeForIdent = function(ident) {
     var allTypes = NetBeans_Preset.allTypes();
     for (i in allTypes) {
-        if (allTypes[i].ident == ident) {
+        if (allTypes[i].ident === ident) {
             return allTypes[i];
         }
     }
     console.error('Type not found for ident: ' + ident);
     // fallback, avoid NPE
     return allTypes[0];
-}
+};
 
 /**
  * Window presets manager.
@@ -514,35 +515,35 @@ NetBeans_Presets._presets = null;
 // active/current preset
 NetBeans_Presets._preset = null;
 NetBeans_Presets.getPreset = function(preset) {
-    if (preset == undefined) {
+    if (preset === undefined) {
         return this._preset;
     }
     var tmp = this.getPresets()[preset];
-    if (tmp == undefined) {
+    if (tmp === undefined) {
         return null;
     }
     this._preset = tmp;
     return this._preset;
-}
+};
 // get all presets
 NetBeans_Presets.getPresets = function(copy) {
     if (copy) {
         return this._loadPresets();
     }
-    if (this._presets == null) {
+    if (this._presets === null) {
         this._presets = this._loadPresets();
     }
     return this._presets;
-}
+};
 // set (and save) new presets
 NetBeans_Presets.setPresets = function(presets) {
     this._presets = presets;
     this._savePresets();
     this.presetsChanged();
-}
+};
 // load presets from the central storage
 NetBeans_Presets._loadPresets = function() {
-    if (ResizeOptions == null) {
+    if (ResizeOptions === null) {
         // netbeans not running?
         return null;
     }
@@ -560,20 +561,22 @@ NetBeans_Presets._loadPresets = function() {
         ));
     }
     return presets;
-}
+};
 // save presets to the central storage
 NetBeans_Presets._savePresets = function() {
     console.log('Saving window presets back to NetBeans');
     NetBeans.sendSaveResizeOptionsMessage(this._presets);
-}
+};
 
 /**
  * Viewport (so browser window can be correctly resized).
  */
 NetBeans_ViewPort = {
+    width: -1,
+    height: -1,
     marginWidth: 0,
     marginHeight: 0
-}
+};
 
 /**
  * Resize options (a.k.a. Windows Presets from NetBeans).

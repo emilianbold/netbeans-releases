@@ -52,6 +52,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.*;
 import javax.swing.text.Position.Bias;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.windows.IOColors;
 
 /**
@@ -193,6 +194,9 @@ class ExtPlainView extends PlainView {
     }
 
     private void underline(Graphics g, Segment s, int x, int p0, int y) {
+        if (!isLinkUndeliningEnabled(this)) {
+            return;
+        }
         int textLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0);
         int underlineShift = g.getFontMetrics().getDescent() - 1;
         g.drawLine(x, y + underlineShift, x + textLen, y + underlineShift);
@@ -454,4 +458,20 @@ class ExtPlainView extends PlainView {
         return pos;
     }
 
+    static boolean isLinkUndeliningEnabled(View v) {
+        Container pane = v.getContainer();
+        if (pane != null) {
+            OutputTab tab = (OutputTab) SwingUtilities.getAncestorOfClass(
+                    OutputTab.class, pane);
+            if (tab != null) {
+                OutputTab outputTab = (OutputTab) tab;
+                OutputOptions.LinkStyle linkStyle;
+                linkStyle = outputTab.getIO().getOptions().getLinkStyle();
+                if (linkStyle == OutputOptions.LinkStyle.NONE) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

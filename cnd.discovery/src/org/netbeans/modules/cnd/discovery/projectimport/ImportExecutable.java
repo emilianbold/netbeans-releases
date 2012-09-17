@@ -228,12 +228,12 @@ public class ImportExecutable implements PropertyChangeListener {
         try {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
-            map.put("DW:buildResult", binaryPath); // NOI18N
-            map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
+            map.put(DiscoveryWizardDescriptor.BUILD_RESULT, binaryPath);
+            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
             if (sourcesPath != null && sourcesPath.length()>1) {
-                 map.put("DW:rootFolder", sourcesPath); // NOI18N
+                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, sourcesPath);
             } else {
-                map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
             }
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
         } catch (IOException ex) {
@@ -281,6 +281,7 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                             if (addSourceRoot && sourcesPath != null && sourcesPath.length()>1) {
                                 configurationDescriptor.addSourceRoot(sourcesPath);
+                                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, sourcesPath);
                             }
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
@@ -290,7 +291,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration(),
                                         DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                 if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
-                                    map.put("DW:libraries", additionalDependencies); // NOI18N
+                                    map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, additionalDependencies);
                                 }
                             }
                             if (extension.canApply(map, lastSelectedProject)) {

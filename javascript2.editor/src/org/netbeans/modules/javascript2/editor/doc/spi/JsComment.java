@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Base class which represents JavaScript documentation comment.
@@ -87,8 +88,65 @@ public abstract class JsComment {
 
     public abstract List<DocParameter> getParameters();
 
-    public abstract boolean isDeprecated();
+    /**
+     * Gets the information about deprecation.
+     *
+     * @return {@code null} when the element is not deprecated, any String including the empty one when the element is
+     * deprecated and the documentation can show additional description which was returned here.
+     */
+    public abstract String getDeprecated();
+
+    /**
+     * Gets all exceptions, errors which can throw the commented element.
+     *
+     * @return list of throws, empty list if no thrown, never {@code null}
+     */
+    public abstract List<DocParameter> getThrows();
+
+    /**
+     * Gets all extends of the elements. Informs about inheritance.
+     *
+     * @return list of extends, empty list if no extends, never {@code null}
+     */
+    public abstract List<Type> getExtends();
+
+    /**
+     * Gets all "see" information of the comment.
+     *
+     * @return list of sees, empty list if no one exists, never {@code null}
+     */
+    public abstract List<String> getSee();
+
+    /**
+     * Gets since information of the comment.
+     *
+     * @return since information if exists, {@code null} otherwise
+     */
+    public abstract String getSince();
+
+//    /**
+//     * Gets all author information of the comment.
+//     *
+//     * @return list of authors, empty list if no one exists, never {@code null}
+//     */
+//    public abstract List<String> getAuthor();
+//
+//    /**
+//     * Gets version information of the comment.
+//     *
+//     * @return version information if exists, {@code null} otherwise
+//     */
+//    public abstract String getVersion();
+
+    /**
+     * Gets all example information of the comment.
+     *
+     * @return list of examples, empty list if no one exists, never {@code null}
+     */
+    public abstract List<String> getExamples();
 
     public abstract Set<JsModifier> getModifiers();
+
+    public abstract boolean isClass();
 
 }

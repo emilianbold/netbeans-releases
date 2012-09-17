@@ -44,9 +44,9 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
@@ -193,12 +193,12 @@ public class JsCompletionItem implements CompletionProposal {
             } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
                 allParameters = ((IndexedElement.FunctionIndexedElement)getElement()).getParameters();
             }
-            for (Iterator<String> it = allParameters.keySet().iterator(); it.hasNext();) {
-                String name = it.next();
+            for (Iterator<Map.Entry<String, Collection<String>>> it = allParameters.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, Collection<String>> entry = it.next();
                 formatter.parameters(true);
-                formatter.appendText(name);
+                formatter.appendText(entry.getKey());
                 formatter.parameters(false);
-                Collection<String> types = allParameters.get(name);
+                Collection<String> types = entry.getValue();
                 if (!types.isEmpty()) {
                     formatter.type(true);
                     formatter.appendText(": ");  //NOI18N
@@ -250,7 +250,6 @@ public class JsCompletionItem implements CompletionProposal {
 
     static class KeywordItem extends JsCompletionItem {
         private static  ImageIcon keywordIcon = null;
-        private String description = null;
         private String keyword = null;
 
         public KeywordItem(String keyword, CompletionRequest request) {
@@ -278,13 +277,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                formatter.appendHtml(description);
-                return formatter.getText();
-
-            } else {
-                return null;
-            }
+            return null;
         }
 
         @Override

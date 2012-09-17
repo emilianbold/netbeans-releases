@@ -54,11 +54,11 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /** Represents a C++ object in the Repository */
-@MIMEResolver.Registration(displayName="#CCExtResolver", position=216, resource="resources/mime-resolver-ext-based-cpp.xml",
-        showInFileChooser={"#FILECHOOSER_CC_SOURCES_FILEFILTER"})
+@MIMEResolver.Registration(displayName="#CCExtResolver", position=216, resource="resources/mime-resolver-ext-based-cpp.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_CC_SOURCES_FILEFILTER"}) // NOI18N
 public class CCDataObject extends SourceDataObject {
 
-    @MIMEResolver.Registration(displayName="#ContentResolver", position=470, resource="resources/mime-resolver-content-based.xml")
+    @MIMEResolver.Registration(displayName="#ContentResolver", position=470, resource="resources/mime-resolver-content-based.xml") // NOI18N
     /** Serial version number */
     static final long serialVersionUID = -5855103267479484214L;
 

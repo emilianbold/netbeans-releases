@@ -223,6 +223,14 @@ public final class SiteHelper {
                         projectRoot = helper.getProjectDirectory();
                         firstItem = false;
                         continue;
+                    } if (rootFolder != null && rootFolder.indexOf("angular") != -1) { //NOI18N
+                        ClientSideProjectUtilities.initializeProject(helper, 
+                                "app",  //NOI18N
+                                "test", //NOI18N
+                                "config", //NOI18N
+                                false);
+                        // and also unzip it directly into the root of project:
+                        projectRoot = helper.getProjectDirectory();
                     } else {
                         // no metadata - assume that files in template are site root
                         // and therefore put them into default "public_html" folder
@@ -233,17 +241,17 @@ public final class SiteHelper {
                 firstItem = false;
                 if (entry.isDirectory()) {
                     // ignore build folder from mobile boilerplate; unrelated junk IMO.
-                    if (entryName.startsWith("build") || entryName.startsWith("nbproject")) {
+                    if (entryName.startsWith("build") || entryName.startsWith("nbproject")) { //NOI18N
                         continue;
                     }
                     FileUtil.createFolder(projectRoot, entryName);
                 } else {
                     // ignore internal GIT files:
-                    if (entryName.startsWith(".git") || entryName.contains("/.git")) {
+                    if (entryName.startsWith(".git") || entryName.contains("/.git")) { //NOI18N
                         continue;
                     }
                     // ignore build folder from mobile boilerplate; unrelated junk IMO.
-                    if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) {
+                    if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) { //NOI18N
                         continue;
                     }
                     FileObject fo = FileUtil.createData(projectRoot, entryName);
@@ -289,7 +297,18 @@ public final class SiteHelper {
                     if (entry.isDirectory()) {
                         folder = entry.getName();
                     } else {
-                        return null;
+                        String fileName = entry.getName();
+                        int slashIndex = fileName.indexOf('/');
+                        if (slashIndex != -1) {
+                            String name = fileName.substring(slashIndex+1);
+                            folder = fileName.substring(0, slashIndex);
+                            if (name.length() == 0 || folder.length() == 0) {
+                                return null;
+                            }
+                            folder += "/"; //NOI18N
+                        } else {
+                            return null;
+                        }
                     }
                 } else {
                     if (!entry.getName().startsWith(folder)) {

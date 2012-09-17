@@ -96,34 +96,11 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     }
     
     
-    public static class ParameterBuilder extends OffsetableIdentifiableBuilder {
-        
-        private TypeBuilder typeBuilder;
-        private CsmScope scope;
+    public static class ParameterBuilder extends SimpleDeclarationBuilder {
 
-        public void setTypeBuilder(TypeFactory.TypeBuilder typeBuilder) {
-            this.typeBuilder = typeBuilder;
-        }
-
-        public void setScope(CsmScope scope) {
-            this.scope = scope;
-        }
-        
-        public CsmScope getScope() {
-            assert scope != null;
-            return scope;
-        }
-        
+        @Override
         public ParameterImpl create() {
-            CsmType type = null;
-            if (typeBuilder != null) {
-                typeBuilder.setScope(getScope());
-                type = typeBuilder.create();
-            }
-            if (type == null) {
-                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
-            }
-            ParameterImpl param = new ParameterImpl(type, getName(), getScope(), null, getFile(), getStartOffset(), getEndOffset());
+            ParameterImpl param = new ParameterImpl(getType(), getName(), getScope(), null, getFile(), getStartOffset(), getEndOffset());
             return param;
         }
     }      

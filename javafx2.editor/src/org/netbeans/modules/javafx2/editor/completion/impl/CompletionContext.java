@@ -1339,10 +1339,7 @@ public final class CompletionContext {
                         }
                         break;
                     }
-                    if (s.length() < 2) {
-                        throw new IllegalArgumentException();
-                    }
-                    if (s.charAt(1) == '/') {
+                    if (s.length() > 1 && s.charAt(1) == '/') {
                         // end tag, no completion:
                         type = Type.UNKNOWN;
                         break;

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -68,6 +69,10 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         super(ast, file, scope);
     }
 
+    private DeclarationStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);        
+    }
+    
     public static DeclarationStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         DeclarationStatementImpl stmt = new DeclarationStatementImpl(ast, file, scope);
         stmt.init(ast);
@@ -265,4 +270,31 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
 //	    return null;
 //	}
     }
+    
+    
+    public static class DeclarationStatementBuilder extends StatementBuilder {
+
+        private List<SimpleDeclarationBuilder> declarations = new ArrayList<SimpleDeclarationBuilder>();
+        
+        public void addDeclarationBuilder(SimpleDeclarationBuilder decl) {
+            declarations.add(decl);
+        }
+
+        @Override
+        public DeclarationStatementImpl create() {
+            DeclarationStatementImpl stmt = new DeclarationStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            List<CsmDeclaration> decls = new ArrayList<CsmDeclaration>();
+            for (SimpleDeclarationBuilder declBuilder : declarations) {
+                declBuilder.setScope(getScope());
+                decls.add(declBuilder.create());
+            }
+            if(decls.isEmpty()) {
+                stmt.declarators = Collections.<CsmDeclaration>emptyList();
+            } else {
+                stmt.declarators = decls;
+            }
+            return stmt;
+        }
+
+    }       
 }

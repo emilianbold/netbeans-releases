@@ -85,7 +85,7 @@ public class PushToUpstreamAction extends SingleRepositoryAction {
             @Override
             protected void perform () {
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
-                info.refreshRemotes();
+                info.refresh();
                 GitBranch activeBranch = info.getActiveBranch();
                 if (activeBranch == null) {
                     return;
@@ -186,7 +186,7 @@ public class PushToUpstreamAction extends SingleRepositoryAction {
                 String left = spec.substring(0, pos);
                 String right = spec.substring(pos + 1);
                 if (right.endsWith(GitUtils.PREFIX_R_REMOTES + branchName)
-                        || right.endsWith(GitUtils.PREFIX_R_REMOTES + "*")) { //NOI18N
+                        || right.endsWith(GitUtils.PREFIX_R_REMOTES + remoteName + "/*")) { //NOI18N
                     if (left.endsWith("/*")) { //NOI18N
                         remoteBranchName = branchShortName;
                         break;

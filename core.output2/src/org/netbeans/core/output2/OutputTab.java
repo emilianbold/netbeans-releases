@@ -44,6 +44,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Component;
 import java.awt.Container;
@@ -54,6 +55,7 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
@@ -82,6 +84,7 @@ import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.Document;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.output2.Controller.ControllerOutputEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
@@ -100,7 +103,10 @@ import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 import static org.netbeans.core.output2.OutputTab.ACTION.*;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.netbeans.core.output2.ui.OutputKeymapManager;
+import org.openide.util.WeakListeners;
+import org.openide.windows.IOColors;
 
 
 /**
@@ -109,6 +115,7 @@ import org.netbeans.core.output2.ui.OutputKeymapManager;
 final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks {
     private final NbIO io;
     private OutWriter outWriter;
+    private PropertyChangeListener optionsListener;
 
     OutputTab(NbIO io) {
         this.io = io;
@@ -123,6 +130,26 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         getActionMap().put("jumpNext", action(NEXT_ERROR)); // NOI18N
         getActionMap().put(FindAction.class.getName(), action(FIND));
         getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, action(COPY));
+        applyOptions();
+        initOptionsListener();
+    }
+
+    private void applyOptions() {
+        Lines lines = getDocumentLines();
+        if (lines != null) {
+            OutputOptions opts = io.getOptions();
+            lines.setDefColor(IOColors.OutputType.OUTPUT,
+                    opts.getColorStandard());
+            lines.setDefColor(IOColors.OutputType.ERROR,
+                    opts.getColorError());
+            lines.setDefColor(IOColors.OutputType.HYPERLINK,
+                    opts.getColorLink());
+            lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
+                    opts.getColorLinkImportant());
+            Color bg = io.getOptions().getColorBackground();
+            getOutputPane().getTextView().setBackground(bg);
+            getOutputPane().setViewFont(io.getOptions().getFont());
+        }
     }
 
     private final TabAction action(ACTION a) {
@@ -145,6 +172,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (old != null && old instanceof OutputDocument) {
             ((OutputDocument) old).dispose();
         }
+        applyOptions();
     }
 
     public void reset() {
@@ -154,6 +182,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         // get new OutWriter
         outWriter = io.out();
         setDocument(new OutputDocument(outWriter));
+        applyOptions();
     }
 
     public OutputDocument getDocument() {
@@ -593,8 +622,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     activeActions.add(ta);
                     popup.add(item);
                 } else {
-                    if ((popupItems[i] == ACTION.CLOSE && !io.getIOContainer().isCloseable(this))
-                            || (popupItems[i] == ACTION.FONT_TYPE && getOutputPane().isWrapped())) {
+                    if ((popupItems[i] == ACTION.CLOSE
+                            && !io.getIOContainer().isCloseable(this))) {
                         continue;
                     }
                     JMenuItem item = popup.add(ta);
@@ -698,14 +727,63 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         io.getIOContainer().setTitle(this, escaped.replace("&apos;", "'"));
     }
 
+    private void initOptionsListener() {
+        optionsListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                Lines lines = getDocumentLines();
+                if (lines != null) {
+                    String pn = evt.getPropertyName();
+                    OutputOptions opts = io.getOptions();
+                    updateOptionsProperty(pn, lines, opts);
+                    OutputTab.this.repaint();
+                }
+            }
+        };
+        this.io.getOptions().addPropertyChangeListener(
+                WeakListeners.propertyChange(optionsListener, io.getOptions()));
+    }
+
+    private void updateOptionsProperty(String pn, Lines lines,
+            OutputOptions opts) {
+
+        if (OutputOptions.PROP_COLOR_STANDARD.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.OUTPUT,
+                    opts.getColorStandard());
+        } else if (OutputOptions.PROP_COLOR_ERROR.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.ERROR,
+                    opts.getColorError());
+        } else if (OutputOptions.PROP_COLOR_LINK.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.HYPERLINK,
+                    opts.getColorLink());
+        } else if (OutputOptions.PROP_COLOR_LINK_IMPORTANT.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
+                    opts.getColorLinkImportant());
+        } else if (OutputOptions.PROP_COLOR_BACKGROUND.equals(pn)) {
+            Color bg = opts.getColorBackground();
+            getOutputPane().getTextView().setBackground(bg);
+        } else if (OutputOptions.PROP_FONT.equals(pn)) {
+            Font font = opts.getFont();
+            if (getOutputPane().isWrapped()
+                    && getIO().getIOContainer() == IOContainer.getDefault()) {
+                Font dfltFont = OutputOptions.getDefaultFont();
+                if (!font.getFamily().equals(dfltFont.getFamily())
+                        || font.getStyle() != dfltFont.getStyle()) {
+                    font = Controller.getDefault().getCurrentFontMS();
+                }
+            }
+            getOutputPane().setViewFont(font);
+        }
+    }
+
     static enum ACTION { COPY, WRAP, SAVEAS, CLOSE, NEXT_ERROR, PREV_ERROR,
                          SELECT_ALL, FIND, FIND_NEXT, NAVTOLINE, POSTMENU,
                          FIND_PREVIOUS, CLEAR, NEXTTAB, PREVTAB, LARGER_FONT,
-                         SMALLER_FONT, FONT_TYPE, FILTER, PASTE }
+                         SMALLER_FONT, SETTINGS, FILTER, PASTE }
 
     private static final ACTION[] popupItems = new ACTION[] {
         COPY, PASTE, null, FIND, FIND_NEXT, FIND_PREVIOUS, FILTER, null,
-        WRAP, LARGER_FONT, SMALLER_FONT, FONT_TYPE, null,
+        WRAP, LARGER_FONT, SMALLER_FONT, SETTINGS, null,
         SAVEAS, CLEAR, CLOSE,
     };
 
@@ -735,7 +813,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case FILTER:
                 case LARGER_FONT:
                 case SMALLER_FONT:
-                case FONT_TYPE:
+                case SETTINGS:
                 case CLEAR:
                     action = new TabAction(a, "ACTION_"+a.name());
                     break;
@@ -872,9 +950,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case SMALLER_FONT:
                     return KeyStrokeUtils.getKeyStrokesForAction(
                             OutputKeymapManager.SMALLER_FONT_ACTION_ID, null);
-                case FONT_TYPE:
+                case SETTINGS:
                     return KeyStrokeUtils.getKeyStrokesForAction(
-                            OutputKeymapManager.FONT_TYPE_ACTION_ID, null);
+                            OutputKeymapManager.OUTPUT_SETTINGS_ACTION_ID, null);
                 case CLEAR:
                     return KeyStrokeUtils.getKeyStrokesForAction(
                             OutputKeymapManager.CLEAR_ACTION_ID, null);
@@ -984,8 +1062,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case LARGER_FONT:
                     Controller.getDefault().changeFontSizeBy(1, getOutputPane().isWrapped());
                     break;
-                case FONT_TYPE:
-                    showFontChooser();
+                case SETTINGS:
+                    OptionsDisplayer.getDefault().open(
+                            "Advanced/OutputSettings");                 //NOI18N
                     break;
                 case FILTER:
                     if (origPane != null) {
@@ -1172,5 +1251,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         void dispose() {
             out.dispose();
         }
+    }
+
+    private Lines getDocumentLines() {
+        OutputDocument doc = getDocument();
+        return doc == null ? null : doc.getLines();
     }
 }

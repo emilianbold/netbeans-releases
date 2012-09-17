@@ -1868,10 +1868,10 @@ Form.Methods = {
     getElements: function(form) {
         return $A($(form).getElementsByTagName('*')).inject([],
                 function(elements, child) {
-            if (Form.Element.Serializers[child.tagName.toLowerCase()])
-                elements.push(Element.extend(child));
-            return elements;
-        }
+                    if (Form.Element.Serializers[child.tagName.toLowerCase()])
+                        elements.push(Element.extend(child));
+                    return elements;
+                }
         );
     },
     getInputs: function(form, typeName, name) {
@@ -2199,7 +2199,7 @@ Object.extend(Event, {
 
         if (name == 'keypress' &&
                 (navigator.appVersion.match(/Konqueror|Safari|KHTML/)
-                || element.attachEvent))
+                        || element.attachEvent))
             name = 'keydown';
 
         Event._observeAndCache(element, name, observer, useCapture);
@@ -2210,7 +2210,7 @@ Object.extend(Event, {
 
         if (name == 'keypress' &&
                 (navigator.appVersion.match(/Konqueror|Safari|KHTML/)
-                || element.detachEvent))
+                        || element.detachEvent))
             name = 'keydown';
 
         if (element.removeEventListener) {

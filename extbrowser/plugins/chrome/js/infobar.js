@@ -57,21 +57,20 @@ NetBeans_Infobar.show = function(presets) {
     this._presets = presets;
     this._init();
     this.setSelectionMode(NetBeans.getSelectionMode());
-    this.setSynchronizeSelection(NetBeans.getSynchronizeSelection());
     this._showPresets();
-}
+};
 // redraw presets
 NetBeans_Infobar.redrawPresets = function() {
     this.show(NetBeans_Presets.getPresets());
-}
+};
 // init
 NetBeans_Infobar._init = function() {
-    if (this._container != null) {
+    if (this._container !== null) {
         return;
     }
     this._container = document.getElementById('presets');
     this._registerEvents();
-}
+};
 // register events
 NetBeans_Infobar._registerEvents = function() {
     var that = this;
@@ -87,7 +86,7 @@ NetBeans_Infobar._registerEvents = function() {
     document.getElementById('selectionModeMenu').addEventListener('click', function() {
         that._updateSelectionMode(true);
     }, false);
-}
+};
 // show presets in the toolbar
 NetBeans_Infobar._showPresets = function() {
     // clean
@@ -106,7 +105,7 @@ NetBeans_Infobar._showPresets = function() {
         button.appendChild(document.createTextNode(preset.displayName));
         this._container.appendChild(button);
     }
-}
+};
 
 NetBeans_Infobar._updateSelectionMode = function(switchCheckBoxValue) {
     var checkbox = document.getElementById('selectionModeCheckBox');
@@ -115,20 +114,13 @@ NetBeans_Infobar._updateSelectionMode = function(switchCheckBoxValue) {
     }
     var selectionMode = checkbox.checked;
     NetBeans.setSelectionMode(selectionMode);
-}
+};
 
 // Modifies Selection Mode checkbox according to the given value
 NetBeans_Infobar.setSelectionMode = function(selectionMode) {
     var checkbox = document.getElementById('selectionModeCheckBox');
     checkbox.checked = selectionMode;
-}
-
-// Hides/shows Selection Mode checkbox according to the given value
-// (Selection Mode cannot be switched on when synchronization is turned off)
-NetBeans_Infobar.setSynchronizeSelection = function(synchronizeSelection) {
-    var div = document.getElementById('selectionModeDiv');
-    div.style.display = synchronizeSelection ? 'block' : 'none';
-}
+};
 
 // run!
 window.addEventListener('load', function() {

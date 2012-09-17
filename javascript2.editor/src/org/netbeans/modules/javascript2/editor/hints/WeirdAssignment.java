@@ -108,15 +108,13 @@ public class WeirdAssignment extends JsAstRule {
         }
 
         @Override
-        public Node visit(BinaryNode binaryNode, boolean onset) {
-            if (onset) {
-                if (binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
-                    hints.add(new Hint(rule, Bundle.JsWeirdAssignmentDN(), 
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), binaryNode.getStart(), binaryNode.getFinish()), null, 500));
-                }
+        public Node enter(BinaryNode binaryNode) {
+            if (binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
+                hints.add(new Hint(rule, Bundle.JsWeirdAssignmentDN(),
+                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                        ModelUtils.documentOffsetRange(context.getJsParserResult(), binaryNode.getStart(), binaryNode.getFinish()), null, 500));
             }
-            return super.visit(binaryNode, onset);
+            return super.enter(binaryNode);
         }
     }
 }

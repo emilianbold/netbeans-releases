@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 
 /**
  * CsmReturnStatement implementation
@@ -60,6 +61,10 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
     private ReturnStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
+    
+    private ReturnStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+    }    
 
     public static ReturnStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         return new ReturnStatementImpl(ast, file, scope);
@@ -74,5 +79,13 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
     public CsmExpression getReturnExpression() {
         return null;
     }
+    
+    public static class ReturnStatementBuilder extends StatementBuilder {
+
+        public ReturnStatementImpl create() {
+            ReturnStatementImpl stmt = new ReturnStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            return stmt;
+        }
+    }       
    
 }

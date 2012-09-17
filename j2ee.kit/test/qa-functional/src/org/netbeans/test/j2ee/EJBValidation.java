@@ -87,7 +87,7 @@ public class EJBValidation extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        NbModuleSuite.Configuration conf = emptyConfiguration();
         conf = addServerTests(Server.GLASSFISH, conf, EJBValidation.class, "openProjects");
         conf = addServerTests(Server.GLASSFISH, conf, AddMethodTest.class,
                 "testAddBusinessMethod1InSB",
@@ -121,7 +121,7 @@ public class EJBValidation extends J2eeTestCase {
                 "testStopServer");
         conf = addServerTests(Server.GLASSFISH, conf, EJBValidation.class, "closeProjects");
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     @Override

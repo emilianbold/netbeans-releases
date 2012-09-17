@@ -52,6 +52,11 @@ import java.util.Set;
 public class RuleInfo {
     /** Names of properties that are overriden by other rules. */
     private Set<String> overridenProperties = new HashSet<String>();
+    /**
+     * Determines whether the rules matches the selected element or whether
+     * it matches some parent of the selected element (i.e., is inherited).
+     */
+    private boolean inherited;
 
     /**
      * Marks the specified property as overriden by other rules.
@@ -71,6 +76,28 @@ public class RuleInfo {
      */
     public boolean isOverriden(String propertyName) {
         return overridenProperties.contains(propertyName);
+    }
+
+    /**
+     * Sets whether the rule is inherited or not.
+     * 
+     * @param inherited determines whether the rule matches the selected
+     * element or whether it matches some parent of the selected element
+     * (i.e., is inherited).
+     */
+    void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    /**
+     * Determines whether the rules matches the selected element or whether
+     * it matches some parent of the selected element (i.e., is inherited).
+     * 
+     * @return {@code true} when the rule comes from some parent,
+     * returns {@code false} otherwise.
+     */
+    public boolean isInherited() {
+        return inherited;
     }
 
 }

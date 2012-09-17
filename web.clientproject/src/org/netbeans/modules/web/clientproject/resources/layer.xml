@@ -51,15 +51,16 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="450"/>
             </folder>
         </folder>
-        
+
         <folder name="ClientSide">
             <attr name="position" intvalue="610"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
-            
+
             <file name="html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
@@ -68,6 +69,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.html"/>
@@ -76,6 +78,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
@@ -85,17 +88,18 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.clientproject.ui.wizard.NewFileWizardIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/json.html"/>
             </file>
-            
+
         </folder>
     </folder>
-    
+
     <folder name="Loaders">
         <folder name="text">
-            
+
             <folder name="html">
                 <folder name="Actions">
                   <file name="webHtml-project-separator-1.instance">
@@ -112,11 +116,11 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     </file>
                   </folder>
             </folder>
-            
-        </folder>
-    </folder>   
 
-    <folder name="org-netbeans-api-project-libraries">
+        </folder>
+    </folder>
+
+    <!--<folder name="org-netbeans-api-project-libraries">
         <folder name="LibraryTypeProviders">
             <file name="javascript_library_provider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
@@ -124,8 +128,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="position" intvalue="345"/>
             </file>
         </folder>
-    </folder>
-    
+    </folder> -->
+
     <folder name="Projects">
         <folder name="org.netbeans.modules.web.clientproject">
             <folder name="Actions">
@@ -137,11 +141,15 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="200"/>
                 </file>
-                
+
 
                 <file name="org-netbeans-modules-project-ui-RunProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="700"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-TestProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+                    <attr name="position" intvalue="720"/>
                 </file>
 
                 <file name="sep-3.instance">
@@ -153,58 +161,68 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
                     <attr name="position" intvalue="800"/>
                 </file>
-                
-            
+
+
                 <file name="sep-4.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="900"/>
                 </file>
+                <file name="org-netbeans-modules-project-ui-CloseProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+                <file name="sep-5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="1100"/>
+                </file>
                 <file name="org-netbeans-modules-project-ui-RenameProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RenameProject.instance"/>
-                    <attr name="position" intvalue="1000"/>
+                    <attr name="position" intvalue="1200"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-MoveProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-MoveProject.instance"/>
-                    <attr name="position" intvalue="1100"/>
+                    <attr name="position" intvalue="1300"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-CopyProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CopyProject.instance"/>
-                    <attr name="position" intvalue="1200"/>
+                    <attr name="position" intvalue="1400"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-DeleteProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DeleteProject.instance"/>
-                    <attr name="position" intvalue="1300"/>
+                    <attr name="position" intvalue="1500"/>
                 </file>
-
-                <file name="sep-5.instance">
+                <file name="sep-6.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    <attr name="position" intvalue="1900"/>
-                </file>
-
-                <file name="org-netbeans-modules-project-ui-CloseProject.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
                     <attr name="position" intvalue="2000"/>
                 </file>
-                
+                <file name="org-openide-actions-FindAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+                    <attr name="position" intvalue="2100"/>
+                </file>
+                <file name="general.shadow">
+                    <attr name="originalFile" stringvalue="Projects/Actions"/>
+                    <attr name="position" intvalue="2500"/>
+                </file>
+                <file name="sep-7.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="3000"/>
+                </file>
                 <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
-                    <attr name="position" intvalue="2700"/>
+                    <attr name="position" intvalue="3100"/>
                 </file>
-                
 
-            
             </folder>
         </folder>
     </folder>
 
-    <!-- XXX uncomment once XSD files are uploaded to netbeans.org -->
-    <!--folder name="ProjectXMLCatalog">
+    <folder name="ProjectXMLCatalog">
         <folder name="clientside-project">
             <file name="1.xsd" url="clientside-project1.xsd"/>
         </folder>
         <folder name="clientside-project-private">
             <file name="1.xsd" url="clientside-project-private1.xsd"/>
         </folder>
-    </folder-->
+    </folder>
 
 </filesystem>

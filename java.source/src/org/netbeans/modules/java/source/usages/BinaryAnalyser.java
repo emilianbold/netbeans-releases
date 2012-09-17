@@ -942,7 +942,7 @@ public class BinaryAnalyser {
                     String filePath = file.getAbsolutePath();
                     long fileMTime = file.lastModified();
                     int dotIndex = filePath.lastIndexOf('.');
-                    int slashIndex = filePath.lastIndexOf('/');
+                    int slashIndex = filePath.lastIndexOf(File.separatorChar);
                     int endPos;
                     if (dotIndex>slashIndex) {
                         endPos = dotIndex;
@@ -950,7 +950,7 @@ public class BinaryAnalyser {
                     else {
                         endPos = filePath.length();
                     }
-                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
+                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos), File.separatorChar);
                     cont.report(ElementHandle.createTypeElementHandle(ElementKind.CLASS, relativePath), fileMTime);
                     if (!isUpToDate (relativePath, fileMTime)) {
                         markChanged();

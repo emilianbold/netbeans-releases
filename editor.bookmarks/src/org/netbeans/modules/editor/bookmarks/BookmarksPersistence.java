@@ -380,6 +380,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     @Override
     public void run() {
         ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
             public void run() {
                 List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
                 // lastOpenProjects will contain the just closed projects

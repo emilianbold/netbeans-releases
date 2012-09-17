@@ -91,36 +91,38 @@ public class TplParser extends Parser {
             List<Section> sectionList = new ArrayList<Section>();
 
             for (TokenSequence<?> ts : tsList) {
-                while (ts.moveNext()) {
-                    Token<TplTokenId> token = (Token<TplTokenId>) ts.token();
+                ts.moveNext();
+                Token<TplTokenId> token = (Token<TplTokenId>) ts.token();
+                Section section = new Section();
+                int startOffset = ts.offset();
+                StringBuilder textBuilder = new StringBuilder();
 
-                    /* Parse Smarty Functions */
-                    if (token.id() == TplTokenId.FUNCTION) {
-                        Section section = new Section();
-                        CharSequence functionName = token.text();
-
-                        int startOffset = ts.offset();
-
-                        StringBuilder textBuilder = new StringBuilder();
-                        while (ts.moveNext()) {
-                            token = (Token<TplTokenId>) ts.token();
-                            textBuilder.append(token.text());
-                        }
-                        int endOffset = startOffset + ((startOffset == ts.offset()) ? token.length() : ts.offset() - startOffset + token.length());
-                        section.function = CharSequenceUtilities.toString(functionName);
-                        section.offsetRange = new OffsetRange(startOffset, endOffset);
-                        section.text = textBuilder.toString();
-
-                        String name = functionName.toString().startsWith("/") ? functionName.toString().substring(1) : functionName.toString();
-                        sectionList.add(section);
-                    }
+                if (token.id() == TplTokenId.FUNCTION) {
+                    // store function specific information
+                    section.function = CharSequenceUtilities.toString(token.text());
+                } else {
+                    textBuilder.append(token.text());
                 }
+
+                // rest of tag processing
+                while (ts.moveNext()) {
+                    token = (Token<TplTokenId>) ts.token();
+                    textBuilder.append(token.text());
+                }
+                int endOffset = startOffset + ((startOffset == ts.offset()) ? token.length() : ts.offset() - startOffset + token.length());
+                section.offsetRange = new OffsetRange(startOffset, endOffset);
+                section.text = textBuilder.toString();
+                sectionList.add(section);
             }
 
             /* Analyse functionList structure */
             Stack<Block> blockStack = new Stack<Block>();
             for (Section section : sectionList) {
-                if (TplSyntax.isEndingSmartyCommand(section.function) || TplSyntax.isElseSmartyCommand(section.function)) { //NOI18N
+                if (section.function == null) {
+                    // simple tags - like variables
+                    TplParserResult.Block block = new TplParserResult.Block(section.toParserResultSection());
+                    result.addBlock(block);
+                } else if (TplSyntax.isEndingSmartyCommand(section.function) || TplSyntax.isElseSmartyCommand(section.function)) { //NOI18N
                     if (blockStack.empty()) {
                         result.addError(
                                 NbBundle.getMessage(TplParser.class, "ERR_Unopened_Tag", TplSyntax.getRelatedBaseCommand(section.function)), //NOI18N
@@ -152,7 +154,7 @@ public class TplParser extends Parser {
                     blockStack.push(block);
 
                 } else {
-                    // simple, not-paired tags - just store them into result
+                    // non-paired function tags
                     TplParserResult.Block block = new TplParserResult.Block(section.toParserResultSection());
                     result.addBlock(block);
                 }

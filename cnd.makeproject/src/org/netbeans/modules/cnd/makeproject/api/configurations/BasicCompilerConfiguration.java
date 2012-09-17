@@ -43,13 +43,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -238,6 +240,24 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
     // CommandLine
     public OptionsConfiguration getCommandLineConfiguration() {
         return commandLineConfiguration;
+    }
+    
+    protected String getCommandLineOptions(boolean inherit) {
+        if (!inherit) {
+            return getCommandLineConfiguration().getValue();
+        }
+
+        BasicCompilerConfiguration parent = this;
+        List<String> options = new LinkedList<String>();
+        while (parent != null) {
+            options.add(0, parent.getCommandLineConfiguration().getValue());
+            parent = parent.getMaster();
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String opt : options) {
+            sb.append(opt).append(' ');
+        }
+        return sb.toString().trim();
     }
 
     public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {

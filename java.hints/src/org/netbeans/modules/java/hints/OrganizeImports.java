@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
 import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 
@@ -209,6 +210,7 @@ public class OrganizeImports {
     private static Set<Element> getUsedElements(final CompilationInfo info, final CompilationUnitTree cut, final Set<Element> starImports, final Set<Element> staticStarImports) {
         final Set<Element> ret = new HashSet<Element>();
         final Trees trees = info.getTrees();
+        final Types types = info.getTypes();
         new TreePathScanner<Void, Void>() {
 
             @Override
@@ -278,8 +280,9 @@ public class OrganizeImports {
                 }
                 for (Scope.Entry e = ((JCCompilationUnit)cut).starImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
                     if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind()) {
-                        if (stars != null)
+                        if (stars != null) {
                             stars.add(e.sym.owner);
+                        }
                         return e.sym;
                     }
                 }

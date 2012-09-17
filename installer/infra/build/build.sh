@@ -3,7 +3,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -80,14 +80,6 @@ fi
 if [ -z "$BUNDLE_JDK_PLATFORM" ] ; then
     #build NetBeans/JDK for windows,windows-x64,linux,linux-x64 by default (Mac has own native build)
     BUNDLE_JDK_PLATFORM="windows,windows-x64,linux,linux-x64"
-fi
-
-if [ -z "$EN_BUILD" ] ; then
-    EN_BUILD=1
-fi
-
-if [ -z "$ML_BUILD" ] ; then
-    ML_BUILD=0
 fi
 
 if [ -z "$COMMUNITY_ML_BUILD" ] ; then
@@ -205,9 +197,6 @@ run() {
             \"-Dnb.builds.host=${NB_BUILDS_HOST}\" \
             \"-Dnb.files.prefix=${BASENAME_PREFIX}\" \
             \"-Dnb.locales=${LOCALES}\" \
-            \"-Dnb.build.type=${NB_BUILD_TYPE}\" \
-            \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
-            \"-Dgf-mod.build.type=${GFMOD_BUILD_TYPE}\"\
             \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Djdk.builds.host=${JDK_BUILDS_HOST}\" \
@@ -257,27 +246,8 @@ run() {
             fi
 }
 
-setNetBeansBuildsHost() {
-    if [ -n "$1" ] && [ 1 == $1 ] && [ -n "${NB_BUILDS_HOST_ML}" ] ; then
-        NB_BUILDS_HOST=${NB_BUILDS_HOST_ML}
-    else 
-        NB_BUILDS_HOST=${NB_BUILDS_HOST_EN}
-    fi
-}
+NB_BUILDS_HOST=${NB_BUILDS_HOST_EN}
 
-if [ 1 == "$EN_BUILD" ] ; then
-        setNetBeansBuildsHost
-        run $*
-fi
-
-if [ 1 == "$ML_BUILD" ] ; then
-	setNetBeansBuildsHost $ML_BUILD
-	NB_BUILD_TYPE=ml
-        GF_BUILD_TYPE=ml
-        GFMOD_BUILD_TYPE=ml
-	OUTPUT_DIR=${OUTPUT_DIR}/${NB_BUILD_TYPE}
-	run $*
-fi
-
+run $*
 
 ################################################################################

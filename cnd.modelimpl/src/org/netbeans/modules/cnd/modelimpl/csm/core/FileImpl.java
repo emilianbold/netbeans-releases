@@ -201,7 +201,7 @@ public final class FileImpl implements CsmFile,
      */
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int lastParseTime;
-
+    
     FileContentSignature getSignature() {
         return FileContentSignature.create(this);
     }
@@ -240,6 +240,8 @@ public final class FileImpl implements CsmFile,
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
 
     private long lastParsed = Long.MIN_VALUE;
+    private long lastParsedCRC;
+
     /** Cache the hash code */
     private int hash = 0; // Default to 0
     private Reference<List<CsmReference>> lastMacroUsages = null;
@@ -765,27 +767,30 @@ public final class FileImpl implements CsmFile,
     int getLastParseTime(){
         return lastParseTime;
     }
-
+    
     public boolean validate() {
         synchronized (changeStateLock) {
             if (state == State.PARSED) {
                 long lastModified = getBuffer().lastModified();
                 // using "==" when comparison disallows offline index: in most cases timestamps differ
                 if (TraceFlags.USE_CURR_PARSE_TIME ? (lastModified > lastParsed) : (lastModified != lastParsed)) {
-                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
-                        System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
+                    if (lastParsedCRC != getBuffer().getCRC()) {
+                        if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
+                            System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
+                        }
+                        if (reportParse || logState || TraceFlags.DEBUG) {
+                            System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
+                        }
+                        state = State.MODIFIED;
+                        postMarkedAsModified();
+                        return false;
                     }
-                    if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                    }
-                    state = State.MODIFIED;
-                    postMarkedAsModified();
-                    return false;
                 }
             }
             return true;
         }
     }
+
     private static final class ChangeStateLock {}
     private final Object changeStateLock = new ChangeStateLock();
 
@@ -1425,6 +1430,7 @@ public final class FileImpl implements CsmFile,
         }
         clearStateCache();
         lastParsed = fileBuffer.lastModified();
+        lastParsedCRC = fileBuffer.getCRC();
         // using file time as parse time disallows offline index: in most cases timestamps differ
         if (TraceFlags.USE_CURR_PARSE_TIME) {
             lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
@@ -1918,6 +1924,7 @@ public final class FileImpl implements CsmFile,
 
         output.writeLong(lastParsed);
         output.writeInt(lastParseTime);
+        output.writeLong(lastParsedCRC);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
@@ -1952,6 +1959,7 @@ public final class FileImpl implements CsmFile,
         assert fileBuffer != null;
         lastParsed = input.readLong();
         lastParseTime = input.readInt();
+        lastParsedCRC = input.readLong();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
     }

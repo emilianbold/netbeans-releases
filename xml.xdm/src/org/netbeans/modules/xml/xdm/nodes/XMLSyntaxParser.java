@@ -149,7 +149,8 @@ public class XMLSyntaxParser {
                             tokenType = TokenType.TOKEN_ELEMENT_START_TAG;
                             if(image.startsWith("</")) {
                                 currentNode = stack.pop();
-                                if(!currentNode.getTokens().get(0).getValue().substring(1).
+                                if(currentNode.getTokens().isEmpty() ||
+                                    !currentNode.getTokens().get(0).getValue().substring(1).
                                         equals(image.substring(2))) {
                                     throw new IOException("Invalid token '" + image +
                                             "' found in document: " +

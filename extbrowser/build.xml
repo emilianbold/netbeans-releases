@@ -94,8 +94,8 @@ made subject to such option by the copyright holder.
             <fileset dir="plugins/chrome" excludes="**/*.pem"/>
         </zip> 
         <crx src="build/netbeans-ros-chrome-plugin.zip" privatekey="plugins/chrome/private.pem" publickey="plugins/chrome/public.pem"/>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="build/netbeans-ros-chrome-plugin.crx" todir="${cluster}/modules/ext/"/>
+        <mkdir dir="${cluster}/modules/lib"/>
+        <copy file="build/netbeans-ros-chrome-plugin.crx" todir="${cluster}/modules/lib/"/>
     </target>
     
     <target name="build-crx-task">

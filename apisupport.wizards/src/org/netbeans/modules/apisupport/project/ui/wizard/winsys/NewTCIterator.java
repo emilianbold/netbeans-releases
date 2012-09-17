@@ -92,12 +92,14 @@ public final class NewTCIterator extends BasicWizardIterator {
 
     private NewTCIterator.DataModel data;
     
+    @Override
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();
         return getCreatedFiles(cmf, data.getProject());
     }
     
+    @Override
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewTCIterator.DataModel(wiz);
         return new BasicWizardIterator.Panel[] {
@@ -457,7 +459,7 @@ public final class NewTCIterator extends BasicWizardIterator {
     }
 
     private static String defineWinSysBehavior( DataModel model ) {
-        StringBuffer res = new StringBuffer();
+        StringBuilder res = new StringBuilder();
         if( model.isClosingNotAllowed() ) {
             res.append("\tputClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);\n");
         }
@@ -481,7 +483,7 @@ public final class NewTCIterator extends BasicWizardIterator {
     
     private static String getRelativePath(String rootpath, String fullyQualifiedPackageName,
             String prefix, String postfix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         
         sb.append(rootpath).append('/').append(fullyQualifiedPackageName.replace('.','/'))
                         .append('/').append(prefix).append(postfix);
@@ -498,18 +500,19 @@ public final class NewTCIterator extends BasicWizardIterator {
             this.name = actionname;
         }
         
+        @Override
         public void run(FileSystem layer) throws IOException {
             FileObject folder = layer.getRoot().getFileObject("Actions/Window");// NOI18N
             if (folder == null) {
                 folder = FileUtil.createFolder(layer.getRoot(), "Actions/Window"); // NOI18N
             }
             String instance = packageName.replace('.','-') + "-" + name; // NOI18N
-            FileObject file = folder.createData(instance, "instance"); // NOI18N
+            folder.createData(instance, "instance"); // NOI18N
             folder = layer.getRoot().getFileObject("Menu/Window");// NOI18N
             if (folder == null) {
                 folder = FileUtil.createFolder(layer.getRoot(), "Menu/Window"); // NOI18N
             }
-            file = folder.createData(name, "shadow"); // NOI18N
+            FileObject file = folder.createData(name, "shadow"); // NOI18N
             file.setAttribute("originalFile", "Actions/Window/" + instance + ".instance"); // NOI18N
         }
     }

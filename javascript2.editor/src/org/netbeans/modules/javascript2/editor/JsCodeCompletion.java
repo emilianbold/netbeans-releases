@@ -107,7 +107,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
         
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
-        CodeCompletionResult result = CodeCompletionResult.NONE;
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
             request.context = context;
@@ -227,7 +226,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
                 default:
-                    result = CodeCompletionResult.NONE;
+                    break;
             }
         }
         
@@ -273,6 +272,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 });
             } catch (ParseException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
+            }
+        } else if (element instanceof JsObject) {
+            JsObject jsObject = (JsObject) element;
+            if (jsObject.getDocumentation() != null) {
+                documentation.append(jsObject.getDocumentation());
             }
         }
         if (documentation.length() == 0) {
@@ -365,6 +369,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // get the token before
                     docTokenSeq.movePrevious();
                     prefix = docTokenSeq.token().text().toString();
+                }
+            }
+            if (id.isError()) {
+                prefix = token.text().toString();
+                if (upToOffset) {
+                    prefix = prefix.substring(0, caretOffset - ts.offset());
                 }
             }
         }
@@ -651,20 +661,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             
             // create code completion results
-            for(String name : addedProperties.keySet()) {
-                JsElement element = addedProperties.get(name);
+            for (JsElement element : addedProperties.values()) {
                 resultList.add(JsCompletionItem.Factory.create(element, request));
             }
         }
-    }
-    
-    private JsObject findObjectForOffset(String name, int offset, Model model) {
-        for (JsObject object : model.getVariables(offset)) {
-            if (object.getName().equals(name)) {
-                return object;
-            }
-        }
-        return null;
     }
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {

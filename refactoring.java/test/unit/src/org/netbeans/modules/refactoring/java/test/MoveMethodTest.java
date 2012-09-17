@@ -54,6 +54,64 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+    public void test215809() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    int i() { return 1; }\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    /** Something about i */\n"
+                + "    int i(boolean j) { return 2; }\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    /** Something about i */\n"
+                + "    int i(boolean j) { return 2; }\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "    /** Something about i */\n"
+                + "    public int i() { return 1; }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i());\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void testMoveAbstractPolymorphic() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -302,7 +360,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "        System.out.println(i());\n"
                 + "    }\n"
                 + "}\n"));
-        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_PullUp_MemberAlreadyExists"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_existingMethod"));
     }
 
     public void testMoveToLibrary() throws Exception {
@@ -452,6 +510,42 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "public class C {\n"
                 + "    public void foo() {\n"
                 + "        System.out.println(B.i(new B()));\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void test216700() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static void method() {\n"
+                + "        A.method();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A.method();\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public static void method() {\n"
+                + "        B.method();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        B.method();\n"
                 + "    }\n"
                 + "}\n"));
     }

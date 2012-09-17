@@ -109,14 +109,68 @@ public class MIParserTestCase extends TestCase {
         MITList resultList = result.results();
         
         assertEquals(3, resultList.size());
-        assertEquals(resultList.get(0).toString(),
-            "bkpt={number=\"2\",type=\"breakpoint\",disp=\"keep\",enabled=\"y\",addr=\"<MULTIPLE>\",times=\"0\",original-location=\"Customer::Customer\"}"
+        assertEquals(
+                "bkpt={number=\"2\",type=\"breakpoint\",disp=\"keep\",enabled=\"y\",addr=\"<MULTIPLE>\",times=\"0\",original-location=\"Customer::Customer\"}",
+                resultList.get(0).toString()
         );
-        assertEquals(resultList.get(1).toString(),
-            "bkpt={number=\"2.1\",enabled=\"y\",addr=\"0x0000000000403efe\",func=\"Customer::Customer(Customer const&)\",file=\"customer.h\",fullname=\"/home/henk/tmp/Quote_2/customer.h\",line=\"38\"}"
+        assertEquals(
+                "bkpt={number=\"2.1\",enabled=\"y\",addr=\"0x0000000000403efe\",func=\"Customer::Customer(Customer const&)\",file=\"customer.h\",fullname=\"/home/henk/tmp/Quote_2/customer.h\",line=\"38\"}",
+                resultList.get(1).toString()
         );
-        assertEquals(resultList.get(2).toString(),
-            "bkpt={number=\"2.2\",enabled=\"y\",addr=\"0x0000000000404707\",func=\"Customer::Customer(std::string, int)\",file=\"customer.cc\",fullname=\"/home/henk/tmp/Quote_2/customer.cc\",line=\"35\"}"
+        assertEquals(
+                "bkpt={number=\"2.2\",enabled=\"y\",addr=\"0x0000000000404707\",func=\"Customer::Customer(std::string, int)\",file=\"customer.cc\",fullname=\"/home/henk/tmp/Quote_2/customer.cc\",line=\"35\"}",
+                resultList.get(2).toString()
         );
+    }
+    
+    @Test
+    public void testMacOSBreakpoint() {
+        String testLine = "12^done,bkpt={number=\"2\",type=\"breakpoint\","
+                + "disp=\"del\",enabled=\"y\",addr=\"0x00001f0f\",func=\"main\","
+                + "file=\"src/args.c\",line=\"39\","
+                + "shlib=\"/Users/tester/NetBeansProjects/Arguments_3/dist/Debug/GNU-MacOSX/arguments_3\","
+                + "times=\"0\"},"
+                + "time={wallclock=\"0.00037\",user=\"0.00034\","
+                + "system=\"0.00003\",start=\"1346852609.987786\","
+                + "end=\"1346852609.988157\"}";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup(testLine);
+        MIRecord result = parser.parse();
+        MITList resultList = result.results();
+        
+        assertEquals(2, resultList.size());
+        assertEquals(
+            "bkpt={number=\"2\",type=\"breakpoint\",disp=\"del\",enabled=\"y\","
+                + "addr=\"0x00001f0f\",func=\"main\",file=\"src/args.c\","
+                + "line=\"39\","
+                + "shlib=\"/Users/tester/NetBeansProjects/Arguments_3/dist/Debug/GNU-MacOSX/arguments_3\","
+                + "times=\"0\"}",
+            resultList.get(0).toString()
+        );
+        assertEquals(
+            "time={wallclock=\"0.00037\",user=\"0.00034\",system=\"0.00003\","
+                + "start=\"1346852609.987786\",end=\"1346852609.988157\"}",
+            resultList.get(1).toString()
+        );
+    }
+    
+    public void testAsyncBreakpoint() {
+        String testLine = "=breakpoint-created,bkpt={number=\"2\","
+                + "type=\"breakpoint\",disp=\"keep\",enabled=\"y\","
+                + "addr=\"0x0000000000403175\",func=\"main(int, char**)\","
+                + "file=\"quote.cc\",fullname=\"/home/henk/tmp/Quote_1/quote.cc\","
+                + "line=\"123\",times=\"0\",original-location=\"quote.cc:123\"}";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup(testLine);
+        MIRecord result = parser.parse();
+        MITList resultList = result.results();
+        
+        assertEquals(1, resultList.size());
+        assertEquals(
+                "{number=\"2\",type=\"breakpoint\",disp=\"keep\",enabled=\"y\","
+                    + "addr=\"0x0000000000403175\",func=\"main(int, char**)\","
+                    + "file=\"quote.cc\",fullname=\"/home/henk/tmp/Quote_1/quote.cc\","
+                    + "line=\"123\",times=\"0\",original-location=\"quote.cc:123\"}",
+                resultList.valueOf("bkpt").toString());
     }
 }

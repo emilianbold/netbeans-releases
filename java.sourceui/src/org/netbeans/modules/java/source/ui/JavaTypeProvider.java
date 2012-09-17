@@ -29,6 +29,8 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ * 
+ * markiewb@netbeans.org
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -52,12 +54,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -87,7 +94,10 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
+ *
  * @author Petr Hrebejk
+ * @author Tomas Zezula
+ * @author markiewb
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class JavaTypeProvider implements TypeProvider {
@@ -133,7 +143,7 @@ public class JavaTypeProvider implements TypeProvider {
     @Override
     public void computeTypeNames(Context context, final Result res) {
         isCanceled = false;
-        String text = context.getText();
+        String originalText = context.getText();
         SearchType searchType = context.getSearchType();
 
         boolean hasBinaryOpen = Lookup.getDefault().lookup(BinaryElementOpen.class) != null;
@@ -291,18 +301,15 @@ public class JavaTypeProvider implements TypeProvider {
         } else {
             res.setMessage(null);
         }
+        int lastIndexOfDot = originalText.lastIndexOf("."); //NOI18N
+        boolean isFullyQualifiedName = -1 != lastIndexOfDot;
+        final Pattern packageName = isFullyQualifiedName ?
+                createPackageRegExp(originalText.substring(0, lastIndexOfDot)) :
+                null;
+        final String typeName = isFullyQualifiedName ? originalText.substring(lastIndexOfDot + 1) : originalText;
+        final String textForQuery = getTextForQuery(typeName, nameKind, context.getSearchType());
 
-        final String textForQuery;
-        switch( nameKind ) {
-            case REGEXP:
-            case CASE_INSENSITIVE_REGEXP:
-                text = removeNonJavaChars(text);
-                textForQuery = NameMatcherFactory.wildcardsToRegexp(text, searchType != SearchType.CASE_INSENSITIVE_EXACT_NAME);
-                break;
-            default:
-                textForQuery = text;
-        }
-        LOGGER.log(Level.FINE, "Text For Query ''{0}''.", text);
+        LOGGER.log(Level.FINE, "Text For Query ''{0}''.", originalText);
         if (customizer != null) {
             c = getCache();
             if (c != null) {
@@ -351,9 +358,10 @@ public class JavaTypeProvider implements TypeProvider {
                                 if (isCanceled) {
                                     return null;
                                 }
-                                final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (ci.getDeclaredTypes(textForQuery,nameKind));
+                                final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (
+                                        ci.getDeclaredTypes(packageName, textForQuery,nameKind));
                                 if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                                    names.addAll(ci.getDeclaredTypes(textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX));
+                                    names.addAll(ci.getDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX));
                                 }
                                 for (ElementHandle<TypeElement> name : names) {
                                     JavaTypeDescription td = new JavaTypeDescription(ci, name);
@@ -413,6 +421,90 @@ public class JavaTypeProvider implements TypeProvider {
             LOGGER.log(LEVEL, "Setting cache entries from " + this.cache + " to " + cache + ".", new Exception());
         }
         this.cache = cache;
+    }
+
+    private static String getTextForQuery(String text, final NameKind nameKind, SearchType searchType) {
+        String textForQuery;
+        switch (nameKind) {
+            case REGEXP:
+            case CASE_INSENSITIVE_REGEXP:
+                textForQuery = NameMatcherFactory.wildcardsToRegexp(removeNonJavaChars(text), searchType != SearchType.CASE_INSENSITIVE_EXACT_NAME);
+                break;
+            default:
+                textForQuery = text;
+        }
+        return textForQuery;
+    }
+
+    @NonNull
+    private static Pattern createPackageRegExp(@NonNull String pkgName) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("(.*\\.)?");  //NOI18N
+        for (int i=0; i< pkgName.length(); i++) {
+            char c = pkgName.charAt(i);
+            if (Character.isJavaIdentifierPart(c)) {
+                sb.append(c);
+            } else if (c == '.') {  //NOI18N
+                sb.append(".*\\."); //NOI18N
+            }
+        }
+        sb.append(".*(\\..*)?");  //NOI18N
+        LOGGER.log(Level.FINE, "Package pattern: {0}", sb); //NOI18N
+        return Pattern.compile(sb.toString());
+    }
+
+    /**
+     * Todo: Create an API and remove
+     */
+    @NonNull
+    private static NameKind translateSearchType(
+            @NonNull String simpleName,
+            @NonNull final NameKind originalSearchType) {
+        if (originalSearchType == NameKind.SIMPLE_NAME ||
+            originalSearchType == NameKind.CASE_INSENSITIVE_REGEXP) {
+            return originalSearchType;
+        } else if ((isAllUpper(simpleName) && simpleName.length() > 1) || isCamelCase(simpleName)) {
+            return NameKind.CAMEL_CASE;
+        } else if (containsWildCard(simpleName) != -1) {
+            return isCaseSensitive(originalSearchType) ? NameKind.REGEXP : NameKind.CASE_INSENSITIVE_REGEXP;
+        } else {
+            return isCaseSensitive(originalSearchType) ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        }
+    }
+
+    private static boolean isCaseSensitive(@NonNull final NameKind originalNameKind) {
+        switch (originalNameKind) {
+            case CAMEL_CASE_INSENSITIVE:
+            case CASE_INSENSITIVE_PREFIX:
+            case CASE_INSENSITIVE_REGEXP:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    private static int containsWildCard(@NonNull final String text) {
+        for( int i = 0; i < text.length(); i++ ) {
+            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isAllUpper(@NonNull final String text ) {
+        for( int i = 0; i < text.length(); i++ ) {
+            if ( !Character.isUpperCase( text.charAt( i ) ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
+    
+    private static boolean isCamelCase(String text) {
+         return camelCasePattern.matcher(text).matches();
     }
 
     //@NotTreadSafe
@@ -491,8 +583,12 @@ public class JavaTypeProvider implements TypeProvider {
             }
             return cpInfo;
         }
-        
-        public  Set<ElementHandle<TypeElement>> getDeclaredTypes(final String name, final NameKind kind) {
+
+        @NonNull
+        public  Set<ElementHandle<TypeElement>> getDeclaredTypes(
+            @NullAllowed final Pattern packageName,
+            @NonNull final String typeName,
+            @NonNull NameKind kind) {
             if (index == null) {
                 final ClassPath cp = ClassPathSupport.createClassPath(root);
                 index = isBinary ? 
@@ -501,7 +597,26 @@ public class JavaTypeProvider implements TypeProvider {
                         JavaSourceAccessor.getINSTANCE().createClassIndex(ClassPath.EMPTY,cp,ClassPath.EMPTY,false):
                     JavaSourceAccessor.getINSTANCE().createClassIndex(ClassPath.EMPTY,ClassPath.EMPTY,cp,false);
             }
-            return index.getDeclaredTypes(name,kind,EnumSet.of(isBinary?ClassIndex.SearchScope.DEPENDENCIES:ClassIndex.SearchScope.SOURCE));
+            final SearchScope baseSearchScope = isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE;
+            SearchScopeType searchScope;
+            if (packageName != null) {
+                //FQN
+                Set<? extends String> packages = filterPackages(
+                        packageName,
+                        index.getPackageNames(
+                            "",
+                            false,
+                            Collections.<SearchScopeType>singleton(baseSearchScope)));
+                searchScope = ClassIndex.createPackageSearchScope(baseSearchScope, packages.toArray(new String[packages.size()]));
+                kind = translateSearchType(typeName, kind);
+            } else {
+                //simple name
+                searchScope = baseSearchScope;
+            }
+
+
+            Set<SearchScopeType> searchScopeSet = Collections.<SearchScopeType>singleton(searchScope);
+            return index.getDeclaredTypes(typeName, kind, Collections.unmodifiableSet(searchScopeSet));
         }
 
         private void initProjectInfo() {
@@ -515,6 +630,19 @@ public class JavaTypeProvider implements TypeProvider {
             } catch (URISyntaxException e) {
                 Exceptions.printStackTrace(e);
             }
+        }
+
+        @NonNull
+        private Set<? extends String> filterPackages(
+                @NonNull final Pattern packageName,
+                @NonNull final Set<? extends String> basePackages) {
+            final Set<String> result = new HashSet<String>();
+            for (String pkg : basePackages) {
+                if (packageName.matcher(pkg).matches()) {
+                    result.add(pkg);
+                }
+            }
+            return result;
         }
 
     }

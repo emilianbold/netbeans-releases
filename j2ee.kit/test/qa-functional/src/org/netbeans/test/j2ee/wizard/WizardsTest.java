@@ -60,13 +60,12 @@ public class WizardsTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        NbModuleSuite.Configuration conf = emptyConfiguration();
         conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class, "testEJBModWizard");
         if (isRegistered(Server.GLASSFISH)) {
             conf = conf.addTest(Suite.class);
         }
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     public static class Suite extends NbTestSuite {

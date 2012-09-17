@@ -143,6 +143,20 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         doTestExecAndWaitTasks(ExecutionEnvironmentFactory.getLocal());
     }
 
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testDestroySignal() throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(getTestExecutionEnvironment());
+        npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
+        npb.setExecutable("/bin/sh").setArguments("-c", "trap 'echo OK' TERM\nsleep 10"); // NOI18N
+        NativeProcess process = npb.call();
+        process.destroy();
+        String output = ProcessUtils.readProcessOutputLine(process);
+        String error = ProcessUtils.readProcessErrorLine(process);
+        assertEquals("OK", output); // NOI18N
+        assertEquals("Terminated", error); // NOI18N
+    }
+
     public void doTestDestroyInfiniteTasks(final ExecutionEnvironment execEnv) throws Exception {
         ConnectionManager.getInstance().connectTo(execEnv);
         final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<NativeProcess>();

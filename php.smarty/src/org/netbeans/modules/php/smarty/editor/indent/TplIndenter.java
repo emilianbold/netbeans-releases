@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -65,6 +67,8 @@ import org.netbeans.modules.web.indent.api.support.IndenterContextData;
  * @author Martin Fousek
  **/
 public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
+
+    private static final Logger LOGGER = Logger.getLogger(TplIndenter.class.getName());
 
     private Stack<TplStackItem> stack = null;
     private int preservedLineIndentation = -1;
@@ -102,6 +106,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
     @Override
     protected void reset() {
         stack = new Stack<TplStackItem>();
+        preservedLineIndentation = -1;
     }
 
     @Override
@@ -304,6 +309,11 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             }
         }
 
+        if (LOGGER.isLoggable(Level.FINE)) {
+            for (IndentCommand command : iis) {
+                LOGGER.log(Level.FINE, command.toString());
+            }
+        }
         return iis;
     }
 

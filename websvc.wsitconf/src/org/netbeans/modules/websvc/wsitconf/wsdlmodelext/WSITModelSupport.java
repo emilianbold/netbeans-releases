@@ -220,7 +220,9 @@ public class WSITModelSupport {
     
     /* Retrieves WSDL model for a WS client - always has a wsdl
      */
-    static WSDLModel getModelForClient(Project p, URI fileUri, boolean create, Collection<FileObject> createdFiles) throws IOException {
+    static WSDLModel getModelForClient(Project p, URI fileUri, boolean create, 
+            Collection<FileObject> createdFiles) throws IOException 
+    {
         
         WSDLModel model = null;
         FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
@@ -233,15 +235,27 @@ public class WSITModelSupport {
             FileObject originalWsdlFO = Utilities.getFileObject(originalms);
             WSDLModel originalwsdlmodel = getModelFromFO(originalWsdlFO, true);
             
-            // check whether config file already exists
-            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(), CONFIG_WSDL_EXTENSION);
-            if ((configFO != null) && (configFO.isValid())) {
-                return getModelFromFO(configFO, true);
+            FileObject configFO;
+            if ( originalWsdlFO != null ){
+                // check whether config file already exists
+                configFO = srcFolder.getFileObject(originalWsdlFO.getName(),
+                        CONFIG_WSDL_EXTENSION);
+                if ((configFO != null) && (configFO.isValid())) {
+                    return getModelFromFO(configFO, true);
+                }
+            }
+            else {
+                logger.log(Level.INFO, "No original WSDL file found for "+fileUri);
             }
             
             if (create) {
+                if ( originalwsdlmodel == null ){
+                    return null;
+                }
+                
                 // check whether main config file exists
-                FileObject mainConfigFO = srcFolder.getFileObject(CONFIG_WSDL_CLIENT_PREFIX, MAIN_CONFIG_EXTENSION);
+                FileObject mainConfigFO = srcFolder.getFileObject(
+                        CONFIG_WSDL_CLIENT_PREFIX, MAIN_CONFIG_EXTENSION);
                 if (mainConfigFO == null) {
                     mainConfigFO = createMainConfig(srcFolder, createdFiles);
                 }

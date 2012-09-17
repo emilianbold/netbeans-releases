@@ -113,7 +113,7 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
     @Override
     public void stateChanged( ChangeEvent event ) {
         SourceGroup group = getSourceGroup();
-        if ( !group.equals( sourceGroup)){
+        if ( group != null && !group.equals( sourceGroup)){
             sourceGroup = group;
             updateSourceGroupPackages();
         }

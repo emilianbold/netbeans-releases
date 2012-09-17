@@ -1099,7 +1099,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     
     private void doShow () {
         NbPresenter prev = null;
-        MenuSelectionManager.defaultManager().clearSelectedPath();
+        try {
+            MenuSelectionManager.defaultManager().clearSelectedPath();
+        } catch( NullPointerException npE ) {
+            //#216184
+            LOG.log( Level.FINE, null, npE );
+        }
         if (isModal()) {
             prev = currentModalDialog;
             currentModalDialog = this;

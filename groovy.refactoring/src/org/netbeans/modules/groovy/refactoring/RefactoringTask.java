@@ -53,7 +53,6 @@ import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -63,12 +62,11 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
  * Abstract groovy refactoring task. In the current state it is always either
- * TextComponent task (which means refactoring called from the editor) or
+ * TextComponentTask (which means refactoring called from the editor) or
  * NodeToElementTask (refactoring called on the concrete node)
  *
  * @author Martin Janicek
@@ -78,26 +76,18 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
     private RefactoringTask() {
     }
 
-    public static RefactoringTask createRefactoringTask(Lookup lookup) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        FileObject fileObject = lookup.lookup(FileObject.class);
 
-        if (GroovyProjectUtil.isFromEditor(ec)) {
-            return new TextComponentTask(ec, fileObject);
-        } else {
-            return new NodeToElementTask(lookup.lookupAll(Node.class), fileObject);
-        }
-    }
+    public abstract boolean isValid();
 
 
-    private static class TextComponentTask extends RefactoringTask {
+    protected static abstract class TextComponentTask extends RefactoringTask {
 
         private final FileObject fileObject;
         private JTextComponent textC;
         private RefactoringUI ui;
 
         
-        private TextComponentTask(EditorCookie ec, FileObject fileObject) {
+        protected TextComponentTask(EditorCookie ec, FileObject fileObject) {
             this.textC = ec.getOpenedPanes()[0];
             this.fileObject = fileObject;
 
@@ -108,23 +98,38 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         }
 
         @Override
+        public boolean isValid() {
+            try {
+                SourceUtils.runUserActionTask(fileObject, this);
+                return true;
+            } catch (Exception ex) {
+                return false;
+            } catch (AssertionError error) {
+                return false;
+            }
+        }
+
+        @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
-            ASTNode root = ASTUtils.getRoot(parserResult);
+            final GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
+            final ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
                 return;
             }
 
-            int caret = textC.getCaretPosition();
-            int start = textC.getSelectionStart();
-            int end = textC.getSelectionEnd();
+            final int caret = textC.getCaretPosition();
+            final int start = textC.getSelectionStart();
+            final int end = textC.getSelectionEnd();
 
-            BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
-            AstPath path = new AstPath(root, caret, doc);
-            ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);;
-            ElementKind kind = ElementUtils.getKind(path, doc, caret);
+            final BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
+            final AstPath path = new AstPath(root, caret, doc);
+            final ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);
+            final ElementKind kind = ElementUtils.getKind(path, doc, caret);
+            if (kind != ElementKind.CLASS) {
+                throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !");
+            }
 
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
+            final GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
             }
@@ -141,31 +146,34 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui, TopComponent.getRegistry().getActivated());
         }
 
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info) {
-            return new WhereUsedQueryUI(selectedElement);
-        }
+        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
     }
 
-    private static class NodeToElementTask extends RefactoringTask {
+    protected static abstract class NodeToElementTask extends RefactoringTask {
 
         private final FileObject fileObject;
         private RefactoringUI ui;
 
 
-        private NodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
+        protected NodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
             assert nodes.size() == 1;
             this.fileObject = fileObject;
         }
 
         @Override
+        public boolean isValid() {
+            return true; // At the moment I can't imagine case where a refactoring on the node element isn't valid
+        }
+
+        @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
-            ASTNode root = ASTUtils.getRoot(parserResult);
+            final GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
+            final ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
                 return;
             }
             
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
+            final GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }
@@ -181,8 +189,6 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui);
         }
 
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
-            return new WhereUsedQueryUI(selectedElement);
-        }
+        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info);
     }
 }

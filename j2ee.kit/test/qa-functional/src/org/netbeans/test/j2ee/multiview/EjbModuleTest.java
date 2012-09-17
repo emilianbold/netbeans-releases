@@ -90,11 +90,12 @@ public class EjbModuleTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EjbModuleTest.class);
-        conf = addServerTests(Server.ANY, conf, "testOpenProject", "testRenameDisplayName",
-                "testChangeDescription", "testAddSmallIcon", "testAddLargeIcon");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.ANY, EjbModuleTest.class,
+                "testOpenProject",
+                "testRenameDisplayName",
+                "testChangeDescription",
+                "testAddSmallIcon",
+                "testAddLargeIcon");
     }
 
     /*

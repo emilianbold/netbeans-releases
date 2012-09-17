@@ -95,9 +95,9 @@ public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
             return true;
         }
         MavenProject mp = nbmp.getMavenProject();
-        Properties props = PluginPropertyUtils.getPluginPropertyParameter(mp, "org.apache.felix", "maven-bundle-plugin", "instructions", "bundle");
+        Properties props = PluginPropertyUtils.getPluginPropertyParameter(project, "org.apache.felix", "maven-bundle-plugin", "instructions", "bundle");
         if (props != null) {
-            String embed = props.getProperty("Embed-Dependency"); //TODO should we parse it somehow?
+            //String embed = props.getProperty("Embed-Dependency"); //TODO should we parse it somehow?
             //are embedded ones a problem? not on CP I guess
 //            if (embed != null && embed.contains("inline=true")) {
 //                return false;
