@@ -66,6 +66,10 @@ import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -97,6 +101,22 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
     MavenJaxWsSupportProvider(final Project prj, final JAXWSLightSupport jaxWsSupport) {
         this.prj = prj;
         this.jaxWsSupport = jaxWsSupport;
+        
+        final Lookup lookup = prj.getLookup();
+        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
+        final LookupListener listener = new LookupListener(){
+
+            @Override
+            public void resultChanged( LookupEvent event ) {
+                synchronized (result) {
+                    LOG.log(Level.INFO, "Maven project lookup is changed"); // NOI18N
+                    result.notifyAll();
+                }
+            }
+            
+        };
+        result.addLookupListener( listener );
+        LOG.log(Level.INFO, "Lookup listener is added into the Maven project");// NOI18N
 
         MAVEN_WS_RP.post(new Runnable() {
 
@@ -104,13 +124,30 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             public void run() {
                 registerPCL();
                 LOG.log(Level.INFO, "Inside Maven WS request processor");   // NOI18N
+                
+                synchronized (result) {
+                    while (lookup.lookup(J2eeModuleProvider.class) == null) {
+                        try {
+                            LOG.log(Level.INFO, 
+                                    "Wait in cycle for J2eeModuleProvider instance in Maven lookup");// NOI18N
+                            result.wait(1000);
+                        }
+                        catch( InterruptedException e ){
+                            LOG.log(Level.INFO, "Lookup change wait is interrupted", e); //NOI18N
+                        }
+                    }
+                    result.removeLookupListener(listener);
+                }
+                LOG.log(Level.INFO, "Get out of waiting J2eeModuleProvider instance cycle, listener is removed");// NOI18N
+                J2eeModuleProvider provider = lookup.lookup(J2eeModuleProvider.class);
+                LOG.log(Level.INFO, "J2eeModuleProvider instance :"+provider);// NOI18N
+                
                 MetadataModel<WebservicesMetadata> model = 
                         jaxWsSupport.getWebservicesMetadataModel();
                 LOG.log(Level.INFO, "WS metadata model : "+model);       // NOI18N
                 if (model != null) {
                     registerAnnotationListener(model);
                 }
-                J2eeModuleProvider provider = WSUtils.getModuleProvider(prj);
                 serverInstance = provider== null ? null : 
                     provider.getServerInstanceID();
                 //wsModel = model;

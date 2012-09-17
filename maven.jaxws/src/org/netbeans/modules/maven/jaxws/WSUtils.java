@@ -185,41 +185,7 @@ public class WSUtils {
     }
     
     static final J2eeModuleProvider getModuleProvider(Project project){
-        Lookup lookup = project.getLookup();
-        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
-        final Logger log = Logger.getLogger( WSUtils.class.getName());
-        LookupListener listener = new LookupListener(){
-
-            @Override
-            public void resultChanged( LookupEvent event ) {
-                synchronized (result) {
-                    log.log(Level.INFO, "Maven project lookup is changed"); // NOI18N
-                    result.notifyAll();
-                    if ( !result.allInstances().isEmpty() ){
-                        result.removeLookupListener( this );
-                    }
-                    log.log(Level.INFO, 
-                            "Get out of waiting J2eeModuleProvider instance cycle, listener is removed");// NOI18N
-                }
-            }
-            
-        };
-        result.addLookupListener( listener );
-        log.log(Level.INFO, "Lookup listener is added into the Maven project");// NOI18N
-        synchronized (result) {
-            while (lookup.lookup(J2eeModuleProvider.class) == null) {
-                try {
-                    log.log(Level.INFO, "Wait in cycle for J2eeModuleProvider instance in Maven lookup");// NOI18N
-                    result.wait();
-                }
-                catch( InterruptedException e ){
-                    log.log(Level.INFO, "Lookup change wait is interrupted", e); //NOI18N
-                }
-            }
-        }
-        J2eeModuleProvider provider = lookup.lookup(J2eeModuleProvider.class);
-        log.log(Level.INFO, "J2eeModuleProvider instance :"+provider);// NOI18N
-        return provider;
+        return project.getLookup().lookup(J2eeModuleProvider.class);
     }
     
     private static String readResource(InputStream is) throws IOException {

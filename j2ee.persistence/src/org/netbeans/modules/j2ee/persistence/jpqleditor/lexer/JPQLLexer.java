@@ -147,13 +147,13 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                     input.backup(1);
                     return token(JPQLTokenId.MINUS);
 
-                case '*':
-                    input.backup(1);
-                    return token(JPQLTokenId.STAR);
-
-                case '|':
-                    input.backup(1);
-                    return token(JPQLTokenId.BAR);
+//                case '*':
+//                    input.backup(1);
+//                    return token(JPQLTokenId.STAR);
+//
+//                case '|':
+//                    input.backup(1);
+//                    return token(JPQLTokenId.BAR);
 
                 case '&':
                     switch (input.read()) {
@@ -163,17 +163,17 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                     input.backup(1);
                     return token(JPQLTokenId.AMP);
 
-                case '%':
-                    input.backup(1);
-                    return token(JPQLTokenId.PERCENT);
-
-                case '^':
-                    input.backup(1);
-                    return token(JPQLTokenId.CARET);
-
-                case '!':
-                    input.backup(1);
-                    return token(JPQLTokenId.BANG);
+//                case '%':
+//                    input.backup(1);
+//                    return token(JPQLTokenId.PERCENT);
+//
+//                case '^':
+//                    input.backup(1);
+//                    return token(JPQLTokenId.CARET);
+//
+//                case '!':
+//                    input.backup(1);
+//                    return token(JPQLTokenId.BANG);
 
                 case '.':
                     if ((c = input.read()) == '.') {

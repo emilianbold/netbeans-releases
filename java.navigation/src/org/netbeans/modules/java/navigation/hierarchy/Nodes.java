@@ -96,7 +96,6 @@ import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -278,6 +277,15 @@ class Nodes {
             this.globalActions = globalActions;
             this.filters.addPropertyChangeListener(this);
             updateDisplayName();
+        }
+
+        @Override
+        public String getShortDescription() {
+            if (filters.isFqn()) {
+                return super.getShortDescription();
+            } else {
+                return description.getHandle().getQualifiedName();
+            }
         }
 
         @Override
