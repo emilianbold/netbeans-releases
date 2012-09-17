@@ -88,19 +88,19 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
         File art11 = new File(repo, "test/prj/1.1/prj-1.1.jar");
         assertEquals(null, foq.getOwner(Utilities.toURI(art10)));
         assertEquals(null, foq.getOwner(Utilities.toURI(art11)));
-        foq.registerProject(p10);
+        foq.registerProject(p10, true);
         assertEquals(p10, foq.getOwner(Utilities.toURI(art10)));
         assertEquals(null, foq.getOwner(Utilities.toURI(art11)));
-        foq.registerProject(p11);
+        foq.registerProject(p11, true);
         assertEquals(p10, foq.getOwner(Utilities.toURI(art10)));
         assertEquals(p11, foq.getOwner(Utilities.toURI(art11)));
     }
     
     public void testOldEntriesGetRemoved() throws Exception {
         URL url = new URL("file:///users/mkleint/aaa/bbb");
-        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("a", "b", "0", url);
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("a", "b", "0", url, true);
         assertNotNull(MavenFileOwnerQueryImpl.prefs().get("a:b:0", null));
-        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("a", "b", "1", url);
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("a", "b", "1", url, true);
         assertNotNull(MavenFileOwnerQueryImpl.prefs().get("a:b:1", null));
         assertNull(MavenFileOwnerQueryImpl.prefs().get("a:b:0", null));
         

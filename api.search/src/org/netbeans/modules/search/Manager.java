@@ -329,7 +329,7 @@ public final class Manager {
         Method theMethod;
         try {
             theMethod = ResultView.class
-                        .getMethod("requestActive", new Class[0]);      //NOI18N
+                        .getMethod("requestActive", new Class<?>[0]);   //NOI18N
         } catch (NoSuchMethodException ex) {
             throw new IllegalArgumentException();
         }
@@ -373,7 +373,7 @@ public final class Manager {
         Method theMethod;
         try {
             theMethod = ResultView.class
-                        .getDeclaredMethod(methodName, new Class[0]);
+                        .getDeclaredMethod(methodName, new Class<?>[0]);
         } catch (NoSuchMethodException ex) {
             throw new IllegalArgumentException();
         }
