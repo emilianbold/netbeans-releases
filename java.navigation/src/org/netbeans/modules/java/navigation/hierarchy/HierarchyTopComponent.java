@@ -157,6 +157,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final InstanceContent selectedNodes;
     private final Lookup lookup;
     private final Container contentView;
+    private final JLabel nonActiveInfo;
     private final BeanTreeView btw;
     private final TapPanel lowerToolBar;
     private final JComboBox viewTypeCombo;
@@ -218,10 +219,10 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         contentView.setLayout(new CardLayout());
         JPanel nonActiveContent = updateBackground(new JPanel());
         nonActiveContent.setLayout(new BorderLayout());
-        final JLabel info = new JLabel(Bundle.TXT_NonActiveContent());
-        info.setEnabled(false);
-        info.setHorizontalAlignment(SwingConstants.CENTER);
-        nonActiveContent.add(info, BorderLayout.CENTER);
+        nonActiveInfo = new JLabel(Bundle.TXT_NonActiveContent());
+        nonActiveInfo.setEnabled(false);
+        nonActiveInfo.setHorizontalAlignment(SwingConstants.CENTER);
+        nonActiveContent.add(nonActiveInfo, BorderLayout.CENTER);
         btw = createBeanTreeView();
         contentView.add(nonActiveContent, NON_ACTIVE_CONTENT);
         contentView.add(btw, ACTIVE_CONTENT);
@@ -525,47 +526,54 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         @Override
         @NbBundle.Messages({
         "ERR_Cannot_Resolve_File=Cannot resolve type: {0}.",
-        "ERR_Not_Declared_Type=Not a declared type."})
+        "ERR_Not_Declared_Type=Not a declared type.",
+        "WARN_Object=<html>The subtypes of java.lang.Object are not supported."})
         public void run() {
             try {
                 final Pair<URI,ElementHandle<TypeElement>> pair = toShow.get();
                 if (pair != null) {
-                    final FileObject file = URLMapper.findFileObject(pair.first.toURL());
-                    JavaSource js;
-                    if (file != null && (js=JavaSource.forFileObject(file)) != null) {
-                        LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
-                        history.addToHistory(pair);
-                        js.runUserActionTask(new Task<CompilationController>() {
-                            @Override
-                            public void run(CompilationController cc) throws Exception {
-                                cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                                final TypeElement te = pair.second.resolve(cc);
-                                if (te != null) {
-                                    final Node root;
-                                    if (viewType == ViewType.SUPER_TYPE) {
-                                     root = Nodes.superTypeHierarchy(
-                                            (DeclaredType)te.asType(),
-                                            cc.getClasspathInfo(),
-                                            filters);
-                                    } else {
-                                        Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, new AtomicBoolean());
-                                        
-                                        root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
-                                    }
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            historyCombo.getModel().setSelectedItem(pair);
-                                            rootChildren.set(root);
-                                            btw.expandAll();
-                                        }
-                                    });
-                                }
-                            }
-                        }, true);
+                    if (viewType == ViewType.SUB_TYPE &&
+                        Object.class.getName().equals(pair.second.getQualifiedName())) {
+                        nonActiveInfo.setText(Bundle.WARN_Object());
+                        ((CardLayout)contentView.getLayout()).show(contentView, NON_ACTIVE_CONTENT);
                     } else {
-                        rootChildren.set(null);
-                        StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
+                        final FileObject file = URLMapper.findFileObject(pair.first.toURL());
+                        JavaSource js;
+                        if (file != null && (js=JavaSource.forFileObject(file)) != null) {
+                            LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
+                            history.addToHistory(pair);
+                            js.runUserActionTask(new Task<CompilationController>() {
+                                @Override
+                                public void run(CompilationController cc) throws Exception {
+                                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    final TypeElement te = pair.second.resolve(cc);
+                                    if (te != null) {
+                                        final Node root;
+                                        if (viewType == ViewType.SUPER_TYPE) {
+                                         root = Nodes.superTypeHierarchy(
+                                                (DeclaredType)te.asType(),
+                                                cc.getClasspathInfo(),
+                                                filters);
+                                        } else {
+                                            Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, new AtomicBoolean());
+
+                                            root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
+                                        }
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                historyCombo.getModel().setSelectedItem(pair);
+                                                rootChildren.set(root);
+                                                btw.expandAll();
+                                            }
+                                        });
+                                    }
+                                }
+                            }, true);
+                        } else {
+                            rootChildren.set(null);
+                            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
+                        }
                     }
                 } else {
                     rootChildren.set(null);
