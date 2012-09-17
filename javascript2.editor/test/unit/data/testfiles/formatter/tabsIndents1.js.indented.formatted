@@ -1,7 +1,7 @@
     var engine = {
-        cylinders : 8,
-        power : "22k",
-        getDescription : function() {
+        cylinders: 8,
+        power: "22k",
+        getDescription: function() {
             if (enabled) {
                 println('Cylinders: '
                         + this.cylinders + ' with power: ' + this.power);

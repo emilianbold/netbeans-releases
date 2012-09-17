@@ -1,7 +1,7 @@
 var foo = {
-    items : [
+    items: [
         {
-            text : 'bar'
+            text: 'bar'
         }
     ]
 };

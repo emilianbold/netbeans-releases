@@ -1,11 +1,11 @@
-$("#deviceTree").jstree({"plugins" : ["themes", "html_data", "ui",
+$("#deviceTree").jstree({"plugins": ["themes", "html_data", "ui",
         "crrm", "hotkeys"],
-    "themes" :
+    "themes":
             {
-                "theme" : "default",
-                "test" :
+                "theme": "default",
+                "test":
                         {
-                            "testinner" : "test"
+                            "testinner": "test"
                         }
             }
 });

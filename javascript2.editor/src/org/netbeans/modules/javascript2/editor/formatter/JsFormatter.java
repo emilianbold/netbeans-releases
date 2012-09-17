@@ -962,7 +962,7 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(formatContext).spaceAroundAssignOps();
             case BEFORE_PROPERTY_OPERATOR:
                 // FIXME option
-                return true;
+                return false;
             case AFTER_PROPERTY_OPERATOR:
                 // FIXME option
                 return true;
