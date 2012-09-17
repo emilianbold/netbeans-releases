@@ -238,36 +238,37 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 height = icon.getIconHeight();
             }
 
-            if( null == displayer.getContainerWinsysInfo() 
+            if( null == displayer.getContainerWinsysInfo()
                     || displayer.getContainerWinsysInfo().isTopComponentClosingEnabled() ) {
                 //create close button
                 btnClose = TabControlButtonFactory.createCloseButton( displayer );
                 buttonsPanel.add( btnClose );
-                
+
                 Icon icon = btnClose.getIcon();
                 height = Math.max( height, icon.getIconHeight() );
             }
 
-            if( showPin ) {
-                Icon icon = btnAutoHidePin.getIcon();
-                btnAutoHidePin.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
-                width += icon.getIconWidth();
-            }
-            
             if( null != btnClose ) {
-                if( 0 != width )
-                    width += ICON_X_PAD;
                 Icon icon = btnClose.getIcon();
                 btnClose.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
                 width += icon.getIconWidth();
             }
-                
+
+            if( showPin ) {
+                if( 0 != width )
+                    width += ICON_X_PAD;
+                Icon icon = btnAutoHidePin.getIcon();
+                btnAutoHidePin.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
+                width += icon.getIconWidth();
+                width += ICON_X_PAD;
+            }
+
             Dimension size = new Dimension( width, height );
             buttonsPanel.setMinimumSize( size );
             buttonsPanel.setSize( size );
             buttonsPanel.setPreferredSize( size );
             buttonsPanel.setMaximumSize( size );
-            
+
             controlButtons = buttonsPanel;
         }
         return controlButtons;
