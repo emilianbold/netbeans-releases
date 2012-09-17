@@ -253,13 +253,14 @@ public abstract class PUCompletor {
                         });
                     }
                     // add classes 
-                    for (Entity entity : entities) {
-                        if (typedPrefix.length() == 0 || entity.getClass2().toLowerCase().startsWith(typedPrefix.toLowerCase()) || entity.getName().toLowerCase().startsWith(typedPrefix.toLowerCase())) {
-                            JPACompletionItem item = JPACompletionItem.createAttribValueItem(substitutionOffset, entity.getClass2());
-                            results.add(item);
+                    if(entities != null) {
+                        for (Entity entity : entities) {
+                            if (typedPrefix.length() == 0 || entity.getClass2().toLowerCase().startsWith(typedPrefix.toLowerCase()) || entity.getName().toLowerCase().startsWith(typedPrefix.toLowerCase())) {
+                                JPACompletionItem item = JPACompletionItem.createAttribValueItem(substitutionOffset, entity.getClass2());
+                                results.add(item);
+                            }
                         }
                     }
-
                 }
             }, true);
 

@@ -125,34 +125,12 @@ public class UIDUtilities {
                 uid = new DeclarationUID<T>(declaration);
             }
         }
-        return UIDManager.instance().getSharedUID(uid);
+        return updateCachedUIDIfNeeded(uid, declaration);
     }
 
-    public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(CsmDeclaration.Kind kind, CharSequence name, FileImpl containingFile, int startOffset) {
-        assert name != null;
-        CsmUID<T> uid;
-        if (name.length() == 0) {
-            uid = handleUnnamedDeclaration(kind, containingFile, startOffset);
-        } else {
-            Key key = KeyUtilities.createOffsetableDeclarationKey(containingFile, startOffset, Utils.getCsmDeclarationKindkey(kind), name);
-//            if (kind == CsmDeclaration.Kind.TYPEDEF) {
-//                uid = new TypedefUID<T>(key);
-//            } else if (kind == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) {
-//                uid = new ForwardClassUID<T>(key);
-//            } else 
-            if (kind == CsmDeclaration.Kind.CLASS) {
-                uid = new ClassifierUID<T>(key);
-            } else {
-                uid = new DeclarationUID<T>(key);
-            }
-        }
-        return UIDManager.instance().getSharedUID(uid);
-    }
-
-    
     public static <T extends CsmInstantiation> CsmUID<T> createInstantiationUID(T inst) {
         CsmUID<T> uid = new InstantiationUID<T>(inst);
-        return UIDManager.instance().getSharedUID(uid);
+        return updateCachedUIDIfNeeded(uid, inst);
     }
     
     private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration) {
@@ -174,21 +152,26 @@ public class UIDUtilities {
     }
 
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
-        return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
+        CsmUID<CsmClass> sharedUID = UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
+        assert !(sharedUID instanceof CachedUID);
+        return sharedUID;
     }
 
     public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
-        return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
+        CsmUID<CsmFile> sharedUID = UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
+        assert !(sharedUID instanceof CachedUID);
+        return sharedUID;
     }
 
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
-        return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+        CsmUID<CsmNamespace> sharedUID = UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+        assert !(sharedUID instanceof CachedUID);
+        return sharedUID;
     }
 
-    private static <T> CsmUID<T> getCachedUID(CachedUID<T> uid, T obj) {
-        CachedUID<T> cachedUid = (CachedUID<T>)UIDManager.instance().getSharedUID(uid);
-        cachedUid.update(obj);
-        return cachedUid;
+    private static <T extends CsmObject> CsmUID<T> getCachedUID(CachedUID<T> uid, T obj) {
+        updateCachedUID(uid, obj);
+        return uid;
     }
 
     public static int getProjectID(CsmUID<?> uid) {
@@ -1017,4 +1000,18 @@ public class UIDUtilities {
         }
     }
 
+    private static <T extends CsmObject> CsmUID<T> updateCachedUIDIfNeeded(CsmUID<T> uid, T declaration) {
+        CsmUID<T> sharedUID = UIDManager.instance().getSharedUID(uid);
+        if(sharedUID instanceof CachedUID) {
+            ((CachedUID)sharedUID).update(declaration);
+        }
+        return sharedUID;
+    }
+
+    private static <T extends CsmObject> CsmUID<T> updateCachedUID(CachedUID<T> uid, T obj) {
+        CachedUID<T> cachedUid = (CachedUID<T>)UIDManager.instance().getSharedUID(uid);
+        cachedUid.update(obj);
+        return cachedUid;
+    }
+    
 }

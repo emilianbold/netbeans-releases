@@ -296,14 +296,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             }
         }
         for(int i = list.size() - 1; i >= 0; i--) {
-            inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor));
+            inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
         }
         set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         // Preprocessor Macros
         inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration) getMaster();
         while (master != null) {
-            inheritedValues.append(master.getPreprocessorConfiguration().toString(visitor));
+            inheritedValues.append(master.getPreprocessorConfiguration().toString(visitor, "\n")); //NOI18N
             if (master.getInheritPreprocessor().getValue()) {
                 master = (CCCCompilerConfiguration) master.getMaster();
             } else {

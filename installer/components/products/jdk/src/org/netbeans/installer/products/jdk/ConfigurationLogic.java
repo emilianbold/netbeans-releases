@@ -280,23 +280,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (locationPath.contains(" ")) {
                 locationPath = convertPathNamesToShort(locationPath);
             }
-            final String loggingOption = (logFile!=null) ?
-                "/log " + BACK_SLASH + QUOTE  +  logPath + BACK_SLASH + QUOTE +" ":
-                EMPTY_STRING;
-            String installLocationOption = "/qn /norestart INSTALLDIR=" +
-                    BACK_SLASH + QUOTE + locationPath + BACK_SLASH + QUOTE;
             commands = new String [] {
                 installer.getAbsolutePath(),
                 "/s",
-                "/v" + loggingOption + installLocationOption};
-
-        } else  {
+                "/qn",
+                "/norestart",
+                logFile != null ? "/lv" : EMPTY_STRING,
+                logFile != null ? logPath : EMPTY_STRING,
+                "INSTALLDIR=" + locationPath,
+                "REBOOT=ReallySuppress"            
+            };
+        } else {
              ////////////////////////////for msi////////////////////////////
             LogManager.log("Installing JDK with MSI installer");
             final String packageOption = "/i \"" + installer.getAbsolutePath() +"\" ";
             final String loggingOption = (logFile!=null) ?
-                "/log \"" + logFile.getAbsolutePath()  +"\" ":
-                EMPTY_STRING;
+                "/log \"" + logFile.getAbsolutePath()  +"\" " : EMPTY_STRING;
             final String installLocationOption = "/qn INSTALLDIR=\"" +  location.getAbsolutePath() + "\"";
             commands = new String [] {
                 "CMD",
