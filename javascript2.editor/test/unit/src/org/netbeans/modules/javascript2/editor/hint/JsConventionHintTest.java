@@ -60,7 +60,6 @@ public class JsConventionHintTest extends HintTestBase {
         super(testName);
     }
     
-    
     private Rule createRule() {
         return new JsConventionRule();
     }
@@ -97,8 +96,16 @@ public class JsConventionHintTest extends HintTestBase {
         checkHints(this, createSemicolonHint(), "testfiles/hints/issue218042.js", null);
     }
 
+    public void testBetterConditionIssue218042() throws Exception {
+        checkHints(this, createBetterConditionHint(), "testfiles/hints/issue218042.js", null);
+    }
+
     public void testSemicolonIssue218108() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/hints/issue218108.js", null);
+    }
+
+    public void testSemicolonIssue218446() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue218446.js", null);
     }
     
     public void testObjectTrailingComma01() throws Exception {
