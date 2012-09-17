@@ -50,14 +50,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.html.api.HtmlDataNode;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
@@ -72,6 +72,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.common.api.ValueCompletion;
+import org.openide.cookies.EditorCookie;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
@@ -94,35 +95,77 @@ import org.openide.util.NbBundle;
 })
 public class HtmlElementProperties {
 
-    static void parsed(HtmlParserResult result, SchedulerEvent event) {
+    private static final Logger LOGGER = Logger.getLogger(HtmlElementProperties.class.getSimpleName());
+    private static final Level LEVEL = Level.FINE;
+
+    static void parsed(final HtmlParserResult result, SchedulerEvent event) {
         try {
             FileObject file = result.getSnapshot().getSource().getFileObject();
             if (file == null) {
+                LOGGER.log(LEVEL, "null file, exit");
                 return;
             }
 
             if (!file.isValid()) {
+                LOGGER.log(LEVEL, "invalid file, exit");
                 return;
             }
 
-            DataObject dobj = DataObject.find(file);
-            org.openide.nodes.Node dataObjectNode = dobj.getNodeDelegate();
-
-            HtmlDataNode htmlNode = dataObjectNode instanceof HtmlDataNode ? (HtmlDataNode) dataObjectNode : null;
-
-            //filter out embedded html cases
-            int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-            Node node = result.findBySemanticRange(caretPosition, true);
-            if (node != null) {
-                if (node.type() == ElementType.OPEN_TAG) { //may be root node!
-                    OpenTag ot = (OpenTag) node;
-                    htmlNode.setPropertySets(new PropertySet[]{new PropertiesPropertySet(result, ot)});
+            final DataObject dobj = DataObject.find(file);
+            final int caretOffset;
+            if (event == null) {
+                LOGGER.log(LEVEL, "run() - NULL SchedulerEvent?!?!?!");
+                caretOffset = -1;
+            } else {
+                if (event instanceof CursorMovedSchedulerEvent) {
+                    caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+                } else {
+                    LOGGER.log(LEVEL, "run() - !(event instanceof CursorMovedSchedulerEvent)");
+                    caretOffset = -1;
                 }
             }
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    runInEDT(result, dobj, caretOffset);
+                }
+            });
+
+
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
 
+    }
+
+    private static void runInEDT(HtmlParserResult result, DataObject dobj, int caretOffset) {
+        if (caretOffset == -1) {
+            //dirty workaround
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
+                if (panes != null && panes.length > 0) {
+                    JEditorPane pane = panes[0]; //hopefully the active one
+                    caretOffset = pane.getCaretPosition();
+                }
+            }
+            LOGGER.log(LEVEL, "workarounded caret offset: {0}", caretOffset);
+        }
+
+
+        org.openide.nodes.Node dataObjectNode = dobj.getNodeDelegate();
+        HtmlDataNode htmlNode = dataObjectNode instanceof HtmlDataNode ? (HtmlDataNode) dataObjectNode : null;
+
+
+        //filter out embedded html cases
+        Node node = result.findBySemanticRange(caretOffset, true);
+        if (node != null) {
+            if (node.type() == ElementType.OPEN_TAG) { //may be root node!
+                OpenTag ot = (OpenTag) node;
+                htmlNode.setPropertySets(new PropertySet[]{new PropertiesPropertySet(result, ot)});
+            }
+        }
     }
 
     public static class PropertiesPropertySet extends PropertySet {
@@ -252,7 +295,6 @@ public class HtmlElementProperties {
         private Document doc;
         private Snapshot snap;
         private OpenTag ot;
-        
         private String[] tags;
 
         public NewAttributeProperty(Document doc, Snapshot snap, String attrName, OpenTag ot) {
@@ -261,7 +303,7 @@ public class HtmlElementProperties {
             this.snap = snap;
             this.ot = ot;
             this.attrName = attrName;
-            
+
             tags = findTags(ot.name().toString(), attrName);
         }
 
