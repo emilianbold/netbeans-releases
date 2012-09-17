@@ -47,9 +47,12 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.css.lib.nblexer.CssLanguageHierarchy;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.Css3Lexer;
 import static org.netbeans.modules.css.lib.api.CssTokenIdCategory.*;
+import org.netbeans.modules.css.lib.api.properties.Token;
 
 /**
  * Token ids of CSS language
@@ -259,5 +262,24 @@ public enum CssTokenId implements TokenId {
         return primaryCategory;
     }
 
+    /**
+     * Verifies whether the given input text is lexed as on token of this type.
+     * 
+     * If some part of the input text is not matched by the css token the method returns false.
+     * 
+     * @since 1.12
+     * @param input source code to be lexed
+     * @return true if the whole source code is lexed as a token of this type.
+     */
+    public boolean matchesInput(CharSequence input) {
+        TokenHierarchy<CharSequence> th = TokenHierarchy.create(input, CssTokenId.language());
+        TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
+        ts.moveStart();
+        if(!ts.moveNext()) {
+            return false;
+        }
+        org.netbeans.api.lexer.Token<CssTokenId> t = ts.token();
+        return !ts.moveNext() && t.id() == this;
+    }
 
 }
