@@ -166,11 +166,15 @@ public class JsStructureScanner implements StructureScanner {
                     // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
                     int startOffset = ts.offset() + 3;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(startOffset, endOffset));
+                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(
+                            info.getSnapshot().getOriginalOffset(startOffset), 
+                            info.getSnapshot().getOriginalOffset(endOffset)));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
                     int startOffset = ts.offset() + 2;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(startOffset, endOffset));
+                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(
+                            info.getSnapshot().getOriginalOffset(startOffset), 
+                            info.getSnapshot().getOriginalOffset(endOffset)));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
