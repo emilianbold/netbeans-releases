@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -55,32 +56,40 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JList;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.actions.Openable;
+import org.openide.awt.HtmlRenderer;
+import org.openide.awt.HtmlRenderer.Renderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author lahvac
  */
-public class BreadCrumbComponent extends JComponent implements PropertyChangeListener {
+public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent implements PropertyChangeListener {
 
+    private final Image SEPARATOR = ImageUtilities.loadImage("org/netbeans/modules/editor/breadcrumbs/resources/separator.png");
+    
     public BreadCrumbComponent() {
-        setPreferredSize(new Dimension(0, /*XXX:*/24));
+        setPreferredSize(new Dimension(0, COMPONENT_HEIGHT));
         addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 expand(e);
@@ -88,10 +97,12 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
         });
     }
 
-    private static final int INSET_HEIGHT = 2;
-    private static final int SEPARATOR_INSETS = 10;
-    private static final int START_INSET = 10;
+    private static final int USABLE_HEIGHT = 19;
+    private static final int LEFT_SEPARATOR_INSET = 3;
+    private static final int RIGHT_SEPARATOR_INSET = 18;
+    private static final int START_INSET = 8;
     private static final int MAX_ROWS_IN_POP_UP = 20;
+    public static final int COMPONENT_HEIGHT = USABLE_HEIGHT;
 
     private ExplorerManager seenManager;
 
@@ -117,32 +128,40 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
     protected void paintComponent(Graphics g) {
         if (nodes == null) measurePrepaint();
 
-        int x = START_INSET;
-
+        assert nodes != null;
+        
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        
         int height = getHeight();
-        int insetHeight = (int) ((height - this.height) / 2);
         
         ((Graphics2D) g).addRenderingHints(Collections.singletonMap(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-        for (int i = 0; i < nodes.length; i++) {
-            Component rendered = renderer.getListCellRendererComponent(fakeList, nodes[i], i, false, false);
-            g.translate(x, insetHeight);
-            rendered.setSize(rendered.getPreferredSize());
-            rendered.paint(g);
-            g.translate(-x, -insetHeight);
+        
+        if (nodes.length == 0) {
+            g.drawImage(SEPARATOR, START_INSET, (height - SEPARATOR.getHeight(null)) / 2, null);
+            return ;
+        }
+        
+        int x = START_INSET;
 
-            double angleX = height / 3;
+        for (int i = 0; i < nodes.length; i++) {
+            configureForNode(nodes[i]);
+            Dimension preferred = renderer.getPreferredSize();
+            int labelY = (height - preferred.height) / 2;
+            g.translate(x, labelY);
+            renderer.setSize(preferred);
+            renderer.paint(g);
+            g.translate(-x, -labelY);
 
             x += sizes[i];
             
-            g.drawLine(x + SEPARATOR_INSETS, INSET_HEIGHT, (int) (x + angleX + SEPARATOR_INSETS), (int) (height / 2));
-            g.drawLine((int) (x + angleX + SEPARATOR_INSETS), (int) (height / 2), x + SEPARATOR_INSETS, (int) (height));
+            g.drawImage(SEPARATOR, x + LEFT_SEPARATOR_INSET, (height - SEPARATOR.getHeight(null)) / 2, null);
 
-            x += SEPARATOR_INSETS * 2 + angleX;
+            x += LEFT_SEPARATOR_INSET + SEPARATOR.getWidth(null) + RIGHT_SEPARATOR_INSET;
         }
     }
 
-    private final JList fakeList = new JList();
-    private final NodeRenderer renderer = new NodeRenderer();
+    private final T renderer = (T) HtmlRenderer.createLabel();
     private Node[] nodes;
     private double[] sizes;
     private double height;
@@ -160,8 +179,8 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
         height = /*XXX*/0;
 
         for (Node n : nodes) {
-            Component rendered = renderer.getListCellRendererComponent(fakeList, n, i, false, false);
-            Dimension preferedSize = rendered.getPreferredSize();
+            configureForNode(n);
+            Dimension preferedSize = renderer.getPreferredSize();
             xTotal += sizes[i] = preferedSize.width;
             
             height = Math.max(height, preferedSize.height);
@@ -169,9 +188,7 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
             i++;
         }
 
-        double angleX = height / 3;
-        
-        setPreferredSize(new Dimension((int) (xTotal + (nodes.length - 1) * (SEPARATOR_INSETS * 2 + angleX) + START_INSET), (int) (height + 2 * INSET_HEIGHT)));
+        setPreferredSize(new Dimension((int) (xTotal + (nodes.length - 1) * (LEFT_SEPARATOR_INSET + SEPARATOR.getWidth(null) + RIGHT_SEPARATOR_INSET) + START_INSET), USABLE_HEIGHT/*(int) (height + 2 * INSET_HEIGHT)*/));
     }
     
     @Override
@@ -193,9 +210,22 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
             int startX = elemX;
             elemX += sizes[i];
 
-            double angleX = height / 4;
-
-            elemX += SEPARATOR_INSETS + angleX;
+            elemX += LEFT_SEPARATOR_INSET;
+            
+            if (clickX <= elemX) {
+                //found:
+                List<Node> path = computeNodePath();
+                Node selected = path.get(i);
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    open(selected);
+                } else {
+                    expand(startX, selected);
+                }
+                return ;
+            }
+            
+            startX = elemX;
+            elemX += SEPARATOR.getWidth(null);
             
             if (clickX <= elemX) {
                 //found:
@@ -204,7 +234,7 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
                 return ;
             }
             
-            elemX += SEPARATOR_INSETS;
+            elemX += RIGHT_SEPARATOR_INSET;
         }
     }
 
@@ -225,6 +255,14 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
         return path;
     }
 
+    private void open(Node node) {
+        Openable openable = node.getLookup().lookup(Openable.class);
+
+        if (openable != null) {
+            openable.open();
+        }
+    }
+    
     private void expand(int startX, final Node what) {
         if (what.getChildren().getNodesCount() == 0) return ;
         
@@ -295,12 +333,7 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                     Node[] selected = expandManager.getSelectedNodes();
                     if (selected.length == 1) {
-                        Openable openable = selected[0].getLookup().lookup(Openable.class);
-                        
-                        if (openable != null) {
-                            openable.open();
-                        }
-                        
+                        open(selected[0]);
                         popup.hide();
                         Toolkit.getDefaultToolkit().removeAWTEventListener(multicastListener);
                     }
@@ -309,5 +342,29 @@ public class BreadCrumbComponent extends JComponent implements PropertyChangeLis
         });
         
         popup.show();
+    }
+
+    private void configureForNode(Node node) {
+        renderer.reset();
+        
+        Image nodeIcon = node.getIcon(BeanInfo.ICON_COLOR_16x16);
+        Icon icon = nodeIcon != null ? ImageUtilities.image2Icon(nodeIcon) : null;
+        int width = icon != null ? icon.getIconWidth() : 0;
+        if (width > 0) {
+            renderer.setIcon(icon);
+            renderer.setIconTextGap(24 - width);
+        } else {
+            renderer.setIcon(null);
+            renderer.setIconTextGap(0);
+        }
+        String html = node.getHtmlDisplayName();
+        if (html != null) {
+            renderer.setHtml(true);
+            renderer.setText(html);
+        } else {
+            renderer.setHtml(false);
+            renderer.setText(node.getDisplayName());
+        }
+//        renderer.setFont(getFont());
     }
 }

@@ -476,6 +476,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             locale = DefaultLocaleQueryImplementation.getDefaultLocale();
         }
         
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        
         Dictionary d = ACCESSOR.lookupDictionary(locale);
         
         if (d == null)
