@@ -242,14 +242,6 @@ public class PageInspectorImpl extends PageInspector {
                                 selectionModeButton.setSelected(selectionMode);
                             }
                         });
-                    } else if (PageModel.PROP_SYNCHRONIZE_SELECTION.equals(propName)) {
-                        final boolean synchronizeSelection = pageModel.isSynchronizeSelection();
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                selectionModeButton.setVisible(synchronizeSelection);
-                            }
-                        });
                     }
                 }
             });
@@ -263,7 +255,6 @@ public class PageInspectorImpl extends PageInspector {
             toolBar.add(Box.createHorizontalStrut(gapSize));
             toolBar.add(selectionModeButton);
             selectionModeButton.setSelected(pageModel.isSelectionMode());
-            selectionModeButton.setVisible(pageModel.isSynchronizeSelection());
         }
     }
 
