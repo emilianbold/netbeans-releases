@@ -476,6 +476,10 @@ public final class FormatToken {
         BEFORE_ASSIGNMENT_OPERATOR,
         AFTER_ASSIGNMENT_OPERATOR,
 
+        // around property
+        BEFORE_PROPERTY_OPERATOR,
+        AFTER_PROPERTY_OPERATOR,
+
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,

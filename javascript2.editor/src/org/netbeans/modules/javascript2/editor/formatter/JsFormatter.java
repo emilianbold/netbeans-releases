@@ -960,6 +960,12 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(formatContext).spaceAroundAssignOps();
             case AFTER_ASSIGNMENT_OPERATOR:
                 return CodeStyle.get(formatContext).spaceAroundAssignOps();
+            case BEFORE_PROPERTY_OPERATOR:
+                // FIXME option
+                return true;
+            case AFTER_PROPERTY_OPERATOR:
+                // FIXME option
+                return true;
             case BEFORE_BINARY_OPERATOR:
                 return CodeStyle.get(formatContext).spaceAroundBinaryOps();
             case AFTER_BINARY_OPERATOR:

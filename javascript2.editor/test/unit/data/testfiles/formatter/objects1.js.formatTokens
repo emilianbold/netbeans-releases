@@ -17,7 +17,9 @@ FormattingToken{kind=EOL, offset=14, text=
 FormattingToken{kind=WHITESPACE, offset=15, text=     }
 FormattingToken{kind=TEXT, offset=20, text=pocetValcu}
 FormattingToken{kind=WHITESPACE, offset=30, text= }
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=31, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=32, text= }
 FormattingToken{kind=TEXT, offset=33, text=8}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
@@ -28,7 +30,9 @@ FormattingToken{kind=EOL, offset=35, text=
 }
 FormattingToken{kind=WHITESPACE, offset=36, text=    }
 FormattingToken{kind=TEXT, offset=40, text=vykon}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=46, text= }
 FormattingToken{kind=TEXT, offset=47, text="}
 FormattingToken{kind=TEXT, offset=48, text=22kfdafa}
@@ -41,7 +45,9 @@ FormattingToken{kind=EOL, offset=58, text=
 }
 FormattingToken{kind=WHITESPACE, offset=59, text=    }
 FormattingToken{kind=TEXT, offset=63, text=getDescription}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=77, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=78, text= }
 FormattingToken{kind=TEXT, offset=79, text=function}
 FormattingToken{kind=WHITESPACE, offset=87, text= }

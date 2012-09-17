@@ -1,8 +1,8 @@
 $("#deviceTree").jstree({"plugins" : ["themes", "html_data", "ui",
         "crrm", "hotkeys"],
-    "themes":
+    "themes" :
             {
-                "theme": "default",
+                "theme" : "default",
                 "test" :
                         {
                             "testinner" : "test"

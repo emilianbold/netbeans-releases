@@ -278,8 +278,8 @@ function PlotContainer(div, data, showPoints) {
                 show : p
             }
         },
-        legend:{
-            position: "nw"
+        legend : {
+            position : "nw"
         },
         crosshair : {
             mode : "x"
@@ -423,13 +423,13 @@ $(document).ready(function() {
         $(this).mouseenter(function(e) {
             if (e.target == $("span[data-trigger='true']")[0]) {
                 $("#logo").animate({
-                    top:"0"
+                    top : "0"
                 });
                 children = ($(".tabs > ul").children().length) * 1;
 //                $("#visualization").animate({top:(((children - 1)) * 40 + 20) + "px"});
 
                 $("#logo2").animate({
-                    top:"0px"
+                    top : "0px"
                 });
             }
 
@@ -438,12 +438,12 @@ $(document).ready(function() {
 
         $(this).mouseleave(function(e) {
             $("#logo").animate({
-                top:((-(children - 1)) * 40) + "px"
+                top : ((-(children - 1)) * 40) + "px"
             });
 
 //                $("#visualization").animate({top:(480+(-(children - 1)) * 40) });
             $("#logo2").animate({
-                top:((-(children - 1)) * 40) + "px"
+                top : ((-(children - 1)) * 40) + "px"
             });
         });
 
