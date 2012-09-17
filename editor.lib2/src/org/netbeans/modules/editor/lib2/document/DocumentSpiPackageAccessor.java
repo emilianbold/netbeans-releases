@@ -42,66 +42,40 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.Document;
-import javax.swing.text.Element;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import javax.swing.undo.UndoableEdit;
+import org.netbeans.spi.editor.document.OnSaveTask;
+import org.openide.util.Exceptions;
 
 /**
+ * Package accessor for o.n.spi.editor.document package.
  *
  * @author Miloslav Metelka
  */
-public class DocumentInternalUtils {
+public abstract class DocumentSpiPackageAccessor {
 
-    private DocumentInternalUtils() {
-        // no instances
-    }
+    private static DocumentSpiPackageAccessor INSTANCE;
 
-    public static Element customElement(Document doc, int startOffset, int endOffset) {
-        return new CustomRootElement(doc, startOffset, endOffset);
-    }
-
-    private static final class CustomElement extends AbstractPositionElement {
-
-        CustomElement(Element parent, int startOffset, int endOffset) {
-            super(parent, startOffset, endOffset);
-            CharSequenceUtilities.checkIndexesValid(startOffset, endOffset,
-                    parent.getDocument().getLength() + 1);
-        }
-
-        @Override
-        public String getName() {
-            return "CustomElement";
-        }
-
-    }
-
-
-    private static final class CustomRootElement extends AbstractRootElement<CustomElement> {
-
-        private final CustomElement customElement;
-
-        public CustomRootElement(Document doc, int startOffset, int endOffset) {
-            super(doc);
-            customElement = new CustomElement(this, startOffset, endOffset);
-        }
-
-        @Override
-        public String getName() {
-            return "CustomRootElement";
-        }
-
-        @Override
-        public Element getElement(int index) {
-            if (index == 0) {
-                return customElement;
-            } else {
-                return null;
+    public static DocumentSpiPackageAccessor get() {
+        if (INSTANCE == null) {
+            // Cause api accessor impl to get initialized
+            try {
+                Class.forName(OnSaveTask.Context.class.getName(), true, DocumentSpiPackageAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
             }
+            assert (INSTANCE != null) : "Registration failed"; // NOI18N
         }
-
-        @Override
-        public int getElementCount() {
-            return 1;
-        }
-
+        return INSTANCE;
     }
+
+    public static void register(DocumentSpiPackageAccessor accessor) {
+        INSTANCE = accessor;
+    }
+
+    public abstract OnSaveTask.Context createContext(Document doc);
+
+    public abstract void setUndoEdit(OnSaveTask.Context context, UndoableEdit undoEdit);
+        
+    public abstract void setTaskStarted(OnSaveTask.Context context, boolean taskStarted);
+
 }
