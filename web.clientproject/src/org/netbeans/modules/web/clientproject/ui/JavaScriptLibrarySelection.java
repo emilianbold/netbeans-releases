@@ -151,7 +151,32 @@ public class JavaScriptLibrarySelection extends JPanel {
                 assert EventQueue.isDispatchThread();
                 Point point = e.getPoint();
                 int row = librariesTable.convertRowIndexToModel(librariesTable.rowAtPoint(point));
-                librariesTable.setToolTipText(librariesTableModel.getItems().get(row).getDescription());
+                librariesTable.setToolTipText(getWrappedText(librariesTableModel.getItems().get(row).getDescription()));
+            }
+
+            /**
+             * Wrap the given text after each 100 characters or so.
+             */
+            private String getWrappedText(String text) {
+                if (text == null || text.isEmpty()) {
+                    return null;
+                }
+                final int lineLength = 100;
+                if (text.length() <= lineLength) {
+                    return text;
+                }
+                StringBuilder sb = new StringBuilder(text.length() + 40);
+                int currentLineLength = lineLength;
+                for (String word : text.split(" ")) { // NOI18N
+                    sb.append(word);
+                    if (sb.length() > currentLineLength) {
+                        sb.append("<br>"); // NOI18N
+                        currentLineLength += lineLength + 4; // count <br> as well
+                    } else {
+                        sb.append(" "); // NOI18N
+                    }
+                }
+                return "<html>" + sb.toString(); // NOI18N
             }
         });
         librariesFilterTextField.getDocument().addDocumentListener(new DocumentListener() {
