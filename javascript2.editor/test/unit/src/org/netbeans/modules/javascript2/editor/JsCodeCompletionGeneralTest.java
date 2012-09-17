@@ -93,6 +93,10 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/issue217100_2.js", "v^", false);
     }
 
+    public void testIssue217100_03() throws Exception {
+        checkCompletion("testfiles/completion/issue217100_3.js", "v^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
