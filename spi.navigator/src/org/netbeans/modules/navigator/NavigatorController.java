@@ -248,6 +248,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * not available for activation.
      */
     public void activatePanel (NavigatorPanel panel) {
+        String iaeText = "Panel is not available for activation: "; //NOI18N
+        if (currentPanels == null) {
+            throw new IllegalArgumentException(iaeText + panel);
+        }
         NavigatorPanel toActivate = null;
         boolean contains = false;
         for (NavigatorPanel navigatorPanel : currentPanels) {
@@ -261,8 +265,8 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 break;
             }
         }
-        if (currentPanels == null || !contains) {
-            throw new IllegalArgumentException("Panel is not available for activation: " + panel); //NOI18N
+        if (!contains) {
+            throw new IllegalArgumentException(iaeText + panel);
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
         if (!toActivate.equals(oldPanel)) {
