@@ -328,10 +328,14 @@ public class JSTestDriverSupport {
         public LineConvertorImpl(Project p) {
             this.p = p;
         }
-        
+
+        // XXX: exact this algorithm is also in 
+        // web.javascript.debugger/src/org/netbeans/modules/web/javascript/debugger/console/BrowserConsoleLogger.java
+        // keep them in sync
         @Override
         public List<ConvertedLine> convert(String line) {
             // pattern is "at ...... (file:line:column)"
+            // file can be also http:// url
             if (!line.endsWith(")")) {
                 return null;
             }
@@ -339,22 +343,25 @@ public class JSTestDriverSupport {
             if (start == -1) {
                 return null;
             }
-            int fileEnd = line.indexOf(':', start);
+            int lineNumberEnd = line.lastIndexOf(':');
+            if (lineNumberEnd == -1) {
+                return null;
+            }
+            int fileEnd = line.lastIndexOf(':', lineNumberEnd-1);
             if (fileEnd == -1) {
                 return null;
             }
             int lineNumber = -1;
             int columnNumber = -1;
-            int lineNumberEnd = line.indexOf(':', fileEnd+1);
             try {
-                if (lineNumberEnd == -1) {
-                    lineNumber = Integer.parseInt(line.substring(fileEnd+1, line.length()-1));
-                } else {
-                    lineNumber = Integer.parseInt(line.substring(fileEnd+1, lineNumberEnd));
-                    columnNumber = Integer.parseInt(line.substring(lineNumberEnd+1, line.length()-1));
-                }
+                lineNumber = Integer.parseInt(line.substring(fileEnd+1, lineNumberEnd));
+                columnNumber = Integer.parseInt(line.substring(lineNumberEnd+1, line.length()-1));
             } catch (NumberFormatException e) {
                 //ignore
+            }
+            if (columnNumber != -1 && lineNumber == -1) {
+                // perhaps stack trace had only line number:
+                lineNumber = columnNumber;
             }
             if (lineNumber == -1) {
                 return null;
