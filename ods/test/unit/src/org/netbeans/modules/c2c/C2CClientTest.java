@@ -110,7 +110,7 @@ public class C2CClientTest extends NbTestCase  {
                 firstRun = false;
             }
         }
-        if (!proxy_host.isEmpty()) {
+        if (proxy_host != null && !proxy_host.isEmpty()) {
             System.setProperty("netbeans.system_http_proxy", proxy_host + ":" + (proxy_port == null ? "80" : proxy_port));
         }
     }
