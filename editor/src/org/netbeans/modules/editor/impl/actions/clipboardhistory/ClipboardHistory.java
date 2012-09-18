@@ -126,7 +126,6 @@ public final class ClipboardHistory implements ClipboardListener {
     @Override
     public void clipboardChanged(ClipboardEvent ev) {
         ExClipboard clipboard = ev.getClipboard();
-        clipboard.removeClipboardListener(this);
 
         String clipboardContent = null;
         try {
@@ -142,8 +141,6 @@ public final class ClipboardHistory implements ClipboardListener {
         if (clipboardContent != null) {
             addHistory(clipboardContent);
         }
-
-        clipboard.addClipboardListener(this);
     }
 
     public synchronized int getPosition(ClipboardHistoryElement history) {
