@@ -72,8 +72,6 @@ import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -202,6 +200,7 @@ public final class ClientSideProjectUtilities {
      * @param jsLibFolder JS libraries folder
      * @param siteRootDir site root
      * @param handle progress handle, can be {@code null}
+     * @return list of libraries that cannot be downloaded
      * @throws IOException if any error occurs
      */
     @NbBundle.Messages({
@@ -209,11 +208,11 @@ public final class ClientSideProjectUtilities {
         "# {0} - library name",
         "ClientSideProjectUtilities.msg.downloadingJsLib=Downloading {0}"
     })
-    public static void applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries, String jsLibFolder, FileObject siteRootDir,
-            @NullAllowed ProgressHandle handle) throws IOException {
+    public static List<JavaScriptLibrarySelection.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries,
+            String jsLibFolder, FileObject siteRootDir, @NullAllowed ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
+        List<JavaScriptLibrarySelection.SelectedLibrary> failed = new ArrayList<JavaScriptLibrarySelection.SelectedLibrary>(selectedLibraries.size());
         FileObject librariesRoot = null;
-        boolean someFilesAreMissing = false;
         for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
             if (selectedLibrary.isDefault()) {
                 // ignore default js lib (they are already applied)
@@ -230,16 +229,11 @@ public final class ClientSideProjectUtilities {
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
-                someFilesAreMissing = true;
+                LOGGER.log(Level.INFO, null, e);
+                failed.add(selectedLibrary);
             }
         }
-        if (someFilesAreMissing) {
-            errorOccured(Bundle.ClientSideProjectUtilities_error_copyingJsLib());
-        }
-    }
-
-    private static void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        return failed;
     }
 
     private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
