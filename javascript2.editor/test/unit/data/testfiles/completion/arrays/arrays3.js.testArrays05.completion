@@ -1,0 +1,49 @@
+Code completion result for source line:
+myArray2.|push("1");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   stub_CORE_Array.js
+METHOD     apply(thisArg: String, argArra  [PUBLIC]   stub_CORE_Function.js
+METHOD     bind(thisArg: Object): String   [PUBLIC]   stub_CORE_Function.js
+METHOD     call(thisArg: Object): String   [PUBLIC]   stub_CORE_Function.js
+METHOD     concat(): Array                 [PUBLIC]   stub_CORE_Array.js
+METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     every(callbackfn: Function): B  [PUBLIC]   stub_CORE_Array.js
+METHOD     filter(callbackfn: Function):   [PUBLIC]   stub_CORE_Array.js
+METHOD     forEach(callbackfn: Function):  [PUBLIC]   stub_CORE_Array.js
+METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
+METHOD     indexOf(searchElement: Array):  [PUBLIC]   stub_CORE_Array.js
+METHOD     isArray(arg: Object): Boolean   [PUBLIC,   stub_CORE_Array.js
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     join(separator: String): Strin  [PUBLIC]   stub_CORE_Array.js
+METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
+METHOD     lastIndexOf(searchElement: Obj  [PUBLIC]   stub_CORE_Array.js
+METHOD     map(callbackfn: Function): Arr  [PUBLIC]   stub_CORE_Array.js
+METHOD     pop(): Object                   [PUBLIC]   stub_CORE_Array.js
+METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
+METHOD     push(): Number                  [PUBLIC]   stub_CORE_Array.js
+METHOD     reduce(callbackfn: Function):   [PUBLIC]   stub_CORE_Array.js
+METHOD     reduceRight(callbackfn: Functi  [PUBLIC]   stub_CORE_Array.js
+METHOD     reverse(): Array                [PUBLIC]   stub_CORE_Array.js
+METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
+METHOD     shift(): Object                 [PUBLIC]   stub_CORE_Array.js
+METHOD     slice(start: Number, end: Numb  [PUBLIC]   stub_CORE_Array.js
+METHOD     some(callbackfn: Function): Bo  [PUBLIC]   stub_CORE_Array.js
+METHOD     sort(comparefn: Array): Array   [PUBLIC]   stub_CORE_Array.js
+METHOD     splice(start: Number, deleteCo  [PUBLIC]   stub_CORE_Array.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Array.js
+METHOD     unshift(): Number               [PUBLIC]   stub_CORE_Array.js
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_Array.js
+FIELD      length                          [PUBLIC]   stub_CORE_Array.js
