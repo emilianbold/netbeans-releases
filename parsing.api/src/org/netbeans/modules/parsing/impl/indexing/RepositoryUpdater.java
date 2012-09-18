@@ -2622,7 +2622,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             try {
                 for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
                     parkWhileSuspended();
+                    long st = System.currentTimeMillis();
                     entry.getKey().scanFinished(entry.getValue());
+                    long et = System.currentTimeMillis();
+                    logIndexerTime(entry.getKey().getIndexerName(), (int)(et-st));
                 }
             } finally {
                 for(Context ctx : contexts.values()) {
