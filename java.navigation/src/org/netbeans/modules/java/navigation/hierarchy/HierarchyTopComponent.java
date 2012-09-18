@@ -50,7 +50,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -120,13 +119,14 @@ import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
+ * @author Tomas Zezula
  */
 @ConvertAsProperties(
     dtd = "-//org.netbeans.modules.java.navigation.hierarchy//Hierarchy//EN",
 autostore = false)
 @TopComponent.Description(
     preferredID = "JavaHierarchyTopComponent",
-iconBase="org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif", 
+iconBase="org/netbeans/modules/java/navigation/resources/hierarchy_window.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "properties", openAtStartup = false)
 @Messages({
@@ -403,6 +403,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         assert SwingUtilities.isEventDispatchThread();
         ((CardLayout)contentView.getLayout()).show(contentView, ACTIVE_CONTENT);
         rootChildren.set(Nodes.waitNode());
+        btw.requestFocus();
     }
 
     private void schedule(@NonNull final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver) {

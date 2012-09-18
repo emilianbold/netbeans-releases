@@ -41,29 +41,38 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
+import java.awt.EventQueue;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
-public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>,
+public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private final Object siteTemplateWizardLock = new Object();
-    // @GuardedBy("siteTemplateWizardLock")
-    private SiteTemplateWizard siteTemplateWizard;
+    static final Logger LOGGER = Logger.getLogger(SiteTemplateWizardPanel.class.getName());
+
+    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
+    private volatile SiteTemplateWizard siteTemplateWizard;
     private volatile WizardDescriptor wizardDescriptor;
-    // #216416
-    private volatile boolean templatePrepared = false;
+    // #202796
+    volatile boolean asynchError = false;
 
 
     @Override
     public SiteTemplateWizard getComponent() {
-        synchronized (siteTemplateWizardLock) {
-            if (siteTemplateWizard == null) {
-                siteTemplateWizard = new SiteTemplateWizard();
-            }
-            return siteTemplateWizard;
+        if (siteTemplateWizard == null) {
+            siteTemplateWizard = new SiteTemplateWizard();
+            siteTemplateWizard.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    asynchError = false;
+                }
+            });
         }
+        return siteTemplateWizard;
     }
 
     @Override
@@ -74,41 +83,52 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        templatePrepared = false;
+        asynchError = false;
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        if (settings.getValue() == WizardDescriptor.NEXT_OPTION
-                || settings.getValue() == WizardDescriptor.FINISH_OPTION) {
-            // next step or finish
-            if (templatePrepared) {
-                return;
-            }
-            templatePrepared = true;
-            synchronized (siteTemplateWizardLock) {
-                wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
-                getComponent().prepareTemplate();
-            }
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
+    }
+
+    @Override
+    public void prepareValidation() {
+        getComponent().lockPanel();
+    }
+
+    @Override
+    public void validate() throws WizardValidationException {
+        String error;
+        try {
+            error = getComponent().prepareTemplate();
+        } finally {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    getComponent().unlockPanel();
+                }
+            });
+        }
+        if (error != null) {
+            asynchError = true;
+            throw new WizardValidationException(getComponent(), "ERROR_PREPARE", error); // NOI18N
         }
     }
 
     @Override
     public boolean isValid() {
-        // error
-        String error;
-        synchronized (siteTemplateWizardLock) {
-            error = getComponent().getErrorMessage();
+        // grrr
+        if (asynchError) {
+            return true;
         }
+        // error
+        String error = getComponent().getErrorMessage();
         if (error != null && !error.isEmpty()) {
             setErrorMessage(error);
             return false;
         }
         // warning
-        String warning;
-        synchronized (siteTemplateWizardLock) {
-            warning = getComponent().getWarningMessage();
-        }
+        String warning = getComponent().getWarningMessage();
         if (warning != null && !warning.isEmpty()) {
             setErrorMessage(warning);
             return true;
@@ -124,16 +144,12 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
 
     @Override
     public void addChangeListener(ChangeListener l) {
-        synchronized (siteTemplateWizardLock) {
-            getComponent().addChangeListener(l);
-        }
+        getComponent().addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
-        synchronized (siteTemplateWizardLock) {
-            getComponent().removeChangeListener(l);
-        }
+        getComponent().removeChangeListener(l);
     }
 
     @Override

@@ -45,7 +45,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask.Problem;
@@ -69,8 +68,8 @@ public final class JSchConnectionTask implements Cancellable {
     // ------------------------------------------------------------------------
     private final JSch jsch;
     private final ExecutionEnvironment env;
-    private AtomicReference<Future<JSchConnectionTask.Result>> resultRef =
-            new AtomicReference<Future<JSchConnectionTask.Result>>();
+    private final Object resultLock = new Object();
+    private Future<JSchConnectionTask.Result> result = null;
     private volatile boolean cancelled;
 
     public JSchConnectionTask(final JSch jsch, final ExecutionEnvironment env) {
@@ -79,17 +78,17 @@ public final class JSchConnectionTask implements Cancellable {
         cancelled = false;
     }
 
-    public synchronized void start() {
-        if (resultRef.get() == null) {
-            Future<Result> result =
-                    connectorThread.submit(new Callable<JSchConnectionTask.Result>() {
+    public void start() {
+        synchronized (resultLock) {
+            if (result == null) {
+                result = connectorThread.submit(new Callable<JSchConnectionTask.Result>() {
 
-                @Override
-                public Result call() throws Exception {
-                    return connect();
-                }
-            });
-            resultRef.set(result);
+                    @Override
+                    public Result call() throws Exception {
+                        return connect();
+                    }
+                });
+            }
         }
     }
 
@@ -172,23 +171,29 @@ public final class JSchConnectionTask implements Cancellable {
     }
 
     public Problem getProblem() throws InterruptedException, ExecutionException {
-        Future<JSchConnectionTask.Result> result = resultRef.get();
+        Future<JSchConnectionTask.Result> r;
+        synchronized (resultLock) {
+            r = result;
+        }
 
-        if (result == null) {
+        if (r == null) {
             throw new IllegalStateException("Not started yet"); // NOI18N
         }
 
-        return result.get().problem;
+        return r.get().problem;
     }
 
     public JSchChannelsSupport getResult() throws InterruptedException, ExecutionException {
-        Future<JSchConnectionTask.Result> result = resultRef.get();
+        Future<JSchConnectionTask.Result> r;
+        synchronized (resultLock) {
+            r = result;
+        }
 
-        if (result == null) {
+        if (r == null) {
             throw new IllegalStateException("Not started yet"); // NOI18N
         }
 
-        return result.get().cs;
+        return r.get().cs;
     }
 
     private boolean isReachable() throws IOException {

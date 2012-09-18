@@ -80,7 +80,7 @@ public class BreadcrumbsController {
     }
     
     public static boolean areBreadCrumsEnabled(@NonNull Document doc) {
-        return MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class).getBoolean(SideBarFactoryImpl.KEY_BREADCRUMBS, false);
+        return MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class).getBoolean(SideBarFactoryImpl.KEY_BREADCRUMBS, SideBarFactoryImpl.DEF_BREADCRUMBS);
     }
     
     public static void addBreadCrumbsEnabledListener(@NonNull final ChangeListener l) {

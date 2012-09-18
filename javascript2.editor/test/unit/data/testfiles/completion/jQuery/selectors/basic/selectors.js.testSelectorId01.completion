@@ -2,7 +2,6 @@ Code completion result for source line:
 $(my|)
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-VARIABLE   my                              [PUBLIC]   selectors.js
 RULE       #myIdTable                                 null
 RULE       .myClas                                    null
 RULE       .myClass                                   null

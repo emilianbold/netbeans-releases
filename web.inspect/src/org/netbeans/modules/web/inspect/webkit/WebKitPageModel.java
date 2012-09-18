@@ -88,6 +88,8 @@ public class WebKitPageModel extends PageModel {
     private boolean synchronizeSelection;
     /** Owner project of the inspected page. */
     private Project project;
+    /** Page context. */
+    private Lookup pageContext;
     /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
     private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
     /**
@@ -104,6 +106,7 @@ public class WebKitPageModel extends PageModel {
      * @param pageContext page context.
      */
     public WebKitPageModel(Lookup pageContext) {
+        this.pageContext = pageContext;
         this.webKit = pageContext.lookup(WebKitDebugging.class);
         this.project = pageContext.lookup(Project.class);
         addPropertyChangeListener(new WebPaneSynchronizer());
@@ -163,6 +166,15 @@ public class WebKitPageModel extends PageModel {
      */
     public Project getProject() {
         return project;
+    }
+
+    /**
+     * Returns the page context.
+     * 
+     * @return page context.
+     */
+    public Lookup getPageContext() {
+        return pageContext;
     }
 
     @Override
@@ -554,7 +566,9 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public CSSStylesView getCSSStylesView() {
-        return CSSStylesPanel.getDefault();
+        CSSStylesPanel view = CSSStylesPanel.getDefault();
+        view.updatePageModel();
+        return view;
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

@@ -74,6 +74,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     private Map<String, List<? extends InterfaceScope>> ifaces = new HashMap<String, List<? extends InterfaceScope>>();
     private Collection<QualifiedName> fqIfaces = new HashSet<QualifiedName>();
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
 
     TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
@@ -289,18 +291,20 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
-        for (InterfaceScope interfaceScope : subType.getSuperInterfaceScopes()) {
-            if (interfaceScope.equals(this)) {
-                result = true;
-            } else {
-                result = isSuperTypeOf(interfaceScope);
+        if (superRecursionDetection.add(subType)) {
+            for (InterfaceScope interfaceScope : subType.getSuperInterfaceScopes()) {
+                if (interfaceScope.equals(this)) {
+                    result = true;
+                } else {
+                    result = isSuperTypeOf(interfaceScope);
+                }
+                if (result == true) {
+                    break;
+                }
             }
-            if (result == true) {
-                break;
+            if (result == false && !subType.isInterface()) {
+                result = subType.isSubTypeOf(this);
             }
-        }
-        if (result == false && !subType.isInterface()) {
-            result = subType.isSubTypeOf(this);
         }
         return result;
     }
@@ -308,15 +312,17 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     @Override
     public boolean isSubTypeOf(final TypeScope superType) {
         boolean result = false;
-        if (superType.isInterface()) {
-            for (InterfaceScope interfaceScope : getSuperInterfaceScopes()) {
-                if (interfaceScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = interfaceScope.isSubTypeOf(superType);
-                }
-                if (result == true) {
-                    break;
+        if (subRecursionDetection.add(superType)) {
+            if (superType.isInterface()) {
+                for (InterfaceScope interfaceScope : getSuperInterfaceScopes()) {
+                    if (interfaceScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = interfaceScope.isSubTypeOf(superType);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
             }
         }

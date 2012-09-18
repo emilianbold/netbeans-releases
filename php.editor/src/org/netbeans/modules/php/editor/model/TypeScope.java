@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 
