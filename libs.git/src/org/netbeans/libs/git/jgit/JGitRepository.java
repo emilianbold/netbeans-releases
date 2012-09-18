@@ -54,6 +54,7 @@ import org.eclipse.jgit.lib.Repository;
  */
 public final class JGitRepository {
     private final Repository repository;
+    private boolean closed;
 
     public JGitRepository (File location) throws GitException {
         this.repository = getRepository(location);
@@ -75,5 +76,20 @@ public final class JGitRepository {
 
     public Repository getRepository () {
         return repository;
+    }
+    
+    public synchronized void close () {
+        if (repository != null) {
+            if (!closed) {
+                repository.close();
+                closed = true;
+            }
+        }
+    }
+
+    @Override
+    protected void finalize () throws Throwable {
+        close();
+        super.finalize();
     }
 }

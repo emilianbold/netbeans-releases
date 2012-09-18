@@ -22,7 +22,7 @@
                   <Component id="jAutoRefreshCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jHighlightSelectionCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="99" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

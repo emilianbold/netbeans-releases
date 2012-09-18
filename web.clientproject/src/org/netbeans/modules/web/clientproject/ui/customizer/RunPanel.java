@@ -72,13 +72,14 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author david
  */
-public class RunPanel extends javax.swing.JPanel implements DocumentListener, ItemListener {
+public class RunPanel extends javax.swing.JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
 
     private ClientSideProject project;
     private ComboBoxModel model;
@@ -396,6 +397,11 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
     @Override
     public void itemStateChanged(ItemEvent e) {
         updateWebRootEnablement();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.RunPanel");
     }
     
     private static class ConfigRenderer implements ListCellRenderer {

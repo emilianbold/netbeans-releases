@@ -55,6 +55,7 @@ import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.SwitchNode;
 import com.oracle.nashorn.ir.TernaryNode;
 import com.oracle.nashorn.ir.TryNode;
@@ -502,8 +503,17 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node leave(ObjectNode objectNode) {
-        return null;
+    public Node enter(PropertyNode propertyNode) {
+        FormatToken colon = getNextToken(getFinish(propertyNode.getKey()),
+                JsTokenId.OPERATOR_COLON, getFinish(propertyNode));
+        if (colon != null) {
+            appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY_OPERATOR));
+            FormatToken before = colon.previous();
+            if (before != null) {
+                appendTokenAfterLastVirtual(before, FormatToken.forFormat(FormatToken.Kind.BEFORE_PROPERTY_OPERATOR));
+            }
+        }
+        return super.enter(propertyNode);
     }
 
     @Override

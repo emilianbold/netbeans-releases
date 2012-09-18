@@ -689,6 +689,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
                 firstMember = false;
             }
+	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
         } else {
             printEmptyBlockComments(tree, false);
         }

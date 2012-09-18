@@ -188,6 +188,13 @@ public class JsConventionRule extends JsAstRule {
             if (ts == null) {
                 return;
             }
+            // actually end might mark position after semicolon
+            ts.move(offset - 1);
+            if (ts.moveNext()) {
+                if (ts.token().id() == JsTokenId.OPERATOR_SEMICOLON) {
+                    return;
+                }
+            }
             ts.move(offset);
             if (ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
@@ -200,10 +207,6 @@ public class JsConventionRule extends JsAstRule {
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
                     Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
                     id = previous.id();
-                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                        Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
-                        id = next.id();
-                    }
                     // check again whether there is not semicolon and it is not generated
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
                             && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {

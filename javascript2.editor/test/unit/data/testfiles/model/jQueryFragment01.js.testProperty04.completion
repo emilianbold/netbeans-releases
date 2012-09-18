@@ -5,8 +5,8 @@ jQuery.event.customEvent.|test();
 CLASS      class                           [PUBLIC]   jQueryFragment01.js
 CLASS      martin                          [PUBLIC]   jQueryFragment01.js
 METHOD     test(): undefined               [PUBLIC]   jQueryFragment01.js
-FIELD      changeData                      [PUBLIC]   jQueryFragment01.js
-FIELD      getData                         [PUBLIC]   jQueryFragment01.js
+FIELD      changeData: Boolean             [PUBLIC]   jQueryFragment01.js
+FIELD      getData: Boolean                [PUBLIC]   jQueryFragment01.js
 FIELD      name                            [PUBLIC]   jQueryFragment01.js
-FIELD      petr                            [PUBLIC]   jQueryFragment01.js
-FIELD      setData                         [PUBLIC]   jQueryFragment01.js
+FIELD      petr: Number                    [PUBLIC]   jQueryFragment01.js
+FIELD      setData: Boolean                [PUBLIC]   jQueryFragment01.js
