@@ -961,9 +961,9 @@ public class JsFormatter implements Formatter {
             case AFTER_ASSIGNMENT_OPERATOR:
                 return CodeStyle.get(formatContext).spaceAroundAssignOps();
             case BEFORE_PROPERTY_OPERATOR:
-                return CodeStyle.get(formatContext).spaceBeforePropertyOps();
+                return CodeStyle.get(formatContext).spaceBeforeColon();
             case AFTER_PROPERTY_OPERATOR:
-                return CodeStyle.get(formatContext).spaceAfterPropertyOps();
+                return CodeStyle.get(formatContext).spaceAfterColon();
             case BEFORE_BINARY_OPERATOR:
                 return CodeStyle.get(formatContext).spaceAroundBinaryOps();
             case AFTER_BINARY_OPERATOR:

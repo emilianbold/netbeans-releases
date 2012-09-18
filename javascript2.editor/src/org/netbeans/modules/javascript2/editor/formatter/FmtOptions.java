@@ -146,8 +146,6 @@ public class FmtOptions {
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
     public static final String spaceBeforeWithParen = "spaceBeforeWithParen"; //NOI18N
 
-    public static final String spaceBeforePropertyOps = "spaceBeforePropertyOps"; //NOI18N
-    public static final String spaceAfterPropertyOps = "spaceAfterPropertyOps"; //NOI18N
     public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
@@ -189,8 +187,8 @@ public class FmtOptions {
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
     public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
     public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
-//    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
-//    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
+    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
+    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
 
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
@@ -326,8 +324,6 @@ public class FmtOptions {
             { spaceBeforeCatchParen, TRUE},
             { spaceBeforeSwitchParen, TRUE},
             { spaceBeforeWithParen, TRUE},
-            { spaceBeforePropertyOps, FALSE},
-            { spaceAfterPropertyOps, TRUE},
             { spaceAroundUnaryOps, FALSE},
             { spaceAroundBinaryOps, TRUE},
             { spaceAroundTernaryOps, TRUE},
@@ -369,8 +365,8 @@ public class FmtOptions {
             { spaceAfterComma, TRUE},
             { spaceBeforeSemi, FALSE},
             { spaceAfterSemi, TRUE},
-//            { spaceBeforeColon, TRUE},
-//            { spaceAfterColon, TRUE},
+            { spaceBeforeColon, FALSE},
+            { spaceAfterColon, TRUE},
 
 	    { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N

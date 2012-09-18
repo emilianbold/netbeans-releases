@@ -507,8 +507,8 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testObjects7Inverted() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.spaceBeforePropertyOps, true);
-        options.put(FmtOptions.spaceAfterPropertyOps, false);
+        options.put(FmtOptions.spaceBeforeColon, true);
+        options.put(FmtOptions.spaceAfterColon, false);
         reformatFileContents("testfiles/formatter/objects7.js", options, ".inverted.formatted");
     }
 
