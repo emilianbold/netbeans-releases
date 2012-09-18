@@ -1128,6 +1128,14 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "$c = new \\Foo\\MyNewCl^ass123();", true);
     }
 
+    public void testIssue218487_01() throws Exception {
+        checkOccurrences(getTestPath(), "use Zend\\Stdlib2\\DispatchableInterface2 as Dispatch^able2;", true);
+    }
+
+    public void testIssue218487_02() throws Exception {
+        checkOccurrences(getTestPath(), "class AbstractController implements Dispatch^able2 {", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

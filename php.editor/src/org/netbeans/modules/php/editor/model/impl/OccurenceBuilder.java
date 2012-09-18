@@ -352,7 +352,12 @@ class OccurenceBuilder {
             }
             List<Expression> interfaes = classDeclaration.getInterfaes();
             for (Expression iface : interfaes) {
-                prepare(Kind.IFACE, iface, scope);
+                QualifiedName ifaceName = QualifiedName.create(iface);
+                if (ifaceName != null && VariousUtils.isAlias(ifaceName, classDeclaration.getStartOffset(), scope)) {
+                    prepare(Kind.USE_ALIAS, iface, scope);
+                } else {
+                    prepare(Kind.IFACE, iface, scope);
+                }
             }
 
         }
