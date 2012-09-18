@@ -86,19 +86,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      */
     private int previousAdjustmentIndent;
 
-
-    public boolean isInsertMatchingEnabled(BaseDocument doc) {
-        // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-        // Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        // return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
-        if (options != null) {
-            return options.getMatchBrackets();
-        }
-
-        return true;
-    }
-
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
         isAfter = true;
@@ -170,12 +157,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         case ']':
         case '(':
         case '[': {
-
-            if (!isInsertMatchingEnabled(doc)) {
-                return;
-            }
-
-
             Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return;
@@ -238,10 +219,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 //            break;
 
         case '/': {
-            if (!isInsertMatchingEnabled(doc)) {
-                return;
-            }
-
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
@@ -261,19 +238,20 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         return;
                     }
                 }
-                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
-                    TokenId[] stringTokens = REGEXP_TOKENS;
-                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
-
-                    boolean inserted =
-                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-
-                    if (inserted) {
-                        caret.setDot(dotPos + 1);
-                    }
-
-                    return;
-                }
+                // see issue #217134 - it's confusing to have it turned on by default
+//                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
+//                    TokenId[] stringTokens = REGEXP_TOKENS;
+//                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
+//
+//                    boolean inserted =
+//                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
+//
+//                    if (inserted) {
+//                        caret.setDot(dotPos + 1);
+//                    }
+//
+//                    return;
+//                }
             }
             break;
         }
@@ -289,12 +267,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         char ch = context.getText().charAt(0);
         BaseDocument doc = (BaseDocument) context.getDocument();
 
-        if (!isInsertMatchingEnabled(doc)) {
-            return false;
-        }
-
-        //dumpTokens(doc, caretOffset);
-
         if (target.getSelectionStart() != -1) {
             if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
@@ -307,7 +279,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     doc.remove(start, end-start);
                 }
                 // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
+            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0) {

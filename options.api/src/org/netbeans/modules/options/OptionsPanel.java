@@ -56,6 +56,7 @@ import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -63,6 +64,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -76,7 +79,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -124,6 +126,11 @@ public class OptionsPanel extends JPanel {
     private JPanel pCategories2;
     private JPanel pOptions;
     private JPanel quickSearch;
+    private Color origForeground;
+    private String hintText;
+    private JTextComponent searchTC;
+    private String text2search = "";
+    boolean clearSearch = false;
     private CardLayout cLayout;
     
     private int selectedTabIndex = -1;
@@ -167,8 +174,11 @@ public class OptionsPanel extends JPanel {
 
             if(Utilities.isMac()) {
                 inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_MASK), "SEARCH_OPTIONS");//NOI18N
+                // Mac cloverleaf symbol
+                hintText = Bundle.Filter_Textfield_Hint("\u2318+F");
             } else {
                 inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK), "SEARCH_OPTIONS");//NOI18N
+                hintText = Bundle.Filter_Textfield_Hint("Ctrl+F");
             }
             getActionMap().put("SEARCH_OPTIONS", new SearchAction());//NOI18N
         }
@@ -292,6 +302,9 @@ public class OptionsPanel extends JPanel {
     
     // private methods .........................................................
 
+    @NbBundle.Messages({"Filter_Textfield_Tooltip=Press Esc or Enter with empty text to clear the filter",
+        "# {0} - shortcut to access the search text field",
+        "Filter_Textfield_Hint=Filter ({0})"})
     private void initUI(String categoryName) {
         this.getAccessibleContext().setAccessibleDescription(loc("ACS_OptionsPanel"));//NOI18N
         // central panel
@@ -309,10 +322,37 @@ public class OptionsPanel extends JPanel {
         pCategories2.setBorder (null);
         addCategoryButtons();        
 
-        quickSearch = new JPanel(new BorderLayout());
+        quickSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         quickSearch.setBackground(Color.white);
         QuickSearch qs = QuickSearch.attach(quickSearch, null, new OptionsQSCallback());
         qs.setAlwaysShown(true);
+        
+        JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
+        searchPanel.setToolTipText(Bundle.Filter_Textfield_Tooltip());
+        searchTC = (JTextComponent) searchPanel.getComponent(1);
+        searchTC.setToolTipText(Bundle.Filter_Textfield_Tooltip());
+        searchTC.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                showHint(false);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (text2search.trim().isEmpty()) {
+                    showHint(true);
+                } else {
+                    showHint(false);
+                }
+                if(e.getOppositeComponent() != null && e.getOppositeComponent().equals(quickSearch) && !clearSearch) {
+                    searchTC.requestFocusInWindow();
+                } else {
+                    clearSearch = false;
+                }
+            }
+        });
+        showHint(true);
         
         pCategories = new JPanel (new BorderLayout ());
         pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
@@ -342,8 +382,21 @@ public class OptionsPanel extends JPanel {
     }
     
     private void clearSearchField() {
-        JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
-        ((JTextComponent) searchPanel.getComponent(searchPanel.getComponentCount() - 1)).setText("");
+        searchTC.setText("");
+    }
+    
+    private void showHint (boolean showHint) {
+        // remember orig color on first invocation
+        if (origForeground == null) {
+            origForeground = searchTC.getForeground();
+        }
+        if (showHint) {
+            searchTC.setForeground(searchTC.getDisabledTextColor());
+            searchTC.setText(hintText);
+        } else {
+            searchTC.setForeground(origForeground);
+            searchTC.setText(text2search);
+        }
     }
         
     private void computeOptionsWords() {
@@ -614,31 +667,8 @@ public class OptionsPanel extends JPanel {
 
         @Override
         public void quickSearchUpdate(String searchText) {
-            searchText = searchText.trim();
-            if (searchText.length() == 0) {
-                clearAll();
-                return;
-            }
-            if (searchText.length() < 3) {
-                return;
-            }
-            showWaitCursor();
-            try {
-                if (!initialized) {
-                    final String sText = searchText;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            computeOptionsWords();
-                            initialized = true;
-                            handleSearch(sText);
-                        }
-                    });
-                } else {
-                    handleSearch(searchText);
-                }
-            } finally {
-                hideWaitCursor();
+            if (!searchText.equalsIgnoreCase(hintText)) {
+                text2search = searchText.trim();
             }
         }
         
@@ -702,7 +732,7 @@ public class OptionsPanel extends JPanel {
                                                     && exactCategory.toUpperCase().contains(searchText.toUpperCase()))) {
                                             exactTabIndex = tabIndex;
                                             setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-                                        }
+                                    }
                                     }
                                     break;
                                 }
@@ -734,8 +764,8 @@ public class OptionsPanel extends JPanel {
                                         for (Integer removedTabIndex : removedTabsInfo.keySet()) {
                                             if (removedTabIndex < tabIndex) {
                                                 removedTabsBefore++;
-                                            }
-                                        }
+                            }
+                        }
                                         removedTabsInfo.put(tabIndex, tabsInfo.get(tabIndex));
                                         tabbedpane2removedtabs.put(pane, removedTabsInfo);
                                         pane.removeTabAt(tabIndex - removedTabsBefore);
@@ -799,18 +829,44 @@ public class OptionsPanel extends JPanel {
 
         @Override
         public void quickSearchConfirmed() {
-            clearAll();
+            if (text2search.length() == 0) {
+                clearAll();
+                showHint(true);
+                return;
+            }
+            showWaitCursor();
+            try {
+                if (!initialized) {
+                    final String sText = text2search;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            computeOptionsWords();
+                            initialized = true;
+                            handleSearch(sText);
+                            showHint(false);
+                        }
+                    });
+                } else {
+                    handleSearch(text2search);
+                    showHint(false);
+                }
+            } finally {
+                hideWaitCursor();
+            }
         }
 
         @Override
         public void quickSearchCanceled() {
             clearAll();
+            showHint(true);
         }
 
         private void clearAll() {
+            clearSearch = true;
             for (String category : removedCategories) {
                 buttons.get(category).setVisible(true);
-            }
+                    }
 
             for (JTabbedPane pane : tabbedpane2removedtabs.keySet()) {
                 HashMap<Integer, TabInfo> stuff = tabbedpane2removedtabs.get(pane);
@@ -822,6 +878,9 @@ public class OptionsPanel extends JPanel {
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
             removedCategories.clear();
             tabbedpane2removedtabs.clear();
+            if(keymapsSearch != null) {
+                keymapsSearch.setText("");
+            }
         }
     }
     
@@ -979,8 +1038,8 @@ public class OptionsPanel extends JPanel {
     private class SearchAction extends AbstractAction {
         @Override
         public void actionPerformed (ActionEvent e) {
-            JComponent searchPanel = (JComponent)quickSearch.getComponent(0);
-            searchPanel.getComponent(searchPanel.getComponentCount() - 1).requestFocusInWindow();
+            showHint(false);
+            searchTC.requestFocusInWindow();
         }
     }
     

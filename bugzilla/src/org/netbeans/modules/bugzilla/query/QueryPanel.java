@@ -47,22 +47,14 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.GroupLayout;
 import javax.swing.Icon;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -70,13 +62,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 
 /**
@@ -165,46 +156,16 @@ public class QueryPanel extends javax.swing.JPanel {
         filterComboBox.setRenderer(new FilterCellRenderer());
 
         UIUtils.keepFocusedComponentVisible(this);
-        
-        addAncestorListener(new AncestorListener() {
+        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
             @Override
-            public void ancestorAdded(AncestorEvent event) {
-                final JViewport v = getViewport(QueryPanel.this);
-                assert v != null;
-                if(v == null) {
-                    return;
-                }
-                setByTextWidth(v.getViewRect().width);
-                v.addComponentListener(new ComponentListener() {
-                    @Override
-                    public void componentResized(ComponentEvent e) {
-                        setByTextWidth(v.getViewRect().width);
-                    }
-                    @Override public void componentMoved(ComponentEvent e) { }
-                    @Override public void componentShown(ComponentEvent e) { }
-                    @Override public void componentHidden(ComponentEvent e) { }
-                });
-            }
-            private void setByTextWidth(int width) {
+            public void setWidth(int width) {
                 setContainerSize(byTextContainer, width, byTextPanel.getPreferredSize().height);
                 setContainerSize(byPeopleContainer, width, byPeoplePanel.getPreferredSize().height);
                 setContainerSize(byLastChangeContainer, width, byLastChangePanel.getPreferredSize().height);
             }
-            private JViewport getViewport(Container c) {
-                if(c == null) {
-                    return null;
-                }
-                if(c instanceof JScrollPane) {
-                    return ((JScrollPane) c).getViewport();
-                }
-                return getViewport(c.getParent());
-            }
-            @Override public void ancestorRemoved(AncestorEvent event) { }
-            @Override public void ancestorMoved(AncestorEvent event) { }
-
-            private void setContainerSize(JComponent container, int width, int height) {
-                container.setPreferredSize(new Dimension(width, height));
-                container.revalidate();
+            private void setContainerSize(JComponent cmp, int width, int height) {
+                cmp.setPreferredSize(new Dimension(width, height));
+                cmp.revalidate();
             }
         });
         
@@ -839,7 +800,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE)
+                .addComponent(urlTextField)
                 .addContainerGap())
         );
         urlPanelLayout.setVerticalGroup(
@@ -871,7 +832,7 @@ public class QueryPanel extends javax.swing.JPanel {
                             .addComponent(byLastChangeLabel)))
                     .addComponent(byTextContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(byPeopleContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

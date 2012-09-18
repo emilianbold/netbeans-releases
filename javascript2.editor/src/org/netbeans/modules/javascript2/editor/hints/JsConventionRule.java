@@ -51,6 +51,7 @@ import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.ReturnNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
 import java.util.Arrays;
@@ -59,11 +60,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -106,7 +109,7 @@ public class JsConventionRule extends JsAstRule {
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this,
+        ConventionVisitor conventionVisitor = new ConventionVisitor(
                 betterConditionRule, missingSemicolon, duplicatePropertyName,
                 assignmentInCondition, objectTrailingComma, arrayTrailingComma);
         conventionVisitor.process(context, hints);
@@ -136,9 +139,6 @@ public class JsConventionRule extends JsAstRule {
 
     private static class ConventionVisitor extends PathNodeVisitor {
 
-        private List<Hint> hints;
-        private JsRuleContext context;
-        private final Rule rule;
         private final Rule betterConditionRule;
         private final Rule missingSemicolon;
         private final Rule duplicatePropertyName;
@@ -146,10 +146,13 @@ public class JsConventionRule extends JsAstRule {
         private final Rule objectTrailingComma;
         private final Rule arrayTrailingComma;
 
-        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, 
+        private List<Hint> hints;
+
+        private JsRuleContext context;
+
+        public ConventionVisitor(Rule betterCondition, Rule missingSemicolon, 
                 Rule duplicatePropertyName, Rule assignmentInCondition,
                 Rule objectTrailingComma, Rule arrayTrailingComma) {
-            this.rule = rule;
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
             this.duplicatePropertyName = duplicatePropertyName;
@@ -180,23 +183,30 @@ public class JsConventionRule extends JsAstRule {
             if (fileOffset == -1) {
                 return;
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), offset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                    context.parserResult.getSnapshot(), offset);
             if (ts == null) {
                 return;
             }
             ts.move(offset);
-            if(ts.movePrevious() && ts.moveNext()) {
+            if (ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
-                if(id == JsTokenId.STRING_END && ts.moveNext()) {
+                if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
                 if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    id = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE)).id();
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                    id = previous.id();
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                        // check again whether there is not semicolon
+                        Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                        id = next.id();
+                    }
+                    // check again whether there is not semicolon and it is not generated
+                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
+                            && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {
                         fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                         if (fileOffset >= 0) {
                             hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
@@ -209,43 +219,46 @@ public class JsConventionRule extends JsAstRule {
         }
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
-        private void checkCondition(Node condition) {
-            if (betterConditionRule == null && assignmentInCondition == null) {
+        private void checkAssignmentInCondition(Node condition) {
+            if (assignmentInCondition == null) {
                 return;
             }
-            if(condition instanceof BinaryNode) {
+            if (condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
                 if (assignmentInCondition != null && binaryNode.isAssignment()) {
-                    
-                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(), 
+                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
-                } else {
-                    if (betterConditionRule == null) {
-                        return;
-                    }
-                    String message = null;
-                    switch(binaryNode.tokenType()) {
-                        case EQ:
-                            message = Bundle.ExpectedInstead("===", "=="); //NOI18N
-                            break;
-                        case NE:
-                            message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
-                            break;
-                    }
-                    if (message != null) {
-                        hints.add(new Hint(betterConditionRule, message, 
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
-                    }
                 }
                 if (binaryNode.lhs() instanceof BinaryNode) {
-                    checkCondition(binaryNode.lhs());
+                    checkAssignmentInCondition(binaryNode.lhs());
                 }
                 if (binaryNode.rhs() instanceof BinaryNode) {
-                    checkCondition(binaryNode.rhs());
+                    checkAssignmentInCondition(binaryNode.rhs());
                 }
             }
+        }
+
+        private void checkCondition(BinaryNode binaryNode) {
+            if (betterConditionRule == null) {
+                return;
+            }
+            String message = null;
+            switch (binaryNode.tokenType()) {
+                case EQ:
+                    message = Bundle.ExpectedInstead("===", "=="); //NOI18N
+                    break;
+                case NE:
+                    message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
+                    break;
+            }
+            if (message != null) {
+                hints.add(new Hint(betterConditionRule, message,
+                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                    ModelUtils.documentOffsetRange(context.getJsParserResult(),
+                        binaryNode.getStart(), binaryNode.getFinish()), null, 500));
+            }
+
         }
 
         private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN, AFTER_BRACKET};
@@ -335,12 +348,30 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
             }
-        }   
+        }
 
         @Override
         public Node enter(DoWhileNode doWhileNode) {
-            checkCondition(doWhileNode.getTest());
+            checkAssignmentInCondition(doWhileNode.getTest());
             return super.enter(doWhileNode);
+        }
+
+        @Override
+        public Node enter(ForNode forNode) {
+            checkAssignmentInCondition(forNode.getTest());
+            return super.enter(forNode);
+        }
+
+        @Override
+        public Node enter(IfNode ifNode) {
+            checkAssignmentInCondition(ifNode.getTest());
+            return super.enter(ifNode);
+        }
+
+        @Override
+        public Node enter(WhileNode whileNode) {
+            checkAssignmentInCondition(whileNode.getTest());
+            return super.enter(whileNode);
         }
 
         @Override
@@ -349,18 +380,6 @@ public class JsConventionRule extends JsAstRule {
                 checkSemicolon(executeNode.getFinish());
             }
             return super.enter(executeNode);
-        }
-
-        @Override
-        public Node enter(ForNode forNode) {
-            checkCondition(forNode.getTest());
-            return super.enter(forNode);
-        }
-
-        @Override
-        public Node enter(IfNode ifNode) {
-            checkCondition(ifNode.getTest());
-            return super.enter(ifNode);
         }
 
         @Override
@@ -449,9 +468,15 @@ public class JsConventionRule extends JsAstRule {
         }
 
         @Override
-        public Node enter(WhileNode whileNode) {
-            checkCondition(whileNode.getTest());
-            return super.enter(whileNode);
+        public Node enter(ReturnNode returnNode) {
+            checkSemicolon(returnNode.getFinish());
+            return super.enter(returnNode);
+        }
+
+        @Override
+        public Node enter(BinaryNode binaryNode) {
+            checkCondition(binaryNode);
+            return super.enter(binaryNode);
         }
     }
 }

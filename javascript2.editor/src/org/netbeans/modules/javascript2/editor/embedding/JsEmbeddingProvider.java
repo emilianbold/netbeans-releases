@@ -108,16 +108,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             // no-op
         }
 
-        public
         @Override
-        Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             //filter out transitive embedding creations like JSP -> HTML -> JavaScript
             //we have a direct translator for them JSP -> JavaScript
-            //but not in case of xhtml as source mimetype :-( grrr, this is hacking!!!
-            if (!snapshot.getSource().getMimeType().equals("text/xhtml")) {
-                if (snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
-                    return null;
-                }
+            if (snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
+                return null;
             }
 
             Translator t = translators.get(snapshot.getMimeType());

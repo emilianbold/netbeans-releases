@@ -198,7 +198,6 @@ public final class ParserProviderImpl extends CsmParserProvider {
                             parseFileContent = ((FileImpl.ParseDescriptor)descr).getFileContent();
                         }
                         new AstRenderer(file, parseFileContent, objects).render(ast);
-                        file.incParseCount();
                     }            
                     break;
                 case NAMESPACE_DEFINITION_BODY:
@@ -232,6 +231,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 default:
                     assert false : "unexpected parse kind " + kind;
             }
+            file.incParseCount();
         }
         
         @Override
@@ -309,11 +309,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     new DataRenderer((FileImpl.ParseDescriptor)context[0]).render(parser.parsedObjects);
-                    file.incParseCount();
                     break;
                 default:
                     assert false : "unexpected render kind " + kind;
             }
+            file.incParseCount();
         }
 
         @Override

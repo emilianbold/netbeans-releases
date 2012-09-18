@@ -482,7 +482,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         buttonDownloadMode.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.buttonDownloadMode.text")); // NOI18N
         buttonDownloadMode.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonDownloadMode.text")); // NOI18N
 
-        checkBoxBundle.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.checkBoxBundle.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxBundle, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.checkBoxBundle.text")); // NOI18N
         checkBoxBundle.setToolTipText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "TOOLTIP_labelBundle")); // NOI18N
         checkBoxBundle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -625,6 +625,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
         jfxProps.setNativeBundlingEnabled(sel);
         if(jfxProps.getNativeBundlingEnabled() && jfxProps.getNativeBundlingType() == JFXProjectProperties.BundlingType.NONE) {
             jfxProps.setNativeBundlingType(JFXProjectProperties.BundlingType.ALL);
+            comboBoxBundle.setSelectedItem(JFXProjectProperties.BundlingType.ALL.getString());
         }
     }//GEN-LAST:event_checkBoxBundleActionPerformed
 

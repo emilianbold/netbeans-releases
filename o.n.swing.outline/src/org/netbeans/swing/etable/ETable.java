@@ -50,6 +50,7 @@ import java.awt.Container;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Event;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -2761,6 +2762,7 @@ public class ETable extends JTable {
             try {
                 Container con = ETable.this.getFocusCycleRootAncestor();
                 if (con != null) {
+                    /*
                     Component target = ETable.this;
                     if (getParent() instanceof JViewport) {
                         target = getParent().getParent();
@@ -2768,6 +2770,7 @@ public class ETable extends JTable {
                             target = ETable.this;
                         }
                     }
+                    */
 
                     EventObject eo = EventQueue.getCurrentEvent();
                     boolean backward = false;
@@ -2779,18 +2782,30 @@ public class ETable extends JTable {
                             KeyEvent.SHIFT_DOWN_MASK) != 0;
                     }
 
-                    Component to = backward ? 
-                        con.getFocusTraversalPolicy().getComponentAfter(
-                        con, ETable.this) 
-                        : con.getFocusTraversalPolicy().getComponentAfter(
-                        con, ETable.this);
+                    Component c = ETable.this;
+                    Component to;
+                    Container parentWithFTP = null;
+                    do {
+                        FocusTraversalPolicy ftp = con.getFocusTraversalPolicy();
+                        to = backward ? ftp.getComponentBefore(con, c)
+                                      : ftp.getComponentAfter(con, c);
 
-                        
-                    if (to == ETable.this) {
-                        to = backward ? 
-                            con.getFocusTraversalPolicy().getFirstComponent(con) : 
-                            con.getFocusTraversalPolicy().getLastComponent(con);
-                    }
+
+                        if (to == ETable.this) {
+                            to = backward ? ftp.getFirstComponent(con)
+                                          : ftp.getLastComponent(con);
+                        }
+                        if (to == ETable.this) {
+                            parentWithFTP = con.getParent();
+                            if (parentWithFTP != null) {
+                                parentWithFTP = parentWithFTP.getFocusCycleRootAncestor();
+                            }
+                            if (parentWithFTP != null) {
+                                c = con;
+                                con = parentWithFTP;
+                            }
+                        }
+                    } while (to == ETable.this && parentWithFTP != null);
                     if (to != null) {
                         to.requestFocus();
                     }

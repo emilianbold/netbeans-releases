@@ -144,12 +144,14 @@ public class WatchPanel {
             if (contextRetrievalRP != null) {
                 final DebuggerEngine den = en;
                 contextRetrievalRP.post(new Runnable() {
+                    @Override
                     public void run() {
                         final Context c = retrieveContext(den);
                         if (c != null) {
                             setupContext(editorPane, c.url, c.line, c.debugger);
                             if (contextSetUp != null) {
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run() {
                                         contextSetUp.actionPerformed(null);
                                     }
@@ -159,8 +161,11 @@ public class WatchPanel {
                     }
                 });
                 Context c = retrieveContext(null);
-                if (c != null) setupContext(editorPane, c.url, c.line, c.debugger);
-                else setupUI(editorPane);
+                if (c != null) {
+                    setupContext(editorPane, c.url, c.line, c.debugger);
+                } else {
+                    setupUI(editorPane);
+                }
                 return ;
             } else {
                 en = null;
@@ -174,6 +179,7 @@ public class WatchPanel {
         }
         if (contextSetUp != null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     contextSetUp.actionPerformed(null);
                 }
@@ -338,7 +344,9 @@ public class WatchPanel {
                 }
                 if (isThrows) {
                     i = line.indexOf("{", i);
-                    if (i < 0) i = line.length();
+                    if (i < 0) {
+                        i = line.length();
+                    }
                 }
                 if (i < line.length()) {
                     if (line.charAt(i) == '{') {
@@ -371,6 +379,7 @@ public class WatchPanel {
         // Do the binding for Java files only:
         if ("text/x-java".equals(file.getMIMEType())) { // NOI18N
             Runnable bindComponentToDocument = new Runnable() {
+                @Override
                 public void run() {
                     String origText = editorPane.getText();
                     DialogBinding.bindComponentToFile(file, (line >= 0) ? line : 0, 0, 0, editorPane);
@@ -398,6 +407,7 @@ public class WatchPanel {
     
     private static void setupUI(final JEditorPane editorPane) {
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
                 if (eui == null) {
@@ -424,7 +434,9 @@ public class WatchPanel {
     }
 
     public JComponent getPanel() {
-        if (panel != null) return panel;
+        if (panel != null) {
+            return panel;
+        }
 
         panel = new JPanel();
         ResourceBundle bundle = NbBundle.getBundle(WatchPanel.class);
@@ -497,10 +509,12 @@ public class WatchPanel {
         int offset
     ) {
         String t = null;
-        if ( (ep.getSelectionStart () <= offset) &&
-             (offset <= ep.getSelectionEnd ())
-        )   t = ep.getSelectedText ();
-        if (t != null) return t;
+        if (ep.getSelectionStart () <= offset && offset <= ep.getSelectionEnd ()) {
+            t = ep.getSelectedText ();
+        }
+        if (t != null) {
+            return t;
+        }
 
         int line = NbDocument.findLineNumber (
             doc,
@@ -515,7 +529,9 @@ public class WatchPanel {
                 org.openide.text.NbDocument.findLineRootElement (doc).
                 getElement (line);
 
-            if (lineElem == null) return null;
+            if (lineElem == null) {
+                return null;
+            }
             int lineStartOffset = lineElem.getStartOffset ();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
             t = doc.getText (lineStartOffset, lineLen);
@@ -534,7 +550,9 @@ public class WatchPanel {
                 identEnd++;
             }
 
-            if (identStart == identEnd) return null;
+            if (identStart == identEnd) {
+                return null;
+            }
             return t.substring (identStart, identEnd);
         } catch (javax.swing.text.BadLocationException e) {
             return null;
@@ -560,7 +578,9 @@ public class WatchPanel {
 
         private CompilationController findController(FileObject fileObj) {
             JavaSource javaSource = JavaSource.forFileObject(fileObj);
-            if (javaSource == null) return null;
+            if (javaSource == null) {
+                return null;
+            }
             final CompilationController[] result = new CompilationController[1];
             result[0] = null;
             try {
@@ -590,7 +610,9 @@ public class WatchPanel {
         @Override
         public Trees wrapTrees(Trees trees) {
             JPDADebugger debugger = debuggerRef.get();
-            if (debugger == null) return trees;
+            if (debugger == null) {
+                return trees;
+            }
             return new MyTrees(trees, findController(fileObject), debugger);
         }
 
@@ -681,8 +703,9 @@ public class WatchPanel {
                     if (var != null) {
                         Elements elements = controller.getElements();
                         TypeElement typeElem = elements.getTypeElement(var.getClassType().getName());
-                        if (typeElem != null)
+                        if (typeElem != null) {
                             return typeElem.asType();
+                        }
                     }
                 }
             }

@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -71,8 +72,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -88,11 +91,11 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.navigation.actions.SortActions;
+import org.netbeans.modules.java.navigation.base.Utils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -277,6 +280,15 @@ class Nodes {
         }
 
         @Override
+        public String getShortDescription() {
+            if (filters.isFqn()) {
+                return super.getShortDescription();
+            } else {
+                return description.getHandle().getQualifiedName();
+            }
+        }
+
+        @Override
         public Image getIcon(int type) {
             return ImageUtilities.icon2Image(
                     ElementIcons.getElementIcon(
@@ -424,9 +436,9 @@ class Nodes {
                 new InstanceContent.Convertor<Description, FileObject>() {
                     @Override
                     public FileObject convert(Description desc) {
-                        return SourceUtils.getFile(
-                                desc.getHandle(),
-                                desc.getClasspathInfo());
+                        return Utils.getFile(
+                            desc.getHandle(),
+                            desc.getClasspathInfo());
                     }
                     @Override
                     public Class<? extends FileObject> type(Description desc) {
@@ -447,9 +459,9 @@ class Nodes {
                     @Override
                     public DataObject convert(Description desc) {
                         try {
-                            final FileObject file = SourceUtils.getFile(
-                                    desc.getHandle(),
-                                    desc.getClasspathInfo());
+                            final FileObject file = Utils.getFile(
+                                desc.getHandle(),
+                                desc.getClasspathInfo());
                             return file == null ? null : DataObject.find(file);
                         } catch (DataObjectNotFoundException ex) {
                             return null;
@@ -522,11 +534,19 @@ class Nodes {
             @NonNull final HierarchyFilters filters,
             @NonNull final AtomicBoolean cancel) {
         try {
-            FileObject thisSourceRoot = findSourceRoot(SourceUtils.getFile(element, info.getClasspathInfo()));
+            boolean isSourceRoot = true;
+            FileObject thisRoot = findSourceRoot(SourceUtils.getFile(element, info.getClasspathInfo()));
+            if (thisRoot == null) {
+                thisRoot = findBinaryRoot(element, info);
+                isSourceRoot = false;
+            }
+            if (thisRoot == null) {
+                return null;
+            }
             ElementHandle<TypeElement> elementHandle = ElementHandle.create(element);
             TypeDescription td = new TypeDescription(info.getClasspathInfo(), elementHandle);
             
-            Map<TypeDescription, Set<TypeDescription>> subclassesJoined = new ComputeSubClasses(cancel).computeUsers(info, thisSourceRoot, Collections.singleton(td), new long[1], false);
+            Map<TypeDescription, Set<TypeDescription>> subclassesJoined = new ComputeSubClasses(cancel).computeUsers(info, thisRoot, Collections.singleton(td), new long[1], false, isSourceRoot);
             
             if (subclassesJoined == null) return null;
             
@@ -579,6 +599,34 @@ class Nodes {
         return cp != null ? cp.findOwnerRoot(file) : null;
     }
 
+    @CheckForNull
+    private static FileObject findBinaryRoot(
+            @NonNull final TypeElement element,
+            @NonNull final CompilationInfo info) {
+        final FileObject res = findBinaryInCp(
+                info.getElements(),
+                element,
+                info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT));
+        if (res != null) {
+            return res;
+        }
+        return findBinaryInCp(
+                info.getElements(),
+                element,
+                info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE));
+    }
+
+    @CheckForNull
+    private static FileObject findBinaryInCp(
+            @NonNull final Elements elements,
+            @NonNull final TypeElement element,
+            @NonNull final ClassPath cp) {
+        final FileObject file = cp.findResource(String.format(
+                "%s.class", //NOI18N
+                elements.getBinaryName(element).toString().replace('.', '/'))); //NOI18N
+        return file == null ? null : cp.findOwnerRoot(file);
+    }
+
     private static String getSimpleName(@NonNull final String fqn) {
         int sepIndex = fqn.lastIndexOf('$');   //NOI18N
         if (sepIndex == -1) {
@@ -596,7 +644,7 @@ class Nodes {
             this.cancel = cancel;
         }
         
-        Map<TypeDescription, Set<TypeDescription>> computeUsers(CompilationInfo info, FileObject thisSourceRoot, Set<TypeDescription> baseHandles, long[] classIndexCumulative, boolean interactive) {
+        Map<TypeDescription, Set<TypeDescription>> computeUsers(CompilationInfo info, FileObject thisRoot, Set<TypeDescription> baseHandles, long[] classIndexCumulative, boolean interactive, boolean isSourceRoot) {
             Map<URL, List<URL>> sourceDeps = getDependencies(false);
             Map<URL, List<URL>> binaryDeps = getDependencies(true);
 
@@ -612,17 +660,10 @@ class Nodes {
                 return null;
             }
 
-            URL thisSourceRootURL;
-
-            try {
-                thisSourceRootURL = thisSourceRoot.getURL();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
+            final URL thisRootURL = thisRoot.toURL();
 
             Map<URL, List<URL>> rootPeers = getRootPeers();
-            List<URL> sourceRoots = reverseSourceRootsInOrder(info, thisSourceRootURL, thisSourceRoot, sourceDeps, binaryDeps, rootPeers, interactive);
+            List<URL> sourceRoots = reverseSourceRootsInOrder(info, thisRootURL, thisRoot, sourceDeps, binaryDeps, rootPeers, interactive, isSourceRoot);
 
             if (sourceRoots == null) {
                 return null;
@@ -641,7 +682,7 @@ class Nodes {
             Map<TypeDescription, Set<TypeDescription>> result = new HashMap<TypeDescription, Set<TypeDescription>>();
             Map<TypeDescription, Set<TypeDescription>> auxHandles = new HashMap<TypeDescription, Set<TypeDescription>>();
 
-            if (!sourceDeps.containsKey(thisSourceRootURL)) {
+            if (!sourceDeps.containsKey(thisRootURL)) {
                 Set<URL> binaryRoots = new HashSet<URL>();
 
                 for (URL sr : sourceRoots) {
@@ -822,19 +863,19 @@ class Nodes {
 
         static List<URL> reverseSourceRootsInOrderOverride;
 
-        private List<URL> reverseSourceRootsInOrder(CompilationInfo info, URL thisSourceRoot, FileObject thisSourceRootFO, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, Map<URL, List<URL>> rootPeers, boolean interactive) {
+        private List<URL> reverseSourceRootsInOrder(CompilationInfo info, URL thisRoot, FileObject thisRootFO, Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, Map<URL, List<URL>> rootPeers, boolean interactive, boolean isSourceRoot) {
             if (reverseSourceRootsInOrderOverride != null) {
                 return reverseSourceRootsInOrderOverride;
             }
 
             Set<URL> sourceRootsSet;
 
-            if (sourceDeps.containsKey(thisSourceRoot)) {
-                sourceRootsSet = findReverseSourceRoots(thisSourceRoot, sourceDeps, rootPeers, info.getFileObject());
+            if (sourceDeps.containsKey(thisRoot)) {
+                sourceRootsSet = findReverseSourceRoots(thisRoot, sourceDeps, rootPeers, info.getFileObject());
             } else {
                 sourceRootsSet = new HashSet<URL>();
 
-                for (URL binary : findBinaryRootsForSourceRoot(thisSourceRootFO, binaryDeps)) {
+                for (URL binary : findBinaryRootsForSourceRoot(thisRootFO, binaryDeps, isSourceRoot)) {
                     List<URL> deps = binaryDeps.get(binary);
 
                     if (deps != null) {
@@ -908,19 +949,22 @@ class Nodes {
             }
         }
 
-        private Set<URL> findBinaryRootsForSourceRoot(FileObject sourceRoot, Map<URL, List<URL>> binaryDeps) {
+        private Set<URL> findBinaryRootsForSourceRoot(FileObject root, Map<URL, List<URL>> binaryDeps, boolean isSourceRoot) {
     //      BinaryForSourceQuery.findBinaryRoots(thisSourceRoot).getRoots();
             Set<URL> result = new HashSet<URL>();
 
-            for (URL bin : binaryDeps.keySet()) {
-                if (cancel.get()) return Collections.emptySet();
-                for (FileObject s : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
-                    if (s == sourceRoot) {
-                        result.add(bin);
+            if (isSourceRoot) {
+                for (URL bin : binaryDeps.keySet()) {
+                    if (cancel.get()) return Collections.emptySet();
+                    for (FileObject s : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
+                        if (s == root) {
+                            result.add(bin);
+                        }
                     }
                 }
+            } else if (binaryDeps.containsKey(root.toURL())) {
+                result.add(root.toURL());
             }
-
             return result;
         }
 

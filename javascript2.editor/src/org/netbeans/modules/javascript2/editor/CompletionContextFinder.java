@@ -113,10 +113,13 @@ public class CompletionContextFinder {
             tokenId = token.id();
         }
         if (tokenId == JsTokenId.IDENTIFIER || WHITESPACES_TOKENS.contains(tokenId)) {
-            ts.movePrevious();
+            if (!ts.movePrevious()) {
+                return CompletionContext.GLOBAL;
+            }
             token = LexUtilities.findPrevious(ts, WHITESPACES_TOKENS);
         }
-        if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
+        if (CHANGE_CONTEXT_TOKENS.contains(token.id())
+                || (WHITESPACES_TOKENS.contains(token.id()) && !ts.movePrevious())) {
             return CompletionContext.GLOBAL;
         }
         if (tokenId == JsTokenId.DOC_COMMENT) {
