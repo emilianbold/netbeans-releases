@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Map.Entry;
 import java.util.*;
+import java.util.Map.Entry;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -52,13 +52,13 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
-import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.*;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.util.Union2;
 
@@ -456,7 +456,10 @@ class OccurenceBuilder {
         }
 
         for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
-            setOffsetElementInfo(new ElementInfo(entry.getKey(), ModelUtils.getNamespaceScope(entry.getValue())), offset);
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(entry.getValue());
+            if (namespaceScope != null) {
+                setOffsetElementInfo(new ElementInfo(entry.getKey(), namespaceScope), offset);
+            }
         }
 
         for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
@@ -1717,15 +1720,12 @@ class OccurenceBuilder {
     }
 
     private void buildDocTagsForFields(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Collection<QualifiedName> matchingTypeNames = new HashSet<QualifiedName>();
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             if (phpElement instanceof FieldElement) {
                 FieldElement fieldElement = (FieldElement) phpElement;
                 TypeElement typeElement = fieldElement.getType();
                 Exact typeName = NameKind.exact(typeElement.getFullyQualifiedName());
-                matchingTypeNames.add(typeElement.getFullyQualifiedName());
-                matchingTypeNames.add(nodeCtxInfo.getTypeQualifiedName());
                 Exact fieldName = NameKind.exact(phpElement.getName());
                 for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
                     PhpDocTypeTagInfo nodeInfo = entry.getKey();
@@ -1776,8 +1776,7 @@ class OccurenceBuilder {
         }
         final VariableScope ctxVarScope = (VariableScope) ctxScope;
         final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeCtxInfo.getName()));
-        final Set<VariableName> vars = ctxVarScope != null ? nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()))
-                : Collections.<VariableName>emptySet();
+        final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
         final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
         if (var != null) {
             for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
@@ -1812,8 +1811,7 @@ class OccurenceBuilder {
         }
         final VariableScope ctxVarScope = (VariableScope) ctxScope;
         final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeCtxInfo.getName()));
-        final Set<VariableName> vars = ctxVarScope != null ? nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()))
-                : Collections.<VariableName>emptySet();
+        final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
         final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
         if (var != null) {
             for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
@@ -1940,16 +1938,11 @@ class OccurenceBuilder {
         return false;
     }
 
-    private static QualifiedName getTypeFullyQualifedName(ASTNodeInfo nodeInfo, Scope inScope) {
-        return null;
-    }
-
     private class OccurenceImpl implements Occurence {
 
         private final OffsetRange occurenceRange;
         final PhpElement declaration;
         private Collection<? extends PhpElement> allDeclarations;
-        private Collection<? extends PhpElement> gotoDeclarations;
         private Accuracy accuracy = Accuracy.EXACT;
 
         public OccurenceImpl(Collection<? extends PhpElement> allDeclarations, OffsetRange occurenceRange) {
@@ -1989,7 +1982,7 @@ class OccurenceBuilder {
 
         @Override
         public Collection<? extends PhpElement> gotoDeclarations() {
-            return gotoDeclarations == null ? allDeclarations : gotoDeclarations;
+            return allDeclarations;
         }
 
         public void setAccuracy(Accuracy accuracy) {
@@ -2152,6 +2145,8 @@ class OccurenceBuilder {
                 case TRAIT:
                     kind = Kind.TRAIT;
                     break;
+                default:
+                    assert false;
             }
             assert kind != null;
             return kind;
