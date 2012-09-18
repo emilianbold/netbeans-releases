@@ -58,7 +58,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     private volatile SiteTemplateWizard siteTemplateWizard;
     private volatile WizardDescriptor wizardDescriptor;
     // #202796
-    static volatile String asynchError = null;
+    static volatile boolean asynchError = false;
 
 
     @Override
@@ -68,7 +68,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
             siteTemplateWizard.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    asynchError = null;
+                    asynchError = false;
                 }
             });
         }
@@ -83,7 +83,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        asynchError = null;
+        asynchError = false;
     }
 
     @Override
@@ -98,8 +98,9 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
 
     @Override
     public void validate() throws WizardValidationException {
+        String error;
         try {
-            asynchError = getComponent().prepareTemplate();
+            error = getComponent().prepareTemplate();
         } finally {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -108,15 +109,16 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
                 }
             });
         }
-        if (asynchError != null) {
-            throw new WizardValidationException(getComponent(), "ERROR_PREPARE", asynchError); // NOI18N
+        if (error != null) {
+            asynchError = true;
+            throw new WizardValidationException(getComponent(), "ERROR_PREPARE", error); // NOI18N
         }
     }
 
     @Override
     public boolean isValid() {
         // grrr
-        if (asynchError != null) {
+        if (asynchError) {
             return true;
         }
         // error
