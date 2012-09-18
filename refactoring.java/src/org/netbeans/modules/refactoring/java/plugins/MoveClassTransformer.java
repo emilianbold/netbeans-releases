@@ -191,7 +191,7 @@ public class MoveClassTransformer extends RefactoringVisitor {
                     final GeneratorUtilities get = GeneratorUtilities.get(workingCopy);
                     
                     ClassTree classTree = (ClassTree) workingCopy.getTrees().getTree(resolved);
-                    classTree = get.importComments(classTree, workingCopy.getTrees().getPath(resolved).getCompilationUnit());
+                    ClassTree origTree = get.importComments(classTree, workingCopy.getTrees().getPath(resolved).getCompilationUnit());
                     final Map<Tree, Tree> org2trans = new HashMap<Tree, Tree>();
                     TreeScanner<Object, Element> scanner= new TreeScanner<Object, Element>() {
 
@@ -234,8 +234,8 @@ public class MoveClassTransformer extends RefactoringVisitor {
                     flags.add(Modifier.STATIC);
                     newClass = make.Class(make.Modifiers(flags, modifiers.getAnnotations()), newClass.getSimpleName(), newClass.getTypeParameters(),
                             newClass.getExtendsClause(), newClass.getImplementsClause(), newClass.getMembers());
-                    get.copyComments(classTree, newClass, true);
-                    get.copyComments(classTree, newClass, false);
+                    get.copyComments(origTree, newClass, true);
+                    get.copyComments(origTree, newClass, false);
                     newClass = get.insertClassMember(node, newClass);
                     newClass = get.importFQNs(newClass);
                     original2Translated.put(node, newClass);

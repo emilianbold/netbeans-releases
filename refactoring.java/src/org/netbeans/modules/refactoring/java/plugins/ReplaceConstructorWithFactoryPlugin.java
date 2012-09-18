@@ -49,32 +49,47 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.java.hints.support.TransformationSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
+@NbBundle.Messages({"ERR_ReplaceWrongType=Cannot Replace Constructor with Factory of this object. A constructor has to be selected.",
+                    "ERR_ReplaceWrongInnerType=Cannot Replace Constructor with Factory in non-static inner class."})
+public class ReplaceConstructorWithFactoryPlugin extends JavaRefactoringPlugin {
 
-    private final ReplaceConstructorWithFactoryRefactoring replaceConstructorRefactoring;
+    private final ReplaceConstructorWithFactoryRefactoring refactoring;
     
     private final AtomicBoolean cancel = new AtomicBoolean();
+    private final TreePathHandle treePathHandle;
 
     public ReplaceConstructorWithFactoryPlugin(ReplaceConstructorWithFactoryRefactoring replaceConstructorRefactoring) {
-        this.replaceConstructorRefactoring = replaceConstructorRefactoring;
+        this.refactoring = replaceConstructorRefactoring;
+        treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
 
     @Override
-    public Problem preCheck() {
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        Element constr = treePathHandle.resolveElement(javac);
+        if(constr.getKind() != ElementKind.CONSTRUCTOR) {
+            return new Problem(true, ERR_ReplaceWrongType());
+        }
+        Element enclosingElement = constr.getEnclosingElement();
+        if(!enclosingElement.getModifiers().contains(Modifier.STATIC) && enclosingElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+            return new Problem(true, ERR_ReplaceWrongInnerType());
+        }
         return null;
     }
 
@@ -85,7 +100,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        String factoryName = replaceConstructorRefactoring.getFactoryName();
+        String factoryName = refactoring.getFactoryName();
         
         if (factoryName == null || factoryName.length() == 0) {
             return new Problem(true, "No factory method name specified.");
@@ -102,7 +117,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
 //        FileObject file = tph.getFileObject();
 //        ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
 //        FileObject sourceRoot = source.findOwnerRoot(file);
-        final TreePathHandle constr = replaceConstructorRefactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        final TreePathHandle constr = treePathHandle;
         final String[] ruleCode = new String[1];
         final String[] toCode = new String[1];
 
@@ -111,7 +126,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
 
                 @Override
                 public void run(WorkingCopy parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
+                    parameter.toPhase(JavaSource.Phase.RESOLVED);
                     TreePath constrPath = constr.resolve(parameter);
                     MethodTree constructor = (MethodTree) constrPath.getLeaf();
                     TypeElement parent = (TypeElement) parameter.getTrees().getElement(constrPath.getParentPath());
@@ -133,7 +148,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
                     }
                     EnumSet<Modifier> factoryMods = EnumSet.of(Modifier.STATIC);
                     factoryMods.addAll(constructor.getModifiers().getFlags());
-                    MethodTree factory = make.Method(make.Modifiers(factoryMods), replaceConstructorRefactoring.getFactoryName(), make.QualIdent(parent), Collections.<TypeParameterTree>emptyList(), constructor.getParameters(), Collections.<ExpressionTree>emptyList(), "{ return new " + parent.getSimpleName() + "(" + realParameters + "); }", null);
+                    MethodTree factory = make.Method(make.Modifiers(factoryMods), refactoring.getFactoryName(), make.QualIdent(parent), Collections.<TypeParameterTree>emptyList(), constructor.getParameters(), Collections.<ExpressionTree>emptyList(), "{ return new " + parent.getSimpleName() + "(" + realParameters + "); }", null);
                     parameter.rewrite(constrPath.getParentPath().getLeaf(), GeneratorUtilities.get(parameter).insertClassMember((ClassTree) constrPath.getParentPath().getLeaf(), factory));
                     EnumSet<Modifier> constructorMods = EnumSet.of(Modifier.PRIVATE);
                     parameter.rewrite(constructor.getModifiers(), make.Modifiers(constructorMods));
@@ -144,7 +159,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
                     }
 //                    rule.append(" => ").append(parent.getQualifiedName()).append(".").append(replaceConstructorRefactoring.getFactoryName()).append("(").append(parameters).append(");;");
                     ruleCode[0] = rule.toString();
-                    toCode[0] = parent.getQualifiedName() + "." + replaceConstructorRefactoring.getFactoryName() + "(" + parameters + ")";
+                    toCode[0] = parent.getQualifiedName() + "." + refactoring.getFactoryName() + "(" + parameters + ")";
                     toCode[0]+=";;";
                 }
             });
@@ -155,7 +170,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
 
             results.addAll(TransformationSupport.create(ruleCode[0] + " => " + toCode[0]).setCancel(cancel).processAllProjects());
 
-            ReplaceConstructorWithBuilderPlugin.createAndAddElements(replaceConstructorRefactoring, refactoringElements, results);
+            ReplaceConstructorWithBuilderPlugin.createAndAddElements(refactoring, refactoringElements, results);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -166,6 +181,12 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
     @Override
     public void cancelRequest() {
         cancel.set(true);
+    }
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        return JavaSource.create(cpInfo, treePathHandle.getFileObject());
     }
 
 }

@@ -498,7 +498,21 @@ public class LayoutPosition implements LayoutConstants {
         if (origAlign == LEADING || origAlign == TRAILING || origAlign == LayoutRegion.ALL_POINTS) {
             if (par != null && par.aligned) {
                 LayoutInterval parParent = parent.isParallel() ? parent : parent.getParent();
-                if (parallelComp == null) {
+                // can we consider parallel snap with this parent?
+                boolean parentAlign = (parallelComp == null);
+                if (parallelComp != null && !par.componentNeighborAtBorder && (alignment == LEADING || alignment == TRAILING)) {
+                    parentAlign = true;
+                    InSequence s = orig.inSequence[alignment];
+                    if (s != null && s.componentNeighbors != null) {
+                        for (LayoutInterval li : s.componentNeighbors) {
+                            if (parParent.isParentOf(li)) {
+                                parentAlign = false; // it's not the original par. parent, it's parent of something that was in sequence
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (parentAlign) {
                     if (parParent == orig.root) {
                         incl.snappedParallel = orig.root;
                     } else if (LayoutInterval.isAlignedAtBorder(parParent, orig.root, alignment)) {

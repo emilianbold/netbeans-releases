@@ -449,6 +449,14 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
                     Collections.<String>emptyList());
     }
     
+    public void testBooleanLiterals() throws Exception {
+        String code = "package test; public class Test { public void test() { if (false) { System.err.println(\"false\"); } if (true) { System.err.println(\"true\"); } } }";
+
+        performTest(code,
+                    Collections.singletonMap("if (true) $then; else $else$;", Arrays.asList("if (true) { System.err.println(\"true\"); }")),
+                    Collections.<String>emptyList());
+    }
+    
     public void testEfficientMultiMatching() throws Exception {
         String code = "package test; public class Test { private void m() {} }";
 
