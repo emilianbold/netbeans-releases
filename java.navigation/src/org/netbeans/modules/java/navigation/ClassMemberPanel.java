@@ -136,7 +136,7 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
         getClassMemberPanelUI().selectElementNode(eh);
     }
     
-    private synchronized ClassMemberPanelUI getClassMemberPanelUI() {
+    synchronized ClassMemberPanelUI getClassMemberPanelUI() {
         if (this.component == null) {
             this.component = new ClassMemberPanelUI();
         }
