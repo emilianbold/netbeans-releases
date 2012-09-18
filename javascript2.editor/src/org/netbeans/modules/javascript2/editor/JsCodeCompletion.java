@@ -444,13 +444,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     foundObjects.put(object.getName(), object);
                 } else {
                     if (object.isDeclared()) {
-                        if (fobject.isDeclared()) {
+//                        if (fobject.isDeclared()) {
                             // put to the cc result both
-                            resultList.add(JsCompletionItem.Factory.create(object, request));
-                        } else {
+//                            resultList.add(JsCompletionItem.Factory.create(object, request));
+//                        } else {
                             // replace with the one, which is declared
                             foundObjects.put(object.getName(), object);
-                        }
+//                        }
                     }
                 }
             }

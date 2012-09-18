@@ -3,7 +3,6 @@ $(ta|ska).text("fadsfads");
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 VARIABLE   taska                           [PUBLIC]   selectors.js
-VARIABLE   taska                           [PUBLIC]   selectors.js
 TAG        table                                      null
 TAG        tan                                        null
 TAG        tanh                                       null
