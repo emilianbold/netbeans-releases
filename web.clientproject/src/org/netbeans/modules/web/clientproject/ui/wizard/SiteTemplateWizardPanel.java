@@ -58,7 +58,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     private volatile SiteTemplateWizard siteTemplateWizard;
     private volatile WizardDescriptor wizardDescriptor;
     // #202796
-    static volatile boolean asynchError = false;
+    volatile boolean asynchError = false;
 
 
     @Override
