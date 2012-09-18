@@ -234,6 +234,12 @@ public final class DOMNode {
         StringBuilder sb = new StringBuilder();
         for (NodeId ni : path) {
             sb.append(ni.name);
+            int cn = ni.childNumber;
+            if (0 <= cn) {
+                sb.append("[");
+                sb.append(Integer.toString(cn));
+                sb.append("]");
+            }
             sb.append("/");
         }
         sb.deleteCharAt(sb.length() - 1);
